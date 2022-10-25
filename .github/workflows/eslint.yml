@@ -6,11 +6,6 @@ on: # yamllint disable-line rule:truthy
     push: # yamllint disable-line rule:empty-values
     pull_request: # yamllint disable-line rule:empty-values
 
-env:
-    package: "@${{ github.repository }}"
-    registry_url: "https://npm.pkg.github.com"
-    scope: "${{ github.repository_owner }}"
-
 jobs:
     text-lint:
         name: "Eslint"
