@@ -1,0 +1,7 @@
+.gitkeep
+.env*
+*.ico
+*.lock
+dist
+CHANGELOG.md
+__tests__
