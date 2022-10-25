@@ -31,10 +31,10 @@ jobs:
                   version: 7
                   run_install: false
 
-            - name: "Use Node.js 18.x"
+            - name: "Use Node.js 16.x"
               uses: "actions/setup-node@v3"
               with:
-                  node-version: "18.x"
+                  node-version: "16.x"
                   cache: "pnpm"
 
             - name: "Get pnpm store directory"

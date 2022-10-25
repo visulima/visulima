@@ -67,7 +67,7 @@
     },
     "packageManager": "pnpm@7.5.2",
     "engines": {
-        "node": ">=18.0"
+        "node": ">=16.0"
     },
     "prisma": {
         "schema": "db/schema.prisma"

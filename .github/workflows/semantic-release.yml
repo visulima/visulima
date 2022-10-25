@@ -17,7 +17,7 @@ jobs:
         strategy:
             matrix:
                 os: ["ubuntu-latest"]
-                node_version: ["18"]
+                node_version: ["16"]
             fail-fast: false
 
         name: "Build & Unit Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
@@ -98,10 +98,10 @@ jobs:
                   version: 7
                   run_install: false
 
-            - name: "Use Node.js 18.x"
+            - name: "Use Node.js 16.x"
               uses: "actions/setup-node@v3"
               with:
-                  node-version: "18.x"
+                  node-version: "16.x"
                   cache: "pnpm"
 
             - name: "Get pnpm store directory"
@@ -165,10 +165,10 @@ jobs:
               with:
                   version: 7
 
-            - name: "Use Node.js 18.x"
+            - name: "Use Node.js 16.x"
               uses: "actions/setup-node@v3"
               with:
-                  node-version: "18.x"
+                  node-version: "16.x"
 
             - name: "Update pnpm lock"
               run: "pnpm install --no-frozen-lockfile"

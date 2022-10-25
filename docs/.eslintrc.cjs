@@ -4,6 +4,8 @@ module.exports = {
     root: true,
     extends: [
         "@anolilab/eslint-config",
+        "plugin:@next/next/recommended",
+        "plugin:@next/next/core-web-vitals"
     ],
     ignorePatterns: ["!**/*"],
     env: {
