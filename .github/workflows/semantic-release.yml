@@ -12,7 +12,70 @@ on: # yamllint disable-line rule:truthy
             - "alpha"
             - "beta"
 
+# Enable this to use the github packages
+# yamllint disable-line rule:comments
+#env:
+#    package: "@${{ github.repository }}"
+#    registry_url: "https://npm.pkg.github.com"
+#    scope: "${{ github.repository_owner }}"
+
 jobs:
+    eslint:
+        name: "Eslint"
+
+        runs-on: "ubuntu-latest"
+
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v3"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - uses: "pnpm/action-setup@v2.2.4"
+              with:
+                  version: 7
+                  run_install: false
+
+            - name: "Use Node.js 16.x"
+              uses: "actions/setup-node@v3"
+              with:
+                  node-version: "16.x"
+                  cache: "pnpm"
+
+            - name: "Get pnpm store directory"
+              id: "pnpm-cache"
+              run: |
+                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+            - uses: "actions/cache@v3"
+              name: "Setup pnpm cache"
+              with:
+                  path: "${{ steps.pnpm-cache.outputs.STORE_PATH }}"
+                  key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
+
+            # @see: https://github.com/pnpm/pnpm/issues/4348
+            - name: "Upgrade npm to 8.4 version"
+              run: "npm install --global npm@8.4"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Check npm version"
+              run: "npm -v"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile"
+
+            - name: "lint"
+              run: "pnpm run lint:eslint"
+
     test:
         strategy:
             matrix:
@@ -80,7 +143,7 @@ jobs:
 
         runs-on: "ubuntu-latest"
 
-        needs: ["test"]
+        needs: ["test", "eslint"]
 
         steps:
             - name: "Git checkout"
@@ -130,6 +193,9 @@ jobs:
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
+
+            - name: "Build"
+              run: "pnpm run build:packages"
 
             - name: "Semantic Release"
               if: "success()"
