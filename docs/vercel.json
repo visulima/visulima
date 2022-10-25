@@ -1,4 +1,8 @@
 {
     "installCommand": "pnpm install",
-    "trailingSlash": false
+    "trailingSlash": false,
+    "env": {
+        "NEXT_TELEMETRY_DISABLED": "1",
+        "NO_LOGS": "true"
+    }
 }
