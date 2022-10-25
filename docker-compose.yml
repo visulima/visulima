@@ -1,0 +1,31 @@
+version: "3.7"
+
+services:
+    db:
+        image: "postgres:13.3-alpine"
+        volumes:
+            - "data:/var/lib/postgresql/data"
+        # Here we are using the already existing .env.local file
+        env_file: "./visulima/.env.local"
+        ports:
+            - "5432:5432"
+
+    redis:
+        image: "redis:6.2.3-alpine"
+        ports:
+            - "6379:6379"
+
+    mailhog:
+        image: "mailhog/mailhog:v1.0.1"
+        ports:
+            - "1025:1025"
+            - "8025:8025"
+        volumes:
+            - "data:/data"
+        env_file: "./visulima/.env.local"
+        depends_on:
+            - "db"
+        restart: "always"
+
+volumes:
+    data: # yamllint disable-line rule:empty-values

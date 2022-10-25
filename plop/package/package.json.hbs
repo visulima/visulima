@@ -1,0 +1,110 @@
+{
+    "name": "@visulima/{{name}}",
+    "version": "2.1.0",
+    "description": "{{description}}",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "thehoneybee",
+        "react",
+        "blitz",
+        "blitzjs"
+    ],
+    "homepage": "https://visulima.com/packages/{{name}}",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/{{path}}/{{name}}"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index-server.d.ts",
+            "require": "./dist/index-server.js",
+            "import": "./dist/index-server.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index-server.js",
+    "module": "dist/index-server.mjs",
+    "browser": "./dist/index-browser.mjs",
+    "types": "dist/index-server.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rm -rf node_modules && rm -rf dist",
+        "dev": "pnpm predev && pnpm run build --watch",
+        "lint:eslint": "cross-env NO_LOGS=true eslint --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
+        "lint:eslint:fix": "pnpm run lint:eslint --fix"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^4.0.9",
+        "@anolilab/semantic-release-preset": "^2.0.7",
+        "@rushstack/eslint-plugin-security": "^0.3.1",
+        "@testing-library/react": "^13.3.0",
+        "@testing-library/react-hooks": "^8.0.1",
+        "@types/node": "^18.0.5",
+        "@types/react": "^18.0.15",
+        "@types/react-dom": "^18.0.6",
+        "@typescript-eslint/eslint-plugin": "^5.30.6",
+        "@typescript-eslint/parser": "^5.30.6",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.20.0",
+        "eslint-plugin-compat": "^4.0.2",
+        "eslint-plugin-eslint-comments": "^3.2.0",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-jest": "^26.6.0",
+        "eslint-plugin-json": "^3.1.0",
+        "eslint-plugin-jsx-a11y": "^6.6.0",
+        "eslint-plugin-markdown": "^3.0.0",
+        "eslint-plugin-material-ui": "^1.0.1",
+        "eslint-plugin-no-loops": "^0.3.0",
+        "eslint-plugin-no-secrets": "^0.8.9",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-optimize-regex": "^1.2.1",
+        "eslint-plugin-promise": "^6.0.0",
+        "eslint-plugin-radar": "^0.2.1",
+        "eslint-plugin-react": "7.30.1",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-simple-import-sort": "^7.0.0",
+        "eslint-plugin-sort-keys-fix": "^1.1.2",
+        "eslint-plugin-testing-library": "^5.5.1",
+        "eslint-plugin-unicorn": "^43.0.1",
+        "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
+        "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "prettier": "^2.7.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "read-pkg": "^7.1.0",
+        "semantic-release": "^19.0.3",
+        "tsup": "^6.1.3",
+        "typescript": "^4.7.4",
+        "unbuild": "^0.7.4"
+    },
+    "peerDependencies": {
+        "react": "^17.0.0 || ^18.0.0",
+        "react-dom": "^17.0.0 || ^18.0.0"
+    },
+    "engines": {
+        "node": ">=16"
+    },
+    "pnpm": {
+        "overrides": {
+            "got@<11.8.5": ">=11.8.5",
+            "moment@>=2.18.0 <2.29.4": ">=2.29.4"
+        }
+    }
+}
