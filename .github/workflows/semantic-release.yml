@@ -154,8 +154,6 @@ jobs:
               uses: "actions/checkout@v3"
               with:
                   fetch-depth: 2
-                  token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
-                  ref: "${{ github.ref }}"
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
