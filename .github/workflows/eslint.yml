@@ -3,11 +3,10 @@
 name: "Eslint"
 
 on: # yamllint disable-line rule:truthy
-    push: # yamllint disable-line rule:empty-values
     pull_request: # yamllint disable-line rule:empty-values
 
 jobs:
-    text-lint:
+    eslint:
         name: "Eslint"
 
         runs-on: "ubuntu-latest"
