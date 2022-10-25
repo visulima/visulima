@@ -13,6 +13,7 @@
     "dependencies": {
         "@giscus/react": "^2.2.0",
         "@headlessui/react": "^1.7.3",
+        "@next/env": "^12.3.1",
         "@reach/skip-nav": "^0.18.0",
         "@tailwindcss/typography": "^0.5.7",
         "focus-visible": "^5.2.0",
@@ -20,7 +21,6 @@
         "markdown-to-jsx": "^7.1.7",
         "next": "^12.3.1",
         "next-sitemap": "^3.1.29",
-        "@next/env": "^12.3.1",
         "nextra": "^2.0.0-beta.17",
         "nextra-theme-docs": "^2.0.0-beta.17",
         "postcss-focus-visible": "^7.1.0",
@@ -32,6 +32,7 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.1.1",
+        "@next/eslint-plugin-next": "^12.3.1",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@types/node": "18.11.5",
         "@types/react": "18.0.22",
@@ -59,7 +60,6 @@
         "eslint-plugin-unicorn": "^44.0.2",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
-        "@next/eslint-plugin-next": "^12.3.1",
         "postcss": "^8.4.18",
         "tailwindcss": "^3.2.1",
         "typescript": "4.8.4"

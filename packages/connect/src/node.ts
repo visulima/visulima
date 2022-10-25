@@ -1,0 +1,173 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { AnyZodObject } from "zod";
+import { ZodObject } from "zod";
+
+import withZod from "./adapter/with-zod";
+import type { Route } from "./router";
+import { Router } from "./router";
+import type {
+    FindResult,
+    FunctionLike,
+    HandlerOptions,
+    HttpMethod,
+    Nextable,
+    RouteMatch,
+    RoutesExtendedRequestHandler,
+    RouteShortcutMethod,
+    ValueOrPromise,
+} from "./types";
+
+const onNoMatch = async (request: IncomingMessage, response: ServerResponse) => {
+    response.statusCode = 404;
+    response.end(request.method !== "HEAD" ? `Route ${request.method} ${request.url} not found` : undefined);
+};
+
+const onError = async (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
+    response.statusCode = 500;
+    // eslint-disable-next-line no-console
+    console.error(error);
+
+    response.end("Internal Server Error");
+};
+
+export function getPathname(url: string) {
+    const queryIndex = url.indexOf("?");
+
+    return queryIndex !== -1 ? url.slice(0, Math.max(0, queryIndex)) : url;
+}
+
+export type RequestHandler<Request extends IncomingMessage, Response extends ServerResponse> = (request: Request, response: Response) => ValueOrPromise<void>;
+
+export class NodeRouter<
+    Request extends IncomingMessage = IncomingMessage,
+    Response extends ServerResponse = ServerResponse,
+    Schema extends AnyZodObject = ZodObject<any>,
+> {
+    private router = new Router<RequestHandler<Request, Response>>();
+
+    private readonly onNoMatch: RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>;
+
+    private readonly onError: (
+        error: unknown,
+        ...arguments_: Parameters<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>
+    ) => ReturnType<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>;
+
+    constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
+        this.onNoMatch = options.onNoMatch || onNoMatch;
+        this.onError = options.onError || onError;
+    }
+
+    private add(
+        method: HttpMethod | "",
+        routeOrFunction: RouteMatch | Nextable<RequestHandler<Request, Response>>,
+        zodOrRouteOrFunction?: RouteMatch | Schema | Nextable<RequestHandler<Request, Response>>,
+        ...fns: Nextable<RequestHandler<Request, Response>>[]
+    ) {
+        if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        } else if (typeof zodOrRouteOrFunction === "object") {
+            // eslint-disable-next-line unicorn/prefer-ternary
+            if (typeof routeOrFunction === "function") {
+                // eslint-disable-next-line no-param-reassign
+                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(
+                    zodOrRouteOrFunction as Schema,
+                    routeOrFunction,
+                )];
+            } else {
+                // eslint-disable-next-line no-param-reassign,max-len
+                fns = fns.map((function_) => withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_));
+            }
+        } else if (typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        }
+
+        this.router.add(method, routeOrFunction, ...fns);
+
+        return this;
+    }
+
+    public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
+
+    public get: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "GET");
+
+    public head: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "HEAD");
+
+    public post: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "POST");
+
+    public put: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PUT");
+
+    public patch: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PATCH");
+
+    public delete: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "DELETE");
+
+    public use(
+        base: RouteMatch | Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>,
+        ...fns: (Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>)[]
+    ) {
+        if (typeof base === "function" || base instanceof NodeRouter) {
+            fns.unshift(base);
+            // eslint-disable-next-line no-param-reassign
+            base = "/";
+        }
+        this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
+
+        return this;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private prepareRequest(request: Request & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<Request, Response>>) {
+        request.params = {
+            ...findResult.params,
+            ...request.params, // original params will take precedence
+        };
+    }
+
+    public clone() {
+        const r = new NodeRouter<Request, Response, Schema>({ onNoMatch: this.onNoMatch, onError: this.onError });
+
+        r.router = this.router.clone();
+
+        return r;
+    }
+
+    async run(request: Request, response: Response): Promise<unknown> {
+        // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
+        const result = this.router.find(request.method as HttpMethod, getPathname(request.url as string));
+
+        if (result.fns.length === 0) {
+            return;
+        }
+
+        this.prepareRequest(request, result);
+
+        // eslint-disable-next-line consistent-return
+        return Router.exec(result.fns, request, response);
+    }
+
+    handler() {
+        const { routes } = this.router as Router<FunctionLike>;
+
+        return async (request: Request, response: Response) => {
+            // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
+            const result = this.router.find(request.method as HttpMethod, getPathname(request.url as string));
+
+            this.prepareRequest(request, result);
+
+            try {
+                await (result.fns.length === 0 || result.middleOnly ? this.onNoMatch(request, response, routes) : Router.exec(result.fns, request, response));
+            } catch (error) {
+                await this.onError(error, request, response, routes);
+            }
+        };
+    }
+}
+
+export const createRouter = <
+    Request extends IncomingMessage,
+    Response extends ServerResponse,
+    Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
+>(
+        options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
+    ) => new NodeRouter<Request, Response, Schema>(options);
