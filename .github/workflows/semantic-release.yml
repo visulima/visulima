@@ -32,7 +32,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.2"
+            - uses: "pnpm/action-setup@v2.2.4"
               with:
                   version: 7
                   run_install: false
@@ -46,12 +46,12 @@ jobs:
             - name: "Get pnpm store directory"
               id: "pnpm-cache"
               run: |
-                  echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
             - uses: "actions/cache@v3"
               name: "Setup pnpm cache"
               with:
-                  path: "${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}"
+                  path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
                   key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
                   restore-keys: |
                       ${{ runner.os }}-pnpm-store-
@@ -93,7 +93,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.2"
+            - uses: "pnpm/action-setup@v2.2.4"
               with:
                   version: 7
                   run_install: false
@@ -107,12 +107,12 @@ jobs:
             - name: "Get pnpm store directory"
               id: "pnpm-cache"
               run: |
-                  echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
             - uses: "actions/cache@v3"
               name: "Setup pnpm cache"
               with:
-                  path: "${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}"
+                  path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
                   key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
                   restore-keys: |
                       ${{ runner.os }}-pnpm-store-
@@ -161,7 +161,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.2"
+            - uses: "pnpm/action-setup@v2.2.4"
               with:
                   version: 7
 
@@ -169,7 +169,6 @@ jobs:
               uses: "actions/setup-node@v3"
               with:
                   node-version: "18.x"
-                  registry-url: "${{ env.registry_url }}"
 
             - name: "Update pnpm lock"
               run: "pnpm install --no-frozen-lockfile"
