@@ -27,25 +27,29 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
+            - uses: "pnpm/action-setup@v2.2.2"
+              with:
+                  version: 7
+                  run_install: false
+
             - name: "Use Node.js 18.x"
               uses: "actions/setup-node@v3"
               with:
                   node-version: "18.x"
-                  registry-url: "${{ env.registry_url }}"
-                  # Defaults to the user or organization that owns the workflow file
-                  scope: "@${{ env.scope }}"
+                  cache: "pnpm"
 
-            - name: "Install pnpm"
-              run: "curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm@6"
+            - name: "Get pnpm store directory"
+              id: "pnpm-cache"
+              run: |
+                  echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
 
-            - name: "Cache .pnpm-store"
-              uses: "actions/cache@v3"
-              id: "pnpm-cache" # use this to check for `cache-hit` (`steps.pnpm-cache.outputs.cache-hit != 'true'`)
+            - uses: "actions/cache@v3"
+              name: "Setup pnpm cache"
               with:
-                  path: "~/.pnpm-store"
-                  key: "${{ runner.os }}-node16-${{ hashFiles('**/pnpm-lock.yaml') }}"
+                  path: "${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}"
+                  key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
                   restore-keys: |
-                      ${{ runner.os }}-pnpm-
+                      ${{ runner.os }}-pnpm-store-
 
             # @see: https://github.com/pnpm/pnpm/issues/4348
             - name: "Upgrade npm to 8.4 version"

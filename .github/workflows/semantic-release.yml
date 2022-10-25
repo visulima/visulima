@@ -56,6 +56,17 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-pnpm-store-
 
+            # @see: https://github.com/pnpm/pnpm/issues/4348
+            - name: "Upgrade npm to 8.4 version"
+              run: "npm install --global npm@8.4"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Check npm version"
+              run: "npm -v"
+              env:
+                  SKIP_CHECK: "true"
+
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
               env:
