@@ -57,10 +57,14 @@
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
         "test": "vitest"
     },
+    "dependencies": {
+        "micromatch": "^4.0.5"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
         "@anolilab/semantic-release-preset": "^2.0.7",
         "@rushstack/eslint-plugin-security": "^0.5.0",
+        "@types/micromatch": "^4.0.2",
         "@types/node": "^18.8.4",
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",
@@ -70,6 +74,7 @@
         "eslint-plugin-eslint-comments": "^3.2.0",
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-json": "^3.1.0",
+        "eslint-plugin-jsonc": "^2.5.0",
         "eslint-plugin-jsx-a11y": "^6.6.1",
         "eslint-plugin-markdown": "^3.0.0",
         "eslint-plugin-material-ui": "^1.0.1",

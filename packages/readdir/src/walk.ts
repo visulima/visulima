@@ -1,16 +1,26 @@
+import micromatch, { Options as MicromatchOptions } from "micromatch";
 import { Dirent, promises } from "node:fs";
 import { basename, join, normalize } from "node:path";
 
-function include(path: string, extensions?: string[], match?: RegExp[], skip?: RegExp[]): boolean {
+function include(
+    path: string,
+    extensions?: string[],
+    match?: string | ReadonlyArray<string>,
+    skip?: string | ReadonlyArray<string>,
+    minimatchOptions: {
+        match?: MicromatchOptions;
+        skip?: MicromatchOptions;
+    } = {},
+): boolean {
     if (extensions && !extensions.some((extension): boolean => path.endsWith(extension))) {
         return false;
     }
 
-    if (match && !match.some((pattern): boolean => pattern.test(path))) {
+    if (match && !micromatch.isMatch(path, match, { noglobstar: true, ...minimatchOptions.match })) {
         return false;
     }
 
-    return !(skip && skip.some((pattern): boolean => pattern.test(path)));
+    return !(skip && micromatch.isMatch(path, skip, minimatchOptions.skip));
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -36,8 +46,12 @@ export type Options = {
     includeDirs?: boolean;
     followSymlinks?: boolean;
     extensions?: string[];
-    match?: RegExp[];
-    skip?: RegExp[];
+    match?: string | ReadonlyArray<string>;
+    skip?: string | ReadonlyArray<string>;
+    minimatchOptions?: {
+        match?: MicromatchOptions;
+        skip?: MicromatchOptions;
+    };
 };
 
 export interface WalkEntry extends Pick<Dirent, "name" | "isFile" | "isDirectory" | "isSymbolicLink"> {
@@ -53,8 +67,8 @@ export interface WalkEntry extends Pick<Dirent, "name" | "isFile" | "isDirectory
  * - includeDirs?: boolean = true;
  * - followSymlinks?: boolean = false;
  * - extensions?: string[];
- * - match?: RegExp[];
- * - skip?: RegExp[];
+ * - match?: string | ReadonlyArray<string>;
+ * - skip?: string | ReadonlyArray<string>;
  */
 // eslint-disable-next-line radar/cognitive-complexity
 export default async function* walk(
@@ -67,17 +81,18 @@ export default async function* walk(
         extensions,
         match,
         skip,
+        minimatchOptions,
     }: Options = {},
 ): AsyncIterableIterator<WalkEntry> {
     if (maxDepth < 0) {
         return;
     }
 
-    if (includeDirectories && include(directory, extensions, match, skip)) {
+    if (includeDirectories && include(directory, extensions, match, skip, minimatchOptions)) {
         yield await _createWalkEntry(directory);
     }
 
-    if (maxDepth < 1 || !include(directory, undefined, undefined, skip)) {
+    if (maxDepth < 1 || !include(directory, undefined, undefined, skip, minimatchOptions)) {
         return;
     }
 
@@ -100,7 +115,7 @@ export default async function* walk(
         }
 
         if (entry.isFile()) {
-            if (includeFiles && include(p, extensions, match, skip)) {
+            if (includeFiles && include(p, extensions, match, skip, minimatchOptions)) {
                 yield {
                     path: p,
                     name: entry.name,
