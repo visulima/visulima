@@ -1,0 +1,123 @@
+{
+    "name": "@visulima/connect",
+    "version": "0.0.0",
+    "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
+    "keywords": [
+        "javascript",
+        "nextjs",
+        "middleware",
+        "router",
+        "connect",
+        "vercel",
+        "node",
+        "http",
+        "http2",
+        "zod"
+    ],
+    "homepage": "https://visulima.com/packages/connect",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/api"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "import": "./dist/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist",
+        "coverage": "vitest run --coverage",
+        "dev": "pnpm predev && pnpm run build --watch",
+        "lint:eslint": "cross-env NO_LOGS=true eslint --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
+        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "http-errors": "^2.0.0",
+        "regexparam": "^2.0.1"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^4.1.1",
+        "@anolilab/semantic-release-preset": "^2.1.0",
+        "@rushstack/eslint-plugin-security": "^0.5.0",
+        "@types/http-errors": "^1.8.2",
+        "@types/node": "^18.11.5",
+        "@typescript-eslint/eslint-plugin": "^5.41.0",
+        "@typescript-eslint/parser": "^5.41.0",
+        "@vitest/coverage-c8": "^0.24.3",
+        "c8": "^7.12.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.26.0",
+        "eslint-plugin-compat": "^4.0.2",
+        "eslint-plugin-eslint-comments": "^3.2.0",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-json": "^3.1.0",
+        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-markdown": "^3.0.0",
+        "eslint-plugin-material-ui": "^1.0.1",
+        "eslint-plugin-no-loops": "^0.3.0",
+        "eslint-plugin-no-secrets": "^0.8.9",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-optimize-regex": "^1.2.1",
+        "eslint-plugin-promise": "^6.1.1",
+        "eslint-plugin-radar": "^0.2.1",
+        "eslint-plugin-simple-import-sort": "^8.0.0",
+        "eslint-plugin-sort-keys-fix": "^1.1.2",
+        "eslint-plugin-testing-library": "^5.9.1",
+        "eslint-plugin-unicorn": "^44.0.2",
+        "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
+        "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "express": "^4.18.2",
+        "fastify": "^4.9.2",
+        "isomorphic-fetch": "^3.0.0",
+        "prettier": "^2.7.1",
+        "read-pkg": "^7.1.0",
+        "rimraf": "^3.0.2",
+        "semantic-release": "^19.0.5",
+        "tsup": "^6.3.0",
+        "typescript": "^4.8.4",
+        "vitest": "^0.24.3",
+        "zod": "^3.19.1"
+    },
+    "peerDependencies": {
+        "zod": "^3.19.1"
+    },
+    "engines": {
+        "node": ">=16"
+    }
+}
