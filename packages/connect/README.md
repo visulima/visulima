@@ -37,6 +37,13 @@
 npm install @visulima/connect
 ```
 
+```sh
+yarn add @visulima/connect
+```
+
+```sh
+pnpm add @visulima/connect
+```
 ## Usage
 
 > **Note**
