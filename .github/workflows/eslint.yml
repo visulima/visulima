@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Markdown Lint"
+name: "Eslint"
 
 on: # yamllint disable-line rule:truthy
     push: # yamllint disable-line rule:empty-values
@@ -13,7 +13,7 @@ env:
 
 jobs:
     text-lint:
-        name: "Markdown lint"
+        name: "Eslint"
 
         runs-on: "ubuntu-latest"
 
