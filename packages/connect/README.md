@@ -589,13 +589,27 @@ router.use(expressWrapper(someExpressMiddleware));
 
 </details>
 
+## Supported Node.js Versions
+
+Libraries in this ecosystem make the best effort to track
+[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+
 ## Contributing
 
-Please see my [contributing.md](https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md).
+If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guild.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+-   [next-connect](https://github.com/hoangvvo/next-connect)
+-   [Daniel Bannert](https://github.com/prisis)
+-   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 
-[MIT][license-url]
+The visulima connect is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
