@@ -27,6 +27,7 @@
         "storybook": "pnpm --filter \"storybook\" run dev",
         "test:api-platform": "pnpm --filter \"api-platform\" run test",
         "test:connect": "pnpm --filter \"connect\" run test",
+        "test:readdir": "pnpm --filter \"readdir\" run test",
         "test:coverage": "nx run-many --target=coverage --all --parallel",
         "test:coverage:api-platform": "pnpm --filter \"api-platform\" run coverage",
         "test:coverage:connect": "pnpm --filter \"connect\" run coverage",
