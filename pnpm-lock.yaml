@@ -64,6 +64,8 @@ importers:
       '@anolilab/eslint-config': ^4.1.1
       '@giscus/react': ^2.2.0
       '@headlessui/react': ^1.7.3
+      '@next/env': ^12.3.1
+      '@next/eslint-plugin-next': ^12.3.1
       '@reach/skip-nav': ^0.18.0
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@tailwindcss/typography': ^0.5.7
@@ -111,13 +113,14 @@ importers:
     dependencies:
       '@giscus/react': 2.2.0_biqbaboplfbrettd7655fr4n2y
       '@headlessui/react': 1.7.3_biqbaboplfbrettd7655fr4n2y
+      '@next/env': 12.3.1
       '@reach/skip-nav': 0.18.0_biqbaboplfbrettd7655fr4n2y
       '@tailwindcss/typography': 0.5.7_tailwindcss@3.2.1
       focus-visible: 5.2.0
       intersection-observer: 0.12.2
       markdown-to-jsx: 7.1.7_react@18.2.0
       next: 12.3.1_biqbaboplfbrettd7655fr4n2y
-      next-sitemap: 3.1.29_next@12.3.1
+      next-sitemap: 3.1.29_mna6xsgplvxkrmeg4ftolwenke
       nextra: 2.0.0-beta.17_azq6kxkn3od7qdylwkyksrwopy
       nextra-theme-docs: 2.0.0-beta.17_azq6kxkn3od7qdylwkyksrwopy
       postcss-focus-visible: 7.1.0_postcss@8.4.18
@@ -128,6 +131,7 @@ importers:
       tailwindcss: 3.2.1_postcss@8.4.18
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_wyqvi574yv7oiwfeinomdzmc3m
+      '@next/eslint-plugin-next': 12.3.1
       '@rushstack/eslint-plugin-security': 0.5.0_wyqvi574yv7oiwfeinomdzmc3m
       '@types/node': 18.11.5
       '@types/react': 18.0.22
@@ -1255,6 +1259,12 @@ packages:
   /@next/env/12.3.1:
     resolution: {integrity: sha512-9P9THmRFVKGKt9DYqeC2aKIxm8rlvkK38V1P1sRE7qyoPBIs8l9oo79QoSdPtOWfzkbDAVUqvbQGgTMsb8BtJg==}
     dev: false
+
+  /@next/eslint-plugin-next/12.3.1:
+    resolution: {integrity: sha512-sw+lTf6r6P0j+g/n9y4qdWWI2syPqZx+uc0+B/fRENqfR3KpSid6MIKqc9gNwGhJASazEQ5b3w8h4cAET213jw==}
+    dependencies:
+      glob: 7.1.7
+    dev: true
 
   /@next/swc-android-arm-eabi/12.3.1:
     resolution: {integrity: sha512-i+BvKA8tB//srVPPQxIQN5lvfROcfv4OB23/L1nXznP+N/TyKL8lql3l7oo2LNhnH66zWhfoemg3Q4VJZSruzQ==}
@@ -6188,6 +6198,17 @@ packages:
       path-is-absolute: 1.0.1
     dev: true
 
+  /glob/7.1.7:
+    resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
+    dependencies:
+      fs.realpath: 1.0.0
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 3.1.2
+      once: 1.4.0
+      path-is-absolute: 1.0.1
+    dev: true
+
   /glob/7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     dependencies:
@@ -9040,7 +9061,7 @@ packages:
     resolution: {integrity: sha512-EZSPZB70jiVsivaBLYDCyntd5eH8NTSMOn3rB+HxwdmKThGELLdYv8qVIMWvZEFy9w8ZZpW9h9OB32l1rGtj7g==}
     dev: false
 
-  /next-sitemap/3.1.29_next@12.3.1:
+  /next-sitemap/3.1.29_mna6xsgplvxkrmeg4ftolwenke:
     resolution: {integrity: sha512-7UQyfpI7obOdB11aCswWYfqRn5CR0YSmWHo1r/uarrFfZD5PyyAWtQlgP6jNqDW0eX1ZJWERBwmJ2dLjl4nT8Q==}
     engines: {node: '>=14.18'}
     hasBin: true
@@ -9049,6 +9070,7 @@ packages:
       next: '*'
     dependencies:
       '@corex/deepmerge': 4.0.29
+      '@next/env': 12.3.1
       minimist: 1.2.6
       next: 12.3.1_biqbaboplfbrettd7655fr4n2y
     dev: false
