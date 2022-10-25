@@ -10,11 +10,6 @@ on: # yamllint disable-line rule:truthy
         paths:
             - "**.md"
 
-env:
-    package: "@${{ github.repository }}"
-    registry_url: "https://npm.pkg.github.com"
-    scope: "${{ github.repository_owner }}"
-
 jobs:
     text-lint:
         name: "Markdown lint"
