@@ -112,8 +112,8 @@ function parseDescription(tag: any) {
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 // @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function tagsToObjects(tags: Spec[], verbose?: boolean) {
     return tags.map((tag) => {
         const parsedResponse = parseDescription(tag);

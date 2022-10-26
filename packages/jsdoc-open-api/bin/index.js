@@ -1,16 +1,27 @@
 #!/usr/bin/env node
+// eslint-disable-next-line unicorn/prefer-module
 const path = require("node:path");
+// eslint-disable-next-line unicorn/prefer-module
 const fs = require("node:fs");
+// eslint-disable-next-line unicorn/prefer-module
 const { Command } = require("commander");
+// eslint-disable-next-line unicorn/prefer-module
 const SwaggerParser = require("@apidevtools/swagger-parser");
+// eslint-disable-next-line unicorn/prefer-module
 const { collect } = require("@visulima/readdir");
+// eslint-disable-next-line unicorn/prefer-module
 const cliProgress = require("cli-progress");
 
-const { jsDocumentCommentsToOpenApi, parseFile, SpecBuilder, swaggerJsDocumentCommentsToOpenApi } = require("../dist/index.js");
+const {
+    jsDocumentCommentsToOpenApi, parseFile, SpecBuilder, swaggerJsDocumentCommentsToOpenApi,
+// eslint-disable-next-line unicorn/prefer-module
+} = require("../dist/index.js");
 
+// eslint-disable-next-line unicorn/prefer-module,no-underscore-dangle
 const package_ = require("../package.json");
 
 const program = new Command();
+const defaultConfigName = ".openapirc.js";
 
 program.name("@visulima/jsdoc-open-api").description("CLI to to generate OpenAPI (Swagger) documentation from JSDoc's").version(package_.version);
 
@@ -18,13 +29,15 @@ program
     .command("init")
     .description("Inits a pre-configured @visulima/jsdoc-open-api config file.")
     .action(() => {
-        if (fs.existsSync(".openapirc.js")) {
+        if (fs.existsSync(defaultConfigName)) {
+            // eslint-disable-next-line no-console
             console.error("Config file already exists");
+            // eslint-disable-next-line no-undef
             process.exit(1);
         }
 
         fs.writeFileSync(
-            ".openapirc.js",
+            defaultConfigName,
             `module.exports = {
   exclude: [
     'coverage/**',
@@ -63,6 +76,7 @@ program
 `,
         );
 
+        // eslint-disable-next-line no-console
         console.log("Created .openapirc.js");
     });
 
@@ -75,14 +89,19 @@ program
     .option("-o, --output [swaggerSpec.json]", "Output swagger specification.")
     .option("-v, --verbose", "Verbose output.")
     .option("-vv, --very-verbose", "Very verbose output.")
+    // eslint-disable-next-line radar/cognitive-complexity
     .action(async (paths, options) => {
         let openapiConfig = {};
 
         try {
-            openapiConfig = require(path.resolve(options.config || ".openapirc.js"));
+            // eslint-disable-next-line unicorn/prefer-module,import/no-dynamic-require
+            openapiConfig = require(path.resolve(options.config || defaultConfigName));
         } catch (error) {
-            console.log("No config file found, on: ", options.config || ".openapirc.js\n");
+            // eslint-disable-next-line no-console
+            console.log("No config file found, on:", options.config || ".openapirc.js\n");
+            // eslint-disable-next-line no-console
             console.error(error);
+            // eslint-disable-next-line no-undef
             process.exit(1);
         }
 
@@ -112,7 +131,7 @@ program
 
             if (options.verbose || options.veryVerbose) {
                 // eslint-disable-next-line no-console
-                console.log("\n" + `Found ${files.length} files in ${dir}`);
+                console.log(`\nFound ${files.length} files in ${dir}`);
             }
 
             if (options.veryVerbose) {
@@ -124,6 +143,7 @@ program
 
             files.forEach((file) => {
                 if (options.verbose) {
+                    // eslint-disable-next-line no-console
                     console.log(`Parsing file ${file}`);
                 }
 
@@ -144,6 +164,7 @@ program
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error(error.toJSON());
+            // eslint-disable-next-line no-undef
             process.exit();
         }
 
@@ -153,12 +174,15 @@ program
 
         fs.writeFileSync(output, JSON.stringify(spec, null, 2));
 
+        // eslint-disable-next-line no-console
         console.log(`\nSwagger specification is ready, check the${output}file.`);
     });
-
+// eslint-disable-next-line no-undef
 program.parse(process.argv);
 
+// eslint-disable-next-line no-undef
 if (process.argv.slice(2).length === 0) {
     program.help();
+    // eslint-disable-next-line no-undef
     process.exit();
 }
