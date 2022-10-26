@@ -15,13 +15,21 @@
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
+[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 </div>
+
+---
 
 <div align="center">
-  <sub>Built with ❤︎ by <a href="https://twitter.com/_prisis_">Daniel Bannert</a></sub>
+    <p>
+        <sup>
+            Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
+        </sup>
+    </p>
 </div>
+
+---
 
 ## Features
 
@@ -615,7 +623,5 @@ The visulima connect is open-sourced software licensed under the [MIT][license-u
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/connect?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/connect/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/connect/v/alpha "npm"
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/visulima/connect?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/visulima/connect?targetFile=package.json "synk"
+[npm-image]: https://img.shields.io/npm/v/@visulima/connect/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/connect/v/latest "npm"

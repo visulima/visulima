@@ -9,11 +9,9 @@
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
+[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 </div>
-
-# Webpack utils for Next.js
 
 ---
 
@@ -112,7 +110,5 @@ The visulima readdir is open-sourced software licensed under the [MIT][license-u
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/readdir?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/readdir/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/readdir/v/alpha "npm"
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/visulima/readdir?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/visulima/readdir?targetFile=package.json "synk"
+[npm-image]: https://img.shields.io/npm/v/@visulima/readdir/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/readdir/v/latest "npm"

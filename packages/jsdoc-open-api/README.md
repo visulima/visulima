@@ -11,13 +11,21 @@
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url] [![synk-image]][synk-url]
+[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 </div>
+
+---
 
 <div align="center">
-  <sub>Built with ❤︎ by <a href="https://twitter.com/_prisis_">Daniel Bannert</a></sub>
+    <p>
+        <sup>
+            Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
+        </sup>
+    </p>
 </div>
+
+---
 
 ## Installation
 
@@ -214,7 +222,5 @@ For more information, see [Authentication](/docs/short/authentication.md).
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/jsdoc-open-api/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/alpha "npm"
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/visulima/jsdoc-open-api?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/visulima/jsdoc-open-api?targetFile=package.json "synk"
+[npm-image]: https://img.shields.io/npm/v/@visulima/jsdoc-open-api/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/latest "npm"
