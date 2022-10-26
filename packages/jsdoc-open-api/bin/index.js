@@ -124,8 +124,14 @@ program
                 followSymlinks: openapiConfig.followSymlinks || false,
                 match: openapiConfig.include,
                 minimatchOptions: {
-                    debug: options.verbose,
-                    matchBase: true,
+                    match: {
+                        debug: options.verbose,
+                        matchBase: true,
+                    },
+                    skip: {
+                        debug: options.verbose,
+                        matchBase: true,
+                    }
                 },
             });
 
