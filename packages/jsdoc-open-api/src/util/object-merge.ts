@@ -1,5 +1,5 @@
-function objectMerge<T extends { [key: string]: object } = {}>(a: T, b: T) {
-    Object.keys(b).forEach((key) => {
+function objectMerge<T>(a: T, b: T) {
+    Object.keys(b as object).forEach((key) => {
         if (a[key as keyof typeof b] === undefined) {
             // eslint-disable-next-line no-param-reassign
             a[key as keyof typeof b] = {
