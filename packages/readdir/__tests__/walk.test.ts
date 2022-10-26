@@ -1,7 +1,7 @@
+import path from "node:path";
 import {
     describe, expect, it,
 } from "vitest";
-import path from "path";
 
 import { walk } from "../src";
 
@@ -15,12 +15,12 @@ describe("walk", () => {
         }
 
         expect(files).toEqual([
-            // eslint-disable-next-line unicorn/prefer-module
-            path.join(__dirname, '..', '/__fixtures__'),
-            // eslint-disable-next-line unicorn/prefer-module
-            path.join(__dirname, '..', '/__fixtures__', '/test.js'),
-            // eslint-disable-next-line unicorn/prefer-module
-            path.join(__dirname, '..', '/__fixtures__', '/test2.ts'),
+            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            path.join(__dirname, "..", "/__fixtures__"),
+            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            path.join(__dirname, "..", "/__fixtures__", "/test.js"),
+            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            path.join(__dirname, "..", "/__fixtures__", "/test2.ts"),
         ]);
     });
 });
