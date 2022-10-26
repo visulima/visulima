@@ -1,5 +1,5 @@
 dist
 node_modules
 inject-react-import.js
-__tests__/fixtures/**
+__fixtures__/**
 vitest.config.ts
