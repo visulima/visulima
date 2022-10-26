@@ -1,37 +1,40 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
 name: "Semantic Pull Request"
 
-on:
-  pull_request_target:
-    types:
-      - "opened"
-      - "edited"
-      - "synchronize"
+on: # yamllint disable-line rule:truthy
+    pull_request_target:
+        types:
+            - "opened"
+            - "edited"
+            - "synchronize"
 
 permissions: {}
+
 jobs:
-  main:
-    permissions:
-      pull-requests: "read" # to analyze PRs (amannn/action-semantic-pull-request)
-      statuses: "write" # to mark status of analyzed PR (amannn/action-semantic-pull-request)
+    main:
+        permissions:
+            pull-requests: "read" # to analyze PRs (amannn/action-semantic-pull-request)
+            statuses: "write" # to mark status of analyzed PR (amannn/action-semantic-pull-request)
 
-    runs-on: "ubuntu-latest"
+        runs-on: "ubuntu-latest"
 
-    name: "Semantic Pull Request"
+        name: "Semantic Pull Request"
 
-    steps:
-      - name: "Validate PR title"
-        uses: "amannn/action-semantic-pull-request@v5"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          types: |
-            feat
-            fix
-            chore
-            refactor
-            docs
-            test
-            ci
-            build
-            infra
-            revert
+        steps:
+            - name: "Validate PR title"
+              uses: "amannn/action-semantic-pull-request@v5"
+              env:
+                  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+              with:
+                  types: |
+                      feat
+                      fix
+                      chore
+                      refactor
+                      docs
+                      test
+                      ci
+                      build
+                      infra
+                      revert
