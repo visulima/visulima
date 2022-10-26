@@ -52,6 +52,7 @@ yarn add @visulima/connect
 ```sh
 pnpm add @visulima/connect
 ```
+
 ## Usage
 
 > **Note**
@@ -206,7 +207,7 @@ router
     res.json({ user });
     return new Response(JSON.stringify({ user }), {
       status: 200,
-      headers: {
+      headerList: {
         "content-type": "application/json",
       },
     });
@@ -215,7 +216,7 @@ router
     const user = await updateUser(req.body.user);
     return new Response(JSON.stringify({ user }), {
       status: 200,
-      headers: {
+      headerList: {
         "content-type": "application/json",
       },
     });
