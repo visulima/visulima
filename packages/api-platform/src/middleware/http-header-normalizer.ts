@@ -2,42 +2,36 @@ import type { NextHandler } from "@visulima/connect";
 import type { IncomingHttpHeaders } from "node:http";
 import { IncomingMessage } from "node:http";
 
-const exceptionsList = [
-    "ALPN",
-    "C-PEP",
-    "C-PEP-Info",
-    "CalDAV-Timezones",
-    "Content-ID",
-    "Content-MD5",
-    "DASL",
-    "DAV",
-    "DNT",
-    "ETag",
-    "GetProfile",
-    "HTTP2-Settings",
-    "Last-Event-ID",
-    "MIME-Version",
-    "Optional-WWW-Authenticate",
-    "Sec-WebSocket-Accept",
-    "Sec-WebSocket-Extensions",
-    "Sec-WebSocket-Key",
-    "Sec-WebSocket-Protocol",
-    "Sec-WebSocket-Version",
-    "SLUG",
-    "TCN",
-    "TE",
-    "TTL",
-    "WWW-Authenticate",
-    "X-ATT-DeviceId",
-    "X-DNSPrefetch-Control",
-    "X-UIDH",
-];
-
-const exceptions = exceptionsList.reduce((accumulator: { [key: string]: string }, current: string) => {
-    accumulator[current.toLowerCase()] = current;
-
-    return accumulator;
-}, {});
+const exceptions = {
+    alpn: "ALPN",
+    "c-pep": "C-PEP",
+    "c-pep-info": "C-PEP-Info",
+    "caldav-timezones": "CalDAV-Timezones",
+    "content-id": "Content-ID",
+    "content-md5": "Content-MD5",
+    dasl: "DASL",
+    dav: "DAV",
+    dnt: "DNT",
+    etag: "ETag",
+    getprofile: "GetProfile",
+    "http2-settings": "HTTP2-Settings",
+    "last-event-id": "Last-Event-ID",
+    "mime-version": "MIME-Version",
+    "optional-www-authenticate": "Optional-WWW-Authenticate",
+    "sec-websocket-accept": "Sec-WebSocket-Accept",
+    "sec-websocket-extensions": "Sec-WebSocket-Extensions",
+    "sec-webSocket-key": "Sec-WebSocket-Key",
+    "sec-webSocket-protocol": "Sec-WebSocket-Protocol",
+    "sec-webSocket-version": "Sec-WebSocket-Version",
+    slug: "SLUG",
+    tcn: "TCN",
+    te: "TE",
+    ttl: "TTL",
+    "www-authenticate": "WWW-Authenticate",
+    "x-att-deviceid": "X-ATT-DeviceId",
+    "x-dnsprefetch-control": "X-DNSPrefetch-Control",
+    "x-uidh": "X-UIDH",
+};
 
 const normalizeHeaderKey = (key: string, canonical: boolean) => {
     const lowerCaseKey = key.toLowerCase();
@@ -46,8 +40,8 @@ const normalizeHeaderKey = (key: string, canonical: boolean) => {
         return lowerCaseKey;
     }
 
-    if (exceptions[lowerCaseKey]) {
-        return exceptions[lowerCaseKey];
+    if (exceptions[lowerCaseKey as keyof typeof exceptions]) {
+        return exceptions[lowerCaseKey as keyof typeof exceptions];
     }
 
     return (
@@ -64,6 +58,11 @@ const defaults = {
     normalizeHeaderKey,
 };
 
+/**
+ * HTTP headers are case-insensitive.
+ * That's why NodeJS makes them lower case by default.
+ * While sensible, sometimes, for example for compatibility reasons, you might need them in their more common form.
+ */
 const httpHeaderNormalizerMiddleware = (options_?: { canonical?: boolean; normalizeHeaderKey?: (key: string, canonical: boolean) => string }) => {
     const options = { ...defaults, ...options_ };
 
@@ -74,6 +73,7 @@ const httpHeaderNormalizerMiddleware = (options_?: { canonical?: boolean; normal
 
             Object.keys(request.headers).forEach((key) => {
                 rawHeaders[key] = request.headers[key];
+
                 const normalizedKey = options.normalizeHeaderKey(key, options.canonical);
 
                 if (typeof normalizedKey !== "undefined") {

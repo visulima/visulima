@@ -69,6 +69,7 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     return data;
 };
 
+// eslint-disable-next-line max-len
 const serializersMiddleware = (serializers: Serializers = []) => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response | NextApiResponse, next: NextHandler) => {
     if (typeof (response as NextApiResponse)?.send === "function") {
         const oldSend = (response as NextApiResponse).send;

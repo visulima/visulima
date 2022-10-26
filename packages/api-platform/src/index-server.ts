@@ -5,11 +5,6 @@ export { default as createHttpError } from "http-errors";
 export { default as createRouter } from "./connect/create-router";
 export { onError, onNoMatch } from "./connect/handler";
 
-export { default as swaggerApiRoute } from "./routes/api/swagger";
-
-export { default as createSwaggerSpec } from "./swagger/create-swagger-spec";
-export type { SwaggerOptions } from "./swagger/types";
-
 export type {
     IRLWrapperBlackAndWhiteOptions,
     IRateLimiterStoreOptions,

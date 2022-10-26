@@ -19,7 +19,7 @@ const withOpenApi = ({ definition, sources }: { definition: BaseDefinition; sour
                 plugins: [
                 // @ts-ignore
                     ...config.plugins,
-                    new SwaggerCompilerPlugin(`${publicRuntimeConfig.PUBLIC_BASE_URL}/_next/static/swagger.json`, sources, definition, {}),
+                    new SwaggerCompilerPlugin(`${publicRuntimeConfig.PUBLIC_BASE_URL}/static/swagger.json`, sources, definition, { verbose: true }),
                 ],
             };
 

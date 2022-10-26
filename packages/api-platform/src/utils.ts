@@ -19,6 +19,7 @@ export const parseBody = async (request: IncomingApiRequest): Promise<unknown> =
 
     const buffers = [];
 
+    // eslint-disable-next-line no-restricted-syntax
     for await (const chunk of request) {
         buffers.push(chunk);
     }

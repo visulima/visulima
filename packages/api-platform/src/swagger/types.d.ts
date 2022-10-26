@@ -6,14 +6,8 @@ type ExtendedOAS3Definition = Omit<OAS3Definition, "openapi" | "info"> & {
 };
 
 export type SwaggerOptions = {
-    apiFolders?: string[];
-    options: {
-        apis?: ReadonlyArray<string> | undefined;
-        definition?: ExtendedOAS3Definition | undefined;
-        swaggerDefinition?: ExtendedOAS3Definition | undefined;
-        [key: string]: any;
-    };
-    allowedMediaTypes: { [key: string]: boolean };
+    allowedMediaTypes?: { [key: string]: boolean };
+    swaggerDefinition?: Partial<ExtendedOAS3Definition>;
 };
 
 export interface OpenAPI2 {

@@ -1,15 +1,17 @@
 import merge from "lodash.merge";
 import type { NextApiRequest, NextApiResponse } from "next";
+import path from 'path';
+import { promises as fs } from 'fs';
 
-import createRouter from "../../connect/create-router";
-import yamlTransformer from "../../serializers/yaml";
-import createSwaggerSpec from "../../swagger/create-swagger-spec";
-import type { OpenAPI3, SwaggerOptions } from "../../swagger/types";
+import createRouter from "../../../connect/create-router";
+import yamlTransformer from "../../../serializers/yaml";
+import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
+import type { OpenAPI3, SwaggerOptions } from "../../../swagger/types";
 
 // eslint-disable-next-line max-len
 const swaggerApiRoute = (title: string, version: string, options: Partial<SwaggerOptions> & Partial<{ mediaTypes: {} }> = {}) => {
     const router = createRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-        const { mediaTypes, ...swaggerOptions } = options;
+        const { mediaTypes, swaggerDefinition } = options;
 
         const allowedMediaTypes = merge(
             {
@@ -24,24 +26,26 @@ const swaggerApiRoute = (title: string, version: string, options: Partial<Swagge
             mediaTypes,
         );
 
-        const spec = createSwaggerSpec(
-            merge(
-                {
-                    options: {
-                        swaggerDefinition: {
-                            info: {
-                                title,
-                                version,
-                            },
-                            schemes: ["http", "https"],
-                            host: `${process.env.NEXT_PUBLIC_APP_ORIGIN}`,
-                            basePath: "/",
+        const jsonDirectory = path.join(process.cwd(), 'static');
+        const fileContents = await fs.readFile(jsonDirectory + '/data.json', 'utf8');
+
+        const spec = extendSwaggerSpec(
+            JSON.parse(fileContents) as OpenAPI3,
+            {
+                swaggerDefinition: merge(
+                    {
+                        info: {
+                            title,
+                            version,
                         },
+                        schemes: ["http", "https"],
+                        host: `${process.env.NEXT_PUBLIC_APP_ORIGIN}`,
+                        basePath: "/",
                     },
-                    allowedMediaTypes,
-                },
-                swaggerOptions,
-            ),
+                    swaggerDefinition,
+                ),
+                allowedMediaTypes,
+            },
         ) as OpenAPI3;
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
