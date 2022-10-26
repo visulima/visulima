@@ -1,5 +1,6 @@
 dist
 node_modules
+coverage
 inject-react-import.js
 __fixtures__
 vitest.config.ts
