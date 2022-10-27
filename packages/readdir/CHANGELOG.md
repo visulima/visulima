@@ -1,3 +1,10 @@
+## @visulima/readdir [1.1.1](https://github.com/visulima/visulima/compare/@visulima/readdir@1.1.0...@visulima/readdir@1.1.1) (2022-10-27)
+
+
+### Bug Fixes
+
+* fixed package.json files paths ([0d21e94](https://github.com/visulima/visulima/commit/0d21e94a75e9518f7b87293706615d8fb280095c))
+
 ## @visulima/readdir [1.1.0](https://github.com/visulima/visulima/compare/@visulima/readdir@1.0.0...@visulima/readdir@1.1.0) (2022-10-26)
 
 
