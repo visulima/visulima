@@ -1,3 +1,11 @@
+## @visulima/jsdoc-open-api [1.0.2](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.0.1...@visulima/jsdoc-open-api@1.0.2) (2022-10-27)
+
+
+### Bug Fixes
+
+* **jsdoc-open-api:** fixed found errors with empty data, writing swagger file to a not existing folder, added more error returns ([8cef566](https://github.com/visulima/visulima/commit/8cef566b998d37a5c0f5c32acabf8e336510ec81))
+* **jsdoc-open-api:** fixed wrong options for minimatchOptions and added default exclude for the webpack plugin ([e6cba73](https://github.com/visulima/visulima/commit/e6cba73a5add43042249e0caff0d6d605f694274))
+
 ## @visulima/jsdoc-open-api [1.0.1](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.0.0...@visulima/jsdoc-open-api@1.0.1) (2022-10-26)
 
 
