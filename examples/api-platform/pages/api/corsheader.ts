@@ -15,10 +15,14 @@ export const swagger = {};
  *     tags:
  *       - "root"
  *     description: "Return a greeting."
- *     operationId: "hello"
+ *     operationId: "cors"
  *     parameters:
  *       - name: name
  *         in: query
+ *         required: false
+ *         explode: true
+ *         schema:
+ *            type: string
  *     responses:
  *       200:
  *         description: "Successful operation"

@@ -26,6 +26,10 @@ export const swagger = {};
  *     parameters:
  *       - name: name
  *         in: query
+ *         required: false
+ *         explode: true
+ *         schema:
+ *            type: string
  *     responses:
  *       200:
  *         description: "Successful operation"
@@ -38,7 +42,7 @@ export const swagger = {};
  *                   type: string
  */
 const router = createRouter<NextApiRequest, NextApiResponse<Data>>().get(async (request, response) => {
-    response.status(200).json({ name: request.query?.name || "John Doe" });
+    response.status(200).json({ name: (request.query?.name as string) || "John Doe" });
 }, schema);
 
 export default router.handler();

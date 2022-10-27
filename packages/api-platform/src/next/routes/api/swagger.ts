@@ -1,7 +1,7 @@
 import merge from "lodash.merge";
 import type { NextApiRequest, NextApiResponse } from "next";
 import path from 'path';
-import { promises as fs } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 
 import createRouter from "../../../connect/create-router";
 import yamlTransformer from "../../../serializers/yaml";
@@ -9,9 +9,9 @@ import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
 import type { OpenAPI3, SwaggerOptions } from "../../../swagger/types";
 
 // eslint-disable-next-line max-len
-const swaggerApiRoute = (title: string, version: string, options: Partial<SwaggerOptions> & Partial<{ mediaTypes: {} }> = {}) => {
+const swaggerApiRoute = (title: string, version: string, options: Partial<SwaggerOptions> & Partial<{ mediaTypes: {}, swaggerFilePath: string }> = {}) => {
     const router = createRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-        const { mediaTypes, swaggerDefinition } = options;
+        const { mediaTypes, swaggerDefinition, swaggerFilePath } = options;
 
         const allowedMediaTypes = merge(
             {
@@ -26,8 +26,13 @@ const swaggerApiRoute = (title: string, version: string, options: Partial<Swagge
             mediaTypes,
         );
 
-        const jsonDirectory = path.join(process.cwd(), 'static');
-        const fileContents = await fs.readFile(jsonDirectory + '/data.json', 'utf8');
+        const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
+
+        if (!existsSync(swaggerPath)) {
+            throw new Error(`Swagger file not found at ${swaggerPath}. Did you change the output path in "withOpenApi" inside the next.config.js file?`);
+        }
+
+        const fileContents = readFileSync(swaggerPath, 'utf8');
 
         const spec = extendSwaggerSpec(
             JSON.parse(fileContents) as OpenAPI3,

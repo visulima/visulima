@@ -241,7 +241,6 @@ importers:
       '@anolilab/eslint-config': ^4.0.9
       '@anolilab/semantic-release-preset': ^2.0.7
       '@rushstack/eslint-plugin-security': ^0.5.0
-      '@tanstack/react-query': ^4.10.3
       '@testing-library/react': ^13.4.0
       '@testing-library/react-hooks': ^8.0.1
       '@types/cors': ^2.8.12
@@ -336,7 +335,6 @@ importers:
       '@anolilab/eslint-config': 4.1.1_wyqvi574yv7oiwfeinomdzmc3m
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@19.0.5
       '@rushstack/eslint-plugin-security': 0.5.0_wyqvi574yv7oiwfeinomdzmc3m
-      '@tanstack/react-query': 4.13.0_biqbaboplfbrettd7655fr4n2y
       '@testing-library/react': 13.4.0_biqbaboplfbrettd7655fr4n2y
       '@testing-library/react-hooks': 8.0.1_3sauqnnrv7lnox3glal4dmngp4
       '@types/cors': 2.8.12
@@ -2788,6 +2786,7 @@ packages:
 
   /@tanstack/query-core/4.13.0:
     resolution: {integrity: sha512-PzmLQcEgC4rl2OzkiPHYPC9O79DFcMGaKsOzDEP+U4PJ+tbkcEP+Z+FQDlfvX8mCwYC7UNH7hXrQ5EdkGlJjVg==}
+    dev: false
 
   /@tanstack/react-query/4.13.0_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-dI/5hJ/pGQ74P5hxBLC9h6K0/Cap2T3k0ZjjjFLBCNnohDYgl7LNmMopzrRzBHk2mMjf2hgXHIzcKNG8GOZ5hg==}
@@ -2805,6 +2804,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
+    dev: false
 
   /@testing-library/dom/8.19.0:
     resolution: {integrity: sha512-6YWYPPpxG3e/xOo6HIWwB/58HukkwIVTOaZ0VwdMVjhRUX/01E4FtQbck9GazOOj7MXHc5RBzMrU86iBJHbI+A==}

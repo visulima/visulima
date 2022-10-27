@@ -17,6 +17,7 @@ module.exports = withOpenApi({
         }
     },
     sources: [
-        "./src/api/**",
+        "pages/api",
     ],
+    verbose: false,
 })(nextConfig);

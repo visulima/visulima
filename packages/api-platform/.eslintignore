@@ -3,3 +3,4 @@ node_modules
 inject-react-import.js
 coverage
 vitest.config.ts
+recipes
