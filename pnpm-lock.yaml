@@ -164,7 +164,6 @@ importers:
 
   examples/api-platform:
     specifiers:
-      '@tanstack/react-query': ^4.10.3
       '@types/node': ^18.8.4
       '@types/react': 18.0.21
       '@types/react-dom': ^18.0.6
@@ -184,7 +183,6 @@ importers:
       typescript: ^4.8.4
       zod: ^3.19.1
     dependencies:
-      '@tanstack/react-query': 4.13.0_biqbaboplfbrettd7655fr4n2y
       '@visulima/api-platform': link:../../packages/api-platform
       '@visulima/connect': link:../../packages/connect
       core-js: 3.26.0
@@ -389,6 +387,9 @@ importers:
       typescript: 4.8.4
       vitest: 0.24.3
       zod: 3.19.1
+
+  packages/api-platform/next:
+    specifiers: {}
 
   packages/connect:
     specifiers:
@@ -2782,28 +2783,6 @@ packages:
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.2.1_postcss@8.4.18
-    dev: false
-
-  /@tanstack/query-core/4.13.0:
-    resolution: {integrity: sha512-PzmLQcEgC4rl2OzkiPHYPC9O79DFcMGaKsOzDEP+U4PJ+tbkcEP+Z+FQDlfvX8mCwYC7UNH7hXrQ5EdkGlJjVg==}
-    dev: false
-
-  /@tanstack/react-query/4.13.0_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-dI/5hJ/pGQ74P5hxBLC9h6K0/Cap2T3k0ZjjjFLBCNnohDYgl7LNmMopzrRzBHk2mMjf2hgXHIzcKNG8GOZ5hg==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
-    dependencies:
-      '@tanstack/query-core': 4.13.0
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      use-sync-external-store: 1.2.0_react@18.2.0
     dev: false
 
   /@testing-library/dom/8.19.0:

@@ -10,7 +10,6 @@
         "start": "next start"
     },
     "dependencies": {
-        "@tanstack/react-query": "^4.10.3",
         "@visulima/api-platform": "workspace:*",
         "@visulima/connect": "workspace:*",
         "core-js": "^3.25.5",
