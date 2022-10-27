@@ -58,12 +58,14 @@ export default defineConfig((options) => {
 
     const inject: string[] = [];
 
+    let count = 0;
     sources.map((source: string) => {
         const sourcePath = join(process.cwd(), source);
 
         const injectReactImport = detectAndInjectReactImport(sourcePath);
 
-        if (injectReactImport) {
+        if (count === 0 && injectReactImport) {
+            count += 1;
             inject.push(injectReactImport);
         }
 

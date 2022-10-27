@@ -1,17 +1,16 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { collect } from "@visulima/readdir";
-import _debug from "debug";
+import fs from "node:fs";
+import { dirname } from "node:path";
 import { exit } from "node:process";
-import type { Configuration } from "webpack";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Compiler } from "webpack";
 
 import type { BaseDefinition } from "../exported";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
-
-const debug = _debug("visulima:jsdoc-open-api:swagger-compiler-plugin");
 
 const exclude = [
     "coverage/**",
@@ -32,12 +31,19 @@ const exclude = [
     "**/node_modules/**",
     "**/pnpm-lock.yaml",
     "**/pnpm-workspace.yaml",
-    "**/package-lock.json",
+    "**/{package,package-lock}.json",
     "**/yarn.lock",
-    "**/package.json",
     "**/package.json5",
     "**/.next/**",
 ];
+
+const errorHandler = (error: any) => {
+    if (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+        exit(1);
+    }
+};
 
 class SwaggerCompilerPlugin {
     private readonly swaggerDefinition: BaseDefinition;
@@ -46,7 +52,7 @@ class SwaggerCompilerPlugin {
 
     private readonly verbose: boolean;
 
-    private ignore: string | ReadonlyArray<string>;
+    private readonly ignore: string | ReadonlyArray<string>;
 
     assetsPath: string;
 
@@ -66,13 +72,10 @@ class SwaggerCompilerPlugin {
         this.ignore = options.ignore || [];
     }
 
-    apply(compiler: Configuration) {
-        // @ts-ignore
-        compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (compilation, callback: VoidFunction) => {
+    apply(compiler: Compiler) {
+        compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction) => {
             // eslint-disable-next-line no-console
-            console.log("Build paused");
-            // eslint-disable-next-line no-console
-            console.log("switching to swagger build");
+            console.log("Build paused, switching to swagger build");
 
             const spec = new SpecBuilder(this.swaggerDefinition);
 
@@ -102,37 +105,57 @@ class SwaggerCompilerPlugin {
                 }
 
                 files.forEach((file) => {
-                    // eslint-disable-next-line testing-library/no-debugging-utils
-                    debug(`Parsing file ${file}`);
+                    if (this.verbose) {
+                        // eslint-disable-next-line no-console
+                        console.log(`Parsing file ${file}`);
+                    }
 
-                    const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, this.verbose);
+                    try {
+                        const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, this.verbose);
 
-                    spec.addData(parsedJsDocumentFile.map((item) => item.spec));
+                        spec.addData(parsedJsDocumentFile.map((item) => item.spec));
 
-                    const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, this.verbose);
+                        const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, this.verbose);
 
-                    spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+                        spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+                    } catch (error) {
+                        // eslint-disable-next-line no-console
+                        console.error(error);
+                        exit(1);
+                    }
                 });
             }
 
             try {
+                if (this.verbose) {
+                    // eslint-disable-next-line no-console
+                    console.log("Validating swagger spec");
+                    // eslint-disable-next-line no-console
+                    console.log(JSON.stringify(spec, null, 2));
+                }
+
                 await SwaggerParser.validate(JSON.parse(JSON.stringify(spec)));
-            } catch (error) {
-                // @ts-ignore
+            } catch (error: any) {
                 // eslint-disable-next-line no-console
                 console.error(error.toJSON());
                 exit(1);
             }
 
-            // eslint-disable-next-line no-param-reassign
-            compilation.assets[this.assetsPath] = {
-                source() {
-                    return JSON.stringify(spec, null, 2);
-                },
-                size() {
-                    return Object.keys(spec).length;
-                },
-            };
+            const { assetsPath } = this;
+
+            fs.mkdir(dirname(assetsPath), { recursive: true }, (error) => {
+                if (error) {
+                    errorHandler(error);
+                }
+
+                fs.writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
+            });
+
+            // eslint-disable-next-line unicorn/consistent-destructuring
+            if (this.verbose) {
+                // eslint-disable-next-line no-console,unicorn/consistent-destructuring
+                console.log(`Written swagger spec to "${this.assetsPath}" file`);
+            }
 
             // eslint-disable-next-line no-console
             console.log("switching back to normal build");
