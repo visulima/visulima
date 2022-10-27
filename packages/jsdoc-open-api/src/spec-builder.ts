@@ -45,11 +45,11 @@ class SpecBuilder implements OpenApiObject {
 
             // only merge paths and components
             objectMerge(this, {
-                paths,
-                components,
+                paths: paths || {},
+                components: components || {},
             } as OpenApiObject);
 
-            // overwrite everthing else:
+            // overwrite everything else:
             Object.entries(rest).forEach(([key, value]) => {
                 // @ts-ignore
                 this[key as keyof OpenApiObject] = value;

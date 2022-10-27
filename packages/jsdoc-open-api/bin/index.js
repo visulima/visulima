@@ -4,6 +4,8 @@ const path = require("node:path");
 // eslint-disable-next-line unicorn/prefer-module
 const fs = require("node:fs");
 // eslint-disable-next-line unicorn/prefer-module
+const { exit } = require("node:process");
+// eslint-disable-next-line unicorn/prefer-module
 const { Command } = require("commander");
 // eslint-disable-next-line unicorn/prefer-module
 const SwaggerParser = require("@apidevtools/swagger-parser");
@@ -13,8 +15,11 @@ const { collect } = require("@visulima/readdir");
 const cliProgress = require("cli-progress");
 
 const {
-    jsDocumentCommentsToOpenApi, parseFile, SpecBuilder, swaggerJsDocumentCommentsToOpenApi,
-// eslint-disable-next-line unicorn/prefer-module
+    jsDocumentCommentsToOpenApi,
+    parseFile,
+    SpecBuilder,
+    swaggerJsDocumentCommentsToOpenApi,
+    // eslint-disable-next-line unicorn/prefer-module
 } = require("../dist/index.js");
 
 // eslint-disable-next-line unicorn/prefer-module,no-underscore-dangle
@@ -32,8 +37,7 @@ program
         if (fs.existsSync(defaultConfigName)) {
             // eslint-disable-next-line no-console
             console.error("Config file already exists");
-            // eslint-disable-next-line no-undef
-            process.exit(1);
+            exit(1);
         }
 
         fs.writeFileSync(
@@ -58,9 +62,8 @@ program
     '**/node_modules/**',
     '**/pnpm-lock.yaml',
     '**/pnpm-workspace.yaml',
-    '**/package-lock.json',
+    '**/{package,package-lock}.json',
     '**/yarn.lock',
-    '**/package.json',
     '**/package.json5',
     '**/.next/**',
   ],
@@ -101,8 +104,7 @@ program
             console.log("No config file found, on:", options.config || ".openapirc.js\n");
             // eslint-disable-next-line no-console
             console.error(error);
-            // eslint-disable-next-line no-undef
-            process.exit(1);
+            exit(1);
         }
 
         const multibar = new cliProgress.MultiBar(
@@ -117,6 +119,9 @@ program
 
         // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations
         for await (const dir of paths) {
+            // Check if the path is a directory
+            fs.lstatSync(dir).isDirectory();
+
             const files = await collect(dir, {
                 // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
                 skip: [...openapiConfig.exclude, "node_modules/**"],
@@ -131,7 +136,7 @@ program
                     skip: {
                         debug: options.verbose,
                         matchBase: true,
-                    }
+                    },
                 },
             });
 
@@ -155,30 +160,65 @@ program
 
                 bar.increment(1, { filename: dir });
 
-                const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, this.verbose);
+                try {
+                    const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, this.verbose);
 
-                spec.addData(parsedJsDocumentFile.map((item) => item.spec));
+                    spec.addData(parsedJsDocumentFile.map((item) => item.spec));
 
-                const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, this.verbose);
+                    const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, this.verbose);
 
-                spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+                    spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                    exit(1);
+                }
             });
         }
 
         try {
+            if (options.verbose) {
+                // eslint-disable-next-line no-console
+                console.log("Validating swagger spec");
+            }
+
+            if (options.veryVerbose) {
+                // eslint-disable-next-line no-console
+                console.log(JSON.stringify(spec, null, 2));
+            }
+
             await SwaggerParser.validate(JSON.parse(JSON.stringify(spec)));
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error(error.toJSON());
-            // eslint-disable-next-line no-undef
-            process.exit();
+            exit(1);
         }
 
         const output = options.output || "swagger.json";
 
         multibar.stop();
 
-        fs.writeFileSync(output, JSON.stringify(spec, null, 2));
+        if (options.verbose) {
+            // eslint-disable-next-line no-console
+            console.log(`Written swagger spec to "${output}" file`);
+        }
+
+        const errorHandler = (error) => {
+            if (error) {
+                // eslint-disable-next-line no-console
+                console.error(error);
+                exit(1);
+            }
+        };
+
+        // eslint-disable-next-line consistent-return
+        fs.mkdir(path.dirname(output), { recursive: true }, (error) => {
+            if (error) {
+                errorHandler(error);
+            }
+
+            fs.writeFile(output, JSON.stringify(spec, null, 2), errorHandler);
+        });
 
         // eslint-disable-next-line no-console
         console.log(`\nSwagger specification is ready, check the${output}file.`);
@@ -189,6 +229,5 @@ program.parse(process.argv);
 // eslint-disable-next-line no-undef
 if (process.argv.slice(2).length === 0) {
     program.help();
-    // eslint-disable-next-line no-undef
-    process.exit();
+    exit(1);
 }
