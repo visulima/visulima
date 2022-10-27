@@ -53,19 +53,21 @@
             "import": "./dist/index-server.mjs"
         },
         "./next": {
-            "types": "./next/index-server.d.ts",
-            "browser": "./next/index-browser.js",
-            "require": "./next/index-server.js",
-            "import": "./next/index-server.mjs"
+            "types": "./dist/next/index-server.d.ts",
+            "browser": "./dist/next/index-browser.js",
+            "require": "./dist/next/index-server.js",
+            "import": "./dist/next/index-server.mjs"
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index-server.js",
     "module": "dist/index-server.mjs",
-    "browser": "./dist/index-browser.mjs",
+    "browser": "dist/index-browser.mjs",
     "types": "dist/index-server.d.ts",
     "files": [
-        "dist/**",
+        "src",
+        "dist",
+        "next",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
