@@ -37,12 +37,13 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "./dist/index.js",
-    "module": "./dist/index.module.mjs",
+    "main": "dist/index.js",
+    "module": "dist/index.module.mjs",
     "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
-        "dist/**",
+        "src",
+        "dist",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
