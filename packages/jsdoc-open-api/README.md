@@ -47,7 +47,7 @@ Choose the syntax you want to use for your OpenAPI definitions:
 
 ![choose the syntax](./assets/swagger-difference.png)
 
-CLI:
+### CLI:
 
 ```bash
 # This generate the .openapirc.js config file, this command is only needed on the first run
@@ -55,6 +55,94 @@ jsdoc-open-api init
 
 # This will generate the swagger.json file
 jsdoc-open-api generate src/
+```
+
+### As Next.js webpack plugin:
+
+#### with-open-api.js
+```js
+
+const path = require("node:path");
+const fs = require("node:fs");
+const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
+
+/**
+ * @param definition {import('@visulima/jsdoc-open-api').SwaggerDefinition}
+ * @param sources {string[]}
+ * @param verbose {boolean}
+ * @param output {string}
+ *
+ * @returns {function(*): *&{webpack: function(Configuration, *): (Configuration)}}
+ */
+const withOpenApi = ({ definition, sources, verbose, output = "swagger/swagger.json" }) => (nextConfig) => {
+    return {
+        ...nextConfig,
+        webpack: (config, options) => {
+            if (!options.isServer) {
+                return config;
+            }
+
+            if (output.startsWith("/")) {
+                output = output.slice(1);
+            }
+
+            if (!output.endsWith(".json")) {
+                throw new Error("The output path must end with .json");
+            }
+
+            // eslint-disable-next-line no-param-reassign
+            config = {
+                ...config,
+                plugins: [
+                // @ts-ignore
+                    ...config.plugins,
+                    new SwaggerCompilerPlugin(`${options.dir}/${output}`, sources.map((source) => {
+                        const combinedPath = path.join(options.dir, source.replace("./", ""));
+
+                        // Check if the path is a directory
+                        fs.lstatSync(combinedPath).isDirectory();
+
+                        return combinedPath;
+                    }), definition, { verbose }),
+                ],
+            };
+
+            if (typeof nextConfig.webpack === "function") {
+                return nextConfig.webpack(config, options);
+            }
+
+            return config;
+        },
+    };
+};
+
+module.exports = withOpenApi;
+```
+
+#### next.config.js
+```js
+const withOpenApi = require("./with-open-api");
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    reactStrictMode: true,
+    swcMinify: true,
+    env: {
+        NEXT_PUBLIC_APP_ORIGIN: process.env.VERCEL_URL || "http://localhost:3001",
+    }
+};
+
+module.exports = withOpenApi({
+    definition: {
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src"],
+    verbose: true,
+    output: "swagger/swagger.json",
+})(nextConfig);
 ```
 
 ## OpenApi yaml syntax
