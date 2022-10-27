@@ -134,14 +134,16 @@ const nextConfig = {
 
 module.exports = withOpenApi({
     definition: {
+        openapi: "3.0.0",
         info: {
             title: "My API",
             version: "1.0.0",
         },
     },
-    sources: ["./src"],
-    verbose: true,
-    output: "swagger/swagger.json",
+    sources: [
+         "pages/api",
+    ],
+    verbose: false, // default is false
 })(nextConfig);
 ```
 
