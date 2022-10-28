@@ -258,6 +258,7 @@ importers:
       '@visulima/jsdoc-open-api': workspace:*
       '@visulima/readdir': workspace:*
       case: ^1.6.3
+      commander: ^9.4.1
       core-js: ^3.25.5
       cors: ^2.8.5
       cross-env: ^7.0.3
@@ -314,6 +315,7 @@ importers:
     dependencies:
       '@visulima/jsdoc-open-api': link:../jsdoc-open-api
       case: 1.6.3
+      commander: 9.4.1
       cors: 2.8.5
       debug: 4.3.4
       http-errors: 2.0.0

@@ -84,6 +84,7 @@
     },
     "dependencies": {
         "@visulima/jsdoc-open-api": "workspace:*",
+        "@visulima/readdir": "workspace:*",
         "case": "^1.6.3",
         "cors": "^2.8.5",
         "debug": "^4.3.4",
@@ -97,7 +98,8 @@
         "ts-japi": "^1.8.0",
         "yaml": "^2.1.3",
         "query-string": "^7.1.1",
-        "zod-to-ts": "^1.1.1"
+        "zod-to-ts": "^1.1.1",
+        "commander": "^9.4.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
@@ -180,7 +182,8 @@
         "src/index-browser.tsx",
         "src/index-server.ts",
         "src/next/index-browser.tsx",
-        "src/next/index-server.ts"
+        "src/next/index-server.ts",
+        "src/next/cli/index.ts"
     ],
     "publishConfig": {
         "access": "public"
