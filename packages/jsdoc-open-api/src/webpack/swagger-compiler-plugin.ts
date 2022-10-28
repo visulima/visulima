@@ -85,6 +85,7 @@ class SwaggerCompilerPlugin {
                     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
                     skip: [...this.ignore, ...exclude],
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
+                    includeDirs: false,
                     minimatchOptions: {
                         match: {
                             debug: this.verbose,
