@@ -9,15 +9,15 @@ const collect = async (directory: string, options: Partial<Options & { extension
 
     // eslint-disable-next-line compat/compat,no-async-promise-executor
     return new Promise<string[]>(async (resolve, reject) => {
-        const files: string[] = [];
+        const entries: string[] = [];
 
         try {
             // eslint-disable-next-line no-restricted-syntax
-            for await (const index of walk(directory, config)) {
-                files.push(index.path);
+            for await (const entry of walk(directory, config)) {
+                entries.push(entry.path);
             }
 
-            resolve(files as string[]);
+            resolve(entries as string[]);
         } catch (error: any) {
             reject(error);
         }
