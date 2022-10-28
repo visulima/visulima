@@ -64,7 +64,9 @@ const config: NextConfig = {
                 ...config,
                 entry() {
                     return config.entry().then(async (entry) => {
-                        const allCommands = await collect("commands", __dirname);
+                        const allCommands = await collect("commands", __dirname, {
+                            includeDirs: false,
+                        });
                         const commands: { [key: string]: string } = {};
 
                         allCommands.forEach((commandPath) => {
