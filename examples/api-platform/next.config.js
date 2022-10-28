@@ -1,4 +1,7 @@
 const { withOpenApi } = require("@visulima/api-platform/next");
+
+const packageJson = require("./package.json");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
@@ -10,10 +13,10 @@ const nextConfig = {
 
 module.exports = withOpenApi({
     definition: {
-        openapi: "3.0.0",
         info: {
-            title: "Visulima API",
-            version: "1.0.0",
+            title: packageJson.name,
+            version: packageJson.version,
+            description: packageJson.description,
         }
     },
     sources: [

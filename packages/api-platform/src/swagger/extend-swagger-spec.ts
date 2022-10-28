@@ -4,7 +4,7 @@ import type {
     OpenAPI3, ReferenceObject, ResponseObject, SchemaObject, SwaggerOptions,
 } from "./types";
 
-function extendComponentSchema(spec: OpenAPI3, schemaName: string, mediaType: string, schema: SchemaObject) {
+function extendComponentSchema(spec: OpenAPI3, schemaName: string, schema: SchemaObject) {
     if (typeof spec.components !== "object") {
         // eslint-disable-next-line no-param-reassign
         spec.components = {};
@@ -16,16 +16,12 @@ function extendComponentSchema(spec: OpenAPI3, schemaName: string, mediaType: st
     }
 
     if (typeof spec.components.schemas[schemaName] === "undefined") {
-        // eslint-disable-next-line radar/no-duplicate-string
-        if (mediaType === "application/ld+json") {
-            throw new Error("Automated JSON-LD schema generation is not supported yet");
-        } else {
-            // eslint-disable-next-line no-param-reassign
-            spec.components.schemas[schemaName] = schema;
-        }
+        // eslint-disable-next-line no-param-reassign
+        spec.components.schemas[schemaName] = schema;
     }
 }
 
+// eslint-disable-next-line radar/cognitive-complexity
 export default function extendSwaggerSpec(spec: OpenAPI3, swaggerOptions: SwaggerOptions): OpenAPI3 {
     if (typeof spec === "object" && typeof spec.paths === "object") {
         Object.entries(spec.paths).forEach(([pathKey, pathSpec]) => {
@@ -53,39 +49,24 @@ export default function extendSwaggerSpec(spec: OpenAPI3, swaggerOptions: Swagge
                                             mediaType === "application/ld+json" ? ".jsonld" : ""
                                         }`;
 
-                                        if ((schema as ReferenceObject).$ref === "string") {
-                                            // const reference = (schema as ReferenceObject).$ref;
-
-                                            // eslint-disable-next-line radar/no-duplicate-string
-                                            if (mediaType === "application/ld+json") {
-                                                throw new Error("Automated JSON-LD schema generation is not supported yet");
-                                            }
-
-                                            return;
-                                        }
-
-                                        extendComponentSchema(spec, schemaName, mediaType, schema as SchemaObject);
+                                        extendComponentSchema(spec, schemaName, schema as SchemaObject);
 
                                         if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.schema === "undefined") {
                                             // eslint-disable-next-line no-param-reassign
                                             methodSpec.responses[status].content[mediaType] = { schema: {} };
                                         }
 
-                                        if (mediaType === "application/ld+json") {
-                                            throw new Error("Automated JSON-LD schema generation is not supported yet");
-                                        } else {
-                                            // eslint-disable-next-line no-param-reassign
-                                            methodSpec.responses[status].content[mediaType].schema = schemaIsArray
-                                                ? {
-                                                    type: "array",
-                                                    items: {
-                                                        $ref: `#/components/schemas/${schemaName}`,
-                                                    },
-                                                }
-                                                : {
+                                        // eslint-disable-next-line no-param-reassign
+                                        methodSpec.responses[status].content[mediaType].schema = schemaIsArray
+                                            ? {
+                                                type: "array",
+                                                items: {
                                                     $ref: `#/components/schemas/${schemaName}`,
-                                                };
-                                        }
+                                                },
+                                            }
+                                            : {
+                                                $ref: `#/components/schemas/${schemaName}`,
+                                            };
                                     });
                                 }
                             });

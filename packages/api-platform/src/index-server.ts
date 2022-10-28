@@ -41,3 +41,6 @@ export { default as rateLimiterMiddleware } from "./middleware/rate-limiter-midd
 export { default as corsMiddleware } from "./middleware/cors-middleware";
 
 export { dateIn, dateOut } from "./zod";
+
+export type { SimplePaginator } from "./pagination";
+export { Paginator, paginate } from "./pagination";

@@ -18,8 +18,7 @@ const SwaggerApiDocument: (
     name: string,
     swagger?: Exclude<SwaggerUIProps, "spec">,
     // eslint-disable-next-line max-len,unicorn/no-useless-undefined
-) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (name, swagger = {}) => ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => {
-    return (
+) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (name, swagger = {}) => ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
             <>
                 <Head>
                     <title>{name}</title>
@@ -34,7 +33,6 @@ body {
                 {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                 <SwaggerUI {...swagger} spec={swaggerData} />
             </>
-    );
-};
+);
 
 export default SwaggerApiDocument;

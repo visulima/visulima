@@ -1,5 +1,6 @@
 {
     "name": "nextjs_example_api-platform",
+    "description": "API Platform distribution for Next.js",
     "version": "0.0.0",
     "private": true,
     "scripts": {

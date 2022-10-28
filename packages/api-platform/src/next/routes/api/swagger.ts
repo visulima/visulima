@@ -1,30 +1,33 @@
 import merge from "lodash.merge";
 import type { NextApiRequest, NextApiResponse } from "next";
-import path from 'path';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 import createRouter from "../../../connect/create-router";
 import yamlTransformer from "../../../serializers/yaml";
 import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
 import type { OpenAPI3, SwaggerOptions } from "../../../swagger/types";
 
-// eslint-disable-next-line max-len
-const swaggerApiRoute = (title: string, version: string, options: Partial<SwaggerOptions> & Partial<{ mediaTypes: {}, swaggerFilePath: string }> = {}) => {
-    const router = createRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-        const { mediaTypes, swaggerDefinition, swaggerFilePath } = options;
+const defaultMediaTypes = {
+    "application/json": true,
+    "application/vnd.api+json": true,
+    "application/x-yaml": true,
+    "application/xml": true,
+    "text/csv": true,
+    "text/html": true,
+    "text/xml": true,
+};
 
-        const allowedMediaTypes = merge(
-            {
-                "application/json": true,
-                "application/vnd.api+json": true,
-                "application/x-yaml": true,
-                "application/xml": true,
-                "text/csv": true,
-                "text/html": true,
-                "text/xml": true,
-            },
-            mediaTypes,
-        );
+// eslint-disable-next-line max-len
+const swaggerApiRoute = (
+    options: Partial<SwaggerOptions> &
+    Partial<{
+        mediaTypes: { [key: string]: boolean };
+        swaggerFilePath: string;
+    }> = {},
+) => {
+    const router = createRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
+        const { mediaTypes = defaultMediaTypes, swaggerDefinition, swaggerFilePath } = options;
 
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
 
@@ -32,26 +35,19 @@ const swaggerApiRoute = (title: string, version: string, options: Partial<Swagge
             throw new Error(`Swagger file not found at ${swaggerPath}. Did you change the output path in "withOpenApi" inside the next.config.js file?`);
         }
 
-        const fileContents = readFileSync(swaggerPath, 'utf8');
+        const fileContents = readFileSync(swaggerPath, "utf8");
 
-        const spec = extendSwaggerSpec(
-            JSON.parse(fileContents) as OpenAPI3,
-            {
-                swaggerDefinition: merge(
-                    {
-                        info: {
-                            title,
-                            version,
-                        },
-                        schemes: ["http", "https"],
-                        host: `${process.env.NEXT_PUBLIC_APP_ORIGIN}`,
-                        basePath: "/",
-                    },
-                    swaggerDefinition,
-                ),
-                allowedMediaTypes,
-            },
-        ) as OpenAPI3;
+        const spec = extendSwaggerSpec(JSON.parse(fileContents) as OpenAPI3, {
+            swaggerDefinition: merge(
+                {
+                    schemes: ["http", "https"],
+                    host: `${process.env.NEXT_PUBLIC_APP_ORIGIN}`,
+                    basePath: "/",
+                },
+                swaggerDefinition,
+            ),
+            allowedMediaTypes: mediaTypes,
+        }) as OpenAPI3;
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);
