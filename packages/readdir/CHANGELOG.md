@@ -1,3 +1,10 @@
+## @visulima/readdir [1.2.0](https://github.com/visulima/visulima/compare/@visulima/readdir@1.1.1...@visulima/readdir@1.2.0) (2022-10-29)
+
+
+### Features
+
+* **readdir:** fixed wrong example in the readme ([64e96fc](https://github.com/visulima/visulima/commit/64e96fc82e290a0eb5e2d863a27f954e6b929049))
+
 ## @visulima/readdir [1.1.1](https://github.com/visulima/visulima/compare/@visulima/readdir@1.1.0...@visulima/readdir@1.1.1) (2022-10-27)
 
 
