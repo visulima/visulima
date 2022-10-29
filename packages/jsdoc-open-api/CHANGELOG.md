@@ -1,3 +1,16 @@
+## @visulima/jsdoc-open-api [1.1.0](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.0.3...@visulima/jsdoc-open-api@1.1.0) (2022-10-29)
+
+
+### Features
+
+* **jsdoc-open-api:** added includeDirs: false to the collect func to hidde dir output ([c77f5ca](https://github.com/visulima/visulima/commit/c77f5cad73856de17e576af61cce661cb4f65189))
+
+
+
+### Dependencies
+
+* **@visulima/readdir:** upgraded to 1.2.0
+
 ## @visulima/jsdoc-open-api [1.0.3](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.0.2...@visulima/jsdoc-open-api@1.0.3) (2022-10-27)
 
 
