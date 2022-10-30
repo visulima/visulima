@@ -4,3 +4,4 @@ inject-react-import.js
 coverage
 vitest.config.ts
 recipes
+__fixtures__

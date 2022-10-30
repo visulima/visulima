@@ -258,6 +258,7 @@ importers:
       '@visulima/jsdoc-open-api': workspace:*
       '@visulima/readdir': workspace:*
       case: ^1.6.3
+      chalk: 4.1.2
       commander: ^9.4.1
       core-js: ^3.25.5
       cors: ^2.8.5
@@ -315,6 +316,7 @@ importers:
     dependencies:
       '@visulima/jsdoc-open-api': link:../jsdoc-open-api
       case: 1.6.3
+      chalk: 4.1.2
       commander: 9.4.1
       cors: 2.8.5
       debug: 4.3.4
@@ -4935,8 +4937,8 @@ packages:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  /chalk/5.0.1:
-    resolution: {integrity: sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w==}
+  /chalk/5.1.2:
+    resolution: {integrity: sha512-E5CkT4jWURs1Vy5qGJye+XwCkNj7Od3Af7CP6SujMetSMkLs8Do2RWJK5yx1wamHV/op8Rz+9rltjaTQWDnEFQ==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   /change-case/4.1.2:
@@ -9757,7 +9759,7 @@ packages:
     resolution: {integrity: sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==}
     engines: {node: '>=12'}
     dependencies:
-      chalk: 5.0.1
+      chalk: 5.1.2
       is-unicode-supported: 1.2.0
     dev: false
 
@@ -9925,7 +9927,7 @@ packages:
     dependencies:
       ansi-escapes: 5.0.0
       cardinal: 2.1.1
-      chalk: 5.0.1
+      chalk: 5.1.2
       cli-table3: 0.6.2
       marked: 4.0.18
       node-emoji: 1.11.0
@@ -11675,7 +11677,7 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       bl: 5.0.0
-      chalk: 5.0.1
+      chalk: 5.1.2
       cli-cursor: 4.0.0
       cli-spinners: 2.7.0
       is-interactive: 2.0.0
@@ -12135,7 +12137,7 @@ packages:
     hasBin: true
     dependencies:
       '@types/liftoff': 4.0.0
-      chalk: 5.0.1
+      chalk: 5.1.2
       interpret: 2.2.0
       liftoff: 4.0.0
       minimist: 1.2.6
