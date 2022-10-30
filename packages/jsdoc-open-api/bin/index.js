@@ -28,7 +28,7 @@ const package_ = require("../package.json");
 const program = new Command();
 const defaultConfigName = ".openapirc.js";
 
-program.name("@visulima/jsdoc-open-api").description("CLI to to generate OpenAPI (Swagger) documentation from JSDoc's").version(package_.version);
+program.name("@visulima/jsdoc-open-api").description("CLI to generate OpenAPI (Swagger) documentation from JSDoc's").version(package_.version);
 
 program
     .command("init")
