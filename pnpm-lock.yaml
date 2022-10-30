@@ -397,6 +397,9 @@ importers:
   packages/api-platform/next:
     specifiers: {}
 
+  packages/api-platform/next/cli:
+    specifiers: {}
+
   packages/connect:
     specifiers:
       '@anolilab/eslint-config': ^4.1.1
@@ -8359,7 +8362,7 @@ packages:
     dev: false
 
   /identity-obj-proxy/3.0.0:
-    resolution: {integrity: sha512-00n6YnVHKrinT9t0d9+5yZC6UBNJANpYEQvL2LlX6Ab9lnmxzIRcEmTPuyGScvl1+jKuCICX1Z0Ab1pPKKdikA==}
+    resolution: {integrity: sha1-lNK9qWCERT7zb7xarsN+D3nx/BQ=}
     engines: {node: '>=4'}
     dependencies:
       harmony-reflect: 1.6.2
