@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import colors from "chalk";
+import { describe, expect, it } from "vitest";
 
 import routesRender from "../../../../src/next/cli/list/routes-render";
 
