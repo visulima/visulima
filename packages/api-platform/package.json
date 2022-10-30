@@ -58,6 +58,11 @@
             "require": "./dist/next/index-server.js",
             "import": "./dist/next/index-server.mjs"
         },
+        "./next/cli": {
+            "types": "./dist/next/cli/index.d.ts",
+            "require": "./dist/next/cli/index.js",
+            "import": "./dist/next/cli/index.mjs"
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index-server.js",
