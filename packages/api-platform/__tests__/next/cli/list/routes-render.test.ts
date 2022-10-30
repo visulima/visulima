@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import colors from "chalk";
 
 import routesRender from "../../../../src/next/cli/list/routes-render";
 
@@ -16,7 +17,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[34mGET\u001B[39m\u001B[90m|HEAD\u001B[39m      /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.blue("GET")}${colors.grey("|HEAD")}      /api/cors`]);
     });
 
     it("print get|head route", () => {
@@ -31,7 +32,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[92mGET\u001B[39m\u001B[90m|HEAD\u001B[39m      /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.blue("GET")}${colors.grey("|HEAD")}      /api/cors`]);
     });
 
     it("print head route", () => {
@@ -46,7 +47,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[38;5;103mHEAD\u001B[39m          /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.hex("#6C7280")("HEAD")}          /api/cors`]);
     });
 
     it("print post route", () => {
@@ -61,7 +62,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[33mPOST\u001B[39m          /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.yellow("POST")}          /api/cors`]);
     });
 
     it("print patch route", () => {
@@ -76,7 +77,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[33mPATCH\u001B[39m         /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.yellow("PATCH")}         /api/cors`]);
     });
 
     it("print put route", () => {
@@ -91,7 +92,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[33mPUT\u001B[39m           /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.yellow("PUT")}           /api/cors`]);
     });
 
     it("print delete route", () => {
@@ -106,7 +107,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[91mDELETE\u001B[39m        /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.redBright("DELETE")}        /api/cors`]);
     });
 
     it("print options route", () => {
@@ -121,7 +122,7 @@ describe("list printer", () => {
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[38;5;103mOPTIONS\u001B[39m       /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.hex("#6C7280")("OPTIONS")}       /api/cors`]);
     });
 
     it("print all method route", () => {
@@ -129,13 +130,13 @@ describe("list printer", () => {
             [
                 {
                     path: "/api/cors",
-                    method: "GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS",
+                    method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     tags: ["root"],
                     file: "__fixtures__/pages/api/corsheader.ts",
                 },
             ],
         );
 
-        expect(view).toStrictEqual(["  \u001B[91mANY\u001B[39m           /api/cors"]);
+        expect(view).toStrictEqual([`  ${colors.redBright("ANY")}           /api/cors`]);
     });
 });

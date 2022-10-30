@@ -17,7 +17,7 @@ const renderRoute = (method: string, routePath: string): string => {
     let methodText: string;
 
     if (method === "GET|HEAD") {
-        methodText = `${colors.greenBright("GET")}${colors.grey("|HEAD")}`;
+        methodText = `${colors.blue("GET")}${colors.grey("|HEAD")}`;
     } else {
         const coloredMethod = colorMap[method as keyof typeof colorMap](method);
 
