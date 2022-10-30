@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import routesRender from "../../../../src/next/cli/list/routes-view";
+import routesRender from "../../../../src/next/cli/list/routes-render";
 
 describe("list printer", () => {
     it("print get route", () => {
