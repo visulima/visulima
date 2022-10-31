@@ -11,4 +11,4 @@ export type ErrorHandlers = {
     handler: ErrorHandler;
 }[];
 
-export type ApiFormat = "jsonapi" | "hydra" | "problem";
+export type ApiFormat = "jsonapi" | "problem";

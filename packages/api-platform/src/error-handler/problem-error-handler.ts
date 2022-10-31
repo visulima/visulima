@@ -1,8 +1,8 @@
 import { HttpError } from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
 
-import type { ErrorHandler } from "../types";
-import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./util";
+import type { ErrorHandler } from "./types";
+import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultType = "https://tools.ietf.org/html/rfc2616#section-10";
 const defaultTitle = "An error occurred";
@@ -11,7 +11,7 @@ const defaultTitle = "An error occurred";
  *
  * @see https://tools.ietf.org/html/rfc7807
  */
-const ProblemErrorHandler: ErrorHandler = (error: HttpError | Error, _request, response) => {
+const problemErrorHandler: ErrorHandler = (error: HttpError | Error, _request, response) => {
     const { stack, message } = error;
 
     if (error instanceof HttpError) {
@@ -36,9 +36,9 @@ const ProblemErrorHandler: ErrorHandler = (error: HttpError | Error, _request, r
             type: defaultType,
             title: getReasonPhrase(response.statusCode) || defaultTitle,
             details: message,
-            trace: stack,
+            ...((error as { expose: boolean } & Error).expose ? { trace: stack } : {}),
         });
     }
 };
 
-export default ProblemErrorHandler;
+export default problemErrorHandler;

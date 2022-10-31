@@ -2,12 +2,12 @@ import { HttpError } from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
 import { ErrorSerializer, JapiError } from "ts-japi";
 
-import type { ErrorHandler } from "../types";
-import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./util";
+import type { ErrorHandler } from "./types";
+import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultTitle = "An error occurred";
 
-const JsonapiErrorHandler: ErrorHandler = (error: HttpError | JapiError | Error, _request, response) => {
+const jsonapiErrorHandler: ErrorHandler = (error: HttpError | JapiError | Error, _request, response) => {
     addStatusCodeToResponse(response, error);
 
     setErrorHeaders(response, error);
@@ -43,4 +43,4 @@ const JsonapiErrorHandler: ErrorHandler = (error: HttpError | JapiError | Error,
     }
 };
 
-export default JsonapiErrorHandler;
+export default jsonapiErrorHandler;

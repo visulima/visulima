@@ -6,10 +6,10 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import JsonapiErrorHandler from "../error-handler/jsonapi-error-handler";
 import ProblemErrorHandler from "../error-handler/problem-error-handler";
-import type { ErrorHandler, ErrorHandlers } from "../types";
+import type { ErrorHandler, ErrorHandlers } from "../error-handler/types";
 
 // eslint-disable-next-line unicorn/consistent-function-scoping,max-len
-export const onError = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers) => (error: unknown, request: Request, response: Response): ValueOrPromise<void> => {
+export const onError = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean) => async (error: unknown, request: Request, response: Response): Promise<void> => {
     const apiFormat: string = request.headers.accept as string;
 
     let errorHandler: ErrorHandler = ProblemErrorHandler;
@@ -26,7 +26,10 @@ export const onError = <Request extends IncomingMessage, Response extends Server
         }
     }
 
-    return errorHandler(error, request, response);
+    // eslint-disable-next-line no-param-reassign
+    (error as { expose: boolean } & Error).expose = showTrace;
+
+    errorHandler(error, request, response);
 };
 
 export const onNoMatch: <Request extends IncomingMessage, Response extends ServerResponse>(
