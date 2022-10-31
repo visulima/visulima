@@ -1,3 +1,11 @@
+## @visulima/jsdoc-open-api [1.1.1](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.1.0...@visulima/jsdoc-open-api@1.1.1) (2022-10-31)
+
+
+### Bug Fixes
+
+* **jsdoc-open-api:** make bin file executable ([469cb9b](https://github.com/visulima/visulima/commit/469cb9bd32e1815354a46c1dd6fca8c1a3532f32))
+* **jsdoc-open-api:** removed second to in the txt ([dc5eebb](https://github.com/visulima/visulima/commit/dc5eebb96c220c21171753238eb6b1d7c2da58a1))
+
 ## @visulima/jsdoc-open-api [1.1.0](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.0.3...@visulima/jsdoc-open-api@1.1.0) (2022-10-29)
 
 
