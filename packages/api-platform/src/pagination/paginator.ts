@@ -1,6 +1,6 @@
-import qs from "query-string";
+import qs from "qs";
 
-import { SimplePaginator } from "./types";
+import type { SimplePaginator } from "./types";
 
 /**
  * Simple paginator works with the data set provided by the standard
@@ -77,11 +77,11 @@ class Paginator extends Array implements SimplePaginator<any> {
     /**
      * Returns JSON meta data
      */
-    public getMeta(): any {
+    public getMeta() {
         return {
             total: this.total,
             perPage: this.perPage,
-            currentPage: this.currentPage,
+            page: this.currentPage,
             lastPage: this.lastPage,
             firstPage: this.firstPage,
             firstPageUrl: this.getUrl(1),

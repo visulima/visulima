@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import createRouter from "../../../connect/create-router";
+import createNodeRouter from "../../../connect/create-router";
 import yamlTransformer from "../../../serializers/yaml";
 import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
 import type { OpenAPI3, SwaggerOptions } from "../../../swagger/types";
@@ -26,7 +26,7 @@ const swaggerApiRoute = (
         swaggerFilePath: string;
     }> = {},
 ) => {
-    const router = createRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
+    const router = createNodeRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
         const { mediaTypes = defaultMediaTypes, swaggerDefinition, swaggerFilePath } = options;
 
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");

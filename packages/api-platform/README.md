@@ -50,6 +50,29 @@ pnpm add @visulima/api-platform
 
 ## Usage
 
+This package has an extended version of the `@visulima/connect` package.
+That means you can use all the features of the `@visulima/connect` package, in addition to the features of this package.
+
+```ts
+// pages/api/hello.js
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createNodeRouter } from "@visulima/api-platform";
+import cors from "cors";
+
+// Default Req and Res are IncomingMessage and ServerResponse
+// You may want to pass in NextApiRequest and NextApiResponse
+const router = createNodeRouter<NextApiRequest, NextApiResponse>();
+
+router
+  .get((req, res) => {
+    res.send("Hello world");
+  });
+
+export default router.handler();
+```
+
+```
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track
