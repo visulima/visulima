@@ -1,3 +1,10 @@
+## @visulima/connect [1.1.0](https://github.com/visulima/visulima/compare/@visulima/connect@1.0.1...@visulima/connect@1.1.0) (2022-11-07)
+
+
+### Features
+
+* **connect:** renamed createRouter to createNodeRouter ([92f6d3f](https://github.com/visulima/visulima/commit/92f6d3f4d3430c281ae7106f7d09bb5b744df341))
+
 ## @visulima/connect [1.0.1](https://github.com/visulima/visulima/compare/@visulima/connect@1.0.0...@visulima/connect@1.0.1) (2022-10-27)
 
 
