@@ -66,12 +66,12 @@ Below are some use cases.
 ```typescript
 // pages/api/hello.js
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createRouter, expressWrapper } from "@visulima/connect";
+import { createNodeRouter, expressWrapper } from "@visulima/connect";
 import cors from "cors";
 
 // Default Req and Res are IncomingMessage and ServerResponse
 // You may want to pass in NextApiRequest and NextApiResponse
-const router = createRouter<NextApiRequest, NextApiResponse>({
+const router = createNodeRouter<NextApiRequest, NextApiResponse>({
   onError: (err, req, res) => {
     console.error(err.stack);
     res.status(500).end("Something broke!");
@@ -100,7 +100,7 @@ router
   .put(
     async (req, res, next) => {
       // You may want to pass in NextApiRequest & { isLoggedIn: true }
-      // in createRouter generics to define this extra property
+      // in createNodeRouter generics to define this extra property
       if (!req.isLoggedIn) throw new Error("thrown stuff will be caught");
       // go to the next in chain
       return next();
@@ -111,8 +111,6 @@ router
     }
   );
 
-// create a handler from router with custom
-// onError and onNoMatch
 export default router.handler();
 ```
 
@@ -120,7 +118,7 @@ export default router.handler();
 
 ```jsx
 // page/users/[id].js
-import { createRouter } from "@visulima/connect";
+import { createNodeRouter } from "@visulima/connect";
 
 export default function Page({ user, updated }) {
   return (
@@ -132,7 +130,7 @@ export default function Page({ user, updated }) {
   );
 }
 
-const router = createRouter()
+const router = createNodeRouter()
   .use(async (req, res, next) => {
     // this serve as the error handling middleware
     try {
@@ -267,9 +265,9 @@ export function middleware(request: NextRequest) {
 
 ## API
 
-The following APIs are rewritten in terms of `NodeRouter` (`createRouter`), but they apply to `EdgeRouter` (`createEdgeRouter`) as well.
+The following APIs are rewritten in terms of `NodeRouter` (`createNodeRouter`), but they apply to `EdgeRouter` (`createEdgeRouter`) as well.
 
-### router = createRouter()
+### router = createNodeRouter()
 
 Create an instance Node.js router.
 
@@ -285,31 +283,31 @@ Create an instance Node.js router.
 ```javascript
 // Mount a middleware function
 router1.use(async (req, res, next) => {
-  req.hello = "world";
-  await next(); // call to proceed to the next in chain
-  console.log("request is done"); // call after all downstream handler has run
+    req.hello = "world";
+    await next(); // call to proceed to the next in chain
+    console.log("request is done"); // call after all downstream handler has run
 });
 
 // Or include a base
 router2.use("/foo", fn); // Only run in /foo/**
 
 // mount an instance of router
-const sub1 = createRouter().use(fn1, fn2);
-const sub2 = createRouter().use("/dashboard", auth);
-const sub3 = createRouter()
-  .use("/waldo", subby)
-  .get(getty)
-  .post("/baz", posty)
-  .put("/", putty);
+const sub1 = createNodeRouter().use(fn1, fn2);
+const sub2 = createNodeRouter().use("/dashboard", auth);
+const sub3 = createNodeRouter()
+    .use("/waldo", subby)
+    .get(getty)
+    .post("/baz", posty)
+    .put("/", putty);
 router3
-  // - fn1 and fn2 always run
-  // - auth runs only on /dashboard
-  .use(sub1, sub2)
-  // `subby` runs on ANY /foo/waldo?/*
-  // `getty` runs on GET /foo/*
-  // `posty` runs on POST /foo/baz
-  // `putty` runs on PUT /foo
-  .use("/foo", sub3);
+    // - fn1 and fn2 always run
+    // - auth runs only on /dashboard
+    .use(sub1, sub2)
+    // `subby` runs on ANY /foo/waldo?/*
+    // `getty` runs on GET /foo/*
+    // `posty` runs on POST /foo/baz
+    // `putty` runs on PUT /foo
+    .use("/foo", sub3);
 ```
 
 ### router.METHOD(pattern, ...fns)
@@ -357,13 +355,13 @@ By default, it responds with a generic `500 Internal Server Error` while logging
 
 ```javascript
 function onError(err, req, res) {
-  logger.log(err);
-  // OR: console.error(err);
+    logger.log(err);
+    // OR: console.error(err);
 
-  res.status(500).end("Internal server error");
+    res.status(500).end("Internal server error");
 }
 
-const router = createRouter({ onError });
+const router = createNodeRouter({onError});
 
 export default router.handler();
 ```
@@ -375,10 +373,10 @@ By default, it responds with a `404` status and a `Route [Method] [Url] not foun
 
 ```javascript
 function onNoMatch(req, res) {
-  res.status(404).end("page is not found... or is it!?");
+    res.status(404).end("page is not found... or is it!?");
 }
 
-const router = createRouter({ onNoMatch });
+const router = createNodeRouter({onNoMatch});
 
 export default router.handler();
 ```
@@ -489,14 +487,16 @@ console.log("finally"); // this will run before the get layer gets to finish
 
 ```javascript
 // api-libs/base.js
-export default createRouter().use(a).use(b);
+export default createNodeRouter().use(a).use(b);
 
 // api/foo.js
 import router from "api-libs/base";
+
 export default router.get(x).handler();
 
 // api/bar.js
 import router from "api-libs/base";
+
 export default router.get(y).handler();
 ```
 
@@ -505,14 +505,16 @@ If you want to achieve something like that, you can use `router.clone` to return
 
 ```javascript
 // api-libs/base.js
-export default createRouter().use(a).use(b);
+export default createNodeRouter().use(a).use(b);
 
 // api/foo.js
 import router from "api-libs/base";
+
 export default router.clone().get(x).handler();
 
 // api/bar.js
 import router from "api-libs/base";
+
 export default router.clone().get(y).handler();
 ```
 
@@ -520,22 +522,22 @@ export default router.clone().get(y).handler();
 
 ```javascript
 // page/index.js
-const handler = createRouter()
-  .use((req, res) => {
-    // BAD: res.redirect is not a function (not defined in `getServerSideProps`)
-    // See https://github.com/hoangvvo/@visulima/connect/issues/194#issuecomment-1172961741 for a solution
-    res.redirect("foo");
-  })
-  .use((req, res) => {
-    // BAD: `getServerSideProps` gives undefined behavior if we try to send a response
-    res.end("bar");
-  });
+const handler = createNodeRouter()
+    .use((req, res) => {
+        // BAD: res.redirect is not a function (not defined in `getServerSideProps`)
+        // See https://github.com/hoangvvo/@visulima/connect/issues/194#issuecomment-1172961741 for a solution
+        res.redirect("foo");
+    })
+    .use((req, res) => {
+        // BAD: `getServerSideProps` gives undefined behavior if we try to send a response
+        res.end("bar");
+    });
 
-export async function getServerSideProps({ req, res }) {
-  await router.run(req, res);
-  return {
-    props: {},
-  };
+export async function getServerSideProps({req, res}) {
+    await router.run(req, res);
+    return {
+        props: {},
+    };
 }
 ```
 
@@ -543,14 +545,14 @@ export async function getServerSideProps({ req, res }) {
 
 ```javascript
 // page/index.js
-const router = createRouter().use(foo).use(bar);
+const router = createNodeRouter().use(foo).use(bar);
 const handler = router.handler();
 
-export async function getServerSideProps({ req, res }) {
-  await handler(req, res); // BAD: You should call router.run(req, res);
-  return {
-    props: {},
-  };
+export async function getServerSideProps({req, res}) {
+    await handler(req, res); // BAD: You should call router.run(req, res);
+    return {
+        props: {},
+    };
 }
 ```
 
@@ -567,9 +569,9 @@ If you need to create all handlers for all routes in one file (similar to `Expre
 
 ```javascript
 // pages/api/[[...slug]].js
-import { createRouter } from "@visulima/connect";
+import { createNodeRouter } from "@visulima/connect";
 
-const router = createRouter()
+const router = createNodeRouter()
   .use("/api/hello", someMiddleware())
   .get("/api/user/:userId", (req, res) => {
     res.send(`Hello ${req.params.userId}`);
