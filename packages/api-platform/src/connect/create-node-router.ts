@@ -14,13 +14,13 @@ const createNodeRouter = <
     Response extends ServerResponse,
     Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
 >(
-    options: Partial<{
-        "http-header-normalizer": { canonical?: boolean; normalizeHeaderKey?: (key: string, canonical: boolean) => string };
-        serializers: Serializers;
-        errorHandlers: ErrorHandlers;
-        showTrace?: boolean;
-    }> = {},
-) => {
+        options: Partial<{
+            "http-header-normalizer": { canonical?: boolean; normalizeHeaderKey?: (key: string, canonical: boolean) => string };
+            serializers: Serializers;
+            errorHandlers: ErrorHandlers;
+            showTrace?: boolean;
+        }> = {},
+    ) => {
     const router = new NodeRouter<Request, Response, Schema>({
         onNoMatch,
         onError: onError(options.errorHandlers || [], options.showTrace || false),

@@ -68,7 +68,7 @@ router
     res.send("Hello world");
   });
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
 ```

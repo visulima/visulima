@@ -42,7 +42,7 @@ export {
     UnavailableForLegalReasons,
     UnsupportedMediaType,
     UpgradeRequired,
-    URITooLong
+    URITooLong,
 } from "http-errors";
 
 export { default as createNodeRouter } from "./connect/create-node-router";
@@ -61,7 +61,9 @@ export type {
     RouteShortcutMethod,
     HttpMethod,
 } from "@visulima/connect";
-export { createEdgeRouter, EdgeRouter, expressWrapper, NodeRouter, Router, withZod, sendJson } from "@visulima/connect";
+export {
+    createEdgeRouter, EdgeRouter, expressWrapper, NodeRouter, Router, withZod, sendJson,
+} from "@visulima/connect";
 
 export type {
     IRLWrapperBlackAndWhiteOptions,
@@ -99,6 +101,3 @@ export { default as rateLimiterMiddleware } from "./middleware/rate-limiter-midd
 export { default as corsMiddleware } from "./middleware/cors-middleware";
 
 export { dateIn, dateOut } from "./zod";
-
-export type { SimplePaginator } from "./pagination";
-export { Paginator, paginate } from "./pagination";

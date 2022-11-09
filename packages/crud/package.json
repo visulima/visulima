@@ -1,0 +1,140 @@
+{
+    "name": "@visulima/crud",
+    "version": "0.0.0",
+    "description": "visulima crud",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "api-platform",
+        "api",
+        "crud",
+        "prisma"
+    ],
+    "homepage": "https://visulima.com/packages/crud",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/crud"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "import": "./dist/index.mjs"
+        },
+        "./node": {
+            "types": "./dist/node/index.d.ts",
+            "require": "./dist/node/index.js",
+            "import": "./dist/node/index.mjs"
+        },
+        "./edge": {
+            "types": "./dist/edge/index.d.ts",
+            "require": "./dist/edge/index.js",
+            "import": "./dist/edge/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "sources": [
+        "src/index.ts",
+        "src/node/index.ts",
+        "src/edge/index.ts"
+    ],
+    "types": "dist/index.d.ts",
+    "files": [
+        "src",
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist",
+        "coverage": "vitest run --coverage",
+        "dev": "pnpm predev && pnpm run build --watch",
+        "lint:eslint": "cross-env NO_LOGS=true eslint --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
+        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@visulima/pagination": "workspace:*",
+        "http-errors": "^2.0.0",
+        "http-status-codes": "^2.2.0",
+        "lodash.set": "^4.3.2",
+        "path-to-regexp": "^6.2.1",
+        "qs": "^6.11.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^4.0.9",
+        "@anolilab/semantic-release-preset": "^2.0.7",
+        "@prisma/client": "^4.5.0",
+        "@rushstack/eslint-plugin-security": "^0.5.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/react-hooks": "^8.0.1",
+        "@types/http-errors": "^1.8.2",
+        "@types/lodash.set": "^4.3.7",
+        "@types/node": "^18.8.4",
+        "@types/qs": "^6.9.7",
+        "@typescript-eslint/eslint-plugin": "^5.40.0",
+        "@typescript-eslint/parser": "^5.40.0",
+        "@visulima/connect": "workspace:*",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.25.0",
+        "eslint-plugin-compat": "^4.0.2",
+        "eslint-plugin-eslint-comments": "^3.2.0",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-json": "^3.1.0",
+        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-markdown": "^3.0.0",
+        "eslint-plugin-no-loops": "^0.3.0",
+        "eslint-plugin-no-secrets": "^0.8.9",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-optimize-regex": "^1.2.1",
+        "eslint-plugin-promise": "^6.0.1",
+        "eslint-plugin-radar": "^0.2.1",
+        "eslint-plugin-react": "7.31.10",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-simple-import-sort": "^8.0.0",
+        "eslint-plugin-sort-keys-fix": "^1.1.2",
+        "eslint-plugin-testing-library": "^5.7.2",
+        "eslint-plugin-unicorn": "^44.0.2",
+        "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
+        "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "next": "^12.3.1",
+        "next-test-api-route-handler": "^4.0.0-canary.1",
+        "node-mocks-http": "^1.11.0",
+        "prettier": "^2.7.1",
+        "read-pkg": "^7.1.0",
+        "rimraf": "^3.0.2",
+        "semantic-release": "^19.0.5",
+        "tsup": "^6.2.3",
+        "typescript": "^4.8.4",
+        "vitest": "^0.24.1"
+    },
+    "peerDependencies": {},
+    "engines": {
+        "node": ">=16"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

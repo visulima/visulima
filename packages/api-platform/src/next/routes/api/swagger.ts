@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import createNodeRouter from "../../../connect/create-router";
+import createNodeRouter from "../../../connect/create-node-router";
 import yamlTransformer from "../../../serializers/yaml";
 import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
 import type { OpenAPI3, SwaggerOptions } from "../../../swagger/types";

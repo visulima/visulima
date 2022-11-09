@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createRouter } from "@visulima/api-platform"
+import { createNodeRouter } from "@visulima/api-platform";
 import { z } from "zod";
 
 type Data = {
@@ -10,10 +10,8 @@ type Data = {
 const schema = z.object({
     query: z.object({
         name: z.string().optional(),
-    })
-})
-
-export const swagger = {};
+    }),
+});
 
 /**
  * @openapi
@@ -41,7 +39,7 @@ export const swagger = {};
  *                 name:
  *                   type: string
  */
-const router = createRouter<NextApiRequest, NextApiResponse<Data>>().get(async (request, response) => {
+const router = createNodeRouter<NextApiRequest, NextApiResponse<Data>>().get(async (request, response) => {
     response.status(200).json({ name: (request.query?.name as string) || "John Doe" });
 }, schema);
 
