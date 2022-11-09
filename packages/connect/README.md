@@ -111,7 +111,7 @@ router
     }
   );
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
 ### Next.js getServerSideProps
@@ -220,7 +220,7 @@ router
     });
   });
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
 ### Next.js Middleware
@@ -285,7 +285,7 @@ Create an instance Node.js router.
 router1.use(async (req, res, next) => {
     req.hello = "world";
     await next(); // call to proceed to the next in chain
-    console.log("request is done"); // call after all downstream handler has run
+    console.log("request is done"); // call after all downstream nodeHandler has run
 });
 
 // Or include a base
@@ -338,19 +338,19 @@ router.get((req, res, next) => {
 ```
 
 > **Note**
-> You should understand Next.js [file-system based routing](https://nextjs.org/docs/routing/introduction). For example, having a `router.put("/api/foo", handler)` inside `page/api/index.js` _does not_ serve that handler at `/api/foo`.
+> You should understand Next.js [file-system based routing](https://nextjs.org/docs/routing/introduction). For example, having a `router.put("/api/foo", nodeHandler)` inside `page/api/index.js` _does not_ serve that nodeHandler at `/api/foo`.
 
 ### router.all(pattern, ...fns)
 
 Same as [.METHOD](#methodpattern-fns) but accepts _any_ methods.
 
-### router.handler(options)
+### router.nodeHandler(options)
 
-Create a handler to handle incoming requests.
+Create a nodeHandler to handle incoming requests.
 
 **options.onError**
 
-Accepts a function as a catch-all error handler; executed whenever a handler throws an error.
+Accepts a function as a catch-all error nodeHandler; executed whenever a nodeHandler throws an error.
 By default, it responds with a generic `500 Internal Server Error` while logging the error to `console`.
 
 ```javascript
@@ -363,12 +363,12 @@ function onError(err, req, res) {
 
 const router = createNodeRouter({onError});
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
 **options.onNoMatch**
 
-Accepts a function of `(req, res)` as a handler when no route is matched.
+Accepts a function of `(req, res)` as a nodeHandler when no route is matched.
 By default, it responds with a `404` status and a `Route [Method] [Url] not found` body.
 
 ```javascript
@@ -378,7 +378,7 @@ function onNoMatch(req, res) {
 
 const router = createNodeRouter({onNoMatch});
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
 ### router.run(req, res)
@@ -460,10 +460,10 @@ router
   });
 ```
 
-Another issue is that the handler would resolve before all the code in each layer runs.
+Another issue is that the nodeHandler would resolve before all the code in each layer runs.
 
 ```javascript
-const handler = router
+const nodeHandler = router
   .use(async (req, res, next) => {
     next(); // this is not returned or await
   })
@@ -473,9 +473,9 @@ const handler = router
     res.send("ok");
     console.log("request is completed");
   })
-  .handler();
+  .nodeHandler();
 
-await handler(req, res);
+await nodeHandler(req, res);
 console.log("finally"); // this will run before the get layer gets to finish
 
 // This will result in:
@@ -492,12 +492,12 @@ export default createNodeRouter().use(a).use(b);
 // api/foo.js
 import router from "api-libs/base";
 
-export default router.get(x).handler();
+export default router.get(x).nodeHandler();
 
 // api/bar.js
 import router from "api-libs/base";
 
-export default router.get(y).handler();
+export default router.get(y).nodeHandler();
 ```
 
 This is because, in each API Route, the same router instance is mutated, leading to undefined behaviors.
@@ -510,19 +510,19 @@ export default createNodeRouter().use(a).use(b);
 // api/foo.js
 import router from "api-libs/base";
 
-export default router.clone().get(x).handler();
+export default router.clone().get(x).nodeHandler();
 
 // api/bar.js
 import router from "api-libs/base";
 
-export default router.clone().get(y).handler();
+export default router.clone().get(y).nodeHandler();
 ```
 
 3. **DO NOT** use response function like `res.(s)end` or `res.redirect` inside `getServerSideProps`.
 
 ```javascript
 // page/index.js
-const handler = createNodeRouter()
+const nodeHandler = createNodeRouter()
     .use((req, res) => {
         // BAD: res.redirect is not a function (not defined in `getServerSideProps`)
         // See https://github.com/hoangvvo/@visulima/connect/issues/194#issuecomment-1172961741 for a solution
@@ -541,15 +541,15 @@ export async function getServerSideProps({req, res}) {
 }
 ```
 
-3. **DO NOT** use `handler()` directly in `getServerSideProps`.
+4. **DO NOT** use `nodeHandler()` directly in `getServerSideProps`.
 
 ```javascript
 // page/index.js
 const router = createNodeRouter().use(foo).use(bar);
-const handler = router.handler();
+const nodeHandler = router.nodeHandler();
 
 export async function getServerSideProps({req, res}) {
-    await handler(req, res); // BAD: You should call router.run(req, res);
+    await nodeHandler(req, res); // BAD: You should call router.run(req, res);
     return {
         props: {},
     };
@@ -563,7 +563,7 @@ export async function getServerSideProps({req, res}) {
 <details>
 <summary>Match multiple routes</summary>
 
-If you created the file `/api/<specific route>.js` folder, the handler will only run on that specific route.
+If you created the file `/api/<specific route>.js` folder, the nodeHandler will only run on that specific route.
 
 If you need to create all handlers for all routes in one file (similar to `Express.js`). You can use [Optional catch-all API routes](https://nextjs.org/docs/api-routes/dynamic-api-routes#optional-catch-all-api-routes).
 
@@ -577,10 +577,10 @@ const router = createNodeRouter()
     res.send(`Hello ${req.params.userId}`);
   });
 
-export default router.handler();
+export default router.nodeHandler();
 ```
 
-While this allows quick migration from Express.js, consider seperating routes into different files (`/api/user/[userId].js`, `/api/hello.js`) in the future.
+While this allows quick migration from Express.js, consider separating routes into different files (`/api/user/[userId].js`, `/api/hello.js`) in the future.
 
 </details>
 

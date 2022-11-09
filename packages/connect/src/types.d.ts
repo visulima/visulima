@@ -1,4 +1,4 @@
-import { AnyZodObject } from "zod";
+import type { AnyZodObject } from "zod";
 
 export type HttpMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE";
 
