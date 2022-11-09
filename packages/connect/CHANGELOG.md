@@ -1,3 +1,10 @@
+## @visulima/connect [1.1.1](https://github.com/visulima/visulima/compare/@visulima/connect@1.1.0...@visulima/connect@1.1.1) (2022-11-09)
+
+
+### Bug Fixes
+
+* **connect:** added missing type to the types.d ([33f7fa8](https://github.com/visulima/visulima/commit/33f7fa8282d23e00cd3bb4aeb7691f4b615b9afc))
+
 ## @visulima/connect [1.1.0](https://github.com/visulima/visulima/compare/@visulima/connect@1.0.1...@visulima/connect@1.1.0) (2022-11-07)
 
 
