@@ -52,11 +52,6 @@
     },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
-    "sources": [
-        "src/index.ts",
-        "src/node/index.ts",
-        "src/edge/index.ts"
-    ],
     "types": "dist/index.d.ts",
     "files": [
         "src",
@@ -78,9 +73,9 @@
     "dependencies": {
         "@visulima/pagination": "workspace:*",
         "http-errors": "^2.0.0",
-        "http-status-codes": "^2.2.0",
         "lodash.set": "^4.3.2",
         "path-to-regexp": "^6.2.1",
+        "prisma-json-schema-generator": "^3.1.1",
         "qs": "^6.11.0"
     },
     "devDependencies": {
@@ -136,5 +131,10 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "sources": [
+        "src/index.ts",
+        "src/node/index.ts",
+        "src/edge/index.ts"
+    ]
 }

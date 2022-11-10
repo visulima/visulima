@@ -18,4 +18,8 @@ export type {
     WhereOperator,
     WhereCondition,
     SearchCondition,
+    PaginationData,
 } from "./types.d";
+
+export type { ModelsToOpenApiParameters } from "./swagger/adapter/prisma"
+export { default as modelsToOpenApi } from "./swagger/adapter/prisma"

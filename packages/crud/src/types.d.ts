@@ -1,5 +1,3 @@
-import type { PaginatorInterface } from "@visulima/pagination";
-
 export enum RouteType {
     CREATE = "CREATE",
     READ_ALL = "READ_ALL",
@@ -22,7 +20,7 @@ export type ModelsOptions<M extends string = string> = {
 export type HandlerOptions<M extends string = string> = {
     formatResourceId?: (resourceId: string) => string | number;
     models?: ModelsOptions<M>;
-    defaultExposeStrategy?: "all" | "none";
+    exposeStrategy?: "all" | "none";
     pagination?: PaginationConfig
 };
 
@@ -57,15 +55,14 @@ export interface Adapter<T, Q, M extends string = string> {
     connect?: () => Promise<void>;
     disconnect?: () => Promise<void>;
     handleError?: (error: Error) => void;
-    getModelsJsonSchema?: () => any;
-    mapModelsToRouteNames?: () => { [key in M]?: string };
+    mapModelsToRouteNames?: () => Promise<{ [key in M]?: string }>;
 }
 
 export type PaginationData = {
-  total: number
-  pageCount: number
-  page: number
-}
+    total: number
+    pageCount: number
+    page: number
+};
 
 export type RecursiveField = {
     [key: string]: boolean | TRecursiveField;
@@ -107,4 +104,8 @@ export interface ParsedQueryParameters {
     originalQuery?: {
         [key: string]: any;
     };
+}
+
+export interface ExecuteHandler<Request, Response> {
+    (request: Request, response: Response): Promise<void>;
 }

@@ -109,7 +109,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
         "@anolilab/semantic-release-preset": "^2.0.7",
-        "@prisma/client": "^4.5.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@testing-library/react": "^13.4.0",
         "@testing-library/react-hooks": "^8.0.1",
@@ -129,6 +128,7 @@
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",
         "@visulima/connect": "workspace:*",
+        "@visulima/crud": "workspace:*",
         "@visulima/readdir": "workspace:*",
         "core-js": "^3.25.5",
         "cross-env": "^7.0.3",
@@ -180,6 +180,7 @@
     },
     "optionalDependencies": {
         "@visulima/readdir": "workspace:*",
+        "@visulima/crud": "workspace:*",
         "redoc": "^2.0.0",
         "webpack": "^5.74.0"
     },

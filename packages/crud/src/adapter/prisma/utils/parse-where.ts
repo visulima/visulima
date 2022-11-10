@@ -1,6 +1,10 @@
-import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types";
+import type {
+    Condition, SearchCondition, WhereCondition, WhereField, WhereOperator,
+} from "../../../types.d";
 import isPrimitive from "../../../utils/is-primitive";
-import type { PrismaFieldFilter, PrismaWhereOperator, PrismaWhereField, PrismaRelationFilter } from "../types";
+import type {
+    PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator,
+} from "../types.d";
 
 const isObject = (a: any) => a instanceof Object;
 
@@ -20,7 +24,7 @@ const operatorsAssociation: {
     $starts: "startsWith",
 };
 
-const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2]\d:[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[-+][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
+const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
 
 const getSearchValue = (originalValue: any): SearchCondition => {
     if (isDateString(originalValue)) {
@@ -55,18 +59,18 @@ const parseSimpleField = (value: Condition): undefined | { [key: string]: Condit
     return undefined;
 };
 
-const parseObjectCombination = (obj: Condition, manyRelations: string[]): PrismaFieldFilter => {
+const parseObjectCombination = (object: Condition, manyRelations: string[]): PrismaFieldFilter => {
     const parsed: PrismaFieldFilter = {};
 
-    Object.keys(obj).forEach((key) => {
-        const val = obj[key];
+    Object.keys(object).forEach((key) => {
+        const value = object[key];
 
         if (isRelation(key, manyRelations)) {
-            parseRelation(val, key, parsed, manyRelations);
-        } else if (isPrimitive(val)) {
-            parsed[key] = val as SearchCondition;
-        } else if (isObject(val)) {
-            const fieldResult = parseSimpleField(val as Condition);
+            parseRelation(value, key, parsed, manyRelations);
+        } else if (isPrimitive(value)) {
+            parsed[key] = value as SearchCondition;
+        } else if (isObject(value)) {
+            const fieldResult = parseSimpleField(value as Condition);
 
             if (fieldResult) {
                 parsed[key] = fieldResult;
@@ -140,8 +144,8 @@ const parseRelation = (
     // Format correctly in the prisma way
     parsed[initialFieldKey] = {
         some: {
-            ...((oldParsed?.some as object) || {}),
-            ...(formatFields[initialFieldKey as string]?.some as object || {}),
+            ...(oldParsed?.some as object),
+            ...(formatFields[initialFieldKey as string]?.some as object),
         },
     };
 };

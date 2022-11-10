@@ -1,7 +1,7 @@
 import { header as headerCase } from "case";
 
 import type {
-    OpenAPI3, ReferenceObject, ResponseObject, SchemaObject, SwaggerOptions,
+    OpenAPI3, ReferenceObject, ResponseObject, SchemaObject,
 } from "./types";
 
 function extendComponentSchema(spec: OpenAPI3, schemaName: string, schema: SchemaObject) {
@@ -22,7 +22,7 @@ function extendComponentSchema(spec: OpenAPI3, schemaName: string, schema: Schem
 }
 
 // eslint-disable-next-line radar/cognitive-complexity
-export default function extendSwaggerSpec(spec: OpenAPI3, swaggerOptions: SwaggerOptions): OpenAPI3 {
+export default function extendSwaggerSpec(spec: OpenAPI3, allowedMediaTypes?: { [key: string]: boolean }): OpenAPI3 {
     if (typeof spec === "object" && typeof spec.paths === "object") {
         Object.entries(spec.paths).forEach(([pathKey, pathSpec]) => {
             Object.values(pathSpec).forEach((methodSpec) => {
@@ -39,7 +39,7 @@ export default function extendSwaggerSpec(spec: OpenAPI3, swaggerOptions: Swagge
 
                                     const schemaIsArray = (schema as SchemaObject).type === "array";
 
-                                    Object.entries(swaggerOptions?.allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+                                    Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
                                         if (!allowed) {
                                             return;
                                         }

@@ -1,4 +1,4 @@
-import type { HandlerParameters } from "../types";
+import type { HandlerParameters } from "../types.d";
 
 type Handler = <T, Q, Request>(
     parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },

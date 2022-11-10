@@ -1,0 +1,283 @@
+// @ts-ignore
+import { getJSONSchemaProperty } from "prisma-json-schema-generator/dist/generator/properties";
+// @ts-ignore
+import { transformDMMF } from "prisma-json-schema-generator/dist/generator/transformDMMF";
+
+import formatSchemaReference from "./utils/format-schema-ref";
+
+const getJSONSchemaScalar = (fieldType: string | object) => {
+    switch (fieldType) {
+        case "Int":
+        case "BigInt": {
+            return "integer";
+        }
+        case "DateTime":
+        case "Bytes":
+        case "String": {
+            return "string";
+        }
+        case "Float":
+        case "Decimal": {
+            return "number";
+        }
+        case "Json": {
+            return "object";
+        }
+        case "Boolean": {
+            return "boolean";
+        }
+        case "Null": {
+            return "null";
+        }
+        default: {
+            return "";
+        }
+    }
+};
+
+const PAGINATION_SCHEMA_NAME = "PaginationData";
+
+const methodsNames = [
+    { methodStart: "createOne", schemaNameStart: "Create" },
+    { methodStart: "updateOne", schemaNameStart: "Update" },
+];
+
+class PrismaJsonSchemaParser {
+    schemaInputTypes: Map<string, any> = new Map<string, any>();
+
+    constructor(private dmmf: any) {}
+
+    parseModels() {
+        // @ts-ignore
+        const modelsDefinitions = transformDMMF(this.dmmf).definitions;
+
+        for (const definition in modelsDefinitions) {
+            const { properties } = modelsDefinitions[definition];
+
+            for (const property in properties) {
+                if (Array.isArray(properties[property].type) && properties[property].type.includes("null")) {
+                    properties[property].type = properties[property].type.filter((type: string) => type !== "null");
+
+                    if (properties[property].type.length === 1) {
+                        properties[property].type = properties[property].type[0];
+                    }
+                    properties[property].nullable = true;
+                }
+            }
+        }
+
+        return modelsDefinitions;
+    }
+
+    parseInputTypes(models: string[]) {
+        const definitions = models.reduce((accumulator: { [key: string]: any }, modelName) => {
+            const methods = methodsNames.map((method) => {
+                return {
+                    name: `${method.methodStart}${modelName}`,
+                    schemaName: `${method.schemaNameStart}${modelName}`,
+                };
+            });
+
+            methods.forEach(({ name: method, schemaName }) => {
+                const dataFields =
+                    // @ts-ignore
+                    this.dmmf.mutationType.fieldMap[method].args[0].inputTypes[0].type.fields;
+                const requiredProperties: string[] = [];
+                const properties = dataFields.reduce((propertiesAccumulator: any, field: any) => {
+                    if (field.inputTypes[0].kind === "scalar") {
+                        const schema = getJSONSchemaProperty(
+                            // @ts-ignore
+                            this.dmmf.datamodel,
+                            {},
+                        )({
+                            name: field.name,
+                            ...field.inputTypes[0],
+                        });
+
+                        if (schema[1].type && Array.isArray(schema[1].type)) {
+                            if (schema[1].type.includes("null")) {
+                                propertiesAccumulator[field.name] = {
+                                    ...schema[1],
+                                    type: schema[1].type.filter((type: string) => type !== "null"),
+                                    nullable: true,
+                                };
+                                if (propertiesAccumulator[field.name].type.length === 1) {
+                                    propertiesAccumulator[field.name] = {
+                                        ...propertiesAccumulator[field.name],
+                                        type: propertiesAccumulator[field.name].type[0],
+                                    };
+                                }
+                            }
+                        } else {
+                            propertiesAccumulator[field.name] = schema[1];
+                        }
+                    } else {
+                        const typeName = this.parseObjectInputType(field.inputTypes[0]);
+                        propertiesAccumulator[field.name] = {
+                            ...typeName,
+                            nullable: field.isNullable,
+                        };
+                    }
+
+                    if (field.isRequired) {
+                        requiredProperties.push(field.name);
+                    }
+
+                    return propertiesAccumulator;
+                }, {});
+
+                accumulator[schemaName] = {
+                    type: "object",
+                    properties,
+                };
+
+                if (requiredProperties.length > 0) {
+                    accumulator[schemaName].required = requiredProperties;
+                }
+            });
+
+            return accumulator;
+        }, {});
+
+        for (const [key, value] of this.schemaInputTypes.entries()) {
+            definitions[key] = {
+                type: "object",
+                properties: value,
+            };
+        }
+
+        return definitions;
+    }
+
+    formatInputTypeData(inputType: any) {
+        if (inputType.kind === "object") {
+            const reference = formatSchemaReference(inputType.type.name);
+            if (inputType.isList) {
+                return {
+                    type: "array",
+                    items: {
+                        $ref: reference,
+                    },
+                };
+            }
+
+            return { $ref: reference };
+        }
+
+        const type = getJSONSchemaScalar(inputType.type);
+
+        if (inputType.isList) {
+            return {
+                type: "array",
+                items: {
+                    type,
+                },
+            };
+        }
+        return { type };
+    }
+
+    parseObjectInputType(fieldType: any) {
+        if (fieldType.kind === "object") {
+            if (!this.schemaInputTypes.has(fieldType.type.name)) {
+                this.schemaInputTypes.set(fieldType.type.name, {});
+
+                fieldType.type.fields.forEach((field: any) => {
+                    let fieldData: Record<string, any> = {};
+
+                    if (field.inputTypes.length > 1) {
+                        let nullable = false;
+                        const anyOf = field.inputTypes
+                            .map((inputType: any) => {
+                                const inputTypeData = this.formatInputTypeData(inputType);
+
+                                if (inputTypeData.type === "null") {
+                                    nullable = true;
+                                    return;
+                                }
+
+                                return inputTypeData;
+                            })
+                            .filter(Boolean);
+
+                        if (anyOf.length === 1) {
+                            fieldData = anyOf[0];
+                        } else {
+                            fieldData.anyOf = anyOf;
+                        }
+
+                        if (nullable) {
+                            fieldData.nullable = true;
+                        }
+                    } else {
+                        const inputType = field.inputTypes[0];
+
+                        fieldData = this.formatInputTypeData(inputType);
+                    }
+                    this.schemaInputTypes.set(fieldType.type.name, {
+                        ...this.schemaInputTypes.get(fieldType.type.name),
+                        [field.name]: fieldData,
+                    });
+
+                    field.inputTypes.forEach((inputType: any) => {
+                        if (inputType.kind === "object") {
+                            this.parseObjectInputType(inputType);
+                        }
+                    });
+                });
+            }
+            return { $ref: formatSchemaReference(fieldType.type.name) };
+        }
+
+        return { type: getJSONSchemaScalar(fieldType.type) };
+    }
+
+    getPaginationDataSchema() {
+        return {
+            [PAGINATION_SCHEMA_NAME]: {
+                type: "object",
+                properties: {
+                    total: {
+                        type: "integer",
+                        minimum: 0,
+                        description: "Total number of elements in the collection",
+                    },
+                    pageCount: {
+                        type: "integer",
+                        minimum: 0,
+                        description: "Total number of pages",
+                    },
+                    page: {
+                        type: "integer",
+                        minimum: 0,
+                        description: "Current page number",
+                    },
+                },
+            },
+        };
+    }
+
+    getPaginatedModelsSchemas(modelNames: string[]) {
+        return modelNames.reduce((accumulator, modelName) => {
+            return {
+                ...accumulator,
+                [`${modelName}Page`]: {
+                    type: "object",
+                    properties: {
+                        data: {
+                            type: "array",
+                            items: {
+                                $ref: formatSchemaReference(modelName),
+                            },
+                        },
+                        pagination: {
+                            $ref: formatSchemaReference(PAGINATION_SCHEMA_NAME),
+                        },
+                    },
+                },
+            };
+        }, {});
+    }
+}
+
+export default PrismaJsonSchemaParser;

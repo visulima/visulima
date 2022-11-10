@@ -1,21 +1,21 @@
-import type { OrderByField, OrderByOperator } from '../../../types'
-import type { PrismaOrderBy, PrismaOrderByOperator } from '../types'
+import type { OrderByField, OrderByOperator } from "../../../types.d";
+import type { PrismaOrderBy, PrismaOrderByOperator } from "../types.d";
 
 const operatorsAssociation: Record<OrderByOperator, PrismaOrderByOperator> = {
-  $asc: 'asc',
-  $desc: 'desc',
-}
+    $asc: "asc",
+    $desc: "desc",
+};
 
 const parsePrismaOrderBy = (orderBy: OrderByField): PrismaOrderBy => {
-  const parsed: PrismaOrderBy = {}
+    const parsed: PrismaOrderBy = {};
 
-  Object.keys(orderBy).forEach((key) => {
-    const value = orderBy[key]
+    Object.keys(orderBy).forEach((key) => {
+        const value = orderBy[key];
 
-    parsed[key] = operatorsAssociation[value as OrderByOperator]
-  })
+        parsed[key] = operatorsAssociation[value as OrderByOperator];
+    });
 
-  return parsed
-}
+    return parsed;
+};
 
 export default parsePrismaOrderBy;

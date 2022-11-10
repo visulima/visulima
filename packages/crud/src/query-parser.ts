@@ -3,7 +3,7 @@ import { parse } from "qs";
 
 import type {
     OrderByField, ParsedQueryParameters, RecursiveField, WhereField,
-} from "./types";
+} from "./types.d";
 
 const parseRecursive = (select: string): RecursiveField => {
     if (typeof select === "string") {

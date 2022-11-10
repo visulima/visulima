@@ -1,27 +1,26 @@
-import type { RecursiveField } from '../../../types'
-import type { PrismaRecursive, PrismaRecursiveField } from '../types'
+import type { RecursiveField } from "../../../types.d";
+import type { PrismaRecursive, PrismaRecursiveField } from "../types.d";
 
 const parsePrismaRecursiveField = <T extends PrismaRecursiveField>(
-  select: RecursiveField,
-  fieldName: T
+    select: RecursiveField,
+    fieldName: T,
 ): PrismaRecursive<T> => {
-  const parsed: PrismaRecursive<T> = {}
+    const parsed: PrismaRecursive<T> = {};
 
-  Object.keys(select).forEach((field) => {
-    if (select[field] !== true) {
-      parsed[field] = {
-        [fieldName]: parsePrismaRecursiveField(
-          select[field] as RecursiveField,
-          fieldName
-        ),
-      } as Record<T, PrismaRecursive<T>>
-    } else {
-      parsed[field] = true
-    }
-  })
+    Object.keys(select).forEach((field) => {
+        if (select[field] !== true) {
+            parsed[field] = {
+                [fieldName]: parsePrismaRecursiveField(
+                    select[field] as RecursiveField,
+                    fieldName,
+                ),
+            } as Record<T, PrismaRecursive<T>>;
+        } else {
+            parsed[field] = true;
+        }
+    });
 
-  return parsed
-}
+    return parsed;
+};
 
 export default parsePrismaRecursiveField;
-

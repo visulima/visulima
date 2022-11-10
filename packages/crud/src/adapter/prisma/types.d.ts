@@ -34,7 +34,7 @@ export type PrismaCursor = {
     [key: string]: string | number | boolean;
 };
 
-export interface PrismaParsedQueryParams {
+export interface PrismaParsedQueryParameters {
     select?: PrismaRecursive<"select">;
     include?: PrismaRecursive<"include">;
     where?: PrismaWhereField;

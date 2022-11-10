@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 
-import type { UniqueResourceHandlerParameters } from "../types";
+import type { UniqueResourceHandlerParameters } from "../types.d";
 
 type Handler = <T, Q>(
     parameters: UniqueResourceHandlerParameters<T, Q>,

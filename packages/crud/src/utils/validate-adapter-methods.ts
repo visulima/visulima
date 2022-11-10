@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 
-import { Adapter } from "../types";
+import { Adapter } from "../types.d";
 
 const adapterMethods = ["create" || "delete" || "getAll" || "getOne" || "parseQuery" || "update" || "getPaginationData" || "getModels"];
 

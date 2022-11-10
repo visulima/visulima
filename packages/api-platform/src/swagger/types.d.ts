@@ -1,13 +1,12 @@
 import type { Information, OAS3Definition } from "swagger-jsdoc";
 
-type ExtendedOAS3Definition = Omit<OAS3Definition, "openapi" | "info"> & {
+export type ExtendedOAS3Definition = Omit<OAS3Definition, "openapi" | "info"> & {
     openapi?: string;
     info?: Information;
 };
 
 export type SwaggerOptions = {
     allowedMediaTypes?: { [key: string]: boolean };
-    swaggerDefinition?: Partial<ExtendedOAS3Definition>;
 };
 
 export interface OpenAPI2 {
