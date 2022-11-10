@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createNodeRouter } from "@visulima/api-platform";
 import { PrismaAdapter } from "@visulima/crud";
-import crudHandler  from "@visulima/crud/node";
+import { nodeHandler }  from "@visulima/crud/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
@@ -11,8 +11,8 @@ const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
     prismaClient: prisma,
 });
 
-const router = createNodeRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-    const handler = await crudHandler(prismaAdapter);
+const router = createNodeRouter<NextApiRequest, NextApiResponse>().all(async (request, response) => {
+    const handler = await nodeHandler(prismaAdapter);
 
     return await handler(request, response)
 });

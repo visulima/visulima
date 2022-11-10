@@ -38,15 +38,10 @@
             "require": "./dist/index.js",
             "import": "./dist/index.mjs"
         },
-        "./node": {
-            "types": "./dist/node/index.d.ts",
-            "require": "./dist/node/index.js",
-            "import": "./dist/node/index.mjs"
-        },
-        "./edge": {
-            "types": "./dist/edge/index.d.ts",
-            "require": "./dist/edge/index.js",
-            "import": "./dist/edge/index.mjs"
+        "./next": {
+            "types": "./dist/next/index.d.ts",
+            "require": "./dist/next/index.js",
+            "import": "./dist/next/index.mjs"
         },
         "./package.json": "./package.json"
     },
@@ -134,7 +129,6 @@
     },
     "sources": [
         "src/index.ts",
-        "src/node/index.ts",
-        "src/edge/index.ts"
+        "src/next/index.ts"
     ]
 }

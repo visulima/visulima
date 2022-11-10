@@ -48,7 +48,7 @@ const allHandler: Handler = async ({
         const paginator = paginate(page, (paginationOptions as PaginationOptions).perPage as number, total, resources);
 
         return {
-            ...paginator.toJSON(),
+            data: paginator.toJSON(),
             status: 200,
         };
     }

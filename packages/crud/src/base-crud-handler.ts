@@ -122,6 +122,11 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
                     case RouteType.READ_ALL: {
                         responseConfig = await allHandler<T, Q>({
                             ...parameters,
+                            query: {
+                                ...parameters.query,
+                                page: parsedQuery.page ? Number(parsedQuery.page) : undefined,
+                                limit: parsedQuery.limit ? Number(parsedQuery.limit) : undefined,
+                            },
                             pagination: config.pagination,
                         });
                         break;

@@ -1,9 +1,0 @@
-{
-    "name": "@visulima/crud-edge",
-    "version": "0.0.0",
-    "description": "visulima crud edge version",
-    "license": "MIT",
-    "main": "../dist/edge/index.js",
-    "module": "../dist/edge/index.mjs",
-    "types": "../dist/edge/index.d.ts"
-}

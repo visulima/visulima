@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import baseHandler from "../base-crud-handler";
+import baseHandler from "../../../base-crud-handler";
 import type {
     Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters,
-} from "../types.d";
+} from "../../../types.d";
 
 async function handler<R extends IncomingMessage, Response extends ServerResponse, T, Q extends ParsedQueryParameters = any, M extends string = string>(
     adapter: Adapter<T, Q>,

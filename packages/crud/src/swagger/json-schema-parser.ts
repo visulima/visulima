@@ -240,17 +240,47 @@ class PrismaJsonSchemaParser {
                     total: {
                         type: "integer",
                         minimum: 0,
-                        description: "Total number of elements in the collection",
+                        description: "Holds the value for the total number of rows in the database",
                     },
-                    pageCount: {
+                    perPage: {
                         type: "integer",
                         minimum: 0,
-                        description: "Total number of pages",
+                        description: "Returns the value for the limit passed to the paginate method",
                     },
                     page: {
                         type: "integer",
                         minimum: 0,
                         description: "Current page number",
+                    },
+                    lastPage: {
+                        type: "integer",
+                        minimum: 0,
+                        description: "Returns the value for the last page by taking the total of rows into account",
+                    },
+                    firstPage: {
+                        type: "integer",
+                        minimum: 0,
+                        description: "Returns the number for the first page. It is always 1",
+                    },
+                    firstPageUrl: {
+                        type: "string",
+                        minimum: 0,
+                        description: "The URL for the first page",
+                    },
+                    lastPageUrl: {
+                        type: "string",
+                        minimum: 0,
+                        description: "The URL for the last page",
+                    },
+                    nextPageUrl: {
+                        type: "string",
+                        minimum: 0,
+                        description: "The URL for the next page",
+                    },
+                    previousPageUrl: {
+                        type: "string",
+                        minimum: 0,
+                        description: "The URL for the previous page",
                     },
                 },
             },
@@ -270,7 +300,7 @@ class PrismaJsonSchemaParser {
                                 $ref: formatSchemaReference(modelName),
                             },
                         },
-                        pagination: {
+                        meta: {
                             $ref: formatSchemaReference(PAGINATION_SCHEMA_NAME),
                         },
                     },
