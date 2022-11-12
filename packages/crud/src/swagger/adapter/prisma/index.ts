@@ -48,8 +48,6 @@ const modelsToOpenApi = async <M extends string = string>({
         ...parser.getPaginatedModelsSchemas(dModels),
     });
 
-    const defs = schema.replace(/#\/definitions/g, "#/components/schemas");
-
     if (typeof ctorModels !== "undefined") {
         ctorModels.forEach((model) => {
             if (!Object.keys(prismaDmmfModels).includes(model)) {
@@ -72,9 +70,11 @@ const modelsToOpenApi = async <M extends string = string>({
         models: crud.models || {},
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
     });
+    const schemas = JSON.parse(schema.replace(/#\/definitions/g, "#/components/schemas"));
 
     return {
-        schemas: JSON.parse(defs),
+        schemas,
+        examples: parser.getExampleModelsSchemas(dModels, schemas),
         tags: swaggerTags,
         paths: swaggerPaths,
     };

@@ -2,6 +2,7 @@
 import { getJSONSchemaProperty } from "prisma-json-schema-generator/dist/generator/properties";
 // @ts-ignore
 import { transformDMMF } from "prisma-json-schema-generator/dist/generator/transformDMMF";
+import type { OpenAPIV3 } from "openapi-types";
 
 import formatSchemaReference from "./utils/format-schema-ref";
 
@@ -47,7 +48,7 @@ class PrismaJsonSchemaParser {
 
     constructor(private dmmf: any) {}
 
-    parseModels() {
+    public parseModels() {
         // @ts-ignore
         const modelsDefinitions = transformDMMF(this.dmmf).definitions;
 
@@ -69,7 +70,7 @@ class PrismaJsonSchemaParser {
         return modelsDefinitions;
     }
 
-    parseInputTypes(models: string[]) {
+    public parseInputTypes(models: string[]) {
         const definitions = models.reduce((accumulator: { [key: string]: any }, modelName) => {
             const methods = methodsNames.map((method) => {
                 return {
@@ -149,9 +150,10 @@ class PrismaJsonSchemaParser {
         return definitions;
     }
 
-    formatInputTypeData(inputType: any) {
+    public formatInputTypeData(inputType: any) {
         if (inputType.kind === "object") {
             const reference = formatSchemaReference(inputType.type.name);
+
             if (inputType.isList) {
                 return {
                     type: "array",
@@ -177,7 +179,7 @@ class PrismaJsonSchemaParser {
         return { type };
     }
 
-    parseObjectInputType(fieldType: any) {
+    public parseObjectInputType(fieldType: any) {
         if (fieldType.kind === "object") {
             if (!this.schemaInputTypes.has(fieldType.type.name)) {
                 this.schemaInputTypes.set(fieldType.type.name, {});
@@ -232,7 +234,7 @@ class PrismaJsonSchemaParser {
         return { type: getJSONSchemaScalar(fieldType.type) };
     }
 
-    getPaginationDataSchema() {
+    public getPaginationDataSchema() {
         return {
             [PAGINATION_SCHEMA_NAME]: {
                 type: "object",
@@ -249,7 +251,7 @@ class PrismaJsonSchemaParser {
                     },
                     page: {
                         type: "integer",
-                        minimum: 0,
+                        minimum: 1,
                         description: "Current page number",
                     },
                     lastPage: {
@@ -264,22 +266,18 @@ class PrismaJsonSchemaParser {
                     },
                     firstPageUrl: {
                         type: "string",
-                        minimum: 0,
                         description: "The URL for the first page",
                     },
                     lastPageUrl: {
                         type: "string",
-                        minimum: 0,
                         description: "The URL for the last page",
                     },
                     nextPageUrl: {
                         type: "string",
-                        minimum: 0,
                         description: "The URL for the next page",
                     },
                     previousPageUrl: {
                         type: "string",
-                        minimum: 0,
                         description: "The URL for the previous page",
                     },
                 },
@@ -287,7 +285,102 @@ class PrismaJsonSchemaParser {
         };
     }
 
-    getPaginatedModelsSchemas(modelNames: string[]) {
+    public getExampleModelsSchemas(
+        modelNames: string[],
+        schemas: {
+            [key: string]: OpenAPIV3.SchemaObject;
+        },
+    ) {
+        const objectPropertiesToSchema = (objectProperties: { [name: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject }) => {
+            const values: { [key: string]: string | object | object[] } = {};
+
+            Object.entries(objectProperties).forEach(([key, value]) => {
+                if (typeof (value as OpenAPIV3.ReferenceObject)["$ref"] !== "undefined") {
+                    values[key] = refToSchema((value as OpenAPIV3.ReferenceObject).$ref);
+                } else {
+                    values[key] = (value as OpenAPIV3.SchemaObject).type as string;
+                }
+            });
+
+            return values;
+        };
+
+        const arrayItemsToSchema = (items: OpenAPIV3.ArraySchemaObject) => {
+            const values: { [key: string]: object | object[] } = {};
+
+            Object.entries(items).forEach(([key, value]) => {
+                if (typeof value.items["$ref"] !== "undefined") {
+                    values[key] = [refToSchema(value.items["$ref"])];
+                } else if (value.type === "array") {
+                    values[key] = [arrayItemsToSchema(value.items)];
+                } else if (value.type === "object") {
+                    values[key] = objectPropertiesToSchema(value.properties);
+                } else {
+                    values[key] = value.type;
+                }
+            });
+
+            return values;
+        };
+
+        const refToSchema = (ref: string) => {
+            const name = ref.replace("#/components/schemas/", "");
+            const model = schemas[name] as OpenAPIV3.SchemaObject;
+
+            const values: { [key: string]: string | object[] } = {};
+
+            Object.entries((model?.properties as OpenAPIV3.SchemaObject) || {}).forEach(([key, v]) => {
+                const type = (v as OpenAPIV3.SchemaObject).type as string;
+
+                if (type === "array") {
+                    values[key] = [arrayItemsToSchema(v.items)];
+                } else {
+                    values[key] = type;
+                }
+            });
+
+            return values;
+        };
+
+        return modelNames.reduce((accumulator, modelName) => {
+            const value: { [key: string]: string | { [key: string]: string }[] } = {};
+            const model = schemas[modelName] as OpenAPIV3.SchemaObject;
+
+            Object.entries(model.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
+                const type = (v as OpenAPIV3.SchemaObject).type as string;
+
+                if (type === "array") {
+                    // @ts-ignore
+                    value[key] = [refToSchema(v.items["$ref"])];
+                } else if (type === "object") {
+                } else {
+                    value[key] = type;
+                }
+            });
+
+            const pagination = this.getPaginationDataSchema()[PAGINATION_SCHEMA_NAME];
+            const meta: { [key: string]: string } = {};
+
+            Object.entries(pagination.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
+                meta[key] = (v as OpenAPIV3.SchemaObject).type as string;
+            });
+
+            return {
+                ...accumulator,
+                [`${modelName}`]: {
+                    value,
+                },
+                [`${modelName}Page`]: {
+                    value: {
+                        data: [value],
+                        meta,
+                    },
+                },
+            };
+        }, {});
+    }
+
+    public getPaginatedModelsSchemas(modelNames: string[]) {
         return modelNames.reduce((accumulator, modelName) => {
             return {
                 ...accumulator,

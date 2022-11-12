@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { OAS3Definition } from "swagger-jsdoc";
 
 import createNodeRouter from "../../../connect/create-node-router";
 import yamlTransformer from "../../../serializers/yaml";
 import extendSwaggerSpec from "../../../swagger/extend-swagger-spec";
-import type { OpenAPI3 } from "../../../swagger/types";
 
 const defaultMediaTypes = {
     "application/json": true,
@@ -35,7 +35,7 @@ const swaggerApiRoute = (
 
         const fileContents = readFileSync(swaggerPath, "utf8");
 
-        const spec = extendSwaggerSpec(JSON.parse(fileContents) as OpenAPI3, mediaTypes) as OpenAPI3;
+        const spec = extendSwaggerSpec(JSON.parse(fileContents) as OAS3Definition, mediaTypes) as OAS3Definition;
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);

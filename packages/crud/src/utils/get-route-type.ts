@@ -8,10 +8,7 @@ const getRouteType: (
     method: string,
     url: string,
     resourceName: string,
-) => {
-    routeType: RouteType | null;
-    resourceId?: string;
-} = (method, url, resourceName) => {
+) => GetRouteType = (method, url, resourceName) => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
 
@@ -92,6 +89,11 @@ const getRouteType: (
             };
         }
     }
+};
+
+export type GetRouteType = {
+    routeType: RouteType | null;
+    resourceId?: string;
 };
 
 export default getRouteType;

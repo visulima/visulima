@@ -1,8 +1,10 @@
-import { ModelOption, ModelsOptions, RouteType } from "../../types.d";
+import { RouteType } from "../../types.d";
+import type { ModelOption, ModelsOptions } from "../../types.d";
 import { getQueryParams as getQueryParameters } from "../parameters";
-import { Routes, SwaggerModelsConfig } from "../types.d";
+import type { Routes, SwaggerModelsConfig } from "../types.d";
 import formatSchemaReference from "./format-schema-ref";
 import generateMethodForRouteType from "./generate-method-for-route-type";
+import formatExampleReference from "./format-example-ref";
 
 const generateContentForSchema = (schemaName: string, isArray?: boolean) => {
     if (isArray) {
@@ -57,6 +59,14 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                             schema: {
                                 oneOf: [generateContentForSchema(modelName, true), generateContentForSchema(`${modelName}Page`, false)],
                             },
+                            examples: {
+                                Default: {
+                                    $ref: formatExampleReference(`${modelName}`),
+                                },
+                                Pagination: {
+                                    $ref: formatExampleReference(`${modelName}Page`),
+                                }
+                            }
                         },
                     },
                 },
