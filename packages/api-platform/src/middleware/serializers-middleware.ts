@@ -30,11 +30,15 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     data: any,
     // eslint-disable-next-line radar/cognitive-complexity
 ) => {
-    const apiFormat = response.getHeader("content-type");
+    let apiFormat = request.headers.accept;
 
     if (typeof apiFormat === "string") {
         let serializedData = data;
         let skipDefaultSerializer = false;
+
+        if (apiFormat === "*/*") {
+            apiFormat = response.getHeader("Content-Type") as string;
+        }
 
         // eslint-disable-next-line no-restricted-syntax
         for (const { regex, serializer } of serializers) {
@@ -74,14 +78,12 @@ const serializersMiddleware = (serializers: Serializers = []) => async <Request 
     if (typeof (response as NextApiResponse)?.send === "function") {
         const oldSend = (response as NextApiResponse).send;
 
-        // @ts-ignore
         (response as NextApiResponse).send = (data) => {
             (response as NextApiResponse).send = oldSend;
 
             // eslint-disable-next-line no-param-reassign
             data = serialize<Request, Response>(serializers, request, response, data);
 
-            // @ts-ignore
             return (response as NextApiResponse).send(data);
         };
     } else {

@@ -21,5 +21,5 @@ export type {
     PaginationData,
 } from "./types.d";
 
-export type { ModelsToOpenApiParameters } from "./swagger/adapter/prisma"
-export { default as modelsToOpenApi } from "./swagger/adapter/prisma"
+export type { ModelsToOpenApiParameters } from "./swagger/adapter/prisma";
+export { default as modelsToOpenApi } from "./swagger/adapter/prisma";

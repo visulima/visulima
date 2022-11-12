@@ -1,8 +1,8 @@
 // @ts-ignore
+import type { OpenAPIV3 } from "openapi-types";
 import { getJSONSchemaProperty } from "prisma-json-schema-generator/dist/generator/properties";
 // @ts-ignore
 import { transformDMMF } from "prisma-json-schema-generator/dist/generator/transformDMMF";
-import type { OpenAPIV3 } from "openapi-types";
 
 import formatSchemaReference from "./utils/format-schema-ref";
 
@@ -295,8 +295,8 @@ class PrismaJsonSchemaParser {
             const values: { [key: string]: string | object | object[] } = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
-                if (typeof (value as OpenAPIV3.ReferenceObject)["$ref"] !== "undefined") {
-                    values[key] = refToSchema((value as OpenAPIV3.ReferenceObject).$ref);
+                if (typeof (value as OpenAPIV3.ReferenceObject).$ref !== "undefined") {
+                    values[key] = referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
                 } else {
                     values[key] = (value as OpenAPIV3.SchemaObject).type as string;
                 }
@@ -309,8 +309,8 @@ class PrismaJsonSchemaParser {
             const values: { [key: string]: object | object[] } = {};
 
             Object.entries(items).forEach(([key, value]) => {
-                if (typeof value.items["$ref"] !== "undefined") {
-                    values[key] = [refToSchema(value.items["$ref"])];
+                if (typeof value.items.$ref !== "undefined") {
+                    values[key] = [referenceToSchema(value.items.$ref)];
                 } else if (value.type === "array") {
                     values[key] = [arrayItemsToSchema(value.items)];
                 } else if (value.type === "object") {
@@ -323,8 +323,8 @@ class PrismaJsonSchemaParser {
             return values;
         };
 
-        const refToSchema = (ref: string) => {
-            const name = ref.replace("#/components/schemas/", "");
+        const referenceToSchema = (reference: string) => {
+            const name = reference.replace("#/components/schemas/", "");
             const model = schemas[name] as OpenAPIV3.SchemaObject;
 
             const values: { [key: string]: string | object[] } = {};
@@ -351,9 +351,8 @@ class PrismaJsonSchemaParser {
 
                 if (type === "array") {
                     // @ts-ignore
-                    value[key] = [refToSchema(v.items["$ref"])];
-                } else if (type === "object") {
-                } else {
+                    value[key] = [referenceToSchema(v.items.$ref)];
+                } else if (type === "object") {} else {
                     value[key] = type;
                 }
             });

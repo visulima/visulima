@@ -1,5 +1,4 @@
 import { header as headerCase } from "case";
-
 import type { OpenAPIV3 } from "openapi-types";
 import type { OAS3Definition } from "swagger-jsdoc";
 
@@ -18,7 +17,7 @@ const extendComponentSchema = (spec: Partial<OAS3Definition>, schemaName: string
         // eslint-disable-next-line no-param-reassign
         spec.components.schemas[schemaName] = schema;
     }
-}
+};
 
 // eslint-disable-next-line radar/cognitive-complexity
 export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowedMediaTypes?: { [key: string]: boolean }): Partial<OAS3Definition> {

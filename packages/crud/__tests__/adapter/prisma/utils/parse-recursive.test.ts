@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import parsePrismaRecursiveField from "../../../../src/adapter/prisma/utils/parse-recursive";
 import type { PrismaRecursive } from "../../../../src/adapter/prisma/types";
+import parsePrismaRecursiveField from "../../../../src/adapter/prisma/utils/parse-recursive";
 
 describe("Prisma parse recursive", () => {
     it("should parse select to prisma select", () => {

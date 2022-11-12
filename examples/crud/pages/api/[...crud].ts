@@ -12,9 +12,9 @@ const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
 });
 
 const router = createNodeRouter<NextApiRequest, NextApiResponse>().all(async (request, response) => {
-    const handler = await nodeHandler(prismaAdapter);
+    const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
 
-    return await handler(request, response)
+    await handler(request, response);
 });
 
 export default router.handler();

@@ -14,7 +14,7 @@ import getSwaggerTags from "../../utils/get-swagger-tags";
 const modelsToOpenApi = async <M extends string = string>({
     prismaClient,
     models: ctorModels,
-    swagger = { models: {} },
+    swagger = { models: {}, allowedMediaTypes: { "application/json": true } },
     crud = { models: {} },
     defaultExposeStrategy = "all",
 }: ModelsToOpenApiParameters<M>) => {
@@ -80,12 +80,13 @@ const modelsToOpenApi = async <M extends string = string>({
     };
 };
 
-export interface ModelsToOpenApiParameters<M extends string = string>{
+export interface ModelsToOpenApiParameters<M extends string = string> {
     prismaClient: PrismaClient;
     defaultExposeStrategy?: "all" | "none";
     models?: M[];
     swagger?: {
         models: SwaggerModelsConfig<M>;
+        allowedMediaTypes?: { [key: string]: boolean };
     };
     crud?: {
         models: ModelsOptions<M>;

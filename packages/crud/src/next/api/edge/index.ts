@@ -3,7 +3,7 @@ import type {
     Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters,
 } from "../../../types.d";
 
-async function handler<R extends Request, Context, T, Q extends ParsedQueryParameters = any, M extends string = string>(
+async function handler<T, R extends Request, Context, Q extends ParsedQueryParameters = any, M extends string = string>(
     adapter: Adapter<T, Q>,
     options?: HandlerOptions<M>,
 ): Promise<ExecuteHandler<R, Context>> {

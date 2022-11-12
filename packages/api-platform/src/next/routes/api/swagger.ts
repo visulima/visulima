@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { OAS3Definition } from "swagger-jsdoc";
+import type { OAS3Definition } from "swagger-jsdoc";
 
 import createNodeRouter from "../../../connect/create-node-router";
 import yamlTransformer from "../../../serializers/yaml";
@@ -20,12 +20,12 @@ const defaultMediaTypes = {
 // eslint-disable-next-line max-len
 const swaggerApiRoute = (
     options: Partial<{
-        mediaTypes: { [key: string]: boolean };
+        allowedMediaTypes: { [key: string]: boolean };
         swaggerFilePath: string;
     }> = {},
 ) => {
     const router = createNodeRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-        const { mediaTypes = defaultMediaTypes, swaggerFilePath } = options;
+        const { allowedMediaTypes = defaultMediaTypes, swaggerFilePath } = options;
 
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
 
@@ -34,8 +34,7 @@ const swaggerApiRoute = (
         }
 
         const fileContents = readFileSync(swaggerPath, "utf8");
-
-        const spec = extendSwaggerSpec(JSON.parse(fileContents) as OAS3Definition, mediaTypes) as OAS3Definition;
+        const spec = extendSwaggerSpec(JSON.parse(fileContents) as OAS3Definition, allowedMediaTypes) as OAS3Definition;
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);
