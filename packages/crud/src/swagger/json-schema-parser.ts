@@ -1,5 +1,5 @@
 import { getJSONSchemaProperty, transformDMMF } from "@visulima/prisma-dmmf-transformer";
-import type { JSONSchema7Definition } from "json-schema";
+import type { JSONSchema7 } from "json-schema";
 import type { OpenAPIV3 } from "openapi-types";
 
 import formatSchemaReference from "./utils/format-schema-ref";
@@ -47,16 +47,18 @@ class PrismaJsonSchemaParser {
     constructor(private dmmf: any) {}
 
     public parseModels(): {
-        [key: string]: JSONSchema7Definition;
+        [key: string]: JSONSchema7;
     } {
         const modelsDefinitions = transformDMMF(this.dmmf).definitions as {
-            [key: string]: JSONSchema7Definition;
+            [key: string]: JSONSchema7;
         };
 
         Object.keys(modelsDefinitions || {})?.forEach((definition: string | number) => {
+            // @TODO: added the correct type
+            // @ts-ignore
             const { properties } = modelsDefinitions[definition];
 
-            properties.forEach((property: string | number) => {
+            Object.keys(properties).forEach((property: string) => {
                 if (Array.isArray(properties[property].type) && properties[property].type.includes("null")) {
                     properties[property].type = properties[property].type.filter((type: string) => type !== "null");
 
@@ -91,7 +93,6 @@ class PrismaJsonSchemaParser {
                 const properties = dataFields.reduce((propertiesAccumulator: any, field: any) => {
                     if (field.inputTypes[0].kind === "scalar") {
                         const schema = getJSONSchemaProperty(
-                            // @ts-ignore
                             this.dmmf.datamodel,
                             {},
                         )({
@@ -99,12 +100,16 @@ class PrismaJsonSchemaParser {
                             ...field.inputTypes[0],
                         });
 
-                        if (schema[1].type && Array.isArray(schema[1].type)) {
-                            if (schema[1].type.includes("null")) {
+                        // @TODO: added the correct type
+                        // @ts-ignore
+                        const { type: schemaType = undefined } = schema[1];
+
+                        if (schemaType && Array.isArray(schemaType)) {
+                            if (schemaType.includes("null")) {
                                 // eslint-disable-next-line no-param-reassign
                                 propertiesAccumulator[field.name] = {
-                                    ...schema[1],
-                                    type: schema[1].type.filter((type: string) => type !== "null"),
+                                    ...schemaType,
+                                    type: schemaType.filter((type: string) => type !== "null"),
                                     nullable: true,
                                 };
                                 if (propertiesAccumulator[field.name].type.length === 1) {
