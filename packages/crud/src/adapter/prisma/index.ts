@@ -14,7 +14,6 @@ import parsePrismaCursor from "./utils/parse-cursor";
 import parsePrismaOrderBy from "./utils/parse-order-by";
 import parsePrismaRecursiveField from "./utils/parse-recursive";
 import parsePrismaWhere from "./utils/parse-where";
-import { ServerErrorCode } from "../../types.d";
 
 interface AdapterCtorArguments<M extends string = string> {
     primaryKey?: string;
