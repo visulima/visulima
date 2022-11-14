@@ -59,6 +59,47 @@ const parseSimpleField = (value: Condition): undefined | { [key: string]: Condit
     return undefined;
 };
 
+const parseRelation = (
+    value: string | number | boolean | Date | Condition | WhereCondition,
+    key: string,
+    parsed: PrismaWhereField,
+    manyRelations: string[],
+) => {
+    // Reverse the keys so that we can format our object by nesting
+    const fields = key.split(".").reverse();
+
+    let formatFields: { [key: string]: any } = {};
+
+    fields.forEach((field, index) => {
+        // If we iterate over the property name, which is index 0, we parse it like a normal field
+        if (index === 0) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            basicParse(value, field, formatFields, manyRelations);
+            // Else we format the relation filter in the prisma way
+        } else {
+            formatFields = {
+                [field]: {
+                    some: formatFields,
+                },
+            };
+        }
+    });
+
+    // Retrieve the main relation field
+    const initialFieldKey = fields.reverse()[0] as string;
+    // Retrieve the old parsed version
+    const oldParsed = parsed[initialFieldKey] as PrismaRelationFilter;
+
+    // Format correctly in the prisma way
+    // eslint-disable-next-line no-param-reassign
+    parsed[initialFieldKey] = {
+        some: {
+            ...(oldParsed?.some as object),
+            ...(formatFields[initialFieldKey as string]?.some as object),
+        },
+    };
+};
+
 const parseObjectCombination = (object: Condition, manyRelations: string[]): PrismaFieldFilter => {
     const parsed: PrismaFieldFilter = {};
 
@@ -83,71 +124,38 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
 
 const basicParse = (value: string | number | boolean | Condition | Date | WhereCondition, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
     if (isPrimitive(value)) {
+        // eslint-disable-next-line no-param-reassign
         parsed[key] = getSearchValue(value);
     } else {
         switch (key) {
             case "$or": {
                 if (isObject(value)) {
+                    // eslint-disable-next-line no-param-reassign
                     parsed.OR = parseObjectCombination(value as Condition, manyRelations);
                 }
                 break;
             }
             case "$and": {
                 if (isObject(value)) {
+                    // eslint-disable-next-line no-param-reassign
                     parsed.AND = parseObjectCombination(value as Condition, manyRelations);
                 }
                 break;
             }
             case "$not": {
                 if (isObject(value)) {
+                    // eslint-disable-next-line no-param-reassign
                     parsed.NOT = parseObjectCombination(value as Condition, manyRelations);
                 }
                 break;
             }
             default: {
+                // eslint-disable-next-line no-param-reassign
                 parsed[key] = parseSimpleField(value as Condition);
                 break;
             }
         }
     }
-};
-
-const parseRelation = (
-    value: string | number | boolean | Date | Condition | WhereCondition,
-    key: string,
-    parsed: PrismaWhereField,
-    manyRelations: string[],
-) => {
-    // Reverse the keys so that we can format our object by nesting
-    const fields = key.split(".").reverse();
-
-    let formatFields: { [key: string]: any } = {};
-
-    fields.forEach((field, index) => {
-        // If we iterate over the property name, which is index 0, we parse it like a normal field
-        if (index === 0) {
-            basicParse(value, field, formatFields, manyRelations);
-        }
-        // Else we format the relation filter in the prisma way
-        else {
-            formatFields = {
-                [field]: {
-                    some: formatFields,
-                },
-            };
-        }
-    });
-    // Retrieve the main relation field
-    const initialFieldKey = fields.reverse()[0] as string;
-    // Retrieve the old parsed version
-    const oldParsed = parsed[initialFieldKey] as PrismaRelationFilter;
-    // Format correctly in the prisma way
-    parsed[initialFieldKey] = {
-        some: {
-            ...(oldParsed?.some as object),
-            ...(formatFields[initialFieldKey as string]?.some as object),
-        },
-    };
 };
 
 const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhereField => {

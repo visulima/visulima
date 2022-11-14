@@ -1,8 +1,6 @@
-// @ts-ignore
+import { getJSONSchemaProperty, transformDMMF } from "@visulima/prisma-dmmf-transformer";
+import type { JSONSchema7Definition } from "json-schema";
 import type { OpenAPIV3 } from "openapi-types";
-import { getJSONSchemaProperty } from "prisma-json-schema-generator/dist/generator/properties";
-// @ts-ignore
-import { transformDMMF } from "prisma-json-schema-generator/dist/generator/transformDMMF";
 
 import formatSchemaReference from "./utils/format-schema-ref";
 
@@ -48,29 +46,36 @@ class PrismaJsonSchemaParser {
 
     constructor(private dmmf: any) {}
 
-    public parseModels() {
-        // @ts-ignore
-        const modelsDefinitions = transformDMMF(this.dmmf).definitions;
+    public parseModels(): {
+        [key: string]: JSONSchema7Definition;
+    } {
+        const modelsDefinitions = transformDMMF(this.dmmf).definitions as {
+            [key: string]: JSONSchema7Definition;
+        };
 
-        for (const definition in modelsDefinitions) {
+        Object.keys(modelsDefinitions || {})?.forEach((definition: string | number) => {
             const { properties } = modelsDefinitions[definition];
 
-            for (const property in properties) {
+            properties.forEach((property: string | number) => {
                 if (Array.isArray(properties[property].type) && properties[property].type.includes("null")) {
                     properties[property].type = properties[property].type.filter((type: string) => type !== "null");
 
                     if (properties[property].type.length === 1) {
+                        // eslint-disable-next-line prefer-destructuring
                         properties[property].type = properties[property].type[0];
                     }
+
                     properties[property].nullable = true;
                 }
-            }
-        }
+            });
+        });
 
         return modelsDefinitions;
     }
 
+    // eslint-disable-next-line radar/cognitive-complexity
     public parseInputTypes(models: string[]) {
+        // eslint-disable-next-line radar/cognitive-complexity
         const definitions = models.reduce((accumulator: { [key: string]: any }, modelName) => {
             const methods = methodsNames.map((method) => {
                 return {
@@ -80,9 +85,8 @@ class PrismaJsonSchemaParser {
             });
 
             methods.forEach(({ name: method, schemaName }) => {
-                const dataFields =
-                    // @ts-ignore
-                    this.dmmf.mutationType.fieldMap[method].args[0].inputTypes[0].type.fields;
+                // @ts-ignore
+                const dataFields = this.dmmf.mutationType.fieldMap[method].args[0].inputTypes[0].type.fields;
                 const requiredProperties: string[] = [];
                 const properties = dataFields.reduce((propertiesAccumulator: any, field: any) => {
                     if (field.inputTypes[0].kind === "scalar") {
@@ -97,12 +101,14 @@ class PrismaJsonSchemaParser {
 
                         if (schema[1].type && Array.isArray(schema[1].type)) {
                             if (schema[1].type.includes("null")) {
+                                // eslint-disable-next-line no-param-reassign
                                 propertiesAccumulator[field.name] = {
                                     ...schema[1],
                                     type: schema[1].type.filter((type: string) => type !== "null"),
                                     nullable: true,
                                 };
                                 if (propertiesAccumulator[field.name].type.length === 1) {
+                                    // eslint-disable-next-line no-param-reassign
                                     propertiesAccumulator[field.name] = {
                                         ...propertiesAccumulator[field.name],
                                         type: propertiesAccumulator[field.name].type[0],
@@ -110,10 +116,13 @@ class PrismaJsonSchemaParser {
                                 }
                             }
                         } else {
+                            // eslint-disable-next-line no-param-reassign,prefer-destructuring
                             propertiesAccumulator[field.name] = schema[1];
                         }
                     } else {
                         const typeName = this.parseObjectInputType(field.inputTypes[0]);
+
+                        // eslint-disable-next-line no-param-reassign
                         propertiesAccumulator[field.name] = {
                             ...typeName,
                             nullable: field.isNullable,
@@ -140,16 +149,17 @@ class PrismaJsonSchemaParser {
             return accumulator;
         }, {});
 
-        for (const [key, value] of this.schemaInputTypes.entries()) {
+        this.schemaInputTypes.forEach((value, key) => {
             definitions[key] = {
                 type: "object",
                 properties: value,
             };
-        }
+        });
 
         return definitions;
     }
 
+    // eslint-disable-next-line class-methods-use-this
     public formatInputTypeData(inputType: any) {
         if (inputType.kind === "object") {
             const reference = formatSchemaReference(inputType.type.name);
@@ -176,9 +186,11 @@ class PrismaJsonSchemaParser {
                 },
             };
         }
+
         return { type };
     }
 
+    // eslint-disable-next-line radar/cognitive-complexity
     public parseObjectInputType(fieldType: any) {
         if (fieldType.kind === "object") {
             if (!this.schemaInputTypes.has(fieldType.type.name)) {
@@ -189,20 +201,24 @@ class PrismaJsonSchemaParser {
 
                     if (field.inputTypes.length > 1) {
                         let nullable = false;
+
                         const anyOf = field.inputTypes
                             .map((inputType: any) => {
                                 const inputTypeData = this.formatInputTypeData(inputType);
 
                                 if (inputTypeData.type === "null") {
                                     nullable = true;
+
                                     return;
                                 }
 
+                                // eslint-disable-next-line consistent-return
                                 return inputTypeData;
                             })
                             .filter(Boolean);
 
                         if (anyOf.length === 1) {
+                            // eslint-disable-next-line prefer-destructuring
                             fieldData = anyOf[0];
                         } else {
                             fieldData.anyOf = anyOf;
@@ -216,6 +232,7 @@ class PrismaJsonSchemaParser {
 
                         fieldData = this.formatInputTypeData(inputType);
                     }
+
                     this.schemaInputTypes.set(fieldType.type.name, {
                         ...this.schemaInputTypes.get(fieldType.type.name),
                         [field.name]: fieldData,
@@ -228,12 +245,14 @@ class PrismaJsonSchemaParser {
                     });
                 });
             }
+
             return { $ref: formatSchemaReference(fieldType.type.name) };
         }
 
         return { type: getJSONSchemaScalar(fieldType.type) };
     }
 
+    // eslint-disable-next-line class-methods-use-this
     public getPaginationDataSchema() {
         return {
             [PAGINATION_SCHEMA_NAME]: {
@@ -291,6 +310,26 @@ class PrismaJsonSchemaParser {
             [key: string]: OpenAPIV3.SchemaObject;
         },
     ) {
+        const referenceToSchema = (reference: string) => {
+            const name = reference.replace("#/components/schemas/", "");
+            const model = schemas[name] as OpenAPIV3.SchemaObject;
+
+            const values: { [key: string]: string | object[] } = {};
+
+            Object.entries((model?.properties as OpenAPIV3.SchemaObject) || {}).forEach(([key, v]) => {
+                const type = (v as OpenAPIV3.SchemaObject).type as string;
+
+                if (type === "array") {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                    values[key] = [arrayItemsToSchema(v.items)];
+                } else {
+                    values[key] = type;
+                }
+            });
+
+            return values;
+        };
+
         const objectPropertiesToSchema = (objectProperties: { [name: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject }) => {
             const values: { [key: string]: string | object | object[] } = {};
 
@@ -323,36 +362,18 @@ class PrismaJsonSchemaParser {
             return values;
         };
 
-        const referenceToSchema = (reference: string) => {
-            const name = reference.replace("#/components/schemas/", "");
-            const model = schemas[name] as OpenAPIV3.SchemaObject;
-
-            const values: { [key: string]: string | object[] } = {};
-
-            Object.entries((model?.properties as OpenAPIV3.SchemaObject) || {}).forEach(([key, v]) => {
-                const type = (v as OpenAPIV3.SchemaObject).type as string;
-
-                if (type === "array") {
-                    values[key] = [arrayItemsToSchema(v.items)];
-                } else {
-                    values[key] = type;
-                }
-            });
-
-            return values;
-        };
-
         return modelNames.reduce((accumulator, modelName) => {
-            const value: { [key: string]: string | { [key: string]: string }[] } = {};
+            const value: { [key: string]: string | object | object[] } = {};
             const model = schemas[modelName] as OpenAPIV3.SchemaObject;
 
             Object.entries(model.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
                 if (type === "array") {
-                    // @ts-ignore
                     value[key] = [referenceToSchema(v.items.$ref)];
-                } else if (type === "object") {} else {
+                } else if (type === "object") {
+                    value[key] = objectPropertiesToSchema(v.properties);
+                } else {
                     value[key] = type;
                 }
             });
@@ -379,6 +400,7 @@ class PrismaJsonSchemaParser {
         }, {});
     }
 
+    // eslint-disable-next-line class-methods-use-this
     public getPaginatedModelsSchemas(modelNames: string[]) {
         return modelNames.reduce((accumulator, modelName) => {
             return {

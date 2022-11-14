@@ -1,6 +1,6 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations
+// eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
 import type { ModelsToOpenApiParameters } from "@visulima/crud";
-// eslint-disable-next-line unicorn/prevent-abbreviations
+// eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
 import { modelsToOpenApi } from "@visulima/crud";
 import debug from "debug";
 import merge from "lodash.merge";
@@ -10,7 +10,9 @@ import type { OAS3Definition, Tag } from "swagger-jsdoc";
 
 import extendSwaggerSpec from "../../../../swagger/extend-swagger-spec";
 
+// eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerDebug = debug("visulima:api-platform:swagger:get-static-properties-swagger");
+// eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
 // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -47,6 +49,7 @@ const getStaticProps: (
 
             swaggerCrudDebug(JSON.stringify(crudSwagger, null, 2));
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.log(error);
             throw new Error("Please install @visulima/crud to use the crud swagger generator.");
         }

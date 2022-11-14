@@ -5,11 +5,11 @@ import isPrimitive from "../../src/utils/is-primitive";
 describe("Primitives", () => {
     it("should return true for primitives", () => {
         const nbr = 1;
-        const string_ = "hello";
+        const stringString = "hello";
         const bool = true;
 
         expect(isPrimitive(nbr)).toBe(true);
-        expect(isPrimitive(string_)).toBe(true);
+        expect(isPrimitive(stringString)).toBe(true);
         expect(isPrimitive(bool)).toBe(true);
     });
 

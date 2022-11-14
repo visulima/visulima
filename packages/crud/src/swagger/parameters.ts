@@ -4,8 +4,7 @@ import type { SwaggerParameter } from "./types.d";
 const queryParameters: Record<string, SwaggerParameter> = {
     select: {
         name: "select",
-        description:
-      "Fields to select. For nested fields, chain them separated with a dot, eg: user.posts",
+        description: "Fields to select. For nested fields, chain them separated with a dot, eg: user.posts",
         schema: {
             type: "string",
         },
@@ -19,16 +18,14 @@ const queryParameters: Record<string, SwaggerParameter> = {
     },
     where: {
         name: "where",
-        description:
-      'Fields to filter. See <a href="https://next-crud.js.org/query-params#where">the docs</a>',
+        description: 'Fields to filter. See <a href="https://next-crud.js.org/query-params#where">the docs</a>',
         schema: {
             type: "string",
         },
     },
     orderBy: {
         name: "orderBy",
-        description:
-      'Field on which to order by a direction. See <a href="https://next-crud.js.org/query-params#orderBy">the docs</a>',
+        description: 'Field on which to order by a direction. See <a href="https://next-crud.js.org/query-params#orderBy">the docs</a>',
         schema: {
             type: "string",
         },
@@ -66,9 +63,9 @@ const queryParameters: Record<string, SwaggerParameter> = {
     },
 };
 
-export const commonQueryParams = [queryParameters.select, queryParameters.include];
-export const listQueryParams = [
-    ...commonQueryParams,
+export const commonQueryParameters = [queryParameters.select, queryParameters.include];
+export const listQueryParameters = [
+    ...commonQueryParameters,
     queryParameters.limit,
     queryParameters.skip,
     queryParameters.where,
@@ -77,16 +74,10 @@ export const listQueryParams = [
     queryParameters.distinct,
 ];
 
-export const getQueryParams = (
-    routeType: RouteType,
-    additionalQueryParameters: SwaggerParameter[] = [],
-) => {
-    switch (routeType) {
-        case RouteType.READ_ALL: {
-            return [...listQueryParams, ...additionalQueryParameters];
-        }
-        default: {
-            return [...commonQueryParams, ...additionalQueryParameters];
-        }
+export const getQueryParameters = (routeType: RouteType, additionalQueryParameters: SwaggerParameter[] = []) => {
+    if (routeType === RouteType.READ_ALL) {
+        return [...listQueryParameters, ...additionalQueryParameters];
     }
+
+    return [...commonQueryParameters, ...additionalQueryParameters];
 };

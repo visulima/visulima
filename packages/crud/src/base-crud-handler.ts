@@ -1,5 +1,6 @@
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ApiError } from "next/dist/server/api-utils";
 import type { IncomingMessage, ServerResponse } from "node:http";
 

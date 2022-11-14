@@ -2,7 +2,7 @@ import type { ModelOption, ModelsOptions } from "../../types.d";
 import getAccessibleRoutes from "../../utils/get-accessible-routes";
 import type { Routes } from "../types.d";
 
-export const getModelsAccessibleRoutes = <M extends string>(
+const getModelsAccessibleRoutes = <M extends string>(
     modelNames: M[],
     models?: ModelsOptions<M>,
     defaultExposeStrategy: "all" | "none" = "all",
@@ -19,3 +19,5 @@ export const getModelsAccessibleRoutes = <M extends string>(
             [modelName]: getAccessibleRoutes(undefined, undefined, defaultExposeStrategy),
         };
     }, {});
+
+export default getModelsAccessibleRoutes;

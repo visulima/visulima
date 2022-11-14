@@ -5,10 +5,13 @@ import type {
     Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters,
 } from "../../../types.d";
 
-async function handler<T, Q extends ParsedQueryParameters = any, R extends NextApiRequest = NextApiRequest, Response extends NextApiResponse = NextApiResponse, M extends string = string>(
-    adapter: Adapter<T, Q>,
-    options?: HandlerOptions<M>,
-): Promise<ExecuteHandler<R, Response>> {
+async function handler<
+    T,
+    Q extends ParsedQueryParameters = any,
+    R extends NextApiRequest = NextApiRequest,
+    Response extends NextApiResponse = NextApiResponse,
+    M extends string = string,
+>(adapter: Adapter<T, Q>, options?: HandlerOptions<M>): Promise<ExecuteHandler<R, Response>> {
     return baseHandler<R, Response, T, Q, M>(
         async (response, responseConfig) => {
             response.status(responseConfig.status).json(responseConfig.data);

@@ -2,7 +2,7 @@ import { header as headerCase } from "case";
 import type { OpenAPIV3 } from "openapi-types";
 import type { OAS3Definition } from "swagger-jsdoc";
 
-const extendComponentSchema = (spec: Partial<OAS3Definition>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
+const extendComponentSchemas = (spec: Partial<OAS3Definition>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
     if (typeof spec.components !== "object") {
         // eslint-disable-next-line no-param-reassign
         spec.components = {};
@@ -19,6 +19,23 @@ const extendComponentSchema = (spec: Partial<OAS3Definition>, schemaName: string
     }
 };
 
+const extendComponentExamples = (spec: Partial<OAS3Definition>, exampleName: string, example: OpenAPIV3.SchemaObject) => {
+    if (typeof spec.components !== "object") {
+        // eslint-disable-next-line no-param-reassign
+        spec.components = {};
+    }
+
+    if (typeof spec.components.examples !== "object") {
+        // eslint-disable-next-line no-param-reassign
+        spec.components.examples = {};
+    }
+
+    if (typeof spec.components.examples[exampleName] === "undefined") {
+        // eslint-disable-next-line no-param-reassign
+        spec.components.examples[exampleName] = example;
+    }
+};
+
 // eslint-disable-next-line radar/cognitive-complexity
 export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowedMediaTypes?: { [key: string]: boolean }): Partial<OAS3Definition> {
     if (typeof spec === "object" && typeof spec.paths === "object") {
@@ -27,9 +44,19 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                 if (typeof methodSpec.responses === "object") {
                     Object.entries<OpenAPIV3.ResponseObject>(methodSpec.responses).forEach(([status, responseSpec]) => {
                         if (typeof responseSpec.content === "object") {
-                            Object.values(responseSpec.content).forEach((contentSpec) => {
+                            let examples:
+                            | {
+                                [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+                            }
+                            | undefined;
+
+                            Object.entries(responseSpec.content).forEach(([mediaName, contentSpec]) => {
                                 if (typeof contentSpec.schema === "object") {
                                     const { schema } = contentSpec;
+
+                                    if (mediaName === "application/json" && typeof contentSpec.examples !== "undefined") {
+                                        examples = contentSpec.examples;
+                                    }
 
                                     if (typeof (schema as OpenAPIV3.ReferenceObject).$ref !== "undefined") {
                                         return;
@@ -47,7 +74,7 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                                             mediaType === "application/ld+json" ? ".jsonld" : ""
                                         }`;
 
-                                        extendComponentSchema(spec as OAS3Definition, schemaName, schema as OpenAPIV3.SchemaObject);
+                                        extendComponentSchemas(spec as OAS3Definition, schemaName, schema as OpenAPIV3.SchemaObject);
 
                                         if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.schema === "undefined") {
                                             // eslint-disable-next-line no-param-reassign
@@ -68,6 +95,35 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                                     });
                                 }
                             });
+
+                            if (typeof examples !== "undefined") {
+                                Object.keys(responseSpec.content).forEach((mediaName) => {
+                                    if (mediaName === "application/json") {
+                                        return;
+                                    }
+
+                                    Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+                                        if (!allowed) {
+                                            return;
+                                        }
+
+                                        // eslint-disable-next-line max-len
+                                        const examplesName = `${headerCase(pathKey.trim().replace("/", ""))}${
+                                            mediaType === "application/ld+json" ? ".jsonld" : ""
+                                        }`;
+
+                                        extendComponentExamples(spec as OAS3Definition, examplesName, examples as OpenAPIV3.SchemaObject);
+
+                                        if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.examples === "undefined") {
+                                            // eslint-disable-next-line no-param-reassign
+                                            methodSpec.responses[status].content[mediaType] = { examples: {} };
+                                        }
+
+                                        // eslint-disable-next-line no-param-reassign
+                                        methodSpec.responses[status].content[mediaType].examples = examples;
+                                    });
+                                });
+                            }
                         }
                     });
                 }

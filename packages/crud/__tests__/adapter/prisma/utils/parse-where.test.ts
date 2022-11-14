@@ -89,6 +89,7 @@ describe("Prisma parse where", () => {
         };
 
         expect(
+            // eslint-disable-next-line radar/no-duplicate-string
             parsePrismaWhere(baseQuery, ["posts.author"]),
         ).toEqual<PrismaWhereField>(
             // @ts-ignore

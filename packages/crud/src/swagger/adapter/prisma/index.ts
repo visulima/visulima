@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
     // @ts-ignore
     PrismaClient,
@@ -7,7 +8,7 @@ import modelsToRouteNames from "../../../adapter/prisma/utils/models-to-route-na
 import type { ModelsOptions } from "../../../types.d";
 import PrismaJsonSchemaParser from "../../json-schema-parser";
 import type { SwaggerModelsConfig } from "../../types.d";
-import { getModelsAccessibleRoutes } from "../../utils/get-models-accessible-routes";
+import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
@@ -21,13 +22,14 @@ const modelsToOpenApi = async <M extends string = string>({
     let dmmf: any;
     let prismaDmmfModels: any;
 
-    // @ts-ignore
+    // eslint-disable-next-line no-underscore-dangle
     if (prismaClient._dmmf) {
-        // @ts-ignore
+        // eslint-disable-next-line no-underscore-dangle
         dmmf = prismaClient._dmmf;
         prismaDmmfModels = dmmf?.mappingsMap;
+        // eslint-disable-next-line no-underscore-dangle
     } else if (prismaClient._getDmmf) {
-        // @ts-ignore
+        // eslint-disable-next-line no-underscore-dangle
         dmmf = await prismaClient._getDmmf();
         prismaDmmfModels = dmmf.mappingsMap;
     }
@@ -56,11 +58,8 @@ const modelsToOpenApi = async <M extends string = string>({
         });
     }
 
-    const models =
-        // @ts-ignore
-        ctorModels
-        // @ts-ignore
-        ?? (Object.keys(prismaDmmfModels) as M[]);
+    // @ts-ignore
+    const models = ctorModels ?? (Object.keys(prismaDmmfModels) as M[]);
 
     const swaggerRoutes = getModelsAccessibleRoutes(models, crud.models || {}, defaultExposeStrategy);
     const swaggerTags = getSwaggerTags(models, swagger?.models || {});
@@ -84,10 +83,10 @@ export interface ModelsToOpenApiParameters<M extends string = string> {
     prismaClient: PrismaClient;
     defaultExposeStrategy?: "all" | "none";
     models?: M[];
-    swagger?: {
+    swagger?: Partial<{
         models: SwaggerModelsConfig<M>;
-        allowedMediaTypes?: { [key: string]: boolean };
-    };
+        allowedMediaTypes: { [key: string]: boolean };
+    }>;
     crud?: {
         models: ModelsOptions<M>;
     };

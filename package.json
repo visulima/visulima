@@ -8,7 +8,7 @@
     "scripts": {
         "build": "nx run-many --target=build --all --parallel",
         "build-storybook": "pnpm --filter \"storybook\" run build",
-        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination",
+        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer",
         "check": "manypkg check",
         "clean": "nx run-many --target=clean --all --parallel && rimraf node_modules",
         "docs:dev": "pnpm --filter \"docs\" run dev",
@@ -33,6 +33,8 @@
         "test:coverage:connect": "pnpm --filter \"connect\" run coverage",
         "test:coverage:crud": "pnpm --filter \"crud\" run coverage",
         "test:coverage:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run coverage",
+        "test:coverage:pagination": "pnpm --filter \"pagination\" run coverage",
+        "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run coverage",
         "test:health-check": "pnpm --filter \"health-check\" run test",
         "test:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run test",
         "test:readdir": "pnpm --filter \"readdir\" run test",

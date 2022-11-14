@@ -157,6 +157,7 @@
         "next": "^12.3.1",
         "next-test-api-route-handler": "^4.0.0-canary.1",
         "node-mocks-http": "^1.11.0",
+        "openapi-types": "^12.0.2",
         "prettier": "^2.7.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -169,8 +170,7 @@
         "typescript": "^4.8.4",
         "vitest": "^0.24.1",
         "webpack": "^5.74.0",
-        "zod": "^3.19.1",
-        "openapi-types": "^12.0.2"
+        "zod": "^3.19.1"
     },
     "peerDependencies": {
         "@visulima/connect": "workspace:*",
@@ -180,8 +180,8 @@
         "zod": "^3.19.1"
     },
     "optionalDependencies": {
-        "@visulima/readdir": "workspace:*",
         "@visulima/crud": "workspace:*",
+        "@visulima/readdir": "workspace:*",
         "redoc": "^2.0.0",
         "webpack": "^5.74.0"
     },

@@ -25,7 +25,7 @@ const swaggerApiRoute = (
     }> = {},
 ) => {
     const router = createNodeRouter<NextApiRequest, NextApiResponse>().get(async (request, response) => {
-        const { allowedMediaTypes = defaultMediaTypes, swaggerFilePath } = options;
+        const { allowedMediaTypes = { ...defaultMediaTypes, "application/json": true }, swaggerFilePath } = options;
 
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
 

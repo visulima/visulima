@@ -6,12 +6,14 @@ import getRouteType from "../../src/utils/get-route-type";
 
 describe("getRouteType without query params", () => {
     it("should return READ_ALL type", () => {
+        // eslint-disable-next-line radar/no-duplicate-string
         expect(getRouteType("GET", "/api/users", "users")).toEqual<GetRouteType>({
             routeType: RouteType.READ_ALL,
         });
     });
 
     it("should return READ_ONE type", () => {
+        // eslint-disable-next-line radar/no-duplicate-string
         expect(getRouteType("GET", "/api/users/1", "users")).toEqual<GetRouteType>({
             routeType: RouteType.READ_ONE,
             resourceId: "1",
@@ -74,12 +76,14 @@ describe("getRouteType without query params", () => {
 
 describe("getRouteType with query params", () => {
     it("should return READ_ALL type", () => {
+        // eslint-disable-next-line radar/no-duplicate-string
         expect(getRouteType("GET", "/api/users?q=1", "users")).toEqual<GetRouteType>({
             routeType: RouteType.READ_ALL,
         });
     });
 
     it("should return READ_ONE type", () => {
+        // eslint-disable-next-line radar/no-duplicate-string
         expect(getRouteType("GET", "/api/users/1?q=1", "users")).toEqual<GetRouteType>({
             routeType: RouteType.READ_ONE,
             resourceId: "1",

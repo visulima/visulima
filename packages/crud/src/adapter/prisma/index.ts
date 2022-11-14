@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
     // @ts-ignore
     PrismaAction,
@@ -13,6 +14,7 @@ import parsePrismaCursor from "./utils/parse-cursor";
 import parsePrismaOrderBy from "./utils/parse-order-by";
 import parsePrismaRecursiveField from "./utils/parse-recursive";
 import parsePrismaWhere from "./utils/parse-where";
+import { ServerErrorCode } from "../../types.d";
 
 interface AdapterCtorArguments<M extends string = string> {
     primaryKey?: string;
@@ -34,30 +36,29 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
     models?: M[];
 
-    private readonly _ctorModels?: M[];
+    private readonly ctorModels?: M[];
 
-    // private prismaJsonSchemaParser: PrismaJsonSchemaParser;
     private dmmf: any;
 
-    constructor({
-        primaryKey = "id", prismaClient, manyRelations = {}, models,
-    }: AdapterCtorArguments<M>) {
+    constructor({ primaryKey = "id", prismaClient, manyRelations = {}, models }: AdapterCtorArguments<M>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
-        this._ctorModels = models;
+        this.ctorModels = models;
     }
 
     private getPrismaClientModels = async () => {
-        // @ts-ignore
+        // eslint-disable-next-line no-underscore-dangle
         if (this.prismaClient._dmmf) {
-            // @ts-ignore
+            // eslint-disable-next-line no-underscore-dangle
             this.dmmf = this.prismaClient._dmmf;
-            // @ts-ignore
+
             return this.dmmf?.mappingsMap;
-            // @ts-ignore
-        } if (this.prismaClient._getDmmf) {
-            // @ts-ignore
+        }
+
+        // eslint-disable-next-line no-underscore-dangle
+        if (this.prismaClient._getDmmf) {
+            // eslint-disable-next-line no-underscore-dangle
             this.dmmf = await this.prismaClient._getDmmf();
 
             return this.dmmf.mappingsMap;
@@ -67,7 +68,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
     };
 
     async init() {
-        const models = this._ctorModels;
+        const models = this.ctorModels;
         const prismaDmmfModels = await this.getPrismaClientModels();
 
         if (typeof models !== "undefined") {
@@ -78,13 +79,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             });
         }
 
-        this.models =
-            // @ts-ignore
-            models
-            // @ts-ignore
-            ?? (Object.keys(prismaDmmfModels) as M[]); // Retrieve model names from dmmf for prisma v2
-
-        // this.prismaJsonSchemaParser = new PrismaJsonSchemaParser(this.prismaClient, this.dmmf);
+        // @ts-ignore
+        this.models = models ?? (Object.keys(prismaDmmfModels) as M[]); // Retrieve model names from dmmf for prisma v2
     }
 
     async getPaginationData(resourceName: M, query: PrismaParsedQueryParameters): Promise<PaginationData> {
@@ -101,10 +97,18 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         };
     }
 
-    handleError(error: Error) {
+    // eslint-disable-next-line class-methods-use-this
+    handleError(error: any) {
+        // eslint-disable-next-line no-console
         console.error(error);
 
-        throw error.constructor.name === "PrismaClientKnownRequestError" || error.constructor.name === "PrismaClientValidationError" ? createHttpError(400, "invalid request, check your server logs for more info") : createHttpError(500, "an unknown error occured, check your server logs for more info");
+        if (error instanceof Error && error.stack) {
+            console.error(error.stack);
+        }
+
+        throw error.constructor.name === "PrismaClientKnownRequestError" || error.constructor.name === "PrismaClientValidationError"
+            ? createHttpError(400, "invalid request, check your server logs for more info")
+            : createHttpError(500, "an unknown error occured, check your server logs for more info");
     }
 
     parseQuery(resourceName: M, query: ParsedQueryParameters) {
