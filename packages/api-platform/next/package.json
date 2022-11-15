@@ -1,0 +1,10 @@
+{
+    "name": "@visulima/api-platform-next",
+    "version": "0.0.0",
+    "description": "visulima api platform",
+    "license": "MIT",
+    "main": "../dist/next/index-server.js",
+    "module": "../dist/next/index-server.mjs",
+    "browser": "../dist/next/index-browser.mjs",
+    "types": "../dist/next/index-server.d.ts"
+}

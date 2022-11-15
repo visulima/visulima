@@ -44,7 +44,7 @@ If a response range is defined using an explicit code,
 the explicit code definition takes precedence over the range definition for that code.
 Each response status requires a description.
 For example, you can describe the conditions for error responses.
-Markdown ([CommonMark](http://commonmark.org/help/)) can be used for rich text representation.
+Markdown ([CommonMark](https://commonmark.org/help/)) can be used for rich text representation.
 
 ```js
 /**
@@ -56,16 +56,16 @@ Markdown ([CommonMark](http://commonmark.org/help/)) can be used for rich text r
  */
 ```
 
-Note that an API specification does not necessarily need to cover all possible HTTP response codes, since they may not be known in advance.
-However, it is expected to cover successful responses and any known errors.
+ An API specification does not necessarily need to cover all possible HTTP response codes, since they may not be known in advance.
+However, it’s expected to cover successful responses and any known errors.
 By "known errors" we mean, for example, a 404 Not Found response for an operation that returns a resource by ID,
 or a 400 Bad Request response in case of invalid operation parameters.
 
 ### Response body
 A response body can define:
-- an `object` or an `array` — typically used with JSON and XML APIs
-- a primitive data type such as a `number` or `string` – used for plain text responses
-- a file – (see below)
+- An `object` or an `array` — typically used with JSON and XML APIs
+- A primitive data type such as a `number` or `string` – used for plain text responses
+- A file – (see below)
 
 Objects can be defined in `components`:
 
@@ -83,7 +83,7 @@ components:
           description: The user name.
 ```
 
-and be used with:
+And be used with:
 
 ```js
 /**
@@ -133,7 +133,7 @@ components:
 ```
 
 ### Empty response body
-Some responses, such as 204 No Content, have no body.
+ Responses, such as 204 No Content, have no body.
 To indicate the response body is empty, do not specify `@responseContent`:
 
 ```js
@@ -168,7 +168,7 @@ You can define custom `headers` for each response as follows:
  */
 ```
 
-Note that, currently,
+, currently,
 OpenAPI Specification does not permit to define common response headers for different response codes or different API operations.
 You need to define the headers for each response individually.
 

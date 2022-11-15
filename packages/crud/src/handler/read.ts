@@ -1,0 +1,27 @@
+import createHttpError from "http-errors";
+
+import type { UniqueResourceHandlerParameters } from "../types.d";
+
+const readHandler: Handler = async ({
+    adapter, query, resourceName, resourceId,
+}) => {
+    const resource = await adapter.getOne(resourceName, resourceId, query);
+
+    if (!resource) {
+        throw createHttpError(404, `${resourceName} ${resourceId} not found`);
+    }
+
+    return {
+        data: resource,
+        status: 200,
+    };
+};
+
+export type Handler = <T, Q>(
+    parameters: UniqueResourceHandlerParameters<T, Q>,
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export default readHandler;

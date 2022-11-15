@@ -119,7 +119,7 @@ const withOpenApi = ({ definition, sources, verbose, output = "swagger/swagger.j
 module.exports = withOpenApi;
 ```
 
-#### next.config.js
+#### Next.config.js
 ```js
 const withOpenApi = require("./with-open-api");
 
@@ -147,7 +147,7 @@ module.exports = withOpenApi({
 })(nextConfig);
 ```
 
-## OpenApi yaml syntax
+## OpenApi YAML syntax
 
 The library will take the contents of @openapi (or @swagger):
 
@@ -246,7 +246,7 @@ For example, this JSON object:
 }
 ```
 
-can be represented as:
+Can be represented as:
 
 ```yaml
 components:
@@ -263,7 +263,7 @@ components:
         - name
 ```
 
-and then referenced in the request body schema and response body schema as follows:
+And then referenced in the request body schema and response body schema as follows:
 
 ```js
 /**

@@ -1,0 +1,9 @@
+{
+    "name": "@visulima/api-platform-next-cli",
+    "version": "0.0.0",
+    "description": "visulima api platform",
+    "license": "MIT",
+    "main": "../dist/next/cli/index.js",
+    "module": "../dist/next/cli/index.mjs",
+    "types": "../dist/next/cli/index.d.ts"
+}
