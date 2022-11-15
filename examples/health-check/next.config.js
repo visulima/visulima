@@ -21,15 +21,7 @@ module.exports = withOpenApi({
             version: packageJson.version,
             description: packageJson.description,
         },
-        schemes: ["http", "https"],
-        servers: [
-            {
-                url: `${process.env.VERCEL_URL || "http://localhost:3000"}/api`,
-            }
-        ]
     },
-    sources: [
-        "pages/api",
-    ],
+    sources: ["pages/api"],
     verbose: false,
 })(nextConfig);
