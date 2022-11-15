@@ -36,17 +36,53 @@ with a more intuitive API for creating HTTP API endpoints.
 
 ## Installation
 
+### npm
 ```sh
-npm install @visulima/api-platform
+npm install @visulima/api-platform @visulima/connect zod
 ```
 
-```sh
-yarn add @visulima/api-platform
-```
+#### Installation for Next.js
 
 ```sh
-pnpm add @visulima/api-platform
+npm install @visulima/api-platform @visulima/connect zod @visulima/readdir chalk commander
 ```
+
+### yarn
+
+```sh
+yarn add @visulima/api-platform @visulima/connect zod
+```
+
+#### Installation for Next.js
+
+```sh
+yarn add @visulima/api-platform @visulima/connect zod @visulima/readdir chalk commander
+```
+
+### pnpm
+
+```sh
+pnpm add @visulima/api-platform @visulima/connect zod
+```
+
+#### Installation for Next.js
+
+```sh
+pnpm add @visulima/api-platform @visulima/connect zod @visulima/readdir chalk commander
+```
+
+### To use the swagger-ui or the redoc-ui you need to install the following packages:
+
+```sh
+npm install swagger-ui-react
+```
+
+or
+
+```sh
+npm install redoc
+```
+
 
 ## Usage
 
@@ -69,8 +105,6 @@ router
   });
 
 export default router.nodeHandler();
-```
-
 ```
 
 ## Supported Node.js Versions
