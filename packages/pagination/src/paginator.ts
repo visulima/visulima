@@ -23,11 +23,14 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      */
     public readonly isEmpty: boolean;
 
-    /**
-     * Casting `total` to a number. Later, we can think of situations
-     * to cast it to a bigint
-     */
-    public readonly total;
+    constructor(private readonly totalNumber: number, public readonly perPage: number, public currentPage: number, ...rows: any[]) {
+        super(...rows);
+
+        this.totalNumber = Number(totalNumber);
+
+        this.rows = rows;
+        this.isEmpty = this.rows.length === 0;
+    }
 
     /**
      * Find if there are total records or not. This is not same as
@@ -36,35 +39,37 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      * The `isEmpty` reports about the current set of results. However, `hasTotal`
      * reports about the total number of records, regardless of the current.
      */
-    public readonly hasTotal: boolean;
-
-    /**
-     * The Last page number
-     */
-    public readonly lastPage: number;
+    get hasTotal(): boolean {
+        return this.total > 0;
+    }
 
     /**
      * Find if there are more pages to come
      */
-    public readonly hasMorePages: boolean;
+    get hasMorePages(): boolean {
+        return this.lastPage > this.currentPage;
+    }
 
     /**
      * Find if there are enough results to be paginated or not
      */
-    public readonly hasPages: boolean;
+    get hasPages(): boolean {
+        return this.lastPage !== 1;
+    }
 
-    constructor(private readonly totalNumber: number, public readonly perPage: number, public readonly currentPage: number, ...rows: any[]) {
-        super(...rows);
+    /**
+     * The Last page number
+     */
+    get lastPage(): number {
+        return Math.max(Math.ceil(this.total / this.perPage), 1);
+    }
 
-        this.totalNumber = Number(totalNumber);
-        this.total = Number(this.totalNumber);
-        this.hasTotal = this.total > 0;
-        this.lastPage = Math.max(Math.ceil(this.total / this.perPage), 1);
-        this.hasMorePages = this.lastPage > this.currentPage;
-        this.hasPages = this.lastPage !== 1;
-
-        this.rows = rows;
-        this.isEmpty = this.rows.length === 0;
+    /**
+     * Casting `total` to a number. Later, we can think of situations
+     * to cast it to a bigint
+     */
+    get total(): number {
+        return Number(this.totalNumber);
     }
 
     /**
@@ -107,6 +112,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      */
     public queryString(values: { [key: string]: any }): this {
         this.qs = values;
+
         return this;
     }
 
@@ -115,6 +121,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      */
     public baseUrl(url: string): this {
         this.url = url;
+
         return this;
     }
 
@@ -135,6 +142,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
         if (this.hasMorePages) {
             return this.getUrl(this.currentPage + 1);
         }
+
         return null;
     }
 

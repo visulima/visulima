@@ -1,5 +1,5 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
-import type { ModelsToOpenApiParameters } from "@visulima/crud";
+import type { ModelsToOpenApiParameters, SwaggerModelsConfig } from "@visulima/crud";
 // eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
 import { modelsToOpenApi } from "@visulima/crud";
 import debug from "debug";
@@ -11,7 +11,6 @@ import type { OAS3Definition, Tag } from "swagger-jsdoc";
 
 import yamlTransformer from "../connect/serializers/yaml";
 import extendSwaggerSpec from "./extend-swagger-spec";
-import { SwaggerModelsConfig } from "@visulima/crud/src/swagger/types";
 
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
