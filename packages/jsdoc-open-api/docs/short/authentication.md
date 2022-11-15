@@ -1,3 +1,3 @@
 ## Authentication
 
-coming soon
+Coming soon

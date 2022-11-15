@@ -7,7 +7,7 @@
    [node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
    [@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
 
-with a more intuitive API for creating HTTP API endpoints.
+With a more intuitive API for creating HTTP API endpoints.
 
   </p>
 </div>
@@ -74,7 +74,7 @@ export default router.nodeHandler();
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track
-[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+[Node.js’ release schedule](https://github.com/nodejs/release#release-schedule). Here’s [a
 post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing

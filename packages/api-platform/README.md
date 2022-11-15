@@ -7,7 +7,7 @@
    [node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
    [@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
 
-with a more intuitive API for creating HTTP API endpoints.
+With a more intuitive API for creating HTTP API endpoints.
 
   </p>
 </div>
@@ -36,7 +36,7 @@ with a more intuitive API for creating HTTP API endpoints.
 
 ## Installation
 
-### npm
+### Npm
 ```sh
 npm install @visulima/api-platform zod
 ```
@@ -47,7 +47,7 @@ npm install @visulima/api-platform zod
 npm install @visulima/api-platform zod @visulima/readdir chalk commander
 ```
 
-### yarn
+### Yarn
 
 ```sh
 yarn add @visulima/api-platform zod
@@ -59,7 +59,7 @@ yarn add @visulima/api-platform zod
 yarn add @visulima/api-platform zod @visulima/readdir chalk commander
 ```
 
-### pnpm
+### Pnpm
 
 ```sh
 pnpm add @visulima/api-platform zod
@@ -77,7 +77,7 @@ pnpm add @visulima/api-platform zod @visulima/readdir chalk commander
 npm install swagger-ui-react
 ```
 
-or
+Or
 
 ```sh
 npm install redoc
@@ -110,7 +110,7 @@ export default router.nodeHandler();
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track
-[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+[Node.js’ release schedule](https://github.com/nodejs/release#release-schedule). Here’s [a
 post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing

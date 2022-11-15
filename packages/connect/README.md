@@ -59,7 +59,7 @@ pnpm add @visulima/connect
 >
 > Although `@visulima/connect` is initially written for Next.js, it can be used in [http server](https://nodejs.org/api/http.html#httpcreateserveroptions-requestlistener), [Vercel](https://vercel.com/docs/concepts/functions/serverless-functions). See [Examples](./examples/) for more integrations.
 
-Below are some use cases.
+Below are use cases.
 
 ### Next.js API Routes
 
@@ -415,7 +415,7 @@ await router.run(req, res);
 
 ## Common errors
 
-There are some pitfalls in using `@visulima/connect`. Below are things to keep in mind to use it correctly.
+There are pitfalls in using `@visulima/connect`. Below are things to keep in mind to use it correctly.
 
 1. **Always** `await next()`
 
@@ -580,7 +580,7 @@ const router = createNodeRouter()
 export default router.handler();
 ```
 
-While this allows quick migration from Express.js, consider seperating routes into different files (`/api/user/[userId].js`, `/api/hello.js`) in the future.
+While this allows quick migration from Express.js, consider separating routes into different files (`/api/user/[userId].js`, `/api/hello.js`) in the future.
 
 </details>
 
@@ -603,7 +603,7 @@ router.use(expressWrapper(someExpressMiddleware));
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track
-[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+[Node.js’ release schedule](https://github.com/nodejs/release#release-schedule). Here’s [a
 post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing

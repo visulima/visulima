@@ -59,7 +59,7 @@ The generator currently supports a few options as a second argument:
 
 | Key                      | Default Value | Description                                                                                                                                                                                            |
 | ------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| keepRelationScalarFields | "false"       | By default, the JSON Schema that's generated will output only objects for related model records. If set to "true", this will cause the generator to also output foreign key fields for related records |
+| keepRelationScalarFields | "false"       | By default, the JSON Schema that’s generated will output only objects for related model records. If set to "true", this will cause the generator to also output foreign key fields for related records |
 | schemaId                 | undefined     | Add an id to the generated schema. All references will include the schema id                                                                                                                           |
 | includeRequiredFields    | "false"       | If this flag is `"true"` all required scalar prisma fields that do not have a default value, will be added to the `required` properties field for that schema definition.                              |
 | persistOriginalType      | "false"       | If this flag is `"true"` the original type will be outputed under the property key "originalType"                                                                                                      |
@@ -109,7 +109,7 @@ enum Role {
 }
 ```
 
-into:
+Into:
 
 ```json5
 {
@@ -249,7 +249,7 @@ Output:
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track
-[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+[Node.js’ release schedule](https://github.com/nodejs/release#release-schedule). Here’s [a
 post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing
