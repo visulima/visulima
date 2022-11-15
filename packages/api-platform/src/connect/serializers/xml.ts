@@ -4,7 +4,6 @@ import { toXML } from "jstoxml";
 import type { Serializer } from "./types";
 
 const config = {
-    indent: "  ",
     header: true,
 };
 

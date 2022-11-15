@@ -97,7 +97,11 @@ export {
     RateLimiterMemcache,
 } from "rate-limiter-flexible";
 
-export { default as rateLimiterMiddleware } from "./middleware/rate-limiter-middleware";
-export { default as corsMiddleware } from "./middleware/cors-middleware";
+export { default as rateLimiterMiddleware } from "./connect/middleware/rate-limiter-middleware";
+export { default as corsMiddleware } from "./connect/middleware/cors-middleware";
+export { default as serializersMiddleware } from "./connect/middleware/serializers-middleware";
+export { default as httpHeaderNormalizerMiddleware } from "./connect/middleware/http-header-normalizer";
+
+export { default as swaggerHandler } from "./swagger/swagger-handler";
 
 export { dateIn, dateOut } from "./zod";

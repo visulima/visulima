@@ -39,7 +39,9 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
     private dmmf: any;
 
-    constructor({ primaryKey = "id", prismaClient, manyRelations = {}, models }: AdapterCtorArguments<M>) {
+    constructor({
+        primaryKey = "id", prismaClient, manyRelations = {}, models,
+    }: AdapterCtorArguments<M>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
@@ -102,6 +104,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         console.error(error);
 
         if (error instanceof Error && error.stack) {
+            // eslint-disable-next-line no-console
             console.error(error.stack);
         }
 

@@ -1,8 +1,8 @@
-import { NextHandler } from "@visulima/connect";
+import type { NextHandler } from "@visulima/connect";
 import createHttpError from "http-errors";
-import { NextApiResponse } from "next";
-import { IncomingMessage, ServerResponse } from "node:http";
-import { RateLimiterAbstract, RateLimiterRes } from "rate-limiter-flexible";
+import type { NextApiResponse } from "next";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { RateLimiterAbstract, RateLimiterRes } from "rate-limiter-flexible";
 
 // eslint-disable-next-line max-len
 const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined = (request) => request?.ip

@@ -21,7 +21,8 @@
         "force",
         "bruteforce",
         "brute-force",
-        "attack"
+        "attack",
+        "accepts"
     ],
     "homepage": "https://visulima.com/packages/api-platform",
     "repository": {
@@ -104,7 +105,8 @@
         "swagger-ui-react": "^4.14.3",
         "ts-japi": "^1.8.0",
         "yaml": "^2.1.3",
-        "zod-to-ts": "^1.1.1"
+        "zod-to-ts": "^1.1.1",
+        "accepts": "^1.3.8"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
@@ -114,6 +116,7 @@
         "@testing-library/react-hooks": "^8.0.1",
         "@types/cors": "^2.8.12",
         "@types/debug": "^4.1.7",
+        "@types/accepts": "^1.3.5",
         "@types/http-errors": "^1.8.2",
         "@types/jstoxml": "^2.0.2",
         "@types/lodash.merge": "^4.6.7",

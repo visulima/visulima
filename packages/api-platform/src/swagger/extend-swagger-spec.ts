@@ -45,10 +45,10 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                     Object.entries<OpenAPIV3.ResponseObject>(methodSpec.responses).forEach(([status, responseSpec]) => {
                         if (typeof responseSpec.content === "object") {
                             let examples:
-                            | {
-                                [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
-                            }
-                            | undefined;
+                                | {
+                                      [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+                                  }
+                                | undefined;
 
                             Object.entries(responseSpec.content).forEach(([mediaName, contentSpec]) => {
                                 if (typeof contentSpec.schema === "object") {
@@ -84,14 +84,21 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                                         // eslint-disable-next-line no-param-reassign
                                         methodSpec.responses[status].content[mediaType].schema = schemaIsArray
                                             ? {
-                                                type: "array",
-                                                items: {
-                                                    $ref: `#/components/schemas/${schemaName}`,
-                                                },
-                                            }
+                                                  type: "array",
+                                                  items: {
+                                                      $ref: `#/components/schemas/${schemaName}`,
+                                                  },
+                                              }
                                             : {
-                                                $ref: `#/components/schemas/${schemaName}`,
-                                            };
+                                                  $ref: `#/components/schemas/${schemaName}`,
+                                              };
+
+                                        if (typeof methodSpec.produces === "undefined") {
+                                            // eslint-disable-next-line no-param-reassign
+                                            methodSpec.produces = [];
+                                        }
+
+                                        methodSpec.produces.push(mediaType);
                                     });
                                 }
                             });

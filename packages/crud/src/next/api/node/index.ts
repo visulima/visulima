@@ -14,10 +14,10 @@ async function handler<
 >(adapter: Adapter<T, Q>, options?: HandlerOptions<M>): Promise<ExecuteHandler<R, Response>> {
     return baseHandler<R, Response, T, Q, M>(
         async (response, responseConfig) => {
-            response.status(responseConfig.status).json(responseConfig.data);
+            response.status(responseConfig.status).send(responseConfig.data);
         },
-        async () => {
-            // (response as Response).end();
+        async (response) => {
+            (response as Response).end();
         },
         adapter,
         options,

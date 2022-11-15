@@ -102,7 +102,7 @@ class PrismaJsonSchemaParser {
 
                         // @TODO: added the correct type
                         // @ts-ignore
-                        const { type: schemaType = undefined } = schema[1];
+                        const { type: schemaType } = schema[1];
 
                         if (schemaType && Array.isArray(schemaType)) {
                             if (schemaType.includes("null")) {
@@ -143,6 +143,9 @@ class PrismaJsonSchemaParser {
 
                 accumulator[schemaName] = {
                     type: "object",
+                    xml: {
+                        name: schemaName,
+                    },
                     properties,
                 };
 
@@ -157,6 +160,9 @@ class PrismaJsonSchemaParser {
         this.schemaInputTypes.forEach((value, key) => {
             definitions[key] = {
                 type: "object",
+                xml: {
+                    name: key,
+                },
                 properties: value,
             };
         });
@@ -172,6 +178,10 @@ class PrismaJsonSchemaParser {
             if (inputType.isList) {
                 return {
                     type: "array",
+                    xml: {
+                        name: inputType.type.name,
+                        wrapped: true,
+                    },
                     items: {
                         $ref: reference,
                     },
@@ -186,6 +196,10 @@ class PrismaJsonSchemaParser {
         if (inputType.isList) {
             return {
                 type: "array",
+                xml: {
+                    name: inputType.type.name,
+                    wrapped: true,
+                },
                 items: {
                     type,
                 },
@@ -262,6 +276,9 @@ class PrismaJsonSchemaParser {
         return {
             [PAGINATION_SCHEMA_NAME]: {
                 type: "object",
+                xml: {
+                    name: PAGINATION_SCHEMA_NAME,
+                },
                 properties: {
                     total: {
                         type: "integer",
@@ -412,9 +429,16 @@ class PrismaJsonSchemaParser {
                 ...accumulator,
                 [`${modelName}Page`]: {
                     type: "object",
+                    xml: {
+                        name: `${modelName}Page`,
+                    },
                     properties: {
                         data: {
                             type: "array",
+                            xml: {
+                                name: "Data",
+                                wrapped: true,
+                            },
                             items: {
                                 $ref: formatSchemaReference(modelName),
                             },

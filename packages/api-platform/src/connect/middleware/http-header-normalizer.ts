@@ -1,6 +1,5 @@
 import type { NextHandler } from "@visulima/connect";
-import type { IncomingHttpHeaders } from "node:http";
-import { IncomingMessage } from "node:http";
+import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
 
 const exceptions = {
     alpn: "ALPN",

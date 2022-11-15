@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import httpHeaderNormalizer from "../../src/middleware/http-header-normalizer";
+import httpHeaderNormalizer from "../../../src/connect/middleware/http-header-normalizer";
 
 const normalizeHeaderKey = (key: string) => key.toUpperCase();
 
