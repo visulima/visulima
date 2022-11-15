@@ -11,6 +11,7 @@ import type { OAS3Definition, Tag } from "swagger-jsdoc";
 
 import yamlTransformer from "../connect/serializers/yaml";
 import extendSwaggerSpec from "./extend-swagger-spec";
+import { SwaggerModelsConfig } from "@visulima/crud/src/swagger/types";
 
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
@@ -19,19 +20,16 @@ const swaggerHandler = (
     options: Partial<{
         allowedMediaTypes: { [key: string]: boolean };
         swaggerFilePath: string;
-        crud: Exclude<ModelsToOpenApiParameters, "swagger.allowedMediaTypes">;
+        crud: Exclude<ModelsToOpenApiParameters, "swagger"> & {
+            swagger?: {
+                models?: SwaggerModelsConfig<string>;
+            };
+        };
     }> = {},
 ) => {
     const {
         allowedMediaTypes = {
             "application/json": true,
-
-            "application/vnd.api+json": true,
-            "application/x-yaml": true,
-            "application/xml": true,
-            "text/csv": true,
-            "text/html": true,
-            "text/xml": true,
         },
         swaggerFilePath,
         crud,
