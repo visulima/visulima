@@ -1,3 +1,9 @@
+import type { Handler as CreateHandler } from "./handler/create";
+import type { Handler as DeleteHandler } from "./handler/delete";
+import type { Handler as ListHandler } from "./handler/list";
+import type { Handler as GetHandler } from "./handler/read";
+import type { Handler as UpdateHandler } from "./handler/update";
+
 export enum RouteType {
     CREATE = "CREATE",
     READ_ALL = "READ_ALL",
@@ -21,7 +27,14 @@ export type HandlerOptions<M extends string = string> = {
     formatResourceId?: (resourceId: string) => string | number;
     models?: ModelsOptions<M>;
     exposeStrategy?: "all" | "none";
-    pagination?: PaginationConfig
+    pagination?: PaginationConfig,
+    handlers?: {
+        create?: CreateHandler;
+        delete?: DeleteHandler;
+        get?: GetHandler;
+        list?: ListHandler;
+        update?: UpdateHandler;
+    },
 };
 
 export type PaginationConfig = {

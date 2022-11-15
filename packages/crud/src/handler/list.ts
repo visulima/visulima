@@ -2,19 +2,12 @@ import { paginate } from "@visulima/pagination";
 
 import type { HandlerParameters, PaginationConfig, ParsedQueryParameters } from "../types.d";
 
-type Handler = <T, Q extends ParsedQueryParameters>(
-    parameters: HandlerParameters<T, Q> & { pagination: PaginationConfig },
-) => Promise<{
-    data: any;
-    status: number;
-}>;
-
 type PaginationOptions = {
     page: number;
     perPage: number;
 };
 
-const allHandler: Handler = async ({
+const listHandler: Handler = async ({
     adapter, query, resourceName, pagination,
 }) => {
     let isPaginated = false;
@@ -59,4 +52,11 @@ const allHandler: Handler = async ({
     };
 };
 
-export default allHandler;
+export type Handler = <T, Q extends ParsedQueryParameters>(
+    parameters: HandlerParameters<T, Q> & { pagination: PaginationConfig },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export default listHandler;

@@ -1,1 +1,1 @@
-export type Serializer = (data: any) => any;
+export type Serializer = (data: any) => string | Buffer | Uint8Array;

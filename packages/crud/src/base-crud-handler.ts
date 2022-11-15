@@ -4,9 +4,9 @@ import createHttpError from "http-errors";
 import { ApiError } from "next/dist/server/api-utils";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import allHandler from "./handler/all";
 import createHandler from "./handler/create";
 import deleteHandler from "./handler/delete";
+import listHandler from "./handler/list";
 import readHandler from "./handler/read";
 import updateHandler from "./handler/update";
 import parseQuery from "./query-parser";
@@ -114,14 +114,14 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
 
                 switch (routeType) {
                     case RouteType.READ_ONE: {
-                        responseConfig = await readHandler<T, Q>({
+                        responseConfig = await (config?.handlers?.get || readHandler)<T, Q>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                         });
                         break;
                     }
                     case RouteType.READ_ALL: {
-                        responseConfig = await allHandler<T, Q>({
+                        responseConfig = await (config?.handlers?.list || listHandler)<T, Q>({
                             ...parameters,
                             query: {
                                 ...parameters.query,
@@ -133,14 +133,14 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
                         break;
                     }
                     case RouteType.CREATE: {
-                        responseConfig = await createHandler<T, Q, R>({
+                        responseConfig = await (config?.handlers?.create || createHandler)<T, Q, R>({
                             ...parameters,
                             request: request as R & { body: Record<string, any> },
                         });
                         break;
                     }
                     case RouteType.UPDATE: {
-                        responseConfig = await updateHandler<T, Q, R>({
+                        responseConfig = await (config?.handlers?.update || updateHandler)<T, Q, R>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                             request: request as R & { body: Partial<T> },
@@ -148,7 +148,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
                         break;
                     }
                     case RouteType.DELETE: {
-                        responseConfig = await deleteHandler<T, Q>({
+                        responseConfig = await (config?.handlers?.delete || deleteHandler)<T, Q>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                         });

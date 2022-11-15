@@ -22,14 +22,20 @@ const swaggerHandler = (
         crud: Exclude<ModelsToOpenApiParameters, "swagger.allowedMediaTypes">;
     }> = {},
 ) => {
-    const { allowedMediaTypes = { "application/json": true, ...{
-    "application/vnd.api+json": true,
-    "application/x-yaml": true,
-    "application/xml": true,
-    "text/csv": true,
-    "text/html": true,
-    "text/xml": true,
-} }, swaggerFilePath, crud } = options;
+    const {
+        allowedMediaTypes = {
+            "application/json": true,
+
+            "application/vnd.api+json": true,
+            "application/x-yaml": true,
+            "application/xml": true,
+            "text/csv": true,
+            "text/html": true,
+            "text/xml": true,
+        },
+        swaggerFilePath,
+        crud,
+    } = options;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response) => {
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");

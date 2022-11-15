@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import xmlTransformer from "../../src/serializers/xml";
+import xmlTransformer from "../../../src/connect/serializers/xml";
 
 describe("xml-transformer", () => {
     it("should be able to transform object to xml", () => {

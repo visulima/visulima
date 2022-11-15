@@ -2,13 +2,6 @@ import createHttpError from "http-errors";
 
 import type { UniqueResourceHandlerParameters } from "../types.d";
 
-type Handler = <T, Q, Request>(
-    parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
-) => Promise<{
-    data: any;
-    status: number;
-}>;
-
 const updateHandler: Handler = async ({
     adapter, query, resourceName, resourceId, request,
 }) => {
@@ -22,7 +15,15 @@ const updateHandler: Handler = async ({
             data: updatedResource,
         };
     }
+
     throw createHttpError(404, `${resourceName} ${resourceId} not found`);
 };
+
+export type Handler = <T, Q, Request>(
+    parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
 
 export default updateHandler;

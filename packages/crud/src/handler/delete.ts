@@ -2,13 +2,6 @@ import createHttpError from "http-errors";
 
 import type { UniqueResourceHandlerParameters } from "../types.d";
 
-type Handler = <T, Q>(
-    parameters: UniqueResourceHandlerParameters<T, Q>,
-) => Promise<{
-    data: any;
-    status: number;
-}>;
-
 const deleteHandler: Handler = async ({
     adapter, query, resourceName, resourceId,
 }) => {
@@ -25,4 +18,10 @@ const deleteHandler: Handler = async ({
     throw createHttpError(404, `${resourceName} ${resourceId} not found`);
 };
 
+export type Handler = <T, Q>(
+    parameters: UniqueResourceHandlerParameters<T, Q>,
+) => Promise<{
+    data: any;
+    status: number;
+}>;
 export default deleteHandler;

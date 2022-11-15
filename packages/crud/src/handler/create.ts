@@ -1,12 +1,5 @@
 import type { HandlerParameters } from "../types.d";
 
-type Handler = <T, Q, Request>(
-    parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },
-) => Promise<{
-    data: any;
-    status: number;
-}>;
-
 const createHandler: Handler = async ({
     adapter, query, resourceName, request,
 }) => {
@@ -17,5 +10,12 @@ const createHandler: Handler = async ({
         status: 201,
     };
 };
+
+export type Handler = <T, Q, Request>(
+    parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
 
 export default createHandler;
