@@ -89,6 +89,7 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@visulima/connect": "workspace:*",
         "@visulima/jsdoc-open-api": "workspace:*",
         "accepts": "^1.3.8",
         "case": "^1.6.3",
@@ -174,7 +175,6 @@
         "zod": "^3.19.1"
     },
     "peerDependencies": {
-        "@visulima/connect": "workspace:*",
         "next": "^12.3.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

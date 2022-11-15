@@ -14,7 +14,6 @@
     "dependencies": {
         "@prisma/client": "^4.6.0",
         "@visulima/api-platform": "workspace:*",
-        "@visulima/connect": "workspace:*",
         "@visulima/crud": "workspace:*",
         "core-js": "^3.26.0",
         "chalk": "4.1.2",
