@@ -1,4 +1,4 @@
-// eslint-disable-next-line unicorn/prefer-module
+// eslint-disable-next-line unicorn/prefer-module,import/no-extraneous-dependencies
 const { Command } = require("commander");
 // eslint-disable-next-line unicorn/prefer-module
 const { exit } = require("node:process");

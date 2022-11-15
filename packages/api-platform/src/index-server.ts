@@ -65,38 +65,6 @@ export {
     createEdgeRouter, EdgeRouter, expressWrapper, NodeRouter, Router, withZod, sendJson,
 } from "@visulima/connect";
 
-export type {
-    IRLWrapperBlackAndWhiteOptions,
-    IRateLimiterStoreOptions,
-    IRateLimiterStoreNoAutoExpiryOptions,
-    IRateLimiterRes,
-    IRateLimiterQueueOpts,
-    IRateLimiterOptions,
-    IRateLimiterMongoOptions,
-    IRateLimiterMongoFunctionOptions,
-    IRateLimiterClusterOptions,
-    ICallbackReady,
-} from "rate-limiter-flexible";
-
-export {
-    BurstyRateLimiter,
-    RateLimiterAbstract,
-    RateLimiterCluster,
-    RateLimiterClusterMaster,
-    RateLimiterClusterMasterPM2,
-    RateLimiterStoreAbstract,
-    RLWrapperBlackAndWhite,
-    RateLimiterUnion,
-    RateLimiterRes,
-    RateLimiterRedis,
-    RateLimiterQueue,
-    RateLimiterPostgres,
-    RateLimiterMySQL,
-    RateLimiterMongo,
-    RateLimiterMemory,
-    RateLimiterMemcache,
-} from "rate-limiter-flexible";
-
 export { default as rateLimiterMiddleware } from "./connect/middleware/rate-limiter-middleware";
 export { default as corsMiddleware } from "./connect/middleware/cors-middleware";
 export { default as serializersMiddleware } from "./connect/middleware/serializers-middleware";

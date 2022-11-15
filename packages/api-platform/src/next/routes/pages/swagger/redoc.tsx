@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import type { InferGetStaticPropsType, NextPage } from "next";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";

@@ -1,4 +1,5 @@
 import { expressWrapper } from "@visulima/connect";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import type { CorsOptions, CorsOptionsDelegate } from "cors";
 import cors from "cors";
 import type { IncomingMessage, ServerResponse } from "node:http";

@@ -11,6 +11,7 @@ import getStaticProps from "./get-static-properties-swagger";
 const SwaggerUI = dynamic<{
     spec: any;
     // @ts-ignore
+    // eslint-disable-next-line import/no-extraneous-dependencies
 }>(import("swagger-ui-react"), { ssr: false });
 
 // eslint-disable-next-line max-len

@@ -1,6 +1,6 @@
 import { header as headerCase } from "case";
 import type { OpenAPIV3 } from "openapi-types";
-import type { OAS3Definition } from "swagger-jsdoc";
+import type { OAS3Definition, Operation, Responses } from "swagger-jsdoc";
 
 const extendComponentSchemas = (spec: Partial<OAS3Definition>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
     if (typeof spec.components !== "object") {
@@ -36,6 +36,109 @@ const extendComponentExamples = (spec: Partial<OAS3Definition>, exampleName: str
     }
 };
 
+function extendSwaggerWithMediaTypeSchema(
+    responseSpec: OpenAPIV3.ResponseObject,
+    allowedMediaTypes: { [p: string]: boolean } | undefined,
+    pathKey: string,
+    spec: Partial<OAS3Definition>,
+    methodSpec: Operation,
+    status: string,
+) {
+    let examples:
+        | {
+              [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+          }
+        | undefined;
+
+    Object.entries(responseSpec.content as object).forEach(([mediaName, contentSpec]) => {
+        if (typeof contentSpec.schema === "object") {
+            const { schema } = contentSpec;
+
+            if (mediaName === "application/json" && typeof contentSpec.examples !== "undefined") {
+                examples = contentSpec.examples;
+            }
+
+            if (typeof (schema as OpenAPIV3.ReferenceObject).$ref !== "undefined") {
+                return;
+            }
+
+            const schemaIsArray = (schema as OpenAPIV3.SchemaObject).type === "array";
+
+            Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+                if (!allowed) {
+                    return;
+                }
+
+                // eslint-disable-next-line max-len
+                const schemaName = `${headerCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
+
+                extendComponentSchemas(spec as OAS3Definition, schemaName, schema as OpenAPIV3.SchemaObject);
+
+                if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.schema === "undefined") {
+                    // eslint-disable-next-line no-param-reassign
+                    (methodSpec.responses as Responses)[status].content[mediaType] = { schema: {} };
+                }
+
+                // eslint-disable-next-line no-param-reassign
+                (methodSpec.responses as Responses)[status].content[mediaType].schema = schemaIsArray
+                    ? {
+                          type: "array",
+                          items: {
+                              $ref: `#/components/schemas/${schemaName}`,
+                          },
+                      }
+                    : {
+                          $ref: `#/components/schemas/${schemaName}`,
+                      };
+
+                if (typeof methodSpec.produces === "undefined") {
+                    // eslint-disable-next-line no-param-reassign
+                    methodSpec.produces = [];
+                }
+
+                methodSpec.produces.push(mediaType);
+            });
+        }
+    });
+
+    return examples;
+}
+
+function extendSwaggerWithMediaTypeExamples(
+    responseSpec: OpenAPIV3.ResponseObject,
+    allowedMediaTypes: { [p: string]: boolean } | undefined,
+    pathKey: string,
+    spec: Partial<OAS3Definition>,
+    examples: { [p: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject } | undefined,
+    methodSpec: Operation,
+    status: string,
+) {
+    Object.keys(responseSpec.content as object).forEach((mediaName) => {
+        if (mediaName === "application/json") {
+            return;
+        }
+
+        Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+            if (!allowed) {
+                return;
+            }
+
+            // eslint-disable-next-line max-len
+            const examplesName = `${headerCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
+
+            extendComponentExamples(spec as OAS3Definition, examplesName, examples as OpenAPIV3.SchemaObject);
+
+            if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.examples === "undefined") {
+                // eslint-disable-next-line no-param-reassign
+                (methodSpec.responses as Responses)[status].content[mediaType] = { examples: {} };
+            }
+
+            // eslint-disable-next-line no-param-reassign
+            (methodSpec.responses as Responses)[status].content[mediaType].examples = examples;
+        });
+    });
+}
+
 // eslint-disable-next-line radar/cognitive-complexity
 export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowedMediaTypes?: { [key: string]: boolean }): Partial<OAS3Definition> {
     if (typeof spec === "object" && typeof spec.paths === "object") {
@@ -48,88 +151,10 @@ export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowed
                                 | {
                                       [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
                                   }
-                                | undefined;
-
-                            Object.entries(responseSpec.content).forEach(([mediaName, contentSpec]) => {
-                                if (typeof contentSpec.schema === "object") {
-                                    const { schema } = contentSpec;
-
-                                    if (mediaName === "application/json" && typeof contentSpec.examples !== "undefined") {
-                                        examples = contentSpec.examples;
-                                    }
-
-                                    if (typeof (schema as OpenAPIV3.ReferenceObject).$ref !== "undefined") {
-                                        return;
-                                    }
-
-                                    const schemaIsArray = (schema as OpenAPIV3.SchemaObject).type === "array";
-
-                                    Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
-                                        if (!allowed) {
-                                            return;
-                                        }
-
-                                        // eslint-disable-next-line max-len
-                                        const schemaName = `${headerCase(pathKey.trim().replace("/", ""))}${
-                                            mediaType === "application/ld+json" ? ".jsonld" : ""
-                                        }`;
-
-                                        extendComponentSchemas(spec as OAS3Definition, schemaName, schema as OpenAPIV3.SchemaObject);
-
-                                        if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.schema === "undefined") {
-                                            // eslint-disable-next-line no-param-reassign
-                                            methodSpec.responses[status].content[mediaType] = { schema: {} };
-                                        }
-
-                                        // eslint-disable-next-line no-param-reassign
-                                        methodSpec.responses[status].content[mediaType].schema = schemaIsArray
-                                            ? {
-                                                  type: "array",
-                                                  items: {
-                                                      $ref: `#/components/schemas/${schemaName}`,
-                                                  },
-                                              }
-                                            : {
-                                                  $ref: `#/components/schemas/${schemaName}`,
-                                              };
-
-                                        if (typeof methodSpec.produces === "undefined") {
-                                            // eslint-disable-next-line no-param-reassign
-                                            methodSpec.produces = [];
-                                        }
-
-                                        methodSpec.produces.push(mediaType);
-                                    });
-                                }
-                            });
+                                | undefined = extendSwaggerWithMediaTypeSchema(responseSpec, allowedMediaTypes, pathKey, spec, methodSpec, status);
 
                             if (typeof examples !== "undefined") {
-                                Object.keys(responseSpec.content).forEach((mediaName) => {
-                                    if (mediaName === "application/json") {
-                                        return;
-                                    }
-
-                                    Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
-                                        if (!allowed) {
-                                            return;
-                                        }
-
-                                        // eslint-disable-next-line max-len
-                                        const examplesName = `${headerCase(pathKey.trim().replace("/", ""))}${
-                                            mediaType === "application/ld+json" ? ".jsonld" : ""
-                                        }`;
-
-                                        extendComponentExamples(spec as OAS3Definition, examplesName, examples as OpenAPIV3.SchemaObject);
-
-                                        if (typeof methodSpec?.responses?.[status]?.content[mediaType]?.examples === "undefined") {
-                                            // eslint-disable-next-line no-param-reassign
-                                            methodSpec.responses[status].content[mediaType] = { examples: {} };
-                                        }
-
-                                        // eslint-disable-next-line no-param-reassign
-                                        methodSpec.responses[status].content[mediaType].examples = examples;
-                                    });
-                                });
+                                extendSwaggerWithMediaTypeExamples(responseSpec, allowedMediaTypes, pathKey, spec, examples, methodSpec, status);
                             }
                         }
                     });

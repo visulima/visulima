@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { collect } from "@visulima/readdir";
 import fs from "node:fs";
 import { join } from "node:path";
