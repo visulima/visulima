@@ -187,8 +187,8 @@
         "commander": "^9.4.1",
         "cors": "^2.8.5",
         "rate-limiter-flexible": "^2.3.11",
-        "swagger-ui-react": "^4.14.3",
         "redoc": "^2.0.0",
+        "swagger-ui-react": "^4.14.3",
         "webpack": "^5.74.0"
     },
     "engines": {

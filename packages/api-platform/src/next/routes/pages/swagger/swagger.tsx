@@ -13,6 +13,11 @@ const SwaggerUI = dynamic<{
     // @ts-ignore
     // eslint-disable-next-line import/no-extraneous-dependencies
 }>(import("swagger-ui-react"), { ssr: false });
+dynamic<{
+    spec: any;
+    // @ts-ignore
+    // eslint-disable-next-line import/no-extraneous-dependencies
+}>(import("swagger-ui-react/swagger-ui.css"), { ssr: false });
 
 // eslint-disable-next-line max-len
 const SwaggerApiDocument: (
