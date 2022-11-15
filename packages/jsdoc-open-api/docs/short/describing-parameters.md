@@ -88,7 +88,7 @@ You would define this operation as follows:
 
 ### Cookie parameters
 Operations can also pass parameters in the `Cookie` header, as `Cookie: name=value`.
-Multiple cookie parameters are sent in the same header, separated by a semicolon and space.
+Multiple cookie parameters are sent in the same header, separated by a semicolon, and space.
 
 ```
 GET /api/users
@@ -110,13 +110,13 @@ Use `@cookieParam` to define cookie parameters:
 
 ### Required and optional parameters
 By default, all request parameters are treated as required.
-You can enclose the parameter's name in square brackets `[ ]` to mark it as optional.
-Note that path parameters are always required.
+You can enclose the parameter’s name in square brackets `[ ]` to mark it as optional.
+ Path parameters are always required.
 
 ### Default parameter values
 Append `=value` to the variable name to specify the default value for an optional parameter.
 The default value is the one that the server uses if the client does not supply the parameter value in the request.
-The value type must be the same as the parameter's data type.
+The value type must be the same as the parameter’s data type.
 A typical example is paging parameters such as offset and limit:
 
 ```

@@ -1,0 +1,127 @@
+{
+    "name": "@visulima/prisma-dmmf-transformer",
+    "version": "0.0.0",
+    "description": "A generator for Prisma to generate a valid JSON Schema v7.",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "prisma",
+        "prisma2",
+        "prisma3",
+        "prisma4",
+        "prisma-schema",
+        "dmmf",
+        "transformer",
+        "json-schema"
+    ],
+    "homepage": "https://visulima.com/packages/prisma-dmmf-transformer",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/prisma-dmmf-transformer"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "import": "./dist/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.module.mjs",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "files": [
+        "src",
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist",
+        "coverage": "vitest run --coverage",
+        "dev": "pnpm predev && pnpm run build --watch",
+        "lint:eslint": "cross-env NO_LOGS=true eslint --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@prisma/generator-helper": "4.6.1",
+        "@prisma/internals": "4.6.1"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^4.0.9",
+        "@anolilab/semantic-release-preset": "^2.0.7",
+        "@prisma/client": "4.6.1",
+        "@rushstack/eslint-plugin-security": "^0.5.0",
+        "@types/json-schema": "7.0.11",
+        "@types/micromatch": "^4.0.2",
+        "@types/node": "^18.8.4",
+        "@typescript-eslint/eslint-plugin": "^5.40.0",
+        "@typescript-eslint/parser": "^5.40.0",
+        "ajv": "8.11.0",
+        "ajv-formats": "2.1.1",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.25.0",
+        "eslint-plugin-compat": "^4.0.2",
+        "eslint-plugin-eslint-comments": "^3.2.0",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-json": "^3.1.0",
+        "eslint-plugin-jsonc": "^2.5.0",
+        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-markdown": "^3.0.0",
+        "eslint-plugin-material-ui": "^1.0.1",
+        "eslint-plugin-no-loops": "^0.3.0",
+        "eslint-plugin-no-secrets": "^0.8.9",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-optimize-regex": "^1.2.1",
+        "eslint-plugin-promise": "^6.0.1",
+        "eslint-plugin-radar": "^0.2.1",
+        "eslint-plugin-react": "7.31.10",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-simple-import-sort": "^8.0.0",
+        "eslint-plugin-sort-keys-fix": "^1.1.2",
+        "eslint-plugin-testing-library": "^5.7.2",
+        "eslint-plugin-unicorn": "^44.0.2",
+        "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
+        "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "prettier": "^2.7.1",
+        "prisma": "4.6.1",
+        "read-pkg": "^7.1.0",
+        "rimraf": "^3.0.2",
+        "semantic-release": "^19.0.5",
+        "tsup": "^6.2.3",
+        "typescript": "^4.8.4",
+        "vitest": "^0.24.1"
+    },
+    "peerDependencies": {
+        "@prisma/client": "3.* || 4.*",
+        "prisma": "3.* || 4.*"
+    },
+    "engines": {
+        "node": ">=16"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

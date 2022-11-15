@@ -3,7 +3,7 @@ Request bodies are typically used with "create" and "update" operations (POST, P
 For example, when creating a resource using POST or PUT,
 the request body usually contains the representation of the resource to be created.
 
-It's important to note that unlike parameters, **request bodies are optional by default**.
+It’s important to  unlike parameters, **request bodies are optional by default**.
 To mark the body as required, use `@bodyRequired`.
 
 ```js
@@ -83,9 +83,9 @@ Can be reused as:
 ### Form data
 The term "form data" is used for the media types `application/x-www-form-urlencoded` and `multipart/form-data`,
 which are commonly used to submit HTML forms.
-- `application/x-www-form-urlencoded` is used to send simple ASCII text data as key=value pairs.
+- `application/x-www-form-urlencoded` is used to send  ASCII text data as key=value pairs.
 The payload format is similar to query parameters.
-- `multipart/form-data` allows submitting binary data as well as multiple media types in a single message (for example, image and JSON).
+- `multipart/form-data` allows submitting binary data as well as multiple media types in a single message (for example, image, and JSON).
 Each form field has its own section in the payload with internal HTTP headers.
 `multipart` requests are commonly used for file uploads.
 
@@ -99,7 +99,7 @@ To illustrate form data, consider an HTML POST form:
 </form>
 ```
 
-This form POSTs data to the form's endpoint:
+This form POSTs data to the form’s endpoint:
 
 ```
 POST /survey HTTP/1.1

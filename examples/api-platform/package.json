@@ -1,0 +1,38 @@
+{
+    "name": "nextjs_example_api-platform",
+    "version": "0.0.0",
+    "private": true,
+    "description": "API Platform distribution for Next.js",
+    "scripts": {
+        "build": "next build",
+        "clean": "rimraf --no-glob ./.next ./out ./coverage ./tsconfig.tsbuildinfo node_modules",
+        "dev": "next dev",
+        "lint": "next lint",
+        "migrate:deploy": "prisma migrate up --experimental",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/api-platform": "workspace:*",
+        "core-js": "^3.26.0",
+        "chalk": "4.1.2",
+        "commander": "^9.4.1",
+        "encoding": "^0.1.13",
+        "mobx": "^6.6.2",
+        "next": "13.0.2",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "redoc": "^2.0.0",
+        "styled-components": "^5.3.6",
+        "swagger-ui-react": "^4.14.3",
+        "zod": "^3.19.1"
+    },
+    "devDependencies": {
+        "@types/node": "^18.11.9",
+        "@types/react": "18.0.25",
+        "@types/react-dom": "^18.0.8",
+        "eslint": "^8.27.0",
+        "eslint-config-next": "13.0.2",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.8.4"
+    }
+}
