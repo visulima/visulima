@@ -4,18 +4,19 @@ import pingCheck from "../../src/checks/ping-check";
 
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
-        const result = await pingCheck("https://example.com")();
+        const result = await pingCheck("www.github.com")();
 
         expect(result).toStrictEqual({
-            displayName: "Ping check for https://example.com",
+            displayName: "Ping check for www.github.com",
             health: {
                 healthy: true,
-                message: "Ping check for https://example.com was successful.",
+                message: "Ping check for www.github.com was successful.",
                 timestamp: expect.any(String),
             },
             meta: expect.any(Object),
         });
     });
+
     it("should return unhealthy when the host is reachable", async () => {
         const result = await pingCheck("https://example.com1")();
 
