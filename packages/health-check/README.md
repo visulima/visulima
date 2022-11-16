@@ -200,5 +200,5 @@ The visulima health-check is open-sourced software licensed under the [MIT][lice
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/health-check?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/health-check/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/health-check/v/alpha "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/health-check/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/health-check/v/latest "npm"

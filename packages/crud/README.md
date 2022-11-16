@@ -96,6 +96,6 @@ The visulima crud is open-sourced software licensed under the [MIT][license-url]
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/crud?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/crud/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/crud/v/alpha "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/crud/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/crud/v/latest "npm"
 

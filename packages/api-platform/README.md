@@ -132,6 +132,6 @@ The visulima api-platform is open-sourced software licensed under the [MIT][lice
 [typescript-url]: "typescript"
 [license-image]: https://img.shields.io/npm/l/@visulima/api-platform?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/api-platform/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/api-platform/v/alpha "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/api-platform/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/api-platform/v/latest "npm"
 
