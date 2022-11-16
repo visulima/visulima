@@ -1,15 +1,9 @@
 import { describe, expect, it } from "vitest";
-import "cross-fetch/polyfill";
 
 import dnsCheck from "../../src/checks/dns-check";
 
 describe("dnsCheck", () => {
     it("should return healthy when the host is resolved", async () => {
-        if (process.env.CI) {
-            console.log("Skipping DNS check in CI environment");
-            return;
-        }
-
         const result = await dnsCheck("example.com")();
 
         expect(result).toStrictEqual({
