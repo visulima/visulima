@@ -725,6 +725,7 @@ importers:
       '@typescript-eslint/parser': ^5.40.0
       cacheable-lookup: ^7.0.0
       cross-env: ^7.0.3
+      cross-fetch: ^3.1.5
       eslint: ^8.25.0
       eslint-plugin-compat: ^4.0.2
       eslint-plugin-eslint-comments: ^3.2.0
@@ -776,6 +777,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.41.0_rsnrydhm7veestpwsooohufgve
       '@typescript-eslint/parser': 5.41.0_rmayb2veg2btbq6mbmnyivgasy
       cross-env: 7.0.3
+      cross-fetch: 3.1.5
       eslint: 8.27.0
       eslint-plugin-compat: 4.0.2_eslint@8.27.0
       eslint-plugin-eslint-comments: 3.2.0_eslint@8.27.0
@@ -6888,7 +6890,6 @@ packages:
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
-    dev: false
 
   /cross-fetch/3.1.5_encoding@0.1.13:
     resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}

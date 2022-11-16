@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { testApiHandler } from "next-test-api-route-handler";
+import "cross-fetch/polyfill";
 
-import { healthCheckHandler, HealthCheck as HealthCheck, nodeEnvironmentCheck } from "../../src";
+import { healthCheckHandler, HealthCheck as HealthCheck, nodeEnvCheck } from "../../src";
 
 const HealthCheckService = new HealthCheck();
 
-HealthCheckService.addChecker("node-env", nodeEnvironmentCheck);
+HealthCheckService.addChecker("node-env", nodeEnvCheck());
 
 describe("health check route", () => {
     it("endpoint returns health checks reports", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         await testApiHandler({
             handler: healthCheckHandler(HealthCheckService),
@@ -17,6 +18,7 @@ describe("health check route", () => {
                 const response = await fetch();
 
                 expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toBe("application/json");
 
                 const jsonResponse = await response.json();
 
@@ -24,55 +26,64 @@ describe("health check route", () => {
                     appName: "unknown",
                     appVersion: "unknown",
                     message: "Health check successful",
-                    reports: {},
+                    reports: {
+                        "node-env": {
+                            displayName: "Node Environment Check",
+                            health: {
+                                healthy: true,
+                                timestamp: expect.any(String),
+                            },
+                            meta: {
+                                env: "test",
+                            },
+                        },
+                    },
                     status: "ok",
                     timestamp: jsonResponse.timestamp,
                 });
             },
         });
     });
-    //
-    // it("endpoint can handel checks and returns reports", async () => {
-    //     expect.assertions(2);
-    //
-    //     await testApiHandler({
-    //         handler: healthCheckHandler({
-    //             "event-loop": async () => {
-    //                 return {
-    //                     displayName: "event loop",
-    //                     health: {
-    //                         healthy: true,
-    //                         message: "event loop is healthy",
-    //                         timestamp: "2021-07-01T00:00:00.000Z",
-    //                     },
-    //                 };
-    //             },
-    //         }),
-    //         test: async ({ fetch }) => {
-    //             const response = await fetch();
-    //
-    //             expect(response.status).toBe(200);
-    //
-    //             const jsonResponse = await response.json();
-    //
-    //             expect(jsonResponse).toStrictEqual({
-    //                 appName: "unknown",
-    //                 appVersion: "unknown",
-    //                 message: "Health check successful",
-    //                 reports: {
-    //                     "event-loop": {
-    //                         displayName: "event loop",
-    //                         health: {
-    //                             healthy: true,
-    //                             message: "event loop is healthy",
-    //                             timestamp: "2021-07-01T00:00:00.000Z",
-    //                         },
-    //                     },
-    //                 },
-    //                 status: "ok",
-    //                 timestamp: jsonResponse.timestamp,
-    //             });
-    //         },
-    //     });
-    // });
+
+    it("endpoint returns health checks reports with custom app name and version", async () => {
+        expect.assertions(3);
+
+        process.env.APP_NAME = "my-app";
+        process.env.APP_VERSION = "1.0.0";
+
+        await testApiHandler({
+            handler: healthCheckHandler(HealthCheckService),
+            test: async ({ fetch }) => {
+                const response = await fetch();
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toBe("application/json");
+
+                const jsonResponse = await response.json();
+
+                expect(jsonResponse).toStrictEqual({
+                    appName: "my-app",
+                    appVersion: "1.0.0",
+                    message: "Health check successful",
+                    reports: {
+                        "node-env": {
+                            displayName: "Node Environment Check",
+                            health: {
+                                healthy: true,
+                                timestamp: expect.any(String),
+                            },
+                            meta: {
+                                env: "test",
+                            },
+                        },
+                    },
+                    status: "ok",
+                    timestamp: jsonResponse.timestamp,
+                });
+            },
+        });
+
+        process.env.APP_NAME = undefined;
+        process.env.APP_VERSION = undefined;
+    });
 });

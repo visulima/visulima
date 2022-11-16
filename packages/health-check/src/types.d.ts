@@ -1,4 +1,4 @@
-export type Checker = (() => Promise<HealthReportEntry>);
+export type Checker = () => Promise<HealthReportEntry>;
 
 /**
  * Shape of health report entry. Each checker must

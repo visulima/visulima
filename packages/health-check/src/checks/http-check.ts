@@ -8,23 +8,26 @@ const DISPLAY_NAME = "HTTP check for";
  * Register the `http` checker to ensure http body and status is correct.
  */
 const httpCheck =
-    (host: RequestInfo | URL, fetchOption?: RequestInit, expected?: { status?: number; body?: string }): Checker =>
+    (host: RequestInfo | URL, options?: {
+        fetchOptions?: RequestInit,
+        expected?: { status?: number; body?: string }
+    }): Checker =>
     async () => {
         try {
             // eslint-disable-next-line compat/compat
-            const response = await fetch(host, fetchOption);
+            const response = await fetch(host, options?.fetchOptions || {});
 
-            if (typeof expected?.status !== "undefined" && expected?.status !== response.status) {
-                throw new Error(`${DISPLAY_NAME} ${host} returned status ${response.status} instead of ${expected.status}`);
+            if (typeof options?.expected?.status !== "undefined" && options?.expected?.status !== response.status) {
+                throw new Error(`${DISPLAY_NAME} ${host} returned status ${response.status} instead of ${options?.expected.status}`);
             }
 
-            if (typeof expected?.body !== "undefined") {
+            if (typeof options?.expected?.body !== "undefined") {
                 const textBody = await response.text();
 
                 try {
-                    deepStrictEqual(textBody, expected.body);
+                    deepStrictEqual(textBody, options?.expected.body);
                 } catch {
-                    throw new Error(`${DISPLAY_NAME} ${host} returned body ${JSON.stringify(textBody)} instead of ${JSON.stringify(expected.body)}`);
+                    throw new Error(`${DISPLAY_NAME} ${host} returned body ${JSON.stringify(textBody)} instead of ${JSON.stringify(options?.expected.body)}`);
                 }
             }
 
@@ -37,7 +40,7 @@ const httpCheck =
                 },
                 meta: {
                     host,
-                    method: fetchOption?.method || "GET",
+                    method: options?.fetchOptions?.method || "GET",
                     status: response.status,
                 },
             };
@@ -51,7 +54,7 @@ const httpCheck =
                 },
                 meta: {
                     host,
-                    method: fetchOption?.method || "GET",
+                    method: options?.fetchOptions?.method || "GET",
                 },
             };
         }

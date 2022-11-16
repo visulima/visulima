@@ -22,7 +22,7 @@ export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true
             response.setHeader("Content-Type", "application/json");
         }
 
-        response.end(JSON.stringify(payload));
+        response.end(JSON.stringify(payload, null, 2));
     };
 
 export type HealthCheckApiPayload = {

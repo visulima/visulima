@@ -108,4 +108,71 @@ describe("HealthCheck", () => {
             },
         });
     });
+
+    it("should show a list of all services", async () => {
+        const healthCheck = new HealthCheck();
+
+        healthCheck.addChecker("database", async () => {
+            return {
+                displayName: "database",
+                health: {
+                    healthy: true,
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        healthCheck.addChecker("event-loop", async () => {
+            return {
+                displayName: "event-loop",
+                health: {
+                    healthy: true,
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        expect(healthCheck.servicesList).toStrictEqual(["database", "event-loop"]);
+    });
+
+    it("should return a boolean if the service is live", async () => {
+        const healthCheck = new HealthCheck();
+
+        healthCheck.addChecker("database", async () => {
+            return {
+                displayName: "database",
+                health: {
+                    healthy: false,
+                    message: "error",
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        expect(await healthCheck.isLive()).toBe(false);
+
+        const healthCheck2 = new HealthCheck();
+
+        healthCheck2.addChecker("database", async () => {
+            return {
+                displayName: "database",
+                health: {
+                    healthy: true,
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        healthCheck2.addChecker("event-loop", async () => {
+            return {
+                displayName: "event-loop",
+                health: {
+                    healthy: true,
+                    timestamp: dateString,
+                },
+            };
+        });
+
+        expect(await healthCheck2.isLive()).toBe(true);
+    });
 });

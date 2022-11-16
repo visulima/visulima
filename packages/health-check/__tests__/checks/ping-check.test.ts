@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { pingCheck } from "../../src";
+import pingCheck from "../../src/checks/ping-check";
 
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {

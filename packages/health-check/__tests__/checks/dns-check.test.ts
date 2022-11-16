@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dnsCheck } from "../../src";
+import dnsCheck from "../../src/checks/dns-check";
 
 describe("dnsCheck", () => {
     it("should return healthy when the host is resolved", async () => {
