@@ -6,7 +6,7 @@ A benchmark against popular router using [wrk](https://github.com/wg/wrk)
 wrk -t12 -c400 -d30s http://localhost:3000/user/123
 ```
 
-> Remember, this benchmark is for reference only and by no means says that one is better than the others. The slowest part of the app is still the application code itself, not the library.
+> Remember, this benchmark is for reference only and by no means says that one is better than the others. The slowest part of the app is still the app code itself, not the library.
 
 ## How-to
 
