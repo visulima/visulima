@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
     db:
-        image: "postgres:13.3-alpine"
+        image: "postgres:14.6-alpine"
         volumes:
             - "data:/var/lib/postgresql/data"
         # Here we are using the already existing .env.local file
