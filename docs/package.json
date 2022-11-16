@@ -32,7 +32,7 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.1.1",
-        "@next/eslint-plugin-next": "^12.3.1",
+        "@next/eslint-plugin-next": "^13.0.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@types/node": "18.11.9",
         "@types/react": "18.0.25",
