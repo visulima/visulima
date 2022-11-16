@@ -1,5 +1,5 @@
 {
-    "name": "nextjs_example_connect",
+    "name": "nextjs_example_health_check",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -10,11 +10,15 @@
         "start": "next start"
     },
     "dependencies": {
-        "@visulima/connect": "workspace:*",
-        "cookie": "^0.5.0",
+        "@visulima/api-platform": "workspace:*",
+        "@visulima/health-check": "workspace:*",
+        "chalk": "4.1.2",
+        "commander": "^9.4.1",
         "next": "13.0.3",
         "react": "18.2.0",
-        "react-dom": "18.2.0"
+        "react-dom": "18.2.0",
+        "swagger-ui-react": "^4.15.5",
+        "zod": "^3.19.1"
     },
     "devDependencies": {
         "@types/cookie": "^0.5.1",
