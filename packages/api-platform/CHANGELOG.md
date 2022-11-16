@@ -1,3 +1,16 @@
+## @visulima/api-platform [1.0.2](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.1...@visulima/api-platform@1.0.2) (2022-11-16)
+
+
+### Bug Fixes
+
+* fixed wrong image and url for the npm version ([297c187](https://github.com/visulima/visulima/commit/297c187d07ca7fb82d25fd46defe4f320c514de9))
+
+
+
+### Dependencies
+
+* **@visulima/crud:** upgraded to 1.0.1
+
 ## @visulima/api-platform [1.0.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.0...@visulima/api-platform@1.0.1) (2022-11-15)
 
 
