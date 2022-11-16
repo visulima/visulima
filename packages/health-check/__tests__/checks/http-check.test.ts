@@ -20,7 +20,7 @@ describe("httpCheck", () => {
                 status: 200,
             },
         });
-    });
+    }, 5000);
 
     it("should return healthy when the host is reachable with post method", async () => {
         const result = await httpCheck("https://example.com", {
@@ -43,7 +43,7 @@ describe("httpCheck", () => {
                 status: 200,
             },
         });
-    });
+    }, 5000);
 
     it("should return healthy when the host is reachable with post method and body", async () => {
         const result = await httpCheck("https://example.com", {
@@ -67,7 +67,7 @@ describe("httpCheck", () => {
                 status: 200,
             },
         });
-    });
+    }, 5000);
 
     it("should return unhealthy when the status is not the expected one", async () => {
         const result = await httpCheck("https://example.com", {
@@ -86,7 +86,7 @@ describe("httpCheck", () => {
                 method: "GET",
             },
         });
-    });
+    }, 5000);
 
     it("should return unhealthy when the body is not the expected one", async () => {
         const result = await httpCheck("https://example.com", {
@@ -105,5 +105,5 @@ describe("httpCheck", () => {
                 method: "GET",
             },
         });
-    });
+    }, 5000);
 });

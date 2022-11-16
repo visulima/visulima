@@ -15,7 +15,7 @@ describe("pingCheck", () => {
             },
             meta: expect.any(Object),
         });
-    });
+    }, 10000);
 
     it("should return unhealthy when the host is reachable", async () => {
         const result = await pingCheck("https://example.com1")();
