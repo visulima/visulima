@@ -26,17 +26,14 @@ module.exports = {
     rules: {
         // Customize your rules
         "import/extensions": "off",
+
         "unicorn/no-array-for-each": "off",
         "unicorn/no-null": "off",
         "unicorn/no-array-reduce": "off",
 
-        "no-restricted-imports": [
-            "error",
-            {
-                patterns: ["@mui/*/*/*", "!@mui/core/test-utils/*"],
-            },
-        ],
         "max-len": ["error", { code: 160 }],
+
+        "react/jsx-props-no-spreading": "off"
     },
     overrides: [
         {

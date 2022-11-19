@@ -1,7 +1,13 @@
-dist
 node_modules
 inject-react-import.js
-.next
-next-env.d.ts
+vitest.config.ts
 tailwind.config.js
+next-env.d.ts
 postcss.config.js
+
+css
+coverage
+.next
+
+__test__/__fixture__
+__test__/__snapshots__
