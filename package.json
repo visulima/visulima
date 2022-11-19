@@ -85,10 +85,5 @@
     },
     "prisma": {
         "schema": "db/schema.prisma"
-    },
-    "pnpm": {
-        "patchedDependencies": {
-            "nextra@2.0.0-beta.41": "patches/nextra@2.0.0-beta.41.patch"
-        }
     }
 }
