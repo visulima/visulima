@@ -29,7 +29,6 @@ const Pre = ({
     return (
         <>
             <pre className={className} {...properties}>
-                {/* <svg aria-hidden="true" viewBox="0 0 42 10" fill="none" className="h-2.5 w-auto stroke-slate-500/75 mb-3"><circle cx="5" cy="5" r="4.5"></circle><circle cx="21" cy="5" r="4.5"></circle><circle cx="37" cy="5" r="4.5"></circle></svg> */}
                 {filename && (
                     <div className="mt-2 flex space-x-2 text-xs mb-4">
                         <div className="flex h-6 rounded-full bg-gradient-to-r from-sky-400/30 via-sky-400 to-sky-400/30 p-px font-medium text-sky-300">

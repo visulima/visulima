@@ -4,10 +4,7 @@ const Code = ({ children, className = "", ...properties }: ComponentProps<"code"
     const hasLineNumbers = "data-line-numbers" in properties;
     return (
         <code
-            className={[
-                hasLineNumbers ? "[counter-reset:line]" : "",
-                className,
-            ].join(" ")}
+            className={[hasLineNumbers ? "[counter-reset:line]" : "", className].join(" ")}
             // always show code blocks in ltr
             dir="ltr"
             {...properties}

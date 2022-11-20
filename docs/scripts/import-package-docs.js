@@ -11,6 +11,8 @@ const fs = require("node:fs");
 const fse = require("fs-extra");
 // eslint-disable-next-line unicorn/prefer-module
 const path = require("node:path");
+// eslint-disable-next-line unicorn/prefer-module
+const process = require("node:process");
 
 // eslint-disable-next-line no-undef, unicorn/prefer-module
 const packagesPath = path.join(__dirname, "..", "pages", "docs", "packages");
@@ -36,12 +38,14 @@ const { symlink, copy, path: pathOption } = argv;
 if ((!symlink && !copy) || (symlink && copy)) {
     // eslint-disable-next-line no-console
     console.error("Please specify either --symlink or --copy");
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
 }
 
 if (typeof pathOption !== "string") {
     // eslint-disable-next-line no-console
     console.error("Please specify a path on --path");
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
 }
 
@@ -55,6 +59,7 @@ async function command() {
     // eslint-disable-next-line no-console
     console.log("");
 
+    // eslint-disable-next-line no-restricted-syntax
     for await (const result of walk(searchPath, {
         maxDepth: 20,
         includeFiles: true,
@@ -79,4 +84,7 @@ async function command() {
     }
 }
 
-await command();
+command().catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+});

@@ -1,5 +1,3 @@
-import React from "react";
-
 import type { PageTheme } from "./types";
 
 export const DEFAULT_LOCALE = "en-US";

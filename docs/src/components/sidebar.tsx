@@ -32,10 +32,7 @@ const classes = {
         "contrast-more:text-gray-900 contrast-more:dark:text-gray-50",
         "contrast-more:border-transparent contrast-more:hover:border-gray-900 contrast-more:dark:hover:border-gray-50",
     ),
-    active: cn(
-        "font-semibold text-primary-500",
-        "contrast-more:border-primary-500 contrast-more:dark:border-primary-500",
-    ),
+    active: cn("font-semibold text-primary-500", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
     list: cn("flex flex-col gap-1"),
     border: cn(
         "relative before:absolute before:inset-y-1.5",

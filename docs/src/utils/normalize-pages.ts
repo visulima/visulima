@@ -102,12 +102,12 @@ export function normalizePages({
         .filter(
             (a): a is MdxFile | Folder =>
                 // not meta
-                a.kind !== "Meta" &&
+                a.kind !== "Meta"
                 // not hidden routes
-                !a.name.startsWith("_") &&
+                && !a.name.startsWith("_")
                 // locale matches, or fallback to default locale
                 // @ts-expect-error
-                (a.locale === locale || a.locale === defaultLocale || !a.locale),
+                && (a.locale === locale || a.locale === defaultLocale || !a.locale),
         )
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
@@ -176,9 +176,8 @@ export function normalizePages({
         // If the doc is under the active page root.
         const isCurrentDocsTree = route.startsWith(docsRoot);
 
-        const normalizedChildren: any =
-            a.children &&
-            normalizePages({
+        const normalizedChildren: any = a.children
+            && normalizePages({
                 list: a.children,
                 locale,
                 defaultLocale,
@@ -375,11 +374,11 @@ export interface MenuItem extends MdxFile {
     display?: Display;
     children?: PageItem[];
     items?: Record<
-        string,
-        {
-            title: string;
-            href?: string;
-            newWindow?: boolean;
-        }
+    string,
+    {
+        title: string;
+        href?: string;
+        newWindow?: boolean;
+    }
     >;
 }

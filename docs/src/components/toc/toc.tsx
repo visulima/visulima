@@ -1,19 +1,14 @@
 import cn from "clsx";
 import Slugger from "github-slugger";
 import type { Heading } from "nextra";
-import React, { ReactElement, useMemo, useRef } from "react";
+import type { FC } from "react";
+import React, { useMemo, useRef } from "react";
 
 import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { getHeadingText, renderComponent } from "../../utils";
 
-export type TOCProps = {
-    headings: Heading[];
-    activeAnchor: ActiveAnchor;
-    isPage?: boolean;
-};
-
-const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement => {
+const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
     const slugger = new Slugger();
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
@@ -53,7 +48,9 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
                                         5: "ltr:ml-12 rtl:mr-12",
                                         6: "ltr:ml-16 rtl:mr-16",
                                     }[depth],
-                                    isPage ? "border-solid border-b dark:border-primary-100/10 contrast-more:border-neutral-400 py-2" : "my-2 scroll-my-6 scroll-py-6",
+                                    isPage
+                                        ? "border-solid border-b dark:border-primary-100/10 contrast-more:border-neutral-400 py-2"
+                                        : "my-2 scroll-my-6 scroll-py-6",
                                     isPage ? "flex justify-between items-center w-full" : "inline-block w-full",
                                     activeAnchor[slug]?.isActive
                                         ? "text-primary-500 subpixel-antialiased contrast-more:!text-primary-500"
@@ -61,9 +58,7 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
                                     "contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50",
                                 )}
                             >
-                                <span>
-                                {text}
-                                </span>
+                                <span>{text}</span>
                                 {isPage && (
                                     <span className="flex-grow-0 flex-shrink-0 h-4 opacity-50 fill-current rotate-270">
                                         <svg className="block h-full h-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 8">
@@ -80,6 +75,12 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
     }
 
     return null;
+};
+
+export type TOCProperties = {
+    headings: Heading[];
+    activeAnchor: ActiveAnchor;
+    isPage?: boolean;
 };
 
 export default Toc;

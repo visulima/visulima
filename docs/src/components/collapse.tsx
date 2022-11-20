@@ -2,6 +2,7 @@ import cn from "clsx";
 import type { FC, PropsWithChildren } from "react";
 import React, { useEffect, useRef } from "react";
 
+// eslint-disable-next-line radar/cognitive-complexity
 const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = ({ children, className, open }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const innerReference = useRef<HTMLDivElement>(null);
@@ -40,24 +41,22 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
                     }
                 }, 300);
             }
-        } else {
-            if (container && inner) {
-                const contentHeight = innerReference.current.clientHeight;
+        } else if (container && inner) {
+            const contentHeight = innerReference.current.clientHeight;
 
-                container.style.maxHeight = `${contentHeight}px`;
-                container.classList.remove("duration-300");
-                container.classList.add("duration-500");
+            container.style.maxHeight = `${contentHeight}px`;
+            container.classList.remove("duration-300");
+            container.classList.add("duration-500");
 
-                inner.style.opacity = "0";
+            inner.style.opacity = "0";
 
-                setTimeout(() => {
-                    const container = containerReference.current;
+            setTimeout(() => {
+                const container = containerReference.current;
 
-                    if (container) {
-                        container.style.maxHeight = "0px";
-                    }
-                }, 0);
-            }
+                if (container) {
+                    container.style.maxHeight = "0px";
+                }
+            }, 0);
         }
     }, [open]);
 

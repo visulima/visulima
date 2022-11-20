@@ -11,46 +11,48 @@ type AnchorProperties = Omit<ComponentProps<"a">, "ref"> & {
 
 const nextVersion = Number(next.version.split(".")[0]);
 
-const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>((
-    {
-        href = "", children, newWindow, ...properties
-    },
-    // ref is used in <NavbarMenu />
-    forwardedReference,
-): ReactElement => {
-    const config = useConfig();
+const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
+    (
+        {
+            href = "", children, newWindow, ...properties
+        },
+        // ref is used in <NavbarMenu />
+        forwardedReference,
+    ): ReactElement => {
+        const config = useConfig();
 
-    if (newWindow) {
-        return (
-            <a ref={forwardedReference} href={href} target="_blank" rel="noreferrer" {...properties}>
-                {children}
-            </a>
-        );
-    }
+        if (newWindow) {
+            return (
+                <a ref={forwardedReference} href={href} target="_blank" rel="noreferrer" {...properties}>
+                    {children}
+                </a>
+            );
+        }
 
-    if (!href) {
-        return (
-            <a ref={forwardedReference} {...properties}>
-                {children}
-            </a>
-        );
-    }
+        if (!href) {
+            return (
+                <a ref={forwardedReference} {...properties}>
+                    {children}
+                </a>
+            );
+        }
 
-    if (nextVersion > 12 || config.newNextLinkBehavior) {
+        if (nextVersion > 12 || config.newNextLinkBehavior) {
+            return (
+                <NextLink ref={forwardedReference} href={href} {...properties}>
+                    {children}
+                </NextLink>
+            );
+        }
+
         return (
-            <NextLink ref={forwardedReference} href={href} {...properties}>
-                {children}
+            <NextLink href={href} passHref>
+                <a ref={forwardedReference} {...properties}>
+                    {children}
+                </a>
             </NextLink>
         );
-    }
-
-    return (
-        <NextLink href={href} passHref>
-            <a ref={forwardedReference} {...properties}>
-                {children}
-            </a>
-        </NextLink>
-    );
-});
+    },
+);
 
 export default Anchor;

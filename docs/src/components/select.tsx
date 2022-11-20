@@ -2,7 +2,7 @@ import { Listbox, Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useMounted } from "nextra/hooks";
 import { CheckIcon } from "nextra/icons";
-import type { ReactElement, ReactNode } from "react";
+import type { FC, PropsWithChildren, ReactElement } from "react";
 import React from "react";
 import { createPortal } from "react-dom";
 
@@ -21,19 +21,19 @@ interface MenuProperties {
     className?: string;
 }
 
-const Portal = (properties: { children: ReactNode }): ReactElement | null => {
+const Portal: FC<PropsWithChildren> = ({ children }) => {
     const mounted = useMounted();
 
     if (!mounted) {
         return null;
     }
 
-    return createPortal(properties.children, document.body);
+    return createPortal(children, document.body);
 };
 
-const Select = ({
+const Select: FC<MenuProperties> = ({
     options, selected, onChange, title, className,
-}: MenuProperties): ReactElement => {
+}) => {
     const [trigger, container] = usePopper({
         strategy: "fixed",
         placement: "top-start",
@@ -82,9 +82,7 @@ const Select = ({
                                     key={option.key}
                                     value={option}
                                     className={({ active }) => cn(
-                                        active
-                                            ? "bg-primary-50 text-primary-500 dark:bg-primary-500/10"
-                                            : "text-gray-800 dark:text-gray-100",
+                                        active ? "bg-primary-50 text-primary-500 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
                                         "relative cursor-pointer whitespace-nowrap py-1.5",
                                         "ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
                                     )}

@@ -25,23 +25,23 @@ type CalloutProperties = {
 };
 
 const Callout = ({ children, type = "default", emoji = TypeToEmoji[type] }: CalloutProperties): ReactElement => (
+    <div
+        className={cn(
+            "nextra-callout mt-6 flex rounded-lg border py-2 ltr:pr-4 rtl:pl-4",
+            "contrast-more:border-current contrast-more:dark:border-current",
+            classes[type],
+        )}
+    >
         <div
-            className={cn(
-                "nextra-callout mt-6 flex rounded-lg border py-2 ltr:pr-4 rtl:pl-4",
-                "contrast-more:border-current contrast-more:dark:border-current",
-                classes[type],
-            )}
+            className="select-none text-xl ltr:pl-3 ltr:pr-2 rtl:pr-3 rtl:pl-2"
+            style={{
+                fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+            }}
         >
-            <div
-                className="select-none text-xl ltr:pl-3 ltr:pr-2 rtl:pr-3 rtl:pl-2"
-                style={{
-                    fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-                }}
-            >
-                {emoji}
-            </div>
-            <div className="min-w-0">{children}</div>
+            {emoji}
         </div>
+        <div className="min-w-0">{children}</div>
+    </div>
 );
 
 export default Callout;

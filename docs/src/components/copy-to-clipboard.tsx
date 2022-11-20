@@ -7,6 +7,9 @@ import Button from "./button";
 import ErrorToast from "./toast/error";
 import SuccessToast from "./toast/success";
 
+const toastId = "copy-to-clipboard";
+const toastPosition = "bottom-right";
+
 const CopyToClipboard = ({
     value,
     ...properties
@@ -24,6 +27,7 @@ const CopyToClipboard = ({
             setCopied(false);
         }, 2000);
 
+        // eslint-disable-next-line consistent-return
         return () => {
             clearTimeout(timerId);
         };
@@ -32,16 +36,20 @@ const CopyToClipboard = ({
     const handleClick = useCallback<NonNullable<ComponentProps<"button">["onClick"]>>(async () => {
         setCopied(true);
 
+        // eslint-disable-next-line radar/no-duplicate-string
         if (!navigator?.clipboard) {
-            toast.custom(<ErrorToast>Access to clipboard rejected!</ErrorToast>, { id: "copy-to-clipboard", position: "bottom-right" });
+            toast.custom(<ErrorToast>Access to clipboard rejected!</ErrorToast>, { id: toastId, position: toastPosition });
         }
 
         try {
             await navigator.clipboard.writeText(JSON.parse(value));
 
-            toast.custom(<SuccessToast title="Page URL copied to clipboard">Paste it wherever you like it.</SuccessToast>, { id: "copy-to-clipboard", position: "bottom-right" });
+            toast.custom(<SuccessToast title="Page URL copied to clipboard">Paste it wherever you like it.</SuccessToast>, {
+                id: toastId,
+                position: toastPosition,
+            });
         } catch {
-            toast.custom(<ErrorToast>Failed to copy to clipboard</ErrorToast>, { id: "copy-to-clipboard", position: "bottom-right" });
+            toast.custom(<ErrorToast>Failed to copy to clipboard</ErrorToast>, { id: toastId, position: toastPosition });
         }
     }, [value]);
 

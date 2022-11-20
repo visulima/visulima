@@ -1,7 +1,7 @@
 import cn from "clsx";
 import type { Heading } from "nextra";
-import type { MutableRefObject, ReactElement } from "react";
-import React, { useEffect, useRef, useState } from "react";
+import type { FC } from "react";
+import React, { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
@@ -9,13 +9,7 @@ import { getGitIssueUrl, renderComponent } from "../../utils";
 import Anchor from "../anchor";
 import Toc from "./toc";
 
-export type TOCProps = {
-    headings: Heading[];
-    filePath: string;
-    isOnScreen?: boolean;
-};
-
-const TocSidebar = ({ headings, filePath, isOnScreen = true }: TOCProps): ReactElement => {
+const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = true }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement>(null);
@@ -93,6 +87,12 @@ const TocSidebar = ({ headings, filePath, isOnScreen = true }: TOCProps): ReactE
             )}
         </div>
     );
+};
+
+export type TOCProperties = {
+    headings: Heading[];
+    filePath: string;
+    isOnScreen?: boolean;
 };
 
 export default TocSidebar;

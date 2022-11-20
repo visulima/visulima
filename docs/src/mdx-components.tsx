@@ -48,7 +48,11 @@ if (IS_BROWSER) {
                         smallestIndexInViewport = returnValue[s].index;
                         activeSlug = s;
                     }
-                    if (smallestIndexInViewport === Number.POSITIVE_INFINITY && returnValue[s].aboveHalfViewport && returnValue[s].index > largestIndexAboveViewport) {
+                    if (
+                        smallestIndexInViewport === Number.POSITIVE_INFINITY
+                        && returnValue[s].aboveHalfViewport
+                        && returnValue[s].index > largestIndexAboveViewport
+                    ) {
                         largestIndexAboveViewport = returnValue[s].index;
                         activeSlug = s;
                     }

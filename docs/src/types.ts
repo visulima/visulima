@@ -48,7 +48,7 @@ export interface DocumentationThemeConfig {
     footer: {
         component?: ReactNode | FC;
         logo?: ReactNode | FC;
-        copyright?: ReactNode | FC<{activeType: string}>;
+        copyright?: ReactNode | FC<{ activeType: string }>;
     };
     getNextSeoProps?: () => NextSeoProps;
     gitTimestamp: ReactNode | FC<{ timestamp: Date }>;

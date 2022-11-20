@@ -22,7 +22,7 @@ import Sidebar from "../components/sidebar";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
-import type { DocumentationThemeConfig, PageTheme, RecursivePartial } from "../types";
+import type { PageTheme } from "../types";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
@@ -151,6 +151,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 className={activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
             >
                 <script
+                    // eslint-disable-next-line react/no-danger
                     dangerouslySetInnerHTML={{
                         __html: `document.documentElement.setAttribute('dir','${direction}')`,
                     }}
@@ -279,7 +280,3 @@ export default function Index(properties: any): ReactElement {
         </ConfigProvider>
     );
 }
-
-type PartialDocsThemeConfig = RecursivePartial<DocumentationThemeConfig>;
-
-export type { PartialDocsThemeConfig as DocsThemeConfig };

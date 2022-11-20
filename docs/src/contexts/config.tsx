@@ -9,7 +9,6 @@ import React, {
 
 import Anchor from "../components/anchor";
 import FlexSearch from "../components/flexsearch";
-import Footer from "../components/footer";
 import MatchSorterSearch from "../components/match-sorter-search";
 import Navbar from "../components/navbar";
 import TocPageContent from "../components/toc/toc-page-content";
@@ -59,6 +58,7 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
         return { titleTemplate: "%s – Nextra" };
     },
     gitTimestamp({ timestamp }) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const { locale = DEFAULT_LOCALE } = useRouter();
 
         return (
@@ -119,23 +119,44 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
     },
     search: {
         component({ className, directories }) {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             const config = useConfig();
+
             return config.unstable_flexsearch ? <FlexSearch className={className} /> : <MatchSorterSearch className={className} directories={directories} />;
         },
         emptyResult: <span className="block select-none p-8 text-center text-sm text-gray-400">No results found.</span>,
         loading() {
             const { locale } = useRouter();
-            if (locale === "zh-CN") return "正在加载…";
-            if (locale === "ru") return "Загрузка…";
-            if (locale === "fr") return "Сhargement…";
+
+            if (locale === "zh-CN") {
+                return "正在加载…";
+            }
+
+            if (locale === "ru") {
+                return "Загрузка…";
+            }
+
+            if (locale === "fr") {
+                return "Сhargement…";
+            }
+
             return "Loading…";
         },
         placeholder() {
             const { locale } = useRouter();
 
-            if (locale === "zh-CN") return "搜索文档…";
-            if (locale === "ru") return "Поиск документации…";
-            if (locale === "fr") return "Rechercher de la documentation…";
+            if (locale === "zh-CN") {
+                return "搜索文档…";
+            }
+
+            if (locale === "ru") {
+                return "Поиск документации…";
+            }
+
+            if (locale === "fr") {
+                return "Rechercher de la documentation…";
+            }
+
 
             return "Search documentation…";
         },
@@ -163,6 +184,7 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
 const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
     .map(([key, value]) => {
         const isObject = value && typeof value === "object" && !Array.isArray(value) && !isValidElement(value);
+
         if (isObject) {
             return key;
         }
@@ -209,6 +231,8 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             if (legacyOption in themeConfig) {
                 const [object, key] = newPath.split(".");
                 const renameTo = key ? `${object}: { ${key}: ... }` : object;
+
+                // eslint-disable-next-line no-console
                 console.warn(`${notice} \`${legacyOption}\`. Rename it to \`${renameTo}\` for future compatibility.`);
             }
         }
@@ -217,11 +241,13 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             if (key in themeConfig) {
                 const option = themeConfig[key];
                 if (typeof option === "boolean" || option == null) {
+                // eslint-disable-next-line no-console
                     console.warn(`${notice} \`${key}\`.`, option ? "Remove it" : `Rename it to \`${key}: { component: null }\` for future compatibility.`);
                 }
             }
         }
         if (typeof themeConfig.banner === "string") {
+            // eslint-disable-next-line no-console
             console.warn(notice, "`banner`. Rename it to `banner: { content: ... }` for future compatibility.");
         }
     }

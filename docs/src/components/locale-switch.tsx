@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
-import React, { ReactElement } from "react";
+import type { FC } from "react";
+import React from "react";
 
 import { DocumentationThemeConfig } from "../types";
 import Select from "./select";
@@ -11,16 +12,20 @@ interface LocaleSwitchProperties {
     className?: string;
 }
 
-const LocaleSwitch = ({ options, lite, className }: LocaleSwitchProperties): ReactElement => {
+const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite, className }) => {
     const { locale, asPath } = useRouter();
     const selected = options.find((l) => locale === l.locale);
+
     return (
         <Select
             title="Change language"
             className={className}
             onChange={(option) => {
                 const date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+                // eslint-disable-next-line unicorn/no-document-cookie
                 document.cookie = `NEXT_LOCALE=${option.key}; expires=${date.toUTCString()}; path=/`;
+                // eslint-disable-next-line no-restricted-globals
                 location.href = asPath;
             }}
             selected={{

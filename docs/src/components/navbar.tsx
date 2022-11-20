@@ -2,21 +2,13 @@ import { Menu, Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
-import type { FC, ReactNode } from "react";
+import type { FC, PropsWithChildren } from "react";
 import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import {
-    getFSRoute, Item, MenuItem, PageItem, renderComponent,
-} from "../utils";
+import { getFSRoute, Item, MenuItem, PageItem, renderComponent } from "../utils";
 import Anchor from "./anchor";
-
-export type NavBarProps = {
-    flatDirectories: Item[];
-    items: (PageItem | MenuItem)[];
-    activeType: string;
-};
 
 const classes = {
     link: cn("text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100"),
@@ -24,7 +16,7 @@ const classes = {
     inactive: cn("text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"),
 };
 
-const NavbarMenu: FC<{ className?: string; menu: MenuItem; children: ReactNode }> = ({ className, menu, children }) => {
+const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> = ({ className, menu, children }) => {
     const { items } = menu;
     const routes = Object.fromEntries((menu.children || []).map((route) => [route.name, route]));
 
@@ -37,21 +29,25 @@ const NavbarMenu: FC<{ className?: string; menu: MenuItem; children: ReactNode }
                 <Transition leave="transition-opacity" leaveFrom="opacity-100" leaveTo="opacity-0">
                     {/* eslint-disable-next-line max-len */}
                     <Menu.Items className="absolute right-0 z-20 mt-1 max-h-64 min-w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg dark:bg-neutral-800">
-                        {Object.entries(items || {}).map(([key, item]) => (
-                            <Menu.Item key={key}>
-                                <Anchor
-                                    href={item.href || routes[key]?.route || `${menu.route}/${key}`}
-                                    className={cn(
-                                        // eslint-disable-next-line max-len
-                                        "relative hidden w-full select-none whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 md:inline-block",
-                                        "py-1.5 ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
-                                    )}
-                                    newWindow={item.newWindow}
-                                >
-                                    {item.title || key}
-                                </Anchor>
-                            </Menu.Item>
-                        ))}
+                        {Object.entries(items || {}).map(([key, item]) => {
+                            const { href, newWindow, title } = item;
+
+                            return (
+                                <Menu.Item key={key}>
+                                    <Anchor
+                                        href={href || routes[key]?.route || `${menu.route}/${key}`}
+                                        className={cn(
+                                            // eslint-disable-next-line max-len
+                                            "relative hidden w-full select-none whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 md:inline-block",
+                                            "py-1.5 ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
+                                        )}
+                                        newWindow={newWindow}
+                                    >
+                                        {title || key}
+                                    </Anchor>
+                                </Menu.Item>
+                            );
+                        })}
                     </Menu.Items>
                 </Transition>
             </Menu>
@@ -59,7 +55,7 @@ const NavbarMenu: FC<{ className?: string; menu: MenuItem; children: ReactNode }
     );
 };
 
-const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
+const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE, asPath } = useRouter();
     const activeRoute = getFSRoute(asPath, locale);
@@ -116,7 +112,9 @@ const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
                                 </NavbarMenu>
                             );
                         }
+
                         const page = pageOrMenu as PageItem;
+
                         let href = page.href || page.route || "#";
 
                         // If it's a directory
@@ -154,21 +152,21 @@ const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
                         <Anchor className="p-2 text-current" href={config.project.link} newWindow>
                             {renderComponent(config.project.icon)}
                         </Anchor>
-                    ) : (config.project.icon ? (
+                    ) : config.project.icon ? (
                         // if no project link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.project.icon)
-                    ) : null)}
+                    ) : null}
 
                     {config.chat.link ? (
                         <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
                             {renderComponent(config.chat.icon)}
                         </Anchor>
-                    ) : (config.chat.icon ? (
+                    ) : config.chat.icon ? (
                         // if no chat link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.chat.icon)
-                    ) : null)}
+                    ) : null}
                 </div>
                 <div className="flex items-center h-[var(--nextra-navbar-height)]">
                     <button
@@ -183,6 +181,12 @@ const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
             </nav>
         </div>
     );
+};
+
+export type NavBarProperties = {
+    flatDirectories: Item[];
+    items: (PageItem | MenuItem)[];
+    activeType: string;
 };
 
 export default Navbar;

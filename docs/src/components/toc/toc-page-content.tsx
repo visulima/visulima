@@ -1,16 +1,11 @@
 import type { Heading } from "nextra";
-import type { ReactElement, Ref } from "react";
+import type { FC, Ref } from "react";
 import React from "react";
 
 import { useActiveAnchor } from "../../contexts";
 import Toc from "./toc";
 
-export type TOCProps = {
-    headings: Heading[];
-    wrapperRef: Ref<HTMLDivElement>
-};
-
-const TocPageContent = ({ headings, wrapperRef }: TOCProps): ReactElement => {
+const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
     const activeAnchor = useActiveAnchor();
 
     return (
@@ -18,6 +13,11 @@ const TocPageContent = ({ headings, wrapperRef }: TOCProps): ReactElement => {
             <Toc headings={headings} activeAnchor={activeAnchor} isPage />
         </div>
     );
+};
+
+export type TOCProperties = {
+    headings: Heading[];
+    wrapperRef: Ref<HTMLDivElement>;
 };
 
 export default TocPageContent;

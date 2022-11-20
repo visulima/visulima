@@ -4,6 +4,7 @@ vitest.config.ts
 tailwind.config.js
 next-env.d.ts
 postcss.config.js
+env.d.ts
 
 css
 coverage
