@@ -6,23 +6,25 @@ import { SkipNavContent } from "@reach/skip-nav";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { PageMapItem, PageOpts } from "nextra";
-import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
+import type {
+    FC, PropsWithChildren, ReactElement, ReactNode,
+} from "react";
 import React, { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
 import Banner from "../components/banner";
 import Breadcrumb from "../components/breadcrumb";
+import Comments from "../components/comments";
+import Footer from "../components/footer";
 import Head from "../components/head";
 import NavLinks from "../components/nav-links";
 import Sidebar from "../components/sidebar";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
-import { getComponents } from "../mdx-components";
-import type { DocsThemeConfig, PageTheme, RecursivePartial } from "../types";
+import getComponents from "../mdx-components";
+import type { DocumentationThemeConfig, PageTheme, RecursivePartial } from "../types";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
-import Comments from "../components/comments";
-import Footer from "../components/footer";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -47,7 +49,9 @@ const Body: FC<{
     navigation: ReactNode;
     children: ReactNode;
     activeType: string;
-}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType }) => {
+}> = ({
+    themeContext, breadcrumb, timestamp, navigation, children, activeType,
+}) => {
     const config = useConfig();
 
     if (themeContext.layout === "raw") {
@@ -77,6 +81,7 @@ const Body: FC<{
 
     if (themeContext.layout === "full") {
         return (
+            // eslint-disable-next-line max-len
             <article className="min-h-[calc(100vh-4rem)] w-full overflow-x-hidden pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]">
                 {body}
             </article>
@@ -86,6 +91,7 @@ const Body: FC<{
     return (
         <article
             className={cn(
+                // eslint-disable-next-line max-len
                 "flex min-h-[calc(100vh-4rem)] w-full min-w-0 max-w-full justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
             )}
@@ -98,19 +104,22 @@ const Body: FC<{
     );
 };
 
-const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, frontMatter, headings, timestamp, children }) => {
+const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
+    filePath, pageMap, frontMatter, headings, timestamp, children,
+}) => {
     const config = useConfig();
-    const { activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories } =
-        useDirectoryInfo(pageMap);
-    const ref: any = useRef<HTMLDivElement>();
-    const isOnScreen = useOnScreen(ref, `-${(ref?.current?.clientHeight || 0) + 50}px`);
+    const {
+        activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories,
+    } = useDirectoryInfo(pageMap);
+    const reference: any = useRef<HTMLDivElement>();
+    const isOnScreen = useOnScreen(reference, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
     const themeContext = { ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || activeType === "page";
     const tocClassName = "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block";
-    const isDocPage = activeType === "doc" || !themeContext.toc || themeContext.layout !== "default";
+    const isDocumentPage = activeType === "doc" || !themeContext.toc || themeContext.layout !== "default";
 
-    const tocSidebarElement = isDocPage && (
+    const tocSidebarElement = isDocumentPage && (
         <div className={cn(tocClassName, "px-4")}>
             {renderComponent(config.tocSidebar.component, {
                 headings: config.tocSidebar.float ? headings : [],
@@ -119,11 +128,10 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
             })}
         </div>
     );
-    const tocPageContentElement =
-        isDocPage &&
-        renderComponent(config.tocContent.component, {
+    const tocPageContentElement = isDocumentPage
+        && renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
-            wrapperRef: ref,
+            wrapperRef: reference,
         });
 
     const { locale = DEFAULT_LOCALE, route } = useRouter();
@@ -136,7 +144,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
     return (
         <>
             <Toaster />
-            {/*This makes sure that selectors like `[dir=ltr] .nextra-container` work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element.*/}
+            {/* This makes sure that selectors like `[dir=ltr] .nextra-container` */}
+            {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
                 dir={direction}
                 className={activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
@@ -148,8 +157,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar &&
-                    renderComponent(config.navbar, {
+                {themeContext.navbar
+                    && renderComponent(config.navbar, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -171,9 +180,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
                                 <div
                                     className={`absolute w-full ${
                                         config.hero?.height
-                                            ? typeof config.hero.height === "string"
+                                            ? (typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`
+                                                : `h-[${config.hero.height}px]`)
                                             : ""
                                     }`}
                                 >
@@ -183,9 +192,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
                             <div
                                 className={`flex w-full${
                                     config.hero?.height
-                                        ? typeof config.hero.height === "string"
+                                        ? (typeof config.hero.height === "string"
                                             ? ` mt-[${config.hero.height}]`
-                                            : ` mt-[${config.hero.height}px]`
+                                            : ` mt-[${config.hero.height}px]`)
                                         : ""
                                 }`}
                             >
@@ -212,20 +221,23 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
                                         className={cn(
                                             activeType === "doc"
                                                 ? [
-                                                      "prose prose-slate max-w-none dark:prose-invert dark:text-slate-400",
-                                                      // headings
-                                                      "prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-normal lg:prose-headings:scroll-mt-[8.5rem]",
-                                                      // lead
-                                                      "prose-lead:text-slate-500 dark:prose-lead:text-slate-400",
-                                                      // links
-                                                      "prose-a:font-medium dark:prose-a:text-primary-400 hover:prose-a:text-gray-900 dark:hover:prose-a:text-gray-500",
-                                                      // link underline
-                                                      "prose-a:no-underline dark:hover:prose-a:[--tw-prose-underline-size:6px]",
-                                                      // pre
-                                                      "prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-slate-300/10",
-                                                      // hr
-                                                      "dark:prose-hr:border-slate-800",
-                                                  ]
+                                                    "prose prose-slate max-w-none dark:prose-invert dark:text-slate-400",
+                                                    // headings
+                                                    // eslint-disable-next-line max-len
+                                                    "prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-normal lg:prose-headings:scroll-mt-[8.5rem]",
+                                                    // lead
+                                                    "prose-lead:text-slate-500 dark:prose-lead:text-slate-400",
+                                                    // links
+                                                    // eslint-disable-next-line max-len
+                                                    "prose-a:font-medium dark:prose-a:text-primary-400 hover:prose-a:text-gray-900 dark:hover:prose-a:text-gray-500",
+                                                    // link underline
+                                                    "prose-a:no-underline dark:hover:prose-a:[--tw-prose-underline-size:6px]",
+                                                    // pre
+                                                    // eslint-disable-next-line max-len
+                                                    "prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-slate-300/10",
+                                                    // hr
+                                                    "dark:prose-hr:border-slate-800",
+                                                ]
                                                 : "",
                                         )}
                                     >
@@ -251,6 +263,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({ filePath, pageMap, front
 
 export default function Index(properties: any): ReactElement {
     const { route } = useRouter();
+    // eslint-disable-next-line no-underscore-dangle
     const context = globalThis.__nextra_pageContext__[route];
 
     if (!context) {
@@ -267,6 +280,6 @@ export default function Index(properties: any): ReactElement {
     );
 }
 
-type PartialDocsThemeConfig = RecursivePartial<DocsThemeConfig>;
+type PartialDocsThemeConfig = RecursivePartial<DocumentationThemeConfig>;
 
 export type { PartialDocsThemeConfig as DocsThemeConfig };

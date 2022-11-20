@@ -53,17 +53,10 @@ const indexes: {
 
 // Caches promises that load the index
 const loadIndexesPromises = new Map<string, Promise<void>>();
-const loadIndexes = (basePath: string, locale: string): Promise<void> => {
-    const key = `${basePath}@${locale}`;
-    if (loadIndexesPromises.has(key)) {
-        return loadIndexesPromises.get(key)!;
-    }
-    const promise = loadIndexesImpl(basePath, locale);
-    loadIndexesPromises.set(key, promise);
-    return promise;
-};
 
+/* eslint-disable no-underscore-dangle */
 const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> => {
+    // eslint-disable-next-line compat/compat
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
     const data = (await response.json()) as NextraData;
 
@@ -99,11 +92,13 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     });
 
     let pageId = 0;
-    for (const route in data) {
-        let pageContent = "";
-        ++pageId;
 
-        for (const heading in data[route].data) {
+    Object.keys(data).forEach((route) => {
+        let pageContent = "";
+
+        pageId += 1;
+
+        Object.keys(data[route].data).forEach((heading) => {
             const [hash, text] = heading.split("#");
             const url = route + (hash ? `#${hash}` : "");
             const title = text || data[route].title;
@@ -132,16 +127,30 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
 
             // Add the page itself.
             pageContent += ` ${title} ${content}`;
-        }
+        });
 
         pageIndex.add({
             id: pageId,
             title: data[route].title,
             content: pageContent,
         });
-    }
+    });
 
     indexes[locale] = [pageIndex, sectionIndex];
+};
+
+const loadIndexes = (basePath: string, locale: string): Promise<void> => {
+    const key = `${basePath}@${locale}`;
+
+    if (loadIndexesPromises.has(key)) {
+        return loadIndexesPromises.get(key)!;
+    }
+
+    const promise = loadIndexesImpl(basePath, locale);
+
+    loadIndexesPromises.set(key, promise);
+
+    return promise;
 };
 
 const Flexsearch = ({ className }: { className?: string }): ReactElement => {
@@ -174,16 +183,23 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
             })[0]?.result || [];
 
             let isFirstItemOfPage = true;
+
             const occurred: Record<string, boolean> = {};
 
             for (const [index_, { doc }] of sectionResults.entries()) {
                 const isMatchingTitle = doc.display !== undefined;
+
                 if (isMatchingTitle) {
                     pageTitleMatches[index]++;
                 }
+
                 const { url, title } = doc;
                 const content = doc.display || doc.content;
-                if (occurred[`${url}@${content}`]) continue;
+
+                if (occurred[`${url}@${content}`]) {
+                    continue;
+                }
+
                 occurred[`${url}@${content}`] = true;
                 results.push({
                     _page_rk: index,
@@ -243,7 +259,9 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
         async (active: boolean) => {
             if (active && !indexes[locale]) {
                 setLoading(true);
+
                 await loadIndexes(basePath, locale);
+
                 setLoading(false);
             }
         },
@@ -252,12 +270,16 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
 
     const handleChange = async (value: string) => {
         setSearch(value);
+
         if (loading) {
             return;
         }
+
         if (!indexes[locale]) {
             setLoading(true);
+
             await loadIndexes(basePath, locale);
+
             setLoading(false);
         }
         doSearch(value);
@@ -275,5 +297,6 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
         />
     );
 };
+/* eslint-enable no-underscore-dangle */
 
 export default Flexsearch;

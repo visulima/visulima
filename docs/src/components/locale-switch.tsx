@@ -2,11 +2,11 @@ import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import React, { ReactElement } from "react";
 
-import { DocsThemeConfig } from "../types";
+import { DocumentationThemeConfig } from "../types";
 import Select from "./select";
 
 interface LocaleSwitchProperties {
-    options: NonNullable<DocsThemeConfig["i18n"]>;
+    options: NonNullable<DocumentationThemeConfig["i18n"]>;
     lite?: boolean;
     className?: string;
 }

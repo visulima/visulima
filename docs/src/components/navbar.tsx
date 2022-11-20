@@ -7,7 +7,9 @@ import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import { getFSRoute, Item, MenuItem, PageItem, renderComponent } from "../utils";
+import {
+    getFSRoute, Item, MenuItem, PageItem, renderComponent,
+} from "../utils";
 import Anchor from "./anchor";
 
 export type NavBarProps = {
@@ -72,7 +74,7 @@ const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
                 )}
             />
             {/* eslint-disable-next-line max-len */}
-            <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4": "pr-4")}>
+            <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4" : "pr-4")}>
                 <div
                     className={cn(
                         "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
@@ -152,21 +154,21 @@ const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
                         <Anchor className="p-2 text-current" href={config.project.link} newWindow>
                             {renderComponent(config.project.icon)}
                         </Anchor>
-                    ) : config.project.icon ? (
+                    ) : (config.project.icon ? (
                         // if no project link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.project.icon)
-                    ) : null}
+                    ) : null)}
 
                     {config.chat.link ? (
                         <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
                             {renderComponent(config.chat.icon)}
                         </Anchor>
-                    ) : config.chat.icon ? (
+                    ) : (config.chat.icon ? (
                         // if no chat link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.chat.icon)
-                    ) : null}
+                    ) : null)}
                 </div>
                 <div className="flex items-center h-[var(--nextra-navbar-height)]">
                     <button

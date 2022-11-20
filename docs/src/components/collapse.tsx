@@ -1,7 +1,8 @@
 import cn from "clsx";
-import React, { ReactElement, useEffect, useRef } from "react";
+import type { FC, PropsWithChildren } from "react";
+import React, { useEffect, useRef } from "react";
 
-const Collapse = ({ children, className, open }: { children: React.ReactNode; className?: string; open: boolean }): ReactElement => {
+const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = ({ children, className, open }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const innerReference = useRef<HTMLDivElement>(null);
     const animationReference = useRef<any>();
@@ -9,17 +10,21 @@ const Collapse = ({ children, className, open }: { children: React.ReactNode; cl
     const initialState = useRef(open);
 
     useEffect(() => {
-        if (initialRender.current) return;
+        if (initialRender.current) {
+            return;
+        }
 
         if (animationReference.current) {
             clearTimeout(animationReference.current);
         }
 
+        const container = containerReference.current;
+        const inner = innerReference.current;
+
         if (open) {
-            const container = containerReference.current;
-            const inner = innerReference.current;
             if (container && inner) {
                 const contentHeight = innerReference.current.clientHeight;
+
                 container.style.maxHeight = `${contentHeight}px`;
                 container.classList.remove("duration-500");
                 container.classList.add("duration-300");
@@ -36,10 +41,9 @@ const Collapse = ({ children, className, open }: { children: React.ReactNode; cl
                 }, 300);
             }
         } else {
-            const container = containerReference.current;
-            const inner = innerReference.current;
             if (container && inner) {
                 const contentHeight = innerReference.current.clientHeight;
+
                 container.style.maxHeight = `${contentHeight}px`;
                 container.classList.remove("duration-300");
                 container.classList.add("duration-500");
@@ -71,10 +75,7 @@ const Collapse = ({ children, className, open }: { children: React.ReactNode; cl
         >
             <div
                 ref={innerReference}
-                className={cn(
-                    "transform-gpu overflow-hidden p-2 transition-opacity duration-500 ease-in-out motion-reduce:transition-none",
-                    className,
-                )}
+                className={cn("transform-gpu overflow-hidden p-2 transition-opacity duration-500 ease-in-out motion-reduce:transition-none", className)}
                 style={{
                     opacity: initialState.current ? 1 : 0,
                 }}

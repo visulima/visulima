@@ -18,8 +18,10 @@ const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments)
 
     if (value) {
         while ((result = regexp.exec(value)) !== null) {
+            id += 1;
+
             result_.push(
-                <Fragment key={id++}>
+                <Fragment key={id}>
                     {splitText.splice(0, result.index - index).join("")}
                     <span className="text-primary-500">{splitText.splice(0, regexp.lastIndex - result.index).join("")}</span>
                 </Fragment>,

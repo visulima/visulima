@@ -1,7 +1,7 @@
 import React, { ComponentProps, ReactElement } from "react";
 
-const Code = ({ children, className = "", ...props }: ComponentProps<"code">): ReactElement => {
-    const hasLineNumbers = "data-line-numbers" in props;
+const Code = ({ children, className = "", ...properties }: ComponentProps<"code">): ReactElement => {
+    const hasLineNumbers = "data-line-numbers" in properties;
     return (
         <code
             className={[
@@ -10,7 +10,7 @@ const Code = ({ children, className = "", ...props }: ComponentProps<"code">): R
             ].join(" ")}
             // always show code blocks in ltr
             dir="ltr"
-            {...props}
+            {...properties}
         >
             {children}
         </code>

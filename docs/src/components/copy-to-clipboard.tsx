@@ -1,15 +1,15 @@
+import { CheckIcon, CopyIcon } from "nextra/icons";
 import type { ComponentProps, ReactElement } from "react";
 import React, { useCallback, useEffect, useState } from "react";
-import { CheckIcon, CopyIcon } from "nextra/icons";
 import toast from "react-hot-toast";
 
 import Button from "./button";
-import SuccessToast from "./toast/success";
 import ErrorToast from "./toast/error";
+import SuccessToast from "./toast/success";
 
-export const CopyToClipboard = ({
+const CopyToClipboard = ({
     value,
-    ...props
+    ...properties
 }: {
     value: string;
 } & ComponentProps<"button">): ReactElement => {
@@ -48,8 +48,10 @@ export const CopyToClipboard = ({
     const IconToUse = isCopied ? CheckIcon : CopyIcon;
 
     return (
-        <Button onClick={handleClick} title="Copy code" {...props}>
+        <Button onClick={handleClick} title="Copy code" {...properties}>
             <IconToUse className="pointer-events-none h-4 w-4" />
         </Button>
     );
 };
+
+export default CopyToClipboard;

@@ -1,8 +1,7 @@
 import type { ComponentProps, ReactElement } from "react";
 import React from "react";
 
-const Button = ({ children, className = "", ...props }: ComponentProps<"button">): ReactElement => {
-    return (
+const Button = ({ children, className = "", ...properties }: ComponentProps<"button">): ReactElement => (
         <button
             className={[
                 "nextra-button transition-colors",
@@ -10,11 +9,11 @@ const Button = ({ children, className = "", ...props }: ComponentProps<"button">
                 "dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50",
                 className,
             ].join(" ")}
-            {...props}
+            type="button"
+            {...properties}
         >
             {children}
         </button>
-    );
-};
+);
 
 export default Button;

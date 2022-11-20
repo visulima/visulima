@@ -3,7 +3,7 @@ import Giscus from "@giscus/react";
 import { useTheme } from "next-themes";
 
 const Comments = () => {
-    const { theme, systemTheme } = useTheme()
+    const { theme, systemTheme } = useTheme();
 
     return (
         <div className="mt-16">
@@ -24,6 +24,6 @@ const Comments = () => {
             />
         </div>
     );
-}
+};
 
 export default Comments;

@@ -1,12 +1,11 @@
-/* eslint typescript-sort-keys/interface: error */
 import type { NextSeoProps } from "next-seo";
 import type { ThemeProviderProps } from "next-themes/dist/types";
 import type { PageOpts } from "nextra";
 import type { FC, ReactNode } from "react";
 
 import type { NavBarProps as NavBarProperties } from "./components/navbar";
-import type { TOCProps as TOCSidebarProperties } from "./components/toc/toc-sidebar";
 import type { TOCProps as TOCPageContentProperties } from "./components/toc/toc-page-content";
+import type { TOCProps as TOCSidebarProperties } from "./components/toc/toc-sidebar";
 import type { Item } from "./utils";
 
 export type RecursivePartial<T> = {
@@ -19,7 +18,7 @@ export type RecursivePartial<T> = {
                 : T[P];
 };
 
-export interface DocsThemeConfig {
+export interface DocumentationThemeConfig {
     banner: {
         dismissible: boolean;
         key: string;
@@ -49,7 +48,7 @@ export interface DocsThemeConfig {
     footer: {
         component?: ReactNode | FC;
         logo?: ReactNode | FC;
-        copyright?: ReactNode | FC;
+        copyright?: ReactNode | FC<{activeType: string}>;
     };
     getNextSeoProps?: () => NextSeoProps;
     gitTimestamp: ReactNode | FC<{ timestamp: Date }>;
@@ -134,7 +133,7 @@ export type PageTheme = {
 export type Context = {
     Content: FC;
     pageOpts: PageOpts;
-    themeConfig: DocsThemeConfig;
+    themeConfig: DocumentationThemeConfig;
 };
 
 export type SearchResult = {

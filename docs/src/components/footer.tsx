@@ -19,21 +19,21 @@ const Footer = ({ menu, activeType }: { menu?: boolean; activeType: string }): R
             <div className="mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800">
                 <div
                     className={cn(
-                        "md:w-64 flex flex-col items-center pl-4",
+                        "md:w-64 flex flex-col pl-4 py-12",
                         activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
-                    <div className={cn("mx-auto flex gap-2 py-2 px-4 my-3", menu ? "flex" : "hidden")}>
+                    <div className={cn("mx-auto flex gap-2 px-4 mb-9", menu ? "flex" : "hidden")}>
                         {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
                         {config.darkMode && <ThemeSwitch />}
                     </div>
 
-                    {config.footer?.copyright && renderComponent(config.footer.copyright)}
+                    {config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}
                 </div>
                 <div
                     className={cn(
                         "grow py-12 text-gray-600 dark:text-gray-400",
-                        "pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]",
+                        "pl-[max(env(safe-area-inset-left),3.2rem)] pr-[max(env(safe-area-inset-right),3.2rem)]",
                     )}
                 >
                     {renderComponent(config.footer.component)}

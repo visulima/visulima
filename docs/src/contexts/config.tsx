@@ -3,23 +3,25 @@ import { ThemeProvider } from "next-themes";
 import type { PageOpts } from "nextra";
 import { DiscordIcon, GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
-import React, { createContext, isValidElement, useContext, useState } from "react";
+import React, {
+    createContext, isValidElement, useContext, useState,
+} from "react";
 
 import Anchor from "../components/anchor";
 import FlexSearch from "../components/flexsearch";
 import Footer from "../components/footer";
 import MatchSorterSearch from "../components/match-sorter-search";
 import Navbar from "../components/navbar";
+import TocPageContent from "../components/toc/toc-page-content";
 import TocSidebar from "../components/toc/toc-sidebar";
 import { DEFAULT_LOCALE, LEGACY_CONFIG_OPTIONS } from "../constants";
-import type { Context, DocsThemeConfig } from "../types";
+import type { Context, DocumentationThemeConfig } from "../types";
 import { getGitEditUrl } from "../utils";
 import { MenuProvider } from "./menu";
-import TocPageContent from "../components/toc/toc-page-content";
 
-type Config = DocsThemeConfig & Pick<PageOpts, "unstable_flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;
+type Config = DocumentationThemeConfig & Pick<PageOpts, "unstable_flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;
 
-const DEFAULT_THEME: DocsThemeConfig = {
+const DEFAULT_THEME: DocumentationThemeConfig = {
     banner: {
         dismissible: true,
         key: "nextra-banner",
@@ -165,7 +167,7 @@ const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
             return key;
         }
     })
-    .filter(Boolean) as (keyof DocsThemeConfig)[];
+    .filter(Boolean) as (keyof DocumentationThemeConfig)[];
 
 const theme = {
     title: "",
@@ -188,15 +190,13 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
         title: pageOpts.title,
         frontMatter: pageOpts.frontMatter,
         ...Object.fromEntries(
-            DEEP_OBJECT_KEYS.map((key) =>
-                typeof themeConfig[key] === "object"
-                    ? [
-                          key,
-                          // @ts-expect-error -- key has always object value
-                          { ...DEFAULT_THEME[key], ...themeConfig[key] },
-                      ]
-                    : [],
-            ),
+            DEEP_OBJECT_KEYS.map((key) => (typeof themeConfig[key] === "object"
+                ? [
+                    key,
+                    // @ts-expect-error -- key has always object value
+                    { ...DEFAULT_THEME[key], ...themeConfig[key] },
+                ]
+                : [])),
         ),
     };
 

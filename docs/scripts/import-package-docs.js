@@ -1,11 +1,19 @@
+// eslint-disable-next-line unicorn/prevent-abbreviations
+// eslint-disable-next-line unicorn/prefer-module
 const { walk } = require("@visulima/readdir");
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
+// eslint-disable-next-line unicorn/prefer-module
+const yargs = require("yargs/yargs");
+// eslint-disable-next-line unicorn/prefer-module
+const { hideBin } = require("yargs/helpers");
+// eslint-disable-next-line unicorn/prefer-module
 const fs = require("node:fs");
+// eslint-disable-next-line unicorn/prefer-module
 const fse = require("fs-extra");
+// eslint-disable-next-line unicorn/prefer-module
 const path = require("node:path");
 
-const packagesPath =  path.join(__dirname, "..", "pages", "docs", "packages");
+// eslint-disable-next-line no-undef, unicorn/prefer-module
+const packagesPath = path.join(__dirname, "..", "pages", "docs", "packages");
 
 const argv = yargs(hideBin(process.argv))
     .option("path", {
@@ -26,11 +34,13 @@ const argv = yargs(hideBin(process.argv))
 const { symlink, copy, path: pathOption } = argv;
 
 if ((!symlink && !copy) || (symlink && copy)) {
+    // eslint-disable-next-line no-console
     console.error("Please specify either --symlink or --copy");
     process.exit(1);
 }
 
 if (typeof pathOption !== "string") {
+    // eslint-disable-next-line no-console
     console.error("Please specify a path on --path");
     process.exit(1);
 }
@@ -40,7 +50,9 @@ async function command() {
 
     fs.rmSync(packagesPath, { recursive: true, force: true });
 
+    // eslint-disable-next-line no-console
     console.log("Searching for docs in", searchPath);
+    // eslint-disable-next-line no-console
     console.log("");
 
     for await (const result of walk(searchPath, {
@@ -51,18 +63,20 @@ async function command() {
         extensions: [".mdx"],
         skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
     })) {
+        // eslint-disable-next-line no-console
         console.log("Found", result.path);
 
         if (result.isFile && result.path.includes("/docs/")) {
-            const dest = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
+            const destination = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
 
             if (copy) {
-                fse.copySync(result.path, dest);
+                fse.copySync(result.path, destination);
             } else if (symlink) {
-                console.log("TODO: add symlink logic")
+                // eslint-disable-next-line no-console
+                console.log("TODO: add symlink logic");
             }
         }
     }
 }
 
-command();
+await command();

@@ -11,51 +11,6 @@ function extendMeta(meta: string | Record<string, any> = {}, fallback: Record<st
     return { ...fallback, ...meta, theme };
 }
 
-/**
- * An option to control how an item should be displayed in the sidebar:
- * - `normal`: the default behavior, item will be displayed
- * - `hidden`: the item will not be displayed in the sidebar entirely
- * - `children`: if the item is a folder, itself will be hidden but all its children will still be processed
- */
-export type Display = "normal" | "hidden" | "children";
-
-export interface Item extends MdxFile {
-    title: string;
-    type: string;
-    children?: Item[];
-    display?: Display;
-    withIndexPage?: boolean;
-    theme?: PageTheme;
-    isUnderCurrentDocsTree?: boolean;
-}
-
-export interface PageItem extends MdxFile {
-    title: string;
-    type: string;
-    href?: string;
-    newWindow?: boolean;
-    children?: PageItem[];
-    firstChildRoute?: string;
-    display?: Display;
-    withIndexPage?: boolean;
-    isUnderCurrentDocsTree?: boolean;
-}
-
-export interface MenuItem extends MdxFile {
-    title: string;
-    type: "menu";
-    display?: Display;
-    children?: PageItem[];
-    items?: Record<
-    string,
-    {
-        title: string;
-        href?: string;
-        newWindow?: boolean;
-    }
-    >;
-}
-
 interface DocsItem extends MdxFile {
     title: string;
     type: string;
@@ -147,12 +102,12 @@ export function normalizePages({
         .filter(
             (a): a is MdxFile | Folder =>
                 // not meta
-                a.kind !== "Meta"
+                a.kind !== "Meta" &&
                 // not hidden routes
-                && !a.name.startsWith("_")
+                !a.name.startsWith("_") &&
                 // locale matches, or fallback to default locale
                 // @ts-expect-error
-                && (a.locale === locale || a.locale === defaultLocale || !a.locale),
+                (a.locale === locale || a.locale === defaultLocale || !a.locale),
         )
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
@@ -221,8 +176,9 @@ export function normalizePages({
         // If the doc is under the active page root.
         const isCurrentDocsTree = route.startsWith(docsRoot);
 
-        const normalizedChildren: any = a.children
-            && normalizePages({
+        const normalizedChildren: any =
+            a.children &&
+            normalizePages({
                 list: a.children,
                 locale,
                 defaultLocale,
@@ -381,4 +337,49 @@ export function normalizePages({
         flatDocsDirectories,
         topLevelNavbarItems,
     };
+}
+
+/**
+ * An option to control how an item should be displayed in the sidebar:
+ * - `normal`: the default behavior, item will be displayed
+ * - `hidden`: the item will not be displayed in the sidebar entirely
+ * - `children`: if the item is a folder, itself will be hidden but all its children will still be processed
+ */
+export type Display = "normal" | "hidden" | "children";
+
+export interface Item extends MdxFile {
+    title: string;
+    type: string;
+    children?: Item[];
+    display?: Display;
+    withIndexPage?: boolean;
+    theme?: PageTheme;
+    isUnderCurrentDocsTree?: boolean;
+}
+
+export interface PageItem extends MdxFile {
+    title: string;
+    type: string;
+    href?: string;
+    newWindow?: boolean;
+    children?: PageItem[];
+    firstChildRoute?: string;
+    display?: Display;
+    withIndexPage?: boolean;
+    isUnderCurrentDocsTree?: boolean;
+}
+
+export interface MenuItem extends MdxFile {
+    title: string;
+    type: "menu";
+    display?: Display;
+    children?: PageItem[];
+    items?: Record<
+        string,
+        {
+            title: string;
+            href?: string;
+            newWindow?: boolean;
+        }
+    >;
 }

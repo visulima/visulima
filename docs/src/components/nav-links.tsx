@@ -3,9 +3,9 @@ import { ArrowRightIcon } from "nextra/icons";
 import React, { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
+import type { DocsThemeConfig } from "../theme";
 import type { Item } from "../utils";
 import Anchor from "./anchor";
-import type { DocsThemeConfig } from "../theme";
 
 interface NavLinkProperties {
     currentIndex: number;

@@ -1,7 +1,7 @@
 import cn from "clsx";
 import type { Heading } from "nextra";
-import type { ReactElement, MutableRefObject } from "react";
-import React, { useRef, useEffect, useState } from "react";
+import type { MutableRefObject, ReactElement } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
@@ -20,7 +20,7 @@ const TocSidebar = ({ headings, filePath, isOnScreen = true }: TOCProps): ReactE
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement>(null);
 
-    const hasHeadings = headings.filter((heading) => heading.type === "heading" && heading.depth > 1).length > 0;
+    const hasHeadings = headings.some((heading) => heading.type === "heading" && heading.depth > 1);
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
     const linkClassName = cn(
@@ -55,7 +55,7 @@ const TocSidebar = ({ headings, filePath, isOnScreen = true }: TOCProps): ReactE
                 "nextra-scrollbar sticky top-16 overflow-y-auto pr-4 pt-8 text-sm [hyphens:auto]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
                 "transition-opacity duration-200 opacity-0",
-                isOnScreen ? "!opacity-100" : ""
+                isOnScreen ? "!opacity-100" : "",
             )}
         >
             <Toc headings={headings} activeAnchor={activeAnchor} />

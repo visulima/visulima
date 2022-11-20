@@ -4,8 +4,8 @@ import type { Heading } from "nextra";
 import React, { ReactElement, useMemo, useRef } from "react";
 
 import { useConfig } from "../../contexts";
-import { getHeadingText, renderComponent } from "../../utils";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
+import { getHeadingText, renderComponent } from "../../utils";
 
 export type TOCProps = {
     headings: Heading[];
@@ -19,17 +19,16 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
     const tocReference = useRef<HTMLDivElement>(null);
 
     const items = useMemo<{ text: string; slug: string; depth: 2 | 3 | 4 | 5 | 6 }[]>(
-        () =>
-            headings
-                .filter((heading) => heading.type === "heading" && heading.depth > 1)
-                .map((heading) => {
-                    const text = getHeadingText(heading);
-                    return {
-                        text,
-                        slug: slugger.slug(text),
-                        depth: heading.depth as any,
-                    };
-                }),
+        () => headings
+            .filter((heading) => heading.type === "heading" && heading.depth > 1)
+            .map((heading) => {
+                const text = getHeadingText(heading);
+                return {
+                    text,
+                    slug: slugger.slug(text),
+                    depth: heading.depth as any,
+                };
+            }),
         [headings],
     );
 
@@ -41,7 +40,7 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
                 <p className="text-gray-500 dark:text-gray-400 contrast-more:text-gray-800 contrast-more:dark:text-gray-50 uppercase mb-2 font-semibold tracking-wide">
                     {renderComponent(config.tocSidebar.title)}
                 </p>
-                <ul className={"leading-normal"}>
+                <ul className="leading-normal">
                     {items.map(({ slug, text, depth }) => (
                         <li className="group" key={slug}>
                             <a
@@ -68,7 +67,7 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
                                 {isPage && (
                                     <span className="flex-grow-0 flex-shrink-0 h-4 opacity-50 fill-current rotate-270">
                                         <svg className="block h-full h-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 8">
-                                            <path d="M7,8a1,1,0,0,1-.71-.29l-6-6A1,1,0,0,1,1.71.29L7,5.59,12.29.29a1,1,0,1,1,1.42,1.42l-6,6A1,1,0,0,1,7,8Z"></path>
+                                            <path d="M7,8a1,1,0,0,1-.71-.29l-6-6A1,1,0,0,1,1.71.29L7,5.59,12.29.29a1,1,0,1,1,1.42,1.42l-6,6A1,1,0,0,1,7,8Z" />
                                         </svg>
                                     </span>
                                 )}

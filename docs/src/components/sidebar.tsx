@@ -4,12 +4,16 @@ import { useRouter } from "next/router";
 import { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
 import type { ReactElement } from "react";
-import React, { memo, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+    memo, useEffect, useMemo, useRef, useState,
+} from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
-import { getFSRoute, getHeadingText, Item, MenuItem, PageItem, renderComponent } from "../utils";
+import {
+    getFSRoute, getHeadingText, Item, MenuItem, PageItem, renderComponent,
+} from "../utils";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
@@ -51,10 +55,9 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
     const { setMenu } = useMenu();
     const config = useConfig();
     const { theme } = item as Item;
-    const open =
-        TreeState[item.route] !== undefined
-            ? TreeState[item.route]
-            : active || activeRouteInside || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel);
+    const open = TreeState[item.route] !== undefined
+        ? TreeState[item.route]
+        : active || activeRouteInside || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel);
 
     const rerender = useState({})[1];
 
@@ -222,17 +225,17 @@ interface MenuProperties {
     onlyCurrentDocs?: boolean;
 }
 
-const Menu = ({ directories, anchors, className, onlyCurrentDocs }: MenuProperties): ReactElement => (
+const Menu = ({
+    directories, anchors, className, onlyCurrentDocs,
+}: MenuProperties): ReactElement => (
     <ul className={cn(classes.list, className)}>
-        {directories.map((item) =>
-            !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
-                item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
+        {directories.map((item) => (!onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
+            item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
                     <Folder key={item.name} item={item} anchors={anchors} />
-                ) : (
+            ) : (
                     <File key={item.name} item={item} anchors={anchors} />
-                )
-            ) : null,
-        )}
+            )
+        ) : null))}
     </ul>
 );
 
@@ -258,11 +261,10 @@ const Sidebar = ({
     const config = useConfig();
     const { menu, setMenu } = useMenu();
     const anchors = useMemo(
-        () =>
-            headings
-                .filter((v) => v.children && v.depth === 2 && v.type === "heading")
-                .map(getHeadingText)
-                .filter(Boolean),
+        () => headings
+            .filter((v) => v.children && v.depth === 2 && v.type === "heading")
+            .map(getHeadingText)
+            .filter(Boolean),
         [headings],
     );
     const sidebarReference = useRef<HTMLDivElement>(null);

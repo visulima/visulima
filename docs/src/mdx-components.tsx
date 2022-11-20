@@ -9,12 +9,12 @@ import React, {
 } from "react";
 
 import Anchor from "./components/anchor";
+import Code from "./components/code";
 import Collapse from "./components/collapse";
+import Pre from "./components/pre";
 import { IS_BROWSER } from "./constants";
 import { DetailsProvider, useDetails, useSetActiveAnchor } from "./contexts";
-import type { DocsThemeConfig } from "./types";
-import Pre from "./components/pre";
-import Code from "./components/code";
+import type { DocumentationThemeConfig } from "./types";
 
 let observer: IntersectionObserver;
 let setActiveAnchor: ReturnType<typeof useSetActiveAnchor>;
@@ -72,7 +72,9 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
 
     useEffect(() => {
         const heading = obReference.current;
-        if (!heading) return;
+        if (!heading) {
+            return;
+        }
 
         slugs.set(heading, [id, (context.index += 1)]);
         observer.observe(heading);
@@ -86,7 +88,7 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 return returnValue;
             });
         };
-    }, []);
+    }, [id]);
 
     return (
             <Tag
@@ -109,38 +111,13 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
     );
 };
 
-const findSummary = (children: ReactNode) => {
-    let summary: ReactNode = null;
-    const restChildren: ReactNode[] = [];
-
-    Children.forEach(children, (child, index) => {
-        if (child && (child as ReactElement).type === Summary) {
-            summary ||= child;
-            return;
-        }
-
-        let c = child;
-        if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
-            const result = findSummary(child.props.children);
-            summary = result[0];
-            c = cloneElement(child, {
-                ...child.props,
-                children: result[1]?.length ? result[1] : undefined,
-                key: index,
-            });
-        }
-        restChildren.push(c);
-    });
-
-    return [summary, restChildren];
-};
-
 const Details = ({ children, open, ...properties }: ComponentProps<"details">): ReactElement => {
     const [openState, setOpen] = useState(!!open);
     const [summary, restChildren] = findSummary(children);
 
     // To animate the close animation we have to delay the DOM node state here.
     const [delayedOpenState, setDelayedOpenState] = useState(openState);
+
     useEffect(() => {
         if (openState) {
             setDelayedOpenState(true);
@@ -181,15 +158,41 @@ const Summary = (properties: ComponentProps<"summary">): ReactElement => {
     );
 };
 
+const findSummary = (children: ReactNode) => {
+    let summary: ReactNode = null;
+    const restChildren: ReactNode[] = [];
+
+    Children.forEach(children, (child, index) => {
+        if (child && (child as ReactElement).type === Summary) {
+            summary ||= child;
+            return;
+        }
+
+        let c = child;
+        if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
+            const result = findSummary(child.props.children);
+            summary = result[0];
+            c = cloneElement(child, {
+                ...child.props,
+                children: result[1]?.length ? result[1] : undefined,
+                key: index,
+            });
+        }
+        restChildren.push(c);
+    });
+
+    return [summary, restChildren];
+};
+
 const A = ({ href = "", ...properties }) => <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />;
 
-export const getComponents = ({
+const getComponents = ({
     isRawLayout,
     components,
 }: {
     isRawLayout?: boolean;
-    components?: DocsThemeConfig["components"];
-}): DocsThemeConfig["components"] => {
+    components?: DocumentationThemeConfig["components"];
+}): DocumentationThemeConfig["components"] => {
     if (isRawLayout) {
         return { a: A };
     }
@@ -229,3 +232,5 @@ export const getComponents = ({
         ...components,
     };
 };
+
+export default getComponents;
