@@ -75,15 +75,33 @@ export default {
             }
         },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     footer: {
-        text: ({ locale }) => {
-            // switch (locale) {
-            //     default:
-            //         return (
-            //
-            //         );
-            // }
+        copyright: () => {
+            return (
+                <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400 p-1">
+                    © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
+                </span>
+            );
+        },
+        component: () => {
+            const linkClasses =
+                "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
+
+            return (
+                <div>
+                    <div>
+                        <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">Highlights</p>
+                        <ul className="mt-6 space-y-4">
+                            <li>
+                                <a href="#" title="" className={linkClasses}>
+                                    {" "}
+                                    About{" "}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            );
         },
     },
     // hero: {

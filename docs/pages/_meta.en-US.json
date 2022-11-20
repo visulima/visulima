@@ -1,6 +1,12 @@
 {
-    "index": "Getting set up",
-    "packages": {
-        "title": "Packages"
+    "index": {
+        "title": "Getting set up",
+        "type": "page",
+        "hidden": true
+    },
+    "docs": {
+        "title": "Documentation",
+        "type": "page",
+        "hidden": true
     }
 }

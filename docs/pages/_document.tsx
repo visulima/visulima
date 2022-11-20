@@ -9,7 +9,7 @@ class MyDocument extends Document {
         return (
             <Html lang="en">
                 <Head />
-                <body className="relative bg-x-gradient-grey-200-grey-200-50-white-50">
+                <body className="relative">
                     <SkipNavLink />
                     <Main />
                     <NextScript />

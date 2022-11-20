@@ -209,7 +209,7 @@ export const getComponents = ({
         blockquote: (properties: ComponentProps<"blockquote">) => (
             <blockquote
                 className={cn(
-                    "mt-6 border-gray-300 italic text-gray-700 dark:border-gray-700 dark:text-gray-400",
+                    "mt-6 border-gray-300 italic text-gray-700 dark:border-darker-700 dark:text-gray-400",
                     "first:mt-0 ltr:border-l-2 ltr:pl-6 rtl:border-r-2 rtl:pr-6",
                 )}
                 {...properties}

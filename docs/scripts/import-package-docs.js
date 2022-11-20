@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const fse = require("fs-extra");
 const path = require("node:path");
 
-const packagesPath =  path.join(__dirname, "..", "pages", "packages");
+const packagesPath =  path.join(__dirname, "..", "pages", "docs", "packages");
 
 const argv = yargs(hideBin(process.argv))
     .option("path", {

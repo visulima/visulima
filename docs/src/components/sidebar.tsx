@@ -19,12 +19,12 @@ const TreeState: Record<string, boolean> = Object.create(null);
 
 const classes = {
     link: cn(
-        "flex rounded px-2 py-1.5 text-sm transition-colors [word-break:break-word]",
+        "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word]",
         "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
     inactive: cn(
-        "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-        "dark:text-neutral-500 dark:hover:bg-primary-100/5 dark:hover:text-gray-50",
+        "text-gray-500 hover:bg-gray-200 hover:text-gray-700",
+        "dark:text-gray-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-200",
         "contrast-more:text-gray-900 contrast-more:dark:text-gray-50",
         "contrast-more:border-transparent contrast-more:hover:border-gray-900 contrast-more:dark:hover:border-gray-50",
     ),
@@ -74,6 +74,7 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
                 locale: menu.locale,
                 route: `${menu.route}/${key}`,
             };
+
             return {
                 ...route,
                 ...item,
@@ -87,9 +88,11 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
                 className={cn("items-center justify-between gap-2", classes.link, active ? classes.active : classes.inactive)}
                 onClick={(e) => {
                     const clickedToggleIcon = ["svg", "path"].includes((e.target as HTMLElement).tagName.toLowerCase());
+
                     if (clickedToggleIcon) {
                         e.preventDefault();
                     }
+
                     if ((item as Item).withIndexPage) {
                         // If it's focused, we toggle it. Otherwise, always open it.
                         if (active || clickedToggleIcon) {
@@ -101,7 +104,11 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
                         rerender({});
                         return;
                     }
-                    if (active) return;
+
+                    if (active) {
+                        return;
+                    }
+
                     TreeState[item.route] = !open;
                     rerender({});
                 }}
@@ -304,7 +311,7 @@ const Sidebar = ({
             />
             <aside
                 className={cn(
-                    "nextra-sidebar-container flex flex-col bg-x-gradient-grey-200-grey-400-80",
+                    "nextra-sidebar-container flex flex-col bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
                     "md:top-16 md:w-64 md:shrink-0 md:transform-none",
                     asPopover ? "md:hidden" : "md:sticky md:self-start",
                     menu ? "[transform:translate3d(0,0,0)]" : "[transform:translate3d(0,-100%,0)]",

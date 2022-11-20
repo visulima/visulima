@@ -2,7 +2,8 @@ import { Menu, Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
-import React, { ReactElement, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
+import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
@@ -12,6 +13,7 @@ import Anchor from "./anchor";
 export type NavBarProps = {
     flatDirectories: Item[];
     items: (PageItem | MenuItem)[];
+    activeType: string;
 };
 
 const classes = {
@@ -20,7 +22,7 @@ const classes = {
     inactive: cn("text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"),
 };
 
-const NavbarMenu = ({ className, menu, children }: { className?: string; menu: MenuItem; children: ReactNode }): ReactElement => {
+const NavbarMenu: FC<{ className?: string; menu: MenuItem; children: ReactNode }> = ({ className, menu, children }) => {
     const { items } = menu;
     const routes = Object.fromEntries((menu.children || []).map((route) => [route.name, route]));
 
@@ -55,18 +57,29 @@ const NavbarMenu = ({ className, menu, children }: { className?: string; menu: M
     );
 };
 
-const Navbar = ({ flatDirectories, items }: NavBarProps): ReactElement => {
+const Navbar: FC<NavBarProps> = ({ flatDirectories, items, activeType }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE, asPath } = useRouter();
     const activeRoute = getFSRoute(asPath, locale);
     const { menu, setMenu } = useMenu();
 
     return (
-        <div className="nextra-nav-container sticky top-0 z-20 w-full header-border">
-            <div className="nextra-nav-container-blur pointer-events-none absolute z-[-1] h-full w-full bg-x-gradient-grey-200-grey-200-50-white-50" />
+        <div className="nextra-nav-container sticky top-0 z-20 w-full header-border dark:header-border">
+            <div
+                className={cn(
+                    "nextra-nav-container-blur pointer-events-none absolute z-[-1] h-full w-full",
+                    activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
+                )}
+            />
             {/* eslint-disable-next-line max-len */}
-            <nav className="mx-auto flex max-w-[90rem] bg-white">
-                <div className="bg-x-gradient-grey-200-grey-400-80 md:w-64 h-[var(--nextra-navbar-height)] flex items-center pl-4">
+            <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4": "pr-4")}>
+                <div
+                    className={cn(
+                        "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
+                        activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                        activeType === "doc" ? "pl-4" : "",
+                    )}
+                >
                     {config.logoLink ? (
                         <Anchor
                             href={typeof config.logoLink === "string" ? config.logoLink : "/"}
@@ -78,7 +91,7 @@ const Navbar = ({ flatDirectories, items }: NavBarProps): ReactElement => {
                         <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                     )}
                 </div>
-                <div className="grow h-[var(--nextra-navbar-height)]">
+                <div className="grow h-[var(--nextra-navbar-height)] flex items-center justify-center space-x-12">
                     {items.map((pageOrMenu) => {
                         if (pageOrMenu.display === "hidden") return null;
 

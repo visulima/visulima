@@ -39,7 +39,7 @@ const NavLinks = ({ flatDirectories, currentIndex }: NavLinkProperties): ReactEl
             )}
         >
             {previous && (
-                <Anchor href={previous.route} title={previous.title} className={cn(classes.link, "ltr:pr-4 rtl:pl-4", "flex-grow mr-4 border border-solid transition-all hover:-translate-y-1")}>
+                <Anchor href={previous.route} title={previous.title} className={cn(classes.link, "ltr:pr-4 rtl:pl-4", "flex-grow mr-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1")}>
                     <ArrowRightIcon className={cn(classes.icon, "ltr:rotate-180 ml-4")} />
                     <div className="flex flex-col items-end flex-grow">
                         <span className="text-xs">
@@ -55,7 +55,7 @@ const NavLinks = ({ flatDirectories, currentIndex }: NavLinkProperties): ReactEl
                 <Anchor
                     href={next.route}
                     title={next.title}
-                    className={cn(classes.link, "ltr:ml-auto ltr:pl-4 ltr:text-right rtl:mr-auto rtl:pr-4 rtl:text-left", "flex-grow ml-4 border border-solid transition-all hover:-translate-y-1")}
+                    className={cn(classes.link, "ltr:ml-auto ltr:pl-4 ltr:text-right rtl:mr-auto rtl:pr-4 rtl:text-left", "flex-grow ml-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1")}
                 >
                     <div className="flex flex-col items-start flex-grow">
                         <span className="text-xs">

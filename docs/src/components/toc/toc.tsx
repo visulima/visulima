@@ -54,7 +54,7 @@ const Toc = ({ headings, activeAnchor, isPage = false }: TOCProps): ReactElement
                                         5: "ltr:ml-12 rtl:mr-12",
                                         6: "ltr:ml-16 rtl:mr-16",
                                     }[depth],
-                                    isPage ? "border-solid border-b border-grey-700-opacity-10 py-2" : "my-2 scroll-my-6 scroll-py-6",
+                                    isPage ? "border-solid border-b dark:border-primary-100/10 contrast-more:border-neutral-400 py-2" : "my-2 scroll-my-6 scroll-py-6",
                                     isPage ? "flex justify-between items-center w-full" : "inline-block w-full",
                                     activeAnchor[slug]?.isActive
                                         ? "text-primary-500 subpixel-antialiased contrast-more:!text-primary-500"

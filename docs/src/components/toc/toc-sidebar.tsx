@@ -63,7 +63,7 @@ const TocSidebar = ({ headings, filePath, isOnScreen = true }: TOCProps): ReactE
             {hasMetaInfo && (
                 <div
                     className={cn(
-                        hasHeadings && "mt-8 border-t bg-white pt-8 shadow-[0_-12px_16px_white] dark:bg-dark dark:shadow-[0_-12px_16px_#111]",
+                        hasHeadings && "mt-8 border-t pt-8",
                         "sticky bottom-0 flex flex-col items-start gap-2 pb-8 dark:border-neutral-800",
                         "contrast-more:border-t contrast-more:border-neutral-400 contrast-more:shadow-none contrast-more:dark:border-neutral-400",
                     )}

@@ -6,23 +6,38 @@ import { renderComponent } from "../utils";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 
-const Footer = ({ menu }: { menu?: boolean }): ReactElement => {
+const Footer = ({ menu, activeType }: { menu?: boolean; activeType: string }): ReactElement => {
     const config = useConfig();
 
     return (
-        <footer className="bg-gray-100 pb-[env(safe-area-inset-bottom)] dark:bg-neutral-900">
-            <div className={cn("mx-auto flex max-w-[90rem] gap-2 py-2 px-4", menu ? "flex" : "hidden")}>
-                {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
-                {config.darkMode && <ThemeSwitch />}
-            </div>
-            <hr className="dark:border-neutral-800" />
-            <div
-                className={cn(
-                    "mx-auto flex max-w-[90rem] justify-center py-12 text-gray-600 dark:text-gray-400 md:justify-start",
-                    "pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]",
-                )}
-            >
-                {renderComponent(config.footer.text)}
+        <footer
+            className={cn(
+                "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
+                activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
+            )}
+        >
+            <div className="mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800">
+                <div
+                    className={cn(
+                        "md:w-64 flex flex-col items-center pl-4",
+                        activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                    )}
+                >
+                    <div className={cn("mx-auto flex gap-2 py-2 px-4 my-3", menu ? "flex" : "hidden")}>
+                        {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
+                        {config.darkMode && <ThemeSwitch />}
+                    </div>
+
+                    {config.footer?.copyright && renderComponent(config.footer.copyright)}
+                </div>
+                <div
+                    className={cn(
+                        "grow py-12 text-gray-600 dark:text-gray-400",
+                        "pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]",
+                    )}
+                >
+                    {renderComponent(config.footer.component)}
+                </div>
             </div>
         </footer>
     );

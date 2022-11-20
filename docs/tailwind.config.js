@@ -1,19 +1,16 @@
 const colors = require("tailwindcss/colors");
 
-const makePrimaryColor = (l) => ({ opacityValue }) => {
-    if (opacityValue === undefined) {
-        return `hsl(var(--nextra-primary-hue) 100% ${l}%)`;
-    }
-    return `hsl(var(--nextra-primary-hue) 100% ${l}% / ${opacityValue})`;
-};
+const makePrimaryColor =
+    (l) =>
+    ({ opacityValue }) => {
+        if (opacityValue === undefined) {
+            return `hsl(var(--nextra-primary-hue) 100% ${l}%)`;
+        }
+        return `hsl(var(--nextra-primary-hue) 100% ${l}% / ${opacityValue})`;
+    };
 
 module.exports = {
-    content: [
-        "./src/**/*.tsx",
-        "./components/**/*.js",
-        "./pages/**/*.{md,mdx}",
-        "./theme.config.js",
-    ],
+    content: ["./src/**/*.tsx", "./components/**/*.js", "./pages/**/*.{md,mdx}", "./theme.config.js"],
     theme: {
         screens: {
             sm: "640px",
@@ -52,6 +49,12 @@ module.exports = {
             orange: colors.orange,
             blue: colors.blue,
             yellow: colors.yellow,
+            emerald: colors.emerald,
+            darker: {
+                700: "#171923",
+                800: "#12141c",
+                900: "#0c0d12",
+            },
             primary: {
                 50: makePrimaryColor(97),
                 100: makePrimaryColor(94),
@@ -72,8 +75,8 @@ module.exports = {
                 dark: "#111",
             },
             rotate: {
-                '270': '270deg'
-            }
+                270: "270deg",
+            },
         },
     },
     darkMode: ["class", 'html[class~="dark"]'],

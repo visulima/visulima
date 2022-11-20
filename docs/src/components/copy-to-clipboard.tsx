@@ -1,7 +1,11 @@
 import type { ComponentProps, ReactElement } from "react";
 import React, { useCallback, useEffect, useState } from "react";
 import { CheckIcon, CopyIcon } from "nextra/icons";
+import toast from "react-hot-toast";
+
 import Button from "./button";
+import SuccessToast from "./toast/success";
+import ErrorToast from "./toast/error";
 
 export const CopyToClipboard = ({
     value,
@@ -12,7 +16,10 @@ export const CopyToClipboard = ({
     const [isCopied, setCopied] = useState(false);
 
     useEffect(() => {
-        if (!isCopied) return;
+        if (!isCopied) {
+            return;
+        }
+
         const timerId = setTimeout(() => {
             setCopied(false);
         }, 2000);
@@ -24,13 +31,17 @@ export const CopyToClipboard = ({
 
     const handleClick = useCallback<NonNullable<ComponentProps<"button">["onClick"]>>(async () => {
         setCopied(true);
+
         if (!navigator?.clipboard) {
-            console.error("Access to clipboard rejected!");
+            toast.custom(<ErrorToast>Access to clipboard rejected!</ErrorToast>, { id: "copy-to-clipboard", position: "bottom-right" });
         }
+
         try {
             await navigator.clipboard.writeText(JSON.parse(value));
+
+            toast.custom(<SuccessToast title="Page URL copied to clipboard">Paste it wherever you like it.</SuccessToast>, { id: "copy-to-clipboard", position: "bottom-right" });
         } catch {
-            console.error("Failed to copy!");
+            toast.custom(<ErrorToast>Failed to copy to clipboard</ErrorToast>, { id: "copy-to-clipboard", position: "bottom-right" });
         }
     }, [value]);
 

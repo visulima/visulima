@@ -51,8 +51,7 @@ const DEFAULT_THEME: DocsThemeConfig = {
     },
     feedback: {},
     footer: {
-        component: Footer,
-        text: `MIT ${new Date().getFullYear()} © Nextra.`,
+        copyright: `MIT ${new Date().getFullYear()} © Nextra.`,
     },
     getNextSeoProps: () => {
         return { titleTemplate: "%s – Nextra" };

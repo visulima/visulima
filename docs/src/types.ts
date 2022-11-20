@@ -47,8 +47,9 @@ export interface DocsThemeConfig {
         labels?: string;
     };
     footer: {
-        component: ReactNode | FC<{ menu: boolean }>;
-        text: ReactNode | FC;
+        component?: ReactNode | FC;
+        logo?: ReactNode | FC;
+        copyright?: ReactNode | FC;
     };
     getNextSeoProps?: () => NextSeoProps;
     gitTimestamp: ReactNode | FC<{ timestamp: Date }>;
