@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { cnPageMap, usPageMap } from "./__fixture__/pageMap";
+import { describe, expect, it } from "vitest";
+
 import { normalizePages } from "../src/utils";
+import { cnPageMap, usPageMap } from "./__fixture__/page-map";
 
 const defaultLocale = "en-US";
 
@@ -9,7 +10,7 @@ describe("normalize-page", () => {
         const locale = "zh-CN";
         const result = normalizePages({
             list: cnPageMap,
-            locale: locale,
+            locale,
             defaultLocale,
             route: "/",
         });
@@ -20,7 +21,7 @@ describe("normalize-page", () => {
         const locale = "zh-CN";
         const result = normalizePages({
             list: cnPageMap,
-            locale: locale,
+            locale,
             defaultLocale,
             route: "/docs/getting-started",
         });
@@ -31,7 +32,7 @@ describe("normalize-page", () => {
         const locale = "en-US";
         const result = normalizePages({
             list: usPageMap,
-            locale: locale,
+            locale,
             defaultLocale,
             route: "/",
         });
@@ -42,7 +43,7 @@ describe("normalize-page", () => {
         const locale = "en-US";
         const result = normalizePages({
             list: usPageMap,
-            locale: locale,
+            locale,
             defaultLocale,
             route: "/docs/getting-started",
         });
@@ -58,7 +59,7 @@ describe("normalize-page", () => {
                 {
                     kind: "Meta",
                     data: {
-                        "404": {
+                        404: {
                             type: "page",
                             theme: {
                                 layout: "full",
@@ -89,7 +90,7 @@ describe("normalize-page", () => {
                 {
                     kind: "Meta",
                     data: {
-                        "500": {
+                        500: {
                             type: "page",
                             theme: {
                                 layout: "raw",

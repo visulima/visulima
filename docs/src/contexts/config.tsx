@@ -4,7 +4,7 @@ import type { PageOpts } from "nextra";
 import { DiscordIcon, GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
 import React, {
-    createContext, isValidElement, useContext, useState,
+    createContext, isValidElement, useContext, useMemo, useState,
 } from "react";
 
 import Anchor from "../components/anchor";
@@ -119,13 +119,14 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
     },
     search: {
         component({ className, directories }) {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
+            // eslint-disable-next-line react-hooks/rules-of-hooks,@typescript-eslint/no-use-before-define
             const config = useConfig();
 
             return config.unstable_flexsearch ? <FlexSearch className={className} /> : <MatchSorterSearch className={className} directories={directories} />;
         },
         emptyResult: <span className="block select-none p-8 text-center text-sm text-gray-400">No results found.</span>,
         loading() {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             const { locale } = useRouter();
 
             if (locale === "zh-CN") {
@@ -143,6 +144,7 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
             return "Loading…";
         },
         placeholder() {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             const { locale } = useRouter();
 
             if (locale === "zh-CN") {
@@ -157,7 +159,6 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
                 return "Rechercher de la documentation…";
             }
 
-
             return "Search documentation…";
         },
     },
@@ -167,6 +168,7 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
     },
     sidebar: {
         defaultMenuCollapseLevel: 2,
+        // eslint-disable-next-line react/jsx-no-useless-fragment
         titleComponent: ({ title }) => <>{title}</>,
     },
     tocSidebar: {
@@ -188,6 +190,8 @@ const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
         if (isObject) {
             return key;
         }
+
+        return null;
     })
     .filter(Boolean) as (keyof DocumentationThemeConfig)[];
 
@@ -201,32 +205,38 @@ const ConfigContext = createContext<Config>(theme);
 
 export const useConfig = () => useContext(ConfigContext);
 
+// eslint-disable-next-line radar/cognitive-complexity
 export const ConfigProvider = ({ children, value }: { children: ReactNode; value: Context }): ReactElement => {
     const [menu, setMenu] = useState(false);
+
     const { themeConfig, pageOpts } = value;
-    const extendedConfig: Config = {
-        ...DEFAULT_THEME,
-        ...themeConfig,
-        unstable_flexsearch: pageOpts.unstable_flexsearch,
-        newNextLinkBehavior: pageOpts.newNextLinkBehavior,
-        title: pageOpts.title,
-        frontMatter: pageOpts.frontMatter,
-        ...Object.fromEntries(
-            DEEP_OBJECT_KEYS.map((key) => (typeof themeConfig[key] === "object"
-                ? [
-                    key,
-                    // @ts-expect-error -- key has always object value
-                    { ...DEFAULT_THEME[key], ...themeConfig[key] },
-                ]
-                : [])),
-        ),
-    };
+    const extendedConfig: Config = useMemo(() => {
+        return {
+            ...DEFAULT_THEME,
+            ...themeConfig,
+            unstable_flexsearch: pageOpts.unstable_flexsearch,
+            newNextLinkBehavior: pageOpts.newNextLinkBehavior,
+            title: pageOpts.title,
+            frontMatter: pageOpts.frontMatter,
+            ...Object.fromEntries(
+                DEEP_OBJECT_KEYS.map((key) => (typeof themeConfig[key] === "object"
+                    ? [
+                        key,
+                        // @ts-expect-error -- key has always object value
+                        { ...DEFAULT_THEME[key], ...themeConfig[key] },
+                    ]
+                    : [])),
+            ),
+        };
+    }, [themeConfig, pageOpts.unstable_flexsearch, pageOpts.newNextLinkBehavior, pageOpts.title, pageOpts.frontMatter]);
 
     const { nextThemes } = extendedConfig;
 
     if (process.env.NODE_ENV === "development") {
         const notice = "[nextra-theme-docs] ⚠️  You are using a legacy theme config";
 
+        // TODO: find a good way to refactor this
+        // eslint-disable-next-line no-restricted-syntax
         for (const [legacyOption, newPath] of Object.entries(LEGACY_CONFIG_OPTIONS)) {
             if (legacyOption in themeConfig) {
                 const [object, key] = newPath.split(".");
@@ -237,15 +247,17 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             }
         }
 
-        for (const key of ["search", "footer"] as const) {
+        (["search", "footer"] as const).forEach((key) => {
             if (key in themeConfig) {
                 const option = themeConfig[key];
+
                 if (typeof option === "boolean" || option == null) {
-                // eslint-disable-next-line no-console
+                    // eslint-disable-next-line no-console
                     console.warn(`${notice} \`${key}\`.`, option ? "Remove it" : `Rename it to \`${key}: { component: null }\` for future compatibility.`);
                 }
             }
-        }
+        });
+
         if (typeof themeConfig.banner === "string") {
             // eslint-disable-next-line no-console
             console.warn(notice, "`banner`. Rename it to `banner: { content: ... }` for future compatibility.");

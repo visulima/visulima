@@ -1,4 +1,3 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations
 // eslint-disable-next-line unicorn/prefer-module
 const { walk } = require("@visulima/readdir");
 // eslint-disable-next-line unicorn/prefer-module
@@ -84,6 +83,7 @@ async function command() {
     }
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 command().catch((error) => {
     // eslint-disable-next-line no-console
     console.error(error);

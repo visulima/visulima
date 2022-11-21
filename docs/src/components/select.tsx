@@ -43,6 +43,7 @@ const Select: FC<MenuProperties> = ({
                 name: "sameWidth",
                 enabled: true,
                 fn({ state }) {
+                    // eslint-disable-next-line no-param-reassign
                     state.styles.popper.minWidth = `${state.rects.reference.width}px`;
                 },
                 phase: "beforeWrite",
@@ -72,6 +73,7 @@ const Select: FC<MenuProperties> = ({
                             ref={container}
                             show={open}
                             as={Listbox.Options}
+                            // eslint-disable-next-line max-len
                             className="z-20 max-h-64 overflow-auto rounded-md border border-black/5 bg-white py-1 text-sm shadow-lg dark:border-white/20 dark:bg-neutral-800"
                             leave="transition-opacity"
                             leaveFrom="opacity-100"

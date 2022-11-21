@@ -115,7 +115,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
                 ...(paragraphs[0] && { display: paragraphs[0] }),
             });
 
-            for (const [index, paragraph] of paragraphs.entries()) {
+            paragraphs.forEach((paragraph, index) => {
                 sectionIndex.add({
                     id: `${url}_${index}`,
                     url,
@@ -123,7 +123,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
                     pageId: `page_${pageId}`,
                     content: paragraph,
                 });
-            }
+            });
 
             // Add the page itself.
             pageContent += ` ${title} ${content}`;
@@ -159,24 +159,28 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [search, setSearch] = useState("");
 
-    const doSearch = (search: string) => {
-        if (!search) return;
+    // eslint-disable-next-line radar/cognitive-complexity
+    const doSearch = (searchString: string) => {
+        if (!searchString) {
+            return;
+        }
+
         const [pageIndex, sectionIndex] = indexes[locale];
 
-        // Show the results for the top 5 pages
-        const pageResults = pageIndex.search<true>(search, 5, {
+        // Show the resultList for the top 5 pages
+        const pageResults = pageIndex.search<true>(searchString, 5, {
             enrich: true,
             suggest: true,
         })[0]?.result || [];
 
-        const results: Result[] = [];
+        const resultList: Result[] = [];
         const pageTitleMatches: Record<number, number> = {};
 
-        for (const [index, result] of pageResults.entries()) {
+        pageResults.forEach((result, index) => {
             pageTitleMatches[index] = 0;
 
-            // Show the top 5 results for each page
-            const sectionResults = sectionIndex.search<true>(search, 5, {
+            // Show the top 5 resultList for each page
+            const sectionResults = sectionIndex.search<true>(searchString, 5, {
                 enrich: true,
                 suggest: true,
                 tag: `page_${result.id}`,
@@ -186,29 +190,33 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
 
             const occurred: Record<string, boolean> = {};
 
-            for (const [index_, { doc }] of sectionResults.entries()) {
-                const isMatchingTitle = doc.display !== undefined;
+            sectionResults.forEach(({ doc }, sectionResultsIndex) => {
+                const { display, content: documentContent } = doc;
+                const isMatchingTitle = display !== undefined;
 
                 if (isMatchingTitle) {
-                    pageTitleMatches[index]++;
+                    pageTitleMatches[index] += 1;
                 }
 
                 const { url, title } = doc;
-                const content = doc.display || doc.content;
+                const content = display || documentContent;
 
                 if (occurred[`${url}@${content}`]) {
-                    continue;
+                    return;
                 }
 
                 occurred[`${url}@${content}`] = true;
-                results.push({
+
+                resultList.push({
                     _page_rk: index,
-                    _section_rk: index_,
+                    _section_rk: sectionResultsIndex,
                     route: url,
                     prefix: isFirstItemOfPage && (
                         <div
                             className={cn(
-                                "mx-2.5 mb-2 mt-6 select-none border-b border-black/10 px-2.5 pb-1.5 text-xs font-semibold uppercase text-gray-500 first:mt-0 dark:border-white/20 dark:text-gray-300",
+                                "mx-2.5 mb-2 mt-6 select-none px-2.5 pb-1.5",
+                                "text-xs font-semibold uppercase text-gray-500 first:mt-0 dark:text-gray-300",
+                                "border-b border-black/10 dark:border-white/20",
                                 "contrast-more:border-gray-600 contrast-more:text-gray-900 contrast-more:dark:border-gray-50 contrast-more:dark:text-gray-50",
                             )}
                         >
@@ -218,38 +226,40 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
                     children: (
                         <>
                             <div className="text-base font-semibold leading-5">
-                                <HighlightMatches match={search} value={title} />
+                                <HighlightMatches match={searchString} value={title} />
                             </div>
                             {content && (
                                 <div className="excerpt mt-1 text-sm leading-[1.35rem] text-gray-600 dark:text-gray-400 contrast-more:dark:text-gray-50">
-                                    <HighlightMatches match={search} value={content} />
+                                    <HighlightMatches match={searchString} value={content} />
                                 </div>
                             )}
                         </>
                     ),
                 });
                 isFirstItemOfPage = false;
-            }
-        }
+            });
+        });
 
         setResults(
-            results
+            resultList
                 .sort((a, b) => {
                     // Sort by number of matches in the title.
                     if (a._page_rk === b._page_rk) {
                         return a._section_rk - b._section_rk;
                     }
+
                     if (pageTitleMatches[a._page_rk] !== pageTitleMatches[b._page_rk]) {
                         return pageTitleMatches[b._page_rk] - pageTitleMatches[a._page_rk];
                     }
+
                     return a._page_rk - b._page_rk;
                 })
-                .map((res) => {
+                .map((result) => {
                     return {
-                        id: `${res._page_rk}_${res._section_rk}`,
-                        route: res.route,
-                        prefix: res.prefix,
-                        children: res.children,
+                        id: `${result._page_rk}_${result._section_rk}`,
+                        route: result.route,
+                        prefix: result.prefix,
+                        children: result.children,
                     };
                 }),
         );
@@ -265,7 +275,7 @@ const Flexsearch = ({ className }: { className?: string }): ReactElement => {
                 setLoading(false);
             }
         },
-        [locale],
+        [locale, basePath],
     );
 
     const handleChange = async (value: string) => {

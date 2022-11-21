@@ -5,7 +5,7 @@ import {
     Table, Td, Th, Tr,
 } from "nextra/components";
 import React, {
-    Children, cloneElement, ComponentProps, ReactElement, ReactNode, useEffect, useRef, useState,
+    Children, cloneElement, ComponentProps, FC, ReactElement, ReactNode, useEffect, useRef, useState,
 } from "react";
 
 import Anchor from "./components/anchor";
@@ -23,10 +23,11 @@ const slugs = new WeakMap();
 if (IS_BROWSER) {
     observer ||= new IntersectionObserver(
         (entries) => {
+            // eslint-disable-next-line radar/cognitive-complexity
             setActiveAnchor((f) => {
                 const returnValue = { ...f };
 
-                for (const entry of entries) {
+                entries.forEach((entry) => {
                     if (entry?.rootBounds && slugs.has(entry.target)) {
                         const [slug, index] = slugs.get(entry.target);
                         const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
@@ -37,17 +38,20 @@ if (IS_BROWSER) {
                             insideHalfViewport,
                         };
                     }
-                }
+                });
 
                 let activeSlug = "";
                 let smallestIndexInViewport = Number.POSITIVE_INFINITY;
                 let largestIndexAboveViewport = -1;
-                for (const s in returnValue) {
+
+                Object.keys(returnValue).forEach((s) => {
                     returnValue[s].isActive = false;
+
                     if (returnValue[s].insideHalfViewport && returnValue[s].index < smallestIndexInViewport) {
                         smallestIndexInViewport = returnValue[s].index;
                         activeSlug = s;
                     }
+
                     if (
                         smallestIndexInViewport === Number.POSITIVE_INFINITY
                         && returnValue[s].aboveHalfViewport
@@ -56,7 +60,7 @@ if (IS_BROWSER) {
                         largestIndexAboveViewport = returnValue[s].index;
                         activeSlug = s;
                     }
-                }
+                });
 
                 if (returnValue[activeSlug]) returnValue[activeSlug].isActive = true;
                 return returnValue;
@@ -70,8 +74,11 @@ if (IS_BROWSER) {
 }
 
 // Anchor links
-const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => function HeaderLink({ children, id, ...properties }: ComponentProps<"h2">): ReactElement {
+// eslint-disable-next-line max-len
+const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     setActiveAnchor ??= useSetActiveAnchor();
+
     const obReference = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {
@@ -83,9 +90,11 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
         slugs.set(heading, [id, (context.index += 1)]);
         observer.observe(heading);
 
+        // eslint-disable-next-line consistent-return
         return () => {
             observer.disconnect();
             slugs.delete(heading);
+
             setActiveAnchor((f) => {
                 const returnValue = { ...f };
                 delete returnValue[id!];
@@ -110,23 +119,27 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
             >
                 {children}
                 <span className="absolute -mt-20" id={id} ref={obReference} />
-                <a href={`#${id}`} className="subheading-anchor" />
+                {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+                <a href={`#${id}`} className="subheading-anchor" aria-label="hash" />
             </Tag>
     );
 };
 
 const Details = ({ children, open, ...properties }: ComponentProps<"details">): ReactElement => {
     const [openState, setOpen] = useState(!!open);
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const [summary, restChildren] = findSummary(children);
 
     // To animate the close animation we have to delay the DOM node state here.
     const [delayedOpenState, setDelayedOpenState] = useState(openState);
 
+    // eslint-disable-next-line consistent-return
     useEffect(() => {
         if (openState) {
             setDelayedOpenState(true);
         } else {
             const timeout = setTimeout(() => setDelayedOpenState(openState), 500);
+
             return () => clearTimeout(timeout);
         }
     }, [openState]);
@@ -144,6 +157,41 @@ const Details = ({ children, open, ...properties }: ComponentProps<"details">): 
     );
 };
 
+const findSummary = (children: ReactNode) => {
+    let summary: ReactNode = null;
+
+    const restChildren: ReactNode[] = [];
+
+    Children.forEach(children, (child, index) => {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        if (child && (child as ReactElement).type === Summary) {
+            summary ||= child;
+            return;
+        }
+
+        if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
+            const result = findSummary(child.props.children);
+
+            // eslint-disable-next-line prefer-destructuring
+            summary = result[0];
+
+            restChildren.push(
+                cloneElement(child, {
+                    ...child.props,
+                    // @ts-ignore
+                    children: result[1]?.length ? result[1] : undefined,
+                    // eslint-disable-next-line react/no-array-index-key
+                    key: index,
+                }),
+            );
+        } else {
+            restChildren.push(child);
+        }
+    });
+
+    return [summary, restChildren];
+};
+
 const Summary = (properties: ComponentProps<"summary">): ReactElement => {
     const setOpen = useDetails();
     return (
@@ -154,41 +202,17 @@ const Summary = (properties: ComponentProps<"summary">): ReactElement => {
                 "rtl:before:rotate-180 [[data-expanded]>&]:before:rotate-90",
             )}
             {...properties}
-            onClick={(e) => {
-                e.preventDefault();
-                setOpen((v) => !v);
+            onClick={(event) => {
+                event.preventDefault();
+                setOpen((value) => !value);
             }}
         />
     );
 };
 
-const findSummary = (children: ReactNode) => {
-    let summary: ReactNode = null;
-    const restChildren: ReactNode[] = [];
-
-    Children.forEach(children, (child, index) => {
-        if (child && (child as ReactElement).type === Summary) {
-            summary ||= child;
-            return;
-        }
-
-        let c = child;
-        if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
-            const result = findSummary(child.props.children);
-            summary = result[0];
-            c = cloneElement(child, {
-                ...child.props,
-                children: result[1]?.length ? result[1] : undefined,
-                key: index,
-            });
-        }
-        restChildren.push(c);
-    });
-
-    return [summary, restChildren];
-};
-
-const A = ({ href = "", ...properties }) => <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />;
+const A: FC<{ href?: string } & Omit<ComponentProps<"a">, "ref">> = ({ href = "", ...properties }) => (
+    <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />
+);
 
 const getComponents = ({
     isRawLayout,
@@ -204,6 +228,7 @@ const getComponents = ({
     const context = { index: 0 };
 
     return {
+        // eslint-disable-next-line jsx-a11y/heading-has-content
         h1: (properties: ComponentProps<"h1">) => <h1 className="mt-2 text-4xl font-bold tracking-tight" {...properties} />,
         h2: createHeaderLink("h2", context),
         h3: createHeaderLink("h3", context),

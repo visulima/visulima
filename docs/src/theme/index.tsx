@@ -6,9 +6,7 @@ import { SkipNavContent } from "@reach/skip-nav";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { PageMapItem, PageOpts } from "nextra";
-import type {
-    FC, PropsWithChildren, ReactElement, ReactNode,
-} from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 import React, { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -105,7 +103,13 @@ const Body: FC<{
 };
 
 const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
-    filePath, pageMap, frontMatter, headings, timestamp, children,
+    filePath,
+    pageMap,
+    frontMatter,
+    headings,
+    timestamp,
+    children,
+    // eslint-disable-next-line radar/cognitive-complexity
 }) => {
     const config = useConfig();
     const {
@@ -262,7 +266,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-export default function Index(properties: any): ReactElement {
+const Theme: FC = (properties) => {
     const { route } = useRouter();
     // eslint-disable-next-line no-underscore-dangle
     const context = globalThis.__nextra_pageContext__[route];
@@ -279,4 +283,6 @@ export default function Index(properties: any): ReactElement {
             </InnerLayout>
         </ConfigProvider>
     );
-}
+};
+
+export default Theme;

@@ -7,7 +7,9 @@ import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import { getFSRoute, Item, MenuItem, PageItem, renderComponent } from "../utils";
+import {
+    getFSRoute, Item, MenuItem, PageItem, renderComponent,
+} from "../utils";
 import Anchor from "./anchor";
 
 const classes = {
@@ -31,11 +33,12 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
                     <Menu.Items className="absolute right-0 z-20 mt-1 max-h-64 min-w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg dark:bg-neutral-800">
                         {Object.entries(items || {}).map(([key, item]) => {
                             const { href, newWindow, title } = item;
+                            const { route } = menu;
 
                             return (
                                 <Menu.Item key={key}>
                                     <Anchor
-                                        href={href || routes[key]?.route || `${menu.route}/${key}`}
+                                        href={href || routes[key]?.route || `${route}/${key}`}
                                         className={cn(
                                             // eslint-disable-next-line max-len
                                             "relative hidden w-full select-none whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 md:inline-block",
@@ -55,6 +58,7 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
     );
 };
 
+// eslint-disable-next-line radar/cognitive-complexity
 const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE, asPath } = useRouter();
@@ -152,21 +156,21 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                         <Anchor className="p-2 text-current" href={config.project.link} newWindow>
                             {renderComponent(config.project.icon)}
                         </Anchor>
-                    ) : config.project.icon ? (
+                    ) : (config.project.icon ? (
                         // if no project link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.project.icon)
-                    ) : null}
+                    ) : null)}
 
                     {config.chat.link ? (
                         <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
                             {renderComponent(config.chat.icon)}
                         </Anchor>
-                    ) : config.chat.icon ? (
+                    ) : (config.chat.icon ? (
                         // if no chat link is provided, but a component exists, render it
                         // to allow the client to render their own link
                         renderComponent(config.chat.icon)
-                    ) : null}
+                    ) : null)}
                 </div>
                 <div className="flex items-center h-[var(--nextra-navbar-height)]">
                     <button

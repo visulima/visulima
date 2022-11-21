@@ -3,42 +3,63 @@ import type { Folder, MdxFile, PageMapItem } from "nextra";
 import { DEFAULT_PAGE_THEME } from "../constants";
 import type { PageTheme } from "../types";
 
-function extendMeta(meta: string | Record<string, any> = {}, fallback: Record<string, any>) {
+const extendMeta = (
+    meta: string | Record<string, any>,
+    fallback: Record<string, any>,
+): {
+    theme: PageTheme;
+    [key: string]: any;
+} => {
     if (typeof meta === "string") {
+        // eslint-disable-next-line no-param-reassign
         meta = { title: meta };
     }
-    const theme = { ...fallback.theme, ...meta.theme };
-    return { ...fallback, ...meta, theme };
-}
 
-interface DocsItem extends MdxFile {
+    const theme = { ...fallback.theme, ...meta.theme };
+
+    return { ...fallback, ...meta, theme };
+};
+
+interface DocumentationItem extends MdxFile {
     title: string;
     type: string;
-    children?: DocsItem[];
+    children?: DocumentationItem[];
     firstChildRoute?: string;
     withIndexPage?: boolean;
     isUnderCurrentDocsTree?: boolean;
 }
 
-function findFirstRoute(items: DocsItem[]): string | undefined {
-    for (const item of items) {
-        if (item.route) return item.route;
+const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
+    let foundItem: undefined | string;
+
+    items.forEach((item) => {
+        if (item.route) {
+            foundItem = item.route;
+            return;
+        }
+
         if (item.children) {
             const route = findFirstRoute(item.children);
-            if (route) return route;
+
+            if (route) {
+                foundItem = route;
+            }
         }
-    }
-}
+    });
+
+    return foundItem;
+};
 
 const CUSTOM_ERROR_PAGES = new Set(["/404", "/500"]);
 
+// eslint-disable-next-line radar/cognitive-complexity
 export function normalizePages({
     list,
     locale,
     defaultLocale,
     route,
-    docsRoot = "",
-    underCurrentDocsRoot = false,
+    docsRoot: documentationRoot = "",
+    underCurrentDocsRoot: underCurrentDocumentationRoot = false,
     pageThemeContext = DEFAULT_PAGE_THEME,
 }: {
     list: PageMapItem[];
@@ -49,29 +70,32 @@ export function normalizePages({
     underCurrentDocsRoot?: boolean;
     pageThemeContext?: PageTheme;
 }) {
+    // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
     let _meta: Record<string, any> | undefined;
-    for (const item of list) {
+
+    Object.values(list).forEach((item) => {
         if (item.kind === "Meta") {
             if (item.locale === locale) {
                 _meta = item.data;
-                break;
+                return;
             }
             // fallback
             if (!_meta) {
                 _meta = item.data;
             }
         }
-    }
+    });
+
     const meta = _meta || {};
     const metaKeys = Object.keys(meta);
 
-    for (const key of metaKeys) {
+    metaKeys.forEach((key) => {
         if (typeof meta[key] === "string") {
             meta[key] = {
                 title: meta[key],
             };
         }
-    }
+    });
 
     // All directories
     // - directories: all directories in the tree structure
@@ -80,8 +104,8 @@ export function normalizePages({
     const flatDirectories: Item[] = [];
 
     // Docs directories
-    const docsDirectories: DocsItem[] = [];
-    const flatDocsDirectories: DocsItem[] = [];
+    const documentsDirectories: DocumentationItem[] = [];
+    const flatDocumentsDirectories: DocumentationItem[] = [];
 
     // Page directories
     const topLevelNavbarItems: PageItem[] = [];
@@ -102,6 +126,7 @@ export function normalizePages({
         .filter(
             (a): a is MdxFile | Folder =>
                 // not meta
+                // eslint-disable-next-line implicit-arrow-linebreak
                 a.kind !== "Meta"
                 // not hidden routes
                 && !a.name.startsWith("_")
@@ -112,21 +137,35 @@ export function normalizePages({
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
             const indexB = metaKeys.indexOf(b.name);
-            if (indexA === -1 && indexB === -1) return a.name < b.name ? -1 : 1;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
+
+            if (indexA === -1 && indexB === -1) {
+                return a.name < b.name ? -1 : 1;
+            }
+
+            if (indexA === -1) {
+                return 1;
+            }
+
+            if (indexB === -1) {
+                return -1;
+            }
+
             return indexA - indexB;
         })
         .flatMap((item) => {
-            const items = [];
+            const itemList = [];
             const index = metaKeys.indexOf(item.name);
+
             let extendedItem;
+
             if (index !== -1) {
                 // Fill all skipped items in meta.
-                for (let index_ = metaKeyIndex + 1; index_ < index; index_++) {
-                    const key = metaKeys[index_];
+                // eslint-disable-next-line no-plusplus
+                for (let metaKeyIndexPlusOne = metaKeyIndex + 1; metaKeyIndexPlusOne < index; metaKeyIndexPlusOne++) {
+                    const key = metaKeys[metaKeyIndexPlusOne];
+
                     if (key !== "*") {
-                        items.push({
+                        itemList.push({
                             name: key,
                             route: "",
                             ...meta[key],
@@ -136,13 +175,17 @@ export function normalizePages({
                 metaKeyIndex = index;
                 extendedItem = { ...meta[item.name], ...item };
             }
-            items.push(extendedItem || item);
-            return items;
+
+            itemList.push(extendedItem || item);
+
+            return itemList;
         });
 
     // Fill all skipped items in meta.
+    // eslint-disable-next-line no-plusplus
     for (let index = metaKeyIndex + 1; index < metaKeys.length; index++) {
         const key = metaKeys[index];
+
         if (key !== "*") {
             items.push({
                 name: key,
@@ -152,6 +195,7 @@ export function normalizePages({
         }
     }
 
+    // eslint-disable-next-line no-plusplus
     for (let index = 0; index < items.length; index++) {
         const a = items[index];
 
@@ -159,22 +203,25 @@ export function normalizePages({
         // page. In that case we merge them, and use the page's link.
         if (index + 1 < items.length && a.name === items[index + 1].name) {
             items[index + 1] = { ...items[index + 1], withIndexPage: true };
+
             if (a.children && !items[index + 1].children) {
                 items[index + 1].children = a.children;
             }
+            // eslint-disable-next-line no-continue
             continue;
         }
 
         // Get the item's meta information.
-        const extendedMeta = extendMeta(meta[a.name], fallbackMeta);
-        const { display, type = "doc" } = extendedMeta;
+        const {
+            display, type = "doc", theme: metaTheme, title: metaTitle,
+        } = extendMeta(meta[a.name] || {}, fallbackMeta);
         const extendedPageThemeContext = {
             ...pageThemeContext,
-            ...extendedMeta.theme,
+            ...metaTheme,
         };
 
         // If the doc is under the active page root.
-        const isCurrentDocsTree = route.startsWith(docsRoot);
+        const isCurrentDocumentationTree = route.startsWith(documentationRoot);
 
         const normalizedChildren: any = a.children
             && normalizePages({
@@ -182,12 +229,13 @@ export function normalizePages({
                 locale,
                 defaultLocale,
                 route,
-                docsRoot: type === "page" || type === "menu" ? a.route : docsRoot,
-                underCurrentDocsRoot: underCurrentDocsRoot || isCurrentDocsTree,
+                docsRoot: type === "page" || type === "menu" ? a.route : documentationRoot,
+                underCurrentDocsRoot: underCurrentDocumentationRoot || isCurrentDocumentationTree,
                 pageThemeContext: extendedPageThemeContext,
             });
-        const title = extendedMeta.title || (type !== "separator" && a.name);
+        const title = metaTitle || (type !== "separator" && a.name);
 
+        // eslint-disable-next-line unicorn/consistent-function-scoping
         const getItem = (): Item => {
             return {
                 ...a,
@@ -198,10 +246,10 @@ export function normalizePages({
             };
         };
         const item: Item = getItem();
-        const docsItem: DocsItem = getItem();
+        const documentationItem: DocumentationItem = getItem();
         const pageItem: PageItem = getItem();
 
-        docsItem.isUnderCurrentDocsTree = isCurrentDocsTree;
+        documentationItem.isUnderCurrentDocsTree = isCurrentDocumentationTree;
 
         // This item is currently active, we collect the active path etc.
         if (a.route === route) {
@@ -212,20 +260,20 @@ export function normalizePages({
                 ...activeThemeContext,
                 ...extendedPageThemeContext,
             };
-            switch (type) {
-                case "page":
-                case "menu": {
-                    // Active on the navbar
-                    activeIndex = topLevelNavbarItems.length;
-                    break;
-                }
-                case "doc": {
-                    // Active in the docs tree
-                    activeIndex = flatDocsDirectories.length;
-                }
+
+            if (type === "page" || type === "menu") {
+                // Active on the navbar
+                activeIndex = topLevelNavbarItems.length;
+            } else if (type === "doc") {
+                // Active in the docs tree
+                activeIndex = flatDocumentsDirectories.length;
             }
         }
-        if (display === "hidden" || CUSTOM_ERROR_PAGES.has(a.route)) continue;
+
+        if (display === "hidden" || CUSTOM_ERROR_PAGES.has(a.route)) {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
 
         // If this item has children
         if (normalizedChildren) {
@@ -234,94 +282,71 @@ export function normalizePages({
                 activeThemeContext = normalizedChildren.activeThemeContext;
                 activeType = normalizedChildren.activeType;
                 activePath = [item, ...normalizedChildren.activePath];
-                switch (activeType) {
-                    case "page":
-                    case "menu": {
-                        activeIndex = topLevelNavbarItems.length + normalizedChildren.activeIndex;
-                        break;
-                    }
-                    case "doc": {
-                        activeIndex = flatDocsDirectories.length + normalizedChildren.activeIndex;
-                        break;
-                    }
+
+                if (activeType === "page" || activeType === "menu") {
+                    activeIndex = topLevelNavbarItems.length + normalizedChildren.activeIndex;
+                } else if (activeType === "doc") {
+                    activeIndex = flatDocumentsDirectories.length + normalizedChildren.activeIndex;
                 }
+
                 if (a.withIndexPage && type === "doc") {
-                    activeIndex++;
+                    activeIndex += 1;
                 }
             }
 
-            switch (type) {
-                case "page":
-                case "menu": {
-                    // @ts-expect-error normalizedChildren === true
-                    pageItem.children.push(...normalizedChildren.directories);
-                    docsDirectories.push(...normalizedChildren.docsDirectories);
+            if (type === "page" || type === "menu") {
+                pageItem.children.push(...normalizedChildren.directories);
+                documentsDirectories.push(...normalizedChildren.docsDirectories);
 
-                    // If it's a page with children inside, we inject itself as a page too.
-                    if (normalizedChildren.flatDirectories.length > 0) {
-                        pageItem.firstChildRoute = findFirstRoute(normalizedChildren.flatDirectories);
-                        topLevelNavbarItems.push(pageItem);
-                    } else if (pageItem.withIndexPage) {
-                        topLevelNavbarItems.push(pageItem);
-                    }
-
-                    break;
+                // If it's a page with children inside, we inject itself as a page too.
+                if (normalizedChildren.flatDirectories.length > 0) {
+                    pageItem.firstChildRoute = findFirstRoute(normalizedChildren.flatDirectories);
+                    topLevelNavbarItems.push(pageItem);
+                } else if (pageItem.withIndexPage) {
+                    topLevelNavbarItems.push(pageItem);
                 }
-                case "doc": {
-                    if (Array.isArray(docsItem.children)) {
-                        docsItem.children.push(...normalizedChildren.docsDirectories);
-                    }
-                    // Itself is a doc page.
-                    if (item.withIndexPage && display !== "children") {
-                        flatDocsDirectories.push(docsItem);
-                    }
+            } else if (type === "doc") {
+                if (Array.isArray(documentationItem.children)) {
+                    documentationItem.children.push(...normalizedChildren.docsDirectories);
+                }
+                // Itself is a doc page.
+                if (item.withIndexPage && display !== "children") {
+                    flatDocumentsDirectories.push(documentationItem);
                 }
             }
 
             flatDirectories.push(...normalizedChildren.flatDirectories);
-            flatDocsDirectories.push(...normalizedChildren.flatDocsDirectories);
+            flatDocumentsDirectories.push(...normalizedChildren.flatDocsDirectories);
+
             if (Array.isArray(item.children)) {
                 item.children.push(...normalizedChildren.directories);
             }
         } else {
             flatDirectories.push(item);
-            switch (type) {
-                case "page":
-                case "menu": {
-                    topLevelNavbarItems.push(pageItem);
-                    break;
-                }
-                case "doc": {
-                    flatDocsDirectories.push(docsItem);
-                }
+
+            if (type === "page" || type === "menu") {
+                topLevelNavbarItems.push(pageItem);
+            } else if (type === "doc") {
+                flatDocumentsDirectories.push(documentationItem);
             }
         }
 
         if (type === "doc" && display === "children") {
             // Hide the dectory itself and treat all its children as pages
-            if (docsItem.children) {
-                directories.push(...docsItem.children);
-                docsDirectories.push(...docsItem.children);
+            if (documentationItem.children) {
+                directories.push(...documentationItem.children);
+                documentsDirectories.push(...documentationItem.children);
             }
         } else {
             directories.push(item);
         }
 
-        switch (type) {
-            case "page":
-            case "menu": {
-                docsDirectories.push(pageItem);
-                break;
-            }
-            case "doc": {
-                if (display !== "children") {
-                    docsDirectories.push(docsItem);
-                }
-                break;
-            }
-            case "separator": {
-                docsDirectories.push(item);
-            }
+        if (type === "page" || type === "menu") {
+            documentsDirectories.push(pageItem);
+        } else if (type === "doc" && display !== "children") {
+            documentsDirectories.push(documentationItem);
+        } else if (type === "separator") {
+            documentsDirectories.push(item);
         }
     }
 
@@ -332,8 +357,8 @@ export function normalizePages({
         activePath,
         directories,
         flatDirectories,
-        docsDirectories,
-        flatDocsDirectories,
+        docsDirectories: documentsDirectories,
+        flatDocsDirectories: flatDocumentsDirectories,
         topLevelNavbarItems,
     };
 }

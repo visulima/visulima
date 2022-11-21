@@ -33,8 +33,6 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
                 inner.style.opacity = "1";
 
                 animationReference.current = setTimeout(() => {
-                    const container = containerReference.current;
-
                     if (container) {
                         // should be style property in kebab-case, not css class name
                         container.style.removeProperty("max-height");
@@ -51,8 +49,6 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
             inner.style.opacity = "0";
 
             setTimeout(() => {
-                const container = containerReference.current;
-
                 if (container) {
                     container.style.maxHeight = "0px";
                 }

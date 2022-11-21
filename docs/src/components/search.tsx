@@ -3,8 +3,9 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { SpinnerIcon } from "nextra/icons";
+import type { FC, KeyboardEvent } from "react";
 import React, {
-    Fragment, KeyboardEvent, ReactElement, useCallback, useEffect, useRef, useState,
+    Fragment, useCallback, useEffect, useRef, useState,
 } from "react";
 
 import { useConfig, useMenu } from "../contexts";
@@ -25,9 +26,16 @@ type SearchProperties = {
 
 const INPUTS = new Set(["input", "select", "button", "textarea"]);
 
-const Search = ({
-    className, overlayClassName, value, onChange, onActive, loading, results,
-}: SearchProperties): ReactElement => {
+const Search: FC<SearchProperties> = ({
+    className,
+    overlayClassName,
+    value,
+    onChange,
+    onActive,
+    loading,
+    results,
+    // eslint-disable-next-line radar/cognitive-complexity
+}) => {
     const [show, setShow] = useState(false);
     const config = useConfig();
     const [active, setActive] = useState(0);
@@ -41,70 +49,41 @@ const Search = ({
     }, [value]);
 
     useEffect(() => {
-        onActive && onActive(show);
-    }, [show]);
+        if (typeof onActive === "function") {
+            onActive(show);
+        }
+    }, [show, onActive]);
 
     useEffect(() => {
-        const down = (e: globalThis.KeyboardEvent): void => {
+        const down = (keyboardEvent: globalThis.KeyboardEvent): void => {
             const tagName = document.activeElement?.tagName.toLowerCase();
-            if (!input.current || !tagName || INPUTS.has(tagName)) return;
-            if (e.key === "/" || (e.key === "k" && (e.metaKey /* for Mac */ || /* for non-Mac */ e.ctrlKey))) {
-                e.preventDefault();
+
+            if (!input.current || !tagName || INPUTS.has(tagName)) {
+                return;
+            }
+
+            if (keyboardEvent.key === "/" || (keyboardEvent.key === "k" && (keyboardEvent.metaKey /* for Mac */ || /* for non-Mac */ keyboardEvent.ctrlKey))) {
+                keyboardEvent.preventDefault();
                 input.current.focus();
-            } else if (e.key === "Escape") {
+            } else if (keyboardEvent.key === "Escape") {
                 setShow(false);
+
                 input.current.blur();
             }
         };
 
         window.addEventListener("keydown", down);
+
         return () => {
             window.removeEventListener("keydown", down);
         };
     }, []);
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent<T>) => {
-            switch (e.key) {
-                case "ArrowDown": {
-                    if (active + 1 < results.length) {
-                        const element = ulReference.current?.querySelector<HTMLAnchorElement>(`li:nth-of-type(${active + 2}) > a`);
-                        if (element) {
-                            e.preventDefault();
-                            handleActive({ currentTarget: element });
-                            element.focus();
-                        }
-                    }
-                    break;
-                }
-                case "ArrowUp": {
-                    if (active - 1 >= 0) {
-                        const element = ulReference.current?.querySelector<HTMLAnchorElement>(`li:nth-of-type(${active}) > a`);
-                        if (element) {
-                            e.preventDefault();
-                            handleActive({ currentTarget: element });
-                            element.focus();
-                        }
-                    }
-                    break;
-                }
-                case "Enter": {
-                    const result = results[active];
-                    if (result) {
-                        router.push(result.route);
-                        finishSearch();
-                    }
-                    break;
-                }
-                case "Escape": {
-                    setShow(false);
-                    input.current?.blur();
-                    break;
-                }
-            }
-        },
-        [active, results, router],
-    );
+    const handleActive = useCallback((event: { currentTarget: { dataset: DOMStringMap } }) => {
+        const { index } = event.currentTarget.dataset;
+
+        setActive(Number(index));
+    }, []);
 
     const finishSearch = () => {
         input.current?.blur();
@@ -112,6 +91,62 @@ const Search = ({
         setShow(false);
         setMenu(false);
     };
+
+    const handleKeyDown = useCallback(
+        (kEvent: KeyboardEvent<any>) => {
+            // eslint-disable-next-line default-case
+            switch (kEvent.key) {
+                case "ArrowDown": {
+                    if (active + 1 < results.length) {
+                        const element = ulReference.current?.querySelector<HTMLAnchorElement>(`li:nth-of-type(${active + 2}) > a`);
+
+                        if (element) {
+                            kEvent.preventDefault();
+
+                            handleActive({ currentTarget: element });
+                            element.focus();
+                        }
+                    }
+
+                    break;
+                }
+                case "ArrowUp": {
+                    if (active - 1 >= 0) {
+                        const element = ulReference.current?.querySelector<HTMLAnchorElement>(`li:nth-of-type(${active}) > a`);
+
+                        if (element) {
+                            kEvent.preventDefault();
+
+                            handleActive({ currentTarget: element });
+                            element.focus();
+                        }
+                    }
+
+                    break;
+                }
+                case "Enter": {
+                    const result = results[active];
+
+                    if (result) {
+                        router.push(result.route);
+
+                        finishSearch();
+                    }
+
+                    break;
+                }
+                case "Escape": {
+                    setShow(false);
+
+                    input.current?.blur();
+
+                    break;
+                }
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [active, results, router, handleActive],
+    );
 
     const mounted = useMounted();
     const renderList = show && Boolean(value);
@@ -127,6 +162,7 @@ const Search = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
         >
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             <kbd
                 className={cn(
                     "absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5",
@@ -155,22 +191,19 @@ const Search = ({
         </Transition>
     );
 
-    const handleActive = useCallback((e: { currentTarget: { dataset: DOMStringMap } }) => {
-        const { index } = e.currentTarget.dataset;
-        setActive(Number(index));
-    }, []);
-
     return (
         <div className={cn("nextra-search relative md:w-64", className)}>
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             {renderList && <div className="fixed inset-0 z-10" onClick={() => setShow(false)} />}
 
             <Input
                 ref={input}
                 value={value}
-                onChange={(e) => {
-                    const { value } = e.target;
-                    onChange(value);
-                    setShow(Boolean(value));
+                onChange={(event) => {
+                    const { value: eventValue } = event.target;
+
+                    onChange(eventValue);
+                    setShow(Boolean(eventValue));
                 }}
                 type="search"
                 placeholder={renderString(config.search.placeholder)}

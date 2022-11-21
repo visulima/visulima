@@ -3,7 +3,7 @@ import Slugger from "github-slugger";
 import { useRouter } from "next/router";
 import { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
-import type { ReactElement } from "react";
+import type { FC } from "react";
 import React, {
     memo, useEffect, useMemo, useRef, useState,
 } from "react";
@@ -41,7 +41,8 @@ const classes = {
     ),
 };
 
-const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; anchors: string[] }): ReactElement => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,radar/cognitive-complexity
+const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = ({ item, anchors }) => {
     const { asPath, locale = DEFAULT_LOCALE } = useRouter();
     const routeOriginal = getFSRoute(asPath, locale);
     const [route] = routeOriginal.split("#");
@@ -62,35 +63,37 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
         if (activeRouteInside) {
             TreeState[item.route] = true;
         }
-    }, [activeRouteInside]);
+    }, [activeRouteInside, item.route]);
 
     if (item.type === "menu") {
         const menu = item as MenuItem;
-        const routes = Object.fromEntries((menu.children || []).map((route) => [route.name, route]));
+        const routes = Object.fromEntries((menu.children || []).map((mRoute) => [mRoute.name, mRoute]));
 
-        item.children = Object.entries(menu.items || {}).map(([key, item]) => {
-            const route = routes[key] || {
-                name: key,
-                locale: menu.locale,
-                route: `${menu.route}/${key}`,
-            };
-
+        // eslint-disable-next-line no-param-reassign
+        item.children = Object.entries(menu.items || {}).map(([key, value]) => {
             return {
-                ...route,
-                ...item,
+                ...(routes[key] || {
+                    name: key,
+                    locale: menu.locale,
+                    route: `${menu.route}/${key}`,
+                    type: "menu",
+                    kind: "MdxPage",
+                }),
+                ...value,
             };
         });
     }
+
     return (
         <li className={cn({ open, active })}>
             <Anchor
                 href={(item as Item).withIndexPage ? item.route : ""}
                 className={cn("items-center justify-between gap-2", classes.link, active ? classes.active : classes.inactive)}
-                onClick={(e) => {
-                    const clickedToggleIcon = ["svg", "path"].includes((e.target as HTMLElement).tagName.toLowerCase());
+                onClick={(event) => {
+                    const clickedToggleIcon = ["svg", "path"].includes((event.target as HTMLElement).tagName.toLowerCase());
 
                     if (clickedToggleIcon) {
-                        e.preventDefault();
+                        event.preventDefault();
                     }
 
                     if ((item as Item).withIndexPage) {
@@ -124,6 +127,7 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
             </Anchor>
             <Collapse className="ltr:pr-0 rtl:pl-0" open={open}>
                 {Array.isArray(item.children) ? (
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
                     <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} base={item.route} anchors={anchors} />
                 ) : null}
             </Collapse>
@@ -133,7 +137,7 @@ const FolderImpl = ({ item, anchors }: { item: PageItem | MenuItem | Item; ancho
 
 const Folder = memo(FolderImpl);
 
-const Separator = ({ title }: { title: string }): ReactElement => {
+const Separator: FC<{ title: string }> = ({ title }) => {
     const config = useConfig();
 
     return (
@@ -155,7 +159,7 @@ const Separator = ({ title }: { title: string }): ReactElement => {
     );
 };
 
-const File = ({ item, anchors }: { item: PageItem | Item; anchors: string[] }): ReactElement => {
+const File: FC<{ item: PageItem | Item; anchors: string[] }> = ({ item, anchors }) => {
     const { asPath, locale = DEFAULT_LOCALE } = useRouter();
     const route = getFSRoute(asPath, locale);
 
@@ -217,14 +221,13 @@ const File = ({ item, anchors }: { item: PageItem | Item; anchors: string[] }): 
 interface MenuProperties {
     directories: PageItem[] | Item[];
     anchors: string[];
-    base?: string;
     className?: string;
     onlyCurrentDocs?: boolean;
 }
 
-const Menu = ({
+const Menu: FC<MenuProperties> = ({
     directories, anchors, className, onlyCurrentDocs,
-}: MenuProperties): ReactElement => (
+}) => (
     <ul className={cn(classes.list, className)}>
         {directories.map((item) => (!onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
             item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
@@ -247,20 +250,21 @@ interface SideBarProperties {
 
 const emptyHeading: any[] = [];
 
-const Sidebar = ({
+const Sidebar: FC<SideBarProperties> = ({
     docsDirectories,
     flatDirectories,
     fullDirectories,
     asPopover = false,
     headings = emptyHeading,
     includePlaceholder,
-}: SideBarProperties): ReactElement => {
+    // eslint-disable-next-line radar/cognitive-complexity
+}) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
     const anchors = useMemo(
         () => headings
             .filter((v) => v.children && v.depth === 2 && v.type === "heading")
-            .map(getHeadingText)
+            .map((heading) => getHeadingText(heading))
             .filter(Boolean),
         [headings],
     );
@@ -301,6 +305,7 @@ const Sidebar = ({
     return (
         <>
             {includePlaceholder && asPopover ? <div className="hidden h-0 w-64 shrink-0 xl:block" /> : null}
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             <div
                 className={cn(
                     "[transition:background-color_1.5s_ease] motion-reduce:transition-none",

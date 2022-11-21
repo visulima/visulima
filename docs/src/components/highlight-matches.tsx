@@ -6,24 +6,26 @@ type MatchArguments = {
 };
 
 const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments) => {
-    const splitText = value ? value.split("") : [];
+    const splitText = value ? [...value] : [];
     const escapedSearch = match.trim().replace(/[$()*+.?[\\\]^{|}]/g, "\\$&");
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
     const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "ig");
 
-    let result;
+    let regexpResult;
     let id = 0;
     let index = 0;
 
-    const result_ = [];
+    const result = [];
 
-    if (value) {
-        while ((result = regexp.exec(value)) !== null) {
+    if (typeof value === "string") {
+        // eslint-disable-next-line no-cond-assign
+        while ((regexpResult = regexp.exec(value)) !== null) {
             id += 1;
 
-            result_.push(
+            result.push(
                 <Fragment key={id}>
-                    {splitText.splice(0, result.index - index).join("")}
-                    <span className="text-primary-500">{splitText.splice(0, regexp.lastIndex - result.index).join("")}</span>
+                    {splitText.splice(0, regexpResult.index - index).join("")}
+                    <span className="text-primary-500">{splitText.splice(0, regexp.lastIndex - regexpResult.index).join("")}</span>
                 </Fragment>,
             );
 
@@ -33,7 +35,7 @@ const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments)
 
     return (
         <>
-            {result_}
+            {result}
             {splitText.join("")}
         </>
     );

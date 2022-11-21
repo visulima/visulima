@@ -9,29 +9,31 @@ import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { getHeadingText, renderComponent } from "../../utils";
 
 const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
-    const slugger = new Slugger();
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 
-    const items = useMemo<{ text: string; slug: string; depth: 2 | 3 | 4 | 5 | 6 }[]>(
-        () => headings
+    const items = useMemo<{ text: string; slug: string; depth: 2 | 3 | 4 | 5 | 6 }[]>(() => {
+        const slugger = new Slugger();
+
+        return headings
             .filter((heading) => heading.type === "heading" && heading.depth > 1)
             .map((heading) => {
                 const text = getHeadingText(heading);
+
                 return {
                     text,
                     slug: slugger.slug(text),
                     depth: heading.depth as any,
                 };
-            }),
-        [headings],
-    );
+            });
+    }, [headings]);
 
     const hasHeadings = items.length > 0;
 
     if (hasHeadings) {
         return (
             <div ref={tocReference}>
+                {/* eslint-disable-next-line max-len */}
                 <p className="text-gray-500 dark:text-gray-400 contrast-more:text-gray-800 contrast-more:dark:text-gray-50 uppercase mb-2 font-semibold tracking-wide">
                     {renderComponent(config.tocSidebar.title)}
                 </p>

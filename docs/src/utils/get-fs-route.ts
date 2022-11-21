@@ -6,6 +6,7 @@ const getFSRoute = (asPath: string, locale?: string | undefined) => {
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,no-useless-escape,prefer-regex-literals
     const cleanedPath = locale ? pathname.replace(new RegExp(`\.${locale}(\/|$)`), "$1") : pathname;
 
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,prefer-regex-literals
     return cleanedPath.replace(new RegExp("/index(/|$)"), "$1").split("#")[0] || "/";
 };
 
