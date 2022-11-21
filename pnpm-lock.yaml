@@ -34,10 +34,10 @@ importers:
       '@anolilab/prettier-config': 3.1.0_prettier@2.7.1
       '@anolilab/textlint-config': 4.1.0_textlint@12.2.2
       '@manypkg/cli': 0.19.2
-      '@nrwl/cli': 15.2.0
+      '@nrwl/cli': 15.2.1
       '@nrwl/nx-cloud': 15.0.2
       '@nrwl/tao': 15.0.2
-      '@nrwl/workspace': 15.2.0_wfaqnfazd7vxe5mew33e5jwwwa
+      '@nrwl/workspace': 15.2.1_wfaqnfazd7vxe5mew33e5jwwwa
       '@octokit/rest': 19.0.5
       '@qiwi/multi-semantic-release': 6.5.1
       '@types/node': 18.11.5
@@ -45,7 +45,7 @@ importers:
       commitizen: 4.2.5
       core-js: 3.26.0
       depcheck: 1.4.3
-      nx: 15.2.0
+      nx: 15.2.1
       plop: 3.1.1
       prettier: 2.7.1
       prettier-plugin-prisma: 4.4.0_prettier@2.7.1
@@ -92,7 +92,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.9.1
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       focus-visible: ^5.2.0
@@ -156,7 +156,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.28.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_hsf322ms6xhhd4b5ne6lb74y4a
-      eslint-plugin-unicorn: 44.0.2_eslint@8.28.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.28.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.28.0
       postcss: 8.4.18
@@ -383,7 +383,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       http-errors: ^2.0.0
@@ -480,7 +480,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       mobx: 6.6.2
@@ -536,7 +536,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.9.1
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       express: ^4.18.2
@@ -584,7 +584,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       express: 4.18.2
@@ -636,7 +636,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       http-errors: ^2.0.0
@@ -695,7 +695,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       next: 13.0.3
@@ -744,7 +744,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       http-status-codes: ^2.2.0
@@ -796,7 +796,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.27.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_rmayb2veg2btbq6mbmnyivgasy
-      eslint-plugin-unicorn: 44.0.2_eslint@8.27.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.27.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.27.0
       next-test-api-route-handler: 4.0.0-canary.1_next@12.3.1
@@ -849,7 +849,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       lodash.mergewith: ^4.6.2
@@ -905,7 +905,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       openapi-types: 12.0.2
@@ -948,7 +948,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       prettier: ^2.7.1
@@ -991,7 +991,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       prettier: 2.7.1
@@ -1038,7 +1038,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       prettier: ^2.7.1
@@ -1085,7 +1085,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.27.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_rmayb2veg2btbq6mbmnyivgasy
-      eslint-plugin-unicorn: 44.0.2_eslint@8.27.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.27.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.27.0
       prettier: 2.7.1
@@ -1127,7 +1127,7 @@ importers:
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
       eslint-plugin-testing-library: ^5.7.2
-      eslint-plugin-unicorn: ^44.0.2
+      eslint-plugin-unicorn: ^45.0.0
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       micromatch: ^4.0.5
@@ -1169,7 +1169,7 @@ importers:
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
-      eslint-plugin-unicorn: 44.0.2_eslint@8.26.0
+      eslint-plugin-unicorn: 45.0.0_eslint@8.26.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.26.0
       prettier: 2.7.1
@@ -2887,37 +2887,37 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/cli/15.2.0:
-    resolution: {integrity: sha512-tbl8iTEOuNWTs7HnwFqXXyu4jhR8OYyelECicwB7RkcVqihokhBvlvMdWaVlUYNgiOLWWy/elCEfZs4e7QLBZw==}
+  /@nrwl/cli/15.2.1:
+    resolution: {integrity: sha512-ufBJ5o3WCixdp6/TPkpn4rH3QBFJcqCMG1d14A/SvAkEnXu3vWlj3E+4GXf3CK+sGNjjf3ZGoNm7OFV+/Ml4GA==}
     dependencies:
-      nx: 15.2.0
+      nx: 15.2.1
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/devkit/15.2.0_nx@15.2.0+typescript@4.8.4:
-    resolution: {integrity: sha512-njvwu5gWvV1GLlnLs50CIfKQ7piSw81DmlAtnHI/UD9DwzOrQwasd189X5dMrPMDwlif/WObvzcbdMS8M9wm/w==}
+  /@nrwl/devkit/15.2.1_nx@15.2.1+typescript@4.8.4:
+    resolution: {integrity: sha512-si6DK0sjtr6Ln+7hh9QD50KqxnOxuP20xJ0fxMVafT/Lz/qtxuCPw9lwJWVagMHWw3pQAtN6lbkWiLOwj8+YPA==}
     peerDependencies:
       nx: '>= 14 <= 16'
     dependencies:
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
       ejs: 3.1.8
       ignore: 5.2.0
-      nx: 15.2.0
+      nx: 15.2.1
       semver: 7.3.4
       tslib: 2.4.0
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@nrwl/jest/15.2.0_3mwio4yw7op552i6a3bfehxjbe:
-    resolution: {integrity: sha512-bDsbYbFvIu/N5otKW6sqXO+kg3UEmjjLHiQcXblCXC98d6Mb+GhIP7f0aeROKmiAAsmxubPOHqwVw9PDtY01dw==}
+  /@nrwl/jest/15.2.1_lr4fdvl62cay4w2wuey5fhflc4:
+    resolution: {integrity: sha512-/lyqCeNmYmSoHDDnADuuTuooljnfxlJ8uviXUPodLGy3LaQBbxNy1vlxcg7mZqEOe1smH91TFxKq/7xDIZU9cA==}
     dependencies:
       '@jest/reporters': 28.1.1
       '@jest/test-result': 28.1.1
-      '@nrwl/devkit': 15.2.0_nx@15.2.0+typescript@4.8.4
+      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
       chalk: 4.1.0
       dotenv: 10.0.0
@@ -2936,18 +2936,18 @@ packages:
       - typescript
     dev: false
 
-  /@nrwl/linter/15.2.0_w23x7n7zvvy4jtcrbeyi4toj7i:
-    resolution: {integrity: sha512-3gwcFTzCVWI0DtzL8vA+Zfxp73YQkNxyn7uWuRTXYzsbYx/jmE3QDYK31APyli8dxQoYaE9Bp3sVOnLLRFyutg==}
+  /@nrwl/linter/15.2.1_w23x7n7zvvy4jtcrbeyi4toj7i:
+    resolution: {integrity: sha512-b1+xoi6MhLdPD44rplmNbon5OyCuMpKzst50S4Xiyxdhf0fzu/w/cQDBv7zdRshE5+UMQAlDIVXF0zgEnBTQAQ==}
     peerDependencies:
       eslint: ^8.0.0
     peerDependenciesMeta:
       eslint:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.2.0_nx@15.2.0+typescript@4.8.4
-      '@nrwl/jest': 15.2.0_3mwio4yw7op552i6a3bfehxjbe
+      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
+      '@nrwl/jest': 15.2.1_lr4fdvl62cay4w2wuey5fhflc4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
-      nx: 15.2.0
+      nx: 15.2.1
       tmp: 0.2.1
       tslib: 2.4.0
     transitivePeerDependencies:
@@ -2988,28 +2988,28 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/tao/15.2.0:
-    resolution: {integrity: sha512-Z8oRlO7JO/MfxahglZhD/XgQdvSZo3AzfLfdzQDDHQeL7F8sjwoQvNinsUDH5Vqa2/mAcbBsnp+8JubwdbAJSw==}
+  /@nrwl/tao/15.2.1:
+    resolution: {integrity: sha512-6ApglWKORasLhtjlJmqo2co/UexSSiD7mWVxT2886oKG2Y/T/5RnPFNhJgGnKJIURCNMxiSKhq7GAA+CE9zRZg==}
     hasBin: true
     dependencies:
-      nx: 15.2.0
+      nx: 15.2.1
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/workspace/15.2.0_wfaqnfazd7vxe5mew33e5jwwwa:
-    resolution: {integrity: sha512-IPvjSN0Y2GyarnLBUIAl5dz8l8u2UBD30kSiE2eAphH2VgTNu/pdQYEZEdnNUCM8JB6pnPZj7cSXciLxa3FkMQ==}
+  /@nrwl/workspace/15.2.1_wfaqnfazd7vxe5mew33e5jwwwa:
+    resolution: {integrity: sha512-nqF1gP2KuVmQCjgyrX6TECAGFldJ55KEQs6WJIBsjYvmrWvAv341VVb565IEWpPGglb2/8NhJLBMdQ0ZpLG+tg==}
     peerDependencies:
       prettier: ^2.6.2
     peerDependenciesMeta:
       prettier:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.2.0_nx@15.2.0+typescript@4.8.4
-      '@nrwl/jest': 15.2.0_3mwio4yw7op552i6a3bfehxjbe
-      '@nrwl/linter': 15.2.0_w23x7n7zvvy4jtcrbeyi4toj7i
+      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
+      '@nrwl/jest': 15.2.1_lr4fdvl62cay4w2wuey5fhflc4
+      '@nrwl/linter': 15.2.1_w23x7n7zvvy4jtcrbeyi4toj7i
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       chokidar: 3.5.3
@@ -3024,7 +3024,7 @@ packages:
       ignore: 5.2.0
       minimatch: 3.0.5
       npm-run-path: 4.0.1
-      nx: 15.2.0
+      nx: 15.2.1
       open: 8.4.0
       prettier: 2.7.1
       rxjs: 6.6.7
@@ -6724,6 +6724,11 @@ packages:
 
   /ci-info/3.5.0:
     resolution: {integrity: sha512-yH4RezKOGlOhxkmhbeNuC4eYZKAUsEaGtBuBzDDP1eFUKiccDWzBABxBfOx31IDwDIXMTxWuwAxUGModvkbuVw==}
+    dev: true
+
+  /ci-info/3.6.1:
+    resolution: {integrity: sha512-up5ggbaDqOqJ4UqLKZ2naVkyqSJQgJi5lwD6b6mM748ysrghDBX0bx/qJTUHzw7zu6Mq4gycviSF5hJnwceD8w==}
+    engines: {node: '>=8'}
 
   /cities-list/1.0.3:
     resolution: {integrity: sha512-UadgzcZiV38TvJXlGymITRvvxaR5PtlrS2M+RJICyvRNp3TnOCPA/5ZZuRn8yG6SexKy1x9I+IwFctZ39XbI/Q==}
@@ -9674,6 +9679,81 @@ packages:
       strip-indent: 3.0.0
     dev: true
 
+  /eslint-plugin-unicorn/45.0.0_eslint@8.26.0:
+    resolution: {integrity: sha512-iP8cMRxXKHonKioOhnCoCcqVhoqhAp6rB+nsoLjXFDxTHz3btWMAp8xwzjHA0B1K6YV/U/Yvqn1bUXZt8sJPuQ==}
+    engines: {node: '>=14.18'}
+    peerDependencies:
+      eslint: '>=8.28.0'
+    dependencies:
+      '@babel/helper-validator-identifier': 7.19.1
+      ci-info: 3.6.1
+      clean-regexp: 1.0.0
+      eslint: 8.26.0
+      eslint-utils: 3.0.0_eslint@8.26.0
+      esquery: 1.4.0
+      indent-string: 4.0.0
+      is-builtin-module: 3.2.0
+      jsesc: 3.0.2
+      lodash: 4.17.21
+      pluralize: 8.0.0
+      read-pkg-up: 7.0.1
+      regexp-tree: 0.1.24
+      regjsparser: 0.9.1
+      safe-regex: 2.1.1
+      semver: 7.3.8
+      strip-indent: 3.0.0
+    dev: true
+
+  /eslint-plugin-unicorn/45.0.0_eslint@8.27.0:
+    resolution: {integrity: sha512-iP8cMRxXKHonKioOhnCoCcqVhoqhAp6rB+nsoLjXFDxTHz3btWMAp8xwzjHA0B1K6YV/U/Yvqn1bUXZt8sJPuQ==}
+    engines: {node: '>=14.18'}
+    peerDependencies:
+      eslint: '>=8.28.0'
+    dependencies:
+      '@babel/helper-validator-identifier': 7.19.1
+      ci-info: 3.6.1
+      clean-regexp: 1.0.0
+      eslint: 8.27.0
+      eslint-utils: 3.0.0_eslint@8.27.0
+      esquery: 1.4.0
+      indent-string: 4.0.0
+      is-builtin-module: 3.2.0
+      jsesc: 3.0.2
+      lodash: 4.17.21
+      pluralize: 8.0.0
+      read-pkg-up: 7.0.1
+      regexp-tree: 0.1.24
+      regjsparser: 0.9.1
+      safe-regex: 2.1.1
+      semver: 7.3.8
+      strip-indent: 3.0.0
+    dev: true
+
+  /eslint-plugin-unicorn/45.0.0_eslint@8.28.0:
+    resolution: {integrity: sha512-iP8cMRxXKHonKioOhnCoCcqVhoqhAp6rB+nsoLjXFDxTHz3btWMAp8xwzjHA0B1K6YV/U/Yvqn1bUXZt8sJPuQ==}
+    engines: {node: '>=14.18'}
+    peerDependencies:
+      eslint: '>=8.28.0'
+    dependencies:
+      '@babel/helper-validator-identifier': 7.19.1
+      ci-info: 3.6.1
+      clean-regexp: 1.0.0
+      eslint: 8.28.0
+      eslint-utils: 3.0.0_eslint@8.28.0
+      esquery: 1.4.0
+      indent-string: 4.0.0
+      is-builtin-module: 3.2.0
+      jsesc: 3.0.2
+      lodash: 4.17.21
+      pluralize: 8.0.0
+      read-pkg-up: 7.0.1
+      regexp-tree: 0.1.24
+      regjsparser: 0.9.1
+      safe-regex: 2.1.1
+      semver: 7.3.8
+      strip-indent: 3.0.0
+    dev: true
+
   /eslint-plugin-yml/1.2.0_eslint@8.26.0:
     resolution: {integrity: sha512-v0jAU/F5SJg28zkpxwGpY04eGZMWFP6os8u2qaEAIRjSH2GqrNl0yBR5+sMHLU/026kAduxVbvLSqmT3Mu3O0g==}
     engines: {node: ^14.17.0 || >=16.0.0}
@@ -11967,7 +12047,7 @@ packages:
       '@types/node': 18.11.5
       babel-jest: 28.1.3_@babel+core@7.19.3
       chalk: 4.1.2
-      ci-info: 3.5.0
+      ci-info: 3.6.1
       deepmerge: 4.2.2
       glob: 7.2.3
       graceful-fs: 4.2.10
@@ -12249,7 +12329,7 @@ packages:
       '@jest/types': 28.1.3
       '@types/node': 18.11.9
       chalk: 4.1.2
-      ci-info: 3.5.0
+      ci-info: 3.6.1
       graceful-fs: 4.2.10
       picomatch: 2.3.1
     dev: false
@@ -12261,7 +12341,7 @@ packages:
       '@jest/types': 28.1.3
       '@types/node': 18.11.9
       chalk: 4.1.2
-      ci-info: 3.5.0
+      ci-info: 3.6.1
       graceful-fs: 4.2.10
       picomatch: 2.3.1
     dev: false
@@ -12350,10 +12430,21 @@ packages:
     dev: true
     optional: true
 
+  /jsesc/0.5.0:
+    resolution: {integrity: sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA==}
+    hasBin: true
+    dev: true
+
   /jsesc/2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
     engines: {node: '>=4'}
     hasBin: true
+
+  /jsesc/3.0.2:
+    resolution: {integrity: sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==}
+    engines: {node: '>=6'}
+    hasBin: true
+    dev: true
 
   /json-buffer/3.0.0:
     resolution: {integrity: sha512-CuUqjv0FUZIdXkHPI8MezCnFCdaTAacej1TZYulLoAg1h/PhwkdXFN4V/gzY4g+fMBCOV2xF+rp7t2XD2ns/NQ==}
@@ -14549,8 +14640,8 @@ packages:
       - debug
     dev: false
 
-  /nx/15.2.0:
-    resolution: {integrity: sha512-lNoI37FYsN11LiR/XiO0GJqlZDH/ANe/UR1cw2VDipJqbae9rWfi/Td6zjMlymSEraullsiB+Ur7kavId/904w==}
+  /nx/15.2.1:
+    resolution: {integrity: sha512-vVeT5D02cDDiSmS3P2Bos/waYQa3m0yl/rouzsKpusVSmzAQGQbKXhxPb4WnNIj8Iz/8KjFeBM/RZO021BtGNg==}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -14562,8 +14653,8 @@ packages:
       '@swc/core':
         optional: true
     dependencies:
-      '@nrwl/cli': 15.2.0
-      '@nrwl/tao': 15.2.0
+      '@nrwl/cli': 15.2.1
+      '@nrwl/tao': 15.2.1
       '@parcel/watcher': 2.0.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.22
@@ -16243,6 +16334,13 @@ packages:
     dependencies:
       rc: 1.2.8
     dev: false
+
+  /regjsparser/0.9.1:
+    resolution: {integrity: sha512-dQUtn90WanSNl+7mQKcXAgZxvUe7Z0SqXlgzv0za4LwiUhyzBC58yQO3liFoUgu8GiJVInAhJjkj1N0EtQ5nkQ==}
+    hasBin: true
+    dependencies:
+      jsesc: 0.5.0
+    dev: true
 
   /rehype-mdx-title/1.0.0:
     resolution: {integrity: sha512-5B/53Y+KQHm4/nrE6pIIPc9Ie2fbPMCLs8WwMGYWWHr+5g3TkmEijRkr8TGYHULtc+C7bOoPR8LIF5DpGROIDg==}
