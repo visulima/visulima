@@ -58,7 +58,7 @@ export interface DocumentationThemeConfig {
     logoLink?: boolean | string;
     main?: FC<{ children: ReactNode }>;
     navbar: {
-        component: ReactNode | FC<NavBarProperties>
+        component: ReactNode | FC<NavBarProperties>;
         linkBack?: ReactNode | FC<{ locale: string }>;
     };
     navigation:

@@ -48,7 +48,7 @@ const Body: FC<{
     children: ReactNode;
     activeType: string;
 }> = ({
-    themeContext, breadcrumb, timestamp, navigation, children, activeType,
+ themeContext, breadcrumb, timestamp, navigation, children, activeType,
 }) => {
     const config = useConfig();
 
@@ -113,8 +113,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
 }) => {
     const config = useConfig();
     const {
-        activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories,
-    } = useDirectoryInfo(pageMap);
+ activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories,
+} = useDirectoryInfo(pageMap);
     const reference: any = useRef<HTMLDivElement>();
     const isOnScreen = useOnScreen(reference, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
@@ -226,23 +226,23 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         className={cn(
                                             activeType === "doc"
                                                 ? [
-                                                    "prose prose-slate max-w-none dark:prose-invert dark:text-slate-400",
-                                                    // headings
-                                                    // eslint-disable-next-line max-len
-                                                    "prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-normal lg:prose-headings:scroll-mt-[8.5rem]",
-                                                    // lead
-                                                    "prose-lead:text-slate-500 dark:prose-lead:text-slate-400",
-                                                    // links
-                                                    // eslint-disable-next-line max-len
-                                                    "prose-a:font-medium dark:prose-a:text-primary-400 hover:prose-a:text-gray-900 dark:hover:prose-a:text-gray-500",
-                                                    // link underline
-                                                    "prose-a:no-underline dark:hover:prose-a:[--tw-prose-underline-size:6px]",
-                                                    // pre
-                                                    // eslint-disable-next-line max-len
-                                                    "prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-slate-300/10",
-                                                    // hr
-                                                    "dark:prose-hr:border-slate-800",
-                                                ]
+                                                      "prose prose-slate max-w-none dark:prose-invert dark:text-slate-400",
+                                                      // headings
+                                                      // eslint-disable-next-line max-len
+                                                      "prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-normal lg:prose-headings:scroll-mt-[8.5rem]",
+                                                      // lead
+                                                      "prose-lead:text-slate-500 dark:prose-lead:text-slate-400",
+                                                      // links
+                                                      // eslint-disable-next-line max-len
+                                                      "prose-a:font-medium dark:prose-a:text-primary-400 hover:prose-a:text-gray-900 dark:hover:prose-a:text-gray-500",
+                                                      // link underline
+                                                      "prose-a:no-underline dark:hover:prose-a:[--tw-prose-underline-size:6px]",
+                                                      // pre
+                                                      // eslint-disable-next-line max-len
+                                                      "prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-slate-300/10",
+                                                      // hr
+                                                      "dark:prose-hr:border-slate-800",
+                                                  ]
                                                 : "",
                                         )}
                                     >

@@ -2,7 +2,7 @@ import { Menu, Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
-import type { FC, PropsWithChildren } from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
@@ -63,6 +63,34 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
     const { locale = DEFAULT_LOCALE, asPath } = useRouter();
     const activeRoute = getFSRoute(asPath, locale);
     const { menu, setMenu } = useMenu();
+
+    let projectLink: FC | ReactNode | null = null;
+
+    if (config.project.link) {
+        projectLink = (
+            <Anchor className="p-2 text-current" href={config.project.link} newWindow>
+                {renderComponent(config.project.icon)}
+            </Anchor>
+        );
+    } else if (config.project.icon) {
+        // if no project link is provided, but a component exists, render it
+        // to allow the client to render their own link
+        projectLink = renderComponent(config.project.icon);
+    }
+
+    let chatLink: FC | ReactNode | null = null;
+
+    if (config.chat.link) {
+        chatLink = (
+            <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
+                {renderComponent(config.chat.icon)}
+            </Anchor>
+        );
+    } else if (config.chat.icon) {
+        // if no chat link is provided, but a component exists, render it
+        // to allow the client to render their own link
+        chatLink = renderComponent(config.chat.icon);
+    }
 
     return (
         <>
@@ -162,25 +190,11 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                         })}
                     </div>
                     <div className="flex items-center h-[var(--nextra-navbar-height)]">
-                        {config.project.link ? (
-                            <Anchor className="p-2 text-current" href={config.project.link} newWindow>
-                                {renderComponent(config.project.icon)}
-                            </Anchor>
-                        ) : config.project.icon ? (
-                            // if no project link is provided, but a component exists, render it
-                            // to allow the client to render their own link
-                            renderComponent(config.project.icon)
-                        ) : null}
-
-                        {config.chat.link ? (
-                            <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
-                                {renderComponent(config.chat.icon)}
-                            </Anchor>
-                        ) : config.chat.icon ? (
-                            // if no chat link is provided, but a component exists, render it
-                            // to allow the client to render their own link
-                            renderComponent(config.chat.icon)
-                        ) : null}
+                        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
+                        <>
+                            {projectLink}
+                            {chatLink}
+                        </>
                     </div>
                     <div className="flex items-center h-[var(--nextra-navbar-height)]">
                         <button

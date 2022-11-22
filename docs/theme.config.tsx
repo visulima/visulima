@@ -1,6 +1,8 @@
 import cn from "clsx";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
+
 import Anchor from "./src/components/anchor";
 
 // const Logo = ({ height }) => (
@@ -15,12 +17,12 @@ const FEEDBACK_LINK_WITH_TRANSLATIONS = {
     "en-US": "Question? Give us feedback →",
 };
 
+const visulimaGitHubUrl = "https://github.com/visulima/visulima";
+
 export default {
     project: {
-        icon: () => {
-            return <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />;
-        },
-        link: "https://github.com/visulima/visulima"
+        icon: () => <Image src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
+        link: visulimaGitHubUrl,
     },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
     titleSuffix: " – Visulima",
@@ -50,12 +52,10 @@ export default {
     },
     chat: {
         icon: (
-            <>
-                <Anchor className="p-2 text-current" href={""} newWindow>
+            <Anchor className="p-2 text-current" href="" newWindow>
                     <DiscordIcon />
                     <span className="sr-only">Discord</span>
                 </Anchor>
-            </>
         ),
     },
     head: ({ title, meta }) => {
@@ -118,7 +118,7 @@ export default {
                     links: [
                         {
                             title: "GitHub",
-                            href: "https://github.com/visulima/visulima",
+                            href: visulimaGitHubUrl,
                         },
                         {
                             title: "Discord",
@@ -131,7 +131,7 @@ export default {
                     links: [
                         {
                             title: "GitHub",
-                            href: "https://github.com/visulima/visulima",
+                            href: visulimaGitHubUrl,
                         },
                         {
                             title: "Twitter",
@@ -150,13 +150,16 @@ export default {
                 },
             ];
 
+            // eslint-disable-next-line react/no-array-index-key
             return (
                 <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 pt-8 md:p-0 footer-border dark:footer-border md:border-0">
                     {menu.map((item, index) => (
+                        // eslint-disable-next-line react/no-array-index-key
                         <div key={`group-${index}-${item.title}`} className="text-ms col-span-6 md:col-span-3 lg:col-span-2">
                             <p className="text-sm tracking-widest text-gray-400 uppercase">{item.title}</p>
                             <ul className="mt-3 space-y-2">
                                 {item.links.map((link) => (
+                                    // eslint-disable-next-line react/no-array-index-key
                                     <li key={`li-${link.title}`}>
                                         <a href={link.href} title={link.title} className={linkClasses}>
                                             {" "}

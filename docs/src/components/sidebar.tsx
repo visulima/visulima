@@ -5,14 +5,14 @@ import { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
 import React, {
-    memo, useEffect, useMemo, useRef, useState,
+ memo, useEffect, useMemo, useRef, useState,
 } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
 import {
-    getFSRoute, getHeadingText, Item, MenuItem, PageItem, renderComponent,
+ getFSRoute, getHeadingText, Item, MenuItem, PageItem, renderComponent,
 } from "../utils";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
@@ -54,9 +54,9 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
     const config = useConfig();
     const { theme } = item as Item;
     // eslint-disable-next-line unicorn/no-negated-condition
-    const open = TreeState[item.route] !== undefined
-        ? TreeState[item.route]
-        : active || activeRouteInside || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel);
+    const open = TreeState[item.route] === undefined
+            ? active || activeRouteInside || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel)
+            : TreeState[item.route];
 
     const rerender = useState({})[1];
 
@@ -227,16 +227,16 @@ interface MenuProperties {
 }
 
 const Menu: FC<MenuProperties> = ({
-    directories, anchors, className, onlyCurrentDocs,
+ directories, anchors, className, onlyCurrentDocs,
 }) => (
     <ul className={cn(classes.list, className)}>
         {directories.map((item) => (!onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
-            item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
+                item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
                     <Folder key={item.name} item={item} anchors={anchors} />
-            ) : (
+                ) : (
                     <File key={item.name} item={item} anchors={anchors} />
-            )
-        ) : null))}
+                )
+            ) : null))}
     </ul>
 );
 
@@ -264,9 +264,9 @@ const Sidebar: FC<SideBarProperties> = ({
     const { menu, setMenu } = useMenu();
     const anchors = useMemo(
         () => headings
-            .filter((v) => v.children && v.depth === 2 && v.type === "heading")
-            .map((heading) => getHeadingText(heading))
-            .filter(Boolean),
+                .filter((v) => v.children && v.depth === 2 && v.type === "heading")
+                .map((heading) => getHeadingText(heading))
+                .filter(Boolean),
         [headings],
     );
     const sidebarReference = useRef<HTMLDivElement>(null);

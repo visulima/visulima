@@ -6,7 +6,7 @@ import { renderComponent } from "../utils";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 
-const Footer = ({ activeType }: { menu?: boolean; activeType: string }): ReactElement => {
+const Footer = ({ activeType }: { activeType: string }): ReactElement => {
     const config = useConfig();
 
     return (
@@ -39,7 +39,9 @@ const Footer = ({ activeType }: { menu?: boolean; activeType: string }): ReactEl
                 >
                     {renderComponent(config.footer.component)}
                 </div>
-                <div className="block mt-8 md:hidden md:mb-0 footer-border dark:footer-border py-8 md:py-0 w-full">{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
+                <div className="block mt-8 md:hidden md:mb-0 footer-border dark:footer-border py-8 md:py-0 w-full">
+                    {config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}
+                </div>
             </div>
         </footer>
     );

@@ -7,7 +7,7 @@ module.exports = {
         "plugin:@next/next/recommended",
         "plugin:@next/next/core-web-vitals"
     ],
-    ignorePatterns: ["!**/*"],
+    // ignorePatterns: ["!**/*"],
     env: {
         // Your environments (which contains several predefined global variables)
         browser: true,
@@ -33,11 +33,13 @@ module.exports = {
 
         "max-len": ["error", { code: 160 }],
 
-        "react/jsx-props-no-spreading": "off"
+        "react/jsx-props-no-spreading": "off",
+        // @see https://github.com/typescript-eslint/typescript-eslint/issues/1824
+        "@typescript-eslint/indent": "off",
     },
     overrides: [
         {
-            files: ["*.ts", "*.tsx"],
+            files: ["*.ts", "*.tsx", "*.mdx"],
 
             parserOptions: {
                 project: "./tsconfig.eslint.json",

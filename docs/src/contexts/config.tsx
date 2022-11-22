@@ -4,7 +4,7 @@ import type { PageOpts } from "nextra";
 import { GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
 import React, {
-    createContext, isValidElement, useContext, useMemo, useState,
+ createContext, isValidElement, useContext, useMemo, useState,
 } from "react";
 
 import Anchor from "../components/anchor";
@@ -214,12 +214,12 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             frontMatter: pageOpts.frontMatter,
             ...Object.fromEntries(
                 DEEP_OBJECT_KEYS.map((key) => (typeof themeConfig[key] === "object"
-                    ? [
-                        key,
-                        // @ts-expect-error -- key has always object value
-                        { ...DEFAULT_THEME[key], ...themeConfig[key] },
-                    ]
-                    : [])),
+                        ? [
+                              key,
+                              // @ts-expect-error -- key has always object value
+                              { ...DEFAULT_THEME[key], ...themeConfig[key] },
+                          ]
+                        : [])),
             ),
         };
     }, [themeConfig, pageOpts.unstable_flexsearch, pageOpts.newNextLinkBehavior, pageOpts.title, pageOpts.frontMatter]);

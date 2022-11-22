@@ -32,7 +32,7 @@ const Portal: FC<PropsWithChildren> = ({ children }) => {
 };
 
 const Select: FC<MenuProperties> = ({
-    options, selected, onChange, title, className,
+ options, selected, onChange, title, className,
 }) => {
     const [trigger, container] = usePopper({
         strategy: "fixed",
@@ -84,10 +84,10 @@ const Select: FC<MenuProperties> = ({
                                     key={option.key}
                                     value={option}
                                     className={({ active }) => cn(
-                                        active ? "bg-primary-50 text-primary-500 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
-                                        "relative cursor-pointer whitespace-nowrap py-1.5",
-                                        "ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
-                                    )}
+                                            active ? "bg-primary-50 text-primary-500 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
+                                            "relative cursor-pointer whitespace-nowrap py-1.5",
+                                            "ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
+                                        )}
                                 >
                                     {option.name}
                                     {option.key === selected.key && (
