@@ -136,7 +136,16 @@ describe("HealthCheck", () => {
     it("should return a boolean if the service is live", async () => {
         const healthCheck = new HealthCheck();
 
-        healthCheck.addChecker("database", getDatabaseChecker);
+        healthCheck.addChecker("database", async () => {
+            return {
+                displayName: "database",
+                health: {
+                    healthy: false,
+                    message: "error",
+                    timestamp: dateString,
+                },
+            };
+        });
 
         expect(await healthCheck.isLive()).toBe(false);
 
