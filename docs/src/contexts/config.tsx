@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { ThemeProvider } from "next-themes";
 import type { PageOpts } from "nextra";
-import { DiscordIcon, GitHubIcon } from "nextra/icons";
+import { GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
 import React, {
     createContext, isValidElement, useContext, useMemo, useState,
@@ -25,14 +25,6 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
         dismissible: true,
         key: "nextra-banner",
     },
-    chat: {
-        icon: (
-            <>
-                <DiscordIcon />
-                <span className="sr-only">Discord</span>
-            </>
-        ),
-    },
     darkMode: true,
     direction: "ltr",
     docsRepositoryBase: "https://github.com/shuding/nextra",
@@ -51,6 +43,9 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
         text: "Edit this page",
     },
     feedback: {},
+    navbar: {
+        component: Navbar,
+    },
     footer: {
         copyright: `MIT ${new Date().getFullYear()} © Nextra.`,
     },
@@ -92,7 +87,6 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
         </>
     ),
     logoLink: true,
-    navbar: Navbar,
     navigation: {
         next: true,
         prev: true,

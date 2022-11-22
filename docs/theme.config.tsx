@@ -1,5 +1,7 @@
 import cn from "clsx";
 import { useRouter } from "next/router";
+import { DiscordIcon } from "nextra/icons";
+import Anchor from "./src/components/anchor";
 
 // const Logo = ({ height }) => (
 //
@@ -14,7 +16,12 @@ const FEEDBACK_LINK_WITH_TRANSLATIONS = {
 };
 
 export default {
-    project: { link: "https://github.com/visulima/visulima" },
+    project: {
+        icon: () => {
+            return <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />;
+        },
+        link: "https://github.com/visulima/visulima"
+    },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
     titleSuffix: " – Visulima",
     unstable_flexsearch: true,
@@ -40,6 +47,16 @@ export default {
                 </span>
             </>
         );
+    },
+    chat: {
+        icon: (
+            <>
+                <Anchor className="p-2 text-current" href={""} newWindow>
+                    <DiscordIcon />
+                    <span className="sr-only">Discord</span>
+                </Anchor>
+            </>
+        ),
     },
     head: ({ title, meta }) => {
         const ogImage = meta?.image || `https://visulima.com${title === "home" ? "" : `?title=${encodeURIComponent(title)}`}`;
@@ -78,7 +95,7 @@ export default {
     },
     footer: {
         copyright: ({ activeType }) => (
-                <span className={cn("text-sm text-gray-500 dark:text-gray-400", activeType === "page" ? "mx-auto px-4 text-center" : "px-2")}>
+                <span className={cn("text-sm text-gray-500 dark:text-gray-400", activeType === "page" ? "w-full" : "px-2")}>
                     © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
                 </span>
         ),
@@ -97,6 +114,32 @@ export default {
                     ],
                 },
                 {
+                    title: "Support",
+                    links: [
+                        {
+                            title: "GitHub",
+                            href: "https://github.com/visulima/visulima",
+                        },
+                        {
+                            title: "Discord",
+                            href: "#",
+                        },
+                    ],
+                },
+                {
+                    title: "Company",
+                    links: [
+                        {
+                            title: "GitHub",
+                            href: "https://github.com/visulima/visulima",
+                        },
+                        {
+                            title: "Twitter",
+                            href: "https://twitter.com/visulima",
+                        },
+                    ],
+                },
+                {
                     title: "Legal",
                     links: [
                         {
@@ -108,13 +151,13 @@ export default {
             ];
 
             return (
-                <div className="flex flex-row gap-10">
-                    {menu.map((item) => (
-                        <div className="flex flex-col gap-4">
-                            <p className="text-sm font-semibold tracking-widest text-gray-400 uppercase">{item.title}</p>
-                            <ul key={item.title} className="mt-6 space-y-4">
+                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 pt-8 md:p-0 footer-border dark:footer-border md:border-0">
+                    {menu.map((item, index) => (
+                        <div key={`group-${index}-${item.title}`} className="text-ms col-span-6 md:col-span-3 lg:col-span-2">
+                            <p className="text-sm tracking-widest text-gray-400 uppercase">{item.title}</p>
+                            <ul className="mt-3 space-y-2">
                                 {item.links.map((link) => (
-                                    <li key={`li-${link}`}>
+                                    <li key={`li-${link.title}`}>
                                         <a href={link.href} title={link.title} className={linkClasses}>
                                             {" "}
                                             {link.title}{" "}

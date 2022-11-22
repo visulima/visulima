@@ -1,9 +1,12 @@
 {
-    "getting-started": {
-        "title": "Getting Started"
+    "introduction": {
+        "title": "Introduction"
     },
     "prologue": {
         "title": "Prologue"
+    },
+    "getting-started": {
+        "title": "Getting Started"
     },
     "packages": {
         "title": "Packages"

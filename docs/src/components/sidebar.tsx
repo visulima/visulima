@@ -316,7 +316,8 @@ const Sidebar: FC<SideBarProperties> = ({
             />
             <aside
                 className={cn(
-                    "nextra-sidebar-container flex flex-col bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                    "nextra-sidebar-container flex flex-col",
+                    "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
                     "md:top-16 md:w-64 md:shrink-0 md:transform-none",
                     asPopover ? "md:hidden" : "md:sticky md:self-start",
                     menu ? "[transform:translate3d(0,0,0)]" : "[transform:translate3d(0,-100%,0)]",

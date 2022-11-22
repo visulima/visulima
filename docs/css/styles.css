@@ -139,6 +139,24 @@ input[type="search"] {
     @apply hidden;
 }
 
+@media (min-width: 768px) {
+    .md\:bg-x-gradient-gray-200-gray-200-50-white-50 {
+        background-image: linear-gradient(90deg, #f5f5fa, #f5f5fa 50%, #fff 0);
+    }
+
+    .dark .md\:dark\:bg-x-gradient-dark-700-dark-700-50-dark-800 {
+        background-image: linear-gradient(90deg, #171923, #171923 50%, #12141c 0);
+    }
+
+    .md\:bg-x-gradient-gray-200-gray-400-75 {
+        background-image: linear-gradient(90deg, #f5f5fa 75%, #ebebf0);
+    }
+
+    .dark .md\:dark\:bg-x-gradient-dark-700-dark-800-65 {
+        background-image: linear-gradient(90deg, #171923 65%, #12141c);
+    }
+}
+
 .bg-x-gradient-gray-200-gray-200-50-white-50 {
     background-image: linear-gradient(90deg, #f5f5fa, #f5f5fa 50%, #fff 0);
 }

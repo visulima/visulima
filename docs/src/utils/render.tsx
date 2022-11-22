@@ -1,4 +1,5 @@
-import React, { FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
+import React from "react";
 
 export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode, properties?: T) {
     if (!ComponentOrNode) {
@@ -18,5 +19,6 @@ export function renderString<T>(
     properties: T = {},
 ): string {
     const result = typeof stringOrFunction === "function" ? stringOrFunction(properties) : stringOrFunction;
+
     return result || "";
 }

@@ -59,7 +59,7 @@ const Body: FC<{
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
     const gitTimestampElement = date ? (
-        <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
+        <div className="mt-12 mb-8 block text-xs text-gray-500 px-8 ltr:text-right rtl:text-left dark:text-gray-400">
             {renderComponent(config.gitTimestamp, { timestamp: date })}
         </div>
     ) : (
@@ -90,7 +90,7 @@ const Body: FC<{
         <article
             className={cn(
                 // eslint-disable-next-line max-len
-                "flex min-h-[calc(100vh-4rem)] w-full min-w-0 max-w-full justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800",
+                "flex min-h-[calc(100vh-4rem)] w-full min-w-0 max-w-full justify-center pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
             )}
         >
@@ -121,7 +121,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const themeContext = { ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || activeType === "page";
     const tocClassName = "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block";
-    const isDocumentPage = activeType === "doc" || !themeContext.toc || themeContext.layout !== "default";
+    const isDocumentPage = activeType === "doc" || themeContext.toc;
 
     const tocSidebarElement = isDocumentPage && (
         <div className={cn(tocClassName, "px-4")}>
@@ -152,7 +152,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
                 dir={direction}
-                className={activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
+                className={activeType === "page" ? "" : "md:bg-x-gradient-gray-200-gray-200-50-white-50 md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
             >
                 <script
                     // eslint-disable-next-line react/no-danger
@@ -163,7 +163,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 <Head />
                 <Banner />
                 {themeContext.navbar
-                    && renderComponent(config.navbar, {
+                    && renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -180,7 +180,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 includePlaceholder={themeContext.layout === "default"}
                             />
                         )}
-                        <div className="w-full relative">
+                        <div className="relative w-full">
                             {activeType === "doc" && config.hero?.component && (
                                 <div
                                     className={`absolute w-full ${
@@ -260,7 +260,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                         </div>
                     </ActiveAnchorProvider>
                 </div>
-                {themeContext.footer && <Footer menu={hideSidebar} activeType={activeType} />}
+                {themeContext.footer && <Footer activeType={activeType} />}
             </div>
         </>
     );
@@ -276,6 +276,7 @@ const Theme: FC = (properties) => {
     }
 
     const { pageOpts, Content } = context;
+
     return (
         <ConfigProvider value={context}>
             <InnerLayout {...pageOpts}>

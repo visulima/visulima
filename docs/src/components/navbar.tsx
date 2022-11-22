@@ -7,9 +7,8 @@ import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import {
-    getFSRoute, Item, MenuItem, PageItem, renderComponent,
-} from "../utils";
+import type { Item, MenuItem, PageItem } from "../utils";
+import { getFSRoute, renderComponent } from "../utils";
 import Anchor from "./anchor";
 
 const classes = {
@@ -66,124 +65,143 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
     const { menu, setMenu } = useMenu();
 
     return (
-        <div className="nextra-nav-container sticky top-0 z-20 w-full header-border dark:header-border">
-            <div
-                className={cn(
-                    "nextra-nav-container-blur pointer-events-none absolute z-[-1] h-full w-full",
-                    activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
-                )}
-            />
-            {/* eslint-disable-next-line max-len */}
-            <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4" : "pr-4")}>
+        <>
+            {config.navbar?.linkBack && (
+                <div className="md:hidden bg-gray-100 text-center p-4 font-medium">
+                    {renderComponent(config.navbar.linkBack, {
+                        locale,
+                    })}
+                </div>
+            )}
+            <div className="nextra-nav-container sticky top-0 z-20 w-full header-border dark:header-border">
                 <div
                     className={cn(
-                        "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
-                        activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
-                        activeType === "doc" ? "pl-4" : "",
+                        "nextra-nav-container-blur pointer-events-none absolute z-[-1] h-full w-full",
+                        activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
                     )}
-                >
-                    {config.logoLink ? (
-                        <Anchor
-                            href={typeof config.logoLink === "string" ? config.logoLink : "/"}
-                            className="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto"
-                        >
-                            {renderComponent(config.logo)}
-                        </Anchor>
-                    ) : (
-                        <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
-                    )}
-                </div>
-                <div className="grow h-[var(--nextra-navbar-height)] flex items-center justify-center space-x-12">
-                    {items.map((pageOrMenu) => {
-                        if (pageOrMenu.display === "hidden") return null;
+                />
+                {/* eslint-disable-next-line max-len */}
+                <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4" : "pr-4")}>
+                    <div
+                        className={cn(
+                            "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
+                            activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                            activeType === "doc" ? "pl-4" : "",
+                        )}
+                    >
+                        {config.logoLink ? (
+                            <Anchor
+                                href={typeof config.logoLink === "string" ? config.logoLink : "/"}
+                                className="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto"
+                            >
+                                {renderComponent(config.logo)}
+                            </Anchor>
+                        ) : (
+                            <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
+                        )}
+                    </div>
+                    <div className="grow h-[var(--nextra-navbar-height)] flex items-center justify-center space-x-12">
+                        {items.map((pageOrMenu) => {
+                            if (pageOrMenu.display === "hidden") {
+                                return null;
+                            }
 
-                        if (pageOrMenu.type === "menu") {
-                            const pmenu = pageOrMenu as MenuItem;
+                            if (pageOrMenu.type === "menu") {
+                                const pmenu = pageOrMenu as MenuItem;
 
-                            const isActive = pmenu.route === activeRoute || activeRoute.startsWith(`${pmenu.route}/`);
+                                const isActive = pmenu.route === activeRoute || activeRoute.startsWith(`${pmenu.route}/`);
+
+                                return (
+                                    <NavbarMenu
+                                        key={pmenu.title}
+                                        className={cn(classes.link, "flex gap-1", isActive ? classes.active : classes.inactive)}
+                                        menu={pmenu}
+                                    >
+                                        {pmenu.title}
+                                        <ArrowRightIcon
+                                            className="h-[18px] min-w-[18px] rounded-sm p-0.5"
+                                            pathClassName="origin-center transition-transform rotate-90"
+                                        />
+                                    </NavbarMenu>
+                                );
+                            }
+
+                            const page = pageOrMenu as PageItem;
+
+                            let href = page.href || page.route || "#";
+
+                            // If it's a directory
+                            if (page.children) {
+                                href = (page.withIndexPage ? page.route : page.firstChildRoute) || href;
+                            }
+
+                            const isActive = page.route === activeRoute || activeRoute.startsWith(`${page.route}/`);
+                            const isInactive = !isActive || page.newWindow;
 
                             return (
-                                <NavbarMenu
-                                    key={pmenu.title}
-                                    className={cn(classes.link, "flex gap-1", isActive ? classes.active : classes.inactive)}
-                                    menu={pmenu}
+                                <Anchor
+                                    href={href}
+                                    key={page.route}
+                                    className={cn(
+                                        classes.link,
+                                        "-ml-2 hidden whitespace-nowrap p-2 md:inline-block",
+                                        isInactive ? classes.inactive : classes.active,
+                                    )}
+                                    newWindow={page.newWindow}
+                                    aria-current={!page.newWindow && isActive}
                                 >
-                                    {pmenu.title}
-                                    <ArrowRightIcon
-                                        className="h-[18px] min-w-[18px] rounded-sm p-0.5"
-                                        pathClassName="origin-center transition-transform rotate-90"
-                                    />
-                                </NavbarMenu>
+                                    {page.title}
+                                </Anchor>
                             );
-                        }
-
-                        const page = pageOrMenu as PageItem;
-
-                        let href = page.href || page.route || "#";
-
-                        // If it's a directory
-                        if (page.children) {
-                            href = (page.withIndexPage ? page.route : page.firstChildRoute) || href;
-                        }
-
-                        const isActive = page.route === activeRoute || activeRoute.startsWith(`${page.route}/`);
-
-                        return (
-                            <Anchor
-                                href={href}
-                                key={page.route}
-                                className={cn(
-                                    classes.link,
-                                    "-ml-2 hidden whitespace-nowrap p-2 md:inline-block",
-                                    !isActive || page.newWindow ? classes.inactive : classes.active,
-                                )}
-                                newWindow={page.newWindow}
-                                aria-current={!page.newWindow && isActive}
-                            >
-                                {page.title}
+                        })}
+                    </div>
+                    <div className="flex items-center h-[var(--nextra-navbar-height)] mr-2">
+                        {renderComponent(config.search.component, {
+                            directories: flatDirectories,
+                            className: "hidden md:inline-block mx-min-w-[200px]",
+                        })}
+                    </div>
+                    <div className="flex items-center h-[var(--nextra-navbar-height)]">
+                        {config.project.link ? (
+                            <Anchor className="p-2 text-current" href={config.project.link} newWindow>
+                                {renderComponent(config.project.icon)}
                             </Anchor>
-                        );
-                    })}
-                </div>
-                <div className="flex items-center h-[var(--nextra-navbar-height)] mr-2">
-                    {renderComponent(config.search.component, {
-                        directories: flatDirectories,
-                        className: "hidden md:inline-block mx-min-w-[200px]",
-                    })}
-                </div>
-                <div className="flex items-center h-[var(--nextra-navbar-height)]">
-                    {config.project.link ? (
-                        <Anchor className="p-2 text-current" href={config.project.link} newWindow>
-                            {renderComponent(config.project.icon)}
-                        </Anchor>
-                    ) : (config.project.icon ? (
-                        // if no project link is provided, but a component exists, render it
-                        // to allow the client to render their own link
-                        renderComponent(config.project.icon)
-                    ) : null)}
+                        ) : config.project.icon ? (
+                            // if no project link is provided, but a component exists, render it
+                            // to allow the client to render their own link
+                            renderComponent(config.project.icon)
+                        ) : null}
 
-                    {config.chat.link ? (
-                        <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
-                            {renderComponent(config.chat.icon)}
-                        </Anchor>
-                    ) : (config.chat.icon ? (
-                        // if no chat link is provided, but a component exists, render it
-                        // to allow the client to render their own link
-                        renderComponent(config.chat.icon)
-                    ) : null)}
-                </div>
-                <div className="flex items-center h-[var(--nextra-navbar-height)]">
-                    <button
-                        type="button"
-                        aria-label="Menu"
-                        className="nextra-hamburger -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden"
-                        onClick={() => setMenu(!menu)}
-                    >
-                        <MenuIcon className={cn({ open: menu })} />
-                    </button>
-                </div>
-            </nav>
-        </div>
+                        {config.chat.link ? (
+                            <Anchor className="p-2 text-current" href={config.chat.link} newWindow>
+                                {renderComponent(config.chat.icon)}
+                            </Anchor>
+                        ) : config.chat.icon ? (
+                            // if no chat link is provided, but a component exists, render it
+                            // to allow the client to render their own link
+                            renderComponent(config.chat.icon)
+                        ) : null}
+                    </div>
+                    <div className="flex items-center h-[var(--nextra-navbar-height)]">
+                        <button
+                            type="button"
+                            aria-label="Menu"
+                            className="nextra-hamburger -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden"
+                            onClick={() => setMenu(!menu)}
+                        >
+                            <MenuIcon className={cn({ open: menu })} />
+                        </button>
+                    </div>
+                    {config.navbar?.linkBack && (
+                        <div className="items-center h-[var(--nextra-navbar-height)] hidden md:flex ml-4">
+                            {renderComponent(config.navbar.linkBack, {
+                                locale,
+                            })}
+                        </div>
+                    )}
+                </nav>
+            </div>
+        </>
     );
 };
 

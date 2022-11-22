@@ -33,12 +33,13 @@ const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
     let foundItem: undefined | string;
 
     items.forEach((item) => {
-        if (item.route) {
-            foundItem = item.route;
+        if (typeof foundItem === "string") {
             return;
         }
 
-        if (item.children) {
+        if (item.route) {
+            foundItem = item.route;
+        } else if (item.children) {
             const route = findFirstRoute(item.children);
 
             if (route) {

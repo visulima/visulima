@@ -11,7 +11,7 @@
         "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check",
         "check": "manypkg check",
         "clean": "nx run-many --target=clean --all --parallel && rimraf node_modules",
-        "docs:dev": "pnpm --filter \"docs\" run build",
+        "docs:dev": "pnpm --filter \"docs\" run dev",
         "example:api-platform:dev": "pnpm --filter \"nextjs_example_api-platform\" run dev",
         "example:connect:dev": "pnpm --filter \"nextjs_example_connect\" run dev",
         "example:crud:dev": "pnpm --filter \"nextjs_example_crud\" run dev",

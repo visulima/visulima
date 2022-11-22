@@ -12,10 +12,10 @@ export type RecursivePartial<T> = {
     [P in keyof T]?: T[P] extends (infer U)[]
         ? RecursivePartial<U>[]
         : T[P] extends FC // do not change properties for optional in FC type
-            ? T[P]
-            : T[P] extends object
-                ? RecursivePartial<T[P]>
-                : T[P];
+        ? T[P]
+        : T[P] extends object
+        ? RecursivePartial<T[P]>
+        : T[P];
 };
 
 export interface DocumentationThemeConfig {
@@ -24,7 +24,7 @@ export interface DocumentationThemeConfig {
         key: string;
         text?: ReactNode | FC;
     };
-    chat: {
+    chat?: {
         icon: ReactNode | FC;
         link?: string;
     };
@@ -57,35 +57,38 @@ export interface DocumentationThemeConfig {
     logo: ReactNode | FC;
     logoLink?: boolean | string;
     main?: FC<{ children: ReactNode }>;
-    navbar: ReactNode | FC<NavBarProperties>;
-    navigation:
-    | boolean
-    | {
-        next: boolean;
-        prev: boolean;
+    navbar: {
+        component: ReactNode | FC<NavBarProperties>
+        linkBack?: ReactNode | FC<{ locale: string }>;
     };
+    navigation:
+        | boolean
+        | {
+              next: boolean;
+              prev: boolean;
+          };
     nextThemes: Pick<ThemeProviderProps, "defaultTheme" | "storageKey" | "forcedTheme">;
     notFound: {
         content: ReactNode | FC;
         labels: string;
     };
     primaryHue:
-    | number
-    | {
-        dark: number;
-        light: number;
-    };
+        | number
+        | {
+              dark: number;
+              light: number;
+          };
     project: {
         icon: ReactNode | FC;
         link?: string;
     };
     search: {
         component:
-        | ReactNode
-        | FC<{
-            className?: string;
-            directories: Item[];
-        }>;
+            | ReactNode
+            | FC<{
+                  className?: string;
+                  directories: Item[];
+              }>;
         emptyResult: ReactNode | FC;
         loading: string | (() => string);
         // Can't be React component
