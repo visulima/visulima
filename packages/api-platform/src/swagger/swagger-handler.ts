@@ -46,7 +46,7 @@ const swaggerHandler = (
         let spec = extendSwaggerSpec(JSON.parse(fileContents) as OAS3Definition, allowedMediaTypes) as OAS3Definition;
         let crudSwagger: Partial<OAS3Definition> = {};
 
-        if (typeof crud !== "undefined") {
+        if (crud !== undefined) {
             try {
                 const modelsOpenApi = await modelsToOpenApi(crud);
 

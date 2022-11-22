@@ -69,10 +69,10 @@ const parseQuery = (queryString?: string): ParsedQueryParameters => {
         if (query.orderBy) {
             parsedQuery.orderBy = parseOrderBy(query.orderBy as string);
         }
-        if (typeof query.limit !== "undefined") {
+        if (query.limit !== undefined) {
             parsedQuery.limit = Number.isFinite(+query.limit) ? +query.limit : undefined;
         }
-        if (typeof query.skip !== "undefined") {
+        if (query.skip !== undefined) {
             parsedQuery.skip = Number.isFinite(+query.skip) ? +query.skip : undefined;
         }
         if (query.distinct) {

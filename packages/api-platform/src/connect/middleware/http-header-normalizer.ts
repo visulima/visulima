@@ -75,7 +75,7 @@ const httpHeaderNormalizerMiddleware = (options_?: { canonical?: boolean; normal
 
                 const normalizedKey = options.normalizeHeaderKey(key, options.canonical);
 
-                if (typeof normalizedKey !== "undefined") {
+                if (normalizedKey !== undefined) {
                     headers[normalizedKey] = request.headers[key];
                 }
             });

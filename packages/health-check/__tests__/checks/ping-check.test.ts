@@ -1,11 +1,13 @@
-import { describe, expect, it } from "vitest";
 import "cross-fetch/polyfill";
+
+import { describe, expect, it } from "vitest";
 
 import pingCheck from "../../src/checks/ping-check";
 
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
         if (process.env.CI) {
+            // eslint-disable-next-line no-console
             console.log("Skipping DNS check in CI environment");
             return;
         }
@@ -21,7 +23,7 @@ describe("pingCheck", () => {
             },
             meta: expect.any(Object),
         });
-    }, 10000);
+    }, 10_000);
 
     it("should return unhealthy when the host is reachable", async () => {
         const result = await pingCheck("https://example.com1")();

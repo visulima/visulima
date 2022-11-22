@@ -72,7 +72,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         const models = this.ctorModels;
         const prismaDmmfModels = await this.getPrismaClientModels();
 
-        if (typeof models !== "undefined") {
+        if (models !== undefined) {
             models.forEach((model) => {
                 if (!Object.keys(prismaDmmfModels).includes(model)) {
                     throw new Error(`Model name ${model} is invalid.`);
@@ -132,11 +132,11 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             parsed.orderBy = parsePrismaOrderBy(query.orderBy);
         }
 
-        if (typeof query.limit !== "undefined") {
+        if (query.limit !== undefined) {
             parsed.take = query.limit;
         }
 
-        if (typeof query.skip !== "undefined") {
+        if (query.skip !== undefined) {
             parsed.skip = query.skip;
         }
 

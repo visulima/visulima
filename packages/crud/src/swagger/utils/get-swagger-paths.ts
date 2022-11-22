@@ -158,7 +158,7 @@ const generateSwaggerPathObject = <M extends string>({
             const method: HttpMethod = getRouteTypeMethod(routeType);
             const response = generateSwaggerResponse(routeType, returnType);
 
-            if (typeof response === "undefined") {
+            if (response === undefined) {
                 throw new TypeError(`Route type ${routeType}; response config was not found.`);
             }
 

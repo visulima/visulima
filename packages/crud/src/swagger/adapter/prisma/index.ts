@@ -50,7 +50,7 @@ const modelsToOpenApi = async <M extends string = string>({
         ...parser.getPaginatedModelsSchemas(dModels),
     });
 
-    if (typeof ctorModels !== "undefined") {
+    if (ctorModels !== undefined) {
         ctorModels.forEach((model) => {
             if (!Object.keys(prismaDmmfModels).includes(model)) {
                 throw new Error(`Model name ${model} is invalid.`);

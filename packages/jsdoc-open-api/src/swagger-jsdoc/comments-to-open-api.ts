@@ -71,7 +71,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { spec: Ope
         const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
 
         ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {
-            if (typeof result[property] !== "undefined" && hasEmptyProperty(result[property])) {
+            if (result[property] !== undefined && hasEmptyProperty(result[property])) {
                 delete result[property];
             }
         });

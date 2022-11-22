@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { testApiHandler } from "next-test-api-route-handler";
 import "cross-fetch/polyfill";
 
-import { healthCheckHandler, HealthCheck as HealthCheck, nodeEnvCheck } from "../../src";
+import { testApiHandler } from "next-test-api-route-handler";
+import { describe, expect, it } from "vitest";
+
+import { HealthCheck, healthCheckHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
 
 const HealthCheckService = new HealthCheck();
 
-HealthCheckService.addChecker("node-env", nodeEnvCheck());
+HealthCheckService.addChecker("node-env", nodeEnvironmentCheck());
 
 describe("health check route", () => {
     it("endpoint returns health checks reports", async () => {

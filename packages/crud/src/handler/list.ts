@@ -13,7 +13,7 @@ const listHandler: Handler = async ({
     let isPaginated = false;
     let paginationOptions: PaginationOptions | undefined;
 
-    if (typeof query?.page !== "undefined") {
+    if (query?.page !== undefined) {
         if (query?.page <= 0) {
             throw new Error("page query must be a strictly positive number");
         }

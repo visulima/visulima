@@ -23,12 +23,12 @@ export const sendJson = (response: ServerResponse, jsonBody: any): void => {
 
 export const addStatusCodeToResponse = (response: ServerResponse, error: any): void => {
     // respect err.statusCode
-    if (typeof error.statusCode !== "undefined") {
+    if (error.statusCode !== undefined) {
         response.statusCode = error.statusCode;
     }
 
     // respect err.status
-    if (typeof error.status !== "undefined") {
+    if (error.status !== undefined) {
         response.statusCode = error.status;
     }
 

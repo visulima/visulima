@@ -4,7 +4,7 @@ export const getResourceNameFromUrl = <M extends string = string>(url: string, m
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
 
-    if (typeof realPath === "undefined") {
+    if (realPath === undefined) {
         throw new TypeError("Path is undefined");
     }
 

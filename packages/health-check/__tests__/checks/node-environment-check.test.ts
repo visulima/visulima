@@ -7,6 +7,7 @@ describe("node-environment-check", () => {
         const result = await nodeEnvironmentCheck()();
 
         expect(result).toStrictEqual({
+            // eslint-disable-next-line radar/no-duplicate-string
             displayName: "Node Environment Check",
             health: {
                 healthy: true,
@@ -19,7 +20,7 @@ describe("node-environment-check", () => {
     });
 
     it("should return healthy when the node env is set to production", async () => {
-        const oldEnv = process.env.NODE_ENV;
+        const oldEnvironment = process.env.NODE_ENV;
 
         process.env.NODE_ENV = "production";
 
@@ -36,7 +37,7 @@ describe("node-environment-check", () => {
             },
         });
 
-        process.env.NODE_ENV = oldEnv;
+        process.env.NODE_ENV = oldEnvironment;
     });
 
     it("should return unhealthy when the node env is set to production", async () => {
@@ -53,7 +54,7 @@ describe("node-environment-check", () => {
     });
 
     it("should return unhealthy when the node env is not set", async () => {
-        const oldEnv = process.env.NODE_ENV;
+        const oldEnvironment = process.env.NODE_ENV;
 
         delete process.env.NODE_ENV;
 
@@ -68,6 +69,6 @@ describe("node-environment-check", () => {
             },
         });
 
-        process.env.NODE_ENV = oldEnv;
+        process.env.NODE_ENV = oldEnvironment;
     });
 });
