@@ -1,5 +1,4 @@
 import cn from "clsx";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
 
@@ -21,7 +20,8 @@ const visulimaGitHubUrl = "https://github.com/visulima/visulima";
 
 export default {
     project: {
-        icon: () => <Image src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
+        // eslint-disable-next-line @next/next/no-img-element
+        icon: () => <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
         link: visulimaGitHubUrl,
     },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
