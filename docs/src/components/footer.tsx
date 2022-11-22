@@ -20,7 +20,7 @@ const Footer = ({ activeType }: { menu?: boolean; activeType: string }): ReactEl
             <div className="mx-auto flex flex-col md:flex-row md:max-w-[90rem] bg-white dark:bg-darker-800">
                 <div
                     className={cn(
-                        "flex md:flex-col md:pl-4 py-6 md:py-12 md:w-64",
+                        "flex md:flex-col md:pl-4 py-6 md:py-12 md:w-64 md:shrink-0",
                         activeType === "page" ? "" : "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
@@ -39,7 +39,7 @@ const Footer = ({ activeType }: { menu?: boolean; activeType: string }): ReactEl
                 >
                     {renderComponent(config.footer.component)}
                 </div>
-                <div className="block mt-8 md:hidden md:mb-0 footer-border dark:footer-border py-8 w-full">{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
+                <div className="block mt-8 md:hidden md:mb-0 footer-border dark:footer-border py-8 md:py-0 w-full">{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
             </div>
         </footer>
     );
