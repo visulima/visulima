@@ -9,7 +9,7 @@ import { getGitIssueUrl, renderComponent } from "../../utils";
 import Anchor from "../anchor";
 import Toc from "./toc";
 
-const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = true }) => {
+const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = false }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement>(null);
@@ -48,8 +48,8 @@ const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = true }
             className={cn(
                 "nextra-scrollbar sticky top-16 overflow-y-auto pr-4 pt-8 text-sm [hyphens:auto]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
-                "transition-opacity duration-200 opacity-0",
-                isOnScreen ? "!opacity-100" : "",
+                "transition-all duration-200",
+                isOnScreen ? "!opacity-100 !visibility" : "pointer-events-none opacity-0 visibility-hidden",
             )}
         >
             <Toc headings={headings} activeAnchor={activeAnchor} />
