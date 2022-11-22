@@ -16,7 +16,7 @@ type HeaderValue = string | number | ReadonlyArray<string>;
 const rateLimiterMiddleware = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => { [key: string]: HeaderValue }) => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response | NextApiResponse, next: NextHandler) => {
     const ip = getIP(request);
 
-    if (typeof ip === "undefined") {
+    if (ip === undefined) {
         throw createHttpError(400, "Missing IP");
     }
 

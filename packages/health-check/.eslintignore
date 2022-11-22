@@ -1,3 +1,7 @@
 dist
 node_modules
+recipes
+coverage
+
 inject-react-import.js
+vitest.config.ts

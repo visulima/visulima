@@ -8,16 +8,12 @@ const parsePrismaRecursiveField = <T extends PrismaRecursiveField>(
     const parsed: PrismaRecursive<T> = {};
 
     Object.keys(select).forEach((field) => {
-        if (select[field] !== true) {
-            parsed[field] = {
-                [fieldName]: parsePrismaRecursiveField(
-                    select[field] as RecursiveField,
-                    fieldName,
-                ),
-            } as Record<T, PrismaRecursive<T>>;
-        } else {
-            parsed[field] = true;
-        }
+        parsed[field] = select[field] === true ? true : {
+            [fieldName]: parsePrismaRecursiveField(
+                select[field] as RecursiveField,
+                fieldName,
+            ),
+        } as Record<T, PrismaRecursive<T>>;
     });
 
     return parsed;

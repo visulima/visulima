@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import colors from "chalk";
 import { join } from "node:path";
 import process from "node:process";
@@ -21,10 +22,10 @@ const groupBy = (list: Route[], keyGetter: (item: Route) => keyof Route): Map<st
         const key = keyGetter(item);
         const collection = map.get(key);
 
-        if (!collection) {
-            map.set(key, [item]);
-        } else {
+        if (collection) {
             collection.push(item);
+        } else {
+            map.set(key, [item]);
         }
     });
 
@@ -61,7 +62,12 @@ const listCommand = async (
         parsedApiRoutes = options.excludePaths.flatMap((epath) => parsedApiRoutes.filter((route) => !route.path.startsWith(epath)));
     }
 
-    if (typeof options.group !== "undefined") {
+    if (options.group === undefined) {
+        routesRender([], options).forEach((renderedRoute) => {
+            // eslint-disable-next-line no-console
+            console.log(renderedRoute);
+        });
+    } else {
         const groupedMap = groupBy(parsedApiRoutes, (route) => {
             if (options.group === "path") {
                 return route.path.replace("/pages", "").split("/")[1];
@@ -89,11 +95,6 @@ const listCommand = async (
             });
 
             counter += 1;
-        });
-    } else {
-        routesRender([], options).forEach((renderedRoute) => {
-            // eslint-disable-next-line no-console
-            console.log(renderedRoute);
         });
     }
     // });

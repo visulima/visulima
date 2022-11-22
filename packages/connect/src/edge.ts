@@ -16,7 +16,7 @@ import type {
 } from "./types";
 
 // eslint-disable-next-line max-len
-const onNoMatch = async (request: Request) => new Response(request.method !== "HEAD" ? `Route ${request.method} ${request.url} not found` : null, { status: 404 });
+const onNoMatch = async (request: Request) => new Response(request.method === "HEAD" ? null : `Route ${request.method} ${request.url} not found`, { status: 404 });
 
 const onError = async (error: unknown) => {
     // eslint-disable-next-line no-console

@@ -19,7 +19,7 @@ import type {
 
 const onNoMatch = async (request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 404;
-    response.end(request.method !== "HEAD" ? `Route ${request.method} ${request.url} not found` : undefined);
+    response.end(request.method === "HEAD" ? undefined : `Route ${request.method} ${request.url} not found`);
 };
 
 const onError = async (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
@@ -33,7 +33,7 @@ const onError = async (error: unknown, _request: IncomingMessage, response: Serv
 export function getPathname(url: string) {
     const queryIndex = url.indexOf("?");
 
-    return queryIndex !== -1 ? url.slice(0, Math.max(0, queryIndex)) : url;
+    return queryIndex === -1 ? url : url.slice(0, Math.max(0, queryIndex));
 }
 
 export type RequestHandler<Request extends IncomingMessage, Response extends ServerResponse> = (request: Request, response: Response) => ValueOrPromise<void>;

@@ -341,12 +341,8 @@ class PrismaJsonSchemaParser {
             Object.entries((model?.properties as OpenAPIV3.SchemaObject) || {}).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
-                if (type === "array") {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    values[key] = [arrayItemsToSchema(v.items)];
-                } else {
-                    values[key] = type;
-                }
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                values[key] = type === "array" ? [arrayItemsToSchema(v.items)] : type;
             });
 
             return values;
@@ -356,11 +352,8 @@ class PrismaJsonSchemaParser {
             const values: { [key: string]: string | object | object[] } = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
-                if (typeof (value as OpenAPIV3.ReferenceObject).$ref !== "undefined") {
-                    values[key] = referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
-                } else {
-                    values[key] = (value as OpenAPIV3.SchemaObject).type as string;
-                }
+                // eslint-disable-next-line max-len
+                values[key] = (value as OpenAPIV3.ReferenceObject).$ref === undefined ? (value as OpenAPIV3.SchemaObject).type as string : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
             });
 
             return values;
@@ -370,7 +363,7 @@ class PrismaJsonSchemaParser {
             const values: { [key: string]: object | object[] } = {};
 
             Object.entries(items).forEach(([key, value]) => {
-                if (typeof value.items.$ref !== "undefined") {
+                if (value.items.$ref !== undefined) {
                     values[key] = [referenceToSchema(value.items.$ref)];
                 } else if (value.type === "array") {
                     values[key] = [arrayItemsToSchema(value.items)];

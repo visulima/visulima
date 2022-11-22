@@ -6,18 +6,18 @@ const DISPLAY_NAME = "Node Environment Check";
  * Register the `env` checker to ensure that `NODE_ENV` environment
  * variable is defined.
  */
-const nodeEnvironmentCheck = (expectedEnv?: string): Checker => async () => {
+const nodeEnvironmentCheck = (expectedEnvironment?: string): Checker => async () => {
     const environment = process.env.NODE_ENV;
 
     let errorMessage: string | undefined;
 
-    if (typeof environment !== "undefined" && typeof expectedEnv !== "undefined" && environment !== expectedEnv) {
-        errorMessage = `NODE_ENV environment variable is set to "${environment}" instead of "${expectedEnv}".`;
-    } else if (typeof environment === "undefined") {
+    if (environment !== undefined && expectedEnvironment !== undefined && environment !== expectedEnvironment) {
+        errorMessage = `NODE_ENV environment variable is set to "${environment}" instead of "${expectedEnvironment}".`;
+    } else if (environment === undefined) {
         errorMessage = ["Missing NODE_ENV environment variable.", "It can make some parts of the application misbehave"].join(" ");
     }
 
-    if (typeof errorMessage !== "undefined") {
+    if (errorMessage !== undefined) {
         return {
             displayName: DISPLAY_NAME,
             health: {
