@@ -3,9 +3,9 @@ import type { ThemeProviderProps } from "next-themes/dist/types";
 import type { PageOpts } from "nextra";
 import type { FC, ReactNode } from "react";
 
-import type { NavBarProps as NavBarProperties } from "./components/navbar";
-import type { TOCProps as TOCPageContentProperties } from "./components/toc/toc-page-content";
-import type { TOCProps as TOCSidebarProperties } from "./components/toc/toc-sidebar";
+import type { NavBarProperties } from "./components/navbar";
+import type { TOCProperties as TOCPageContentProperties } from "./components/toc/toc-page-content";
+import type { TOCProperties as TOCSidebarProperties } from "./components/toc/toc-sidebar";
 import type { Item } from "./utils";
 
 export type RecursivePartial<T> = {

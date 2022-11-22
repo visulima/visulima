@@ -53,6 +53,7 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
     const { setMenu } = useMenu();
     const config = useConfig();
     const { theme } = item as Item;
+    // eslint-disable-next-line unicorn/no-negated-condition
     const open = TreeState[item.route] !== undefined
         ? TreeState[item.route]
         : active || activeRouteInside || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel);
@@ -128,7 +129,7 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
             <Collapse className="ltr:pr-0 rtl:pl-0" open={open}>
                 {Array.isArray(item.children) ? (
                     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} base={item.route} anchors={anchors} />
+                    <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} anchors={anchors} />
                 ) : null}
             </Collapse>
         </li>

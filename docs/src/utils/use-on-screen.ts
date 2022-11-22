@@ -18,12 +18,12 @@ const useOnScreen = <T extends Element>(reference: MutableRefObject<T>, rootMarg
             },
         );
 
-        if (typeof current !== "undefined" && current !== null) {
+        if (current !== undefined && current !== null) {
             observer.observe(current);
         }
 
         return () => {
-            if (typeof current !== "undefined" && current !== null) {
+            if (current !== undefined && current !== null) {
                 observer.unobserve(current);
             }
         };
