@@ -2,11 +2,7 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
     root: true,
-    extends: [
-        "@anolilab/eslint-config",
-        "plugin:@next/next/recommended",
-        "plugin:@next/next/core-web-vitals"
-    ],
+    extends: ["@anolilab/eslint-config", "plugin:@next/next/recommended", "plugin:@next/next/core-web-vitals"],
     // ignorePatterns: ["!**/*"],
     env: {
         // Your environments (which contains several predefined global variables)
@@ -39,12 +35,20 @@ module.exports = {
     },
     overrides: [
         {
-            files: ["*.ts", "*.tsx", "*.mdx"],
+            files: ["*.ts", "*.tsx"],
 
             parserOptions: {
                 project: "./tsconfig.eslint.json",
                 // eslint-disable-next-line no-undef
                 tsconfigRootDir: __dirname,
+            },
+        },
+        {
+            files: ["*.mdx"],
+            extends: "plugin:mdx/recommended",
+            settings: {
+                "mdx/code-blocks": true,
+                "mdx/language-mapper": {},
             },
         },
     ],
