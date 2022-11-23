@@ -24,7 +24,7 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
                         activeType === "page" ? "" : "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
-                    <div className="mx-auto md:mx-0 flex md:hidden">
+                    <div className={cn("mx-auto md:mx-0 flex", activeType === "doc" ? "md:hidden" : "mb-3")}>
                         {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
                         {config.darkMode && <ThemeSwitch />}
                     </div>

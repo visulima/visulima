@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import cn from "clsx";
 import Slugger from "github-slugger";
 import type { Heading } from "nextra";
@@ -62,10 +63,8 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
                             >
                                 <span>{text}</span>
                                 {isPage && (
-                                    <span className="flex-grow-0 flex-shrink-0 h-4 opacity-50 fill-current rotate-270">
-                                        <svg className="block h-full h-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 8">
-                                            <path d="M7,8a1,1,0,0,1-.71-.29l-6-6A1,1,0,0,1,1.71.29L7,5.59,12.29.29a1,1,0,1,1,1.42,1.42l-6,6A1,1,0,0,1,7,8Z" />
-                                        </svg>
+                                    <span className="flex-grow-0 flex-shrink-0 h-4">
+                                        <ChevronRightIcon className="block h-full h-4 w-4" />
                                     </span>
                                 )}
                             </a>

@@ -71,6 +71,12 @@ export interface DocumentationThemeConfig {
     notFound: {
         content: ReactNode | FC;
         labels: string;
+        pages?: (local: string) => {
+            url: string;
+            title: string;
+            subtitle?: string;
+            icon?: ReactNode | FC;
+        }[];
     };
     primaryHue:
         | number

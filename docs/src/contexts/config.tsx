@@ -96,7 +96,7 @@ const DEFAULT_THEME: DocumentationThemeConfig = {
         storageKey: "theme",
     },
     notFound: {
-        content: "Submit an issue about broken link →",
+        content: "Submit an issue about broken link",
         labels: "bug",
     },
     primaryHue: {

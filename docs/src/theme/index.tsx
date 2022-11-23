@@ -170,16 +170,14 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                     })}
                 <div className={cn("mx-auto flex", themeContext.layout !== "raw" && "max-w-[90rem]")}>
                     <ActiveAnchorProvider>
-                        {activeType === "doc" && (
-                            <Sidebar
-                                docsDirectories={docsDirectories}
-                                flatDirectories={flatDirectories}
-                                fullDirectories={directories}
-                                headings={headings}
-                                asPopover={hideSidebar}
-                                includePlaceholder={themeContext.layout === "default"}
-                            />
-                        )}
+                        <Sidebar
+                            docsDirectories={docsDirectories}
+                            flatDirectories={flatDirectories}
+                            fullDirectories={directories}
+                            headings={headings}
+                            asPopover={hideSidebar}
+                            includePlaceholder={themeContext.layout === "default"}
+                        />
                         <div className="relative w-full">
                             {activeType === "doc" && config.hero?.component && (
                                 <div
@@ -226,12 +224,12 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         className={cn(
                                             activeType === "doc"
                                                 ? [
-                                                      "prose prose-slate max-w-none dark:prose-invert dark:text-slate-400",
+                                                      "prose prose-slate max-w-none dark:prose-invert dark:text-gray-400",
                                                       // headings
                                                       // eslint-disable-next-line max-len
                                                       "prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-normal lg:prose-headings:scroll-mt-[8.5rem]",
                                                       // lead
-                                                      "prose-lead:text-slate-500 dark:prose-lead:text-slate-400",
+                                                      "prose-lead:text-gray-500 dark:prose-lead:text-gray-400",
                                                       // links
                                                       // eslint-disable-next-line max-len
                                                       "prose-a:font-medium dark:prose-a:text-primary-400 hover:prose-a:text-gray-900 dark:hover:prose-a:text-gray-500",
@@ -239,9 +237,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                                       "prose-a:no-underline dark:hover:prose-a:[--tw-prose-underline-size:6px]",
                                                       // pre
                                                       // eslint-disable-next-line max-len
-                                                      "prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-slate-300/10",
+                                                      "prose-pre:rounded-xl prose-pre:bg-gray-900 prose-pre:shadow-lg dark:prose-pre:bg-gray-800/60 dark:prose-pre:shadow-none dark:prose-pre:ring-1 dark:prose-pre:ring-gray-300/10",
                                                       // hr
-                                                      "dark:prose-hr:border-slate-800",
+                                                      "dark:prose-hr:border-gray-800",
                                                   ]
                                                 : "",
                                         )}

@@ -1,3 +1,4 @@
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
@@ -109,7 +110,7 @@ export default {
                     links: [
                         {
                             title: "Getting Started",
-                            href: "/docs/getting-started",
+                            href: "/impress",
                         },
                     ],
                 },
@@ -144,7 +145,7 @@ export default {
                     links: [
                         {
                             title: "Impress",
-                            href: "/docs/getting-started",
+                            href: "/impress",
                         },
                     ],
                 },
@@ -172,6 +173,32 @@ export default {
                     ))}
                 </div>
             );
+        },
+    },
+    notFound: {
+        pages: (local) => {
+            if (local === "en-US") {
+                return [
+                    {
+                        title: "Documentation",
+                        subtitle: "Learn how to use Visulima",
+                        href: "/docs/getting-started",
+                        icon: <BookOpenIcon className="h-6 w-6 lg:h-8 lg:w-8 mx-auto text-primary-700 text-2xl md:text-3xl" />,
+                    },
+                ];
+            }
+
+            return [];
+        },
+    },
+    search: {
+        placeholder: ({ locale }) => {
+            // eslint-disable-next-line radar/no-small-switch
+            switch (locale) {
+                default: {
+                    return "Search";
+                }
+            }
         },
     },
     // hero: {

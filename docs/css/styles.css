@@ -114,9 +114,6 @@ article details > summary {
     .nextra-search ul {
         @apply backdrop-blur-lg bg-white/70 dark:bg-dark/80;
     }
-    .nextra-nav-container-blur {
-        @apply backdrop-blur-md bg-white/[.85] dark:!bg-dark/80;
-    }
 }
 
 input[type="search"] {
@@ -130,6 +127,7 @@ input[type="search"] {
 
 .contains-task-list {
     @apply ml-0 list-none;
+
     input[type="checkbox"] {
         @apply mr-1;
     }
