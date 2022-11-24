@@ -7,5 +7,6 @@
     },
     "rewrites": [
         { "source": "/docs", "destination": "/docs/introduction" }
-    ]
+    ],
+    "buildCommand": "pnpm run docs:copy && pnpm run build"
 }
