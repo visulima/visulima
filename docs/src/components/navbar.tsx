@@ -105,15 +105,16 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                 <div
                     className={cn(
                         "pointer-events-none absolute z-[-1] h-full w-full",
-                        activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
+                        // eslint-disable-next-line max-len
+                        ["page", "hidden"].includes(activeType) ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
                     )}
                 />
                 {/* eslint-disable-next-line max-len */}
-                <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", activeType === "page" ? "px-4" : "pr-4")}>
+                <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", ["page", "hidden"].includes(activeType) ? "px-4" : "pr-4")}>
                     <div
                         className={cn(
                             "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
-                            activeType === "page" ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                            ["page", "hidden"].includes(activeType) ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
                             activeType === "doc" ? "pl-4" : "",
                         )}
                     >

@@ -96,7 +96,7 @@ export default {
     },
     footer: {
         copyright: ({ activeType }) => (
-                <span className={cn("text-sm text-gray-500 dark:text-gray-400", activeType === "page" ? "w-full" : "px-2")}>
+                <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
                     © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
                 </span>
         ),
@@ -119,7 +119,7 @@ export default {
                     links: [
                         {
                             title: "GitHub",
-                            href: visulimaGitHubUrl,
+                            href: `${visulimaGitHubUrl}/discussions/categories/q-a`,
                         },
                         {
                             title: "Discord",
@@ -162,10 +162,10 @@ export default {
                                 {item.links.map((link) => (
                                     // eslint-disable-next-line react/no-array-index-key
                                     <li key={`li-${link.title}`}>
-                                        <a href={link.href} title={link.title} className={linkClasses}>
+                                        <Anchor href={link.href} title={link.title} className={linkClasses} newWindow={link.href[0] !== "/"}>
                                             {" "}
                                             {link.title}{" "}
-                                        </a>
+                                        </Anchor>
                                     </li>
                                 ))}
                             </ul>
