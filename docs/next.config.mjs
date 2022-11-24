@@ -1,12 +1,12 @@
-import nextra from 'nextra'
+import nextra from "nextra";
 
 const withNextra = nextra({
-    theme: "nextra-theme-docs",
+    theme: "./src/theme",
     themeConfig: "./theme.config.tsx",
     unstable_staticImage: true,
     unstable_flexsearch: {
-        codeblocks: true
-    }
+        codeblocks: true,
+    },
 });
 
 /** @type {import('next').NextConfig} */

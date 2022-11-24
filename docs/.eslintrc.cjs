@@ -2,12 +2,8 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
     root: true,
-    extends: [
-        "@anolilab/eslint-config",
-        "plugin:@next/next/recommended",
-        "plugin:@next/next/core-web-vitals"
-    ],
-    ignorePatterns: ["!**/*"],
+    extends: ["@anolilab/eslint-config", "plugin:@next/next/recommended", "plugin:@next/next/core-web-vitals"],
+    // ignorePatterns: ["!**/*"],
     env: {
         // Your environments (which contains several predefined global variables)
         browser: true,
@@ -26,17 +22,16 @@ module.exports = {
     rules: {
         // Customize your rules
         "import/extensions": "off",
+
         "unicorn/no-array-for-each": "off",
         "unicorn/no-null": "off",
         "unicorn/no-array-reduce": "off",
 
-        "no-restricted-imports": [
-            "error",
-            {
-                patterns: ["@mui/*/*/*", "!@mui/core/test-utils/*"],
-            },
-        ],
         "max-len": ["error", { code: 160 }],
+
+        "react/jsx-props-no-spreading": "off",
+        // @see https://github.com/typescript-eslint/typescript-eslint/issues/1824
+        "@typescript-eslint/indent": "off",
     },
     overrides: [
         {
@@ -46,6 +41,14 @@ module.exports = {
                 project: "./tsconfig.eslint.json",
                 // eslint-disable-next-line no-undef
                 tsconfigRootDir: __dirname,
+            },
+        },
+        {
+            files: ["*.mdx"],
+            extends: "plugin:mdx/recommended",
+            settings: {
+                "mdx/code-blocks": true,
+                "mdx/language-mapper": {},
             },
         },
     ],
