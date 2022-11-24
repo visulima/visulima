@@ -9,6 +9,9 @@
         "build": "nx run-many --target=build --all --parallel",
         "build-storybook": "pnpm --filter \"storybook\" run build",
         "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check",
+        "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check",
+        "build:prod:readdir": "pnpm --filter \"readdir\" run build",
+        "build:readdir": "pnpm --filter \"readdir\" run build",
         "check": "manypkg check",
         "clean": "nx run-many --target=clean --all --parallel && rimraf node_modules",
         "docs:dev": "pnpm --filter \"docs\" run dev",
@@ -82,8 +85,5 @@
     "packageManager": "pnpm@7.17.0",
     "engines": {
         "node": ">=16.0"
-    },
-    "prisma": {
-        "schema": "db/schema.prisma"
     }
 }

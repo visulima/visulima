@@ -1,6 +1,6 @@
 import { SkipNavLink } from "@reach/skip-nav";
 import Document, {
-    Head, Html, Main, NextScript,
+ Head, Html, Main, NextScript,
 } from "next/document";
 import React from "react";
 
@@ -9,7 +9,7 @@ class MyDocument extends Document {
         return (
             <Html lang="en">
                 <Head />
-                <body>
+                <body className="relative">
                     <SkipNavLink />
                     <Main />
                     <NextScript />

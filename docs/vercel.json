@@ -4,5 +4,9 @@
     "env": {
         "NEXT_TELEMETRY_DISABLED": "1",
         "NO_LOGS": "true"
-    }
+    },
+    "rewrites": [
+        { "source": "/docs", "destination": "/docs/introduction" }
+    ],
+    "buildCommand": "pnpm run -w build:prod:readdir && pnpm run docs:copy && pnpm run build"
 }
