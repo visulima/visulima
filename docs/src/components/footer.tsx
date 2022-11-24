@@ -20,8 +20,8 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
             <div className="mx-auto flex flex-col md:flex-row md:max-w-[90rem] bg-white dark:bg-darker-800">
                 <div
                     className={cn(
-                        "flex md:flex-col md:pl-4 py-6 md:py-12 md:w-64 md:shrink-0",
-                        activeType === "page" ? "" : "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
+                        "flex md:flex-col py-6 md:py-12 md:w-64 md:shrink-0",
+                        ["page", "hidden"].includes(activeType) ? "" : "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
                     <div className={cn("mx-auto md:mx-0 flex", activeType === "doc" ? "md:hidden" : "mb-3")}>
@@ -29,7 +29,7 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
                         {config.darkMode && <ThemeSwitch />}
                     </div>
 
-                    <div className="hidden md:block px-2">{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
+                    <div className="hidden md:block">{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
                 </div>
                 <div
                     className={cn(
