@@ -119,7 +119,7 @@ export default {
                     links: [
                         {
                             title: "GitHub",
-                            href: visulimaGitHubUrl,
+                            href: `${visulimaGitHubUrl}/discussions/categories/q-a`,
                         },
                         {
                             title: "Discord",
