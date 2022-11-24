@@ -83,7 +83,7 @@
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
         "lightningcss-cli": "^1.16.0",
         "postcss": "^8.4.19",
-        "postcss-cli": "^8.3.1",
+        "postcss-cli": "^10.0.0",
         "postcss-focus-visible": "^7.1.0",
         "postcss-import": "^14.1.0",
         "react": "^18.2.0",
