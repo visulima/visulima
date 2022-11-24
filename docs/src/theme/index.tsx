@@ -16,6 +16,7 @@ import Comments from "../components/comments";
 import Footer from "../components/footer";
 import Head from "../components/head";
 import NavLinks from "../components/nav-links";
+import Prose from "../components/prose";
 import Sidebar from "../components/sidebar";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
@@ -23,7 +24,6 @@ import getComponents from "../mdx-components";
 import type { PageTheme } from "../types";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
-import Prose from "../components/prose";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -48,7 +48,9 @@ const Body: FC<{
     navigation: ReactNode;
     children: ReactNode;
     activeType: string;
-}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType }) => {
+}> = ({
+ themeContext, breadcrumb, timestamp, navigation, children, activeType,
+}) => {
     const config = useConfig();
 
     if (themeContext.layout === "raw") {
@@ -111,8 +113,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     // eslint-disable-next-line radar/cognitive-complexity
 }) => {
     const config = useConfig();
-    const { activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories } =
-        useDirectoryInfo(pageMap);
+    const {
+ activeType, activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories,
+} = useDirectoryInfo(pageMap);
     const reference: any = useRef<HTMLDivElement>();
     const isOnScreen = useOnScreen(reference, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
@@ -130,9 +133,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             })}
         </div>
     );
-    const tocPageContentElement =
-        isDocumentPage &&
-        renderComponent(config.tocContent.component, {
+    const tocPageContentElement = isDocumentPage
+        && renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference,
         });
@@ -160,6 +162,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
                 dir={direction}
+                // eslint-disable-next-line max-len
                 className={["page", "hidden"].includes(activeType) ? "" : "md:bg-x-gradient-gray-200-gray-200-50-white-50 md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
             >
                 <script
@@ -170,8 +173,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar &&
-                    renderComponent(config.navbar.component, {
+                {themeContext.navbar
+                    && renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -191,9 +194,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <div
                                     className={`absolute w-full ${
                                         config.hero?.height
-                                            ? typeof config.hero.height === "string"
+                                            ? (typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`
+                                                : `h-[${config.hero.height}px]`)
                                             : ""
                                     }`}
                                 >
@@ -203,9 +206,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                             <div
                                 className={`flex w-full${
                                     config.hero?.height
-                                        ? typeof config.hero.height === "string"
+                                        ? (typeof config.hero.height === "string"
                                             ? ` mt-[${config.hero.height}]`
-                                            : ` mt-[${config.hero.height}px]`
+                                            : ` mt-[${config.hero.height}px]`)
                                         : ""
                                 }`}
                             >
@@ -213,6 +216,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <SkipNavContent />
                                 <Body
                                     themeContext={themeContext}
+                                    // eslint-disable-next-line max-len
                                     breadcrumb={!["page", "hidden"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null}
                                     timestamp={timestamp}
                                     navigation={

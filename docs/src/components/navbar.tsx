@@ -105,6 +105,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                 <div
                     className={cn(
                         "pointer-events-none absolute z-[-1] h-full w-full",
+                        // eslint-disable-next-line max-len
                         ["page", "hidden"].includes(activeType) ? "" : "bg-x-gradient-gray-200-gray-200-50-white-50 dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
                     )}
                 />

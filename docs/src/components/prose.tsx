@@ -1,8 +1,7 @@
-import { FC, PropsWithChildren } from "react";
 import cn from "clsx";
+import { FC, PropsWithChildren } from "react";
 
-const Prose: FC<PropsWithChildren<{ as: any }>> = ({ as: Component = "div", children }) => {
-    return (
+const Prose: FC<PropsWithChildren<{ as: any }>> = ({ as: Component = "div", children }) => (
         <Component
             className={cn(
                 "prose prose-slate max-w-none dark:prose-invert dark:text-gray-400",
@@ -26,6 +25,5 @@ const Prose: FC<PropsWithChildren<{ as: any }>> = ({ as: Component = "div", chil
             {children}
         </Component>
     );
-};
 
 export default Prose;
