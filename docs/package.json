@@ -5,7 +5,7 @@
     "scripts": {
         "build": "cross-env NO_LOGS=true next build",
         "dev": "next dev",
-        "docs:copy": "node scripts/import-package-documentation.js --path \\\"../packages\\\" --copy",
+        "docs:copy": "node scripts/import-package-documentation.js --path ../packages --copy",
         "lint": "cross-env NO_LOGS=true eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache",
         "lint:eslint": "cross-env NO_LOGS=true eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
