@@ -1,0 +1,26 @@
+// Vitest Snapshot v1
+
+exports[`S3File > should have extra params 1`] = `
+S3File {
+  "Parts": [],
+  "UploadId": "UploadId",
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "WXmBwVX99jH8VH1QU8swj",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "WXmBwVX99jH8VH1QU8swj",
+  "partSize": 1,
+  "partsUrls": [],
+  "size": undefined,
+  "status": undefined,
+  "uri": "uri",
+}
+`;

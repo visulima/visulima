@@ -1,0 +1,23 @@
+// Vitest Snapshot v1
+
+exports[`AzureFile > should have extra params 1`] = `
+AzureFile {
+  "bytesWritten": NaN,
+  "content": undefined,
+  "contentType": "application/octet-stream",
+  "createdAt": undefined,
+  "expiredAt": undefined,
+  "hash": undefined,
+  "id": "njB3IRUlR63kPk-hhnm2T",
+  "metadata": {
+    "foo": "bar",
+  },
+  "modifiedAt": undefined,
+  "name": "",
+  "originalName": "njB3IRUlR63kPk-hhnm2T",
+  "requestId": "requestId",
+  "size": undefined,
+  "status": undefined,
+  "uri": "uri",
+}
+`;

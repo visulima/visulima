@@ -1,5 +1,6 @@
 packages:
     - "examples/**"
+    - "examples/uploads/**"
     - "packages/**"
     - "!**/__fixture__/**"
     - "!**/__fixtures__/**"

@@ -8,9 +8,9 @@
     "scripts": {
         "build": "nx run-many --target=build --all --parallel",
         "build-storybook": "pnpm --filter \"storybook\" run build",
-        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs",
+        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs,uploads",
         "build:prod:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run build:prod",
-        "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs",
+        "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs,uploads",
         "build:prod:readdir": "pnpm --filter \"readdir\" run build:prod",
         "build:readdir": "pnpm --filter \"readdir\" run build",
         "check": "manypkg check",
@@ -25,6 +25,16 @@
         "example:crud:next:13:dev": "pnpm --filter \"nextjs_13_example_crud\" run dev",
         "example:health-check:dev": "pnpm --filter \"nextjs_example_health_check\" run dev",
         "example:nextra:dev": "pnpm --filter \"nextra_example\" run dev",
+        "example:uploads:express:multipart:azure:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:multipart:gcs:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:multipart:local:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:multipart:s3:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:tus:azure:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:tus:gcs:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:tus:local:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:express:tus:s3:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
+        "example:uploads:next:12:dev": "pnpm --filter \"nextjs_12_example_uploads\" run dev",
+        "example:uploads:next:13:dev": "pnpm --filter \"nextjs_13_example_uploads\" run dev",
         "graph": "nx dep-graph",
         "preinstall": "node verify-node-version.cjs && pnpx only-allow pnpm",
         "lint:eslint": "nx run-many --target=lint:eslint --all --parallel",
@@ -34,7 +44,7 @@
         "lint:text:fix": "textlint ./.github/ISSUE_TEMPLATE/** ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --fix",
         "plop": "plop",
         "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
-        "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json docs/package.json",
+        "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json examples/**/**/package.json docs/package.json",
         "storybook": "pnpm --filter \"storybook\" run dev",
         "test:api-platform": "pnpm --filter \"api-platform\" run test",
         "test:connect": "pnpm --filter \"connect\" run test",
@@ -48,6 +58,7 @@
         "test:coverage:pagination": "pnpm --filter \"pagination\" run coverage",
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run coverage",
         "test:coverage:readdir": "pnpm --filter \"readdir\" run coverage",
+        "test:coverage:uploads": "pnpm --filter \"uploads\" run coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
         "test:health-check": "pnpm --filter \"health-check\" run test",
         "test:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run test",
@@ -55,6 +66,7 @@
         "test:pagination": "pnpm --filter \"pagination\" run test",
         "test:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test",
         "test:readdir": "pnpm --filter \"readdir\" run test",
+        "test:uploads": "pnpm --filter \"uploads\" run test",
         "visulima:dev": "pnpm --filter \"visulima\" run dev"
     },
     "browserslist": [
@@ -93,5 +105,10 @@
     "packageManager": "pnpm@7.22.0",
     "engines": {
         "node": ">=16.18.0 <=19.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "@aws-sdk/types": "^3.226.0"
+        }
     }
 }
