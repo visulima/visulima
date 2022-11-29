@@ -1054,7 +1054,7 @@ importers:
     specifiers:
       '@anolilab/eslint-config': ^4.0.9
       '@anolilab/semantic-release-preset': ^2.0.7
-      '@prisma/client': 4.6.1
+      '@prisma/client': 4.7.0
       '@prisma/generator-helper': 4.7.0
       '@prisma/internals': 4.7.0
       '@rushstack/eslint-plugin-security': ^0.5.0
@@ -1090,7 +1090,7 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       prettier: ^2.7.1
-      prisma: 4.6.1
+      prisma: 4.7.0
       read-pkg: ^7.1.0
       rimraf: ^3.0.2
       semantic-release: ^19.0.5
@@ -1103,7 +1103,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_rmayb2veg2btbq6mbmnyivgasy
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@19.0.5
-      '@prisma/client': 4.6.1_prisma@4.6.1
+      '@prisma/client': 4.7.0_prisma@4.7.0
       '@rushstack/eslint-plugin-security': 0.5.0_rmayb2veg2btbq6mbmnyivgasy
       '@types/json-schema': 7.0.11
       '@types/micromatch': 4.0.2
@@ -1137,7 +1137,7 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.27.0
       prettier: 2.7.1
-      prisma: 4.6.1
+      prisma: 4.7.0
       read-pkg: 7.1.0
       rimraf: 3.0.2
       semantic-release: 19.0.5
@@ -3331,6 +3331,21 @@ packages:
     dependencies:
       '@prisma/engines-version': 4.6.1-3.694eea289a8462c80264df36757e4fdc129b1b32
       prisma: 4.6.1
+    dev: false
+
+  /@prisma/client/4.7.0_prisma@4.7.0:
+    resolution: {integrity: sha512-keXMa0oJWJGOzMEFKp+CEgzJPwnOtGSrnTWw6qMYxnypYrRFdNxqyA06EzELZexBhgM4oLooZ1jDJ3iy46wExA==}
+    engines: {node: '>=14.17'}
+    requiresBuild: true
+    peerDependencies:
+      prisma: '*'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+    dependencies:
+      '@prisma/engines-version': 4.7.0-74.39190b250ebc338586e25e6da45e5e783bc8a635
+      prisma: 4.7.0
+    dev: true
 
   /@prisma/debug/4.7.0:
     resolution: {integrity: sha512-KdfL70X2OgYMrweEiXa9pZReAPbsYbCbFAyT8Ud/8+w+zI1xOWpFZ4watK95ambK0f6/2p1kP6WGHGKOor1imA==}
@@ -3369,6 +3384,11 @@ packages:
 
   /@prisma/engines-version/4.6.1-3.694eea289a8462c80264df36757e4fdc129b1b32:
     resolution: {integrity: sha512-HUCmkXAU2jqp2O1RvNtbE+seLGLyJGEABZS/R38rZjSAafAy0WzBuHq+tbZMnD+b5OSCsTVtIPVcuvx1ySxcWQ==}
+    dev: false
+
+  /@prisma/engines-version/4.7.0-74.39190b250ebc338586e25e6da45e5e783bc8a635:
+    resolution: {integrity: sha512-ImczGEQ8NS1OUApEeyAGxC4uLTtQp0wI1+2wM4MeQLVwIQbyMHk1vOhWWE8Pwbi3rnzLcPvsIrd9sm6oNXhERw==}
+    dev: true
 
   /@prisma/engines/2.12.0-18.cf0680a1bfe8d5e743dc659cc7f08009f9587d58:
     resolution: {integrity: sha512-F6RmUZ5JpPWxmGvVDji8c4gepHIGkvYbtuFi0IoDDJVaCVo8yS656stciKFyswI6/BLWXa0X47/MIMbz6nzw7g==}
@@ -3378,11 +3398,11 @@ packages:
   /@prisma/engines/4.6.1:
     resolution: {integrity: sha512-3u2/XxvxB+Q7cMXHnKU0CpBiUK1QWqpgiBv28YDo1zOIJE3FCF8DI2vrp6vuwjGt5h0JGXDSvmSf4D4maVjJdw==}
     requiresBuild: true
+    dev: false
 
   /@prisma/engines/4.7.0:
     resolution: {integrity: sha512-afKrVFktaZ1pOK12/uFl2hRsBWIJZuC5FdDtacuKk5x/mR+rC5AbA+PlN3ZCZbmYTaeiBMHjcU5wbT5z2N3nSQ==}
     requiresBuild: true
-    dev: false
 
   /@prisma/fetch-engine/4.7.0:
     resolution: {integrity: sha512-dDWcs/YpFNSFY8RvA2UfVX1YHt64glbp3clD91dBbNA1mjJSc6dRWSHJXDZQH8Pm/Zi2gT7lymDhiWjnEjOhXg==}
@@ -15918,6 +15938,16 @@ packages:
     requiresBuild: true
     dependencies:
       '@prisma/engines': 4.6.1
+    dev: false
+
+  /prisma/4.7.0:
+    resolution: {integrity: sha512-VsecNo0Ca3+bDTzSpJqIpdupKVhhQ8aOYeWc09JlUM89knqvhSrlMrg0U8BiOD4tFrY1OPaCcraK8leDBxKMBg==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': 4.7.0
+    dev: true
 
   /prismjs/1.27.0:
     resolution: {integrity: sha512-t13BGPUlFDR7wRB5kQDG4jjl7XeuH6jbJGt11JHPL96qwsEHNX2+68tFXqc1/k+/jALsbSWJKUOT/hcYAZ5LkA==}
