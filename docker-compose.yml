@@ -5,6 +5,10 @@ services:
         image: "postgres:18.0-alpine@sha256:f898ac406e1a9e05115cc2efcb3c3abb3a92a4c0263f3b6f6aaae354cbb1953a"
         volumes:
             - "data:/var/lib/postgresql/data"
+        environment:
+            POSTGRES_USER: "visulima"
+            POSTGRES_PASSWORD: "root"
+            POSTGRES_DB: "visulima"
         ports:
             - "5432:5432"
 
@@ -20,10 +24,36 @@ services:
             - "8025:8025"
         volumes:
             - "data:/data"
-        env_file: "./visulima/.env.local"
         depends_on:
             - "db"
-        restart: "always"
+
+    localstack:
+        image: "localstack/localstack:latest"
+        environment:
+            - "AWS_DEFAULT_REGION=us-east-1"
+            - "EDGE_PORT=4566"
+            - "SERVICES=lambda,s3"
+        ports:
+            - "4566-4583:4566-4583"
+        volumes:
+            - "${TEMPDIR:-/tmp/localstack}:/tmp/localstack"
+            - "/var/run/docker.sock:/var/run/docker.sock"
+
+    gcs:
+        image: "fsouza/fake-gcs-server:latest"
+        ports:
+            - "4443:4443"
+        volumes:
+            - "data:/data"
+
+    azure:
+        image: "mcr.microsoft.com/azure-storage/azurite:latest"
+        ports:
+            - "10000:10000" #blob
+            - "10001:10001" #queue
+            - "10002:10002" #table
+        volumes:
+            - "data:/data"
 
 volumes:
     data: # yamllint disable-line rule:empty-values

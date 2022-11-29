@@ -1,0 +1,11 @@
+dist
+node_modules
+recipes
+coverage
+
+inject-react-import.js
+vitest.config.ts
+jest.config.ts
+
+__fixtures__/**
+__mocks__/**
