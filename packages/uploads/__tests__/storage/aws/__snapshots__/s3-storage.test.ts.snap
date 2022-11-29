@@ -1,0 +1,118 @@
+// Vitest Snapshot v1
+
+exports[`S3Storage > .create() > should handle existing 1`] = `
+{
+  "UploadId": "987654321",
+  "bytesWritten": 0,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+}
+`;
+
+exports[`S3Storage > .create() > should request api and set status and UploadId 1`] = `
+S3File {
+  "Parts": undefined,
+  "UploadId": "123456789",
+  "bytesWritten": 0,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": "2022-02-02T01:00:00.000Z",
+  "hash": undefined,
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "partSize": undefined,
+  "partsUrls": undefined,
+  "size": 64,
+  "status": "created",
+  "uri": undefined,
+}
+`;
+
+exports[`S3Storage > .create() > should send error on invalid s3 response 1`] = `[UploadError: s3 create multipart upload error]`;
+
+exports[`S3Storage > .write() > should request api and set status and bytesWritten 1`] = `
+{
+  "UploadId": "987654321",
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "completed",
+  "uri": "/1234",
+}
+`;
+
+exports[`S3Storage > .write() > should request api and set status and bytesWritten on resume 1`] = `
+{
+  "Parts": [],
+  "UploadId": "987654321",
+  "bytesWritten": 0,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "part",
+}
+`;
+
+exports[`S3Storage > normalizeError > not s3 error 1`] = `
+{
+  "code": "GenericUploadError",
+  "message": "Generic Upload Error",
+  "statusCode": 500,
+}
+`;
+
+exports[`S3Storage > normalizeError > s3 error 1`] = `
+{
+  "code": "SomeServiceException",
+  "message": "SomeServiceException",
+  "name": "SomeError",
+  "statusCode": 400,
+}
+`;
