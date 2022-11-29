@@ -17,3 +17,10 @@ cat /proc/sys/fs/inotify/max_user_watches
 # config variable name (not runnable)
 fs.inotify.max_user_watches=524288
 ```
+
+### EsLint shows error in GitHub Actions
+
+```
+Sometimes the hidden local errors are caused by the EsLint cache.
+To fix this, you can delete the cache file and run the EsLint again.
+```
