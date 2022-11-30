@@ -34,10 +34,10 @@ importers:
       '@anolilab/prettier-config': 3.1.0_prettier@2.7.1
       '@anolilab/textlint-config': 4.1.0_textlint@12.2.2
       '@manypkg/cli': 0.19.2
-      '@nrwl/cli': 15.2.1
+      '@nrwl/cli': 15.2.4
       '@nrwl/nx-cloud': 15.0.2
       '@nrwl/tao': 15.0.2
-      '@nrwl/workspace': 15.2.1_wfaqnfazd7vxe5mew33e5jwwwa
+      '@nrwl/workspace': 15.2.4_wfaqnfazd7vxe5mew33e5jwwwa
       '@octokit/rest': 19.0.5
       '@qiwi/multi-semantic-release': 6.5.1
       '@types/node': 18.11.5
@@ -45,7 +45,7 @@ importers:
       commitizen: 4.2.5
       core-js: 3.26.0
       depcheck: 1.4.3
-      nx: 15.2.1
+      nx: 15.2.4
       plop: 3.1.1
       prettier: 2.7.1
       prettier-plugin-prisma: 4.4.0_prettier@2.7.1
@@ -76,7 +76,7 @@ importers:
       '@types/flexsearch': ^0.7.3
       '@types/git-url-parse': ^9.0.1
       '@types/github-slugger': ^1.3.0
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.9
       '@visulima/readdir': ^1.3.0
@@ -173,7 +173,7 @@ importers:
       '@types/flexsearch': 0.7.3
       '@types/git-url-parse': 9.0.1
       '@types/github-slugger': 1.3.0
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.9
       autoprefixer: 10.4.13_postcss@8.4.19
@@ -2269,7 +2269,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       jest-message-util: 28.1.3
       jest-util: 28.1.3
@@ -2282,7 +2282,7 @@ packages:
     dependencies:
       '@jest/fake-timers': 28.1.3
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       jest-mock: 28.1.3
     dev: false
 
@@ -2309,7 +2309,7 @@ packages:
     dependencies:
       '@jest/types': 28.1.3
       '@sinonjs/fake-timers': 9.1.2
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       jest-message-util: 28.1.3
       jest-mock: 28.1.3
       jest-util: 28.1.3
@@ -2341,7 +2341,7 @@ packages:
       '@jest/transform': 28.1.3
       '@jest/types': 28.1.3
       '@jridgewell/trace-mapping': 0.3.14
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       collect-v8-coverage: 1.0.1
       exit: 0.1.2
@@ -2440,7 +2440,7 @@ packages:
       '@jest/schemas': 28.1.3
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       '@types/yargs': 17.0.12
       chalk: 4.1.2
     dev: false
@@ -2944,37 +2944,37 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/cli/15.2.1:
-    resolution: {integrity: sha512-ufBJ5o3WCixdp6/TPkpn4rH3QBFJcqCMG1d14A/SvAkEnXu3vWlj3E+4GXf3CK+sGNjjf3ZGoNm7OFV+/Ml4GA==}
+  /@nrwl/cli/15.2.4:
+    resolution: {integrity: sha512-Urhkzj/hzhTlJqOHFZyibYGjvzHvSQhkjN3keHiYCNEOaAGp9DPF+oC5cYrPcqWbu3ZkldDWTk7aVBbeqwDWZQ==}
     dependencies:
-      nx: 15.2.1
+      nx: 15.2.4
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/devkit/15.2.1_nx@15.2.1+typescript@4.8.4:
-    resolution: {integrity: sha512-si6DK0sjtr6Ln+7hh9QD50KqxnOxuP20xJ0fxMVafT/Lz/qtxuCPw9lwJWVagMHWw3pQAtN6lbkWiLOwj8+YPA==}
+  /@nrwl/devkit/15.2.4_nx@15.2.4+typescript@4.8.4:
+    resolution: {integrity: sha512-5JZWB4ydnu+NKNIfj958nML8AWwhareQ+Q1hLXoOIS/7brqfALNP3y/Ef1ljrLIo1f3xc484TPclqwSH7aRdvQ==}
     peerDependencies:
       nx: '>= 14 <= 16'
     dependencies:
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
       ejs: 3.1.8
       ignore: 5.2.0
-      nx: 15.2.1
+      nx: 15.2.4
       semver: 7.3.4
       tslib: 2.4.0
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@nrwl/jest/15.2.1_lr4fdvl62cay4w2wuey5fhflc4:
-    resolution: {integrity: sha512-/lyqCeNmYmSoHDDnADuuTuooljnfxlJ8uviXUPodLGy3LaQBbxNy1vlxcg7mZqEOe1smH91TFxKq/7xDIZU9cA==}
+  /@nrwl/jest/15.2.4_glgecnr35g5atvwaltflbhb7y4:
+    resolution: {integrity: sha512-b2GoUPPs4/EAGhJvUn41sphD0Ln9P3ybX2Cyb1U5upM9glOGU5qdGYO20ZMl7IJhEL17QRcojUudWTnk1RejHA==}
     dependencies:
       '@jest/reporters': 28.1.1
       '@jest/test-result': 28.1.1
-      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
+      '@nrwl/devkit': 15.2.4_nx@15.2.4+typescript@4.8.4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
       chalk: 4.1.0
       dotenv: 10.0.0
@@ -2993,18 +2993,18 @@ packages:
       - typescript
     dev: false
 
-  /@nrwl/linter/15.2.1_w23x7n7zvvy4jtcrbeyi4toj7i:
-    resolution: {integrity: sha512-b1+xoi6MhLdPD44rplmNbon5OyCuMpKzst50S4Xiyxdhf0fzu/w/cQDBv7zdRshE5+UMQAlDIVXF0zgEnBTQAQ==}
+  /@nrwl/linter/15.2.4_w23x7n7zvvy4jtcrbeyi4toj7i:
+    resolution: {integrity: sha512-EINxMgb7uEYW2rhj8MomHLktUsVAVlGBSTEZSg7SC32vgzY+QJ144qubLNlCHzSV1O5J/LMugoAHt3E+0eNHyA==}
     peerDependencies:
       eslint: ^8.0.0
     peerDependenciesMeta:
       eslint:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
-      '@nrwl/jest': 15.2.1_lr4fdvl62cay4w2wuey5fhflc4
+      '@nrwl/devkit': 15.2.4_nx@15.2.4+typescript@4.8.4
+      '@nrwl/jest': 15.2.4_glgecnr35g5atvwaltflbhb7y4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.8.4
-      nx: 15.2.1
+      nx: 15.2.4
       tmp: 0.2.1
       tslib: 2.4.0
     transitivePeerDependencies:
@@ -3045,28 +3045,28 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/tao/15.2.1:
-    resolution: {integrity: sha512-6ApglWKORasLhtjlJmqo2co/UexSSiD7mWVxT2886oKG2Y/T/5RnPFNhJgGnKJIURCNMxiSKhq7GAA+CE9zRZg==}
+  /@nrwl/tao/15.2.4:
+    resolution: {integrity: sha512-ebGJCkg84yfptuNhGMnIrgHvnknJkeyxWLqRQ7AlMXTzxXOfMS+whjVImM9XjfVYVpBVFWc5QBU5gaKQtzLHmA==}
     hasBin: true
     dependencies:
-      nx: 15.2.1
+      nx: 15.2.4
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/workspace/15.2.1_wfaqnfazd7vxe5mew33e5jwwwa:
-    resolution: {integrity: sha512-nqF1gP2KuVmQCjgyrX6TECAGFldJ55KEQs6WJIBsjYvmrWvAv341VVb565IEWpPGglb2/8NhJLBMdQ0ZpLG+tg==}
+  /@nrwl/workspace/15.2.4_wfaqnfazd7vxe5mew33e5jwwwa:
+    resolution: {integrity: sha512-h35+NwG2zCeJpQzLevw8q9frrKCwsQyOfUxzyP7nApoxQNO70iGdTwRli/dvB7jVIckp3x78yLuu32D9oqiKEA==}
     peerDependencies:
       prettier: ^2.6.2
     peerDependenciesMeta:
       prettier:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.2.1_nx@15.2.1+typescript@4.8.4
-      '@nrwl/jest': 15.2.1_lr4fdvl62cay4w2wuey5fhflc4
-      '@nrwl/linter': 15.2.1_w23x7n7zvvy4jtcrbeyi4toj7i
+      '@nrwl/devkit': 15.2.4_nx@15.2.4+typescript@4.8.4
+      '@nrwl/jest': 15.2.4_glgecnr35g5atvwaltflbhb7y4
+      '@nrwl/linter': 15.2.4_w23x7n7zvvy4jtcrbeyi4toj7i
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       chokidar: 3.5.3
@@ -3081,7 +3081,7 @@ packages:
       ignore: 5.2.0
       minimatch: 3.0.5
       npm-run-path: 4.0.1
-      nx: 15.2.1
+      nx: 15.2.4
       open: 8.4.0
       prettier: 2.7.1
       rxjs: 6.6.7
@@ -4319,7 +4319,7 @@ packages:
   /@types/accepts/1.3.5:
     resolution: {integrity: sha512-jOdnI/3qTpHABjM5cx1Hc0sKsPoYCp+DP/GJRGtDlPd7fiV9oXGGIcjW/ZOxLIvjGz8MA+uMZI9metHlgqbgwQ==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: true
 
   /@types/acorn/4.0.6:
@@ -4392,7 +4392,7 @@ packages:
   /@types/cross-spawn/6.0.2:
     resolution: {integrity: sha512-KuwNhp3eza+Rhu8IFI5HUXRP0LIhqH5cAjubUvGXXthh4YYBuP2ntwEX+Cz8GJoZUHlKo247wPWOfA9LYEq4cw==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/debug/4.1.7:
@@ -4447,7 +4447,7 @@ packages:
   /@types/graceful-fs/4.1.5:
     resolution: {integrity: sha512-anKkLmZZ+xm4p8JWBf4hElkM4XR+EZeA2M9BAkkTldmcyDY4mbdIJnRghDJH3Ov5ooY7/UAoENtmdMSkaAd7Cw==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/hast/2.3.4:
@@ -4501,14 +4501,14 @@ packages:
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/liftoff/4.0.0:
     resolution: {integrity: sha512-Ny/PJkO6nxWAQnaet8q/oWz15lrfwvdvBpuY4treB0CSsBO1CG0fVuNLngR3m3bepQLd+E4c3Y3DlC2okpUvPw==}
     dependencies:
       '@types/fined': 1.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/lodash.merge/4.6.7:
@@ -4569,6 +4569,9 @@ packages:
   /@types/node/14.18.32:
     resolution: {integrity: sha512-Y6S38pFr04yb13qqHf8uk1nHE3lXgQ30WZbv1mLliV9pt0NjvqdWttLcrOYLnXbOafknVYRHZGoMSpR9UwfYow==}
 
+  /@types/node/18.11.10:
+    resolution: {integrity: sha512-juG3RWMBOqcOuXC643OAdSA525V44cVgGV6dUDuiFtss+8Fk5x1hI93Rsld43VeJVIeqlP9I7Fn9/qaVqoEAuQ==}
+
   /@types/node/18.11.5:
     resolution: {integrity: sha512-3JRwhbjI+cHLAkUorhf8RnqUbFXajvzX4q6fMn5JwkgtuwfYtRQYI3u4V92vI6NJuTsbBQWWh3RZjFsuevyMGQ==}
 
@@ -4578,6 +4581,7 @@ packages:
 
   /@types/node/18.11.9:
     resolution: {integrity: sha512-CRpX21/kGdzjOpFsZSkcrXMGIBWMGNIHXXBVFSH+ggkftxg+XYP20TESbh+zFvFj3EQOl5byk0HTRn1IL6hbqg==}
+    dev: true
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -4645,7 +4649,7 @@ packages:
   /@types/responselike/1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/retry/0.12.0:
@@ -4679,7 +4683,7 @@ packages:
   /@types/through/0.0.30:
     resolution: {integrity: sha512-FvnCJljyxhPM3gkRgWmxmDZyAQSiBQQWLI0A0VFL0K7W1oRUrPJSqNO0NvTnLkBcotdlp3lKvaT0JrnyRDkzOg==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /@types/toposort/2.0.3:
@@ -4696,7 +4700,7 @@ packages:
   /@types/webpack/5.28.0:
     resolution: {integrity: sha512-8cP0CzcxUiFuA9xGJkfeVpqmWTk9nx6CWwamRGCj95ph1SmlRRk9KlCZ6avhCbZd4L68LvYT6l1kpdEnQXrF8w==}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       tapable: 2.2.1
       webpack: 5.74.0
     transitivePeerDependencies:
@@ -12165,7 +12169,7 @@ packages:
       '@jest/expect': 28.1.3
       '@jest/test-result': 28.1.3
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       co: 4.6.0
       dedent: 0.7.0
@@ -12258,7 +12262,7 @@ packages:
       '@jest/environment': 28.1.3
       '@jest/fake-timers': 28.1.3
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       jest-mock: 28.1.3
       jest-util: 28.1.3
     dev: false
@@ -12274,7 +12278,7 @@ packages:
     dependencies:
       '@jest/types': 28.1.3
       '@types/graceful-fs': 4.1.5
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       anymatch: 3.1.2
       fb-watchman: 2.0.1
       graceful-fs: 4.2.10
@@ -12325,7 +12329,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
     dev: false
 
   /jest-pnp-resolver/1.2.2_jest-resolve@28.1.1:
@@ -12396,7 +12400,7 @@ packages:
       '@jest/test-result': 28.1.3
       '@jest/transform': 28.1.3
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       emittery: 0.10.2
       graceful-fs: 4.2.10
@@ -12482,7 +12486,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       ci-info: 3.6.1
       graceful-fs: 4.2.10
@@ -12494,7 +12498,7 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       chalk: 4.1.2
       ci-info: 3.6.1
       graceful-fs: 4.2.10
@@ -12519,7 +12523,7 @@ packages:
     dependencies:
       '@jest/test-result': 28.1.3
       '@jest/types': 28.1.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.10.2
@@ -12531,7 +12535,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -12539,7 +12543,7 @@ packages:
     resolution: {integrity: sha512-CqRA220YV/6jCo8VWvAt1KKx6eek1VIHMPeLEbpcfSfkEeWyBNppynM/o6q+Wmw+sOhos2ml34wZbSX3G13//g==}
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     dependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: false
@@ -14875,8 +14879,8 @@ packages:
       - debug
     dev: false
 
-  /nx/15.2.1:
-    resolution: {integrity: sha512-vVeT5D02cDDiSmS3P2Bos/waYQa3m0yl/rouzsKpusVSmzAQGQbKXhxPb4WnNIj8Iz/8KjFeBM/RZO021BtGNg==}
+  /nx/15.2.4:
+    resolution: {integrity: sha512-8rTLo5WGmM6hEo5R/u03Jllkyj4vIUbBk2MRAppCvVRXWLS4xJUEOityXJ5BAvaKoLYm6sWUP1gqU7xlldnT5A==}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -14888,8 +14892,8 @@ packages:
       '@swc/core':
         optional: true
     dependencies:
-      '@nrwl/cli': 15.2.1
-      '@nrwl/tao': 15.2.1
+      '@nrwl/cli': 15.2.4
+      '@nrwl/tao': 15.2.4
       '@parcel/watcher': 2.0.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.22
@@ -19542,7 +19546,7 @@ packages:
     dependencies:
       '@types/chai': 4.3.3
       '@types/chai-subset': 1.3.3
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       acorn: 8.8.0
       acorn-walk: 8.2.0
       chai: 4.3.6
