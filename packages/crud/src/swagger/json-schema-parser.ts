@@ -405,6 +405,9 @@ class PrismaJsonSchemaParser {
                 [`${modelName}`]: {
                     value,
                 },
+                [`${modelName}s`]: {
+                    value: [value],
+                },
                 [`${modelName}Page`]: {
                     value: {
                         data: [value],

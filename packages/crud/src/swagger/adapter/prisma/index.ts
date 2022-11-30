@@ -3,6 +3,7 @@ import {
     // @ts-ignore
     PrismaClient,
 } from "@prisma/client";
+import type { OpenAPIV3 } from "openapi-types";
 
 import modelsToRouteNames from "../../../adapter/prisma/utils/models-to-route-names";
 import type { ModelsOptions } from "../../../types.d";
@@ -11,7 +12,6 @@ import type { SwaggerModelsConfig } from "../../types.d";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
-import { OpenAPIV3 } from "openapi-types";
 
 const modelsToOpenApi = async <M extends string = string>({
     prismaClient,

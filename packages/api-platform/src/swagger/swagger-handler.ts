@@ -72,9 +72,8 @@ const swaggerHandler = (
         }
 
         if (Array.isArray(specs)) {
-            specs.forEach((spec) => {
-                spec = extendSwaggerSpec(spec, allowedMediaTypes);
-                spec = merge(spec, spec);
+            specs.forEach((value) => {
+                spec = merge(spec, extendSwaggerSpec(value, allowedMediaTypes));
             });
         }
 
