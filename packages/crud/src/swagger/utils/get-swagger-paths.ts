@@ -39,6 +39,7 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                 content: {
                     "application/json": {
                         schema: generateContentForSchema(modelName),
+                        example: formatExampleReference(modelName),
                     },
                 },
             },
@@ -53,6 +54,7 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                 content: {
                     "application/json": {
                         schema: generateContentForSchema(modelName),
+                        example: formatExampleReference(modelName),
                     },
                 },
             },
@@ -91,6 +93,7 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                 content: {
                     "application/json": {
                         schema: generateContentForSchema(modelName),
+                        example: formatExampleReference(modelName),
                     },
                 },
             },
@@ -105,6 +108,7 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                 content: {
                     "application/json": {
                         schema: generateContentForSchema(modelName),
+                        example: formatExampleReference(modelName),
                     },
                 },
             },

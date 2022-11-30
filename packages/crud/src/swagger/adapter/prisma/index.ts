@@ -13,6 +13,39 @@ import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes"
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
+const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: { [key: string]: { value: any } }): OpenAPIV3.PathsObject => {
+    // eslint-disable-next-line radar/cognitive-complexity
+    Object.values(swaggerPaths).forEach((pathSpec) => {
+        Object.values(pathSpec as OpenAPIV3.PathsObject & OpenAPIV3.OperationObject).forEach((methodSpec) => {
+            if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
+                Object.values((methodSpec as OpenAPIV3.OperationObject).responses).forEach((responseSpec) => {
+                    if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {
+                        Object.values(
+                            (responseSpec as OpenAPIV3.ResponseObject).content as {
+                                [media: string]: OpenAPIV3.MediaTypeObject;
+                            },
+                        ).forEach((contentSpec) => {
+                            if (typeof (contentSpec as OpenAPIV3.MediaTypeObject).example === "string") {
+                                const example = ((contentSpec as OpenAPIV3.MediaTypeObject).example as string).replace("#/components/examples/", "");
+
+                                if (
+                                    typeof examples[example as keyof typeof examples] !== undefined
+                                    && typeof examples[example as keyof typeof examples]?.value !== undefined
+                                ) {
+                                    // eslint-disable-next-line no-param-reassign
+                                    (contentSpec as OpenAPIV3.MediaTypeObject).example = (examples[example as keyof typeof examples] as typeof examples).value;
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    return swaggerPaths;
+};
+
 const modelsToOpenApi = async <M extends string = string>({
     prismaClient,
     models: ctorModels,
@@ -80,12 +113,13 @@ const modelsToOpenApi = async <M extends string = string>({
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
     });
     const schemas = JSON.parse(schema.replace(/#\/definitions/g, "#/components/schemas"));
+    const examples = parser.getExampleModelsSchemas(dModels, schemas);
 
     return {
         schemas,
-        examples: parser.getExampleModelsSchemas(dModels, schemas),
+        examples,
         tags: swaggerTags,
-        paths: swaggerPaths,
+        paths: overwritePathsExampleWithModel(swaggerPaths, examples),
     };
 };
 

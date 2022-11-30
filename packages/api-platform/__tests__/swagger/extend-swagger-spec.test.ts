@@ -138,6 +138,26 @@ describe("swagger/extend-swagger-spec", () => {
                         },
                     },
                 },
+                "/test3": {
+                    get: {
+                        responses: {
+                            200: {
+                                content: {
+                                    "application/json": {
+                                        schema: {
+                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            $ref: "#/components/schemas/Test3",
+                                        },
+                                        example: {
+                                            test: "test",
+                                        },
+                                    },
+                                },
+                                description: "OK",
+                            },
+                        },
+                    },
+                },
             },
         } as OpenAPIV3.Document;
 
@@ -197,6 +217,7 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                         examples: {
                                             Test: {
+                                                // eslint-disable-next-line radar/no-duplicate-string
                                                 value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                             },
                                         },
@@ -204,6 +225,7 @@ describe("swagger/extend-swagger-spec", () => {
                                     "application/x-yaml": {
                                         examples: {
                                             Test: {
+                                                // eslint-disable-next-line radar/no-duplicate-string
                                                 value: "test: test\n",
                                             },
                                         },
@@ -224,6 +246,7 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
+                                            // eslint-disable-next-line radar/no-duplicate-string
                                             $ref: "#/components/schemas/Test2",
                                         },
                                         examples: {
@@ -250,6 +273,38 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                         schema: {
                                             $ref: "#/components/schemas/Test2",
+                                        },
+                                    },
+                                },
+                                description: "OK",
+                            },
+                        },
+                    },
+                },
+                "/test3": {
+                    get: {
+                        responses: {
+                            200: {
+                                content: {
+                                    "application/json": {
+                                        schema: {
+                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            $ref: "#/components/schemas/Test3",
+                                        },
+                                        example: {
+                                            test: "test",
+                                        },
+                                    },
+                                    "text/xml": {
+                                        schema: {
+                                            $ref: "#/components/schemas/Test3",
+                                        },
+                                        example: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
+                                    },
+                                    "application/x-yaml": {
+                                        example: "test: test\n",
+                                        schema: {
+                                            $ref: "#/components/schemas/Test3",
                                         },
                                     },
                                 },

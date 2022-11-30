@@ -353,7 +353,9 @@ class PrismaJsonSchemaParser {
 
             Object.entries(objectProperties).forEach(([key, value]) => {
                 // eslint-disable-next-line max-len
-                values[key] = (value as OpenAPIV3.ReferenceObject).$ref === undefined ? (value as OpenAPIV3.SchemaObject).type as string : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
+                values[key] = (value as OpenAPIV3.ReferenceObject).$ref === undefined
+                    ? ((value as OpenAPIV3.SchemaObject).type as string)
+                    : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
             });
 
             return values;
