@@ -11,6 +11,7 @@ import type { SwaggerModelsConfig } from "../../types.d";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
+import { OpenAPIV3 } from "openapi-types";
 
 const modelsToOpenApi = async <M extends string = string>({
     prismaClient,
@@ -18,7 +19,16 @@ const modelsToOpenApi = async <M extends string = string>({
     swagger = { models: {}, allowedMediaTypes: { "application/json": true } },
     crud = { models: {} },
     defaultExposeStrategy = "all",
-}: ModelsToOpenApiParameters<M>) => {
+}: ModelsToOpenApiParameters<M>): Promise<{
+    schemas: {
+        [key: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject;
+    };
+    examples: {
+        [key: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+    };
+    tags: OpenAPIV3.TagObject[];
+    paths: OpenAPIV3.PathsObject;
+}> => {
     let dmmf: any;
     let prismaDmmfModels: any;
 

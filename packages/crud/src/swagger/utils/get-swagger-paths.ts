@@ -67,14 +67,14 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
                 content: {
                     "application/json": {
                         schema: {
-                            oneOf: [generateContentForSchema(modelName, true), generateContentForSchema(`${modelName}Page`, false)],
+                            oneOf: [generateContentForSchema(`${modelName}s`, true), generateContentForSchema(`${modelName}sPage`, false)],
                         },
                         examples: {
                             Default: {
-                                $ref: formatExampleReference(`${modelName}`),
+                                $ref: formatExampleReference(`${modelName}s`),
                             },
                             Pagination: {
-                                $ref: formatExampleReference(`${modelName}Page`),
+                                $ref: formatExampleReference(`${modelName}sPage`),
                             },
                         },
                     },

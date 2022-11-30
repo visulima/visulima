@@ -1,8 +1,7 @@
 import { header as headerCase } from "case";
 import type { OpenAPIV3 } from "openapi-types";
-import type { OAS3Definition, Operation, Responses } from "swagger-jsdoc";
 
-const extendComponentSchemas = (spec: Partial<OAS3Definition>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
+const extendComponentSchemas = (spec: Partial<OpenAPIV3.Document>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
     if (typeof spec.components !== "object") {
         // eslint-disable-next-line no-param-reassign
         spec.components = {};
@@ -19,7 +18,13 @@ const extendComponentSchemas = (spec: Partial<OAS3Definition>, schemaName: strin
     }
 };
 
-const extendComponentExamples = (spec: Partial<OAS3Definition>, exampleName: string, example: OpenAPIV3.SchemaObject) => {
+const extendComponentExamples = (
+    spec: Partial<OpenAPIV3.Document>,
+    exampleName: string,
+    examples: {
+        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+    },
+) => {
     if (typeof spec.components !== "object") {
         // eslint-disable-next-line no-param-reassign
         spec.components = {};
@@ -32,23 +37,146 @@ const extendComponentExamples = (spec: Partial<OAS3Definition>, exampleName: str
 
     if (spec.components.examples[exampleName] === undefined) {
         // eslint-disable-next-line no-param-reassign
-        spec.components.examples[exampleName] = example;
+        spec.components.examples[exampleName] = examples[exampleName] as OpenAPIV3.ExampleObject;
     }
+};
+
+const prepareResponseExamples = (
+    spec: Partial<OpenAPIV3.Document>,
+    methodSpec: OpenAPIV3.OperationObject,
+    status: string,
+    mediaType: string,
+    examples: {
+        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+    },
+) => {
+    if ((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject) === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        methodSpec.responses = {};
+    }
+
+    if ((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] = {} as OpenAPIV3.ResponseObject;
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content = {};
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType] === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (
+            ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                [key: string]: OpenAPIV3.MediaTypeObject;
+            }
+        )[mediaType] = {} as OpenAPIV3.MediaTypeObject;
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.examples === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (
+            (
+                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                    [key: string]: OpenAPIV3.MediaTypeObject;
+                }
+            )[mediaType] as OpenAPIV3.MediaTypeObject
+        ).examples = {};
+    }
+
+    const transformedExamples: {
+            [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        } = {};
+
+    Object.entries(examples).forEach(([exampleName, example]) => {
+        if (spec.components?.examples?.[exampleName] !== undefined) {
+            transformedExamples[exampleName] = {
+                $ref: `#/components/examples/${exampleName}`,
+            };
+        } else {
+            transformedExamples[exampleName] = example;
+        }
+    });
+
+    // eslint-disable-next-line no-param-reassign
+    (
+        (
+            ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                [key: string]: OpenAPIV3.MediaTypeObject;
+            }
+        )[mediaType] as OpenAPIV3.MediaTypeObject
+    ).examples = transformedExamples;
+};
+
+const prepareResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string, schemaName: string, schemaIsArray: boolean) => {
+    if ((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject) === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        methodSpec.responses = {};
+    }
+
+    if ((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] = {} as OpenAPIV3.ResponseObject;
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content = {};
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType] === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (
+            ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                [key: string]: OpenAPIV3.MediaTypeObject;
+            }
+        )[mediaType] = {} as OpenAPIV3.MediaTypeObject;
+    }
+
+    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.schema === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        (
+            (
+                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                    [key: string]: OpenAPIV3.MediaTypeObject;
+                }
+            )[mediaType] as OpenAPIV3.MediaTypeObject
+        ).schema = {} as OpenAPIV3.SchemaObject;
+    }
+
+    // eslint-disable-next-line no-param-reassign
+    (
+        (
+            ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
+                [key: string]: OpenAPIV3.MediaTypeObject;
+            }
+        )[mediaType] as OpenAPIV3.MediaTypeObject
+    ).schema = schemaIsArray
+        ? {
+              type: "array",
+              items: {
+                  $ref: `#/components/schemas/${schemaName}`,
+              },
+          }
+        : {
+              $ref: `#/components/schemas/${schemaName}`,
+          };
 };
 
 function extendSwaggerWithMediaTypeSchema(
     responseSpec: OpenAPIV3.ResponseObject,
     allowedMediaTypes: { [p: string]: boolean } | undefined,
     pathKey: string,
-    spec: Partial<OAS3Definition>,
-    methodSpec: Operation,
+    spec: Partial<OpenAPIV3.Document>,
+    methodSpec: OpenAPIV3.OperationObject,
     status: string,
 ) {
     let examples:
-    | {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
-    }
-    | undefined;
+        | {
+              [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+          }
+        | undefined;
 
     // eslint-disable-next-line radar/cognitive-complexity
     Object.entries(responseSpec.content as object).forEach(([mediaName, contentSpec]) => {
@@ -73,31 +201,9 @@ function extendSwaggerWithMediaTypeSchema(
                 // eslint-disable-next-line max-len
                 const schemaName = `${headerCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
 
-                extendComponentSchemas(spec as OAS3Definition, schemaName, schema as OpenAPIV3.SchemaObject);
+                extendComponentSchemas(spec as OpenAPIV3.Document, schemaName, schema as OpenAPIV3.SchemaObject);
 
-                if (methodSpec?.responses?.[status]?.content[mediaType]?.schema === undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    (methodSpec.responses as Responses)[status].content[mediaType] = { schema: {} };
-                }
-
-                // eslint-disable-next-line no-param-reassign
-                (methodSpec.responses as Responses)[status].content[mediaType].schema = schemaIsArray
-                    ? {
-                        type: "array",
-                        items: {
-                            $ref: `#/components/schemas/${schemaName}`,
-                        },
-                    }
-                    : {
-                        $ref: `#/components/schemas/${schemaName}`,
-                    };
-
-                if (methodSpec.produces === undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    methodSpec.produces = [];
-                }
-
-                methodSpec.produces.push(mediaType);
+                prepareResponseSchema(methodSpec, status, mediaType, schemaName, schemaIsArray);
             });
         }
     });
@@ -105,15 +211,17 @@ function extendSwaggerWithMediaTypeSchema(
     return examples;
 }
 
-function extendSwaggerWithMediaTypeExamples(
+const extendSwaggerWithMediaTypeExamples = (
     responseSpec: OpenAPIV3.ResponseObject,
     allowedMediaTypes: { [p: string]: boolean } | undefined,
     pathKey: string,
-    spec: Partial<OAS3Definition>,
-    examples: { [p: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject } | undefined,
-    methodSpec: Operation,
+    spec: Partial<OpenAPIV3.Document>,
+    examples: {
+        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+    },
+    methodSpec: OpenAPIV3.OperationObject,
     status: string,
-) {
+) => {
     Object.keys(responseSpec.content as object).forEach((mediaName) => {
         if (mediaName === "application/json") {
             return;
@@ -127,35 +235,44 @@ function extendSwaggerWithMediaTypeExamples(
             // eslint-disable-next-line max-len
             const examplesName = `${headerCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
 
-            extendComponentExamples(spec as OAS3Definition, examplesName, examples as OpenAPIV3.SchemaObject);
+            extendComponentExamples(spec, examplesName, examples);
 
-            if (methodSpec?.responses?.[status]?.content[mediaType]?.examples === undefined) {
-                // eslint-disable-next-line no-param-reassign
-                (methodSpec.responses as Responses)[status].content[mediaType] = { examples: {} };
-            }
-
-            // eslint-disable-next-line no-param-reassign
-            (methodSpec.responses as Responses)[status].content[mediaType].examples = examples;
+            prepareResponseExamples(spec, methodSpec, status, mediaType, examples);
         });
     });
-}
+};
 
 // eslint-disable-next-line radar/cognitive-complexity
-export default function extendSwaggerSpec(spec: Partial<OAS3Definition>, allowedMediaTypes?: { [key: string]: boolean }): Partial<OAS3Definition> {
+export default function extendSwaggerSpec(spec: Partial<OpenAPIV3.Document>, allowedMediaTypes?: { [key: string]: boolean }): Partial<OpenAPIV3.Document> {
     if (typeof spec === "object" && typeof spec.paths === "object") {
         Object.entries(spec.paths).forEach(([pathKey, pathSpec]) => {
-            Object.values(pathSpec).forEach((methodSpec) => {
-                if (typeof methodSpec.responses === "object") {
-                    Object.entries<OpenAPIV3.ResponseObject>(methodSpec.responses).forEach(([status, responseSpec]) => {
-                        if (typeof responseSpec.content === "object") {
+            Object.values(pathSpec as OpenAPIV3.PathsObject & OpenAPIV3.OperationObject).forEach((methodSpec) => {
+                if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
+                    Object.entries((methodSpec as OpenAPIV3.OperationObject).responses).forEach(([status, responseSpec]) => {
+                        if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {
                             const examples:
-                            | {
-                                [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
-                            }
-                            | undefined = extendSwaggerWithMediaTypeSchema(responseSpec, allowedMediaTypes, pathKey, spec, methodSpec, status);
+                                | {
+                                      [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+                                  }
+                                | undefined = extendSwaggerWithMediaTypeSchema(
+                                responseSpec as OpenAPIV3.ResponseObject,
+                                allowedMediaTypes,
+                                pathKey,
+                                spec,
+                                methodSpec as OpenAPIV3.OperationObject,
+                                status,
+                            );
 
                             if (examples !== undefined) {
-                                extendSwaggerWithMediaTypeExamples(responseSpec, allowedMediaTypes, pathKey, spec, examples, methodSpec, status);
+                                extendSwaggerWithMediaTypeExamples(
+                                    responseSpec as OpenAPIV3.ResponseObject,
+                                    allowedMediaTypes,
+                                    pathKey,
+                                    spec,
+                                    examples,
+                                    methodSpec as OpenAPIV3.OperationObject,
+                                    status,
+                                );
                             }
                         }
                     });

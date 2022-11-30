@@ -1,4 +1,5 @@
-import { RouteType } from "../types.d";
+import type { OpenAPIV3 } from "openapi-types";
+import type { RouteType } from "../types.d";
 
 export type SwaggerType = {
     name: string;
@@ -14,15 +15,6 @@ export type SwaggerOperation = {
     response: SwaggerType;
 };
 
-export type SwaggerTag = {
-    name?: string;
-    description?: string;
-    externalDocs?: {
-        description: string;
-        url: string;
-    };
-};
-
 export type SwaggerParameter = {
     name: string;
     description?: string;
@@ -32,7 +24,7 @@ export type SwaggerParameter = {
 };
 
 export type ModelsConfig = {
-    tag: SwaggerTag;
+    tag: OpenAPIV3.TagObject;
     type?: SwaggerType;
     routeTypes?: {
         [RouteType.READ_ALL]?: SwaggerOperation;
