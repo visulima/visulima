@@ -36,7 +36,7 @@ const extendComponentSchemas = (spec: Partial<OpenAPIV3.Document>, schemaName: s
     }
 };
 
-const prepareResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string, schemaName: string, schemaIsArray: boolean) => {
+const extendResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string, schemaName: string, schemaIsArray: boolean) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
     if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.schema === undefined) {
@@ -117,7 +117,7 @@ const extendSwaggerWithMediaTypeSchema = (
                     schemaName = (schema as OpenAPIV3.ReferenceObject).$ref.replace("#/components/schemas/", "");
                 }
 
-                prepareResponseSchema(methodSpec, status, mediaType, schemaName, schemaIsArray);
+                extendResponseSchema(methodSpec, status, mediaType, schemaName, schemaIsArray);
             });
         }
     });
