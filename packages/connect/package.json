@@ -52,8 +52,7 @@
     "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
-        "src",
-        "dist",
+        "dist/**",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"

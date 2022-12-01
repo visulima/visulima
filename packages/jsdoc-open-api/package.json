@@ -53,8 +53,8 @@
         "jsdoc-open-api": "./bin/index.js"
     },
     "files": [
-        "src",
-        "dist",
+        "bin/**",
+        "dist/**",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
