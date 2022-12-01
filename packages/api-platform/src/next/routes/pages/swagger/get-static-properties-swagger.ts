@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import debug from "debug";
 import type { GetStaticProps } from "next";
-import type { OAS3Definition } from "swagger-jsdoc";
+import type { OpenAPIV3 } from "openapi-types";
 
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerDebug = debug("visulima:api-platform:swagger:get-static-properties-swagger");
@@ -12,7 +12,7 @@ const getStaticProps: (
 ) => GetStaticProps = (swaggerUrl) => async (): Promise<{
     props: {
         swaggerUrl: string;
-        swaggerData: OAS3Definition;
+        swaggerData: OpenAPIV3.Document;
     };
 }> => {
     // eslint-disable-next-line compat/compat

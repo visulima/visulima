@@ -7,7 +7,7 @@ import merge from "lodash.merge";
 import { existsSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
-import type { OAS3Definition, Tag } from "swagger-jsdoc";
+import type { OpenAPIV3 } from "openapi-types";
 
 import yamlTransformer from "../connect/serializers/yaml";
 import extendSwaggerSpec from "./extend-swagger-spec";
@@ -24,6 +24,7 @@ const swaggerHandler = (
                 models?: SwaggerModelsConfig<string>;
             };
         };
+        specs?: Partial<OpenAPIV3.Document>[];
     }> = {},
 ) => {
     const {
@@ -32,6 +33,7 @@ const swaggerHandler = (
         },
         swaggerFilePath,
         crud,
+        specs,
     } = options;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response) => {
@@ -43,8 +45,8 @@ const swaggerHandler = (
 
         const fileContents = readFileSync(swaggerPath, "utf8");
 
-        let spec = extendSwaggerSpec(JSON.parse(fileContents) as OAS3Definition, allowedMediaTypes) as OAS3Definition;
-        let crudSwagger: Partial<OAS3Definition> = {};
+        let spec = extendSwaggerSpec(JSON.parse(fileContents) as OpenAPIV3.Document, allowedMediaTypes) as OpenAPIV3.Document;
+        let crudSwagger: Partial<OpenAPIV3.Document> = {};
 
         if (crud !== undefined) {
             try {
@@ -52,7 +54,7 @@ const swaggerHandler = (
 
                 crudSwagger = {
                     components: { schemas: modelsOpenApi.schemas, examples: modelsOpenApi.examples },
-                    tags: modelsOpenApi.tags as Tag[],
+                    tags: modelsOpenApi.tags as OpenAPIV3.TagObject[],
                     paths: modelsOpenApi.paths,
                 };
 
@@ -64,8 +66,15 @@ const swaggerHandler = (
             } catch (error) {
                 // eslint-disable-next-line no-console
                 console.log(error);
+
                 throw new Error("Please install @visulima/crud to use the crud swagger generator.");
             }
+        }
+
+        if (Array.isArray(specs)) {
+            specs.forEach((value) => {
+                spec = merge(spec, extendSwaggerSpec(value, allowedMediaTypes));
+            });
         }
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
