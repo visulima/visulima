@@ -1,5 +1,5 @@
 {
-    "name": "nextjs_example_api-platform",
+    "name": "nextjs_13_example_api-platform",
     "version": "0.0.0",
     "private": true,
     "description": "API Platform distribution for Next.js",
@@ -18,7 +18,7 @@
         "core-js": "^3.26.1",
         "encoding": "^0.1.13",
         "mobx": "^6.7.0",
-        "next": "13.0.3",
+        "next": "13.0.6-canary.3",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "redoc": "^2.0.0",

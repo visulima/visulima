@@ -210,7 +210,7 @@ importers:
       typescript: 4.9.3
       vitest: 0.25.2
 
-  examples/api-platform:
+  examples/api-platform/next12:
     specifiers:
       '@types/node': ^18.11.9
       '@types/react': 18.0.25
@@ -223,7 +223,7 @@ importers:
       eslint: ^8.27.0
       eslint-config-next: 13.0.3
       mobx: ^6.7.0
-      next: 13.0.3
+      next: 12.3.4
       react: ^18.2.0
       react-dom: ^18.2.0
       redoc: ^2.0.0
@@ -233,13 +233,13 @@ importers:
       typescript: ^4.9.3
       zod: ^3.19.1
     dependencies:
-      '@visulima/api-platform': link:../../packages/api-platform
+      '@visulima/api-platform': link:../../../packages/api-platform
       chalk: 4.1.2
       commander: 9.4.1
       core-js: 3.26.1
       encoding: 0.1.13
       mobx: 6.7.0
-      next: 13.0.3_biqbaboplfbrettd7655fr4n2y
+      next: 12.3.4_biqbaboplfbrettd7655fr4n2y
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       redoc: 2.0.0_s2e7jzlzngp6b3l6mm3zdnwc3y
@@ -247,11 +247,56 @@ importers:
       swagger-ui-react: 4.15.5_a37btljrart7w22t3urww6glry
       zod: 3.19.1
     devDependencies:
-      '@types/node': 18.11.9
+      '@types/node': 18.11.10
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.9
-      eslint: 8.27.0
-      eslint-config-next: 13.0.3_e3uo4sehh4zr4i6m57mkkxxv7y
+      eslint: 8.28.0
+      eslint-config-next: 13.0.3_hsf322ms6xhhd4b5ne6lb74y4a
+      rimraf: 3.0.2
+      typescript: 4.9.3
+
+  examples/api-platform/next13:
+    specifiers:
+      '@types/node': ^18.11.9
+      '@types/react': 18.0.25
+      '@types/react-dom': ^18.0.9
+      '@visulima/api-platform': workspace:*
+      chalk: 4.1.2
+      commander: ^9.4.1
+      core-js: ^3.26.1
+      encoding: ^0.1.13
+      eslint: ^8.27.0
+      eslint-config-next: 13.0.3
+      mobx: ^6.7.0
+      next: 13.0.6-canary.3
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      redoc: ^2.0.0
+      rimraf: ^3.0.2
+      styled-components: ^5.3.6
+      swagger-ui-react: ^4.15.5
+      typescript: ^4.9.3
+      zod: ^3.19.1
+    dependencies:
+      '@visulima/api-platform': link:../../../packages/api-platform
+      chalk: 4.1.2
+      commander: 9.4.1
+      core-js: 3.26.1
+      encoding: 0.1.13
+      mobx: 6.7.0
+      next: 13.0.6-canary.3_biqbaboplfbrettd7655fr4n2y
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      redoc: 2.0.0_s2e7jzlzngp6b3l6mm3zdnwc3y
+      styled-components: 5.3.6_biqbaboplfbrettd7655fr4n2y
+      swagger-ui-react: 4.15.5_a37btljrart7w22t3urww6glry
+      zod: 3.19.1
+    devDependencies:
+      '@types/node': 18.11.10
+      '@types/react': 18.0.25
+      '@types/react-dom': 18.0.9
+      eslint: 8.28.0
+      eslint-config-next: 13.0.3_hsf322ms6xhhd4b5ne6lb74y4a
       rimraf: 3.0.2
       typescript: 4.9.3
 
@@ -288,7 +333,6 @@ importers:
 
   examples/crud/next12:
     specifiers:
-      '@prisma/cli': 2.12.1
       '@prisma/client': ^4.6.1
       '@types/node': ^18.11.9
       '@types/react': 18.0.25
@@ -330,7 +374,6 @@ importers:
       swagger-ui-react: 4.15.5_a37btljrart7w22t3urww6glry
       zod: 3.19.1
     devDependencies:
-      '@prisma/cli': 2.12.1
       '@types/node': 18.11.9
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.9
@@ -341,7 +384,6 @@ importers:
 
   examples/crud/next13:
     specifiers:
-      '@prisma/cli': 2.12.1
       '@prisma/client': ^4.7.0
       '@types/node': ^18.11.10
       '@types/react': 18.0.25
@@ -383,7 +425,6 @@ importers:
       swagger-ui-react: 4.15.5_a37btljrart7w22t3urww6glry
       zod: 3.19.1
     devDependencies:
-      '@prisma/cli': 2.12.1
       '@types/node': 18.11.10
       '@types/react': 18.0.25
       '@types/react-dom': 18.0.9
@@ -3588,21 +3629,6 @@ packages:
     resolution: {integrity: sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==}
     dev: false
 
-  /@prisma/bar/0.0.1:
-    resolution: {integrity: sha512-FVLhwVkbfhXlBhroWfIXMLi+3Jh9IEzYp+9z+MUUiw3ZsbcoAil7CN9/QIjHc4/TcCRyRfuSmT7qCnn4O+TjJw==}
-    dev: true
-
-  /@prisma/cli/2.12.1:
-    resolution: {integrity: sha512-obkwK95dEeifCdVehG0rS0BlPQGLsOtc9U1MgbrjNX3MnhXQdwROnvymfPB3DBlNyoLoHGklPgi9UlwBokNXcQ==}
-    engines: {node: '>=10.4'}
-    deprecated: 'Prisma CLI package was renamed to ''prisma''. Check it out here: https://www.npmjs.com/package/prisma'
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@prisma/bar': 0.0.1
-      '@prisma/engines': 2.12.0-18.cf0680a1bfe8d5e743dc659cc7f08009f9587d58
-    dev: true
-
   /@prisma/client/4.5.0:
     resolution: {integrity: sha512-B2cV0OPI1smhdYUxsJoLYQLoMlLH06MUxgFUWQnHodGMX98VRVXKmQE/9OcrTNkqtke5RC+YU24Szxd04tZA2g==}
     engines: {node: '>=14.17'}
@@ -3666,11 +3692,6 @@ packages:
 
   /@prisma/engines-version/4.7.0-74.39190b250ebc338586e25e6da45e5e783bc8a635:
     resolution: {integrity: sha512-ImczGEQ8NS1OUApEeyAGxC4uLTtQp0wI1+2wM4MeQLVwIQbyMHk1vOhWWE8Pwbi3rnzLcPvsIrd9sm6oNXhERw==}
-
-  /@prisma/engines/2.12.0-18.cf0680a1bfe8d5e743dc659cc7f08009f9587d58:
-    resolution: {integrity: sha512-F6RmUZ5JpPWxmGvVDji8c4gepHIGkvYbtuFi0IoDDJVaCVo8yS656stciKFyswI6/BLWXa0X47/MIMbz6nzw7g==}
-    requiresBuild: true
-    dev: true
 
   /@prisma/engines/4.7.0:
     resolution: {integrity: sha512-afKrVFktaZ1pOK12/uFl2hRsBWIJZuC5FdDtacuKk5x/mR+rC5AbA+PlN3ZCZbmYTaeiBMHjcU5wbT5z2N3nSQ==}
@@ -8750,10 +8771,10 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 5.43.0_e3uo4sehh4zr4i6m57mkkxxv7y
+      '@typescript-eslint/parser': 5.43.0_hsf322ms6xhhd4b5ne6lb74y4a
       debug: 3.2.7
       eslint-import-resolver-node: 0.3.6
-      eslint-import-resolver-typescript: 2.7.1_dcpv4nbdr5ks2h5677xdltrk6e
+      eslint-import-resolver-typescript: 2.7.1_ktrec6dplf4now6nlbc6d67jee
       find-up: 2.1.0
     transitivePeerDependencies:
       - supports-color
