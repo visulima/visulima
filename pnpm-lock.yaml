@@ -109,7 +109,7 @@ importers:
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       flexsearch: ^0.7.21
       focus-visible: ^5.2.0
-      fs-extra: ^10.1.0
+      fs-extra: ^11.0.0
       git-url-parse: ^13.1.0
       github-slugger: ^1.4.0
       intersection-observer: ^0.12.2
@@ -147,7 +147,7 @@ importers:
       clsx: 1.2.1
       flexsearch: 0.7.21
       focus-visible: 5.2.0
-      fs-extra: 10.1.0
+      fs-extra: 11.1.0
       git-url-parse: 13.1.0
       github-slugger: 1.4.0
       intersection-observer: 0.12.2
@@ -10863,6 +10863,15 @@ packages:
       graceful-fs: 4.2.10
       jsonfile: 6.1.0
       universalify: 2.0.0
+
+  /fs-extra/11.1.0:
+    resolution: {integrity: sha512-0rcTq621PD5jM/e0a3EJoGC/1TC5ZBCERW82LQuwfGnCa1V8w7dpYH1yNu+SLb6E5dkeCBzKEyLGlFrnr+dUyw==}
+    engines: {node: '>=14.14'}
+    dependencies:
+      graceful-fs: 4.2.10
+      jsonfile: 6.1.0
+      universalify: 2.0.0
+    dev: false
 
   /fs-extra/7.0.1:
     resolution: {integrity: sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==}
