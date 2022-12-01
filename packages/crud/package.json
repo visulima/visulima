@@ -121,16 +121,15 @@
         "typescript": "^4.8.4",
         "vitest": "^0.25.0"
     },
-
-    "optionalDependenciest": {
-        "next": "^12.0.0 || ^13.0.0",
-        "@prisma/client": "^3.0.0 || ^4.0.0"
-    },
     "engines": {
         "node": ">=16"
     },
     "publishConfig": {
         "access": "public"
+    },
+    "optionalDependenciest": {
+        "next": "^12.0.0 || ^13.0.0",
+        "@prisma/client": "^3.0.0 || ^4.0.0"
     },
     "sources": [
         "src/index.ts",
