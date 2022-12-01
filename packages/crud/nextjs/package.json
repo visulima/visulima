@@ -1,5 +1,6 @@
 {
     "name": "@visulima/crud-next",
+    "private": true,
     "version": "0.0.0",
     "description": "visulima crud next",
     "license": "MIT",
