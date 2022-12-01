@@ -1,3 +1,17 @@
+## @visulima/crud [1.0.2](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.1...@visulima/crud@1.0.2) (2022-12-01)
+
+
+### Bug Fixes
+
+* extended swagger generation for example and fixed typings ([#41](https://github.com/visulima/visulima/issues/41)) ([a16f49b](https://github.com/visulima/visulima/commit/a16f49b70f78763a63525e0d328bd2a597b183f7))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 1.0.1
+* **@visulima/prisma-dmmf-transformer:** upgraded to 1.0.1
+
 ## @visulima/crud [1.0.1](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.0...@visulima/crud@1.0.1) (2022-11-16)
 
 
