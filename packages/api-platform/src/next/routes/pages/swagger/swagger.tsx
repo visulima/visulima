@@ -1,4 +1,5 @@
 import type { InferGetStaticPropsType, NextPage } from "next";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import dynamic from "next/dynamic";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";
@@ -8,16 +9,7 @@ import type { SwaggerUIProps } from "swagger-ui-react";
 
 import getStaticProps from "./get-static-properties-swagger";
 // eslint-disable-next-line import/no-extraneous-dependencies
-const SwaggerUI = dynamic<{
-    spec: any;
-    // @ts-ignore
-    // eslint-disable-next-line import/no-extraneous-dependencies
-}>(import("swagger-ui-react"), { ssr: false });
-dynamic<{
-    spec: any;
-    // @ts-ignore
-    // eslint-disable-next-line import/no-extraneous-dependencies
-}>(import("swagger-ui-react/swagger-ui.css"), { ssr: false });
+const SwaggerUI = dynamic(import("swagger-ui-react"), { ssr: false });
 
 // eslint-disable-next-line max-len
 const SwaggerApiDocument: (

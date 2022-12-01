@@ -37,38 +37,68 @@ With a more intuitive API for creating HTTP API endpoints.
 ## Installation
 
 ```sh
-npm install @visulima/crud
+npm install @visulima/crud prisma @prisma/client
 ```
 
 ```sh
-yarn add @visulima/crud
+yarn add @visulima/crud prisma @prisma/client
 ```
 
 ```sh
-pnpm add @visulima/crud
+pnpm add @visulima/crud prisma @prisma/client
 ```
 
 ## Usage
 
-This package has an extended version of the `@visulima/connect` package.
-That means you can use all the features of the `@visulima/connect` package, in addition to the features of this package.
+To use the `@visulima/crud` package, you need to have a [Prisma](https://www.prisma.io/) schema.
 
 ```ts
-// pages/api/hello.js
+// pages/api/[...crud].ts
+
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createNodeRouter } from "@visulima/crud";
-import cors from "cors";
+import { PrismaAdapter } from "@visulima/crud";
+import { nodeHandler }  from "@visulima/crud/next";
+import type { User, Post, Prisma } from "@prisma/client";
 
-// Default Req and Res are IncomingMessage and ServerResponse
-// You may want to pass in NextApiRequest and NextApiResponse
-const router = createNodeRouter<NextApiRequest, NextApiResponse>();
+import { prisma } from "../../lib/prisma-client";
 
-router
-  .get((req, res) => {
-    res.send("Hello world");
-  });
+const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
+    prismaClient: prisma,
+});
 
-export default router.nodeHandler();
+export default async (request, response) => {
+    const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+
+    await handler(request, response);
+};
+```
+
+To use it with `api-platform connect` you need to install the `@visulima/api-platform` package.
+
+```ts
+// pages/api/[...crud].ts
+
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createNodeRouter } from "@visulima/api-platform";
+import { PrismaAdapter } from "@visulima/crud";
+import { nodeHandler }  from "@visulima/crud/next";
+import type { User, Post, Prisma } from "@prisma/client";
+
+import { prisma } from "../../lib/prisma-client";
+
+const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
+    prismaClient: prisma,
+});
+
+const router = createNodeRouter<NextApiRequest, NextApiResponse>().all(async (request, response) => {
+    const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+
+    await handler(request, response);
+});
+
+export default router.handler();
 ```
 
 ## Supported Node.js Versions
