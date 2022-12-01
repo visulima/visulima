@@ -1,4 +1,5 @@
 import type { InferGetStaticPropsType, NextPage } from "next";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import dynamic from "next/dynamic";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";
@@ -15,10 +16,7 @@ const SwaggerApiDocument: (
     name: string,
     swagger?: Exclude<SwaggerUIProps, "spec">,
     // eslint-disable-next-line max-len,unicorn/no-useless-undefined
-) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> =
-    (name, swagger = {}) =>
-    ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) =>
-        (
+) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (name, swagger = {}) => ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
             <>
                 <Head>
                     <title>{name}</title>
@@ -33,6 +31,6 @@ body {
                 {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                 <SwaggerUI {...swagger} spec={swaggerData} />
             </>
-        );
+);
 
 export default SwaggerApiDocument;

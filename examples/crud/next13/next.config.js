@@ -11,7 +11,6 @@ const nextConfig = {
     },
     experimental: {
         transpilePackages: ["swagger-client", "swagger-ui-react"],
-        externalDir: true,
     },
 };
 

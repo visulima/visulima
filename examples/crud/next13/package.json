@@ -39,14 +39,6 @@
         "rimraf": "^3.0.2",
         "typescript": "^4.9.3"
     },
-    "dependenciesMeta": {
-        "@visulima/crud": {
-            "injected": true
-        },
-        "next": {
-            "injected": true
-        }
-    },
     "prisma": {
         "schema": "prisma/schema.prisma"
     }

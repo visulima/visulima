@@ -82,6 +82,8 @@ export default defineConfig((options) => {
             "index.cjs",
             "react",
             "next",
+            "next/dynamic",
+            "next/head",
             "zod",
             ...Object.keys(packageJsonContent?.peerDependencies || {}),
             ...Object.keys(packageJsonContent?.optionalDependencies || {}),

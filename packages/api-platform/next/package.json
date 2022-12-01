@@ -3,6 +3,15 @@
     "version": "0.0.0",
     "description": "visulima api platform",
     "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/next/index-server.d.ts",
+            "browser": "./../dist/next/index-browser.js",
+            "require": "./../dist/next/index-server.js",
+            "import": "./../dist/next/index-server.mjs"
+        },
+        "./package.json": "./package.json"
+    },
     "main": "../dist/next/index-server.js",
     "module": "../dist/next/index-server.mjs",
     "browser": "../dist/next/index-browser.mjs",
