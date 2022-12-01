@@ -81,6 +81,8 @@ export default defineConfig((options) => {
             "index-browser.mjs",
             "index.cjs",
             "react",
+            "next",
+            "zod",
             ...Object.keys(packageJsonContent?.peerDependencies || {}),
             ...Object.keys(packageJsonContent?.optionalDependencies || {}),
         ],
