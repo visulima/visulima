@@ -1,3 +1,19 @@
+## @visulima/api-platform [1.0.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.2...@visulima/api-platform@1.0.3) (2022-12-01)
+
+
+### Bug Fixes
+
+* extended swagger generation for example and fixed typings ([#41](https://github.com/visulima/visulima/issues/41)) ([a16f49b](https://github.com/visulima/visulima/commit/a16f49b70f78763a63525e0d328bd2a597b183f7))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.1
+* **@visulima/jsdoc-open-api:** upgraded to 1.2.1
+* **@visulima/crud:** upgraded to 1.0.2
+* **@visulima/readdir:** upgraded to 1.3.1
+
 ## @visulima/api-platform [1.0.2](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.1...@visulima/api-platform@1.0.2) (2022-11-16)
 
 

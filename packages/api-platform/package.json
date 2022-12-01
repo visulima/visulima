@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "visulima api platform",
     "keywords": [
         "anolilab",
@@ -90,8 +90,8 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "1.3.0",
-        "@visulima/jsdoc-open-api": "1.2.0",
+        "@visulima/connect": "1.3.1",
+        "@visulima/jsdoc-open-api": "1.2.1",
         "accepts": "^1.3.8",
         "case": "^1.6.3",
         "debug": "^4.3.4",
@@ -125,8 +125,8 @@
         "@types/webpack": "^5.28.0",
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",
-        "@visulima/crud": "1.0.1",
-        "@visulima/readdir": "1.3.0",
+        "@visulima/crud": "1.0.2",
+        "@visulima/readdir": "1.3.1",
         "chalk": "5.1.2",
         "commander": "^9.4.1",
         "core-js": "^3.25.5",
@@ -180,8 +180,8 @@
         "zod": "^3.19.1"
     },
     "optionalDependencies": {
-        "@visulima/crud": "1.0.1",
-        "@visulima/readdir": "1.3.0",
+        "@visulima/crud": "1.0.2",
+        "@visulima/readdir": "1.3.1",
         "chalk": "4.1.2",
         "commander": "^9.4.1",
         "cors": "^2.8.5",
