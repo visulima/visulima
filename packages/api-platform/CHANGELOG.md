@@ -1,3 +1,10 @@
+## @visulima/api-platform [1.1.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.3...@visulima/api-platform@1.1.0) (2022-12-02)
+
+
+### Features
+
+* **api-platform:** fixed typing on next swaggerHandler ([aacc55d](https://github.com/visulima/visulima/commit/aacc55d78a71b087f455ff11d19ba599808dbd98))
+
 ## @visulima/api-platform [1.0.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.2...@visulima/api-platform@1.0.3) (2022-12-01)
 
 
