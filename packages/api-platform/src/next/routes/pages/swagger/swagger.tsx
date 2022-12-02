@@ -9,7 +9,10 @@ import type { SwaggerUIProps } from "swagger-ui-react";
 
 import getStaticProps from "./get-static-properties-swagger";
 // eslint-disable-next-line import/no-extraneous-dependencies
-const SwaggerUI = dynamic(import("swagger-ui-react"), { ssr: false });
+const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
+// @ts-ignore
+// eslint-disable-next-line import/no-extraneous-dependencies
+dynamic(import("swagger-ui-react/swagger-ui.css"), { ssr: false });
 
 // eslint-disable-next-line max-len
 const SwaggerApiDocument: (

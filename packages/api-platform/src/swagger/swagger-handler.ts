@@ -15,18 +15,7 @@ import extendSwaggerSpec from "./extend-swagger-spec";
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
-const swaggerHandler = (
-    options: Partial<{
-        allowedMediaTypes: { [key: string]: boolean };
-        swaggerFilePath: string;
-        crud: Exclude<ModelsToOpenApiParameters, "swagger"> & {
-            swagger?: {
-                models?: SwaggerModelsConfig<string>;
-            };
-        };
-        specs?: Partial<OpenAPIV3.Document>[];
-    }> = {},
-) => {
+const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
     const {
         allowedMediaTypes = {
             "application/json": true,
@@ -87,6 +76,17 @@ const swaggerHandler = (
             response.end(JSON.stringify(spec, null, 2));
         }
     };
+};
+
+export type SwaggerHandlerOptions = {
+    allowedMediaTypes: { [key: string]: boolean };
+    swaggerFilePath: string;
+    crud: Exclude<ModelsToOpenApiParameters, "swagger"> & {
+        swagger?: {
+            models?: SwaggerModelsConfig<string>;
+        };
+    };
+    specs?: Partial<OpenAPIV3.Document>[];
 };
 
 export default swaggerHandler;

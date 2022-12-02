@@ -494,10 +494,10 @@ importers:
       '@types/webpack': ^5.28.0
       '@typescript-eslint/eslint-plugin': ^5.40.0
       '@typescript-eslint/parser': ^5.40.0
-      '@visulima/connect': 1.3.0
-      '@visulima/crud': 1.0.1
-      '@visulima/jsdoc-open-api': 1.2.0
-      '@visulima/readdir': 1.3.0
+      '@visulima/connect': 1.3.1
+      '@visulima/crud': 1.0.2
+      '@visulima/jsdoc-open-api': 1.2.1
+      '@visulima/readdir': 1.3.1
       accepts: ^1.3.8
       case: ^1.6.3
       chalk: 4.1.2
@@ -754,8 +754,8 @@ importers:
       '@types/qs': ^6.9.7
       '@typescript-eslint/eslint-plugin': ^5.40.0
       '@typescript-eslint/parser': ^5.40.0
-      '@visulima/pagination': 1.0.0
-      '@visulima/prisma-dmmf-transformer': 1.0.0
+      '@visulima/pagination': 1.0.1
+      '@visulima/prisma-dmmf-transformer': 1.0.1
       cross-env: ^7.0.3
       eslint: ^8.25.0
       eslint-plugin-compat: ^4.0.2
@@ -963,7 +963,7 @@ importers:
       '@types/webpack': ^5.28.0
       '@typescript-eslint/eslint-plugin': ^5.40.0
       '@typescript-eslint/parser': ^5.40.0
-      '@visulima/readdir': 1.3.0
+      '@visulima/readdir': 1.3.1
       c8: ^7.12.0
       cli-progress: ^3.11.2
       commander: ^9.4.1
