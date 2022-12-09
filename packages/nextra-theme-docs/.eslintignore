@@ -7,3 +7,4 @@ __fixtures__/**
 vitest.config.ts
 postcss.config.js
 tailwind.config.js
+src/env.d.ts
