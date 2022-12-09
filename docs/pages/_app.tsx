@@ -1,8 +1,8 @@
 import "../css/styles.css";
-
 import "@visulima/nextra-theme-docs/style.css";
-import React from "react";
+
 import type { AppProps } from "next/app";
+import React from "react";
 
 import reportAccessibility from "../src/utils/report-accessibility";
 

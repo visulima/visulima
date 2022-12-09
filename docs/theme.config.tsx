@@ -1,6 +1,6 @@
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
 import { Anchor } from "@visulima/nextra-theme-docs";
-import { BookOpenIcon } from "@heroicons/react/24/outline";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
@@ -26,11 +26,6 @@ const config: DocumentationThemeConfig = {
         link: visulimaGitHubUrl,
     },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
-    titleSuffix: " – Visulima",
-    unstable_flexsearch: true,
-    toc: {
-        float: true,
-    },
     feedback: {
         labels: "feedback",
         content: () => {
@@ -77,8 +72,7 @@ const config: DocumentationThemeConfig = {
         ),
         component: () => {
             // eslint-disable-next-line max-len
-            const linkClasses =
-                "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
+            const linkClasses = "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
 
             const menu = [
                 {
