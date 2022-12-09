@@ -5,7 +5,7 @@ import React, { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
-import { getGitIssueUrl, renderComponent } from "../../utils";
+import { getGitIssueUrl, renderComponent, renderString } from "../../utils";
 import Anchor from "../anchor";
 import Toc from "./toc";
 
@@ -85,7 +85,7 @@ const TocSidebar: FC<TOCProperties> = ({
                     {renderComponent(config.editLink.component, {
                         filePath,
                         className: linkClassName,
-                        children: renderComponent(config.editLink.text, { locale }),
+                        children: renderString(config.editLink.text, { locale }),
                     })}
 
                     {renderComponent(config.tocSidebar.extraContent)}

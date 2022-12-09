@@ -38,7 +38,7 @@ export interface DocumentationThemeConfig {
             className?: string;
             filePath?: string;
         }>;
-        text: ReactNode | FC<{ locale: string }>;
+        text: string | (({ locale: string }) => string);
     };
     faviconGlyph?: string;
     feedback: {
