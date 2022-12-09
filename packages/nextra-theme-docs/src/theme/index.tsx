@@ -22,7 +22,9 @@ import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
 import type { PageTheme } from "../types";
-import { getFSRoute, Item, normalizePages, renderComponent } from "../utils";
+import {
+    getFSRoute, Item, normalizePages, renderComponent,
+} from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
@@ -49,7 +51,7 @@ const Body: FC<{
     children: ReactNode;
     activeType: string;
 }> = ({
- themeContext, breadcrumb, timestamp, navigation, children, activeType,
+    themeContext, breadcrumb, timestamp, navigation, children, activeType,
 }) => {
     const config = useConfig();
 
@@ -114,8 +116,17 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
 }) => {
     const config = useConfig();
     const {
- activeType = "doc", activeIndex, activeThemeContext, activePath, topLevelNavbarItems, docsDirectories, flatDirectories, flatDocsDirectories, directories,
-} = useDirectoryInfo(pageMap);
+        // eslint-disable-next-line max-len
+        activeType = "doc",
+        activeIndex,
+        activeThemeContext,
+        activePath,
+        topLevelNavbarItems,
+        docsDirectories,
+        flatDirectories,
+        flatDocsDirectories,
+        directories,
+    } = useDirectoryInfo(pageMap);
     const reference: any = useRef<HTMLDivElement>();
     const isOnScreen = useOnScreen(reference, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
@@ -163,7 +174,11 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             <div
                 dir={direction}
                 // eslint-disable-next-line max-len
-                className={["page", "hidden"].includes(activeType) ? "" : "md:bg-x-gradient-gray-200-gray-200-50-white-50 md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"}
+                className={
+                    ["page", "hidden"].includes(activeType)
+                        ? ""
+                        : "md:bg-x-gradient-gray-200-gray-200-50-white-50 md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"
+                }
             >
                 <script
                     // eslint-disable-next-line react/no-danger
@@ -217,7 +232,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <Body
                                     themeContext={themeContext}
                                     // eslint-disable-next-line max-len
-                                    breadcrumb={!["page", "hidden"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null}
+                                    breadcrumb={
+                                        !["page", "hidden"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
+                                    }
                                     timestamp={timestamp}
                                     navigation={
                                         !["page", "hidden"].includes(activeType) && themeContext.pagination ? (
@@ -228,7 +245,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 >
                                     {activeType === "doc" && (
                                         <h1 className="md:text-4xl lg:text-5xl text-3xl leading-tall tracking-tight font-bold hyphenated mt-4">
-                                            {(activePath[Object.keys(activePath).length - 1] as  Item).title}
+                                            {(activePath[Object.keys(activePath).length - 1] as Item).title}
                                         </h1>
                                     )}
                                     {tocPageContentElement}
@@ -257,7 +274,9 @@ const Theme: FC = (properties) => {
 
     return (
         <ConfigProvider value={context}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <InnerLayout {...pageOpts}>
+                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                 <Content {...properties} />
             </InnerLayout>
         </ConfigProvider>

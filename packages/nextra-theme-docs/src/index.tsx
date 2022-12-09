@@ -1,11 +1,9 @@
-import { default as Theme } from "./theme";
-import { useConfig } from "./contexts";
-import type { RecursivePartial, DocumentationThemeConfig } from "./types";
+import type { DocumentationThemeConfig, RecursivePartial } from "./types";
 
-type PartialDocsThemeConfig = RecursivePartial<DocumentationThemeConfig>;
+type PartialDocumentsThemeConfig = RecursivePartial<DocumentationThemeConfig>;
 
-export type { PartialDocsThemeConfig as DocumentationThemeConfig };
-export { useConfig };
+export type { PartialDocumentsThemeConfig as DocumentationThemeConfig };
+
 export { useMDXComponents } from "@mdx-js/react";
 export { useTheme } from "next-themes";
 export { default as Bleed } from "./components/bleed";
@@ -20,4 +18,6 @@ export { default as Anchor } from "./components/anchor";
 export { default as Prose } from "./components/prose";
 export { default as StepContainer } from "./components/step-container";
 
-export default Theme;
+export { useConfig } from "./contexts";
+
+export { default } from "./theme";

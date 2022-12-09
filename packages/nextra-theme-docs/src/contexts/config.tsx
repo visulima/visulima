@@ -4,7 +4,7 @@ import type { PageOpts } from "nextra";
 import { GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
 import React, {
- createContext, isValidElement, useContext, useMemo, useState,
+    createContext, isValidElement, useContext, useMemo, useState,
 } from "react";
 
 import Anchor from "../components/anchor";
@@ -18,7 +18,7 @@ import type { Context, DocumentationThemeConfig } from "../types";
 import { getGitEditUrl } from "../utils";
 import { MenuProvider } from "./menu";
 
-type Config = DocumentationThemeConfig & Pick<PageOpts, 'flexsearch' | 'newNextLinkBehavior' | 'title' | 'frontMatter'>
+type Config = DocumentationThemeConfig & Pick<PageOpts, "flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;
 
 const DEFAULT_THEME: DocumentationThemeConfig = {
     banner: {
@@ -214,12 +214,12 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             frontMatter: pageOpts.frontMatter,
             ...Object.fromEntries(
                 DEEP_OBJECT_KEYS.map((key) => (typeof themeConfig[key] === "object"
-                        ? [
-                              key,
-                              // @ts-expect-error -- key has always object value
-                              { ...DEFAULT_THEME[key], ...themeConfig[key] },
-                          ]
-                        : [])),
+                    ? [
+                        key,
+                        // @ts-expect-error -- key has always object value
+                        { ...DEFAULT_THEME[key], ...themeConfig[key] },
+                    ]
+                    : [])),
             ),
         };
     }, [themeConfig, pageOpts.flexsearch, pageOpts.newNextLinkBehavior, pageOpts.title, pageOpts.frontMatter]);

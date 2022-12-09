@@ -5,7 +5,7 @@ import { useMounted } from "nextra/hooks";
 import { SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
 import React, {
- Fragment, useCallback, useEffect, useRef, useState,
+    Fragment, useCallback, useEffect, useRef, useState,
 } from "react";
 
 import { useConfig, useMenu } from "../contexts";
@@ -243,8 +243,8 @@ const Search: FC<SearchProperties> = ({
                         </span>
                     ) : (results.length > 0 ? (
                         results.map(({
- route, prefix, children, id,
-}, index) => (
+                            route, prefix, children, id,
+                        }, index) => (
                             <Fragment key={id}>
                                 {prefix}
                                 <li

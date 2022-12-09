@@ -13,14 +13,14 @@ const MatchSorterSearch = ({ className, directories = [] }: { className?: string
         // (similar to what we already do to render the hash links in sidebar)
         // We could also try to search the entire string text from each page
         () => (search
-                ? matchSorter(directories, search, { keys: ["title"] }).map(({ route, title }) => {
-                      return {
-                          id: route + title,
-                          route,
-                          children: <HighlightMatches value={title} match={search} />,
-                      };
-                  })
-                : []),
+            ? matchSorter(directories, search, { keys: ["title"] }).map(({ route, title }) => {
+                return {
+                    id: route + title,
+                    route,
+                    children: <HighlightMatches value={title} match={search} />,
+                };
+            })
+            : []),
         [search, directories],
     );
 

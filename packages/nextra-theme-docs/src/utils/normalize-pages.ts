@@ -214,8 +214,8 @@ export function normalizePages({
 
         // Get the item's meta information.
         const {
- display, type = "doc", theme: metaTheme, title: metaTitle,
-} = extendMeta(meta[a.name] || {}, fallbackMeta);
+            display, type = "doc", theme: metaTheme, title: metaTitle,
+        } = extendMeta(meta[a.name] || {}, fallbackMeta);
         const extendedPageThemeContext = {
             ...pageThemeContext,
             ...metaTheme,
@@ -400,11 +400,11 @@ export interface MenuItem extends MdxFile {
     display?: Display;
     children?: PageItem[];
     items?: Record<
-        string,
-        {
-            title: string;
-            href?: string;
-            newWindow?: boolean;
-        }
+    string,
+    {
+        title: string;
+        href?: string;
+        newWindow?: boolean;
+    }
     >;
 }

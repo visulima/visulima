@@ -24,6 +24,6 @@ const Prose: FC<PropsWithChildren<{ as: any }>> = ({ as: Component = "div", chil
         >
             {children}
         </Component>
-    );
+);
 
 export default Prose;

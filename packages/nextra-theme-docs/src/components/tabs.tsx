@@ -43,14 +43,14 @@ export const Tabs = ({
                             key={index}
                             disabled={disabled}
                             className={({ selected }) => cn(
-                                    "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
-                                    "-mb-0.5 select-none border-b-2",
-                                    selected
-                                        ? "border-primary-500 text-primary-600"
-                                         // eslint-disable-next-line max-len
-                                        : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
-                                    disabled && "pointer-events-none text-gray-400 dark:text-neutral-600",
-                                )}
+                                "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
+                                "-mb-0.5 select-none border-b-2",
+                                selected
+                                    ? "border-primary-500 text-primary-600"
+                                // eslint-disable-next-line max-len
+                                    : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
+                                disabled && "pointer-events-none text-gray-400 dark:text-neutral-600",
+                            )}
                         >
                             {renderTab(item)}
                         </HeadlessTab>
@@ -63,6 +63,7 @@ export const Tabs = ({
 );
 
 export const Tab = ({ children, ...properties }: ComponentProps<"div">): ReactElement => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <HeadlessTab.Panel {...properties} className="rounded pt-6">
         {children}
     </HeadlessTab.Panel>

@@ -10,24 +10,24 @@ import HighlightMatches from "./highlight-matches";
 import Search from "./search";
 
 type SectionIndex = BaseFlexSearch.Document<
-    {
-        id: string;
-        url: string;
-        title: string;
-        pageId: string;
-        content: string;
-        display?: string;
-    },
-    ["title", "content", "url", "display"]
+{
+    id: string;
+    url: string;
+    title: string;
+    pageId: string;
+    content: string;
+    display?: string;
+},
+["title", "content", "url", "display"]
 >;
 
 type PageIndex = BaseFlexSearch.Document<
-    {
-        id: number;
-        title: string;
-        content: string;
-    },
-    ["title"]
+{
+    id: number;
+    title: string;
+    content: string;
+},
+["title"]
 >;
 
 type Result = {
@@ -168,9 +168,9 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
 
         // Show the resultList for the top 5 pages
         const pageResults = pageIndex.search<true>(searchString, 5, {
-                enrich: true,
-                suggest: true,
-            })[0]?.result || [];
+            enrich: true,
+            suggest: true,
+        })[0]?.result || [];
 
         const resultList: Result[] = [];
         const pageTitleMatches: Record<number, number> = {};
@@ -180,10 +180,10 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
 
             // Show the top 5 resultList for each page
             const sectionResults = sectionIndex.search<true>(searchString, 5, {
-                    enrich: true,
-                    suggest: true,
-                    tag: `page_${result.id}`,
-                })[0]?.result || [];
+                enrich: true,
+                suggest: true,
+                tag: `page_${result.id}`,
+            })[0]?.result || [];
 
             let isFirstItemOfPage = true;
 

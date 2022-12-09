@@ -10,6 +10,7 @@ const Button = ({ children, className = "", ...properties }: ComponentProps<"but
             className,
         ].join(" ")}
         type="button"
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...properties}
     >
         {children}

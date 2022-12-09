@@ -25,6 +25,7 @@ const Head = (): ReactElement => {
                 description={frontMatter.description}
                 canonical={frontMatter.canonical}
                 openGraph={frontMatter.openGraph}
+                // eslint-disable-next-line react/jsx-props-no-spreading
                 {...config.getNextSeoProps?.()}
             />
             <NextHead>

@@ -4,7 +4,9 @@ import { useRouter } from "next/router";
 import type { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
-import React, { memo, useEffect, useMemo, useRef, useState, createContext, useContext } from "react";
+import React, {
+    createContext, memo, useContext, useEffect, useMemo, useRef, useState,
+} from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
@@ -19,6 +21,7 @@ import ThemeSwitch from "./theme-switch";
 const TreeState: Record<string, boolean> = Object.create(null);
 
 const FocusedItemContext = createContext<null | string>(null);
+// eslint-disable-next-line no-spaced-func
 const OnFocuseItemContext = createContext<null | ((item: string | null) => any)>(null);
 
 const classes = {
@@ -50,7 +53,7 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
     const activeRouteInside = active || (route as string).startsWith(`${item.route}/`);
 
     const focusedRoute = useContext(FocusedItemContext);
-    const focusedRouteInside = !!focusedRoute?.startsWith(item.route + "/");
+    const focusedRouteInside = !!focusedRoute?.startsWith(`${item.route}/`);
 
     // TODO: This is not always correct. Might be related to docs root.
     const folderLevel = (item.route.match(/\//g) || []).length;
@@ -59,13 +62,12 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
     const config = useConfig();
     const { theme } = item as Item;
     // eslint-disable-next-line unicorn/no-negated-condition
-    const open =
-        TreeState[item.route] !== undefined
-            ? TreeState[item.route] || focusedRouteInside
-            : active ||
-              activeRouteInside ||
-              focusedRouteInside ||
-              (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel);
+    const open = TreeState[item.route] === undefined
+        ? active
+              || activeRouteInside
+              || focusedRouteInside
+              || (theme && "collapsed" in theme ? !theme.collapsed : folderLevel <= config.sidebar.defaultMenuCollapseLevel)
+        : TreeState[item.route] || focusedRouteInside;
 
     const rerender = useState({})[1];
 
@@ -73,6 +75,7 @@ const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = 
         if (activeRouteInside || focusedRouteInside) {
             TreeState[item.route] = true;
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeRouteInside || focusedRouteInside, item.route]);
 
     if (item.type === "menu") {
@@ -242,17 +245,17 @@ interface MenuProperties {
     onlyCurrentDocs?: boolean;
 }
 
-const Menu: FC<MenuProperties> = ({ directories, anchors, className, onlyCurrentDocs }) => (
+const Menu: FC<MenuProperties> = ({
+    directories, anchors, className, onlyCurrentDocs,
+}) => (
     <ul className={cn(classes.list, className)}>
-        {directories.map((item) =>
-            !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
-                item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
+        {directories.map((item) => (!onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
+            item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
                     <Folder key={item.name} item={item} anchors={anchors} />
-                ) : (
+            ) : (
                     <File key={item.name} item={item} anchors={anchors} />
-                )
-            ) : null,
-        )}
+            )
+        ) : null))}
     </ul>
 );
 
@@ -278,13 +281,12 @@ const Sidebar: FC<SideBarProperties> = ({
 }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
-    const [focused, setFocused] = useState<null | string>(null)
+    const [focused, setFocused] = useState<null | string>(null);
     const anchors = useMemo(
-        () =>
-            headings
-                .filter((v) => v.children && v.depth === 2 && v.type === "heading")
-                .map((heading) => getHeadingText(heading))
-                .filter(Boolean),
+        () => headings
+            .filter((v) => v.children && v.depth === 2 && v.type === "heading")
+            .map((heading) => getHeadingText(heading))
+            .filter(Boolean),
         [headings],
     );
     const sidebarReference = useRef<HTMLDivElement>(null);
@@ -356,6 +358,7 @@ const Sidebar: FC<SideBarProperties> = ({
                 </div>
                 <FocusedItemContext.Provider value={focused}>
                     <OnFocuseItemContext.Provider
+                        // eslint-disable-next-line react/jsx-no-constructed-context-values
                         value={(item) => {
                             setFocused(item);
                         }}

@@ -11,6 +11,7 @@ export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode, propertie
     }
 
     // @ts-expect-error TS2322: Type '{}' is not assignable to type 'T'
+    // eslint-disable-next-line react/jsx-props-no-spreading
     return <ComponentOrNode {...properties} />;
 }
 

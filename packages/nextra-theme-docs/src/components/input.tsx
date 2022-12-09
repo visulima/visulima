@@ -17,6 +17,7 @@ const Input = forwardRef<HTMLInputElement, InputProperties>(({ className, suffix
                 "placeholder:text-gray-500 dark:placeholder:text-gray-400",
                 "contrast-more:border contrast-more:border-current",
             )}
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         />
         {suffix}
