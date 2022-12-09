@@ -71,7 +71,6 @@
         "@heroicons/react": "^2.0.13",
         "@mdx-js/react": "^2.1.5",
         "@popperjs/core": "^2.11.6",
-        "@reach/skip-nav": "^0.17.0",
         "clsx": "^1.2.1",
         "copy-to-clipboard": "^3.3.3",
         "flexsearch": "^0.7.21",

@@ -13,6 +13,6 @@ function MyApp({ Component, pageProps }: AppProps & { Component: AppProps["Compo
     return getLayout(<Component {...pageProps} />);
 }
 
-reportAccessibility(React)
+reportAccessibility(React);
 
 export default MyApp;
