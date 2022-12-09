@@ -2,7 +2,6 @@ import "focus-visible";
 import "./polyfill";
 
 import { MDXProvider } from "@mdx-js/react";
-import { SkipNavContent } from "@reach/skip-nav";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { PageMapItem, PageOpts } from "nextra";
@@ -230,7 +229,6 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 }`}
                             >
                                 {tocSidebarElement}
-                                <SkipNavContent />
                                 <Body
                                     themeContext={themeContext}
                                     // eslint-disable-next-line max-len
