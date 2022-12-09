@@ -1,7 +1,7 @@
 {
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/readdir/src",
+    "sourceRoot": "packages/nextra-theme-docs/src",
     "projectType": "library",
-    "tags": ["readdir"],
+    "tags": ["nextra-theme-docs"],
     "implicitDependencies": []
 }
