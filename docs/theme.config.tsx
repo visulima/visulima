@@ -1,9 +1,9 @@
+import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
+import { Anchor } from "@visulima/nextra-theme-docs";
 import { BookOpenIcon } from "@heroicons/react/24/outline";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-
-import Anchor from "./src/components/anchor";
 
 // const Logo = ({ height }) => (
 //
@@ -19,7 +19,7 @@ const FEEDBACK_LINK_WITH_TRANSLATIONS = {
 
 const visulimaGitHubUrl = "https://github.com/visulima/visulima";
 
-export default {
+const config: DocumentationThemeConfig = {
     project: {
         // eslint-disable-next-line @next/next/no-img-element
         icon: () => <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
@@ -54,9 +54,9 @@ export default {
     chat: {
         icon: (
             <Anchor className="p-2 text-current" href="" newWindow>
-                    <DiscordIcon />
-                    <span className="sr-only">Discord</span>
-                </Anchor>
+                <DiscordIcon />
+                <span className="sr-only">Discord</span>
+            </Anchor>
         ),
     },
     head: ({ title, meta }) => {
@@ -96,13 +96,14 @@ export default {
     },
     footer: {
         copyright: ({ activeType }) => (
-                <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
-                    © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
-                </span>
+            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
+                © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
+            </span>
         ),
         component: () => {
             // eslint-disable-next-line max-len
-            const linkClasses = "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
+            const linkClasses =
+                "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
 
             const menu = [
                 {
@@ -163,7 +164,6 @@ export default {
                                     // eslint-disable-next-line react/no-array-index-key
                                     <li key={`li-${link.title}`}>
                                         <Anchor href={link.href} title={link.title} className={linkClasses} newWindow={link.href[0] !== "/"}>
-                                            {" "}
                                             {link.title}{" "}
                                         </Anchor>
                                     </li>
@@ -215,3 +215,5 @@ export default {
     // },
     i18n: [{ locale: "en-US", text: "English" }],
 };
+
+export default config;
