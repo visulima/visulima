@@ -154,7 +154,7 @@ const config: DocumentationThemeConfig = {
 
             // eslint-disable-next-line react/no-array-index-key
             return (
-                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 pt-8 md:p-0 footer-border dark:footer-border md:border-0">
+                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 md:p-0 md:border-0">
                     {menu.map((item, index) => (
                         // eslint-disable-next-line react/no-array-index-key
                         <div key={`group-${index}-${item.title}`} className="text-ms col-span-6 md:col-span-3 lg:col-span-2">

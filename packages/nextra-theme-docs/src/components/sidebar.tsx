@@ -33,7 +33,7 @@ const classes = {
         "contrast-more:border-transparent contrast-more:hover:border-gray-900 contrast-more:dark:hover:border-gray-50",
     ),
     active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
-    list: cn("flex flex-col gap-1"),
+    list: cn("flex-col gap-1"),
     border: cn(
         "relative before:absolute before:inset-y-1.5",
         'before:w-px before:bg-gray-300 before:content-[""] dark:before:bg-neutral-800',
@@ -361,11 +361,11 @@ const Sidebar: FC<SideBarProperties> = ({
                         }}
                     >
                         <div
-                            className={cn("nextra-scrollbar nx-overflow-y-auto nx-p-4", "nx-grow md:nx-h-[calc(100vh-var(--nextra-navbar-height)-3.75rem)]")}
+                            className={cn("nextra-scrollbar overflow-y-auto px-4 pb-4 md:pt-4", "grow md:h-[calc(100vh-var(--nextra-navbar-height)-3.75rem)]")}
                             ref={sidebarReference}
                         >
                             <Menu
-                                className="nx-hidden md:nx-flex"
+                                className="hidden md:flex"
                                 // The sidebar menu, shows only the docs directories.
                                 directories={docsDirectories}
                                 // When the viewport size is larger than `md`, hide the anchors in
@@ -374,7 +374,7 @@ const Sidebar: FC<SideBarProperties> = ({
                                 onlyCurrentDocs
                             />
                             <Menu
-                                className="md:nx-hidden"
+                                className="flex md:hidden"
                                 // The mobile dropdown menu, shows all the directories.
                                 directories={fullDirectories}
                                 // Always show the anchor links on mobile (`md`).
