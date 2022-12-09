@@ -40,7 +40,11 @@ const NotFoundPage = (): ReactElement | null => {
                                     className="flex flex-row px-4 py-8 border-t hover:cursor-pointer transition-all duration-200 delay-100"
                                 >
                                     {/* eslint-disable-next-line max-len */}
-                                    {page.icon && <div className="rounded-md bg-primary-100 px-2 py-2 md:px-3 md:py-3 lg:px-4 lg:py-4 md:py-4">{page.icon as JSX.Element}</div>}
+                                    {page.icon && (
+                                        <div className="rounded-md bg-primary-100 px-2 py-2 md:px-3 md:py-3 lg:px-4 lg:py-4 md:py-4">
+                                            {page.icon as JSX.Element}
+                                        </div>
+                                    )}
                                     <a href={page.url} title={page.title} className="grow flex flex-col pl-5 hover:no-underline! group">
                                         <div className="font-bold lg:font-semibold text-sm md:text-lg lg:text-xl">{page.title}</div>
                                         {page.subtitle && (

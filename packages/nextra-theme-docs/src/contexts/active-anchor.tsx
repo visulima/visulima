@@ -6,15 +6,13 @@ import React, { createContext, useContext, useState } from "react";
 const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
 
-export type ActiveAnchor = Record<
-string,
-{
+export type ActiveAnchorItem = {
     isActive?: boolean;
     aboveHalfViewport: boolean;
     index: number;
     insideHalfViewport: boolean;
-}
->;
+};
+export type ActiveAnchor = Record<string, ActiveAnchorItem>;
 
 // Separate the state as 2 contexts here to avoid
 // re-renders of the content triggered by the state update.

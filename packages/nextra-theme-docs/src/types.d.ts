@@ -38,7 +38,7 @@ export interface DocumentationThemeConfig {
             className?: string;
             filePath?: string;
         }>;
-        text: ReactNode | FC;
+        text: ReactNode | FC<{ locale: string }>;
     };
     faviconGlyph?: string;
     feedback: {
@@ -98,7 +98,7 @@ export interface DocumentationThemeConfig {
         emptyResult: ReactNode | FC;
         loading: string | (() => string);
         // Can't be React component
-        placeholder: string | (() => string);
+        placeholder: string | (({ locale }: { locale: string }) => string);
     };
     serverSideError: {
         content: ReactNode | FC;
@@ -112,13 +112,13 @@ export interface DocumentationThemeConfig {
         component: ReactNode | FC<TOCSidebarProperties>;
         extraContent?: ReactNode | FC;
         float: boolean;
-        title: ReactNode | FC;
+        title: ReactNode | FC<{ locale: string }>;
     };
     tocContent: {
         component: ReactNode | FC<TOCPageContentProperties>;
         extraContent?: ReactNode | FC;
         float: boolean;
-        title: ReactNode | FC;
+        title: ReactNode | FC<{ locale: string }>;
     };
     hero?: {
         component: ReactNode | FC;

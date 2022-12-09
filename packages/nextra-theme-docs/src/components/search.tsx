@@ -8,6 +8,7 @@ import React, {
     Fragment, useCallback, useEffect, useRef, useState,
 } from "react";
 
+import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
 import { SearchResult } from "../types";
 import { renderComponent, renderString } from "../utils";
@@ -206,7 +207,7 @@ const Search: FC<SearchProperties> = ({
                     setShow(Boolean(eventValue));
                 }}
                 type="search"
-                placeholder={renderString(config.search.placeholder)}
+                placeholder={renderString(config.search.placeholder, { locale: router.locale || DEFAULT_LOCALE })}
                 onKeyDown={handleKeyDown}
                 suffix={icon}
             />

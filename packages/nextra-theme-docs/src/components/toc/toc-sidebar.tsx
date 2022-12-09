@@ -9,7 +9,9 @@ import { getGitIssueUrl, renderComponent } from "../../utils";
 import Anchor from "../anchor";
 import Toc from "./toc";
 
-const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = false }) => {
+const TocSidebar: FC<TOCProperties> = ({
+    headings, filePath, isOnScreen = false, locale,
+}) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement>(null);
@@ -79,7 +81,7 @@ const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = false 
                     {renderComponent(config.editLink.component, {
                         filePath,
                         className: linkClassName,
-                        children: renderComponent(config.editLink.text),
+                        children: renderComponent(config.editLink.text, { locale }),
                     })}
 
                     {renderComponent(config.tocSidebar.extraContent)}
@@ -93,6 +95,7 @@ export type TOCProperties = {
     headings: Heading[];
     filePath: string;
     isOnScreen?: boolean;
+    locale: string;
 };
 
 export default TocSidebar;

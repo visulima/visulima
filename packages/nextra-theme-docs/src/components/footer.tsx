@@ -29,7 +29,9 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
                         {config.darkMode && <ThemeSwitch />}
                     </div>
                     {/*  eslint-disable-next-line max-len */}
-                    <div className={cn("hidden md:block", activeType === "doc" ? "px-6" : "px-2")}>{config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
+                    <div className={cn("hidden md:block", activeType === "doc" ? "px-6" : "px-2")}>
+                        {config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}
+                    </div>
                 </div>
                 <div
                     className={cn(

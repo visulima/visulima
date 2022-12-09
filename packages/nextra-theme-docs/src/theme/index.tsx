@@ -135,12 +135,15 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const tocClassName = "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block";
     const isDocumentPage = activeType === "doc" || themeContext.toc;
 
+    const { locale = DEFAULT_LOCALE, route } = useRouter();
+
     const tocSidebarElement = isDocumentPage && (
         <nav className={cn(tocClassName, "px-4")} aria-label="table of contents">
             {renderComponent(config.tocSidebar.component, {
                 headings: config.tocSidebar.float ? headings : [],
                 filePath,
                 isOnScreen: !isOnScreen,
+                locale,
             })}
         </nav>
     );
@@ -149,8 +152,6 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference,
         });
-
-    const { locale = DEFAULT_LOCALE, route } = useRouter();
     const localeConfig = config.i18n.find((l) => l.locale === locale);
     const isRTL = localeConfig ? localeConfig.direction === "rtl" : config.direction === "rtl";
     const direction = isRTL ? "rtl" : "ltr";

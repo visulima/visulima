@@ -47,7 +47,7 @@ export const Tabs = ({
                                 "-mb-0.5 select-none border-b-2",
                                 selected
                                     ? "border-primary-500 text-primary-600"
-                                // eslint-disable-next-line max-len
+                                    // eslint-disable-next-line max-len
                                     : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
                                 disabled && "pointer-events-none text-gray-400 dark:text-neutral-600",
                             )}

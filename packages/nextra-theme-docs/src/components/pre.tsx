@@ -40,7 +40,13 @@ const Pre = ({
                 {children}
             </pre>
             {/* eslint-disable-next-line max-len */}
-            <div className={cn(["opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100", "flex gap-1 absolute m-2 right-0", filename ? "top-10" : "top-0"])}>
+            <div
+                className={cn([
+                    "opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100",
+                    "flex gap-1 absolute m-2 right-0",
+                    filename ? "top-10" : "top-0",
+                ])}
+            >
                 <Button tabIndex={-1} onClick={toggleWordWrap} className="md:hidden" title="Toggle word wrap">
                     <WordWrapIcon className="pointer-events-none h-4 w-4" />
                 </Button>

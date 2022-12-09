@@ -27,7 +27,8 @@ const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
             return (
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 <a ref={forwardedReference} href={href} target="_blank" rel="noreferrer" {...properties}>
-                    {children}<span className="sr-only"> (opens in a new tab)</span>
+                    {children}
+                    <span className="sr-only"> (opens in a new tab)</span>
                 </a>
             );
         }

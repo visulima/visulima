@@ -14,6 +14,7 @@ import Collapse from "./components/collapse";
 import Pre from "./components/pre";
 import { IS_BROWSER } from "./constants";
 import { DetailsProvider, useDetails, useSetActiveAnchor } from "./contexts";
+import type { ActiveAnchorItem } from "./contexts/active-anchor";
 import type { DocumentationThemeConfig } from "./types";
 
 let observer: IntersectionObserver;
@@ -45,24 +46,27 @@ if (IS_BROWSER) {
                 let largestIndexAboveViewport = -1;
 
                 Object.keys(returnValue).forEach((s) => {
-                    returnValue[s].isActive = false;
+                    (returnValue[s] as ActiveAnchorItem).isActive = false;
 
-                    if (returnValue[s].insideHalfViewport && returnValue[s].index < smallestIndexInViewport) {
-                        smallestIndexInViewport = returnValue[s].index;
+                    if ((returnValue[s] as ActiveAnchorItem).insideHalfViewport && (returnValue[s] as ActiveAnchorItem).index < smallestIndexInViewport) {
+                        smallestIndexInViewport = (returnValue[s] as ActiveAnchorItem).index;
                         activeSlug = s;
                     }
 
                     if (
                         smallestIndexInViewport === Number.POSITIVE_INFINITY
-                        && returnValue[s].aboveHalfViewport
-                        && returnValue[s].index > largestIndexAboveViewport
+                        && (returnValue[s] as ActiveAnchorItem).aboveHalfViewport
+                        && (returnValue[s] as ActiveAnchorItem).index > largestIndexAboveViewport
                     ) {
-                        largestIndexAboveViewport = returnValue[s].index;
+                        largestIndexAboveViewport = (returnValue[s] as ActiveAnchorItem).index;
                         activeSlug = s;
                     }
                 });
 
-                if (returnValue[activeSlug]) returnValue[activeSlug].isActive = true;
+                if (returnValue[activeSlug]) {
+                    (returnValue[activeSlug] as ActiveAnchorItem).isActive = true;
+                }
+
                 return returnValue;
             });
         },
