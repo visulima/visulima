@@ -45,7 +45,7 @@ const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
                     title={previous.title}
                     className={cn(
                         classes.link,
-                        next ? "max-w-[50%]": "max-w-full",
+                        next ? "max-w-[50%]" : "max-w-full",
                         "ltr:pr-4 rtl:pl-4",
                         "flex-grow mr-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}
@@ -63,7 +63,7 @@ const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
                     title={next.title}
                     className={cn(
                         classes.link,
-                        previous ? "max-w-[50%]": "max-w-full",
+                        previous ? "max-w-[50%]" : "max-w-full",
                         "ltr:ml-auto ltr:pl-4 ltr:text-right rtl:mr-auto rtl:pr-4 rtl:text-left",
                         "flex-grow ml-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}

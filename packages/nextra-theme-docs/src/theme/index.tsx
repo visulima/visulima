@@ -144,6 +144,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 filePath,
                 isOnScreen: !isOnScreen,
                 locale,
+                route,
             })}
         </nav>
     );

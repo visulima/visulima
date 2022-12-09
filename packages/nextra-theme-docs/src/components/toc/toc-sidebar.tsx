@@ -10,7 +10,7 @@ import Anchor from "../anchor";
 import Toc from "./toc";
 
 const TocSidebar: FC<TOCProperties> = ({
-    headings, filePath, isOnScreen = false, locale,
+    headings, filePath, isOnScreen = false, locale, route
 }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
@@ -67,14 +67,18 @@ const TocSidebar: FC<TOCProperties> = ({
                     {config.feedback.content ? (
                         <Anchor
                             className={linkClassName}
-                            href={getGitIssueUrl({
-                                repository: config.docsRepositoryBase,
-                                title: `Feedback for “${config.title}”`,
-                                labels: config.feedback.labels,
-                            })}
+                            href={
+                                config.feedback?.link
+                                    ? config.feedback.link(config.title, route)
+                                    : getGitIssueUrl({
+                                        repository: config.docsRepositoryBase,
+                                        title: `Feedback for “${config.title}”`,
+                                        labels: config.feedback.labels,
+                                    })
+                            }
                             newWindow
                         >
-                            {renderComponent(config.feedback.content)}
+                            {renderComponent(config.feedback.content, { locale })}
                         </Anchor>
                     ) : null}
 
@@ -96,6 +100,7 @@ export type TOCProperties = {
     filePath: string;
     isOnScreen?: boolean;
     locale: string;
+    route: string;
 };
 
 export default TocSidebar;

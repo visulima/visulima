@@ -42,7 +42,8 @@ export interface DocumentationThemeConfig {
     };
     faviconGlyph?: string;
     feedback: {
-        content?: ReactNode | FC;
+        content?: ReactNode | FC<{ locale }>;
+        link?: (currentTitle: string, currentURL: string) => string;
         labels?: string;
     };
     footer: {

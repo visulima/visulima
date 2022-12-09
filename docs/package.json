@@ -26,6 +26,7 @@
         "yargs": "^17.6.2"
     },
     "devDependencies": {
+        "@axe-core/react": "^4.5.2",
         "@anolilab/eslint-config": "^4.1.1",
         "@next/eslint-plugin-next": "^13.0.6",
         "@rushstack/eslint-plugin-security": "^0.5.0",

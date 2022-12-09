@@ -134,7 +134,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                         )}
                     </div>
                     <div className="grow h-[var(--nextra-navbar-height)] flex items-center justify-center space-x-12">
-                        {items.map((pageOrMenu) => {
+                        {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;
                             }
@@ -174,7 +174,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                             return (
                                 <Anchor
                                     href={href}
-                                    key={page.route}
+                                    key={String(String(page.route) + index + page.type)}
                                     className={cn(
                                         classes.link,
                                         "-ml-2 hidden whitespace-nowrap p-2 md:inline-block",

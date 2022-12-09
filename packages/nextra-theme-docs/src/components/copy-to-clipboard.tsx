@@ -1,8 +1,8 @@
+import copy from "copy-to-clipboard";
 import { CheckIcon, CopyIcon } from "nextra/icons";
 import type { ComponentProps, ReactElement } from "react";
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import copy from "copy-to-clipboard";
 
 import Button from "./button";
 import ErrorToast from "./toast/error";

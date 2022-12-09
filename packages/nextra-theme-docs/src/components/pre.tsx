@@ -1,19 +1,23 @@
 import cn from "clsx";
 import { WordWrapIcon } from "nextra/icons";
-import type { ComponentProps, LegacyRef, FC } from "react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ComponentProps, FC, LegacyRef } from "react";
+import React, {
+    useCallback, useEffect, useRef, useState,
+} from "react";
 
 import Button from "./button";
 import CopyToClipboard from "./copy-to-clipboard";
 
 const Pre: FC<
-    ComponentProps<"pre"> & {
-        filename?: string;
-        value?: string;
-    }
-> = ({ children, className = "code-block", filename, value: _value, ...properties }) => {
-    const ref = useRef<HTMLPreElement | undefined>();
-    const [value, setValue] = useState<string | null>(null);
+ComponentProps<"pre"> & {
+    filename?: string;
+    value?: string;
+}
+> = ({
+    children, className = "code-block", filename, value, ...properties
+}) => {
+    const reference = useRef<HTMLPreElement | undefined>();
+    const [codeString, setCodeString] = useState<string | undefined>(value);
 
     const toggleWordWrap = useCallback(() => {
         const htmlDataset = document.documentElement.dataset;
@@ -27,19 +31,19 @@ const Pre: FC<
     }, []);
 
     useEffect(() => {
-        if (typeof ref.current !== "undefined") {
-            let code = ref.current.querySelector("code");
+        if (reference.current !== undefined) {
+            const code = reference.current.querySelector("code");
 
             if (typeof code?.textContent === "string") {
-                setValue(code.textContent);
+                setCodeString(code.textContent);
             }
         }
-    }, [ref]);
+    }, [reference]);
 
     return (
         <>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <pre className={className} ref={ref as LegacyRef<HTMLPreElement> | undefined} {...properties}>
+            <pre className={className} ref={reference as LegacyRef<HTMLPreElement> | undefined} {...properties}>
                 {filename && (
                     <div className="mt-2 flex space-x-2 text-xs mb-4">
                         <div className="flex h-6 rounded-full bg-gradient-to-r from-sky-400/30 via-sky-400 to-sky-400/30 p-px font-medium text-sky-300">
@@ -60,7 +64,7 @@ const Pre: FC<
                 <Button tabIndex={-1} onClick={toggleWordWrap} className="md:hidden" title="Toggle word wrap">
                     <WordWrapIcon className="pointer-events-none h-4 w-4" />
                 </Button>
-                {value && <CopyToClipboard tabIndex={-1} value={value} />}
+                {codeString && <CopyToClipboard tabIndex={-1} value={codeString} />}
             </div>
         </>
     );
