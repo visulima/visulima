@@ -10,5 +10,21 @@
     "docs": {
         "title": "Documentation",
         "type": "page"
+    },
+    "404": {
+        "type": "page",
+        "theme": {
+            "timestamp": false,
+            "layout": "full",
+            "toc": false
+        }
+    },
+    "500": {
+        "type": "page",
+        "theme": {
+            "timestamp": false,
+            "layout": "full",
+            "toc": false
+        }
     }
 }

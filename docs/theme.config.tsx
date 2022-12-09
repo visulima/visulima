@@ -151,7 +151,7 @@ const config: DocumentationThemeConfig = {
         },
     },
     notFound: {
-        pages: (local) => {
+        pages: ({ local }) => {
             if (local === "en-US") {
                 return [
                     {

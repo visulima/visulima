@@ -18,7 +18,7 @@ const NotFoundPage = (): ReactElement | null => {
         return null;
     }
 
-    const list = pages(locale as string);
+    const list = pages({ local: locale as string });
 
     return (
         <div className="py-8 px-8 md:px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
