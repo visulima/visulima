@@ -10,7 +10,7 @@ import Anchor from "../anchor";
 import Toc from "./toc";
 
 const TocSidebar: FC<TOCProperties> = ({
-    headings, filePath, isOnScreen = false, locale, route
+    headings, filePath, isOnScreen = false, locale, route,
 }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
