@@ -1,7 +1,8 @@
-import React, { ComponentProps, ReactElement } from "react";
+import React, { ComponentProps, FC } from "react";
 
-const Code = ({ children, className = "", ...properties }: ComponentProps<"code">): ReactElement => {
+const Code: FC<ComponentProps<"code">> = ({ children, className = "", ...properties }) => {
     const hasLineNumbers = "data-line-numbers" in properties;
+
     return (
         <code
             className={[hasLineNumbers ? "[counter-reset:line]" : "", className].join(" ")}
