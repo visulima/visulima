@@ -7,7 +7,6 @@
     "compilerOptions": {
         "target": "esnext",
         "module": "esnext",
-        "jsx": "react-jsx",
-        "jsxFragmentFactory": "React.Fragment",
+        "jsx": "react-jsx"
     }
 }
