@@ -80,10 +80,34 @@ module.exports = withNextra();
 // module.exports = withNextra({ /* other next.js config */ })
 ```
 
-## Add Css style to your `pages/_app.js` or `pages/_app.jsx` file
+## Add Css style to your `pages/_app.{js,ts}` or `pages/_app.{jsx,tsx}` file
 
 ```js
 import "@visulima/nextra-theme-docs/style.css";
+```
+
+## Add `SkipNavLink` component your `pages/_document.{js,ts}` or `pages/_document.{jsx,tsx}` file
+
+```js
+import React from "react";
+import Document, { Html, Head, Main, NextScript } from "next/document";
+import { SkipNavLink } from "nextra-theme-docs";
+
+class MyDocument extends Document {
+  render() {
+    return (
+      <Html lang="en">
+        <Head />
+        <body>
+          <SkipNavLink />
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    );
+  }
+}
+export default MyDocument;
 ```
 
 ## Create Docs Theme Config

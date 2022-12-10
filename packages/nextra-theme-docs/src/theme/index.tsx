@@ -17,6 +17,7 @@ import Head from "../components/head";
 import NavLinks from "../components/nav-links";
 import Prose from "../components/prose";
 import Sidebar from "../components/sidebar";
+import { SkipNavContent } from "../components/skip-nav";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
@@ -228,6 +229,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 }`}
                             >
                                 {tocSidebarElement}
+                                <SkipNavContent />
                                 <Body
                                     themeContext={themeContext}
                                     // eslint-disable-next-line max-len

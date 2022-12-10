@@ -21,14 +21,6 @@ body {
     @apply w-full bg-white dark:bg-darker-800 dark:text-gray-100;
 }
 
-[data-reach-skip-link] {
-    @apply sr-only;
-}
-
-[data-reach-skip-link]:focus {
-    @apply not-sr-only fixed ml-6 top-0 bg-white text-lg px-6 py-2 mt-2 outline-none focus:ring z-50;
-}
-
 .dark .invert-on-dark {
     filter: invert(1) brightness(1.8);
 }

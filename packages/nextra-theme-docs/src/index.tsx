@@ -17,6 +17,7 @@ export { default as ThemeSwitch } from "./components/theme-switch";
 export { default as Anchor } from "./components/anchor";
 export { default as Prose } from "./components/prose";
 export { default as StepContainer } from "./components/step-container";
+export { SkipNavLink } from "./components/skip-nav";
 
 export { useConfig } from "./contexts";
 
