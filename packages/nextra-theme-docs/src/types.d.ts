@@ -12,10 +12,10 @@ export type RecursivePartial<T> = {
     [P in keyof T]?: T[P] extends (infer U)[]
         ? RecursivePartial<U>[]
         : T[P] extends FC // do not change properties for optional in FC type
-            ? T[P]
-            : T[P] extends object
-                ? RecursivePartial<T[P]>
-                : T[P];
+        ? T[P]
+        : T[P] extends object
+        ? RecursivePartial<T[P]>
+        : T[P];
 };
 
 export interface DocumentationThemeConfig {
@@ -63,11 +63,11 @@ export interface DocumentationThemeConfig {
         linkBack?: ReactNode | FC<{ locale: string }>;
     };
     navigation:
-    | boolean
-    | {
-        next: boolean;
-        prev: boolean;
-    };
+        | boolean
+        | {
+              next: boolean;
+              prev: boolean;
+          };
     nextThemes: Pick<ThemeProviderProps, "defaultTheme" | "storageKey" | "forcedTheme">;
     notFound: {
         content: ReactNode | FC;
@@ -79,51 +79,65 @@ export interface DocumentationThemeConfig {
             icon?: ReactNode | FC;
         }[];
     };
+
     primaryHue:
-    | number
-    | {
-        dark: number;
-        light: number;
-    };
+        | number
+        | {
+              dark: number;
+              light: number;
+          };
+
     project: {
         icon: ReactNode | FC;
         link?: string;
     };
+
     search: {
         component:
-        | ReactNode
-        | FC<{
-            className?: string;
-            directories: Item[];
-        }>;
+            | ReactNode
+            | FC<{
+                  className?: string;
+                  directories: Item[];
+              }>;
         emptyResult: ReactNode | FC;
         loading: string | (() => string);
         // Can't be React component
         placeholder: string | (({ locale }: { locale: string }) => string);
     };
+
     serverSideError: {
         content: ReactNode | FC;
         labels: string;
     };
+
     sidebar: {
         defaultMenuCollapseLevel: number;
         titleComponent: ReactNode | FC<{ title: string; type: string }>;
     };
+
     tocSidebar: {
         component: ReactNode | FC<TOCSidebarProperties>;
         extraContent?: ReactNode | FC;
         float: boolean;
         title: ReactNode | FC<{ locale: string }>;
     };
+
     tocContent: {
         component: ReactNode | FC<TOCPageContentProperties>;
         extraContent?: ReactNode | FC;
         float: boolean;
         title: ReactNode | FC<{ locale: string }>;
     };
+
     hero?: {
         component: ReactNode | FC;
         height: number | string;
+    };
+
+    comments?: {
+        repository: string;
+        repositoryId: string;
+        categoryId: string;
     };
 }
 

@@ -25,6 +25,7 @@ import type { PageTheme } from "../types";
 import type { Item } from "../utils";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
+import MetaInfo from "../components/meta-info";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -49,9 +50,10 @@ const Body: FC<{
     navigation: ReactNode;
     children: ReactNode;
     activeType: string;
-}> = ({
-    themeContext, breadcrumb, timestamp, navigation, children, activeType,
-}) => {
+    filePath: string;
+    locale: string;
+    route: string;
+}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route }) => {
     const config = useConfig();
 
     if (themeContext.layout === "raw") {
@@ -61,7 +63,7 @@ const Body: FC<{
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
     const gitTimestampElement = date ? (
-        <div className="mt-12 mb-8 block text-xs text-gray-500 px-8 ltr:text-right rtl:text-left dark:text-gray-400">
+        <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
             {renderComponent(config.gitTimestamp, { timestamp: date })}
         </div>
     ) : (
@@ -71,8 +73,15 @@ const Body: FC<{
     const content = (
         <>
             {children}
-            {activeType === "docs" && <Comments />}
+            <hr className="my-8" />
+            {activeType === "doc" && <div className="flex flex-col justify-items-end text-right gap-2"><MetaInfo config={config} filePath={filePath} locale={locale} route={route} /></div>}
             {gitTimestampElement}
+            {activeType === "doc" && config?.comments && (
+                <div className="mb-8">
+                    <hr />
+                    <Comments config={config} />
+                </div>
+            )}
             {navigation}
         </>
     );
@@ -147,8 +156,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             })}
         </nav>
     );
-    const tocPageContentElement = isDocumentPage
-        && renderComponent(config.tocContent.component, {
+    const tocPageContentElement =
+        isDocumentPage &&
+        renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference,
         });
@@ -189,8 +199,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar
-                    && renderComponent(config.navbar.component, {
+                {themeContext.navbar &&
+                    renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -210,9 +220,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <div
                                     className={`absolute w-full ${
                                         config.hero?.height
-                                            ? (typeof config.hero.height === "string"
+                                            ? typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`)
+                                                : `h-[${config.hero.height}px]`
                                             : ""
                                     }`}
                                 >
@@ -222,9 +232,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                             <div
                                 className={`flex w-full${
                                     config.hero?.height
-                                        ? (typeof config.hero.height === "string"
+                                        ? typeof config.hero.height === "string"
                                             ? ` mt-[${config.hero.height}]`
-                                            : ` mt-[${config.hero.height}px]`)
+                                            : ` mt-[${config.hero.height}px]`
                                         : ""
                                 }`}
                             >
@@ -243,6 +253,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         ) : null
                                     }
                                     activeType={activeType}
+                                    route={route}
+                                    locale={locale}
+                                    filePath={filePath}
                                 >
                                     {activeType === "doc" && (
                                         <h1 className="md:text-4xl lg:text-5xl text-3xl leading-tall tracking-tight font-bold hyphenated mt-4">

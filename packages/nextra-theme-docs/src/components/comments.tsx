@@ -1,18 +1,24 @@
 import type { Repo } from "@giscus/react";
 import Giscus from "@giscus/react";
 import { useTheme } from "next-themes";
+import { FC } from "react";
+import { Config } from "../contexts/config";
 
-const Comments = () => {
+const Comments: FC<{ config: Config }> = ({ config }) => {
     const { theme, systemTheme } = useTheme();
+
+    if (typeof config.comments === "undefined") {
+        return null;
+    }
 
     return (
         <div className="mt-16">
             <Giscus
                 id="giscus-comments"
-                repo={process.env.NEXT_PUBLIC_COMMENTS_REPO as Repo}
-                repoId={process.env.NEXT_PUBLIC_COMMENTS_REPO_ID ?? ""}
+                repo={config.comments.repository as Repo}
+                repoId={config.comments.repositoryId}
                 category="Docs"
-                categoryId={process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID ?? ""}
+                categoryId={config.comments.categoryId}
                 mapping="title"
                 strict="1"
                 reactionsEnabled="1"

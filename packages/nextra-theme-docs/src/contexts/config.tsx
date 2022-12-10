@@ -18,8 +18,6 @@ import type { Context, DocumentationThemeConfig } from "../types";
 import { getGitEditUrl } from "../utils";
 import { MenuProvider } from "./menu";
 
-type Config = DocumentationThemeConfig & Pick<PageOpts, "flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;
-
 const DEFAULT_THEME: DocumentationThemeConfig = {
     banner: {
         dismissible: true,
@@ -271,3 +269,5 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
         </ThemeProvider>
     );
 };
+
+export type Config = DocumentationThemeConfig & Pick<PageOpts, "flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;

@@ -5,9 +5,9 @@ import { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
-import { getGitIssueUrl, renderComponent, renderString } from "../../utils";
-import Anchor from "../anchor";
+import { renderComponent } from "../../utils";
 import Toc from "./toc";
+import MetaInfo from "../meta-info";
 
 const TocSidebar: FC<TOCProperties> = ({
     headings, filePath, isOnScreen = false, locale, route,
@@ -18,11 +18,6 @@ const TocSidebar: FC<TOCProperties> = ({
 
     const hasHeadings = headings.some((heading) => heading.type === "heading" && heading.depth > 1);
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
-
-    const linkClassName = cn(
-        "text-xs font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
-        "contrast-more:text-gray-800 contrast-more:dark:text-gray-50",
-    );
 
     const activeSlug = Object.entries(activeAnchor).find(([, { isActive }]) => isActive)?.[0];
 
@@ -64,29 +59,7 @@ const TocSidebar: FC<TOCProperties> = ({
                         "contrast-more:border-t contrast-more:border-neutral-400 contrast-more:shadow-none contrast-more:dark:border-neutral-400",
                     )}
                 >
-                    {config.feedback.content ? (
-                        <Anchor
-                            className={linkClassName}
-                            href={
-                                config.feedback?.link
-                                    ? config.feedback.link(config.title, route)
-                                    : getGitIssueUrl({
-                                        repository: config.docsRepositoryBase,
-                                        title: `Feedback for “${config.title}”`,
-                                        labels: config.feedback.labels,
-                                    })
-                            }
-                            newWindow
-                        >
-                            {renderComponent(config.feedback.content, { locale })}
-                        </Anchor>
-                    ) : null}
-
-                    {renderComponent(config.editLink.component, {
-                        filePath,
-                        className: linkClassName,
-                        children: renderString(config.editLink.text, { locale }),
-                    })}
+                    <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
 
                     {renderComponent(config.tocSidebar.extraContent)}
                 </div>
