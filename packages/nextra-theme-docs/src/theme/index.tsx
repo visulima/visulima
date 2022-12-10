@@ -75,10 +75,10 @@ const Body: FC<{
     const content = (
         <>
             {children}
-            <hr className="my-8" />
+            <hr className="my-8 md:hidden" />
             {/* eslint-disable-next-line max-len */}
             {activeType === "doc" && (
-                <div className="flex flex-col justify-items-end text-right gap-2">
+                <div className="flex md:hidden flex-col justify-items-end text-right gap-2">
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
