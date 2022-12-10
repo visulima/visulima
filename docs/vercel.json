@@ -8,5 +8,5 @@
     "rewrites": [
         { "source": "/docs", "destination": "/docs/introduction" }
     ],
-    "buildCommand": "pnpm run -w build:prod:readdir && pnpm run docs:copy && pnpm run build"
+    "buildCommand": "pnpm run -w build:prod:readdir && pnpm run -w build:prod:nextra-theme-docs && pnpm run docs:copy && pnpm run build"
 }

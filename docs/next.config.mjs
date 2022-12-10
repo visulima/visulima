@@ -1,12 +1,13 @@
 import nextra from "nextra";
 
 const withNextra = nextra({
-    theme: "./src/theme",
+    theme: "@visulima/nextra-theme-docs",
     themeConfig: "./theme.config.tsx",
-    unstable_staticImage: true,
-    unstable_flexsearch: {
+    staticImage: true,
+    flexsearch: {
         codeblocks: true,
     },
+    defaultShowCopyCode: true
 });
 
 /** @type {import('next').NextConfig} */
