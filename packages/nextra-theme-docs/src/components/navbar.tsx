@@ -116,8 +116,8 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                 <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", ["page", "hidden"].includes(activeType) ? "px-4" : "pr-4")}>
                     <div
                         className={cn(
-                            "grow-0 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
-                            ["page", "hidden"].includes(activeType) ? "" : "bg-x-gradient-gray-200-gray-400-75 dark:bg-x-gradient-dark-700-dark-800-65",
+                            "grow md:grow-0 w-2/4 md:w-64 h-[var(--nextra-navbar-height)] flex items-center",
+                            ["page", "hidden"].includes(activeType) ? "" : "md:bg-x-gradient-gray-200-gray-400-75 md:dark:bg-x-gradient-dark-700-dark-800-65",
                             activeType === "doc" ? "pl-4" : "",
                         )}
                     >
@@ -132,7 +132,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="grow h-[var(--nextra-navbar-height)] flex items-center justify-center space-x-12">
+                    <div className="grow h-[var(--nextra-navbar-height)] hidden md:flex items-center justify-center space-x-12">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;

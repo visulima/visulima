@@ -40,7 +40,7 @@ const config: DocumentationThemeConfig = {
         return (
             <>
                 {/* <Logo height={12} /> */}
-                <span className="mx-2 font-extrabold hidden md:inline select-none" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale] || ""}`}>
+                <span className="mx-2 font-extrabold inline select-none" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale] || ""}`}>
                     Visulima
                 </span>
             </>
