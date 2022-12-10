@@ -1,3 +1,12 @@
+## @visulima/crud [1.0.3](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.2...@visulima/crud@1.0.3) (2022-12-10)
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 1.0.2
+* **@visulima/prisma-dmmf-transformer:** upgraded to 1.0.2
+
 ## @visulima/crud [1.0.2](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.1...@visulima/crud@1.0.2) (2022-12-01)
 
 
