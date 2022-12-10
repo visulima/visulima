@@ -116,3 +116,5 @@ dist
 # Storybook
 .storybook/
 storybook-static/
+
+/packages/nextra-theme-docs/style.css

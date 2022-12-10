@@ -1,4 +1,4 @@
-import { SkipNavLink } from "@reach/skip-nav";
+import { SkipNavLink } from "@visulima/nextra-theme-docs";
 import Document, {
  Head, Html, Main, NextScript,
 } from "next/document";

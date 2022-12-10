@@ -1,9 +1,9 @@
 import { BookOpenIcon } from "@heroicons/react/24/outline";
+import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
+import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-
-import Anchor from "./src/components/anchor";
 
 // const Logo = ({ height }) => (
 //
@@ -19,18 +19,13 @@ const FEEDBACK_LINK_WITH_TRANSLATIONS = {
 
 const visulimaGitHubUrl = "https://github.com/visulima/visulima";
 
-export default {
+const config: DocumentationThemeConfig = {
     project: {
         // eslint-disable-next-line @next/next/no-img-element
         icon: () => <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
         link: visulimaGitHubUrl,
     },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
-    titleSuffix: " – Visulima",
-    unstable_flexsearch: true,
-    toc: {
-        float: true,
-    },
     feedback: {
         labels: "feedback",
         content: () => {
@@ -45,7 +40,7 @@ export default {
         return (
             <>
                 {/* <Logo height={12} /> */}
-                <span className="mx-2 font-extrabold hidden md:inline select-none" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale] || ""}`}>
+                <span className="mx-2 font-extrabold inline select-none" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale] || ""}`}>
                     Visulima
                 </span>
             </>
@@ -54,35 +49,10 @@ export default {
     chat: {
         icon: (
             <Anchor className="p-2 text-current" href="" newWindow>
-                    <DiscordIcon />
-                    <span className="sr-only">Discord</span>
-                </Anchor>
+                <DiscordIcon />
+                <span className="sr-only">Discord</span>
+            </Anchor>
         ),
-    },
-    head: ({ title, meta }) => {
-        const ogImage = meta?.image || `https://visulima.com${title === "home" ? "" : `?title=${encodeURIComponent(title)}`}`;
-
-        return (
-            <>
-                {/* Favicons, meta */}
-                <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-                <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-                <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-                <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
-                <link rel="manifest" href="/favicon/site.webmanifest" />
-                <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#000000" />
-                <meta name="msapplication-TileColor" content="#ffffff" />
-                <meta httpEquiv="Content-Language" content="en" />
-                <meta name="description" content={meta?.description || TITLE_WITH_TRANSLATIONS["en-US"]} />
-                <meta name="og:description" content={meta?.description || TITLE_WITH_TRANSLATIONS["en-US"]} />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:site" content="@visulima" />
-                <meta name="twitter:image" content={ogImage} />
-                <meta name="og:title" content={title ? `${title} – Visulima` : TITLE_WITH_TRANSLATIONS["en-US"]} />
-                <meta name="og:image" content={ogImage} />
-                <meta name="apple-mobile-web-app-title" content="Visulima" />
-            </>
-        );
     },
     editLink: {
         text: ({ locale }) => {
@@ -96,9 +66,9 @@ export default {
     },
     footer: {
         copyright: ({ activeType }) => (
-                <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
-                    © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
-                </span>
+            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
+                © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
+            </span>
         ),
         component: () => {
             // eslint-disable-next-line max-len
@@ -153,7 +123,7 @@ export default {
 
             // eslint-disable-next-line react/no-array-index-key
             return (
-                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 pt-8 md:p-0 footer-border dark:footer-border md:border-0">
+                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 md:p-0 md:border-0">
                     {menu.map((item, index) => (
                         // eslint-disable-next-line react/no-array-index-key
                         <div key={`group-${index}-${item.title}`} className="text-ms col-span-6 md:col-span-3 lg:col-span-2">
@@ -163,7 +133,6 @@ export default {
                                     // eslint-disable-next-line react/no-array-index-key
                                     <li key={`li-${link.title}`}>
                                         <Anchor href={link.href} title={link.title} className={linkClasses} newWindow={link.href[0] !== "/"}>
-                                            {" "}
                                             {link.title}{" "}
                                         </Anchor>
                                     </li>
@@ -176,7 +145,7 @@ export default {
         },
     },
     notFound: {
-        pages: (local) => {
+        pages: ({ local }) => {
             if (local === "en-US") {
                 return [
                     {
@@ -214,4 +183,12 @@ export default {
     //     },
     // },
     i18n: [{ locale: "en-US", text: "English" }],
+
+    comments: {
+        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
+        repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID,
+        categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID,
+    },
 };
+
+export default config;
