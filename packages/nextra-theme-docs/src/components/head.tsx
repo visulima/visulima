@@ -2,7 +2,7 @@ import NextHead from "next/head";
 import { NextSeo, NextSeoProps } from "next-seo";
 import { useTheme } from "next-themes";
 import { useMounted } from "nextra/hooks";
-import React, { ReactElement } from "react";
+import type { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
 

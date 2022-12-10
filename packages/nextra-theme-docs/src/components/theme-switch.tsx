@@ -2,7 +2,6 @@ import { useTheme } from "next-themes";
 import { useMounted } from "nextra/hooks";
 import { MoonIcon, SunIcon } from "nextra/icons";
 import type { ReactElement } from "react";
-import React from "react";
 
 import Select from "./select";
 

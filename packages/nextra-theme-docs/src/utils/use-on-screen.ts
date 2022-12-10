@@ -11,7 +11,7 @@ const useOnScreen = <T extends Element>(reference: MutableRefObject<T>, rootMarg
         const observer = new IntersectionObserver(
             ([entry]) => {
                 // Update our state when observer callback fires
-                setIntersecting(entry.isIntersecting);
+                setIntersecting((entry as IntersectionObserverEntry).isIntersecting);
             },
             {
                 rootMargin,

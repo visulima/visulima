@@ -6,7 +6,7 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import type { PageMapItem, PageOpts } from "nextra";
 import type { FC, PropsWithChildren, ReactNode } from "react";
-import React, { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
 import Banner from "../components/banner";
@@ -21,9 +21,8 @@ import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
 import type { PageTheme } from "../types";
-import {
-    getFSRoute, Item, normalizePages, renderComponent,
-} from "../utils";
+import type { Item } from "../utils";
+import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {

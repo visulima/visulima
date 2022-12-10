@@ -1,12 +1,9 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import {
-    Table, Td, Th, Tr,
-} from "nextra/components";
-import React, {
-    Children, cloneElement, ComponentProps, FC, ReactElement, ReactNode, useEffect, useRef, useState,
-} from "react";
+import { Table, Td, Th, Tr } from "nextra/components";
+import type { ComponentProps, FC, ReactElement, ReactNode } from "react";
+import { Children, cloneElement, useEffect, useRef, useState } from "react";
 
 import Anchor from "./components/anchor";
 import Code from "./components/code";
@@ -54,9 +51,9 @@ if (IS_BROWSER) {
                     }
 
                     if (
-                        smallestIndexInViewport === Number.POSITIVE_INFINITY
-                        && (returnValue[s] as ActiveAnchorItem).aboveHalfViewport
-                        && (returnValue[s] as ActiveAnchorItem).index > largestIndexAboveViewport
+                        smallestIndexInViewport === Number.POSITIVE_INFINITY &&
+                        (returnValue[s] as ActiveAnchorItem).aboveHalfViewport &&
+                        (returnValue[s] as ActiveAnchorItem).index > largestIndexAboveViewport
                     ) {
                         largestIndexAboveViewport = (returnValue[s] as ActiveAnchorItem).index;
                         activeSlug = s;
@@ -79,35 +76,37 @@ if (IS_BROWSER) {
 
 // Anchor links
 // eslint-disable-next-line max-len
-const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    setActiveAnchor ??= useSetActiveAnchor();
+const createHeaderLink =
+    (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) =>
+    ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        setActiveAnchor ??= useSetActiveAnchor();
 
-    const obReference = useRef<HTMLAnchorElement>(null);
+        const obReference = useRef<HTMLAnchorElement>(null);
 
-    useEffect(() => {
-        const heading = obReference.current;
-        if (!heading) {
-            return;
-        }
+        useEffect(() => {
+            const heading = obReference.current;
+            if (!heading) {
+                return;
+            }
 
-        slugs.set(heading, [id, (context.index += 1)]);
-        observer.observe(heading);
+            slugs.set(heading, [id, (context.index += 1)]);
+            observer.observe(heading);
 
-        // eslint-disable-next-line consistent-return
-        return () => {
-            observer.disconnect();
-            slugs.delete(heading);
+            // eslint-disable-next-line consistent-return
+            return () => {
+                observer.disconnect();
+                slugs.delete(heading);
 
-            setActiveAnchor((f) => {
-                const returnValue = { ...f };
-                delete returnValue[id!];
-                return returnValue;
-            });
-        };
-    }, [id]);
+                setActiveAnchor((f) => {
+                    const returnValue = { ...f };
+                    delete returnValue[id!];
+                    return returnValue;
+                });
+            };
+        }, [id]);
 
-    return (
+        return (
             <Tag
                 className={cn(
                     "font-semibold tracking-tight",
@@ -127,8 +126,8 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
                 <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
             </Tag>
-    );
-};
+        );
+    };
 
 const Details = ({ children, open, ...properties }: ComponentProps<"details">): ReactElement => {
     const [openState, setOpen] = useState(!!open);

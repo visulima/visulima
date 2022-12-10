@@ -1,7 +1,6 @@
 import { Tab as HeadlessTab } from "@headlessui/react";
 import cn from "clsx";
 import type { ComponentProps, ReactElement, ReactNode } from "react";
-import React from "react";
 
 type TabItem = {
     label: ReactElement;

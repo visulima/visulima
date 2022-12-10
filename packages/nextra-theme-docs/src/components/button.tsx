@@ -1,5 +1,4 @@
 import type { ComponentProps, ReactElement } from "react";
-import React from "react";
 
 const Button = ({ children, className = "", ...properties }: ComponentProps<"button">): ReactElement => (
     <button

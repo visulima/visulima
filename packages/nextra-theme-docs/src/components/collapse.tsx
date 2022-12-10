@@ -1,6 +1,6 @@
 import cn from "clsx";
 import type { FC, PropsWithChildren } from "react";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 // eslint-disable-next-line radar/cognitive-complexity
 const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = ({ children, className, open }) => {

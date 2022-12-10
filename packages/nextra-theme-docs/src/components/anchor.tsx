@@ -3,7 +3,7 @@
 import NextLink from "next/link";
 import next from "next/package.json";
 import type { ComponentProps, ReactElement } from "react";
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 
 import { useConfig } from "../contexts";
 

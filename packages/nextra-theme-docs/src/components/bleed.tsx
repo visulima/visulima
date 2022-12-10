@@ -1,5 +1,5 @@
 import cn from "clsx";
-import React, { ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 const Bleed = ({ full, children }: { full: boolean; children: ReactNode }): ReactElement => (
     <div

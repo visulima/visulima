@@ -3,7 +3,7 @@ import { ThemeProvider } from "next-themes";
 import type { PageOpts } from "nextra";
 import { GitHubIcon } from "nextra/icons";
 import type { ReactElement, ReactNode } from "react";
-import React, {
+import {
     createContext, isValidElement, useContext, useMemo, useState,
 } from "react";
 

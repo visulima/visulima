@@ -1,4 +1,4 @@
-import React, { ComponentProps, FC } from "react";
+import type { ComponentProps, FC } from "react";
 
 const Code: FC<ComponentProps<"code">> = ({ children, className = "", ...properties }) => {
     const hasLineNumbers = "data-line-numbers" in properties;

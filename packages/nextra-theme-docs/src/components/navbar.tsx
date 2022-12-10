@@ -3,7 +3,6 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
 import type { FC, PropsWithChildren, ReactNode } from "react";
-import React from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";

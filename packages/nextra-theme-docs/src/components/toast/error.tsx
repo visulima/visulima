@@ -1,5 +1,4 @@
 import type { FC, PropsWithChildren } from "react";
-import React from "react";
 
 const Error: FC<PropsWithChildren<{ title?: string }>> = ({ children, title = "Error" }) => (
     <div className="flex w-full max-w-sm overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">

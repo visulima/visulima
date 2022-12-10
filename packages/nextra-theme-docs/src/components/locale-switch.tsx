@@ -1,9 +1,8 @@
 import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import type { FC } from "react";
-import React from "react";
 
-import { DocumentationThemeConfig } from "../types";
+import type { DocumentationThemeConfig } from "../types";
 import Select from "./select";
 
 interface LocaleSwitchProperties {

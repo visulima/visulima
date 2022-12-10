@@ -1,6 +1,5 @@
 import type { Heading } from "nextra";
 import type { FC, Ref } from "react";
-import React from "react";
 
 import { useActiveAnchor } from "../../contexts";
 import Toc from "./toc";

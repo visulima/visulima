@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
-import React, {
+import {
     Fragment, useCallback, useEffect, useRef, useState,
 } from "react";
 
@@ -155,7 +155,7 @@ const Search: FC<SearchProperties> = ({
     const icon = (
         <Transition
             show={mounted && (!show || Boolean(value))}
-            as={React.Fragment}
+            as={Fragment}
             enter="transition-opacity"
             enterFrom="opacity-0"
             enterTo="opacity-100"

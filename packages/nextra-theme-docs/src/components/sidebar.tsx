@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import type { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
-import React, {
+import {
     createContext, memo, useContext, useEffect, useMemo, useRef, useState,
 } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";

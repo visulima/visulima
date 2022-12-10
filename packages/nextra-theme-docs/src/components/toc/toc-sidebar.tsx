@@ -1,7 +1,7 @@
 import cn from "clsx";
 import type { Heading } from "nextra";
 import type { FC } from "react";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";

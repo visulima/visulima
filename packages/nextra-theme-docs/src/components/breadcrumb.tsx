@@ -1,8 +1,9 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
-import React, { ReactElement } from "react";
+import type { ReactElement } from "react";
+import { Fragment } from "react";
 
-import { Item } from "../utils";
+import type { Item } from "../utils";
 import Anchor from "./anchor";
 
 const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (
@@ -12,7 +13,7 @@ const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (
             const isActive = index === activePath.length - 1;
 
             return (
-                <React.Fragment key={item.route + item.name}>
+                <Fragment key={item.route + item.name}>
                     {index > 0 && <ArrowRightIcon className="w-3.5 shrink-0" />}
                     <div
                         className={cn(
@@ -26,7 +27,7 @@ const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (
                     >
                         {isLink && !isActive ? <Anchor href={item.route}>{item.title}</Anchor> : item.title}
                     </div>
-                </React.Fragment>
+                </Fragment>
             );
         })}
     </div>

@@ -1,5 +1,5 @@
 import cn from "clsx";
-import React, { FC, PropsWithChildren } from "react";
+import type { FC, PropsWithChildren } from "react";
 
 const Prose: FC<PropsWithChildren<{ as: any }>> = ({ as: Component = "div", children }) => (
     <Component

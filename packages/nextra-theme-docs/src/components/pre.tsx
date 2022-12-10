@@ -1,7 +1,7 @@
 import cn from "clsx";
 import { WordWrapIcon } from "nextra/icons";
 import type { ComponentProps, FC, LegacyRef } from "react";
-import React, {
+import {
     useCallback, useEffect, useRef, useState,
 } from "react";
 

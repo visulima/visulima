@@ -1,6 +1,6 @@
 import cn from "clsx";
 import { XIcon } from "nextra/icons";
-import React, { ReactElement } from "react";
+import type { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
 import { renderComponent } from "../utils";

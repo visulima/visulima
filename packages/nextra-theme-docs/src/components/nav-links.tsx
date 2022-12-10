@@ -1,7 +1,6 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
-import React from "react";
 
 import { useConfig } from "../contexts";
 import type { DocumentationThemeConfig, RecursivePartial } from "../types";

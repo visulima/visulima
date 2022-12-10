@@ -1,8 +1,9 @@
 import { matchSorter } from "match-sorter";
-import React, { ReactElement, useMemo, useState } from "react";
+import type { ReactElement } from "react";
+import { useMemo, useState } from "react";
 
-import { SearchResult } from "../types";
-import { Item as NormalItem } from "../utils";
+import type { SearchResult } from "../types";
+import type { Item as NormalItem } from "../utils";
 import HighlightMatches from "./highlight-matches";
 import Search from "./search";
 

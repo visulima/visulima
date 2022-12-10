@@ -1,4 +1,4 @@
-import { Heading } from "nextra";
+import type { Heading } from "nextra";
 
 function getHeadingText(heading: Heading) {
     return heading.value || "";

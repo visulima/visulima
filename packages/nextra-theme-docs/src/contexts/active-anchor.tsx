@@ -1,7 +1,7 @@
 import type {
     Dispatch, ReactElement, ReactNode, SetStateAction,
 } from "react";
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);

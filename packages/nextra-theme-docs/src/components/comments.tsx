@@ -1,7 +1,6 @@
 import type { Repo } from "@giscus/react";
 import Giscus from "@giscus/react";
 import { useTheme } from "next-themes";
-import React from "react";
 
 const Comments = () => {
     const { theme, systemTheme } = useTheme();

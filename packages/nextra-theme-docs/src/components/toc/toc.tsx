@@ -3,7 +3,7 @@ import cn from "clsx";
 import Slugger from "github-slugger";
 import type { Heading } from "nextra";
 import type { FC } from "react";
-import React, { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";

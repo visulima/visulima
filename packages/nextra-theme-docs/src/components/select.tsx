@@ -3,7 +3,6 @@ import cn from "clsx";
 import { useMounted } from "nextra/hooks";
 import { CheckIcon } from "nextra/icons";
 import type { FC, PropsWithChildren, ReactElement } from "react";
-import React from "react";
 import { createPortal } from "react-dom";
 
 import { usePopper } from "../utils";

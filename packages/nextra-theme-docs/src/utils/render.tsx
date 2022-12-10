@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from "react";
-import React from "react";
 
 export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode, properties?: T) {
     if (!ComponentOrNode) {
