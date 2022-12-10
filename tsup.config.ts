@@ -1,13 +1,8 @@
-import { existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import type { NormalizedPackageJson, NormalizeOptions } from "read-pkg";
 import { readPackageSync } from "read-pkg";
 import { defineConfig } from "tsup";
 
-function getPackageSources(
-    packageContent: NormalizedPackageJson,
-    options?: NormalizeOptions
-) {
+function getPackageSources(packageContent: NormalizedPackageJson) {
     if (typeof packageContent.source === "string") {
         return [packageContent.source];
     }
@@ -16,61 +11,15 @@ function getPackageSources(
         return packageContent.sources;
     }
 
-    throw new TypeError(
-        "Please define a source or sources key in the package.json."
-    );
-}
-
-function detectAndInjectReactImport(source: string): string | null {
-    // ignore non-react packages
-    if (!source.endsWith(".tsx") || !source.includes("index")) {
-        return null;
-    }
-
-    const file = `// NOTE: This file should not be edited
-// see @configs/tsup for implementation.
-// - https://esbuild.github.io/content-types/#auto-import-for-jsx
-// - https://github.com/egoist/tsup/issues/390#issuecomment-933488738
-
-import * as React from "react";
-
-export { React };
-`;
-
-    const relativefilePath = "./inject-react-import.js";
-    const absoluteFilePath = join(process.cwd(), relativefilePath);
-
-    if (!existsSync(absoluteFilePath)) {
-        writeFileSync(absoluteFilePath, file);
-    }
-
-    return relativefilePath;
+    throw new TypeError("Please define a source or sources key in the package.json.");
 }
 
 // @ts-ignore
 export default defineConfig((options) => {
     const packageJsonContent = readPackageSync(options as NormalizeOptions);
 
-    const sources = getPackageSources(
-        packageJsonContent,
-        options as NormalizeOptions
-    );
-
-    const inject: string[] = [];
-
-    let count = 0;
-    sources.map((source: string) => {
-        const sourcePath = join(process.cwd(), source);
-
-        const injectReactImport = detectAndInjectReactImport(sourcePath);
-
-        if (count === 0 && injectReactImport) {
-            count += 1;
-            inject.push(injectReactImport);
-        }
-
-        return sourcePath;
-    });
+    const sources = getPackageSources(packageJsonContent);
+    const peerDependenciesKeys = Object.keys(packageJsonContent?.peerDependencies || {})
 
     return {
         ...options,
@@ -85,10 +34,9 @@ export default defineConfig((options) => {
             "next/dynamic",
             "next/head",
             "zod",
-            ...Object.keys(packageJsonContent?.peerDependencies || {}),
+            ...peerDependenciesKeys,
             ...Object.keys(packageJsonContent?.optionalDependencies || {}),
         ],
-        inject,
         format: ["esm", "cjs"],
         silent: !options.watch,
         minify: process.env.NODE_ENV === "production",
@@ -102,6 +50,11 @@ export default defineConfig((options) => {
         },
         rollup: {
             emitCJS: true,
+        },
+        esbuildOptions(options) {
+            if (process.env.NODE_ENV !== "production" && peerDependenciesKeys.includes("react")) {
+                options.tsconfig = options.tsconfig?.replace("tsconfig.json", "tsconfig.dev.json");
+            }
         },
     };
 });

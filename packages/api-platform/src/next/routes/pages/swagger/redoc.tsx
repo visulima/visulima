@@ -2,7 +2,6 @@
 import type { InferGetStaticPropsType, NextPage } from "next";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";
-import React from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { RedocStandaloneProps } from "redoc";
 // eslint-disable-next-line import/no-extraneous-dependencies
