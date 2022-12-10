@@ -1,3 +1,18 @@
+## @visulima/api-platform [1.1.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.0...@visulima/api-platform@1.1.1) (2022-12-10)
+
+
+### Bug Fixes
+
+* removed old inject hack for react ([5e91106](https://github.com/visulima/visulima/commit/5e911062f8c8fea778d66d99df074470830160ef))
+
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 1.2.2
+* **@visulima/crud:** upgraded to 1.0.3
+* **@visulima/readdir:** upgraded to 1.3.2
+
 ## @visulima/api-platform [1.1.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.0.3...@visulima/api-platform@1.1.0) (2022-12-02)
 
 
