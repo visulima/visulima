@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [1.0.2](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.1...@visulima/prisma-dmmf-transformer@1.0.2) (2022-12-10)
+
+
+### Bug Fixes
+
+* fixed wrong file name for module key in package.json ([2c90a2d](https://github.com/visulima/visulima/commit/2c90a2d75848a159bc33dc58f303af36ee127570))
+
 ## @visulima/prisma-dmmf-transformer [1.0.1](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.0...@visulima/prisma-dmmf-transformer@1.0.1) (2022-12-01)
 
 
