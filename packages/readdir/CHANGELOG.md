@@ -1,3 +1,11 @@
+## @visulima/readdir [1.3.2](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.1...@visulima/readdir@1.3.2) (2022-12-10)
+
+
+### Bug Fixes
+
+* fixed wrong file name for module key in package.json ([2c90a2d](https://github.com/visulima/visulima/commit/2c90a2d75848a159bc33dc58f303af36ee127570))
+* **readdir:** added missing license ([b90f15b](https://github.com/visulima/visulima/commit/b90f15bef6c3dbf04fe991db8b7d9b7658ce0c22))
+
 ## @visulima/readdir [1.3.1](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.0...@visulima/readdir@1.3.1) (2022-12-01)
 
 
