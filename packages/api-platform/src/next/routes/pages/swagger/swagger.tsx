@@ -3,8 +3,6 @@ import type { InferGetStaticPropsType, NextPage } from "next";
 import dynamic from "next/dynamic";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import React from "react";
 import type { SwaggerUIProps } from "swagger-ui-react";
 
 import getStaticProps from "./get-static-properties-swagger";
