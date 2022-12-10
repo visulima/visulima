@@ -14,6 +14,7 @@ import Breadcrumb from "../components/breadcrumb";
 import Comments from "../components/comments";
 import Footer from "../components/footer";
 import Head from "../components/head";
+import MetaInfo from "../components/meta-info";
 import NavLinks from "../components/nav-links";
 import Prose from "../components/prose";
 import Sidebar from "../components/sidebar";
@@ -25,7 +26,6 @@ import type { PageTheme } from "../types";
 import type { Item } from "../utils";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
-import MetaInfo from "../components/meta-info";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -53,7 +53,9 @@ const Body: FC<{
     filePath: string;
     locale: string;
     route: string;
-}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route }) => {
+}> = ({
+    themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route,
+}) => {
     const config = useConfig();
 
     if (themeContext.layout === "raw") {
@@ -74,7 +76,12 @@ const Body: FC<{
         <>
             {children}
             <hr className="my-8" />
-            {activeType === "doc" && <div className="flex flex-col justify-items-end text-right gap-2"><MetaInfo config={config} filePath={filePath} locale={locale} route={route} /></div>}
+            {/* eslint-disable-next-line max-len */}
+            {activeType === "doc" && (
+                <div className="flex flex-col justify-items-end text-right gap-2">
+                    <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
+                </div>
+            )}
             {gitTimestampElement}
             {activeType === "doc" && config?.comments && (
                 <div className="mb-8">
@@ -156,9 +163,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             })}
         </nav>
     );
-    const tocPageContentElement =
-        isDocumentPage &&
-        renderComponent(config.tocContent.component, {
+    const tocPageContentElement = isDocumentPage
+        && renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference,
         });
@@ -199,8 +205,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar &&
-                    renderComponent(config.navbar.component, {
+                {themeContext.navbar
+                    && renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -220,9 +226,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <div
                                     className={`absolute w-full ${
                                         config.hero?.height
-                                            ? typeof config.hero.height === "string"
+                                            ? (typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`
+                                                : `h-[${config.hero.height}px]`)
                                             : ""
                                     }`}
                                 >
@@ -232,9 +238,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                             <div
                                 className={`flex w-full${
                                     config.hero?.height
-                                        ? typeof config.hero.height === "string"
+                                        ? (typeof config.hero.height === "string"
                                             ? ` mt-[${config.hero.height}]`
-                                            : ` mt-[${config.hero.height}px]`
+                                            : ` mt-[${config.hero.height}px]`)
                                         : ""
                                 }`}
                             >

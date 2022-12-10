@@ -6,8 +6,8 @@ import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
 import { renderComponent } from "../../utils";
-import Toc from "./toc";
 import MetaInfo from "../meta-info";
+import Toc from "./toc";
 
 const TocSidebar: FC<TOCProperties> = ({
     headings, filePath, isOnScreen = false, locale, route,

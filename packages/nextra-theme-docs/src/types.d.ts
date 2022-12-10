@@ -12,10 +12,10 @@ export type RecursivePartial<T> = {
     [P in keyof T]?: T[P] extends (infer U)[]
         ? RecursivePartial<U>[]
         : T[P] extends FC // do not change properties for optional in FC type
-        ? T[P]
-        : T[P] extends object
-        ? RecursivePartial<T[P]>
-        : T[P];
+            ? T[P]
+            : T[P] extends object
+                ? RecursivePartial<T[P]>
+                : T[P];
 };
 
 export interface DocumentationThemeConfig {
@@ -63,11 +63,11 @@ export interface DocumentationThemeConfig {
         linkBack?: ReactNode | FC<{ locale: string }>;
     };
     navigation:
-        | boolean
-        | {
-              next: boolean;
-              prev: boolean;
-          };
+    | boolean
+    | {
+        next: boolean;
+        prev: boolean;
+    };
     nextThemes: Pick<ThemeProviderProps, "defaultTheme" | "storageKey" | "forcedTheme">;
     notFound: {
         content: ReactNode | FC;
@@ -81,11 +81,11 @@ export interface DocumentationThemeConfig {
     };
 
     primaryHue:
-        | number
-        | {
-              dark: number;
-              light: number;
-          };
+    | number
+    | {
+        dark: number;
+        light: number;
+    };
 
     project: {
         icon: ReactNode | FC;
@@ -94,11 +94,11 @@ export interface DocumentationThemeConfig {
 
     search: {
         component:
-            | ReactNode
-            | FC<{
-                  className?: string;
-                  directories: Item[];
-              }>;
+        | ReactNode
+        | FC<{
+            className?: string;
+            directories: Item[];
+        }>;
         emptyResult: ReactNode | FC;
         loading: string | (() => string);
         // Can't be React component

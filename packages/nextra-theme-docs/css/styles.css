@@ -43,7 +43,7 @@ summary {
 
 @media (max-width: 767px) {
     .nextra-sidebar-container {
-        @apply fixed pt-[calc(var(--nextra-navbar-height))] top-0 w-full bottom-24 z-[15] overscroll-contain bg-white dark:bg-dark;
+        @apply fixed pt-[calc(var(--nextra-navbar-height))] top-0 w-full bottom-0 z-[15] overscroll-contain bg-white dark:bg-dark;
         transition: transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1);
         will-change: transform, opacity;
         contain: layout style;
