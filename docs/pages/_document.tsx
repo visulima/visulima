@@ -1,8 +1,9 @@
+import { SkipNavLink } from "@visulima/nextra-theme-docs";
 import Document, {
  Head, Html, Main, NextScript,
 } from "next/document";
 import React from "react";
-import { SkipNavLink } from "@visulima/nextra-theme-docs";
+
 class MyDocument extends Document {
     render() {
         return (
