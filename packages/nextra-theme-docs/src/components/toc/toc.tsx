@@ -23,7 +23,7 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
 
                 return {
                     text,
-                    slug: slugger.slug(text),
+                    slug: (heading?.data?.id as string)|| slugger.slug(text),
                     depth: heading.depth as any,
                 };
             });
