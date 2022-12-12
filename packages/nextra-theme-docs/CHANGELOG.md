@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.0.2](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.1...@visulima/nextra-theme-docs@1.0.2) (2022-12-12)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** moved details and summery out of mdx componen… ([#56](https://github.com/visulima/visulima/issues/56)) ([7cdcc99](https://github.com/visulima/visulima/commit/7cdcc99303ca1880b0606c985ebe292333a4f1b2))
+
 ## @visulima/nextra-theme-docs [1.0.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.0...@visulima/nextra-theme-docs@1.0.1) (2022-12-10)
 
 
