@@ -5,18 +5,19 @@ import {
     Table, Td, Th, Tr,
 } from "nextra/components";
 import type {
-    ComponentProps, FC, ReactElement, ReactNode,
+    ComponentProps, FC, ReactElement,
 } from "react";
 import {
-    Children, cloneElement, useEffect, useRef, useState,
+    useEffect, useRef,
 } from "react";
 
 import Anchor from "./components/anchor";
 import Code from "./components/code";
-import Collapse from "./components/collapse";
+import Details from "./components/details";
 import Pre from "./components/pre";
+import Summary from "./components/summary";
 import { IS_BROWSER } from "./constants";
-import { DetailsProvider, useDetails, useSetActiveAnchor } from "./contexts";
+import { useSetActiveAnchor } from "./contexts";
 import type { ActiveAnchorItem } from "./contexts/active-anchor";
 import type { DocumentationThemeConfig } from "./types";
 
@@ -130,95 +131,6 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
                 <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
             </Tag>
-    );
-};
-
-const Details = ({ children, open, ...properties }: ComponentProps<"details">): ReactElement => {
-    const [openState, setOpen] = useState(!!open);
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const [summary, restChildren] = findSummary(children);
-
-    // To animate the close animation we have to delay the DOM node state here.
-    const [delayedOpenState, setDelayedOpenState] = useState(openState);
-
-    // @ts-expect-error TS7030: Not all code paths return a value
-    // eslint-disable-next-line consistent-return
-    useEffect(() => {
-        if (openState) {
-            setDelayedOpenState(true);
-        } else {
-            const timeout = setTimeout(() => setDelayedOpenState(openState), 500);
-
-            return () => clearTimeout(timeout);
-        }
-    }, [openState]);
-
-    return (
-        <details
-            className="my-4 rounded border border-gray-200 bg-white p-2 shadow-sm first:mt-0 dark:border-neutral-800 dark:bg-neutral-900"
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...properties}
-            open={delayedOpenState}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...(openState && { "data-expanded": true })}
-        >
-            <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-            <Collapse open={openState}>{restChildren}</Collapse>
-        </details>
-    );
-};
-
-const findSummary = (children: ReactNode) => {
-    let summary: ReactNode = null;
-
-    const restChildren: ReactNode[] = [];
-
-    Children.forEach(children, (child, index) => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        if (child && (child as ReactElement).type === Summary) {
-            summary ||= child;
-            return;
-        }
-
-        if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
-            const result = findSummary(child.props.children);
-
-            // eslint-disable-next-line prefer-destructuring
-            summary = result[0];
-
-            restChildren.push(
-                cloneElement(child, {
-                    ...child.props,
-                    // @ts-ignore
-                    children: result[1]?.length ? result[1] : undefined,
-                    // eslint-disable-next-line react/no-array-index-key
-                    key: index,
-                }),
-            );
-        } else {
-            restChildren.push(child);
-        }
-    });
-
-    return [summary, restChildren];
-};
-
-const Summary = (properties: ComponentProps<"summary">): ReactElement => {
-    const setOpen = useDetails();
-    return (
-        <summary
-            className={cn(
-                "cursor-pointer list-none p-1 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800",
-                "before:mr-1 before:inline-block before:transition-transform before:content-[''] dark:before:invert",
-                "rtl:before:rotate-180 [[data-expanded]>&]:before:rotate-90",
-            )}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...properties}
-            onClick={(event) => {
-                event.preventDefault();
-                setOpen((value) => !value);
-            }}
-        />
     );
 };
 
