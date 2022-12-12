@@ -1,10 +1,14 @@
-import { DetailsProvider } from "../contexts";
-import type { ComponentProps, FC, ReactElement, ReactNode } from "react";
-import { Children, cloneElement, useEffect, useState } from "react";
+import cn from "clsx";
+import type {
+    ComponentProps, FC, ReactElement, ReactNode,
+} from "react";
+import {
+    Children, cloneElement, useEffect, useState,
+} from "react";
 
+import { DetailsProvider } from "../contexts";
 import Collapse from "./collapse";
 import Summary from "./summary";
-import cn from "clsx";
 
 const findSummary = (children: ReactNode) => {
     let summary: ReactNode = null;
@@ -18,6 +22,7 @@ const findSummary = (children: ReactNode) => {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
             const result = findSummary(child.props.children);
 
@@ -42,10 +47,12 @@ const findSummary = (children: ReactNode) => {
 };
 
 const Details: FC<
-    ComponentProps<"details"> & {
-        variant?: "default" | "raw";
-    }
-> = ({ children, open, className = "", variant = "default", ...properties }) => {
+ComponentProps<"details"> & {
+    variant?: "default" | "raw";
+}
+> = ({
+    children, open, className = "", variant = "default", ...properties
+}) => {
     const [openState, setOpen] = useState(!!open);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const [summary, restChildren] = findSummary(children);

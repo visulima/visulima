@@ -13,13 +13,13 @@ import {
 
 import Anchor from "./components/anchor";
 import Code from "./components/code";
+import Details from "./components/details";
 import Pre from "./components/pre";
+import Summary from "./components/summary";
 import { IS_BROWSER } from "./constants";
 import { useSetActiveAnchor } from "./contexts";
 import type { ActiveAnchorItem } from "./contexts/active-anchor";
 import type { DocumentationThemeConfig } from "./types";
-import Details from "./components/details";
-import Summary from "./components/summary";
 
 let observer: IntersectionObserver;
 let setActiveAnchor: ReturnType<typeof useSetActiveAnchor>;

@@ -1,14 +1,17 @@
-import { ComponentProps, FC } from "react";
-import { useDetails } from "../contexts";
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
+import { ComponentProps, FC } from "react";
+
+import { useDetails } from "../contexts";
 
 const Summary: FC<
-    ComponentProps<"summary"> & {
-        variant?: "default" | "raw";
-        iconProps?: ComponentProps<typeof ArrowRightIcon>;
-    }
-> = ({ variant = "default", className = "", children, iconProps = {}, ...props }) => {
+ComponentProps<"summary"> & {
+    variant?: "default" | "raw";
+    iconProps?: ComponentProps<typeof ArrowRightIcon>;
+}
+> = ({
+    variant = "default", className = "", children, iconProps: iconProperties = {}, ...properties
+}) => {
     const setOpen = useDetails();
 
     return (
@@ -19,20 +22,22 @@ const Summary: FC<
                 "[&::-webkit-details-marker]:hidden",
                 className,
             )}
-            {...props}
-            onClick={(e) => {
-                e.preventDefault();
-                setOpen((v) => !v);
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...properties}
+            onClick={(event) => {
+                event.preventDefault();
+                setOpen((value) => !value);
             }}
         >
             <ArrowRightIcon
-                {...iconProps}
-                className={cn("h-[1.2em] w-[1.2em] p-0.5 shrink-0", iconProps.className)}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...iconProperties}
+                className={cn("h-[1.2em] w-[1.2em] p-0.5 shrink-0", iconProperties.className)}
                 pathClassName={cn(
                     "origin-center transition-transform stroke-[3px] rtl:-rotate-180",
                     "ltr:[[open]>summary>svg>&]:rotate-90",
                     "rtl:[[open]>summary>svg>&]:rotate-[-270deg]",
-                    iconProps.pathClassName,
+                    iconProperties.pathClassName,
                 )}
             />
             {children}

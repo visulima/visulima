@@ -253,7 +253,7 @@ export function normalizePages({
         documentationItem.isUnderCurrentDocsTree = isCurrentDocumentationTree;
 
         // This item is currently active, we collect the active path etc.
-        if (a.route === route || a.route + '/' === route) {
+        if (a.route === route || `${a.route}/` === route) {
             activePath = [item];
             activeType = type;
             // There can be multiple matches.
