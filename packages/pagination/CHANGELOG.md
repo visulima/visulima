@@ -1,3 +1,19 @@
+## @visulima/pagination [2.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@1.1.0...@visulima/pagination@2.0.0) (2022-12-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **pagination:** paginationComponent is now createPaginationMetaSchemaObject func
+
+### Features
+
+* **pagination:** changed  paginationComponent to createPaginationMetaSchemaObject function ([d7ebcf8](https://github.com/visulima/visulima/commit/d7ebcf893fadae9b02b5be4ea962b2cea549e7d3))
+
+
+### Bug Fixes
+
+* **pagination:** added missing key name to object ([1d5d101](https://github.com/visulima/visulima/commit/1d5d101dc9a10381206d70d4098cac0649107a20))
+
 ## @visulima/pagination [1.1.0](https://github.com/visulima/visulima/compare/@visulima/pagination@1.0.3...@visulima/pagination@1.1.0) (2022-12-15)
 
 
