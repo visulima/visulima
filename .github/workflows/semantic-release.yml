@@ -200,8 +200,8 @@ jobs:
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
 
-            - name: "Build"
-              run: "pnpm run build:packages"
+            - name: "Build Production"
+              run: "pnpm run build:prod:packages"
 
             - name: "Semantic Release"
               if: "success()"
