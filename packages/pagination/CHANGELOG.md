@@ -1,3 +1,10 @@
+## @visulima/pagination [1.1.0](https://github.com/visulima/visulima/compare/@visulima/pagination@1.0.3...@visulima/pagination@1.1.0) (2022-12-15)
+
+
+### Features
+
+* **pagination:** added swagger component and create helper for a pagination object ([be5ecc5](https://github.com/visulima/visulima/commit/be5ecc5744015a6536e204353681842fe0d79d26))
+
 ## @visulima/pagination [1.0.3](https://github.com/visulima/visulima/compare/@visulima/pagination@1.0.2...@visulima/pagination@1.0.3) (2022-12-15)
 
 
