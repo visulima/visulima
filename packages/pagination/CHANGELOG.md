@@ -1,3 +1,10 @@
+## @visulima/pagination [1.0.3](https://github.com/visulima/visulima/compare/@visulima/pagination@1.0.2...@visulima/pagination@1.0.3) (2022-12-15)
+
+
+### Bug Fixes
+
+* **pagination:** updated readme with missing example, added missing types export ([37d7782](https://github.com/visulima/visulima/commit/37d77829cef00277f09b847a8b429a53a96c0522))
+
 ## @visulima/pagination [1.0.2](https://github.com/visulima/visulima/compare/@visulima/pagination@1.0.1...@visulima/pagination@1.0.2) (2022-12-10)
 
 
