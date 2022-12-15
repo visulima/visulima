@@ -56,23 +56,25 @@ export const createPaginationSchemaObject = (
     name: string,
     items: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject,
     metaReference: string = "#/components/schemas/PaginationData",
-): OpenAPIV3.SchemaObject => {
+): { [key: string]: OpenAPIV3.SchemaObject } => {
     return {
-        type: "object",
-        xml: {
-            name,
-        },
-        properties: {
-            data: {
-                type: "array",
-                xml: {
-                    name: "Data",
-                    wrapped: true,
-                },
-                items,
+        [name]: {
+            type: "object",
+            xml: {
+                name,
             },
-            meta: {
-                $ref: metaReference,
+            properties: {
+                data: {
+                    type: "array",
+                    xml: {
+                        name: "data",
+                        wrapped: true,
+                    },
+                    items,
+                },
+                meta: {
+                    $ref: metaReference,
+                },
             },
         },
     };
