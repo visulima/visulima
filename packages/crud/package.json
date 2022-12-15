@@ -70,8 +70,7 @@
         "@visulima/prisma-dmmf-transformer": "1.0.2",
         "http-errors": "^2.0.0",
         "lodash.set": "^4.3.2",
-        "path-to-regexp": "^6.2.1",
-        "qs": "^6.11.0"
+        "path-to-regexp": "^6.2.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
@@ -84,7 +83,6 @@
         "@types/json-schema": "7.0.11",
         "@types/lodash.set": "^4.3.7",
         "@types/node": "^18.8.4",
-        "@types/qs": "^6.9.7",
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",
         "cross-env": "^7.0.3",

@@ -5,8 +5,8 @@ import parseQuery from "../src/query-parser";
 
 describe("Parse select", () => {
     it("should parse simple select", () => {
-        const query = "select=user,post";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?select=user,post";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             select: {
@@ -17,8 +17,8 @@ describe("Parse select", () => {
     });
 
     it("should parse nested select 2", () => {
-        const query = "select=user,post.user,post.title";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?select=user,post.user,post.title";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             select: {
@@ -32,8 +32,8 @@ describe("Parse select", () => {
     });
 
     it("should parse nested select 2", () => {
-        const query = "select=user,post.user,post.user.post";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?select=user,post.user,post.user.post";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             select: {
@@ -46,20 +46,12 @@ describe("Parse select", () => {
             },
         });
     });
-
-    it("should fail if select is an array", () => {
-        const query = "select[]=user&select[]=post.user";
-
-        expect(() => parseQuery(query)).toThrowError(
-            new Error("select query param must be a string"),
-        );
-    });
 });
 
 describe("Parse include", () => {
     it("should parse simple include", () => {
-        const query = "include=user,post";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?include=user,post";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             include: {
@@ -70,8 +62,8 @@ describe("Parse include", () => {
     });
 
     it("should parse nested include 1", () => {
-        const query = "include=user,post.user,post.title";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?include=user,post.user,post.title";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             include: {
@@ -85,8 +77,8 @@ describe("Parse include", () => {
     });
 
     it("should parse nested include 12", () => {
-        const query = "include=user,post.user,post.user.post";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?include=user,post.user,post.user.post";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             include: {
@@ -103,8 +95,8 @@ describe("Parse include", () => {
 
 describe("Parse where", () => {
     it("should parse a simple where condition", () => {
-        const query = 'where={"username": "foo"}';
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = 'http://localhost/?where={"username": "foo"}';
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             where: {
@@ -114,8 +106,8 @@ describe("Parse where", () => {
     });
 
     it("should parse where condition with operators", () => {
-        const query = 'where={"age": {"$gt": 18}}';
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = 'http://localhost/?where={"age": {"$gt": 18}}';
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             where: {
@@ -125,8 +117,8 @@ describe("Parse where", () => {
     });
 
     it("should parse where nested field", () => {
-        const query = 'where={"user.age": {"$gt": 18}}';
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = 'http://localhost/?where={"user.age": {"$gt": 18}}';
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             where: {
@@ -142,8 +134,8 @@ describe("Parse where", () => {
 
 describe("Parse orderBy", () => {
     it("should parse a correct orderBy", () => {
-        const query = 'orderBy={"username": "$asc"}';
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = 'http://localhost/?orderBy={"username": "$asc"}';
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             orderBy: {
@@ -153,22 +145,22 @@ describe("Parse orderBy", () => {
     });
 
     it("should throw an error with invalid property", () => {
-        const query = 'orderBy={"id": "foo"}';
+        const url = 'http://localhost/?orderBy={"id": "foo"}';
 
-        expect(() => parseQuery(query)).toThrow();
+        expect(() => parseQuery(url)).toThrow();
     });
 
     it("should throw an error with an empty object value", () => {
-        const query = "orderBy={}";
+        const url = "http://localhost/?orderBy={}";
 
-        expect(() => parseQuery(query)).toThrow();
+        expect(() => parseQuery(url)).toThrow();
     });
 });
 
 describe("Parse limit", () => {
     it("should parse valid number", () => {
-        const query = "limit=2";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?limit=2";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             limit: 2,
@@ -176,8 +168,8 @@ describe("Parse limit", () => {
     });
 
     it("should parse invalid number", () => {
-        const query = "limit=foobar";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?limit=foobar";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             limit: undefined,
@@ -187,8 +179,8 @@ describe("Parse limit", () => {
 
 describe("Parse skip", () => {
     it("should parse valid number", () => {
-        const query = "skip=2";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?skip=2";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             skip: 2,
@@ -196,8 +188,8 @@ describe("Parse skip", () => {
     });
 
     it("should parse invalid number", () => {
-        const query = "skip=foobar";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?skip=foobar";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             skip: undefined,
@@ -207,8 +199,8 @@ describe("Parse skip", () => {
 
 describe("Parse distinct", () => {
     it("should parse distinct", () => {
-        const query = "distinct=id";
-        const { originalQuery, ...result } = parseQuery(query);
+        const url = "http://localhost/?distinct=id";
+        const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toEqual<ParsedQueryParameters>({
             distinct: "id",
