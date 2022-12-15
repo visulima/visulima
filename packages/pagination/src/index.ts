@@ -7,4 +7,4 @@ export { default as Paginator } from "./paginator";
 // eslint-disable-next-line max-len
 export const paginate = <Result>(page: number, perPage: number, total: number, rows: Result[]): PaginatorInterface<Result> => new Paginator(total, Number(perPage), Number(page), ...rows);
 
-export { createPaginationSchemaObject, paginationComponent } from "./swagger";
+export { createPaginationSchemaObject, createPaginationMetaSchemaObject } from "./swagger";
