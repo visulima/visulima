@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima pagination</h3>
   <p>
-  Visulima pagination is ... .
+  Visulima pagination is a simple pagination for node.
 
   </p>
 </div>
@@ -45,7 +45,27 @@ pnpm add @visulima/pagination
 ## Usage
 
 ```ts
-import { createPagination } from "@visulima/pagination";
+import { paginate } from "@visulima/pagination";
+
+const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+const pagination = paginate(1, 5, items.length, items);
+
+console.log(pagination);
+// {
+//   items: [1, 2, 3, 4, 5],
+//   meta: {
+//     total: 10,
+//     perPage: 5,
+//     page: 1,
+//     lastPage: 2,
+//     firstPage: 1,
+//     firstPageUrl: "/?page=1",
+//     lastPageUrl: "/?page=2",
+//     nextPageUrl: "/?page=2",
+//     previousPageUrl: null,
+//   }
+// }
 
 ```
 

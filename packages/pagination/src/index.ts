@@ -1,7 +1,7 @@
 import Paginator from "./paginator";
 import type { Paginator as PaginatorInterface } from "./types";
 
-export type { Paginator as PaginatorInterface } from "./types.d";
+export type { Paginator as PaginatorInterface, PaginationResult, PaginationMeta } from "./types.d";
 export { default as Paginator } from "./paginator";
 
 // eslint-disable-next-line max-len
