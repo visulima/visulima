@@ -102,7 +102,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
 
             await adapter.connect?.();
 
-            const parsedQuery = parseQuery((request.url as string).split("?")[1]);
+            const parsedQuery = parseQuery(request.url);
             const parameters: HandlerParameters<T, Q> = {
                 adapter,
                 query: adapter.parseQuery(modelName as M, parsedQuery),

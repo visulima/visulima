@@ -1,3 +1,4 @@
+import { createPaginationMetaSchemaObject } from "@visulima/pagination";
 import { getJSONSchemaProperty, transformDMMF } from "@visulima/prisma-dmmf-transformer";
 import type { JSONSchema7 } from "json-schema";
 import type { OpenAPIV3 } from "openapi-types";
@@ -273,57 +274,7 @@ class PrismaJsonSchemaParser {
 
     // eslint-disable-next-line class-methods-use-this
     public getPaginationDataSchema() {
-        return {
-            [PAGINATION_SCHEMA_NAME]: {
-                type: "object",
-                xml: {
-                    name: PAGINATION_SCHEMA_NAME,
-                },
-                properties: {
-                    total: {
-                        type: "integer",
-                        minimum: 0,
-                        description: "Holds the value for the total number of rows in the database",
-                    },
-                    perPage: {
-                        type: "integer",
-                        minimum: 0,
-                        description: "Returns the value for the limit passed to the paginate method",
-                    },
-                    page: {
-                        type: "integer",
-                        minimum: 1,
-                        description: "Current page number",
-                    },
-                    lastPage: {
-                        type: "integer",
-                        minimum: 0,
-                        description: "Returns the value for the last page by taking the total of rows into account",
-                    },
-                    firstPage: {
-                        type: "integer",
-                        minimum: 0,
-                        description: "Returns the number for the first page. It is always 1",
-                    },
-                    firstPageUrl: {
-                        type: "string",
-                        description: "The URL for the first page",
-                    },
-                    lastPageUrl: {
-                        type: "string",
-                        description: "The URL for the last page",
-                    },
-                    nextPageUrl: {
-                        type: "string",
-                        description: "The URL for the next page",
-                    },
-                    previousPageUrl: {
-                        type: "string",
-                        description: "The URL for the previous page",
-                    },
-                },
-            },
-        };
+        return createPaginationMetaSchemaObject(PAGINATION_SCHEMA_NAME);
     }
 
     public getExampleModelsSchemas(
@@ -395,7 +346,7 @@ class PrismaJsonSchemaParser {
                 }
             });
 
-            const pagination = this.getPaginationDataSchema()[PAGINATION_SCHEMA_NAME];
+            const pagination = this.getPaginationDataSchema()[PAGINATION_SCHEMA_NAME] as OpenAPIV3.SchemaObject;
             const meta: { [key: string]: string } = {};
 
             Object.entries(pagination.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
