@@ -37,7 +37,6 @@ export {
     ServiceUnavailable,
     TooManyRequests,
     Unauthorized,
-    UnorderedCollection,
     UnprocessableEntity,
     UnavailableForLegalReasons,
     UnsupportedMediaType,
