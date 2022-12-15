@@ -1,10 +1,10 @@
 import type { OpenAPIV3 } from "openapi-types";
 
-export const paginationComponent: { PaginationData: OpenAPIV3.SchemaObject } = {
-    PaginationData: {
+export const createPaginationMetaSchemaObject = (name: string = "PaginationData"): { [key: string]: OpenAPIV3.SchemaObject } => ({
+    [name]: {
         type: "object",
         xml: {
-            name: "PaginationData",
+            name,
         },
         properties: {
             total: {
@@ -50,7 +50,7 @@ export const paginationComponent: { PaginationData: OpenAPIV3.SchemaObject } = {
             },
         },
     },
-};
+});
 
 export const createPaginationSchemaObject = (
     name: string,
