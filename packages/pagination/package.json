@@ -1,7 +1,7 @@
 {
     "name": "@visulima/pagination",
     "version": "1.0.2",
-    "description": "Pagination for node.",
+    "description": "Simple Pagination for Node.",
     "keywords": [
         "anolilab",
         "pagination",
