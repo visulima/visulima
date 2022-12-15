@@ -1,3 +1,10 @@
+## @visulima/crud [1.0.7](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.6...@visulima/crud@1.0.7) (2022-12-15)
+
+
+### Bug Fixes
+
+* **crud:** removed internal use of qs ([ec8c478](https://github.com/visulima/visulima/commit/ec8c47879a49f37957e2ec4fb366fb05140f511f))
+
 ## @visulima/crud [1.0.6](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.5...@visulima/crud@1.0.6) (2022-12-15)
 
 
