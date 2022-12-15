@@ -1,3 +1,16 @@
+## @visulima/crud [1.0.6](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.5...@visulima/crud@1.0.6) (2022-12-15)
+
+
+### Bug Fixes
+
+* **crud:** fixed wrong name on data xml key ([a8cbff9](https://github.com/visulima/visulima/commit/a8cbff91b9d307ae15193d53511f3ed70cc27d01))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 2.0.0
+
 ## @visulima/crud [1.0.5](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.4...@visulima/crud@1.0.5) (2022-12-15)
 
 
