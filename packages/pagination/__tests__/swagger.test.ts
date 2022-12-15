@@ -1,7 +1,7 @@
 import type { OpenAPIV3 } from "openapi-types";
 import { describe, expect, it } from "vitest";
 
-import { createPaginationSchemaObject, createPaginationMetaSchemaObject } from "../src";
+import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "../src";
 
 describe("Swagger", () => {
     it("should return the correct values for the pagination schema object", () => {
