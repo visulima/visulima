@@ -434,7 +434,7 @@ class PrismaJsonSchemaParser {
                         data: {
                             type: "array",
                             xml: {
-                                name: "Data",
+                                name: "data",
                                 wrapped: true,
                             },
                             items: {
