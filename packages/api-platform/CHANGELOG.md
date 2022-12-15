@@ -1,3 +1,10 @@
+## @visulima/api-platform [1.1.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.2...@visulima/api-platform@1.1.3) (2022-12-15)
+
+
+### Bug Fixes
+
+* **api-platform:** removed UnorderedCollection from http-errors ([58e3fab](https://github.com/visulima/visulima/commit/58e3fab9982d27277bf47996d4bfc9f4c0b8bc04))
+
 ## @visulima/api-platform [1.1.2](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.1...@visulima/api-platform@1.1.2) (2022-12-15)
 
 
