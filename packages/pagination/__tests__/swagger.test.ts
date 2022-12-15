@@ -14,21 +14,23 @@ describe("Swagger", () => {
         };
 
         expect(createPaginationSchemaObject(name, items)).toEqual({
-            type: "object",
-            xml: {
-                name,
-            },
-            properties: {
-                data: {
-                    type: "array",
-                    xml: {
-                        name: "Data",
-                        wrapped: true,
-                    },
-                    items,
+            [name]: {
+                type: "object",
+                xml: {
+                    name,
                 },
-                meta: {
-                    $ref: "#/components/schemas/PaginationData",
+                properties: {
+                    data: {
+                        type: "array",
+                        xml: {
+                            name: "data",
+                            wrapped: true,
+                        },
+                        items,
+                    },
+                    meta: {
+                        $ref: "#/components/schemas/PaginationData",
+                    },
                 },
             },
         });
