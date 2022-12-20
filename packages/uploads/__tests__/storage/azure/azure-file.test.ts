@@ -8,7 +8,9 @@ describe("AzureFile", () => {
 
         file.requestId = "requestId";
         file.uri = "uri";
+        // eslint-disable-next-line no-secrets/no-secrets
         file.id = "PsRqecfPghVJE6veB-IcX";
+        // eslint-disable-next-line no-secrets/no-secrets
         file.originalName = "PsRqecfPghVJE6veB-IcX";
 
         expect(file).toMatchSnapshot();
