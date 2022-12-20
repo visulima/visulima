@@ -71,7 +71,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
         "@anolilab/semantic-release-preset": "^2.0.7",
-        "@prisma/client": "4.7.1",
+        "@prisma/client": "4.8.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@types/json-schema": "7.0.11",
         "@types/micromatch": "^4.0.2",
@@ -105,7 +105,7 @@
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
         "prettier": "^2.7.1",
-        "prisma": "4.7.1",
+        "prisma": "4.8.0",
         "read-pkg": "^7.1.0",
         "rimraf": "^3.0.2",
         "semantic-release": "^19.0.5",
