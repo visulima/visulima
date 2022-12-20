@@ -49,9 +49,9 @@ services:
     azure:
         image: "mcr.microsoft.com/azure-storage/azurite:latest"
         ports:
-            - "10000:10000" #blob
-            - "10001:10001" #queue
-            - "10002:10002" #table
+            - "10000:10000" # blob
+            - "10001:10001" # queue
+            - "10002:10002" # table
         volumes:
             - "data:/data"
 
