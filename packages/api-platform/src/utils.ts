@@ -35,3 +35,10 @@ export const parseQuery = (request: IncomingApiRequest): unknown => {
     }
     return urlParse(request.url ?? "", true).query;
 };
+
+export const toHeaderCase = (string_: string): string => string_
+    .toLowerCase()
+    .replace(/[^\s\w]/g, " ") // Remove all non-word characters
+    .trimEnd() // Remove trailing spaces
+    .replace(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
+    .replace(/\b\w/g, (c) => c.toUpperCase());

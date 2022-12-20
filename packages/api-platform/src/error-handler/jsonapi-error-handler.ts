@@ -1,19 +1,19 @@
 import { HttpError } from "http-errors";
 import { getReasonPhrase } from "http-status-codes";
-import { ErrorSerializer, JapiError } from "ts-japi";
+import tsJapi from "ts-japi";
 
 import type { ErrorHandler } from "./types";
 import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultTitle = "An error occurred";
 
-const jsonapiErrorHandler: ErrorHandler = (error: HttpError | JapiError | Error, _request, response) => {
+const jsonapiErrorHandler: ErrorHandler = (error: HttpError | tsJapi.JapiError | Error, _request, response) => {
     addStatusCodeToResponse(response, error);
 
     setErrorHeaders(response, error);
 
-    if (error instanceof JapiError || JapiError.isLikeJapiError(error)) {
-        const serializer = new ErrorSerializer();
+    if (error instanceof tsJapi.JapiError || tsJapi.JapiError.isLikeJapiError(error)) {
+        const serializer = new tsJapi.ErrorSerializer();
 
         sendJson(response, serializer.serialize(error));
     } else if (error instanceof HttpError) {

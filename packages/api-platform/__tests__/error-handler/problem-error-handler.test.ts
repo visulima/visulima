@@ -1,4 +1,4 @@
-import { Forbidden } from "http-errors";
+import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
@@ -25,7 +25,7 @@ describe("jsonapi-error-handler", () => {
             method: "GET",
         });
 
-        const error = new Forbidden();
+        const error = new httpErrors.Forbidden();
 
         error.expose = false;
 

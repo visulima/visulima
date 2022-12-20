@@ -1,4 +1,4 @@
-import { BadRequest } from "http-errors";
+import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
@@ -36,7 +36,7 @@ describe("connect/handler", () => {
             method: "GET",
         });
 
-        await onError([], false)(new BadRequest(), req, res);
+        await onError([], false)(new httpErrors.BadRequest(), req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toStrictEqual(400);
@@ -52,7 +52,7 @@ describe("connect/handler", () => {
             },
         });
 
-        await onError([], false)(new BadRequest(), req, res);
+        await onError([], false)(new httpErrors.BadRequest(), req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toStrictEqual(400);
@@ -79,7 +79,7 @@ describe("connect/handler", () => {
                 },
             ],
             false,
-        )(new BadRequest(), req, res);
+        )(new httpErrors.BadRequest(), req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toStrictEqual(400);
