@@ -40,3 +40,5 @@ yarn.lock
 swagger
 
 .env
+
+upload/
