@@ -1,4 +1,4 @@
-import { getDMMF } from "@prisma/internals";
+import prismaInternal from "@prisma/internals";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
@@ -70,7 +70,7 @@ const schema = "http://json-schema.org/draft-07/schema#";
 describe("JSON Schema Generator", () => {
     describe("db postgresql", () => {
         it("returns JSON Schema for given models", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf)).toEqual({
                 $schema: schema,
@@ -153,7 +153,7 @@ describe("JSON Schema Generator", () => {
         });
 
         it("keeps relation scalar fields if requested", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { keepRelationScalarFields: "true" })).toEqual({
                 $schema: schema,
@@ -239,7 +239,7 @@ describe("JSON Schema Generator", () => {
         });
 
         it("adds required field if requested", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { includeRequiredFields: "true" })).toEqual({
                 $schema: schema,
@@ -321,7 +321,7 @@ describe("JSON Schema Generator", () => {
         });
 
         it("adds original type if requested", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { persistOriginalType: "true" })).toEqual({
                 $schema: schema,
@@ -425,7 +425,7 @@ describe("JSON Schema Generator", () => {
         });
 
         it("adds schema id", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(
                 transformDMMF(dmmf, {
@@ -518,7 +518,7 @@ describe("JSON Schema Generator", () => {
         });
 
         it("generated schema validates against input", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelPostGresQL });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
             const jsonSchema = transformDMMF(dmmf, {
                 persistOriginalType: "true",
             });
@@ -575,7 +575,7 @@ describe("JSON Schema Generator", () => {
 
     describe("db mongodb", () => {
         it("returns JSON schema for given models", async () => {
-            const dmmf = await getDMMF({ datamodel: datamodelMongoDB });
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelMongoDB });
 
             expect(transformDMMF(dmmf)).toEqual({
                 $schema: schema,

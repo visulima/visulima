@@ -1,9 +1,9 @@
 import type { NextHandler } from "@visulima/connect";
 import accepts from "accepts";
-import { header as headerCase } from "case";
 import type { NextApiResponse } from "next";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import { toHeaderCase } from "../../utils";
 import type { Serializer } from "../serializers/types";
 import xmlTransformer from "../serializers/xml";
 import yamlTransformer from "../serializers/yaml";
@@ -71,7 +71,7 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
                 response.setHeader(contentTypeKey, type);
 
                 serializedData = xmlTransformer({
-                    [headerCase(`${request.url?.replace("/api/", "")}`.trim())]: hasJsonStructure(data) ? JSON.parse(data) : data,
+                    [toHeaderCase(`${request.url?.replace("/api/", "")}`.trim())]: hasJsonStructure(data) ? JSON.parse(data) : data,
                 });
             }
         }

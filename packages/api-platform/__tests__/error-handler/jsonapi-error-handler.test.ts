@@ -1,6 +1,6 @@
-import { Forbidden } from "http-errors";
+import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
-import { ErrorSerializer } from "ts-japi";
+import tsJapi from "ts-japi";
 import { describe, expect, it } from "vitest";
 
 import jsonapiErrorHandler from "../../src/error-handler/jsonapi-error-handler";
@@ -26,7 +26,7 @@ describe("jsonapi-error-handler", () => {
             method: "GET",
         });
 
-        const error = new Forbidden();
+        const error = new httpErrors.Forbidden();
 
         jsonapiErrorHandler(error, req, res);
 
@@ -41,7 +41,7 @@ describe("jsonapi-error-handler", () => {
             method: "GET",
         });
 
-        const error = new ErrorSerializer();
+        const error = new tsJapi.ErrorSerializer();
 
         jsonapiErrorHandler(error, req, res);
 

@@ -1,4 +1,4 @@
-import { BadRequest } from "http-errors";
+import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
@@ -10,7 +10,7 @@ describe("error-handler/utils", () => {
             method: "GET",
         });
 
-        const error = new BadRequest();
+        const error = new httpErrors.BadRequest();
 
         error.headers = {
             "X-Test": "test",
