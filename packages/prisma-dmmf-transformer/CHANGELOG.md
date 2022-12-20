@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [1.0.3](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.2...@visulima/prisma-dmmf-transformer@1.0.3) (2022-12-20)
+
+
+### Bug Fixes
+
+* fixed found issues after upgrading vitest ([3ee9861](https://github.com/visulima/visulima/commit/3ee9861eeae72a6d0cc941e048d3860c5301ddc4))
+
 ## @visulima/prisma-dmmf-transformer [1.0.2](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.1...@visulima/prisma-dmmf-transformer@1.0.2) (2022-12-10)
 
 
