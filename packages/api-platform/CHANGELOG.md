@@ -1,3 +1,16 @@
+## @visulima/api-platform [1.1.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.6...@visulima/api-platform@1.1.7) (2022-12-20)
+
+
+### Bug Fixes
+
+* fixed found issues after upgrading vitest ([3ee9861](https://github.com/visulima/visulima/commit/3ee9861eeae72a6d0cc941e048d3860c5301ddc4))
+
+
+
+### Dependencies
+
+* **@visulima/crud:** upgraded to 1.0.8
+
 ## @visulima/api-platform [1.1.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.5...@visulima/api-platform@1.1.6) (2022-12-15)
 
 
