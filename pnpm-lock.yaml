@@ -110,7 +110,7 @@ importers:
       react-dom: ^18.2.0
       tailwindcss: ^3.2.4
       typescript: 4.9.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
       yargs: ^17.6.2
     dependencies:
       '@giscus/react': 2.2.4_biqbaboplfbrettd7655fr4n2y
@@ -164,7 +164,7 @@ importers:
       postcss-cli: 10.1.0_postcss@8.4.19
       tailwindcss: 3.2.4_postcss@8.4.19
       typescript: 4.9.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   examples/api-platform/next12:
     specifiers:
@@ -492,7 +492,6 @@ importers:
       '@visulima/jsdoc-open-api': 1.2.2
       '@visulima/readdir': 1.3.2
       accepts: ^1.3.8
-      case: ^1.6.3
       chalk: 4.1.2
       commander: ^9.4.1
       core-js: ^3.25.5
@@ -543,7 +542,7 @@ importers:
       ts-japi: ^1.8.0
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
       webpack: ^5.74.0
       yaml: ^2.1.3
       zod: ^3.19.1
@@ -552,7 +551,6 @@ importers:
       '@visulima/connect': link:../connect
       '@visulima/jsdoc-open-api': link:../jsdoc-open-api
       accepts: 1.3.8
-      case: 1.6.3
       debug: 4.3.4
       http-errors: 2.0.0
       http-status-codes: 2.2.0
@@ -630,7 +628,7 @@ importers:
       styled-components: 5.3.6_biqbaboplfbrettd7655fr4n2y
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
       zod: 3.19.1
 
   packages/api-platform/next:
@@ -683,7 +681,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.3.0
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
       zod: ^3.19.1
     dependencies:
       http-errors: 2.0.0
@@ -729,7 +727,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
       zod: 3.19.1
 
   packages/crud:
@@ -783,7 +781,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       '@visulima/pagination': link:../pagination
       '@visulima/prisma-dmmf-transformer': link:../prisma-dmmf-transformer
@@ -835,7 +833,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/crud/next:
     specifiers: {}
@@ -887,7 +885,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       cacheable-lookup: 7.0.0
       http-status-codes: 2.2.0
@@ -936,7 +934,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/jsdoc-open-api:
     specifiers:
@@ -987,7 +985,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
       webpack: ^5.74.0
       yaml: ^2.1.3
     dependencies:
@@ -1042,7 +1040,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/nextra-theme-docs:
     specifiers:
@@ -1120,7 +1118,7 @@ importers:
       tailwindcss: ^3.1.8
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       '@giscus/react': 2.2.4_biqbaboplfbrettd7655fr4n2y
       '@headlessui/react': 1.7.4_biqbaboplfbrettd7655fr4n2y
@@ -1197,7 +1195,7 @@ importers:
       tailwindcss: 3.2.4_postcss@8.4.19
       tsup: 6.5.0_o6pf6py3ttho7dpy7mshkpxque
       typescript: 4.9.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/pagination:
     specifiers:
@@ -1241,7 +1239,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       qs: 6.11.0
     devDependencies:
@@ -1284,7 +1282,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/prisma-dmmf-transformer:
     specifiers:
@@ -1332,7 +1330,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       '@prisma/generator-helper': 4.7.1
       '@prisma/internals': 4.7.1
@@ -1379,7 +1377,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
   packages/readdir:
     specifiers:
@@ -1421,7 +1419,7 @@ importers:
       semantic-release: ^19.0.5
       tsup: ^6.2.3
       typescript: ^4.8.4
-      vitest: ^0.26.0
+      vitest: ^0.26.1
     dependencies:
       micromatch: 4.0.5
     devDependencies:
@@ -1462,7 +1460,7 @@ importers:
       semantic-release: 19.0.5
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
-      vitest: 0.26.0
+      vitest: 0.26.1
 
 packages:
 
@@ -6998,11 +6996,6 @@ packages:
       ansicolors: 0.3.2
       redeyed: 2.1.1
 
-  /case/1.6.3:
-    resolution: {integrity: sha512-mzDSXIPaFwVDvZAHqZ9VlbyF4yyXRuX6IvB06WvPYkqJVO24kX1PPhv9bfpKNFZyxYFmmgo03HUiD8iklmJYRQ==}
-    engines: {node: '>= 0.8.0'}
-    dev: false
-
   /ccount/1.1.0:
     resolution: {integrity: sha512-vlNK021QdI7PNeiUh/lKkC/mNHHfV0m/Ad5JoI0TYtlBnJAslM/JIkm/tGC88bkLIwO6OQ5uV6ztS6kVAtCDlg==}
     dev: false
@@ -7406,7 +7399,7 @@ packages:
     dev: false
 
   /concat-map/0.0.1:
-    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
 
   /concat-stream/1.6.2:
     resolution: {integrity: sha512-27HBghJxjiZtIk3Ycvn/4kbJk/1uZuJFfuPEns6LaEvpvG1f0hTea8lilrouyo9mVc2GWdcEZ8OLoGmSADlrCw==}
@@ -20399,6 +20392,25 @@ packages:
       - terser
     dev: true
 
+  /vite-node/0.26.1:
+    resolution: {integrity: sha512-5FJSKZZJz48zFRKHE55WyevZe61hLMQEsqGn+ungfd60kxEztFybZ3yG9ToGFtOWNCCy7Vn5EVuXD8bdeHOSdw==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    dependencies:
+      debug: 4.3.4
+      mlly: 1.0.0
+      pathe: 0.2.0
+      source-map: 0.6.1
+      source-map-support: 0.5.21
+      vite: 3.1.8
+    transitivePeerDependencies:
+      - less
+      - sass
+      - stylus
+      - supports-color
+      - terser
+    dev: true
+
   /vite/3.1.8:
     resolution: {integrity: sha512-m7jJe3nufUbuOfotkntGFupinL/fmuTNuQmiVE7cH2IZMuf4UbfbGYMUT3jVWgGYuRVLY9j8NnrRqgw5rr5QTg==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -20463,6 +20475,51 @@ packages:
       tinyspy: 1.0.2
       vite: 3.1.8
       vite-node: 0.26.0
+    transitivePeerDependencies:
+      - less
+      - sass
+      - stylus
+      - supports-color
+      - terser
+    dev: true
+
+  /vitest/0.26.1:
+    resolution: {integrity: sha512-qTLRnjYmjmJpHlLUtErxtlRqGCe8WItFhGXKklpWivu7CLP9KXN9iTezROe+vf51Kb+BB/fzxK6fUG9DvFGL5Q==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@vitest/browser': '*'
+      '@vitest/ui': '*'
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/chai': 4.3.4
+      '@types/chai-subset': 1.3.3
+      '@types/node': 18.11.17
+      acorn: 8.8.1
+      acorn-walk: 8.2.0
+      chai: 4.3.7
+      debug: 4.3.4
+      local-pkg: 0.4.2
+      source-map: 0.6.1
+      strip-literal: 1.0.0
+      tinybench: 2.3.1
+      tinypool: 0.3.0
+      tinyspy: 1.0.2
+      vite: 3.1.8
+      vite-node: 0.26.1
     transitivePeerDependencies:
       - less
       - sass

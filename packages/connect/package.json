@@ -112,7 +112,7 @@
         "semantic-release": "^19.0.5",
         "tsup": "^6.3.0",
         "typescript": "^4.8.4",
-        "vitest": "^0.26.0",
+        "vitest": "^0.26.1",
         "zod": "^3.19.1"
     },
     "peerDependencies": {
