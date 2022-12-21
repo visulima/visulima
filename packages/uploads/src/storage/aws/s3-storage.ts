@@ -111,9 +111,14 @@ class S3Storage extends BaseStorage<S3File> {
             this.meta = config.metaStorage;
         } else {
             const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            const localMeta = "directory" in metaConfig;
+
+            if (localMeta) {
+                this.logger?.debug("Using local meta storage");
+            }
 
             // eslint-disable-next-line max-len
-            this.meta = "directory" in metaConfig ? new LocalMetaStorage<S3File>(metaConfig) : new S3MetaStorage<S3File>(metaConfig);
+            this.meta = localMeta ? new LocalMetaStorage<S3File>(metaConfig) : new S3MetaStorage<S3File>(metaConfig);
         }
 
         this.accessCheck().catch((error: AwsError) => {
