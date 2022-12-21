@@ -6,12 +6,12 @@ interface ClientConfig {
     /**
      * Azure account name.
      */
-    accountName: string;
+    accountName?: string;
 
     /**
      * Azure account key.
      */
-    accountKey: string;
+    accountKey?: string;
 
     /**
      * Azure endpoint.
@@ -27,6 +27,21 @@ interface ClientConfig {
      * Azure root path.
      */
     root?: string;
+}
+
+interface ClientConfig {
+    connectionString?: string;
+
+    /**
+     * Azure container name.
+     */
+    containerName: string;
+
+    /**
+     * Azure root path.
+     */
+    root?: string;
+
 }
 
 export interface AzureMetaStorageOptions extends MetaStorageOptions, ClientConfig {
