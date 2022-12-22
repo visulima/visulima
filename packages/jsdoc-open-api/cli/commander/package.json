@@ -1,0 +1,17 @@
+{
+    "name": "@visulima/jsdoc-open-api-cli-commander",
+    "version": "0.0.0",
+    "description": "Generates swagger doc based on JSDoc; Commander commands.",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/cli/commander/index.d.ts",
+            "require": "./../dist/cli/commander/index.js",
+            "import": "./../dist/cli/commander/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../dist/cli/commander/index.js",
+    "module": "../dist/cli/commander/index.mjs",
+    "types": "../dist/cli/commander/index.d.ts"
+}

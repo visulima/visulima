@@ -34,10 +34,10 @@ importers:
       '@anolilab/prettier-config': 3.1.0_prettier@2.8.1
       '@anolilab/textlint-config': 4.1.2_textlint@12.2.4
       '@manypkg/cli': 0.19.2
-      '@nrwl/cli': 15.3.3
+      '@nrwl/cli': 15.4.0
       '@nrwl/nx-cloud': 15.0.2
       '@nrwl/tao': 15.3.0
-      '@nrwl/workspace': 15.3.3_2gbcgqmzq2pxiocqw2qs7hdeqe
+      '@nrwl/workspace': 15.4.0_2gbcgqmzq2pxiocqw2qs7hdeqe
       '@octokit/rest': 19.0.5
       '@qiwi/multi-semantic-release': 6.5.1
       '@types/node': 18.11.12
@@ -45,7 +45,7 @@ importers:
       commitizen: 4.2.6
       core-js: 3.26.1
       depcheck: 1.4.3
-      nx: 15.3.3
+      nx: 15.4.0
       plop: 3.1.1
       prettier: 2.8.1
       prettier-plugin-prisma: 4.4.0_prettier@2.8.1
@@ -942,8 +942,7 @@ importers:
       '@anolilab/semantic-release-preset': ^2.0.7
       '@apidevtools/swagger-parser': ^10.1.0
       '@rushstack/eslint-plugin-security': ^0.5.0
-      '@types/commander': ^2.12.2
-      '@types/debug': ^4.1.7
+      '@types/cli-progress': ^3.11.0
       '@types/http-errors': ^2.0.0
       '@types/lodash.mergewith': ^4.6.7
       '@types/node': ^18.8.4
@@ -991,19 +990,18 @@ importers:
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0_openapi-types@12.0.2
       '@visulima/readdir': link:../readdir
-      cli-progress: 3.11.2
-      commander: 9.4.1
       comment-parser: 1.3.1
       lodash.mergewith: 4.6.2
       yaml: 2.1.3
     optionalDependencies:
+      cli-progress: 3.11.2
+      commander: 9.4.1
       webpack: 5.74.0
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_wyqvi574yv7oiwfeinomdzmc3m
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@19.0.5
       '@rushstack/eslint-plugin-security': 0.5.0_wyqvi574yv7oiwfeinomdzmc3m
-      '@types/commander': 2.12.2
-      '@types/debug': 4.1.7
+      '@types/cli-progress': 3.11.0
       '@types/http-errors': 2.0.1
       '@types/lodash.mergewith': 4.6.7
       '@types/node': 18.11.5
@@ -1041,6 +1039,12 @@ importers:
       tsup: 6.3.0_typescript@4.8.4
       typescript: 4.8.4
       vitest: 0.26.1
+
+  packages/jsdoc-open-api/cli:
+    specifiers: {}
+
+  packages/jsdoc-open-api/cli/commander:
+    specifiers: {}
 
   packages/nextra-theme-docs:
     specifiers:
@@ -3286,40 +3290,40 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/cli/15.3.3:
-    resolution: {integrity: sha512-ZWTmVP9H3ukppWWGaS/s3Nym2nOYgnt6eHtuUFNsroz8LesG5oFAJviOz9jDEM/b+pLIrvYfU5aAGZqrtM3Z2A==}
+  /@nrwl/cli/15.4.0:
+    resolution: {integrity: sha512-19rP6GqlbLTLFJakhKcfHI8/TXTswnT4D6G4QgjbzKpSj4KRXTnOrv644bOouEsZJ7JIm+NaaJQCfEYpJ+7r1Q==}
     dependencies:
-      nx: 15.3.3
+      nx: 15.4.0
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/devkit/15.3.3_nx@15.3.3+typescript@4.9.4:
-    resolution: {integrity: sha512-48R9HAp6r6umWNXTlVTMsH94YYjU/XUPLDTtXBgKESMVbdq8Fk+HDHuN0thXG5dL6DFkXgD0MICLm3jSQU6xMw==}
+  /@nrwl/devkit/15.4.0_nx@15.4.0+typescript@4.9.4:
+    resolution: {integrity: sha512-aLMg4DBfstmJRFavH1SFBMdso1IVDewLsZi9xq3R+ISWP+AK9sf0JvhYqam9jRf8DSW8GLbp2ziPbnnv+d+uHw==}
     peerDependencies:
       nx: '>= 14 <= 16'
     dependencies:
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       ejs: 3.1.8
       ignore: 5.2.0
-      nx: 15.3.3
+      nx: 15.4.0
       semver: 7.3.4
       tslib: 2.4.0
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@nrwl/linter/15.3.3_nx@15.3.3+typescript@4.9.4:
-    resolution: {integrity: sha512-qAcSmbRuzBZ86ahn0/S+zCOj+PobJRAMf6OZq2ZnbfGwS+LXbqXyaoShzZC1e75nd8vroLV61fFbPkLlTqJwgA==}
+  /@nrwl/linter/15.4.0_nx@15.4.0+typescript@4.9.4:
+    resolution: {integrity: sha512-kt7Ke12OlLrNcI3n82NWxofpBEmYmwKfVqtWY2LsLAm178XRkti1AauFVwHPmWEGYbRBE+1VRpzVnh5E9g6xIw==}
     peerDependencies:
       eslint: ^8.0.0
     peerDependenciesMeta:
       eslint:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.3.3_nx@15.3.3+typescript@4.9.4
+      '@nrwl/devkit': 15.4.0_nx@15.4.0+typescript@4.9.4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       tmp: 0.2.1
       tslib: 2.4.0
@@ -3355,27 +3359,27 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/tao/15.3.3:
-    resolution: {integrity: sha512-f9+VwhlJ/7TWpjHSgoUOAA067uP9DmzABMY9HC5OREEDaCx+rzYEvbLAPv6cXzWw+6IYM6cyKw0zWSQrdEVrWg==}
+  /@nrwl/tao/15.4.0:
+    resolution: {integrity: sha512-mwMmBYOCHe0yl8UrI8VRSplNxTPxrgOZA5OWRoRHLPLoHeyng2ZZxPnfxp3ZVLPFKCxwETHcBwNKKTlx+qUgFA==}
     hasBin: true
     dependencies:
-      nx: 15.3.3
+      nx: 15.4.0
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/workspace/15.3.3_2gbcgqmzq2pxiocqw2qs7hdeqe:
-    resolution: {integrity: sha512-vPv/JSy0K7X9f9oiciF74DpmzH0DvTyDr5HJZhom9tJsFM1FCfHRGu3LysfK3lC3pOpNeNeK4iApJw/BTdXI5A==}
+  /@nrwl/workspace/15.4.0_2gbcgqmzq2pxiocqw2qs7hdeqe:
+    resolution: {integrity: sha512-InnWQjjYgS5ajao9epFfdseo5LtpXnjHyR4uvbUcD0+ejMvDU/FUa8Tlkao0m/PqGzKZlAPyf53XkgqMfIDWIQ==}
     peerDependencies:
       prettier: ^2.6.2
     peerDependenciesMeta:
       prettier:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.3.3_nx@15.3.3+typescript@4.9.4
-      '@nrwl/linter': 15.3.3_nx@15.3.3+typescript@4.9.4
+      '@nrwl/devkit': 15.4.0_nx@15.4.0+typescript@4.9.4
+      '@nrwl/linter': 15.4.0_nx@15.4.0+typescript@4.9.4
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       chokidar: 3.5.3
@@ -3388,9 +3392,10 @@ packages:
       fs-extra: 10.1.0
       glob: 7.1.4
       ignore: 5.2.0
+      jsonc-parser: 3.2.0
       minimatch: 3.0.5
       npm-run-path: 4.0.1
-      nx: 15.3.3
+      nx: 15.4.0
       open: 8.4.0
       prettier: 2.8.1
       rxjs: 6.6.7
@@ -4612,11 +4617,10 @@ packages:
     resolution: {integrity: sha512-KnRanxnpfpjUTqTCXslZSEdLfXExwgNxYPdiO2WGUj8+HDjFi8R3k5RVKPeSCzLjCcshCAtVO2QBbVuAV4kTnw==}
     dev: true
 
-  /@types/commander/2.12.2:
-    resolution: {integrity: sha512-0QEFiR8ljcHp9bAbWxecjVRuAMr16ivPiGOw6KFQBVrVd0RQIcM3xKdRisH2EDWgVWujiYtHwhSkSUoAAGzH7Q==}
-    deprecated: This is a stub types definition for commander (https://github.com/tj/commander.js). commander provides its own type definitions, so you don't need @types/commander installed!
+  /@types/cli-progress/3.11.0:
+    resolution: {integrity: sha512-XhXhBv1R/q2ahF3BM7qT5HLzJNlIL0wbcGyZVjqOTqAybAnsLisd7gy1UCyIqpL+5Iv6XhlSyzjLCnI2sIdbCg==}
     dependencies:
-      commander: 9.4.1
+      '@types/node': 18.11.17
     dev: true
 
   /@types/cookie/0.5.1:
@@ -7209,9 +7213,11 @@ packages:
   /cli-progress/3.11.2:
     resolution: {integrity: sha512-lCPoS6ncgX4+rJu5bS3F/iCz17kZ9MPZ6dpuTtI0KXKABkhyXIdYB3Inby1OpaGti3YlI3EeEkM9AuWpelJrVA==}
     engines: {node: '>=4'}
+    requiresBuild: true
     dependencies:
       string-width: 4.2.3
     dev: false
+    optional: true
 
   /cli-spinners/2.6.1:
     resolution: {integrity: sha512-x/5fWmGMnbKQAaNwN+UZlV79qBLM9JFnJuJ03gIi5whrob0xV0ofNVHy9DhwGdsMJQc2OKv0oGmLzvaqvAVv+g==}
@@ -7347,6 +7353,7 @@ packages:
   /commander/9.4.1:
     resolution: {integrity: sha512-5EEkTNyHNGFPD2H+c/dXXfQZYa/scCKasxWcXJaWnNJ99pnQN9Vnmqow+p+PlFPE63Q6mThaZws1T+HxfpgtPw==}
     engines: {node: ^12.20.0 || >=14}
+    dev: false
 
   /comment-parser/1.3.1:
     resolution: {integrity: sha512-B52sN2VNghyq5ofvUsqZjmk6YkihBX5vMSChmSK9v4ShjKf3Vk5Xcmgpw4o+iIgtrnM/u5FiMpz9VKb8lpBveA==}
@@ -15719,8 +15726,8 @@ packages:
       - debug
     dev: false
 
-  /nx/15.3.3:
-    resolution: {integrity: sha512-yR102AlVW5Sb7X1e9cyR+0h44RD6c3eLJbAZ0yVFKPCKw+zQTdGvAqITtB6ZeFnPkg6Qq6f1oWu6G0n6f2cTpw==}
+  /nx/15.4.0:
+    resolution: {integrity: sha512-6sS6a8q3Vb8W6ElDbhtLuzZcyPgsHC8Yx46tgVALMLzfcJMuUfPT/WYHkhc2/5VPoTvwOOMsuUnKILrApOydhg==}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -15732,8 +15739,8 @@ packages:
       '@swc/core':
         optional: true
     dependencies:
-      '@nrwl/cli': 15.3.3
-      '@nrwl/tao': 15.3.3
+      '@nrwl/cli': 15.4.0
+      '@nrwl/tao': 15.4.0
       '@parcel/watcher': 2.0.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.22

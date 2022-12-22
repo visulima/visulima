@@ -1,6 +1,6 @@
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { collect } from "@visulima/readdir";
-import fs from "node:fs";
+import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
 import { exit } from "node:process";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -144,12 +144,12 @@ class SwaggerCompilerPlugin {
 
             const { assetsPath } = this;
 
-            fs.mkdir(dirname(assetsPath), { recursive: true }, (error) => {
+            mkdir(dirname(assetsPath), { recursive: true }, (error) => {
                 if (error) {
                     errorHandler(error);
                 }
 
-                fs.writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
+                writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
             });
 
             // eslint-disable-next-line unicorn/consistent-destructuring

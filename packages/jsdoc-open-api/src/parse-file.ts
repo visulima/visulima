@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import yaml from "yaml";
 
@@ -16,7 +16,7 @@ const parseFile = (
     commentsToOpenApi: (fileContent: string, verbose?: boolean) => { spec: OpenApiObject; loc: number }[],
     verbose?: boolean,
 ): { spec: OpenApiObject; loc: number }[] => {
-    const fileContent = fs.readFileSync(file, { encoding: "utf8" });
+    const fileContent = readFileSync(file, { encoding: "utf8" });
     const extension = path.extname(file);
 
     if (extension === ".yaml" || extension === ".yml") {
