@@ -1,5 +1,9 @@
 packages:
     - "examples/**"
     - "packages/**"
+    - "!**/__fixture__/**"
+    - "!**/__fixtures__/**"
+    - "!**/__tests__/**"
+    - "!**/__test__/**"
     - "visulima"
     - "docs"

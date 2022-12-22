@@ -49,6 +49,23 @@ Choose the syntax you want to use for your OpenAPI definitions:
 
 ### CLI:
 
+#### To use the CLI, you need to install this missing packages:
+
+
+```sh
+npm install cli-progress commander
+```
+
+```sh
+yarn add cli-progress commander
+```
+
+```sh
+pnpm add cli-progress commander
+```
+
+#### Than you can use the CLI like this:
+
 ```bash
 # This generate the .openapirc.js config file, this command is only needed on the first run
 jsdoc-open-api init
