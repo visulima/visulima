@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import yaml from "yaml";
 
@@ -10,7 +10,7 @@ function parseFile(file: string): BaseDefinition {
         throw new Error("OpenAPI definition path must be YAML or JSON.");
     }
 
-    const fileContent = fs.readFileSync(file, { encoding: "utf8" });
+    const fileContent = readFileSync(file, { encoding: "utf8" });
 
     if (extension === ".yaml" || extension === ".yml") {
         return yaml.parse(fileContent);
