@@ -1,3 +1,10 @@
+## @visulima/jsdoc-open-api [1.3.0](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.2.2...@visulima/jsdoc-open-api@1.3.0) (2022-12-22)
+
+
+### Features
+
+* **jsdoc-open-api:** exported the init (create config) and generate … ([#70](https://github.com/visulima/visulima/issues/70)) ([935f7bf](https://github.com/visulima/visulima/commit/935f7bf299fc1d0591132d08b3b40502f7e9ccf8))
+
 ## @visulima/jsdoc-open-api [1.2.2](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.2.1...@visulima/jsdoc-open-api@1.2.2) (2022-12-10)
 
 
