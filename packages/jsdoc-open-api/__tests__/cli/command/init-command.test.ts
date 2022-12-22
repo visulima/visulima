@@ -15,8 +15,8 @@ vi.mock("node:fs", () => {
 
 describe("init command", () => {
     it("throws an error when the config file already exists", () => {
-        // Create a mock for the existsSync function to return true
         vi.spyOn(fs, "existsSync").mockReturnValue(true);
+        vi.spyOn(console, "log");
 
         // Expect the function to throw an error
         expect(() => initCommand("config.js")).toThrowError("Config file already exists");
@@ -25,11 +25,10 @@ describe("init command", () => {
     it("creates a new config file with the correct contents", () => {
     // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
+        vi.spyOn(console, "log");
 
-        // Create a mock for the writeFileSync function
         const writeFileSyncMock = vi.spyOn(fs, "writeFileSync");
 
-        // Call the function
         initCommand("config.js");
 
         // Verify that the writeFileSync function was called with the correct arguments
@@ -74,16 +73,12 @@ describe("init command", () => {
     });
 
     it("logs a message when the config file is created", () => {
-        // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
-        // Create a mock for the console.log function
         const consoleLogMock = vi.spyOn(console, "log");
 
-        // Call the function
         initCommand("config.js");
 
-        // Verify that the console.log function was called with the correct message
         expect(consoleLogMock).toHaveBeenCalledWith("Created \"config.js\"");
     });
 });
