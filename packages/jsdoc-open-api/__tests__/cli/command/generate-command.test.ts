@@ -23,6 +23,7 @@ describe("generate command", () => {
         // eslint-disable-next-line radar/no-duplicate-string
         const options = { config: "/path/to/nonexistent/config.js" };
 
+        // eslint-disable-next-line radar/no-duplicate-string
         await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow(
             "No config file found, on: /path/to/nonexistent/config.js",
         );
