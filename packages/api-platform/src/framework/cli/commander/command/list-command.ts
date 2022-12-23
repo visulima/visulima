@@ -12,7 +12,7 @@ const listCommand = (
     program
         .command(commandName)
         .description(description)
-        .option("--framework <framework>", "Framework to use")
+        .option("--framework <framework>", "Framework to use, choose from next, express, koa, hapi and fastify")
         .option("-p, --path [path]", "...")
         .option("--group [type]", "Groups routes. Supported: path, tag")
         .option("--include-path [path]", "Includes only routes which contain a given path element. (comma-separated values)", [])
@@ -20,7 +20,7 @@ const listCommand = (
         .option("-v, --verbose", "Verbose output.", false)
         .action((options) => {
             try {
-                command(options.framework as "express" | "koa" | "hapi" | "fastify" | "next" | string, options.path, {
+                command(options.framework as "express" | "koa" | "hapi" | "fastify" | "next", options.path, {
                     verbose: options.verbose as boolean | undefined,
                     group: options.group as string | undefined,
                     includePaths: options.includePath as string[] | undefined,

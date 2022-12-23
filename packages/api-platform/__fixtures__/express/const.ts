@@ -1,4 +1,4 @@
-import type { ExpressRegex } from "../../../src/framework/cli/command/list/routes/express/types";
+import type { ExpressRegex } from "../../src/framework/cli/command/list/routes/express/types";
 
 export const staticPath = /^\/sub-route2\/?(?=\/|$)/i as ExpressRegex;
 

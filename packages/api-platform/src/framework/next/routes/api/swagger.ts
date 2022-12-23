@@ -1,4 +1,4 @@
-import type{ SwaggerHandlerOptions } from "../../../../swagger/swagger-handler";
+import type { SwaggerHandlerOptions } from "../../../../swagger/swagger-handler";
 import swaggerHandler from "../../../../swagger/swagger-handler";
 
 /**

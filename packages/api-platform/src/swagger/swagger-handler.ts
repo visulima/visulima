@@ -9,7 +9,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import type { OpenAPIV3 } from "openapi-types";
 
-import yamlTransformer from "../connect/serializers/yaml";
+import yamlTransformer from "../serializers/transformer/yaml";
 import extendSwaggerSpec from "./extend-swagger-spec";
 
 // eslint-disable-next-line testing-library/no-debugging-utils

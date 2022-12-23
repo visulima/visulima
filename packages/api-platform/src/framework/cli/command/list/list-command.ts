@@ -5,7 +5,6 @@ import { existsSync, rmSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import process from "node:process";
 
-import type { FrameworkName } from "./get-routes";
 import { getRoutes } from "./get-routes";
 import routesGroupBy from "./routes/routes-group-by";
 import routesRender from "./routes/routes-render";
@@ -22,7 +21,7 @@ type RenderOptions = {
 };
 
 const listCommand = async (
-    framework: "express" | "koa" | "hapi" | "fastify" | "next" | string | undefined,
+    framework: "express" | "koa" | "hapi" | "fastify" | "next" | undefined,
     path: string,
     options: Partial<
     {
@@ -110,7 +109,7 @@ const listCommand = async (
 
             routes = await getRoutes(
                 ["AsyncFunction", "Function"].includes(defaultExport.constructor.name) ? await defaultExport() : getApp(defaultExport, framework),
-                framework as FrameworkName,
+                framework,
                 options.verbose || false,
             );
         } finally {
