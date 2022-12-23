@@ -1,7 +1,7 @@
 {
     "name": "@visulima/api-platform",
     "version": "1.1.8",
-    "description": "visulima api platform",
+    "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "anolilab",
         "visulima",
@@ -22,7 +22,13 @@
         "bruteforce",
         "brute-force",
         "attack",
-        "accepts"
+        "accepts",
+        "koa",
+        "express",
+        "hapi.js",
+        "restify",
+        "swagger",
+        "openapi"
     ],
     "homepage": "https://visulima.com/packages/api-platform",
     "repository": {
@@ -54,15 +60,15 @@
             "import": "./dist/index-server.mjs"
         },
         "./next": {
-            "types": "./dist/next/index-server.d.ts",
-            "browser": "./dist/next/index-browser.js",
-            "require": "./dist/next/index-server.js",
-            "import": "./dist/next/index-server.mjs"
+            "types": "./dist/framework/next/index-server.d.ts",
+            "browser": "./dist/framework/next/index-browser.js",
+            "require": "./dist/framework/next/index-server.js",
+            "import": "./dist/framework/next/index-server.mjs"
         },
-        "./next/cli": {
-            "types": "./dist/next/cli/index.d.ts",
-            "require": "./dist/next/cli/index.js",
-            "import": "./dist/next/cli/index.mjs"
+        "./cli": {
+            "types": "./dist/framework/cli/index-server.d.ts",
+            "require": "./dist/framework/cli/index-server.js",
+            "import": "./dist/framework/cli/index-server.mjs"
         },
         "./package.json": "./package.json"
     },
@@ -106,6 +112,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
         "@anolilab/semantic-release-preset": "^2.0.7",
+        "@hapi/hapi": "^21.1.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@testing-library/react": "^13.4.0",
         "@testing-library/react-hooks": "^8.0.1",
@@ -114,6 +121,7 @@
         "@types/debug": "^4.1.7",
         "@types/http-errors": "^2.0.0",
         "@types/jstoxml": "^2.0.2",
+        "@types/koa": "^2.13.5",
         "@types/lodash.merge": "^4.6.7",
         "@types/lodash.set": "^4.3.7",
         "@types/node": "^18.8.4",
@@ -124,9 +132,10 @@
         "@types/webpack": "^5.28.0",
         "@typescript-eslint/eslint-plugin": "^5.40.0",
         "@typescript-eslint/parser": "^5.40.0",
+        "@types/express-serve-static-core": "^4.17.31",
         "@visulima/crud": "1.0.8",
         "@visulima/readdir": "1.3.2",
-        "chalk": "5.2.0",
+        "chalk": "4.1.2",
         "commander": "^9.4.1",
         "core-js": "^3.25.5",
         "cors": "^2.8.5",
@@ -152,6 +161,11 @@
         "eslint-plugin-unicorn": "^45.0.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "express": "^4.18.2",
+        "@types/express": "^4.17.15",
+        "fastify": "^4.10.2",
+        "koa": "^2.14.1",
+        "@koa/router": "^12.0.0",
         "mobx": "^6.6.2",
         "next": "^12.0.0 || ^13.0.0",
         "next-test-api-route-handler": "^4.0.0-canary.1",
@@ -164,9 +178,11 @@
         "read-pkg": "^7.1.0",
         "redoc": "^2.0.0",
         "rimraf": "^3.0.2",
+        "@types/koa__router": "^12.0.0",
         "semantic-release": "^19.0.5",
         "styled-components": "^5.3.6",
         "swagger-ui-react": "^4.14.3",
+        "swagger-ui-dist": "^4.15.5",
         "tsup": "^6.2.3",
         "typescript": "^4.8.4",
         "vitest": "^0.26.1",
@@ -179,14 +195,20 @@
         "zod": "^3.19.1"
     },
     "optionalDependencies": {
+        "@hapi/hapi": "^21.1.0",
         "@visulima/crud": "1.0.8",
         "@visulima/readdir": "1.3.2",
         "chalk": "4.1.2",
         "commander": "^9.4.1",
         "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "fastify": "^4.10.2",
+        "koa": "^2.14.1",
+        "@koa/router": "^12.0.0",
         "next": "^12.0.0 || ^13.0.0",
         "rate-limiter-flexible": "^2.3.11",
         "redoc": "^2.0.0",
+        "swagger-ui-dist": "^4.15.5",
         "swagger-ui-react": "^4.14.3",
         "webpack": "^5.74.0"
     },
@@ -196,11 +218,15 @@
     "publishConfig": {
         "access": "public"
     },
+    "bin": {
+        "api-platform": "./bin/index.js"
+    },
     "sources": [
         "src/index-browser.tsx",
         "src/index-server.ts",
-        "src/next/index-browser.tsx",
-        "src/next/index-server.ts",
-        "src/next/cli/index.ts"
+        "src/framework/cli/index.ts",
+        "src/framework/cli/commander/index.ts",
+        "src/framework/next/index-browser.tsx",
+        "src/framework/next/index-server.ts"
     ]
 }

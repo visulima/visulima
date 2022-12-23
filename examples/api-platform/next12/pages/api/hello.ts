@@ -40,7 +40,9 @@ const schema = z.object({
  *                   type: string
  */
 const router = createNodeRouter<NextApiRequest, NextApiResponse<Data>>().get(async (request, response) => {
-    response.status(200).json({ name: (request.query?.name as string) || "John Doe" });
+    response.status(200);
+
+    response.send({ name: (request.query?.name as string) || "John Doe" });
 }, schema);
 
 export default router.handler();

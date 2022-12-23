@@ -4,9 +4,9 @@ import type { AnyZodObject } from "zod";
 import { ZodObject } from "zod";
 
 import type { ErrorHandlers } from "../error-handler/types";
+import type { Serializers } from "../serializers";
 import { onError, onNoMatch } from "./handler";
 import httpHeaderNormalizerMiddleware from "./middleware/http-header-normalizer";
-import type { Serializers } from "./middleware/serializers-middleware";
 import serializersMiddleware from "./middleware/serializers-middleware";
 
 const createNodeRouter = <
