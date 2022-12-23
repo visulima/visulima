@@ -43,6 +43,7 @@ describe("serialize", () => {
         const { accept, expected, data } = test;
 
         const request = {} as IncomingMessage;
+
         request.headers = { accept };
 
         const response = {} as ServerResponse;

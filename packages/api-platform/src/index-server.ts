@@ -69,6 +69,6 @@ export { default as corsMiddleware } from "./connect/middleware/cors-middleware"
 export { default as serializersMiddleware } from "./connect/middleware/serializers-middleware";
 export { default as httpHeaderNormalizerMiddleware } from "./connect/middleware/http-header-normalizer";
 
-export { default as swaggerHandler } from "./swagger/swagger-handler";
+export { default as swaggerHandler } from "./swagger/api/swagger-handler";
 
 export { dateIn, dateOut } from "./zod";

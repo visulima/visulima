@@ -1,5 +1,5 @@
-import type { SwaggerHandlerOptions } from "../../../../swagger/swagger-handler";
-import swaggerHandler from "../../../../swagger/swagger-handler";
+import type { SwaggerHandlerOptions } from "../../../../swagger/api/swagger-handler";
+import swaggerHandler from "../../../../swagger/api/swagger-handler";
 
 /**
  * @deprecated Use `import { swaggerHandler } from "@visulima/api-framework"` instead.

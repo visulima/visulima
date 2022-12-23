@@ -9,8 +9,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import type { OpenAPIV3 } from "openapi-types";
 
-import yamlTransformer from "../serializers/transformer/yaml";
-import extendSwaggerSpec from "./extend-swagger-spec";
+import yamlTransformer from "../../serializers/transformer/yaml";
+import extendSwaggerSpec from "../extend-swagger-spec";
 
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
@@ -66,15 +66,20 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
             });
         }
 
+        let data: string | Buffer | Uint8Array;
+
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
-            response.statusCode = 200;
             response.setHeader("Content-Type", request.headers.accept);
-            response.end(yamlTransformer(spec));
+
+            data = yamlTransformer(spec);
         } else {
-            response.statusCode = 200;
             response.setHeader("Content-Type", "application/json");
-            response.end(JSON.stringify(spec, null, 2));
+
+            data = JSON.stringify(spec, null, 2);
         }
+
+        response.statusCode = 200;
+        response.end(data);
     };
 };
 
