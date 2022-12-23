@@ -44,7 +44,7 @@ npm install @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-npm install @visulima/api-platform zod @visulima/readdir chalk commander
+npm install @visulima/api-platform zod @visulima/readdir
 ```
 
 ### Yarn
@@ -56,7 +56,7 @@ yarn add @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-yarn add @visulima/api-platform zod @visulima/readdir chalk commander
+yarn add @visulima/api-platform zod @visulima/readdir
 ```
 
 ### Pnpm
@@ -68,7 +68,7 @@ pnpm add @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-pnpm add @visulima/api-platform zod @visulima/readdir chalk commander
+pnpm add @visulima/api-platform zod @visulima/readdir
 ```
 
 ### To use the swagger-ui or the redoc-ui you need to install the following packages:
@@ -85,6 +85,34 @@ npm install redoc
 
 
 ## Usage
+
+### CLI:
+
+#### To use the CLI, you need to install this missing packages:
+
+
+```sh
+npm install cli-progress commander chalk
+```
+
+```sh
+yarn add cli-progress commander chalk
+```
+
+```sh
+pnpm add cli-progress commander chalk
+```
+
+#### Then you can use the CLI like this:
+
+
+```bash
+// Shows the help with all available commands
+
+pnpm api-platform --help
+```
+
+### connect
 
 This package has an extended version of the `@visulima/connect` package.
 That means you can use all the features of the `@visulima/connect` package, in addition to the features of this package.

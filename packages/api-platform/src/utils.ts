@@ -33,6 +33,7 @@ export const parseQuery = (request: IncomingApiRequest): unknown => {
     if (request.query) {
         return request.query;
     }
+
     return urlParse(request.url ?? "", true).query;
 };
 

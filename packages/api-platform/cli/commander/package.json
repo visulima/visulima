@@ -1,0 +1,17 @@
+{
+    "name": "@visulima/api-platform-cli-commander",
+    "version": "0.0.0",
+    "description": "Visulima API platform is a set of tools to build and consume web APIs; Commander commands.",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/framework/cli/commander/index.d.ts",
+            "require": "./../dist/framework/cli/commander/index.js",
+            "import": "./../dist/framework/cli/commander/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../dist/framework/cli/commander/index.js",
+    "module": "../dist/framework/cli/commander/index.mjs",
+    "types": "../dist/framework/cli/commander/index.d.ts"
+}
