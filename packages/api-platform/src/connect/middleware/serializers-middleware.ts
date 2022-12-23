@@ -1,6 +1,9 @@
 import type { NextHandler } from "@visulima/connect";
 import type { NextApiResponse } from "next";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import debug from "debug";
+
+const log = debug("api-platform:connect:serializers-middleware");
 
 import type { Serializers } from "../../serializers";
 import { serialize } from "../../serializers";
@@ -18,6 +21,8 @@ const serializersMiddleware = (serializers: Serializers = [], defaultContentType
 
             return (response as NextApiResponse).send(data);
         };
+    } else if (typeof (response as NextApiResponse)?.json === "function") {
+        log("response.json() is not supported by @visulima/api-platform serializer. Use response.send() or response.end() instead.");
     } else {
         const oldEnd = response.end;
 

@@ -60,15 +60,15 @@
             "import": "./dist/index-server.mjs"
         },
         "./next": {
-            "types": "./dist/next/index-server.d.ts",
-            "browser": "./dist/next/index-browser.js",
-            "require": "./dist/next/index-server.js",
-            "import": "./dist/next/index-server.mjs"
+            "types": "./dist/framework/next/index-server.d.ts",
+            "browser": "./dist/framework/next/index-browser.js",
+            "require": "./dist/framework/next/index-server.js",
+            "import": "./dist/framework/next/index-server.mjs"
         },
-        "./next/cli": {
-            "types": "./dist/next/cli/index.d.ts",
-            "require": "./dist/next/cli/index.js",
-            "import": "./dist/next/cli/index.mjs"
+        "./cli": {
+            "types": "./dist/framework/cli/index-server.d.ts",
+            "require": "./dist/framework/cli/index-server.js",
+            "import": "./dist/framework/cli/index-server.mjs"
         },
         "./package.json": "./package.json"
     },

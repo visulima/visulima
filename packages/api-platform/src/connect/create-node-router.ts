@@ -6,8 +6,8 @@ import { ZodObject } from "zod";
 import type { ErrorHandlers } from "../error-handler/types";
 import { onError, onNoMatch } from "./handler";
 import httpHeaderNormalizerMiddleware from "./middleware/http-header-normalizer";
-import type { Serializers } from "./middleware/serializers-middleware";
 import serializersMiddleware from "./middleware/serializers-middleware";
+import type { Serializers } from "../serializers";
 
 const createNodeRouter = <
     Request extends IncomingMessage,

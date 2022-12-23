@@ -64,6 +64,9 @@ export {
     createEdgeRouter, EdgeRouter, expressWrapper, NodeRouter, Router, withZod, sendJson,
 } from "@visulima/connect";
 
+export type { Serializers, Serializer } from "./serializers";
+export { serialize, yamlTransformer, xmlTransformer } from "./serializers";
+
 export { default as rateLimiterMiddleware } from "./connect/middleware/rate-limiter-middleware";
 export { default as corsMiddleware } from "./connect/middleware/cors-middleware";
 export { default as serializersMiddleware } from "./connect/middleware/serializers-middleware";

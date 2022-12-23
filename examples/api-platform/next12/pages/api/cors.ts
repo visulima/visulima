@@ -11,15 +11,8 @@ const schema = z.object({});
  *   get:
  *     tags:
  *       - "root"
- *     description: "Return a greeting."
+ *     description: "Return a cors headers."
  *     operationId: "cors"
- *     parameters:
- *       - name: name
- *         in: query
- *         required: false
- *         explode: true
- *         schema:
- *            type: string
  *     responses:
  *       200:
  *         description: "Successful operation"
