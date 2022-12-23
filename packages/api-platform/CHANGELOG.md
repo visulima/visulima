@@ -1,3 +1,10 @@
+## @visulima/api-platform [1.2.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.8...@visulima/api-platform@1.2.0) (2022-12-23)
+
+
+### Features
+
+* **api-platform:** added route list command for many http frameworks ([#71](https://github.com/visulima/visulima/issues/71)) ([a4ff00f](https://github.com/visulima/visulima/commit/a4ff00fa7ac9a72685d30e17a74cce38b5685f54))
+
 ## @visulima/api-platform [1.1.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.7...@visulima/api-platform@1.1.8) (2022-12-22)
 
 
