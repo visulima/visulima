@@ -29,7 +29,7 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
         const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
 
         if (!existsSync(swaggerPath)) {
-            throw new Error(`Swagger file not found at ${swaggerPath}. Did you change the output path in "withOpenApi" inside the next.config.js file?`);
+            throw new Error(`Swagger file not found at "${swaggerPath}".`);
         }
 
         const fileContents = readFileSync(swaggerPath, "utf8");
