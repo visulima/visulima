@@ -4,10 +4,10 @@ import type { AnyZodObject } from "zod";
 import { ZodObject } from "zod";
 
 import type { ErrorHandlers } from "../error-handler/types";
+import type { Serializers } from "../serializers";
 import { onError, onNoMatch } from "./handler";
 import httpHeaderNormalizerMiddleware from "./middleware/http-header-normalizer";
 import serializersMiddleware from "./middleware/serializers-middleware";
-import type { Serializers } from "../serializers";
 
 const createNodeRouter = <
     Request extends IncomingMessage,

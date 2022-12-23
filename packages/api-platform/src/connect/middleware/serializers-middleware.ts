@@ -1,12 +1,13 @@
 import type { NextHandler } from "@visulima/connect";
+import debug from "debug";
 import type { NextApiResponse } from "next";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import debug from "debug";
-
-const log = debug("api-platform:connect:serializers-middleware");
 
 import type { Serializers } from "../../serializers";
 import { serialize } from "../../serializers";
+
+// eslint-disable-next-line testing-library/no-debugging-utils
+const log = debug("api-platform:connect:serializers-middleware");
 
 // eslint-disable-next-line max-len
 const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response | NextApiResponse, next: NextHandler) => {
