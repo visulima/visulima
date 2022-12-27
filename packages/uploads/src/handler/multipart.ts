@@ -85,6 +85,10 @@ class Multipart<
             });
 
             form.on("error", async (error) => {
+                if (typeof error !== "object") {
+                    return;
+                }
+
                 try {
                     const file = await this.storage.create(request, config);
 
@@ -113,7 +117,7 @@ class Multipart<
                     }))
                     .then((file) => {
                         if (file.status === "completed") {
-                            resolve({ ...file, headers: { Location: this.buildFileUrl(request, file) }, statusCode: 200 });
+                            return resolve({ ...file, headers: { Location: this.buildFileUrl(request, file) }, statusCode: 200 });
                         }
 
                         return resolve({ ...file, statusCode: 201, headers: {} });

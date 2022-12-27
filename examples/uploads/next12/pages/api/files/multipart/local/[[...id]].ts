@@ -1,7 +1,8 @@
 import { nodeMultipartHandler } from "@visulima/uploads/next";
 import Cors from "cors";
-import runMiddleware from "../../../../utils/middleware";
+import runMiddleware from "../../../../../utils/middleware";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { DiskStorage } from "@visulima/uploads";
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -10,7 +11,7 @@ const cors = Cors({
     preflightContinue: true,
 });
 
-const uploadDirectory = "upload";
+const storage = new DiskStorage({ directory: "upload", logger: console });
 
 export const config = {
     api: {
@@ -20,14 +21,8 @@ export const config = {
     },
 };
 
-export default async function handler(
-  request: NextApiRequest,
-  response: NextApiResponse
-) {
-    await runMiddleware(request, response, cors)
+export default async function handler(request: NextApiRequest, response: NextApiResponse) {
+    await runMiddleware(request, response, cors);
 
-    return nodeMultipartHandler({
-        directory: uploadDirectory,
-        logger: console,
-    })(request, response);
+    return nodeMultipartHandler({ storage })(request, response);
 }

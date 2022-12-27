@@ -12,7 +12,13 @@ export default swaggerApiRoute({
         "text/xml": true,
     },
     specs: [
-        multipartSwagger(process.env.NEXT_PUBLIC_APP_ORIGIN as string, "/api/files/multipart"),
-        tusSwagger("/api/files/tus"),
+        multipartSwagger(process.env.NEXT_PUBLIC_APP_ORIGIN as string, "/api/files/multipart/aws"),
+        // multipartSwagger(process.env.NEXT_PUBLIC_APP_ORIGIN as string, "/api/files/multipart/azure"),
+        // multipartSwagger(process.env.NEXT_PUBLIC_APP_ORIGIN as string, "/api/files/multipart/gcs"),
+        // multipartSwagger(process.env.NEXT_PUBLIC_APP_ORIGIN as string, "/api/files/multipart/local"),
+        tusSwagger("/api/files/tus/aws"),
+        // tusSwagger("/api/files/tus/azure"),
+        // tusSwagger("/api/files/tus/gcs"),
+        // tusSwagger("/api/files/tus/local"),
     ]
 });
