@@ -1,7 +1,9 @@
-import { nodeTusHandler } from "@visulima/uploads/next";
+import { nodeMultipartHandler } from "@visulima/uploads/next";
 import Cors from "cors";
-import runMiddleware from "../../../../utils/middleware";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { GCStorage } from "@visulima/uploads/gcs";
+
+import runMiddleware from "../../../../../utils/middleware";
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -10,7 +12,11 @@ const cors = Cors({
     preflightContinue: true,
 });
 
-const uploadDirectory = "upload";
+const storage = new GCStorage({
+    bucket: "storage",
+    maxUploadSize: "1GB",
+    logger: console,
+});
 
 export const config = {
     api: {
@@ -23,8 +29,5 @@ export const config = {
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
     await runMiddleware(request, response, cors);
 
-    return nodeTusHandler({
-        directory: uploadDirectory,
-        logger: console,
-    })(request, response);
+    return nodeMultipartHandler({ storage })(request, response);
 }

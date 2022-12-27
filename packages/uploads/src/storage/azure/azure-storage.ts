@@ -166,7 +166,7 @@ class AzureStorage extends BaseStorage<AzureFile> {
                         blobContentType: file.contentType ?? "application/octet-stream",
                     },
                     metadata: file.metadata,
-                    abortSignal: abortController.signal,
+                    // abortSignal: abortController.signal,
                 });
 
                 if (response.requestId === undefined) {
