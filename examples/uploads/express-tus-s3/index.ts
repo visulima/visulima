@@ -16,10 +16,7 @@ const storage = new S3Storage({
     onComplete: (file: UploadFile) => console.log("File upload complete: ", file),
 });
 
-const tus = new Tus({
-    allowMIME: ["image/*", "video/*"],
-    storage,
-})
+const tus = new Tus({ storage })
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options

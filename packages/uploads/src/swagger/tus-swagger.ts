@@ -1,19 +1,21 @@
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
+import { createHash } from "node:crypto";
 
 import {
     sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList,
 } from "./shared-swagger";
 
 const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): Partial<OpenAPIV3.Document> => {
-    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet("TusGetFile", tags);
+    const pathHash = createHash('sha256').update(path).digest('base64');
+    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags);
 
     return {
         paths: {
             [path.trimEnd()]: {
                 post: {
                     tags,
-                    operationId: "TusCreate",
+                    operationId: `${pathHash}TusCreate`,
                     summary:
                         // eslint-disable-next-line max-len
                         "An empty POST request is used to create a new upload resource. The Upload-Length header indicates the size of the entire upload in bytes. If the Creation With Upload extension is available, the Client MAY include parts of the upload in the initial Creation request",
@@ -235,7 +237,7 @@ const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): 
                 },
                 options: {
                     tags,
-                    operationId: "TusOptions",
+                    operationId: `${pathHash}TusOptions`,
                     summary: "Request to gather information about the Server's current configuration",
                     responses: {
                         204: {
@@ -270,7 +272,7 @@ const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): 
                         },
                     },
                 },
-                get: sharedGetList("TusGetList", tags),
+                get: sharedGetList(`${pathHash}TusGetList`, tags),
             },
             [`${path.trimEnd()}/{id}`]: {
                 delete: {
@@ -279,7 +281,7 @@ const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): 
                     description:
                         // eslint-disable-next-line max-len
                         "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
-                    operationId: "TusFilesDelete",
+                    operationId: `${pathHash}TusFilesDelete`,
                     parameters: [
                         {
                             name: "id",
@@ -337,7 +339,7 @@ const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): 
                     tags,
                     summary: "Used to determine the offset at which the upload should be continued.",
                     description: "Used to determine the offset at which the upload should be continued.",
-                    operationId: "TusFilesHead",
+                    operationId: `${pathHash}TusFilesHead`,
                     parameters: [
                         {
                             name: "id",
@@ -454,7 +456,7 @@ const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): 
                     description:
                         // eslint-disable-next-line max-len
                         "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
-                    operationId: "TusFilePatch",
+                    operationId: `${pathHash}TusFilePatch`,
                     parameters: [
                         {
                             name: "id",
