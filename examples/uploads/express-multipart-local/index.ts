@@ -6,14 +6,10 @@ import Cors from "cors";
 const PORT = process.env.PORT || 3002;
 
 const app = express();
-const uploadDirectory = "upload";
 
-const storage = new DiskStorage({ directory: uploadDirectory });
+const storage = new DiskStorage({ directory: "upload" });
 
-const tus = new Multipart({
-    allowMIME: ["image/*", "video/*"],
-    storage,
-});
+const multipart = new Multipart({ storage });
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -24,7 +20,7 @@ const cors = Cors({
 
 app.use(cors);
 
-app.use("/files", tus.handle, (request, response) => {
+app.use("/files", multipart.handle, (request, response) => {
     const file = request.body as UploadFile;
 
     console.log("File upload complete: ", file.originalName);

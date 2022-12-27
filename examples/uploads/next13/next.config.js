@@ -9,9 +9,7 @@ const nextConfig = {
     env: {
         NEXT_PUBLIC_APP_ORIGIN: process.env.VERCEL_URL || "http://localhost:3000",
     },
-    experimental: {
-        transpilePackages: ["swagger-client", "swagger-ui-react"],
-    },
+    transpilePackages: ["swagger-client", "swagger-ui-react"],
 };
 
 module.exports = withOpenApi({

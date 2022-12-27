@@ -8,8 +8,11 @@ import {
     sharedGet,
     sharedGetList,
 } from "./shared-swagger";
+import { createHash } from "node:crypto";
 
 const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
+    const pathHash = createHash('sha256').update(path).digest('base64');
+
     return {
         paths: {
             [path.trimEnd()]: {
@@ -17,7 +20,7 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                     // eslint-disable-next-line radar/no-duplicate-string
                     summary: "Create upload",
                     description: "Create upload",
-                    operationId: "MultipartCreate",
+                    operationId: `${pathHash}MultipartCreate`,
                     tags,
                     requestBody: {
                         description: "Upload Metadata",
@@ -187,14 +190,14 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                         },
                     },
                 },
-                get: sharedGetList("MultipartGetList", tags),
+                get: sharedGetList(`${pathHash}MultipartGetList`, tags),
             },
             [`${path.trimEnd()}/{id}`]: {
                 delete: {
                     // eslint-disable-next-line radar/no-duplicate-string
                     summary: "Cancel upload",
                     description: "Cancel upload",
-                    operationId: "MultipartCancel",
+                    operationId: `${pathHash}MultipartCancel`,
                     tags,
                     parameters: [
                         {
@@ -209,7 +212,7 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                         },
                     },
                 },
-                get: sharedGet("TusGetFile", tags),
+                get: sharedGet(`${pathHash}TusGetFile`, tags),
             },
         },
         components: {

@@ -167,6 +167,14 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                         } else {
                             const completed = await this.storage.onComplete(file as TFile);
 
+                            if (typeof completed.headers === "undefined") {
+                                throw new Error("onComplete must return the key headers");
+                            }
+
+                            if (typeof completed.statusCode === "undefined") {
+                                throw new Error("onComplete must return the key statusCode");
+                            }
+
                             this.finish(request, response, completed);
                         }
                     } else {
@@ -347,7 +355,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             };
         }
 
-        return this.send(response, {
+        this.send(response, {
             statusCode,
             headers,
             body,

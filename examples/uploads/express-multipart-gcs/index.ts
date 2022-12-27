@@ -10,17 +10,16 @@ const app = express();
 
 const storage = new GCStorage({
     maxUploadSize: "1GB",
-    onComplete: ({ uri = "unknown", id }: { id : string, uri: string }) => {
+    onComplete: (file) => {
+        const { uri = "unknown", id } = file;
+
         console.log(`File upload complete, storage path: ${uri}`);
         // send gcs link to client
         return { id, link: uri };
     },
 });
 
-const tus = new Multipart({
-    allowMIME: ["image/*", "video/*"],
-    storage,
-});
+const multipart = new Multipart({ storage });
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -31,7 +30,7 @@ const cors = Cors({
 
 app.use(cors);
 
-app.use("/files", tus.handle, (request, response) => {
+app.use("/files", multipart.handle, (request, response) => {
     const file = request.body as UploadFile;
 
     console.log("File upload complete: ", file.originalName);
