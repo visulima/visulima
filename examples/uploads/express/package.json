@@ -3,19 +3,19 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "start:basic": "tsnd -r dotenv/config express-basic",
-        "start:express": "tsnd -r dotenv/config express",
-        "start:express-polling": "tsnd -r dotenv/config express-polling",
-        "start:gcs": "tsnd -r dotenv/config express-gcs",
-        "start:s3": "tsnd -r dotenv/config express-s3",
-        "start:tus": "tsnd -r dotenv/config express-tus"
+        "start:basic": "tsnd -r dotenv/config index-basic",
+        "start:express": "tsnd -r dotenv/config index",
+        "start:express-polling": "tsnd -r dotenv/config index-polling",
+        "start:gcs": "tsnd -r dotenv/config index-gcs",
+        "start:s3": "tsnd -r dotenv/config index-s3",
+        "start:tus": "tsnd -r dotenv/config index-tus"
     },
     "dependencies": {
-        "@aws-sdk/abort-controller": "^3.222.0",
-        "@aws-sdk/client-s3": "^3.222.0",
-        "@aws-sdk/credential-providers": "^3.222.0",
-        "@aws-sdk/s3-request-presigner": "^3.222.0",
-        "@aws-sdk/types": "^3.222.0",
+        "@aws-sdk/abort-controller": "^3.226.0",
+        "@aws-sdk/client-s3": "^3.238.0",
+        "@aws-sdk/credential-providers": "^3.238.0",
+        "@aws-sdk/s3-request-presigner": "^3.238.0",
+        "@aws-sdk/types": "^3.226.0",
         "@visulima/uploads": "workspace:*",
         "cors": "2.8.5",
         "cp-file": "^10.0.0",
@@ -25,8 +25,8 @@
         "winston": "^3.8.2"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.12",
-        "@types/express": "^4.17.14",
+        "@types/cors": "^2.8.13",
+        "@types/express": "^4.17.15",
         "ts-node-dev": "^2.0.0"
     }
 }
