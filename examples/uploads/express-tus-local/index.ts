@@ -10,10 +10,7 @@ const uploadDirectory = "upload";
 
 const storage = new DiskStorage({ directory: uploadDirectory });
 
-const tus = new Tus({
-    allowMIME: ["image/*", "video/*"],
-    storage,
-});
+const tus = new Tus({ storage });
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options

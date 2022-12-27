@@ -65,3 +65,5 @@ storybook-static/
 
 # Package build output
 dist
+
+data/

@@ -1,6 +1,6 @@
 import express from "express";
 import type { UploadFile } from "@visulima/uploads";
-import { Tus } from "@visulima/uploads";
+import { Multipart } from "@visulima/uploads";
 import Cors from "cors";
 import { S3Storage } from "@visulima/uploads/aws";
 
@@ -17,10 +17,7 @@ const storage = new S3Storage({
     onComplete: (file: UploadFile) => console.log("File upload complete: ", file),
 });
 
-const tus = new Tus({
-    allowMIME: ["image/*", "video/*"],
-    storage,
-})
+const multipart = new Multipart({ storage })
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
@@ -31,7 +28,7 @@ const cors = Cors({
 
 app.use(cors);
 
-app.use("/files", tus.handle, (request, response) => {
+app.use("/files", multipart.handle, (request, response) => {
     const file = request.body as UploadFile;
 
     console.log("File upload complete: ", file.originalName);

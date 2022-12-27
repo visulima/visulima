@@ -26,7 +26,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { SdkStream } from "@aws-sdk/types";
 import { parse } from "bytes";
 import type { IncomingMessage } from "node:http";
-import { resolve } from "node:url";
+import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
 import {
@@ -190,6 +190,7 @@ class S3Storage extends BaseStorage<S3File> {
 
     public async write(part: FilePart | FileQuery): Promise<S3File> {
         const file = await this.getMeta(part.id);
+
         await this.checkIfExpired(file);
 
         if (file.status === "completed") {
@@ -286,7 +287,7 @@ class S3Storage extends BaseStorage<S3File> {
 
     public async copy(name: string, destination: string): Promise<CopyObjectCommandOutput> {
         const CopySource = `${this.bucket}/${name}`;
-        const newPath = decodeURI(resolve(`/${CopySource}`, destination)); // path.resolve?
+        const newPath = decodeURI(resolve(`/${CopySource}`, destination));
         const [, Bucket, ...pathSegments] = newPath.split("/");
         const Key = pathSegments.join("/");
         const parameters: CopyObjectCommandInput = { Bucket, Key, CopySource };
