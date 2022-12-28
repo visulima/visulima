@@ -1,8 +1,8 @@
 import express from "express";
-import type { UploadFile } from "@visulima/uploads";
-import { Multipart } from "@visulima/uploads";
+import type { UploadFile } from "../../../packages/upload";
+import { Multipart } from "../../../packages/upload";
 import Cors from "cors";
-import { S3Storage } from "@visulima/uploads/aws";
+import { S3Storage } from "@visulima/upload/aws";
 
 const PORT = process.env.PORT || 3002;
 

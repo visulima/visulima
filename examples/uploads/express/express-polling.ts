@@ -1,4 +1,4 @@
-import { DiskFile, DiskStorage, Uploadx } from "@visulima/uploads";
+import { DiskFile, DiskStorage, Uploadx } from "../../../packages/upload";
 import { copyFile } from "cp-file";
 import express from "express";
 import fs from "node:fs";

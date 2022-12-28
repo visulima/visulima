@@ -1,7 +1,7 @@
-import { nodeTusHandler } from "@visulima/uploads/next";
+import { nodeTusHandler } from "@visulima/upload/next";
 import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { GCStorage } from "@visulima/uploads/gcs";
+import { GCStorage } from "@visulima/upload/gcs";
 
 import runMiddleware from "../../../../../utils/middleware";
 

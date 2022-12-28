@@ -6,7 +6,7 @@
         "dev": "tsnd -r dotenv/config index"
     },
     "dependencies": {
-        "@visulima/uploads": "workspace:*",
+        "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
         "cp-file": "^10.0.0",
         "dotenv": "^16.0.3",

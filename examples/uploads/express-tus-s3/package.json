@@ -11,7 +11,7 @@
         "@aws-sdk/credential-providers": "^3.238.0",
         "@aws-sdk/s3-request-presigner": "^3.238.0",
         "@aws-sdk/types": "^3.226.0",
-        "@visulima/uploads": "workspace:*",
+        "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
         "cp-file": "^10.0.0",
         "dotenv": "^16.0.3",
