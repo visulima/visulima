@@ -1,7 +1,7 @@
 import express from "express";
-import type { UploadFile } from "@visulima/uploads";
-import { Multipart } from "@visulima/uploads";
-import { AzureStorage } from "@visulima/uploads/azure";
+import type { UploadFile } from "../../../packages/upload";
+import { Multipart } from "../../../packages/upload";
+import { AzureStorage } from "@visulima/upload/azure";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3002;
 const app = express();
 
 const storage = new AzureStorage({
-    containerName: "uploads",
+    containerName: "upload",
     accountName: "visulima",
     accountKey: "accountKey",
     maxUploadSize: "1GB",

@@ -1,0 +1,17 @@
+{
+    "name": "@visulima/upload-aws",
+    "version": "0.0.0",
+    "description": "visulima uploads aws",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/storage/aws/index.d.ts",
+            "require": "./../dist/storage/aws/index.js",
+            "import": "./../dist/storage/aws/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../dist/storage/aws/index.js",
+    "module": "../dist/storage/aws/index.mjs",
+    "types": "../dist/storage/aws/index.d.ts"
+}
