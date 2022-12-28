@@ -42,10 +42,9 @@ import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import {
     getFileStatus, hasContent, partMatch, updateSize,
 } from "../utils/file";
-import type { AwsError } from "./aws-error";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
-import type { S3StorageOptions } from "./types.d";
+import type { AwsError, S3StorageOptions } from "./types.d";
 
 const MIN_PART_SIZE = 5 * 1024 * 1024;
 const PART_SIZE = 16 * 1024 * 1024;
@@ -257,6 +256,7 @@ class S3Storage extends BaseStorage<S3File> {
                 delete file.Parts;
 
                 file.uri = completed.Location;
+                file.ETag = completed.ETag;
             }
         } finally {
             await this.unlock(part.id);

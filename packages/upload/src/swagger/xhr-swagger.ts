@@ -1,17 +1,13 @@
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
+import { createHash } from "node:crypto";
 import type { OpenAPIV3 } from "openapi-types";
 
 import {
-    sharedErrorSchemaObject,
-    sharedFileMetaExampleObject,
-    sharedFileMetaSchemaObject,
-    sharedGet,
-    sharedGetList,
+    sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList,
 } from "./shared-swagger";
-import { createHash } from "node:crypto";
 
 const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
-    const pathHash = createHash('sha256').update(path).digest('base64');
+    const pathHash = createHash("sha256").update(path).digest("base64");
 
     return {
         paths: {
@@ -69,6 +65,15 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                                     // eslint-disable-next-line radar/no-duplicate-string
                                     description: "Upload expiration date",
                                 },
+                                ETag: {
+                                    schema: {
+                                        type: "string",
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        example: "d41d8cd98f00b204e9800998ecf8427e",
+                                    },
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Upload ETag",
+                                },
                             },
                         },
                         201: {
@@ -90,6 +95,15 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                                         format: "date-time",
                                     },
                                     description: "Upload expiration date",
+                                },
+                                ETag: {
+                                    schema: {
+                                        type: "string",
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        example: "d41d8cd98f00b204e9800998ecf8427e",
+                                    },
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Upload ETag",
                                 },
                             },
                         },
