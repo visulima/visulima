@@ -1,7 +1,7 @@
-import { nodeMultipartHandler } from "@visulima/uploads/next";
+import { nodeMultipartHandler } from "@visulima/upload/next";
 import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { AzureStorage } from "@visulima/uploads/azure";
+import { AzureStorage } from "@visulima/upload/azure";
 
 import runMiddleware from "../../../../../utils/middleware";
 
@@ -13,7 +13,7 @@ const cors = Cors({
 });
 
 const storage = new AzureStorage({
-    containerName: "uploads",
+    containerName: "upload",
     connectionString: "DefaultEndpointsProtocol=http;AccountName=account1;AccountKey=key1;BlobEndpoint=http://account1.blob.localhost:10000;QueueEndpoint=http://account1.queue.localhost:10001;TableEndpoint=http://account1.table.localhost:10002;",
     maxUploadSize: "1GB",
     logger: console,
