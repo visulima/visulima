@@ -11,7 +11,7 @@ packages:
     - "!packages/readdir/__fixtures__/**"
     - "apps/**"
     - "examples/**"
-    - "examples/uploads/**"
+    - "examples/upload/**"
     - "packages/**"
     - "packages/boxen/__fixtures__/package/cjs"
     - "packages/boxen/__fixtures__/package/mjs"

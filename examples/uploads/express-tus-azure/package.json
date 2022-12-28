@@ -7,7 +7,7 @@
     },
     "dependencies": {
         "@azure/storage-blob": "^12.12.0",
-        "@visulima/uploads": "workspace:*",
+        "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
         "cp-file": "^10.0.0",
         "dotenv": "^16.0.3",

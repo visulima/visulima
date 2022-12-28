@@ -1,7 +1,7 @@
-import { nodeMultipartHandler } from "@visulima/uploads/next";
-import type { UploadFile } from "@visulima/uploads";
+import { nodeMultipartHandler } from "@visulima/upload/next";
+import type { UploadFile } from "../../../../../../../../packages/upload";
 import Cors from "cors";
-import { S3Storage } from "@visulima/uploads/aws";
+import { S3Storage } from "@visulima/upload/aws";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import runMiddleware from "../../../../../utils/middleware";

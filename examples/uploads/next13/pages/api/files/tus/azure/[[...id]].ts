@@ -1,7 +1,7 @@
-import { nodeTusHandler } from "@visulima/uploads/next";
+import { nodeTusHandler } from "@visulima/upload/next";
 import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { AzureStorage } from "@visulima/uploads/azure";
+import { AzureStorage } from "@visulima/upload/azure";
 
 import runMiddleware from "../../../../../utils/middleware";
 
@@ -13,7 +13,7 @@ const cors = Cors({
 });
 
 const storage = new AzureStorage({
-    containerName: "uploads",
+    containerName: "upload",
     accountName: "visulima",
     accountKey: "accountKey",
     maxUploadSize: "1GB",
