@@ -5,12 +5,18 @@ import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 import typeis from "type-is";
 
-import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";
-import { ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator } from "../utils";
+import type {
+    ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig,
+} from "../utils";
+import {
+    ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator,
+} from "../utils";
 import MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, PurgeList } from "./types";
 import type { FileInit, FilePart, FileQuery } from "./utils/file";
-import { File, FileName, isExpired, updateMetadata } from "./utils/file";
+import {
+    File, FileName, isExpired, updateMetadata,
+} from "./utils/file";
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
@@ -194,6 +200,8 @@ abstract class BaseStorage<TFile extends File = File> {
         if (isExpired(file)) {
             // eslint-disable-next-line no-void
             void this.delete(file).catch(() => null);
+            // eslint-disable-next-line no-void
+            void this.deleteMeta(file.id).catch(() => null);
 
             return throwErrorCode(ERRORS.GONE);
         }
@@ -243,11 +251,6 @@ abstract class BaseStorage<TFile extends File = File> {
 
         return {
             ...file,
-            headers: {
-                "Content-Type": file.contentType,
-                "Content-Length": file.size,
-            },
-            statusCode: 200,
             content: await this.getBinary(file),
         };
     }
@@ -255,8 +258,8 @@ abstract class BaseStorage<TFile extends File = File> {
     /**
      * Retrieves a list of upload.
      */
-    public async list(): Promise<TFile[]> {
-        return this.meta.list();
+    public async list(limit: number = 1000): Promise<TFile[]> {
+        return this.meta.list(limit);
     }
 
     /**
