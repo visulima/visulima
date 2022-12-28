@@ -8,7 +8,7 @@
     "scripts": {
         "build": "nx run-many --target=build --all --parallel",
         "build-storybook": "pnpm --filter \"storybook\" run build",
-        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs,uploads",
+        "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs,upload",
         "build:prod:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run build:prod",
         "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs,uploads",
         "build:prod:readdir": "pnpm --filter \"readdir\" run build:prod",

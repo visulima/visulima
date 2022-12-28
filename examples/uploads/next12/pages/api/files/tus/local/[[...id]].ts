@@ -1,8 +1,8 @@
-import { nodeTusHandler } from "@visulima/uploads/next";
+import { nodeTusHandler } from "@visulima/upload/next";
 import Cors from "cors";
 import runMiddleware from "../../../../../utils/middleware";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { DiskStorage } from "@visulima/uploads";
+import { DiskStorage } from "../../../../../../../../packages/upload";
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
