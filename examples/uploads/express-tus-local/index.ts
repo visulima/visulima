@@ -1,6 +1,6 @@
 import express from "express";
-import type { UploadFile } from "@visulima/uploads";
-import { DiskStorage, Tus } from "@visulima/uploads";
+import type { UploadFile } from "../../../packages/upload";
+import { DiskStorage, Tus } from "../../../packages/upload";
 import Cors from "cors";
 
 const PORT = process.env.PORT || 3002;
