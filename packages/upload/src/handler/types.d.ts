@@ -1,6 +1,6 @@
+import type { PaginationResult } from "@visulima/pagination";
 import { EventEmitter } from "node:events";
 import type { IncomingMessage } from "node:http";
-import type { PaginationResult } from "@visulima/pagination";
 
 import BaseStorage from "../storage/storage";
 import type { UploadEventType, UploadFile } from "../storage/utils/file";
@@ -25,7 +25,7 @@ export type UploadEvent<TFile extends UploadFile> = TFile & RequestEvent;
 
 export type UploadErrorEvent = UploadError & RequestEvent;
 
-export type ResponseFile<TFile extends UploadFile> = TFile & BaseResponse
+export type ResponseFile<TFile extends UploadFile> = TFile & BaseResponse;
 
 export type ResponseList<TFile extends UploadFile> = { data: PaginationResult<TFile> | TFile[]; } & BaseResponse;
 

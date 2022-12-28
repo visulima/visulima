@@ -80,7 +80,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     public async list(): Promise<T[]> {
         const blobs: BlobItem[] = [];
         const iterator = this.containerClient.listBlobsFlat({
-            prefix: this.root,
+            prefix: this.prefix,
         });
 
         // eslint-disable-next-line no-restricted-syntax

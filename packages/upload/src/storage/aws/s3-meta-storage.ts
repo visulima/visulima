@@ -1,4 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+import type { _Object, ListObjectsV2CommandInput } from "@aws-sdk/client-s3";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
     DeleteObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
 } from "@aws-sdk/client-s3";
@@ -6,7 +8,7 @@ import {
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";
-import { File } from "../utils/file";
+import { File, isExpired } from "../utils/file";
 import type { S3MetaStorageOptions } from "./types";
 
 class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -36,8 +38,15 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     async get(id: string): Promise<T> {
-        const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
-        const { Metadata } = await this.client.send(new HeadObjectCommand(parameters));
+        const Key = this.getMetaName(id);
+        const parameters = { Bucket: this.bucket, Key };
+        const { Metadata, Expires } = await this.client.send(new HeadObjectCommand(parameters));
+
+        if (Expires && isExpired({ expiredAt: Expires } as T)) {
+            await this.delete(Key);
+
+            throw new Error(`Metafile ${id} not found`);
+        }
 
         if (Metadata !== undefined && Metadata.metadata !== undefined) {
             return JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
@@ -70,24 +79,53 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         return file;
     }
 
-    public async list(): Promise<T[]> {
-        const parameters = {
+    // eslint-disable-next-line radar/cognitive-complexity
+    public async list(limit: number = 1000): Promise<T[]> {
+        let parameters: ListObjectsV2CommandInput = {
             Bucket: this.bucket,
             Prefix: this.prefix,
+            MaxKeys: limit,
         };
         const items: T[] = [];
-        const response = await this.client.send(new ListObjectsV2Command(parameters));
 
-        if (response.Contents?.length) {
-            Object.values(response.Contents).forEach(({ Key, LastModified }) => {
-                if (Key && LastModified && Key.endsWith(this.suffix)) {
-                    items.push({
-                        id: this.getIdFromMetaName(Key),
-                        createdAt: LastModified,
-                        modifiedAt: LastModified,
-                    } as T);
+        // Declare truncated as a flag that the while loop is based on.
+        let truncated = true;
+
+        while (truncated) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const response = await this.client.send(
+                    new ListObjectsV2Command(parameters),
+                );
+
+                // eslint-disable-next-line no-restricted-syntax,no-await-in-loop
+                for await (const { Key, LastModified } of response.Contents as _Object[]) {
+                    if (Key && LastModified && Key.endsWith(this.suffix)) {
+                        const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: this.getMetaName(Key) }));
+
+                        if (Expires && isExpired({ expiredAt: Expires } as T)) {
+                            await this.delete(Key);
+                        } else {
+                            items.push({
+                                id: this.getIdFromMetaName(Key),
+                                createdAt: LastModified,
+                                modifiedAt: LastModified,
+                            } as T);
+                        }
+                    }
                 }
-            });
+
+                truncated = response.IsTruncated || false;
+
+                if (truncated) {
+                    // Declare a variable to which the key of the last element is assigned to in the response.
+                    parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
+                }
+            } catch (error) {
+                truncated = false;
+
+                throw error;
+            }
         }
 
         return items;
