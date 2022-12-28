@@ -84,21 +84,21 @@ class Multipart<
                 Object.assign(config.metadata, data);
             });
 
-            // form.on("error", async (error) => {
-            //     if (typeof error !== "object") {
-            //         return;
-            //     }
-            //
-            //     try {
-            //         const file = await this.storage.create(request, config);
-            //
-            //         await this.storage.delete({ id: file.id });
-            //     } catch (storageError: any) {
-            //         reject(storageError);
-            //     }
-            //
-            //     reject(error);
-            // });
+            form.on("error", async (error) => {
+                if (typeof error !== "object") {
+                    return;
+                }
+
+                try {
+                    const file = await this.storage.create(request, config);
+
+                    await this.storage.delete({ id: file.id });
+                } catch (storageError: any) {
+                    reject(storageError);
+                }
+
+                reject(error);
+            });
 
             form.on("part", (part: MultipartyPart) => {
                 config.size = part.byteCount;
@@ -117,7 +117,16 @@ class Multipart<
                     }))
                     .then((file) => {
                         if (file.status === "completed") {
-                            return resolve({ ...file, headers: { Location: this.buildFileUrl(request, file) }, statusCode: 200 });
+                            return resolve({
+                                ...file,
+                                headers: {
+                                    Location: this.buildFileUrl(request, file),
+                                    ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
+                                    ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
+
+                                },
+                                statusCode: 200,
+                            });
                         }
 
                         return resolve({ ...file, statusCode: 201, headers: {} });
