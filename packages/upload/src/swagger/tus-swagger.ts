@@ -1,13 +1,13 @@
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
-import type { OpenAPIV3 } from "openapi-types";
 import { createHash } from "node:crypto";
+import type { OpenAPIV3 } from "openapi-types";
 
 import {
     sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList,
 } from "./shared-swagger";
 
 const swaggerSpec = (path: string = "/", tags: string[] | undefined = ["Tus"]): Partial<OpenAPIV3.Document> => {
-    const pathHash = createHash('sha256').update(path).digest('base64');
+    const pathHash = createHash("sha256").update(path).digest("base64");
     const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags);
 
     return {

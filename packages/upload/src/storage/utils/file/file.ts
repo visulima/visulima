@@ -49,6 +49,8 @@ class File implements FileInit {
 
     content?: Buffer;
 
+    ETag?: string;
+
     constructor({
         metadata = {}, originalName, contentType, size,
     }: FileInit) {
