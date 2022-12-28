@@ -7,7 +7,9 @@ import { format, parse } from "node:url";
 
 import BaseStorage from "../storage/storage";
 import type { UploadFile } from "../storage/utils/file";
-import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadResponse } from "../utils";
+import type {
+    ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadResponse,
+} from "../utils";
 import {
     ErrorMap,
     ERRORS,
@@ -22,14 +24,15 @@ import {
     UploadError,
     uuidRegex,
 } from "../utils";
-import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
+import type {
+    AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions,
+} from "./types";
 
 const CONTENT_TYPE = "Content-Type";
 
 abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMessage = IncomingMessage, Response extends ServerResponse = ServerResponse>
     extends EventEmitter
-    implements MethodHandler<Request, Response>
-{
+    implements MethodHandler<Request, Response> {
     /**
      * Limiting enabled http method handler
      * @example
@@ -75,7 +78,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     }
 
     protected compose = (): void => {
-        const child = <typeof BaseHandler>this.constructor;
+        const child = <typeof BaseHandler> this.constructor;
 
         (child.methods || BaseHandler.methods).forEach((method) => {
             const handler = (this as MethodHandler<Request, Response>)[method];
@@ -130,14 +133,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
                     this.send(response, { statusCode, headers });
                 } else if (request.method === "GET") {
-                    (request as IncomingMessageWithBody).body =
-                        typeof (file as ResponseList<TFile>)?.data !== "undefined" ? (file as ResponseList<TFile>).data : file;
+                    (request as IncomingMessageWithBody).body = (file as ResponseList<TFile>)?.data === undefined ? file : (file as ResponseList<TFile>).data;
 
                     const { statusCode, headers } = file as ResponseFile<TFile>;
 
                     let body: ResponseList<TFile>["data"] | Buffer | string = "";
 
-                    if (typeof (file as ResponseFile<TFile>).content !== "undefined") {
+                    if ((file as ResponseFile<TFile>).content !== undefined) {
                         body = (file as ResponseFile<TFile>).content as Buffer;
                     } else if (typeof file === "object" && "data" in file) {
                         body = (file as ResponseList<TFile>).data;
@@ -172,12 +174,12 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                         } else {
                             const completed = await this.storage.onComplete(file as TFile);
 
-                            if (typeof completed.headers === "undefined") {
-                                throw new Error("onComplete must return the key headers");
+                            if (completed.headers === undefined) {
+                                throw new TypeError("onComplete must return the key headers");
                             }
 
-                            if (typeof completed.statusCode === "undefined") {
-                                throw new Error("onComplete must return the key statusCode");
+                            if (completed.statusCode === undefined) {
+                                throw new TypeError("onComplete must return the key statusCode");
                             }
 
                             this.finish(request, response, completed);
@@ -216,7 +218,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async options(_request: Request, _response: Response): Promise<ResponseFile<TFile>> {
-        const child = <typeof BaseHandler>this.constructor;
+        const child = <typeof BaseHandler> this.constructor;
 
         return {
             statusCode: 204,
@@ -236,7 +238,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     public async get(request: Request, response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,consistent-return
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars,consistent-return,radar/cognitive-complexity
     public async get(request: Request & { originalUrl?: string }, _response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
@@ -252,9 +254,19 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                     contentType = mime.getType(ext as string) || contentType;
                 }
 
+                const {
+                    size, expiredAt, modifiedAt, ETag,
+                } = file;
+
                 return {
                     statusCode: 200,
-                    headers: {},
+                    headers: {
+                        "Content-Type": contentType,
+                        "Content-Length": String(size),
+                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
+                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
+                        ...(ETag === undefined ? {} : { ETag }),
+                    } as Record<string, string>,
                     ...file,
                     contentType,
                 } as ResponseFile<TFile>;
@@ -305,11 +317,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
         if (typeof body === "string") {
             data = body;
 
-            if (typeof headers["Content-Type"] === "undefined") {
-                headers["Content-Type"] = "text/plain";
+            if (headers[CONTENT_TYPE] === undefined) {
+                // eslint-disable-next-line no-param-reassign
+                headers[CONTENT_TYPE] = "text/plain";
             }
 
-            if (typeof headers["Content-Length"] === "undefined") {
+            if (headers["Content-Length"] === undefined) {
+                // eslint-disable-next-line no-param-reassign
                 headers["Content-Length"] = Buffer.byteLength(body);
             }
         } else if (body instanceof Buffer) {

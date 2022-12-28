@@ -106,6 +106,37 @@ export const sharedGet = (operationId: string, tags: string[] | undefined): Open
         responses: {
             200: {
                 description: "OK",
+                headers: {
+                    "X-Upload-Expires": {
+                        schema: {
+                            type: "string",
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "2021-08-25T11:12:26.635Z",
+                            format: "date-time",
+                        },
+                        // eslint-disable-next-line radar/no-duplicate-string
+                        description: "Upload expiration date",
+                    },
+                    "Last-Modified": {
+                        schema: {
+                            type: "string",
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "2021-08-25T11:12:26.635Z",
+                            format: "date-time",
+                        },
+                        // eslint-disable-next-line radar/no-duplicate-string
+                        description: "Upload last modified date",
+                    },
+                    ETag: {
+                        schema: {
+                            type: "string",
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "d41d8cd98f00b204e9800998ecf8427e",
+                        },
+                        // eslint-disable-next-line radar/no-duplicate-string
+                        description: "Upload ETag",
+                    },
+                },
             },
             404: {
                 description: "Not Found",

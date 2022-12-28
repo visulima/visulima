@@ -64,7 +64,7 @@ class MetaStorage<T> {
      * Retrieves a list of upload.
      */
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
-    public async list(): Promise<T[]> {
+    public async list(_limit: number = 1000): Promise<T[]> {
         throw new Error("Not implemented");
     }
 
