@@ -6,6 +6,11 @@ import type { IncomingMessage } from "node:http";
 import { resolve } from "node:url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import fetch from "node-fetch";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import gaxios from "gaxios";
+import { randomUUID } from "node:crypto";
 
 import type { HttpError } from "../../utils";
 import { ERRORS, getHeader, throwErrorCode } from "../../utils";
@@ -19,7 +24,8 @@ import GCSConfig from "./gcs-config";
 import GCSFile from "./gcs-file";
 import GCSMetaStorage from "./gcs-meta-storage";
 import type { ClientError, GCStorageOptions } from "./types.d";
-import { buildContentRange, getRangeEnd } from "./utils";
+import { buildContentRange, getRangeEnd, retryOptions as baseRetryOptions } from "./utils";
+import pkg from "../../../package.json";
 
 const validateStatus = (code: number): boolean => (code >= 200 && code < 300) || code === 308 || code === 499;
 
@@ -39,6 +45,8 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * ```
  */
 class GCStorage extends BaseStorage<GCSFile> {
+    protected meta: MetaStorage<GCSFile>;
+
     private readonly bucket: string;
 
     private authClient: GoogleAuth;
@@ -47,26 +55,16 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     private readonly uploadBaseURI: string;
 
-    protected meta: MetaStorage<GCSFile>;
+    private readonly isCustomEndpoint: boolean = false;
 
-    constructor(public config: GCStorageOptions = {}) {
+    private readonly retryOptions: RetryConfig = {};
+
+    private readonly useAuthWithCustomEndpoint: boolean;
+
+    private readonly userProject: string | undefined;
+
+    constructor(public config: GCStorageOptions) {
         super(config);
-
-        if (config.metaStorage) {
-            this.meta = config.metaStorage;
-        } else {
-            const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
-            const localMeta = "directory" in metaConfig;
-
-            if (localMeta) {
-                this.logger?.debug("Using local meta storage");
-            }
-
-            this.meta = localMeta ? new LocalMetaStorage(metaConfig) : new GCSMetaStorage(metaConfig);
-        }
-
-        // eslint-disable-next-line no-param-reassign
-        config.keyFile ||= process.env.GCS_KEYFILE;
 
         const bucketName = config.bucket || process.env.GCS_BUCKET;
 
@@ -74,18 +72,52 @@ class GCStorage extends BaseStorage<GCSFile> {
             throw new Error("GCS bucket is not defined");
         }
 
+        if (!config.projectId) {
+            throw new Error("Sorry, we cannot connect to Cloud Services without a project ID.");
+        }
+
         this.bucket = bucketName;
-        this.storageBaseURI = [GCSConfig.storageAPI, this.bucket, "o"].join("/");
-        this.uploadBaseURI = [GCSConfig.uploadAPI, this.bucket, "o"].join("/");
+        this.storageBaseURI = `${config.storageAPI || GCSConfig.storageAPI}/${this.bucket}/o`;
+        this.uploadBaseURI = `${config.uploadAPI || GCSConfig.uploadAPI}/${this.bucket}/o`;
+        this.isCustomEndpoint = !this.storageBaseURI.includes("storage.googleapis.com");
+
+        const { retryOptions, useAuthWithCustomEndpoint, userProject } = config;
+
+        this.userProject = userProject;
+        this.useAuthWithCustomEndpoint = useAuthWithCustomEndpoint || false;
+        this.retryOptions = {
+            ...baseRetryOptions,
+            ...retryOptions,
+        };
 
         // eslint-disable-next-line no-param-reassign
         config.scopes ||= GCSConfig.authScopes;
 
         this.authClient = new GoogleAuth(config);
 
+        if (config.metaStorage) {
+            this.meta = config.metaStorage;
+        } else {
+            let metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            const localMeta = "directory" in metaConfig;
+
+            if (localMeta) {
+                this.logger?.debug("Using local meta storage");
+
+                this.meta = new LocalMetaStorage(metaConfig);
+            } else {
+                if (config.bucket === metaConfig.bucket && config.projectId === metaConfig.projectId) {
+                    metaConfig = { ...metaConfig, authClient: this.authClient };
+                }
+
+                this.meta = new GCSMetaStorage(metaConfig);
+            }
+        }
+
         this.accessCheck().catch((error: ClientError) => {
             this.isReady = false;
-            this.logger?.error("Unable to open bucket: %O", error);
+
+            throw error;
         });
     }
 
@@ -105,7 +137,7 @@ class GCStorage extends BaseStorage<GCSFile> {
     }
 
     private async accessCheck(): Promise<any> {
-        return this.authClient.request({ url: `${GCSConfig.storageAPI}/${this.bucket}` });
+        return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<GCSFile> {
@@ -141,7 +173,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             params: { name: file.name, size: file.size, uploadType: "resumable" },
             url: this.uploadBaseURI,
         };
-        const response = await this.authClient.request(options);
+        const response = await this.makeRequest(options);
 
         file.uri = response.headers.location as string;
 
@@ -203,7 +235,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             // eslint-disable-next-line no-param-reassign
             file.status = "deleted";
 
-            await Promise.all([this.authClient.request({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
+            await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
 
             return { ...file };
         }
@@ -238,7 +270,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         do {
             options.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
             // eslint-disable-next-line no-await-in-loop,unicorn/no-await-expression-member
-            progress = (await this.authClient.request<CopyProgress>(options)).data;
+            progress = (await this.makeRequest<CopyProgress>(options)).data;
         } while (progress.rewriteToken);
 
         return progress.resource;
@@ -248,13 +280,66 @@ class GCStorage extends BaseStorage<GCSFile> {
         const resource = await this.copy(name, destination);
         const url = `${this.storageBaseURI}/${name}`;
 
-        await this.authClient.request({ method: "DELETE" as const, url });
+        await this.makeRequest({ method: "DELETE" as const, url });
 
         return resource;
     }
 
+    /**
+     * Get uploaded file.
+     *
+     * @param {FileQuery} id
+     */
+    public async get({ id }: FileQuery): Promise<GCSFile> {
+        const { data } = await this.makeRequest({ url: `${this.storageBaseURI}/${id}`, params: { alt: "json" } });
+        const file = await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
+
+        return {
+            ...file,
+            content: await this.getBinary(file),
+        };
+    }
+
+    public async list(limit: number = 1000): Promise<GCSFile[]> {
+        const items: GCSFile[] = [];
+
+        // Declare truncated as a flag that the while loop is based on.
+        let truncated = true;
+        let pageToken: string | undefined;
+
+        while (pageToken) {
+            try {
+                const { data } = await this.makeRequest<{
+                    nextPageToken?: string;
+                    items: { name: string; timeCreated: string; metadata?: GCSFile; updated: string }[];
+                }>({ url: this.storageBaseURI, params: { maxResults: limit, ...(typeof pageToken !== "undefined" ? { pageToken } : {}) } });
+
+                (data?.items || []).forEach(({ name, timeCreated, updated }) => {
+                    items.push({
+                        id: name,
+                        createdAt: timeCreated,
+                        modifiedAt: updated,
+                    } as GCSFile);
+                });
+
+                truncated = typeof data?.nextPageToken !== undefined;
+
+                if (truncated) {
+                    pageToken = data.nextPageToken;
+                }
+            } catch (error) {
+                truncated = false;
+                pageToken = undefined;
+
+                throw error;
+            }
+        }
+
+        return items;
+    }
+
     protected async getBinary(file: GCSFile): Promise<Buffer> {
-        const response = await this.authClient.request({ responseType: "arraybuffer", url: file.uri });
+        const response = await this.makeRequest({ params: { alt: "media" }, url: file.uri });
 
         return Buffer.from(response.data);
     }
@@ -303,6 +388,44 @@ class GCStorage extends BaseStorage<GCSFile> {
     }
 
     private internalOnComplete = (file: GCSFile): Promise<any> => this.deleteMeta(file.id);
+
+    private async makeRequest<T = any>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
+        if (typeof data.url === "string") {
+            data.url = data.url
+                // Some URIs have colon separators.
+                // Bad: https://.../projects/:list
+                // Good: https://.../projects:list
+                .replace(/\/:/g, ":");
+        }
+
+        data = {
+            ...data,
+            retry: true,
+            retryConfig: this.retryOptions,
+        };
+
+        if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
+            const requestDefaults: GaxiosOptions = {
+                timeout: 60000,
+                headers: {
+                    "User-Agent": `${pkg.name}/${pkg.version}`,
+                    "x-goog-api-client": `gl-node/${process.versions.node} gccl/${pkg.version} gccl-invocation-id/${randomUUID()}`,
+                },
+                params: {
+                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
+                },
+            };
+            return gaxios.request({ ...requestDefaults, ...data });
+        } else {
+            return this.authClient.request({
+                params: {
+                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
+                    ...data.params,
+                },
+                ...data,
+            });
+        }
+    }
 }
 
 export default GCStorage;

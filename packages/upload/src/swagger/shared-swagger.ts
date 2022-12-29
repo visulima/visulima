@@ -23,7 +23,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                     type: "integer",
                     nullable: true,
                 },
-                description: "Maximum number of elements to retrieve. Use only for pagination.",
+                description: "Maximum number of elements to retrieve.",
             },
             {
                 name: "page",

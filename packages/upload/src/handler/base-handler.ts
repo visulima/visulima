@@ -287,13 +287,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async list(request: Request, _response: Response): Promise<ResponseList<TFile>> {
-        const list = await this.storage.list();
+        const { page, limit } = parse(request.url || "", true).query as { [key: string]: string };
+
+        const list = await this.storage.list(Number(limit || 1000));
 
         if (list.length === 0) {
             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
-
-        const { page, limit } = parse(request.url || "", true).query as { [key: string]: string };
 
         if (page !== undefined && limit !== undefined) {
             return {

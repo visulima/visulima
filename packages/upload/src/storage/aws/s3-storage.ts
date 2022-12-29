@@ -1,13 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AbortController } from "@aws-sdk/abort-controller";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type {
-    CompleteMultipartUploadOutput,
-    CopyObjectCommandInput,
-    CopyObjectCommandOutput,
-    DeleteObjectCommandInput,
-    Part,
-} from "@aws-sdk/client-s3";
+import type { CompleteMultipartUploadOutput, CopyObjectCommandInput, CopyObjectCommandOutput, DeleteObjectCommandInput, Part, ListObjectsV2CommandInput } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
     AbortMultipartUploadCommand,
@@ -20,6 +14,7 @@ import {
     S3Client,
     UploadPartCommand,
     waitUntilBucketExists,
+    ListObjectsV2Command, HeadObjectCommand
 } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
@@ -32,16 +27,12 @@ import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
-import {
-    ERRORS, mapValues, throwErrorCode, toSeconds,
-} from "../../utils";
+import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import {
-    getFileStatus, hasContent, partMatch, updateSize,
-} from "../utils/file";
+import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
@@ -117,15 +108,16 @@ class S3Storage extends BaseStorage<S3File> {
 
             if (localMeta) {
                 this.logger?.debug("Using local meta storage");
+                this.meta = new LocalMetaStorage<S3File>(metaConfig);
+            } else {
+                this.meta = new S3MetaStorage<S3File>(metaConfig);
             }
-
-            // eslint-disable-next-line max-len
-            this.meta = localMeta ? new LocalMetaStorage<S3File>(metaConfig) : new S3MetaStorage<S3File>(metaConfig);
         }
 
         this.accessCheck().catch((error: AwsError) => {
             this.isReady = false;
-            this.logger?.error("Unable to open bucket: %O", error);
+
+            throw error;
         });
     }
 
@@ -251,7 +243,7 @@ class S3Storage extends BaseStorage<S3File> {
             file.status = getFileStatus(file);
 
             if (file.status === "completed") {
-                const completed = await this.completeMultipartUpload(file);
+                const [completed] = await this.internalOnComplete(file);
 
                 delete file.Parts;
 
@@ -308,8 +300,52 @@ class S3Storage extends BaseStorage<S3File> {
         return copyOut;
     }
 
-    private async accessCheck(maxWaitTime = 30): Promise<any> {
-        return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: this.bucket });
+    // eslint-disable-next-line radar/cognitive-complexity
+    public async list(limit: number = 1000): Promise<S3File[]> {
+        let parameters: ListObjectsV2CommandInput = {
+            Bucket: this.bucket,
+            MaxKeys: limit,
+        };
+        const items: S3File[] = [];
+
+        // Declare truncated as a flag that the while loop is based on.
+        let truncated = true;
+
+        while (truncated) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const response = await this.client.send(new ListObjectsV2Command(parameters));
+
+                // eslint-disable-next-line no-restricted-syntax,no-await-in-loop
+                for await (const { Key, LastModified } of response?.Contents || []) {
+                    if (typeof Key !== "undefined") {
+                        const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key }));
+
+                        if (Expires && isExpired({ expiredAt: Expires } as S3File)) {
+                            await this.delete({ id: Key });
+                        } else {
+                            items.push({
+                                id: Key,
+                                ...(LastModified && { createdAt: LastModified }),
+                            } as S3File);
+                        }
+                    }
+                }
+
+                truncated = response.IsTruncated || false;
+
+                if (truncated) {
+                    // Declare a variable to which the key of the last element is assigned to in the response.
+                    parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
+                }
+            } catch (error) {
+                truncated = false;
+
+                throw error;
+            }
+        }
+
+        return items;
     }
 
     protected async getBinary(file: S3File): Promise<Buffer> {
@@ -329,6 +365,10 @@ class S3Storage extends BaseStorage<S3File> {
         return Buffer.concat(chunks);
     }
 
+    private async accessCheck(maxWaitTime = 30): Promise<any> {
+        return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: this.bucket });
+    }
+
     private async buildPresigned(file: S3File): Promise<S3File> {
         if (!file.Parts?.length) {
             // eslint-disable-next-line no-param-reassign
@@ -341,7 +381,7 @@ class S3Storage extends BaseStorage<S3File> {
         file.status = getFileStatus(file);
 
         if (file.status === "completed") {
-            const completed = await this.completeMultipartUpload(file);
+            const [completed] = await this.internalOnComplete(file);
 
             // eslint-disable-next-line no-param-reassign
             delete file.Parts;
@@ -420,6 +460,10 @@ class S3Storage extends BaseStorage<S3File> {
             this.logger?.error("abortMultipartUploadError: ", error);
         }
     }
+
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => {
+        return Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+    };
 }
 
 export default S3Storage;

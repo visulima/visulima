@@ -1,4 +1,3 @@
-import { walk } from "@visulima/readdir";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import normalize from "normalize-path";
@@ -64,34 +63,6 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public async delete(id: string): Promise<void> {
         await removeFile(this.getMetaPath(id));
     }
-
-    public async list(): Promise<T[]> {
-        const config = {
-            extensions: [this.suffix.slice(1)],
-            includeFiles: true,
-            includeDirs: false,
-            followSymlinks: false,
-        };
-        const uploads: T[] = [];
-        const { prefix } = this;
-
-        let { directory } = this;
-
-        if (prefix !== "") {
-            directory = join(directory, prefix);
-        }
-
-        // eslint-disable-next-line no-restricted-syntax
-        for await (const founding of walk(directory, config)) {
-            const { birthtime, ctime, mtime } = await fsp.stat(founding.path);
-            const id = this.getIdFromPath(founding.path);
-
-            uploads.push({ id, createdAt: birthtime || ctime, modifiedAt: mtime } as T);
-        }
-
-        return uploads;
-    }
-
     private async accessCheck(): Promise<void> {
         await fsp.mkdir(this.directory, { recursive: true });
     }
