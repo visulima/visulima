@@ -4,7 +4,7 @@ services:
     db:
         image: "postgres:18.0-alpine@sha256:f898ac406e1a9e05115cc2efcb3c3abb3a92a4c0263f3b6f6aaae354cbb1953a"
         volumes:
-            - "${PWD}/data:/var/lib/postgresql/data"
+            - "./data/postgresql:/var/lib/postgresql/data"
         environment:
             POSTGRES_USER: "visulima"
             POSTGRES_PASSWORD: "root"
@@ -23,7 +23,7 @@ services:
             - "1025:1025"
             - "8025:8025"
         volumes:
-            - "${PWD}/data:/data"
+            - "./data/mailhog:/data"
         depends_on:
             - "db"
 
@@ -37,15 +37,16 @@ services:
         ports:
             - "4566-4583:4566-4583"
         volumes:
-            - "${PWD}/data/localstack:/var/lib/localstack/state"
+            - "./data/localstack:/var/lib/localstack/state"
             - '/var/run/docker.sock:/var/run/docker.sock'
 
     gcs:
         image: "fsouza/fake-gcs-server:1.39.0"
         ports:
             - "4443:4443"
+        command: ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443"]
         volumes:
-            - "${PWD}/data/fake-gcs:/data"
+            - "./data/fake-gcs:/data"
 
     azure:
         image: "mcr.microsoft.com/azure-storage/azurite:latest"
@@ -54,7 +55,7 @@ services:
             - "10001:10001" # queue
             - "10002:10002" # table
         volumes:
-            - "${PWD}/data/azure:/data"
+            - "./data/azure:/data"
 
 volumes:
     data: # yamllint disable-line rule:empty-values
