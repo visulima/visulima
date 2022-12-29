@@ -1,9 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { _Object, ListObjectsV2CommandInput } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import {
-    DeleteObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
 
@@ -19,25 +15,39 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     constructor(public config: S3MetaStorageOptions) {
         super(config);
 
-        const bucket = config.bucket || process.env.S3_BUCKET;
+        const { client, ...metaConfig } = config
+        const bucket = metaConfig.bucket || process.env.S3_BUCKET;
 
-        if (!bucket) {
-            throw new Error("S3 bucket is not defined");
-        }
+        if (typeof client !== "undefined") {
+            this.client = client;
+        } else {
+            if (!bucket) {
+                throw new Error("S3 bucket is not defined");
+            }
 
-        this.bucket = bucket;
-        // eslint-disable-next-line no-param-reassign
-        const keyFile = config.keyFile || process.env.S3_KEYFILE;
-
-        if (keyFile) {
             // eslint-disable-next-line no-param-reassign
-            config.credentials = fromIni({ configFilepath: keyFile });
+            const keyFile = metaConfig.keyFile || process.env.S3_KEYFILE;
+
+            if (keyFile) {
+                // eslint-disable-next-line no-param-reassign
+                metaConfig.credentials = fromIni({ configFilepath: keyFile });
+            }
+
+            this.client = new S3Client(metaConfig);
+
+            this.accessCheck(bucket).catch((error) => {
+                throw error;
+            });
         }
 
-        this.client = new S3Client(config);
+        this.bucket = bucket as string;
     }
 
-    async get(id: string): Promise<T> {
+    private async accessCheck(bucket: string, maxWaitTime = 30): Promise<any> {
+        return waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
+    }
+
+    public async get(id: string): Promise<T> {
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
         const { Metadata, Expires } = await this.client.send(new HeadObjectCommand(parameters));
@@ -59,13 +69,13 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         return this.save(id, file);
     }
 
-    async delete(id: string): Promise<void> {
+    public async delete(id: string): Promise<void> {
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
 
         await this.client.send(new DeleteObjectCommand(parameters));
     }
 
-    async save(id: string, file: T): Promise<T> {
+    public async save(id: string, file: T): Promise<T> {
         const metadata = encodeURIComponent(JSON.stringify(file));
         const parameters = {
             Bucket: this.bucket,
@@ -77,58 +87,6 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         await this.client.send(new PutObjectCommand(parameters));
 
         return file;
-    }
-
-    // eslint-disable-next-line radar/cognitive-complexity
-    public async list(limit: number = 1000): Promise<T[]> {
-        let parameters: ListObjectsV2CommandInput = {
-            Bucket: this.bucket,
-            Prefix: this.prefix,
-            MaxKeys: limit,
-        };
-        const items: T[] = [];
-
-        // Declare truncated as a flag that the while loop is based on.
-        let truncated = true;
-
-        while (truncated) {
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                const response = await this.client.send(
-                    new ListObjectsV2Command(parameters),
-                );
-
-                // eslint-disable-next-line no-restricted-syntax,no-await-in-loop
-                for await (const { Key, LastModified } of response.Contents as _Object[]) {
-                    if (Key && LastModified && Key.endsWith(this.suffix)) {
-                        const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: this.getMetaName(Key) }));
-
-                        if (Expires && isExpired({ expiredAt: Expires } as T)) {
-                            await this.delete(Key);
-                        } else {
-                            items.push({
-                                id: this.getIdFromMetaName(Key),
-                                createdAt: LastModified,
-                                modifiedAt: LastModified,
-                            } as T);
-                        }
-                    }
-                }
-
-                truncated = response.IsTruncated || false;
-
-                if (truncated) {
-                    // Declare a variable to which the key of the last element is assigned to in the response.
-                    parameters = { ...parameters, ContinuationToken: response.NextContinuationToken };
-                }
-            } catch (error) {
-                truncated = false;
-
-                throw error;
-            }
-        }
-
-        return items;
     }
 }
 

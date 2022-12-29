@@ -78,15 +78,15 @@ pnpm add @azure/storage-blob abort-controller
 ### Google Cloud Storage
 
 ```sh
-npm install @google-cloud/storage abort-controller
+npm install @google-cloud/storage abort-controller node-fetch gaxios
 ```
 
 ```sh
-yarn add @google-cloud/storage abort-controller
+yarn add @google-cloud/storage abort-controller node-fetch gaxios
 ```
 
 ```sh
-pnpm add @google-cloud/storage abort-controller
+pnpm add @google-cloud/storage abort-controller node-fetch gaxios
 ```
 
 ## Supported Node.js Versions

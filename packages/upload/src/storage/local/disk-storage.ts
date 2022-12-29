@@ -1,19 +1,16 @@
+import { walk } from "@visulima/readdir";
 import { createWriteStream } from "node:fs";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
 import type { HttpError } from "../../utils";
-import {
-    ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode,
-} from "../../utils";
+import { ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types.d";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import {
-    File, getFileStatus, hasContent, partMatch, updateSize,
-} from "../utils/file";
+import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import LocalMetaStorage from "./local-meta-storage";
 
 /**
@@ -45,12 +42,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         });
     }
 
-    normalizeError(error: Error): HttpError {
+    public normalizeError(error: Error): HttpError {
         return super.normalizeError(error);
-    }
-
-    private async accessCheck(): Promise<void> {
-        await fsp.mkdir(this.directory, { recursive: true });
     }
 
     public async create(request: IncomingMessage, fileInit: FileInit): Promise<TFile> {
@@ -171,6 +164,30 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         }
     }
 
+    public async list(): Promise<TFile[]> {
+        const config = {
+            includeFiles: true,
+            includeDirs: false,
+            followSymlinks: false,
+        };
+        const uploads: TFile[] = [];
+
+        let { directory } = this;
+
+        // eslint-disable-next-line no-restricted-syntax
+        for await (const founding of walk(directory, config)) {
+            if (founding.path.includes(this.meta.suffix)) {
+                continue;
+            }
+
+            const { birthtime, ctime, mtime } = await fsp.stat(founding.path);
+
+            uploads.push({ id: founding.path.replace(directory, ""), createdAt: birthtime || ctime, modifiedAt: mtime } as TFile);
+        }
+
+        return uploads;
+    }
+
     /**
      * Returns path for the uploaded file
      */
@@ -207,6 +224,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     protected async getBinary(file: TFile): Promise<Buffer> {
         return fsp.readFile(this.getFilePath(file.name));
+    }
+
+    private async accessCheck(): Promise<void> {
+        await fsp.mkdir(this.directory, { recursive: true });
     }
 }
 
