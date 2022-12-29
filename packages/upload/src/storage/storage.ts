@@ -255,11 +255,13 @@ abstract class BaseStorage<TFile extends File = File> {
         };
     }
 
+
     /**
      * Retrieves a list of upload.
      */
-    public async list(limit: number = 1000): Promise<TFile[]> {
-        return this.meta.list(limit);
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
+    public async list(_limit: number = 1000): Promise<TFile[]> {
+        throw new Error("Not implemented");
     }
 
     /**

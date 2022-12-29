@@ -15,6 +15,9 @@ const cors = Cors({
 const storage = new GCStorage({
     maxUploadSize: "1GB",
     logger: console,
+    projectId: "test",
+    storageAPI: "http://0.0.0.0:4443/storage/v1/b",
+    uploadAPI: "http://0.0.0.0:4443/upload/storage/v1/b",
 });
 
 export const config = {

@@ -6,9 +6,9 @@ import { FileName } from "./utils/file";
  * Stores upload metadata
  */
 class MetaStorage<T> {
-    protected prefix = "";
+    public prefix = "";
 
-    protected suffix = "";
+    public suffix = "";
 
     protected readonly logger?: Logger;
 
@@ -57,14 +57,6 @@ class MetaStorage<T> {
      */
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
     public async touch(_id: string, _file: T): Promise<T> {
-        throw new Error("Not implemented");
-    }
-
-    /**
-     * Retrieves a list of upload.
-     */
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
-    public async list(_limit: number = 1000): Promise<T[]> {
         throw new Error("Not implemented");
     }
 
