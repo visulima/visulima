@@ -1,10 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { GoogleAuth, GoogleAuthOptions } from "google-auth-library";
+import { RetryConfig } from "gaxios";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import type { GoogleAuthOptions } from "google-auth-library";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { GoogleAuth } from "google-auth-library";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 import GCSFile from "./gcs-file";
-import { RetryConfig } from "gaxios";
 
 interface StorageSettings {
     storageAPI?: string;

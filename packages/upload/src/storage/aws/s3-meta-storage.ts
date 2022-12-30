@@ -1,5 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
+import {
+    DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists,
+} from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
 
@@ -15,12 +17,10 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     constructor(public config: S3MetaStorageOptions) {
         super(config);
 
-        const { client, ...metaConfig } = config
+        const { client, ...metaConfig } = config;
         const bucket = metaConfig.bucket || process.env.S3_BUCKET;
 
-        if (typeof client !== "undefined") {
-            this.client = client;
-        } else {
+        if (client === undefined) {
             if (!bucket) {
                 throw new Error("S3 bucket is not defined");
             }
@@ -38,6 +38,8 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
             this.accessCheck(bucket).catch((error) => {
                 throw error;
             });
+        } else {
+            this.client = client;
         }
 
         this.bucket = bucket as string;

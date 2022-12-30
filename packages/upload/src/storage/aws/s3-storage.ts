@@ -1,7 +1,14 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AbortController } from "@aws-sdk/abort-controller";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { CompleteMultipartUploadOutput, CopyObjectCommandInput, CopyObjectCommandOutput, DeleteObjectCommandInput, Part, ListObjectsV2CommandInput } from "@aws-sdk/client-s3";
+import type {
+    CompleteMultipartUploadOutput,
+    CopyObjectCommandInput,
+    CopyObjectCommandOutput,
+    DeleteObjectCommandInput,
+    ListObjectsV2CommandInput,
+    Part,
+} from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
     AbortMultipartUploadCommand,
@@ -10,11 +17,12 @@ import {
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
     GetObjectCommand,
+    HeadObjectCommand,
+    ListObjectsV2Command,
     ListPartsCommand,
     S3Client,
     UploadPartCommand,
     waitUntilBucketExists,
-    ListObjectsV2Command, HeadObjectCommand
 } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
@@ -27,12 +35,16 @@ import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
-import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
+import {
+    ERRORS, mapValues, throwErrorCode, toSeconds,
+} from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
+import {
+    getFileStatus, hasContent, isExpired, partMatch, updateSize,
+} from "../utils/file";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
@@ -318,7 +330,7 @@ class S3Storage extends BaseStorage<S3File> {
 
                 // eslint-disable-next-line no-restricted-syntax,no-await-in-loop
                 for await (const { Key, LastModified } of response?.Contents || []) {
-                    if (typeof Key !== "undefined") {
+                    if (Key !== undefined) {
                         const { Expires } = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key }));
 
                         if (Expires && isExpired({ expiredAt: Expires } as S3File)) {
@@ -461,9 +473,8 @@ class S3Storage extends BaseStorage<S3File> {
         }
     }
 
-    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => {
-        return Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
-    };
+    // eslint-disable-next-line compat/compat,max-len
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
 }
 
 export default S3Storage;

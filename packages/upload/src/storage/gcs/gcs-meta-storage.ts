@@ -1,16 +1,17 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { GoogleAuth } from "google-auth-library";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import gaxios from "gaxios";
-import { randomUUID } from "node:crypto"
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { GoogleAuth } from "google-auth-library";
+import { randomUUID } from "node:crypto";
 
+import package_ from "../../../package.json";
 import MetaStorage from "../meta-storage";
 import { File } from "../utils/file";
 import GCSConfig from "./gcs-config";
 import type { ClientError, GCSMetaStorageOptions } from "./types";
-import pkg from "../../../package.json";
 import { retryOptions as baseRetryOptions } from "./utils";
 
 class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -34,9 +35,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         const { authClient, ...metaConfig } = config;
         const bucketName = metaConfig.bucket || process.env.GCS_BUCKET;
 
-        if (typeof authClient !== "undefined") {
-            this.authClient = authClient;
-        } else {
+        if (authClient === undefined) {
             if (!bucketName) {
                 throw new Error("GCS bucket is not defined");
             }
@@ -49,6 +48,8 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             metaConfig.scopes ||= GCSConfig.authScopes;
 
             this.authClient = new GoogleAuth(metaConfig);
+        } else {
+            this.authClient = authClient;
         }
 
         this.storageBaseURI = `${metaConfig.storageAPI || GCSConfig.storageAPI}/${bucketName}/o`;
@@ -64,13 +65,13 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             ...retryOptions,
         };
 
-        if (typeof authClient === "undefined") {
-            this.accessCheck().catch((err: ClientError) => {
-                if (err.code === "404") {
+        if (authClient === undefined) {
+            this.accessCheck().catch((error: ClientError) => {
+                if (error.code === "404") {
                     throw new Error(`Bucket ${bucketName} does not exist`);
                 }
 
-                throw err;
+                throw error;
             });
         }
     }
@@ -112,8 +113,9 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return `${this.storageBaseURI}/${this.getMetaName(id)}`;
     }
 
-    private async makeRequest<T = any>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
+    private async makeRequest<Data = any>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {
         if (typeof data.url === "string") {
+            // eslint-disable-next-line no-param-reassign
             data.url = data.url
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
@@ -121,33 +123,26 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 .replace(/\/:/g, ":");
         }
 
+        // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
             retry: true,
             retryConfig: this.retryOptions,
+            timeout: 60_000,
+            headers: {
+                "User-Agent": `${package_.name}/${package_.version}`,
+                "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
+            },
+            params: {
+                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+            },
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
-            const requestDefaults: GaxiosOptions = {
-                timeout: 60000,
-                headers: {
-                    "User-Agent": `${pkg.name}/${pkg.version}`,
-                    "x-goog-api-client": `gl-node/${process.versions.node} gccl/${pkg.version} gccl-invocation-id/${randomUUID()}`,
-                },
-                params: {
-                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
-                },
-            };
-            return gaxios.request({ ...requestDefaults, ...data });
-        } else {
-            return this.authClient.request({
-                params: {
-                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
-                    ...data.params,
-                },
-                ...data,
-            });
+            return gaxios.request(data);
         }
+
+        return this.authClient.request(data);
     }
 }
 
