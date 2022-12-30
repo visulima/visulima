@@ -63,6 +63,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     public async delete(id: string): Promise<void> {
         await removeFile(this.getMetaPath(id));
     }
+
     private async accessCheck(): Promise<void> {
         await fsp.mkdir(this.directory, { recursive: true });
     }

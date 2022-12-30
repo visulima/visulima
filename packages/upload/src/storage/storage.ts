@@ -255,7 +255,6 @@ abstract class BaseStorage<TFile extends File = File> {
         };
     }
 
-
     /**
      * Retrieves a list of upload.
      */

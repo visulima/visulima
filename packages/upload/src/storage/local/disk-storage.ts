@@ -5,12 +5,16 @@ import { join } from "node:path";
 import { pipeline } from "node:stream";
 
 import type { HttpError } from "../../utils";
-import { ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
+import {
+    ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode,
+} from "../../utils";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types.d";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import {
+    File, getFileStatus, hasContent, partMatch, updateSize,
+} from "../utils/file";
 import LocalMetaStorage from "./local-meta-storage";
 
 /**
@@ -172,17 +176,19 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         };
         const uploads: TFile[] = [];
 
-        let { directory } = this;
+        const { directory } = this;
 
         // eslint-disable-next-line no-restricted-syntax
         for await (const founding of walk(directory, config)) {
-            if (founding.path.includes(this.meta.suffix)) {
-                continue;
+            // eslint-disable-next-line unicorn/consistent-destructuring
+            const { suffix } = this.meta;
+            const { path } = founding;
+
+            if (!path.includes(suffix)) {
+                const { birthtime, ctime, mtime } = await fsp.stat(path);
+
+                uploads.push({ id: path.replace(directory, ""), createdAt: birthtime || ctime, modifiedAt: mtime } as TFile);
             }
-
-            const { birthtime, ctime, mtime } = await fsp.stat(founding.path);
-
-            uploads.push({ id: founding.path.replace(directory, ""), createdAt: birthtime || ctime, modifiedAt: mtime } as TFile);
         }
 
         return uploads;
