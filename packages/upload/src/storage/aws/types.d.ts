@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { S3ClientConfig } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ResponseMetadata } from "@aws-sdk/types";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { S3Client } from "@aws-sdk/client-s3";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ResponseMetadata } from "@aws-sdk/types";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
