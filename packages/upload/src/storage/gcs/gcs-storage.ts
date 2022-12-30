@@ -1,17 +1,18 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AbortController } from "abort-controller";
 // eslint-disable-next-line import/no-extraneous-dependencies
+import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import gaxios from "gaxios";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
+import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:url";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import fetch from "node-fetch";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import gaxios from "gaxios";
-import { randomUUID } from "node:crypto";
 
+import package_ from "../../../package.json";
 import type { HttpError } from "../../utils";
 import { ERRORS, getHeader, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
@@ -25,7 +26,6 @@ import GCSFile from "./gcs-file";
 import GCSMetaStorage from "./gcs-meta-storage";
 import type { ClientError, GCStorageOptions } from "./types.d";
 import { buildContentRange, getRangeEnd, retryOptions as baseRetryOptions } from "./utils";
-import pkg from "../../../package.json";
 
 const validateStatus = (code: number): boolean => (code >= 200 && code < 300) || code === 308 || code === 499;
 
@@ -95,10 +95,15 @@ class GCStorage extends BaseStorage<GCSFile> {
 
         this.authClient = new GoogleAuth(config);
 
-        if (config.metaStorage) {
-            this.meta = config.metaStorage;
+        const {
+            metaStorage, metaStorageConfig, projectId, bucket,
+        } = config;
+
+        if (metaStorage) {
+            this.meta = metaStorage;
         } else {
-            let metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            let metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
+
             const localMeta = "directory" in metaConfig;
 
             if (localMeta) {
@@ -106,7 +111,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
                 this.meta = new LocalMetaStorage(metaConfig);
             } else {
-                if (config.bucket === metaConfig.bucket && config.projectId === metaConfig.projectId) {
+                if (bucket === metaConfig.bucket && projectId === metaConfig.projectId) {
                     metaConfig = { ...metaConfig, authClient: this.authClient };
                 }
 
@@ -305,14 +310,15 @@ class GCStorage extends BaseStorage<GCSFile> {
 
         // Declare truncated as a flag that the while loop is based on.
         let truncated = true;
-        let pageToken: string | undefined;
+        let parameters: GaxiosOptions = { url: this.storageBaseURI, params: { maxResults: limit } };
 
-        while (pageToken) {
+        while (truncated) {
             try {
+                // eslint-disable-next-line no-await-in-loop
                 const { data } = await this.makeRequest<{
                     nextPageToken?: string;
                     items: { name: string; timeCreated: string; metadata?: GCSFile; updated: string }[];
-                }>({ url: this.storageBaseURI, params: { maxResults: limit, ...(typeof pageToken !== "undefined" ? { pageToken } : {}) } });
+                }>(parameters);
 
                 (data?.items || []).forEach(({ name, timeCreated, updated }) => {
                     items.push({
@@ -322,14 +328,13 @@ class GCStorage extends BaseStorage<GCSFile> {
                     } as GCSFile);
                 });
 
-                truncated = typeof data?.nextPageToken !== undefined;
+                truncated = data?.nextPageToken !== undefined;
 
                 if (truncated) {
-                    pageToken = data.nextPageToken;
+                    parameters = { ...parameters, params: { ...parameters.params, pageToken: data.nextPageToken } };
                 }
             } catch (error) {
                 truncated = false;
-                pageToken = undefined;
 
                 throw error;
             }
@@ -391,6 +396,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     private async makeRequest<T = any>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
         if (typeof data.url === "string") {
+            // eslint-disable-next-line no-param-reassign
             data.url = data.url
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
@@ -398,33 +404,26 @@ class GCStorage extends BaseStorage<GCSFile> {
                 .replace(/\/:/g, ":");
         }
 
+        // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
             retry: true,
             retryConfig: this.retryOptions,
+            timeout: 60_000,
+            headers: {
+                "User-Agent": `${package_.name}/${package_.version}`,
+                "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
+            },
+            params: {
+                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+            },
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {
-            const requestDefaults: GaxiosOptions = {
-                timeout: 60000,
-                headers: {
-                    "User-Agent": `${pkg.name}/${pkg.version}`,
-                    "x-goog-api-client": `gl-node/${process.versions.node} gccl/${pkg.version} gccl-invocation-id/${randomUUID()}`,
-                },
-                params: {
-                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
-                },
-            };
-            return gaxios.request({ ...requestDefaults, ...data });
-        } else {
-            return this.authClient.request({
-                params: {
-                    ...(typeof this.userProject !== "undefined" ? { userProject: this.userProject } : {}),
-                    ...data.params,
-                },
-                ...data,
-            });
+            return gaxios.request(data);
         }
+
+        return this.authClient.request(data);
     }
 }
 
