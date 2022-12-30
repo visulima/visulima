@@ -1,7 +1,11 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import type { RetryConfig } from "gaxios";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { GaxiosError } from "gaxios";
+
 import type { FilePart } from "../utils/file";
 import { hasContent } from "../utils/file";
 import GCSFile from "./gcs-file";
-import { GaxiosError, RetryConfig } from "gaxios";
 
 export function getRangeEnd(range: string): number {
     const end = +(range.split(/0-/)[1] as string);
@@ -18,7 +22,7 @@ export function buildContentRange(part: Partial<FilePart> & GCSFile): string {
 }
 
 export function shouldRetry(error: GaxiosError) {
-    if (typeof error.response !== "undefined") {
+    if (error.response !== undefined) {
         const { response } = error;
 
         return response?.data?.error?.errors
