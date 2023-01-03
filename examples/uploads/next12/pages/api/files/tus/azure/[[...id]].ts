@@ -14,8 +14,7 @@ const cors = Cors({
 
 const storage = new AzureStorage({
     containerName: "upload",
-    accountName: "visulima",
-    accountKey: "accountKey",
+    connectionString: "AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;",
     maxUploadSize: "1GB",
     logger: console,
 });

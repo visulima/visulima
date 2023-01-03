@@ -56,23 +56,6 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                     },
                 },
             },
-            404: {
-                description: "Not Found",
-                content: {
-                    "application/json": {
-                        schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            $ref: "#/components/schemas/Error",
-                        },
-                        example: {
-                            error: {
-                                code: "FileNotFound",
-                                message: "Not found",
-                            },
-                        },
-                    },
-                },
-            },
             default: {
                 description: "Error",
                 content: {
