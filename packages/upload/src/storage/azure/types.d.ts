@@ -1,6 +1,7 @@
 import { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 import AzureFile from "./azure-file";
+import { BlobServiceClient } from "@azure/storage-blob";
 
 interface ClientConfig {
     /**
@@ -45,7 +46,7 @@ interface ClientConfig {
 }
 
 export interface AzureMetaStorageOptions extends MetaStorageOptions, ClientConfig {
-
+    client?: BlobServiceClient;
 }
 
 export interface AzureStorageOptions extends BaseStorageOptions<AzureFile>, ClientConfig {

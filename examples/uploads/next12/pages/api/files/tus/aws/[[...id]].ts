@@ -17,7 +17,7 @@ const storage = new S3Storage({
     // to create a bucket in localstack, you need to call:
     // aws --endpoint-url=http://localhost:4566 s3 mb s3://my-test-bucket
     bucket: "my-test-bucket",
-    endpoint: "http://localhost:4566",
+    endpoint: "http://0.0.0.0:4566",
     forcePathStyle: true,
     expiration: { maxAge: "1h", purgeInterval: "15min" },
     logger: console,
