@@ -50,43 +50,45 @@ pnpm add @visulima/upload
 ### AWS S3
 
 ```sh
-npm install @aws-sdk/abort-controller @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
 ```
 
 ```sh
-yarn add @aws-sdk/abort-controller @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+yarn add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
 ```
 
 ```sh
-pnpm add @aws-sdk/abort-controller @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
 ```
 
 ### Azure Blob Storage
 
 ```sh
-npm install @azure/storage-blob abort-controller
+npm install @azure/storage-blob
 ```
 
 ```sh
-yarn add @azure/storage-blob abort-controller
+yarn add @azure/storage-blob
 ```
 
 ```sh
-pnpm add @azure/storage-blob abort-controller
+pnpm add @azure/storage-blob
 ```
+
+> Note: If you hit this error: "TypeError: Expected signal to be an instanceof AbortSignal" [#784](https://github.com/node-fetch/node-fetch/issues/784)  you need to install node-fetch 4.0.0-beta or higher.
 
 ### Google Cloud Storage
 
 ```sh
-npm install @google-cloud/storage abort-controller node-fetch gaxios
+npm install @google-cloud/storage node-fetch gaxios
 ```
 
 ```sh
-yarn add @google-cloud/storage abort-controller node-fetch gaxios
+yarn add @google-cloud/storage node-fetch gaxios
 ```
 
 ```sh
-pnpm add @google-cloud/storage abort-controller node-fetch gaxios
+pnpm add @google-cloud/storage node-fetch gaxios
 ```
 
 ## Supported Node.js Versions
