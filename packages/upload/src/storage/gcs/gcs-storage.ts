@@ -1,6 +1,4 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { AbortController } from "abort-controller";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import gaxios from "gaxios";
@@ -171,7 +169,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             headers.Origin = origin;
         }
 
-        const options = {
+        const options: GaxiosOptions = {
             body: JSON.stringify({ metadata: file.metadata }),
             headers,
             method: "POST" as const,
