@@ -2,8 +2,6 @@
 import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { AbortController } from "abort-controller";
 import type { IncomingMessage } from "node:http";
 import normalize from "normalize-path";
 
@@ -20,7 +18,7 @@ import type { AzureStorageOptions } from "./types";
 class AzureStorage extends BaseStorage<AzureFile> {
     private client: BlobServiceClient;
 
-    private containerClient: ContainerClient;
+    private readonly containerClient: ContainerClient;
 
     private readonly root: string;
 
@@ -65,16 +63,28 @@ class AzureStorage extends BaseStorage<AzureFile> {
         if (config.metaStorage) {
             this.meta = config.metaStorage;
         } else {
-            const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            let metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+
             const localMeta = "directory" in metaConfig;
 
             if (localMeta) {
                 this.logger?.debug("Using local meta storage");
-            }
 
-            // eslint-disable-next-line max-len
-            this.meta = localMeta ? new LocalMetaStorage<AzureFile>(metaConfig) : new AzureMetaStorage<AzureFile>(metaConfig);
+                this.meta = new LocalMetaStorage(metaConfig);
+            } else {
+                if (connectionString === metaConfig.connectionString) {
+                    metaConfig = { ...metaConfig, client: this.client };
+                }
+
+                this.meta = new AzureMetaStorage<AzureFile>(metaConfig);
+            }
         }
+
+        this.accessCheck().catch((error) => {
+            this.isReady = false;
+
+            throw error
+        });
     }
 
     public async create(request: IncomingMessage, config: FileInit): Promise<AzureFile> {
@@ -198,6 +208,49 @@ class AzureStorage extends BaseStorage<AzureFile> {
         return poller.pollUntilDone();
     }
 
+    public async list(limit: number = 1000): Promise<AzureFile[]> {
+        const files: AzureFile[] = [];
+
+        // Declare truncated as a flag that the while loop is based on.
+        let truncated = true;
+        let token: string | undefined = undefined;
+
+        while (truncated) {
+            try {
+                let iterator = this.containerClient.listBlobsFlat({
+                    includeMetadata: true,
+                    prefix: this.root,
+                }).byPage({ maxPageSize: limit, continuationToken: token });
+
+                let response = (await iterator.next()).value;
+
+                if (typeof response !== "undefined" && "segment" in response) {
+                    for (const blob of response.segment.blobItems) {
+                        if (!blob.deleted) {
+                            files.push({
+                                id: blob.name,
+                                createdAt: blob.properties.createdOn,
+                                modifiedAt: blob.properties.lastModified,
+                            } as AzureFile);
+                        }
+                    }
+                }
+
+                truncated = typeof response?.continuationToken !== "undefined";
+
+                if (truncated) {
+                    token = response.continuationToken;
+                }
+            } catch (error) {
+                truncated = false;
+
+                throw error;
+            }
+        }
+
+        return files;
+    }
+
     protected getBinary(file: AzureFile): Promise<Buffer> {
         const blobClient = this.containerClient.getBlockBlobClient(file.name);
 
@@ -208,7 +261,11 @@ class AzureStorage extends BaseStorage<AzureFile> {
      * Prefixes the given filePath with the storage root location
      */
     private getFullPath(filePath: string): string {
-        return normalize(`${this.root}/${filePath}`);
+        return filePath;
+    }
+
+    private async accessCheck(): Promise<any> {
+        return this.containerClient.getProperties();
     }
 }
 
