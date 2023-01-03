@@ -14,7 +14,7 @@ const cors = Cors({
 
 const storage = new AzureStorage({
     containerName: "upload",
-    connectionString: "DefaultEndpointsProtocol=http;AccountName=account1;AccountKey=key1;BlobEndpoint=http://account1.blob.localhost:10000;QueueEndpoint=http://account1.queue.localhost:10001;TableEndpoint=http://account1.table.localhost:10002;",
+    connectionString: "AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://0.0.0.0:10000/devstoreaccount1;QueueEndpoint=http://0.0.0.0:10001/devstoreaccount1;",
     maxUploadSize: "1GB",
     logger: console,
 });

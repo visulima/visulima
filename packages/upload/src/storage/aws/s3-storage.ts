@@ -1,6 +1,4 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { AbortController } from "@aws-sdk/abort-controller";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type {
     CompleteMultipartUploadOutput,
     CopyObjectCommandInput,
@@ -29,7 +27,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { SdkStream } from "@aws-sdk/types";
+import type { SdkStream, HttpHandlerOptions } from "@aws-sdk/types";
 import { parse } from "bytes";
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
@@ -237,11 +235,12 @@ class S3Storage extends BaseStorage<S3File> {
                     ContentLength: part.contentLength || 0,
                     ContentMD5: checksumMD5,
                 };
-                const abortSignal = new AbortController().signal;
+                const controller = new AbortController()
+                const abortSignal = controller.signal;
 
-                part.body.on("error", () => abortSignal.abort());
+                part.body.on("error", () => controller.abort());
 
-                const { ETag } = await this.client.send(new UploadPartCommand(parameters), { abortSignal });
+                const { ETag } = await this.client.send(new UploadPartCommand(parameters), { abortSignal } as HttpHandlerOptions);
                 const uploadPart: Part = { PartNumber: partNumber, Size: part.contentLength, ETag };
 
                 file.Parts = [...file.Parts, uploadPart];

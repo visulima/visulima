@@ -20,7 +20,6 @@ import {
     isValidationError,
     pick,
     setHeaders,
-    throwErrorCode,
     UploadError,
     uuidRegex,
 } from "../utils";
@@ -292,7 +291,11 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
         const list = await this.storage.list(Number(limit || 1000));
 
         if (list.length === 0) {
-            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            return {
+                statusCode: 200,
+                headers: {},
+                data: [],
+            };
         }
 
         if (page !== undefined && limit !== undefined) {

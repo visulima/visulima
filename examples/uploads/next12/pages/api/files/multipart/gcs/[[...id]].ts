@@ -19,8 +19,8 @@ const storage = new GCStorage({
     maxUploadSize: "1GB",
     logger: console,
     projectId: "test",
-    storageAPI: "http://localhost:4443/storage/v1/b",
-    uploadAPI: "http://localhost:4443/upload/storage/v1/b",
+    storageAPI: "http://0.0.0.0:4443/storage/v1/b",
+    uploadAPI: "http://0.0.0.0:4443/upload/storage/v1/b",
     expiration: { maxAge: "1h", purgeInterval: "15min" },
 });
 
