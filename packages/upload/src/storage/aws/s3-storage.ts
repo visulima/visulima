@@ -27,7 +27,7 @@ import { fromIni } from "@aws-sdk/credential-providers";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { SdkStream, HttpHandlerOptions } from "@aws-sdk/types";
+import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 import { parse } from "bytes";
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
@@ -171,7 +171,8 @@ class S3Storage extends BaseStorage<S3File> {
         const { UploadId } = await this.client.send(new CreateMultipartUploadCommand(parameters));
 
         if (!UploadId) {
-            return throwErrorCode(ERRORS.FILE_ERROR, "s3 create multipart upload error");
+            // @TODO add better error message
+            return throwErrorCode(ERRORS.FILE_ERROR, "s3 create upload error");
         }
 
         file.UploadId = UploadId;
@@ -235,7 +236,7 @@ class S3Storage extends BaseStorage<S3File> {
                     ContentLength: part.contentLength || 0,
                     ContentMD5: checksumMD5,
                 };
-                const controller = new AbortController()
+                const controller = new AbortController();
                 const abortSignal = controller.signal;
 
                 part.body.on("error", () => controller.abort());

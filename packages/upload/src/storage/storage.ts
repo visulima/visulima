@@ -3,6 +3,7 @@ import Cache from "lru-cache";
 import type { IncomingMessage } from "node:http";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
+import normalize from "normalize-path";
 import typeis from "type-is";
 
 import type {
@@ -67,6 +68,8 @@ abstract class BaseStorage<TFile extends File = File> {
 
     protected abstract meta: MetaStorage<TFile>;
 
+    protected assetFolder: string | undefined = undefined;
+
     protected constructor(public config: BaseStorageOptions<TFile>) {
         const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
 
@@ -78,6 +81,10 @@ abstract class BaseStorage<TFile extends File = File> {
         this.namingFunction = options.filename;
         this.maxUploadSize = parse(options.maxUploadSize);
         this.maxMetadataSize = parse(options.maxMetadataSize);
+
+        if (options.assetFolder !== undefined) {
+            this.assetFolder = normalize(options.assetFolder);
+        }
 
         this.locker = new Locker({
             max: 1000,
@@ -212,8 +219,8 @@ abstract class BaseStorage<TFile extends File = File> {
 
     /**
      * Searches for and purges expired upload
+     *
      * @param maxAge - remove upload older than a specified age
-     * @param prefix - filter upload
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
         const maxAgeMs = toMilliseconds(maxAge || this.config.expiration?.maxAge);

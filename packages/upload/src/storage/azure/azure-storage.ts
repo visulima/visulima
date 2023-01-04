@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse } from "@azure/storage-blob";
+import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import type { IncomingMessage } from "node:http";
@@ -83,7 +83,7 @@ class AzureStorage extends BaseStorage<AzureFile> {
         this.accessCheck().catch((error) => {
             this.isReady = false;
 
-            throw error
+            throw error;
         });
     }
 
@@ -114,12 +114,14 @@ class AzureStorage extends BaseStorage<AzureFile> {
         });
 
         if (response.requestId === undefined) {
+            // @TODO add better error message
             return throwErrorCode(ERRORS.FILE_ERROR, "azure create upload error");
         }
 
         file.requestId = response.requestId;
         // eslint-disable-next-line no-underscore-dangle
         file.uri = response._response.headers.get("location") as string;
+        file.bytesWritten = 0;
 
         await this.saveMeta(file);
 
@@ -176,7 +178,7 @@ class AzureStorage extends BaseStorage<AzureFile> {
                         blobContentType: file.contentType ?? "application/octet-stream",
                     },
                     metadata: file.metadata,
-                    // abortSignal: abortController.signal,
+                    abortSignal: abortController.signal,
                 });
 
                 if (response.requestId === undefined) {
@@ -213,19 +215,21 @@ class AzureStorage extends BaseStorage<AzureFile> {
 
         // Declare truncated as a flag that the while loop is based on.
         let truncated = true;
-        let token: string | undefined = undefined;
+        let token: string | undefined;
 
         while (truncated) {
             try {
-                let iterator = this.containerClient.listBlobsFlat({
+                const iterator = this.containerClient.listBlobsFlat({
                     includeMetadata: true,
                     prefix: this.root,
                 }).byPage({ maxPageSize: limit, continuationToken: token });
 
-                let response = (await iterator.next()).value;
+                // eslint-disable-next-line no-await-in-loop
+                const next = await iterator.next();
+                const response = next.value;
 
-                if (typeof response !== "undefined" && "segment" in response) {
-                    for (const blob of response.segment.blobItems) {
+                if (response !== undefined && "segment" in response) {
+                    response.segment.blobItems.forEach((blob: BlobItem) => {
                         if (!blob.deleted) {
                             files.push({
                                 id: blob.name,
@@ -233,10 +237,10 @@ class AzureStorage extends BaseStorage<AzureFile> {
                                 modifiedAt: blob.properties.lastModified,
                             } as AzureFile);
                         }
-                    }
+                    });
                 }
 
-                truncated = typeof response?.continuationToken !== "undefined";
+                truncated = response?.continuationToken !== undefined;
 
                 if (truncated) {
                     token = response.continuationToken;
@@ -261,6 +265,10 @@ class AzureStorage extends BaseStorage<AzureFile> {
      * Prefixes the given filePath with the storage root location
      */
     private getFullPath(filePath: string): string {
+        if (this.assetFolder !== undefined) {
+            return `${this.assetFolder}/${filePath}`;
+        }
+
         return filePath;
     }
 

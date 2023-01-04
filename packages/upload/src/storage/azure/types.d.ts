@@ -1,7 +1,9 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { BlobServiceClient } from "@azure/storage-blob";
+
 import { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 import AzureFile from "./azure-file";
-import { BlobServiceClient } from "@azure/storage-blob";
 
 interface ClientConfig {
     /**
