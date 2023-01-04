@@ -190,6 +190,8 @@ class GCStorage extends BaseStorage<GCSFile> {
             return file;
         }
 
+        file.bytesWritten = 0;
+
         await this.saveMeta(file);
 
         file.status = "created";

@@ -151,7 +151,6 @@
         "@types/type-is": "^1.6.3",
         "@typescript-eslint/eslint-plugin": "^5.47.0",
         "@typescript-eslint/parser": "^5.47.0",
-        "eslint-plugin-jsonc": "^2.5.0",
         "aws-crt": "^1.15.5",
         "aws-sdk-client-mock": "^2.0.1",
         "cross-env": "^7.0.3",

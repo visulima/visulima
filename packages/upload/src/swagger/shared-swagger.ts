@@ -61,6 +61,7 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                 content: {
                     "application/json": {
                         schema: {
+                            // eslint-disable-next-line radar/no-duplicate-string
                             $ref: "#/components/schemas/Error",
                         },
                     },

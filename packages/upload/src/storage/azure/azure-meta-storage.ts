@@ -2,7 +2,6 @@
 import type { BlobItem } from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-import normalize from "normalize-path";
 
 import MetaStorage from "../meta-storage";
 import { File } from "../utils/file";
@@ -13,16 +12,13 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private containerClient: ContainerClient;
 
-    private readonly root: string;
-
+    // eslint-disable-next-line radar/cognitive-complexity
     constructor(public config: AzureMetaStorageOptions) {
         super(config);
 
         const { client, ...metaConfig } = config;
 
-        if (typeof client !== "undefined") {
-            this.client = client;
-        } else {
+        if (client === undefined) {
             const connectionString = metaConfig.connectionString || process.env.AZURE_STORAGE_CONNECTION_STRING || undefined;
 
             if (connectionString) {
@@ -45,6 +41,8 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
 
                 this.client = new BlobServiceClient(config.endpoint ?? `https://${accountName}.blob.core.windows.net`, signedCredentials);
             }
+        } else {
+            this.client = client;
         }
 
         const containerName = metaConfig.containerName || process.env.AZURE_STORAGE_CONTAINER || undefined;
@@ -55,12 +53,10 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
         }
 
         this.containerClient = this.client.getContainerClient(metaConfig.containerName);
-
-        this.root = config.root ? normalize(config.root).replace(/^\//, "") : "";
     }
 
     public async get(id: string): Promise<T> {
-        const blobClient = this.containerClient.getBlobClient(this.getMetaPath(id));
+        const blobClient = this.containerClient.getBlobClient(this.getMetaName(id));
         const buffer = await blobClient.downloadToBuffer();
 
         return JSON.parse(buffer.toString());
@@ -71,13 +67,13 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public async delete(id: string): Promise<void> {
-        const blobClient = this.containerClient.getBlockBlobClient(this.getMetaPath(id));
+        const blobClient = this.containerClient.getBlockBlobClient(this.getMetaName(id));
 
         await blobClient.deleteIfExists();
     }
 
     public async save(id: string, file: T): Promise<T> {
-        const blobClient = this.containerClient.getBlockBlobClient(this.getMetaPath(id));
+        const blobClient = this.containerClient.getBlockBlobClient(this.getMetaName(id));
         const buffer = Buffer.from(JSON.stringify(file));
 
         await blobClient.uploadData(buffer);
@@ -104,14 +100,6 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
                     createdAt: blob.properties.createdOn,
                 };
             }) as T[];
-    }
-
-    /**
-     * Returns metafile url
-     * @param id - upload id
-     */
-    getMetaPath(id: string): string {
-        return `${this.root}/${this.getMetaName(id)}`;
     }
 }
 

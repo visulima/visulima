@@ -81,6 +81,9 @@ export interface BaseStorageOptions<T extends File = File> {
     expiration?: ExpirationOptions;
     /** Logger injection */
     logger?: Logger;
+
+    /** The full path of the folder where the uploaded asset will be stored. */
+    assetFolder?: string;
 }
 
 export type DiskStorageOptions<T extends File> = BaseStorageOptions<T> & {
