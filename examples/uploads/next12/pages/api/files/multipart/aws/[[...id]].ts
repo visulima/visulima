@@ -15,9 +15,14 @@ const cors = Cors({
 // The credentials are loaded from a shared credentials file
 const storage = new S3Storage({
     // to create a bucket in localstack, you need to call:
-    // aws --endpoint-url=http://localhost:4566 s3 mb s3://my-test-bucket
+    // aws --endpoint-url=http://0.0.0.0:4566 s3 mb s3://my-test-bucket
     bucket: "my-test-bucket",
+    region: "us-east-1",
     endpoint: "http://0.0.0.0:4566",
+    credentials: {
+        accessKeyId: "test",
+        secretAccessKey: "test",
+    },
     forcePathStyle: true,
     expiration: { maxAge: "1h", purgeInterval: "15min" },
     logger: console,

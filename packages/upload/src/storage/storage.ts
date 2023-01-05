@@ -253,14 +253,7 @@ abstract class BaseStorage<TFile extends File = File> {
      *
      * @param {FileQuery} id
      */
-    public async get({ id }: FileQuery): Promise<File> {
-        const file = await this.checkIfExpired(await this.meta.get(id));
-
-        return {
-            ...file,
-            content: await this.getBinary(file),
-        };
-    }
+    public abstract get({ id }: FileQuery): Promise<File>;
 
     /**
      * Retrieves a list of upload.
@@ -300,8 +293,6 @@ abstract class BaseStorage<TFile extends File = File> {
     protected async unlock(key: string): Promise<void> {
         this.locker.unlock(key);
     }
-
-    protected abstract getBinary(file: TFile): Promise<Buffer>;
 
     protected isUnsupportedChecksum(algorithm = ""): boolean {
         return !!algorithm && !this.checksumTypes.includes(algorithm);
