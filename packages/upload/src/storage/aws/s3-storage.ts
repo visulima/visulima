@@ -33,16 +33,12 @@ import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
-import {
-    ERRORS, mapValues, throwErrorCode, toSeconds,
-} from "../../utils";
+import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import {
-    getFileStatus, hasContent, isExpired, partMatch, updateSize,
-} from "../utils/file";
+import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
@@ -67,6 +63,11 @@ const PART_SIZE = 16 * 1024 * 1024;
  * ```
  */
 class S3Storage extends BaseStorage<S3File> {
+    /**
+     * S3 multipart upload does not allow more than 10000 parts.
+     */
+    private MAX_PARTS = 10000;
+
     protected bucket: string;
 
     protected client: S3Client;
@@ -167,14 +168,15 @@ class S3Storage extends BaseStorage<S3File> {
             // ignore
         }
 
-        const parameters = {
-            Bucket: this.bucket,
-            Key: file.name,
-            ContentType: file.contentType,
-            Metadata: mapValues(file.metadata, encodeURI),
-            ACL: this.config.acl,
-        };
-        const { UploadId } = await this.client.send(new CreateMultipartUploadCommand(parameters));
+        const { UploadId } = await this.client.send(
+            new CreateMultipartUploadCommand({
+                Bucket: this.bucket,
+                Key: file.name,
+                ContentType: file.contentType,
+                Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
+                ACL: this.config.acl,
+            }),
+        );
 
         if (!UploadId) {
             // @TODO add better error message
@@ -231,6 +233,10 @@ class S3Storage extends BaseStorage<S3File> {
                     return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                 }
 
+                if (file.Parts.length > this.MAX_PARTS) {
+                    throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
+                }
+
                 const checksumMD5 = part.checksumAlgorithm === "md5" ? part.checksum : "";
                 const partNumber = file.Parts.length + 1;
 
@@ -239,16 +245,18 @@ class S3Storage extends BaseStorage<S3File> {
 
                 part.body.on("error", () => controller.abort());
 
-                const { ETag } = await this.client.send(new UploadPartCommand({
-                    Bucket: this.bucket,
-                    Key: file.name,
-                    UploadId: file.UploadId,
-                    PartNumber: partNumber,
-                    Body: part.body,
-                    ContentLength: part.contentLength || 0,
-                    ContentMD5: checksumMD5,
-
-                }), { abortSignal } as HttpHandlerOptions);
+                const { ETag } = await this.client.send(
+                    new UploadPartCommand({
+                        Bucket: this.bucket,
+                        Key: file.name,
+                        UploadId: file.UploadId,
+                        PartNumber: partNumber,
+                        Body: part.body,
+                        ContentLength: part.contentLength || 0,
+                        ContentMD5: checksumMD5,
+                    }),
+                    { abortSignal } as HttpHandlerOptions,
+                );
                 const uploadPart: Part = { PartNumber: partNumber, Size: part.contentLength, ETag };
 
                 file.Parts = [...file.Parts, uploadPart];
@@ -271,7 +279,6 @@ class S3Storage extends BaseStorage<S3File> {
             }
         } finally {
             await this.unlock(part.id);
-
         }
 
         return file;
@@ -382,12 +389,15 @@ class S3Storage extends BaseStorage<S3File> {
             chunks.push(chunk);
         }
 
+        const { originalName, ...meta } = Metadata || {};
+
         return {
             id,
             name: id,
+            originalName,
             contentType: ContentType,
             size: ContentLength,
-            ...Metadata,
+            metadata: meta,
             content: Buffer.concat(chunks),
             expiredAt: Expires,
             modifiedAt: LastModified,
@@ -463,16 +473,18 @@ class S3Storage extends BaseStorage<S3File> {
     }
 
     private completeMultipartUpload(file: S3File): Promise<CompleteMultipartUploadOutput> {
-        return this.client.send(new CompleteMultipartUploadCommand({
-            Bucket: this.bucket,
-            Key: file.name,
-            UploadId: file.UploadId,
-            MultipartUpload: {
-                Parts: file.Parts?.map(({ ETag, PartNumber }) => {
-                    return { ETag, PartNumber };
-                }),
-            },
-        }));
+        return this.client.send(
+            new CompleteMultipartUploadCommand({
+                Bucket: this.bucket,
+                Key: file.name,
+                UploadId: file.UploadId,
+                MultipartUpload: {
+                    Parts: file.Parts?.map(({ ETag, PartNumber }) => {
+                        return { ETag, PartNumber };
+                    }),
+                },
+            }),
+        );
     }
 
     private async abortMultipartUpload(file: S3File): Promise<any> {
@@ -490,7 +502,8 @@ class S3Storage extends BaseStorage<S3File> {
     }
 
     // eslint-disable-next-line compat/compat,max-len
-    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> =>
+        Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
 }
 
 export default S3Storage;
