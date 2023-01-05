@@ -34,10 +34,10 @@ importers:
       '@anolilab/prettier-config': 3.1.0_prettier@2.8.1
       '@anolilab/textlint-config': 4.1.2_textlint@12.2.4
       '@manypkg/cli': 0.19.2
-      '@nrwl/cli': 15.4.2
+      '@nrwl/cli': 15.4.4
       '@nrwl/nx-cloud': 15.0.2
       '@nrwl/tao': 15.3.0
-      '@nrwl/workspace': 15.4.2_2gbcgqmzq2pxiocqw2qs7hdeqe
+      '@nrwl/workspace': 15.4.4_2gbcgqmzq2pxiocqw2qs7hdeqe
       '@octokit/rest': 19.0.5
       '@qiwi/multi-semantic-release': 6.5.1
       '@types/node': 18.11.12
@@ -45,7 +45,7 @@ importers:
       commitizen: 4.2.6
       core-js: 3.26.1
       depcheck: 1.4.3
-      nx: 15.4.2
+      nx: 15.4.4
       plop: 3.1.1
       prettier: 2.8.1
       prettier-plugin-prisma: 4.4.0_prettier@2.8.1
@@ -1339,8 +1339,8 @@ importers:
       '@anolilab/eslint-config': ^4.0.9
       '@anolilab/semantic-release-preset': ^2.0.7
       '@prisma/client': 4.8.0
-      '@prisma/generator-helper': 4.8.0
-      '@prisma/internals': 4.8.0
+      '@prisma/generator-helper': 4.8.1
+      '@prisma/internals': 4.8.1
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@types/json-schema': 7.0.11
       '@types/micromatch': ^4.0.2
@@ -1382,8 +1382,8 @@ importers:
       typescript: ^4.8.4
       vitest: ^0.26.1
     dependencies:
-      '@prisma/generator-helper': 4.8.0
-      '@prisma/internals': 4.8.0
+      '@prisma/generator-helper': 4.8.1
+      '@prisma/internals': 4.8.1
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_rmayb2veg2btbq6mbmnyivgasy
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@19.0.5
@@ -1932,7 +1932,7 @@ packages:
       convert-source-map: 1.8.0
       debug: 4.3.4
       gensync: 1.0.0-beta.2
-      json5: 2.2.1
+      json5: 2.2.3
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -3760,40 +3760,40 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/cli/15.4.2:
-    resolution: {integrity: sha512-k/sGhqHhXsZakJxaWLmbyDJkQd/klqBEBChax3IHXAgIO9kG0lVwXHzENRqbfw3Z8TdKEZQ4IFwBJt9Dao6bCg==}
+  /@nrwl/cli/15.4.4:
+    resolution: {integrity: sha512-29f1No6eJAZczwVsJTjujyE40Lav6iwkfwTxnoiTUWaHHw9S95a8dMXelUB/BT2Tyf7OOFpwWZMXtDcRktrgGA==}
     dependencies:
-      nx: 15.4.2
+      nx: 15.4.4
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/devkit/15.4.2_nx@15.4.2+typescript@4.9.4:
-    resolution: {integrity: sha512-dg+2xF+RAWCGF9eUoIa1NRSQqO4s3goFb3XvT0Xw7V91To6XC1NL7YIcYcsdphdYcOSXs4K4MXzd/oZAEZFZ1A==}
+  /@nrwl/devkit/15.4.4_nx@15.4.4+typescript@4.9.4:
+    resolution: {integrity: sha512-/kDPYyiwRfvtJReE7DrzK/hMtbuhUpO4HQm+TeJvMuxMwCeqSJQP930GUipRqGUfH5aVkbSBkEaa50F7dLE+kg==}
     peerDependencies:
       nx: '>= 14 <= 16'
     dependencies:
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       ejs: 3.1.8
       ignore: 5.2.0
-      nx: 15.4.2
+      nx: 15.4.4
       semver: 7.3.4
       tslib: 2.4.0
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@nrwl/linter/15.4.2_nx@15.4.2+typescript@4.9.4:
-    resolution: {integrity: sha512-S5gSzqxTRLLzTOE5mY6FOu6MYC2v355lI0zyK02RLx29XoFrnggh74QaGJDZAVwqXvQHOXXBJwo6hXWosNn3/g==}
+  /@nrwl/linter/15.4.4_nx@15.4.4+typescript@4.9.4:
+    resolution: {integrity: sha512-v6jW0FD5MOvfEwaunqWQqQivbI9r6YWRoQ2k56DTMY69ARP8SJGVlFgVbWjLr0lth3I2g+z7Hy+23GTpUZzBBw==}
     peerDependencies:
       eslint: ^8.0.0
     peerDependenciesMeta:
       eslint:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.4.2_nx@15.4.2+typescript@4.9.4
+      '@nrwl/devkit': 15.4.4_nx@15.4.4+typescript@4.9.4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       tmp: 0.2.1
       tslib: 2.4.0
@@ -3829,27 +3829,27 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/tao/15.4.2:
-    resolution: {integrity: sha512-c/hYhWMjEBvucO9cGL2h2lqH7f+4gb8DJJiuNRPwfvF+sQITLXpl9wASHlpG2unDrtnLjGFo73u5XUUqGiSKvA==}
+  /@nrwl/tao/15.4.4:
+    resolution: {integrity: sha512-ekPYVpz1y3XlCPu6UkQfcpwyNHQ0SsXMN8omB4MPTSknvEhKmcVOPG3Kr4W9fk1UjmBr58ItAGmtx2sjVMH7XQ==}
     hasBin: true
     dependencies:
-      nx: 15.4.2
+      nx: 15.4.4
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/workspace/15.4.2_2gbcgqmzq2pxiocqw2qs7hdeqe:
-    resolution: {integrity: sha512-5CgLiDeQnkaEy/kXv+Ba678dNfkKx2pDOrpiO2ZfT8MMYbrhOOKQ1xlXcUuC95YN0nMCKii+sApB/9R1BiKzyw==}
+  /@nrwl/workspace/15.4.4_2gbcgqmzq2pxiocqw2qs7hdeqe:
+    resolution: {integrity: sha512-5NLyl8WRGHazPDpU4qAST3/PRrQMOTcCN/a2alLxhsy3ZK5yqvRdInBXJBhhtwsrcqJ9fVhE0oCJmmUkyGS91A==}
     peerDependencies:
       prettier: ^2.6.2
     peerDependenciesMeta:
       prettier:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.4.2_nx@15.4.2+typescript@4.9.4
-      '@nrwl/linter': 15.4.2_nx@15.4.2+typescript@4.9.4
+      '@nrwl/devkit': 15.4.4_nx@15.4.4+typescript@4.9.4
+      '@nrwl/linter': 15.4.4_nx@15.4.4+typescript@4.9.4
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       chokidar: 3.5.3
@@ -3865,7 +3865,7 @@ packages:
       jsonc-parser: 3.2.0
       minimatch: 3.0.5
       npm-run-path: 4.0.1
-      nx: 15.4.2
+      nx: 15.4.4
       open: 8.4.0
       prettier: 2.8.1
       rxjs: 6.6.7
@@ -4111,8 +4111,8 @@ packages:
       prisma: 4.8.0
     dev: true
 
-  /@prisma/debug/4.8.0:
-    resolution: {integrity: sha512-/VT+P6npte5nN8RgLUYm7cNFpHnl7WxbPRZDUIbMF6FG1oI2i3I3NOSOM05urdd1X/rjlZWUgxoh7rL2sdaLSQ==}
+  /@prisma/debug/4.8.1:
+    resolution: {integrity: sha512-BcShw74uZWWuuDPRpvIj8lqF6ywfcaeTqJF6VTiMd3VXxiB+c0F/mCshnYqoURoEaDmwwrBubWjBgmoWBHoPLQ==}
     dependencies:
       '@types/debug': 4.1.7
       debug: 4.3.4
@@ -4121,15 +4121,15 @@ packages:
       - supports-color
     dev: false
 
-  /@prisma/engine-core/4.8.0:
-    resolution: {integrity: sha512-No9Bj0+MKb5LaKPhDqRoXwP00LpTXiBAhrRjAy71wW2sen33r3PmYi+y7njhXUyqm2bUTdYvwO5/CHrv7IdWsw==}
+  /@prisma/engine-core/4.8.1:
+    resolution: {integrity: sha512-IHM2VCmZeJDep1s/TtllVuD7F3PX3N3J36YED/Xeg4G14hCZSkfdIQy8wisJfic2+grdQR9hpyIq7p5ldwdRhg==}
     dependencies:
       '@opentelemetry/api': 1.2.0
       '@opentelemetry/sdk-trace-base': 1.7.0_@opentelemetry+api@1.2.0
-      '@prisma/debug': 4.8.0
-      '@prisma/engines': 4.8.0
-      '@prisma/generator-helper': 4.8.0
-      '@prisma/get-platform': 4.8.0
+      '@prisma/debug': 4.8.1
+      '@prisma/engines': 4.8.1
+      '@prisma/generator-helper': 4.8.1
+      '@prisma/get-platform': 4.8.1
       chalk: 4.1.2
       execa: 5.1.1
       get-stream: 6.0.1
@@ -4162,12 +4162,18 @@ packages:
   /@prisma/engines/4.8.0:
     resolution: {integrity: sha512-A1Asn2rxZMlLAj1HTyfaCv0VQrLUv034jVay05QlqZg1qiHPeA3/pGTfNMijbsMYCsGVxfWEJuaZZuNxXGMCrA==}
     requiresBuild: true
+    dev: true
 
-  /@prisma/fetch-engine/4.8.0:
-    resolution: {integrity: sha512-7GjQNSsNkfKNRAgwNAaqjHTWLjCoA9vLUZuq3VmApdhFfUeXX8vFIJrnBE3xxHNpo0iSJj/ap4GCQmSrFs+beg==}
+  /@prisma/engines/4.8.1:
+    resolution: {integrity: sha512-93tctjNXcIS+i/e552IO6tqw17sX8liivv8WX9lDMCpEEe3ci+nT9F+1oHtAafqruXLepKF80i/D20Mm+ESlOw==}
+    requiresBuild: true
+    dev: false
+
+  /@prisma/fetch-engine/4.8.1:
+    resolution: {integrity: sha512-RtjDUSp2cwABDQEUhLW3Oofq42psAq19I1JCMpZUTFex76wCd3tjUixmRk5RgJPdc8MqxTriyWcTUw6Ax5ba4g==}
     dependencies:
-      '@prisma/debug': 4.8.0
-      '@prisma/get-platform': 4.8.0
+      '@prisma/debug': 4.8.1
+      '@prisma/get-platform': 4.8.1
       chalk: 4.1.2
       execa: 5.1.1
       find-cache-dir: 3.3.2
@@ -4188,10 +4194,10 @@ packages:
       - supports-color
     dev: false
 
-  /@prisma/generator-helper/4.8.0:
-    resolution: {integrity: sha512-qUSX/6aLkIXUAnIw5IyJdizkqFYYc4EfP4VFLAFYQb281affP6XNQm8nf+El7H6J4MM0eWPRqTH1gtAWFqAYkg==}
+  /@prisma/generator-helper/4.8.1:
+    resolution: {integrity: sha512-3JAj4syF2LcojH2fFaW05dLJZrxc0fygoXMFGS+XwA7NHFgUNTBpkvGXlgLUmPH/0uSD8HM7H+ggYgfImc3xTA==}
     dependencies:
-      '@prisma/debug': 4.8.0
+      '@prisma/debug': 4.8.1
       '@types/cross-spawn': 6.0.2
       chalk: 4.1.2
       cross-spawn: 7.0.3
@@ -4199,24 +4205,24 @@ packages:
       - supports-color
     dev: false
 
-  /@prisma/get-platform/4.8.0:
-    resolution: {integrity: sha512-5laip4xTO8yW9Xv8NqJtv4MVB/2RarfaGTChnMIqr3LJvXRSxoAnC4ticLvjxoA1gtbko3tm8hQl+WPEdK04UQ==}
+  /@prisma/get-platform/4.8.1:
+    resolution: {integrity: sha512-KGl/g9WLYxeBPAZSTFeigO50/khsQSun0Qdpa/tmMOWDgruwETw1DQRADAzelD4bWzP0pE3UISAWKObtFfO7Eg==}
     dependencies:
-      '@prisma/debug': 4.8.0
+      '@prisma/debug': 4.8.1
       ts-pattern: 4.0.6
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@prisma/internals/4.8.0:
-    resolution: {integrity: sha512-QUqNhPjM9+B4KQhzoR/C7Cns9v1e/K8ef9lk7XTXGVoZX/7PZnjRXv8qtW3oyyUzPhfkM6Wc1DQ+49rj4VSYfw==}
+  /@prisma/internals/4.8.1:
+    resolution: {integrity: sha512-ABUNTIZCiKmf2+loMKzQEtWB0hCbi6nB+eLfR+ea17JkpRPItq+59qWClAvY43qhHC/WDh4WQLCawKwDQYv0OQ==}
     dependencies:
-      '@prisma/debug': 4.8.0
-      '@prisma/engine-core': 4.8.0
-      '@prisma/engines': 4.8.0
-      '@prisma/fetch-engine': 4.8.0
-      '@prisma/generator-helper': 4.8.0
-      '@prisma/get-platform': 4.8.0
+      '@prisma/debug': 4.8.1
+      '@prisma/engine-core': 4.8.1
+      '@prisma/engines': 4.8.1
+      '@prisma/fetch-engine': 4.8.1
+      '@prisma/generator-helper': 4.8.1
+      '@prisma/get-platform': 4.8.1
       '@prisma/prisma-fmt-wasm': 4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe
       archiver: 5.3.1
       arg: 5.0.2
@@ -4254,7 +4260,7 @@ packages:
       tempy: 1.0.1
       terminal-link: 2.1.1
       tmp: 0.2.1
-      ts-pattern: 4.0.5
+      ts-pattern: 4.0.6
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -14318,6 +14324,12 @@ packages:
     resolution: {integrity: sha512-1hqLFMSrGHRHxav9q9gNjJ5EXznIxGVO09xQRrwplcS8qs28pZ8s8hupZAmqDwZUmVZ2Qb2jnyPOWcDH8m8dlA==}
     engines: {node: '>=6'}
     hasBin: true
+    dev: false
+
+  /json5/2.2.3:
+    resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
+    engines: {node: '>=6'}
+    hasBin: true
 
   /jsonc-eslint-parser/2.1.0:
     resolution: {integrity: sha512-qCRJWlbP2v6HbmKW7R3lFbeiVWHo+oMJ0j+MizwvauqnCV/EvtAeEeuCgoc/ErtsuoKgYB8U4Ih8AxJbXoE6/g==}
@@ -16708,8 +16720,8 @@ packages:
       - debug
     dev: false
 
-  /nx/15.4.2:
-    resolution: {integrity: sha512-np8eJfiBy2I8RZOWCKHr1oeUMHdqLQc7V6ihrzEQe2ZYUl9CSibtKvx0v8YGToHj/vYCiolRPhliFV5sFxgWlg==}
+  /nx/15.4.4:
+    resolution: {integrity: sha512-JWYeGcKsQVHR6nlk7XSL1/dAuSo2eyW+ahmMmK3j3vSnqRlZiN0q53ALZ4nD8VemAwtZCJ3CiOi4D/HExi5wbw==}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -16721,8 +16733,8 @@ packages:
       '@swc/core':
         optional: true
     dependencies:
-      '@nrwl/cli': 15.4.2
-      '@nrwl/tao': 15.4.2
+      '@nrwl/cli': 15.4.4
+      '@nrwl/tao': 15.4.4
       '@parcel/watcher': 2.0.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.22
@@ -16751,7 +16763,7 @@ packages:
       strong-log-transformer: 2.1.0
       tar-stream: 2.2.0
       tmp: 0.2.1
-      tsconfig-paths: 3.14.1
+      tsconfig-paths: 4.1.2
       tslib: 2.4.0
       v8-compile-cache: 2.3.0
       yargs: 17.6.2
@@ -17997,7 +18009,7 @@ packages:
     dependencies:
       debug: 4.3.4
       js-yaml: 3.14.1
-      json5: 2.2.1
+      json5: 2.2.3
       require-from-string: 2.0.2
     transitivePeerDependencies:
       - supports-color
@@ -20681,10 +20693,6 @@ packages:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
-  /ts-pattern/4.0.5:
-    resolution: {integrity: sha512-Bq44KCEt7JVaNLa148mBCJkcQf4l7jtLEBDuDdeuLynWDA+1a60P4D0rMkqSM9mOKLQbIWUddE9h3XKyKwBeqA==}
-    dev: false
-
   /ts-pattern/4.0.6:
     resolution: {integrity: sha512-sFHQYD4KoysBi7e7a2mzDPvRBeqA4w+vEyRE+P5MU9VLq8eEYxgKCgD9RNEAT+itGRWUTYN+hry94GDPLb1/Yw==}
     dev: false
@@ -20696,6 +20704,15 @@ packages:
       json5: 1.0.1
       minimist: 1.2.6
       strip-bom: 3.0.0
+
+  /tsconfig-paths/4.1.2:
+    resolution: {integrity: sha512-uhxiMgnXQp1IR622dUXI+9Ehnws7i/y6xvpZB9IbUVOPy0muvdvgXeZOn88UcGPiT98Vp3rJPTa8bFoalZ3Qhw==}
+    engines: {node: '>=6'}
+    dependencies:
+      json5: 2.2.3
+      minimist: 1.2.6
+      strip-bom: 3.0.0
+    dev: false
 
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
