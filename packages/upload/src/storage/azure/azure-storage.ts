@@ -202,6 +202,19 @@ class AzureStorage extends BaseStorage<AzureFile> {
         return file;
     }
 
+    public async get({ id }: FileQuery): Promise<AzureFile> {
+        const blobClient = this.containerClient.getBlockBlobClient(id);
+
+        const response = await blobClient.getProperties();
+
+        console.log(response);
+
+        return {
+            id,
+            content: await blobClient.downloadToBuffer(),
+        } as AzureFile;
+    }
+
     public async copy(name: string, destination: string): Promise<BlobBeginCopyFromURLResponse> {
         const source = this.containerClient.getBlockBlobClient(this.getFullPath(name));
         const target = this.containerClient.getBlockBlobClient(this.getFullPath(destination));
@@ -253,12 +266,6 @@ class AzureStorage extends BaseStorage<AzureFile> {
         }
 
         return files;
-    }
-
-    protected getBinary(file: AzureFile): Promise<Buffer> {
-        const blobClient = this.containerClient.getBlockBlobClient(file.name);
-
-        return blobClient.downloadToBuffer();
     }
 
     /**

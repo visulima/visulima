@@ -80,7 +80,7 @@ class S3Storage extends BaseStorage<S3File> {
     constructor(public config: S3StorageOptions) {
         super(config);
 
-        const bucket = config.bucket || process.env.S3_BUCKET;
+        const { bucket = process.env.S3_BUCKET, region = process.env.S3_REGION } = config;
 
         if (!bucket) {
             throw new Error("S3 bucket is not defined");
@@ -88,7 +88,13 @@ class S3Storage extends BaseStorage<S3File> {
 
         this.bucket = bucket;
 
+        if (!region) {
+            throw new Error("S3 region is not defined");
+        }
+
         // eslint-disable-next-line no-param-reassign
+        config.region = region;
+
         const keyFile = config.keyFile || process.env.S3_KEYFILE;
 
         if (keyFile) {
@@ -227,7 +233,13 @@ class S3Storage extends BaseStorage<S3File> {
 
                 const checksumMD5 = part.checksumAlgorithm === "md5" ? part.checksum : "";
                 const partNumber = file.Parts.length + 1;
-                const parameters = {
+
+                const controller = new AbortController();
+                const abortSignal = controller.signal;
+
+                part.body.on("error", () => controller.abort());
+
+                const { ETag } = await this.client.send(new UploadPartCommand({
                     Bucket: this.bucket,
                     Key: file.name,
                     UploadId: file.UploadId,
@@ -235,13 +247,8 @@ class S3Storage extends BaseStorage<S3File> {
                     Body: part.body,
                     ContentLength: part.contentLength || 0,
                     ContentMD5: checksumMD5,
-                };
-                const controller = new AbortController();
-                const abortSignal = controller.signal;
 
-                part.body.on("error", () => controller.abort());
-
-                const { ETag } = await this.client.send(new UploadPartCommand(parameters), { abortSignal } as HttpHandlerOptions);
+                }), { abortSignal } as HttpHandlerOptions);
                 const uploadPart: Part = { PartNumber: partNumber, Size: part.contentLength, ETag };
 
                 file.Parts = [...file.Parts, uploadPart];
@@ -264,6 +271,7 @@ class S3Storage extends BaseStorage<S3File> {
             }
         } finally {
             await this.unlock(part.id);
+
         }
 
         return file;
@@ -360,12 +368,12 @@ class S3Storage extends BaseStorage<S3File> {
         return items;
     }
 
-    protected async getBinary(file: S3File): Promise<Buffer> {
+    public async get({ id }: FileQuery): Promise<S3File> {
         const parameters = {
             Bucket: this.bucket,
-            Key: file.name,
+            Key: id,
         };
-        const { Body } = await this.client.send(new GetObjectCommand(parameters));
+        const { Body, Metadata, ContentType, LastModified, Expires, ContentLength, ETag } = await this.client.send(new GetObjectCommand(parameters));
 
         const chunks = [];
 
@@ -374,7 +382,17 @@ class S3Storage extends BaseStorage<S3File> {
             chunks.push(chunk);
         }
 
-        return Buffer.concat(chunks);
+        return {
+            id,
+            name: id,
+            contentType: ContentType,
+            size: ContentLength,
+            ...Metadata,
+            content: Buffer.concat(chunks),
+            expiredAt: Expires,
+            modifiedAt: LastModified,
+            ETag,
+        } as S3File;
     }
 
     private async accessCheck(maxWaitTime = 30): Promise<any> {
@@ -445,7 +463,7 @@ class S3Storage extends BaseStorage<S3File> {
     }
 
     private completeMultipartUpload(file: S3File): Promise<CompleteMultipartUploadOutput> {
-        const parameters = {
+        return this.client.send(new CompleteMultipartUploadCommand({
             Bucket: this.bucket,
             Key: file.name,
             UploadId: file.UploadId,
@@ -454,9 +472,7 @@ class S3Storage extends BaseStorage<S3File> {
                     return { ETag, PartNumber };
                 }),
             },
-        };
-
-        return this.client.send(new CompleteMultipartUploadCommand(parameters));
+        }));
     }
 
     private async abortMultipartUpload(file: S3File): Promise<any> {
