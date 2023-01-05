@@ -136,6 +136,20 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         }
     }
 
+    /**
+     * Get uploaded file.
+     *
+     * @param {FileQuery} id
+     */
+    public async get({ id }: FileQuery): Promise<File> {
+        const file = await this.checkIfExpired(await this.meta.get(id));
+
+        return {
+            ...file,
+            content: await this.getBinary(file),
+        };
+    }
+
     public async delete({ id }: FileQuery): Promise<TFile> {
         try {
             const file = await this.getMeta(id);
