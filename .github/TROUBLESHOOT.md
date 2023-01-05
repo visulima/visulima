@@ -24,3 +24,22 @@ fs.inotify.max_user_watches=524288
 Sometimes the hidden local errors are caused by the EsLint cache.
 To fix this, you can delete the cache file and run the EsLint again.
 ```
+
+## To test the upload component in the example folder
+
+### Aws (localstack)
+
+You need to install the [awscli-local](https://github.com/localstack/awscli-local).
+
+```bash
+pip install awscli-local
+```
+
+To create a bucket in localstack, you can use the following command:
+
+```bash
+awslocal s3 mb s3://my-test-bucket
+```
+
+### Google Cloud Storage
+
