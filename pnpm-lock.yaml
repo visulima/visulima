@@ -1338,7 +1338,7 @@ importers:
     specifiers:
       '@anolilab/eslint-config': ^4.0.9
       '@anolilab/semantic-release-preset': ^2.0.7
-      '@prisma/client': 4.8.0
+      '@prisma/client': 4.8.1
       '@prisma/generator-helper': 4.8.1
       '@prisma/internals': 4.8.1
       '@rushstack/eslint-plugin-security': ^0.5.0
@@ -1374,7 +1374,7 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       prettier: ^2.7.1
-      prisma: 4.8.0
+      prisma: 4.8.1
       read-pkg: ^7.1.0
       rimraf: ^3.0.2
       semantic-release: ^19.0.5
@@ -1387,7 +1387,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_rmayb2veg2btbq6mbmnyivgasy
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@19.0.5
-      '@prisma/client': 4.8.0_prisma@4.8.0
+      '@prisma/client': 4.8.1_prisma@4.8.1
       '@rushstack/eslint-plugin-security': 0.5.0_rmayb2veg2btbq6mbmnyivgasy
       '@types/json-schema': 7.0.11
       '@types/micromatch': 4.0.2
@@ -1421,7 +1421,7 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.27.0
       prettier: 2.7.1
-      prisma: 4.8.0
+      prisma: 4.8.1
       read-pkg: 7.1.0
       rimraf: 3.0.2
       semantic-release: 19.0.5
@@ -4097,8 +4097,8 @@ packages:
       prisma: 4.7.0
     dev: false
 
-  /@prisma/client/4.8.0_prisma@4.8.0:
-    resolution: {integrity: sha512-Y1riB0p2W52kh3zgssP/YAhln3RjBFcJy3uwEiyjmU+TQYh6QTZDRFBo3JtBWuq2FyMOl1Rye8jxzUP+n0l5Cg==}
+  /@prisma/client/4.8.1_prisma@4.8.1:
+    resolution: {integrity: sha512-d4xhZhETmeXK/yZ7K0KcVOzEfI5YKGGEr4F5SBV04/MU4ncN/HcE28sy3e4Yt8UFW0ZuImKFQJE+9rWt9WbGSQ==}
     engines: {node: '>=14.17'}
     requiresBuild: true
     peerDependencies:
@@ -4108,7 +4108,7 @@ packages:
         optional: true
     dependencies:
       '@prisma/engines-version': 4.8.0-61.d6e67a83f971b175a593ccc12e15c4a757f93ffe
-      prisma: 4.8.0
+      prisma: 4.8.1
     dev: true
 
   /@prisma/debug/4.8.1:
@@ -4159,15 +4159,9 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@prisma/engines/4.8.0:
-    resolution: {integrity: sha512-A1Asn2rxZMlLAj1HTyfaCv0VQrLUv034jVay05QlqZg1qiHPeA3/pGTfNMijbsMYCsGVxfWEJuaZZuNxXGMCrA==}
-    requiresBuild: true
-    dev: true
-
   /@prisma/engines/4.8.1:
     resolution: {integrity: sha512-93tctjNXcIS+i/e552IO6tqw17sX8liivv8WX9lDMCpEEe3ci+nT9F+1oHtAafqruXLepKF80i/D20Mm+ESlOw==}
     requiresBuild: true
-    dev: false
 
   /@prisma/fetch-engine/4.8.1:
     resolution: {integrity: sha512-RtjDUSp2cwABDQEUhLW3Oofq42psAq19I1JCMpZUTFex76wCd3tjUixmRk5RgJPdc8MqxTriyWcTUw6Ax5ba4g==}
@@ -17805,13 +17799,13 @@ packages:
       '@prisma/engines': 4.7.0
     dev: false
 
-  /prisma/4.8.0:
-    resolution: {integrity: sha512-DWIhxvxt8f4h6MDd35mz7BJff+fu7HItW3WPDIEpCR3RzcOWyiHBbLQW5/DOgmf+pRLTjwXQob7kuTZVYUAw5w==}
+  /prisma/4.8.1:
+    resolution: {integrity: sha512-ZMLnSjwulIeYfaU1O6/LF6PEJzxN5par5weykxMykS9Z6ara/j76JH3Yo2AH3bgJbPN4Z6NeCK9s5fDkzf33cg==}
     engines: {node: '>=14.17'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      '@prisma/engines': 4.8.0
+      '@prisma/engines': 4.8.1
     dev: true
 
   /prismjs/1.27.0:
