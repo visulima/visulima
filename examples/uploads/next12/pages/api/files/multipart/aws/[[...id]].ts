@@ -16,7 +16,7 @@ const cors = Cors({
 const storage = new S3Storage({
     // to create a bucket in localstack, you need to call:
     // aws --endpoint-url=http://0.0.0.0:4566 s3 mb s3://my-test-bucket
-    bucket: "my-test-bucket",
+    bucket: "upload",
     region: "us-east-1",
     endpoint: "http://0.0.0.0:4566",
     credentials: {

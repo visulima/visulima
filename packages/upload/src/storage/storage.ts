@@ -18,6 +18,7 @@ import type { FileInit, FilePart, FileQuery } from "./utils/file";
 import {
     File, FileName, isExpired, updateMetadata,
 } from "./utils/file";
+import type { FileReturn } from "./utils/file/types";
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
@@ -35,7 +36,7 @@ const defaults: BaseStorageOptions = {
     maxMetadataSize: "8MB",
 };
 
-abstract class BaseStorage<TFile extends File = File> {
+abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
     public onCreate: (file: TFile) => Promise<UploadResponse>;
 
     public onUpdate: (file: TFile) => Promise<UploadResponse>;
@@ -253,7 +254,7 @@ abstract class BaseStorage<TFile extends File = File> {
      *
      * @param {FileQuery} id
      */
-    public abstract get({ id }: FileQuery): Promise<File>;
+    public abstract get({ id }: FileQuery): Promise<TFileReturn>;
 
     /**
      * Retrieves a list of upload.
