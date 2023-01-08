@@ -14,8 +14,8 @@ const cors = Cors({
 
 const storage = new GCStorage({
     // to create a bucket in fake-gcs, you need to call before you run the docker-compose:
-    // mkdir -p /data/fake-gcs/test-bucket
-    bucket: "test-bucket",
+    // mkdir -p /data/fake-gcs/upload
+    bucket: "upload",
     maxUploadSize: "1GB",
     logger: console,
     projectId: "test",
