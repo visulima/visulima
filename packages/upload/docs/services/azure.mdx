@@ -1,0 +1,49 @@
+# Azure Blob Storage
+
+## Overview
+
+Azure Blob Storage is Microsoft's object storage solution for the cloud. Blob Storage is optimized for storing massive amounts of unstructured data, such as text or binary data. Blob Storage is ideal for:
+
+-   Serving images or documents directly to a browser
+-   Storing files for distributed access
+-   Streaming video and audio
+-   Data lakes
+-   Backup and restore
+-   Disaster recovery
+-   Archiving
+
+## Installation
+
+```sh
+npm install @azure/storage-blob
+```
+
+```sh
+yarn add @azure/storage-blob
+```
+
+```sh
+pnpm add @azure/storage-blob
+```
+
+## Usage
+
+```ts
+import { AzureStorage } from "@visulima/upload/azure";
+
+const storage = new AzureStorage({
+    containerName: "upload",
+    connectionString: "your config",
+    maxUploadSize: "1GB",
+    logger: console,
+});
+```
+
+## Configuration
+
+| Name             | Type   | Description                                              | Default     |
+|:-----------------|:-------|:---------------------------------------------------------|:------------|
+| containerName    | string | The name of the container to use                         |             |
+| connectionString | string | The connection string to use to connect to Azure Storage |             |
+| maxUploadSize    | string | The maximum size of the file to upload                   |             |
+| logger           | Logger | The logger to use                                        |             |

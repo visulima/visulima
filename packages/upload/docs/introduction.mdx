@@ -1,0 +1,33 @@
+# Visulima upload
+
+Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.
+
+## Features
+
+- TypeScript ready
+- Parent directories are created automatically as needed (like S3 and Azure)
+- Content types are inferred from file extensions (like the filesystem)
+- Files are by default marked as readable via the web (like a filesystem + web server)
+- Images can be automatically scaled to multiple sizes
+- Images can be cropped
+- Images are automatically rotated if necessary for proper display on the web (i.e. iPhone photos with rotation hints are right side up)
+- Image width, image height and correct file extension are made available to the developer
+- Non-image files are also supported
+- Web access to files can be disabled and reenabled
+- GIF is supported, including animation, with full support for scaling and cropping
+- On fire about minimizing file sizes for your resized images? You can plug in `imagemin` and compatible tools using the `postprocessors` option.
+
+## Getting started
+
+
+```sh
+npm install @visulima/upload
+```
+
+```sh
+yarn add @visulima/upload
+```
+
+```sh
+pnpm add @visulima/upload
+```
