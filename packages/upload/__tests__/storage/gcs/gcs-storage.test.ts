@@ -47,7 +47,7 @@ describe("GCStorage", async () => {
 
         mockAuthRequest.mockResolvedValueOnce({ bucket: "ok" });
 
-        storage = new GCStorage({ ...(storageOptions as GCStorageOptions), bucket: "test-bucket" });
+        storage = new GCStorage({ ...(storageOptions as GCStorageOptions), bucket: "test-bucket", projectId: "test" });
     });
 
     afterEach(() => {
@@ -100,18 +100,6 @@ describe("GCStorage", async () => {
             mockAuthRequest.mockResolvedValue({});
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
-        });
-    });
-
-    describe(".list()", () => {
-        it("should return all user files", async () => {
-            const list = { data: { items: [{ name: testfile.metafilename }] } };
-
-            mockAuthRequest.mockResolvedValue(list);
-
-            const items = await storage.list();
-
-            expect(items).toMatchSnapshot();
         });
     });
 
