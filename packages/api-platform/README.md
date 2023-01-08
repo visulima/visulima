@@ -77,6 +77,13 @@ pnpm add @visulima/api-platform zod @visulima/readdir
 npm install swagger-ui-react
 ```
 
+To have a styled version of the swagger-ui you need to add the following css to your project:
+
+```ts
+import "swagger-ui-react/swagger-ui.css"
+```
+> Note: For `next.js` you can add it to your `_app.tsx` file
+
 Or
 
 ```sh
