@@ -43,6 +43,10 @@ awslocal s3 mb s3://upload
 
 ### Google Cloud Storage
 
+Currently, the Google Cloud Storage resumable is not supported in [fake-gcs](https://github.com/fsouza/fake-gcs-server/issues/623).
+
+You can use the [Google Storage](https://cloud.google.com/storage) to test the upload component.
+
 ### Azure Blob Storage
 
 You need to install the [Azure Storage Explorer](https://azure.microsoft.com/en-gb/products/storage/storage-explorer/)
