@@ -24,6 +24,7 @@ exports[`S3Storage > .create() > should handle existing 1`] = `
 
 exports[`S3Storage > .create() > should request api and set status and UploadId 1`] = `
 S3File {
+  "ETag": undefined,
   "Parts": undefined,
   "UploadId": "123456789",
   "bytesWritten": 0,
@@ -52,10 +53,11 @@ S3File {
 }
 `;
 
-exports[`S3Storage > .create() > should send error on invalid s3 response 1`] = `[UploadError: s3 create multipart upload error]`;
+exports[`S3Storage > .create() > should send error on invalid s3 response 1`] = `[UploadError: s3 create upload error]`;
 
 exports[`S3Storage > .write() > should request api and set status and bytesWritten 1`] = `
 {
+  "ETag": undefined,
   "UploadId": "987654321",
   "bytesWritten": 64,
   "contentType": "video/mp4",

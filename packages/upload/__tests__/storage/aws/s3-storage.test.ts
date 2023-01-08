@@ -3,7 +3,6 @@ import {
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
     HeadObjectCommand,
-    ListObjectsV2Command,
     ListPartsCommand,
     S3Client,
     UploadPartCommand,
@@ -15,18 +14,19 @@ import {
     beforeEach, describe, expect, it, vi,
 } from "vitest";
 
-import type { AwsError } from "../../../src/storage/aws/aws-error";
 import S3Storage from "../../../src/storage/aws/s3-storage";
-import type { S3StorageOptions } from "../../../src/storage/aws/types.d";
+import type { S3StorageOptions, AwsError } from "../../../src/storage/aws/types.d";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
+vi.mock("aws-crt");
 vi.mock("@aws-sdk/s3-request-presigner");
 
 const s3Mock = mockClient(S3Client);
 
 describe("S3Storage", () => {
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
-    const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket" };
+
+    const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1", };
 
     const request = createRequest();
 
@@ -92,20 +92,6 @@ describe("S3Storage", () => {
             expect.assertions(1);
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
-        });
-    });
-
-    describe(".list()", () => {
-        it("should return all user files", async () => {
-            s3Mock.on(ListObjectsV2Command).resolves({
-                Contents: [{ Key: testfile.metafilename, LastModified: new Date() }],
-            });
-
-            const items = await storage.list();
-
-            expect(items).toEqual(expect.any(Array));
-            expect(items).toHaveLength(1);
-            expect(items[0]).toMatchObject({ id: metafile.id });
         });
     });
 

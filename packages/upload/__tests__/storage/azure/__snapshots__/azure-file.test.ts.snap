@@ -2,6 +2,7 @@
 
 exports[`AzureFile > should have extra params 1`] = `
 AzureFile {
+  "ETag": undefined,
   "bytesWritten": NaN,
   "content": undefined,
   "contentType": "application/octet-stream",

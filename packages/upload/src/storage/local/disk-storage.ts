@@ -148,7 +148,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         const {
             name, originalName, contentType, size, metadata, expiredAt, modifiedAt, bytesWritten,
         } = file;
-        const content = await fsp.readFile(this.getFilePath(file.name));
+        const content = await fsp.readFile(this.getFilePath(name));
 
         return {
             id,

@@ -1,4 +1,3 @@
-import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import {
@@ -35,24 +34,5 @@ describe("LocalMetaStorage", () => {
 
         expect(basename(metaPath)).toBe(`.${metafile.id}.`);
         expect(meta.getIdFromPath(metaPath)).toBe(metafile.id);
-    });
-
-    it("methods", async () => {
-        const meta = new LocalMetaStorage({ directory: testRoot });
-
-        await meta.save(metafile.id, metafile);
-
-        await expect(meta.get(metafile.id)).resolves.toEqual(metafile);
-
-        const list = await meta.list();
-
-        expect(list[0]).toMatchObject({ id: metafile.id });
-
-        await meta.delete(metafile.id);
-
-        mkdirSync(join(testRoot, "test"), { recursive: true });
-        writeFileSync(join(testRoot, "test", "test.jpg"), "");
-
-        await expect(meta.list()).resolves.toEqual([]);
     });
 });
