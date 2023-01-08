@@ -1,0 +1,49 @@
+# Amazon S3
+
+## Overview
+
+Amazon S3 is a web service interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web.
+You can use Amazon S3 to store and retrieve any amount of data at any time, from anywhere on the web.
+You can accomplish these tasks using the simple web services interface that Amazon S3 provides.
+Amazon S3 is designed to make web-scale computing easier for developers.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+```sh
+yarn add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+```sh
+pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt
+```
+
+## Usage
+
+```ts
+import { S3Storage } from "@visulima/upload/aws";
+
+const storage = new S3Storage({
+    bucket: "upload",
+    region: "us-east-1",
+    credentials: {
+        accessKeyId: "test",
+        secretAccessKey: "test",
+    },
+    expiration: { maxAge: "1h", purgeInterval: "15min" },
+    logger: console,
+});
+```
+
+## Configuration
+
+| Name        | Type   | Description                                  | Default   |
+|:------------|:-------|:---------------------------------------------|:----------|
+| bucket      | string | The name of the bucket to use.               |           |
+| region      | string | The region of the bucket.                    |           |
+| credentials | object | The credentials to use to access the bucket. |           |
+| expiration  | object | The expiration configuration.                |           |
+| logger      | Logger | The logger to use                            |           |

@@ -1,0 +1,7 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "React + Node 16",
+    "extends": "../../tsconfig.json",
+    "baseUrl": "./",
+    "include": ["src/**/*", "*.d.ts"]
+}
