@@ -18,6 +18,7 @@ import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { getFileStatus, partMatch } from "../utils/file";
+import type { FileReturn } from "../utils/file/types";
 import FetchError from "./fetch-error";
 import GCSConfig from "./gcs-config";
 import GCSFile from "./gcs-file";
@@ -42,7 +43,7 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  *  });
  * ```
  */
-class GCStorage extends BaseStorage<GCSFile> {
+class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     protected meta: MetaStorage<GCSFile>;
 
     private readonly bucket: string;
@@ -295,13 +296,17 @@ class GCStorage extends BaseStorage<GCSFile> {
      *
      * @param {FileQuery} id
      */
-    public async get({ id }: FileQuery): Promise<GCSFile> {
+    public async get({ id }: FileQuery): Promise<FileReturn> {
         const { data } = await this.makeRequest({ url: `${this.storageBaseURI}/${id}`, params: { alt: "json" } });
-        const file = await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
+
+        await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
+
+        //        const response = await this.makeRequest({ params: { alt: "media" }, url: data.uri });
 
         return {
-            ...file,
-            content: await this.getBinary(file),
+            ...data,
+            //            content: Buffer.from(response.data),
+            content: Buffer.from(""),
         };
     }
 
@@ -341,12 +346,6 @@ class GCStorage extends BaseStorage<GCSFile> {
         }
 
         return items;
-    }
-
-    protected async getBinary(file: GCSFile): Promise<Buffer> {
-        const response = await this.makeRequest({ params: { alt: "media" }, url: file.uri });
-
-        return Buffer.from(response.data);
     }
 
     protected async internalWrite(part: Partial<FilePart> & GCSFile): Promise<number> {
