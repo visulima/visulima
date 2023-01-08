@@ -11,11 +11,12 @@ import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
+import type { FileReturn } from "../utils/file/types";
 import AzureFile from "./azure-file";
 import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
 
-class AzureStorage extends BaseStorage<AzureFile> {
+class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
     private client: BlobServiceClient;
 
     private readonly containerClient: ContainerClient;
@@ -110,7 +111,11 @@ class AzureStorage extends BaseStorage<AzureFile> {
             blobHTTPHeaders: {
                 blobContentType: file.contentType,
             },
-            metadata: file.metadata,
+            metadata: {
+                originalName: file.originalName,
+                name: file.name,
+                ...JSON.parse(JSON.stringify(file.metadata)),
+            },
         });
 
         if (response.requestId === undefined) {
@@ -193,6 +198,8 @@ class AzureStorage extends BaseStorage<AzureFile> {
                 if (file.status === "completed") {
                     // eslint-disable-next-line no-underscore-dangle
                     file.uri = response._response.headers.get("location") as string;
+
+                    await this.deleteMeta(file.id);
                 }
             }
         } finally {
@@ -202,17 +209,25 @@ class AzureStorage extends BaseStorage<AzureFile> {
         return file;
     }
 
-    public async get({ id }: FileQuery): Promise<AzureFile> {
+    public async get({ id }: FileQuery): Promise<FileReturn> {
         const blobClient = this.containerClient.getBlockBlobClient(id);
 
         const response = await blobClient.getProperties();
 
-        console.log(response);
+        const { metadata } = response;
 
         return {
             id,
+            name: metadata?.name || id,
+            contentType: response.contentType as string,
+            expiredAt: response.expiresOn,
+            metadata: metadata as Record<string, string> || {},
+            modifiedAt: response.lastModified,
+            originalName: metadata?.originalName || "",
+            size: response.contentLength as number,
             content: await blobClient.downloadToBuffer(),
-        } as AzureFile;
+            ETag: response.etag,
+        };
     }
 
     public async copy(name: string, destination: string): Promise<BlobBeginCopyFromURLResponse> {

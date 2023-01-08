@@ -1,4 +1,5 @@
 import { walk } from "@visulima/readdir";
+import etag from "etag";
 import { createWriteStream } from "node:fs";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
@@ -15,12 +16,13 @@ import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import {
     File, getFileStatus, hasContent, partMatch, updateSize,
 } from "../utils/file";
+import type { FileReturn } from "../utils/file/types";
 import LocalMetaStorage from "./local-meta-storage";
 
 /**
  * Local Disk Storage
  */
-class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
+class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
     checksumTypes = ["md5", "sha1"];
 
     directory: string;
@@ -141,12 +143,24 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      *
      * @param {FileQuery} id
      */
-    public async get({ id }: FileQuery): Promise<File> {
+    public async get({ id }: FileQuery): Promise<FileReturn> {
         const file = await this.checkIfExpired(await this.meta.get(id));
+        const {
+            name, originalName, contentType, size, metadata, expiredAt, modifiedAt, bytesWritten,
+        } = file;
+        const content = await fsp.readFile(this.getFilePath(file.name));
 
         return {
-            ...file,
-            content: await this.getBinary(file),
+            id,
+            name,
+            originalName,
+            contentType,
+            size: size || bytesWritten,
+            metadata,
+            expiredAt,
+            modifiedAt,
+            content,
+            ETag: etag(content),
         };
     }
 
@@ -240,10 +254,6 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 return resolve([part.start + destination.bytesWritten]);
             });
         });
-    }
-
-    protected async getBinary(file: TFile): Promise<Buffer> {
-        return fsp.readFile(this.getFilePath(file.name));
     }
 
     private async accessCheck(): Promise<void> {
