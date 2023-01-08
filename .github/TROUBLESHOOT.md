@@ -38,8 +38,20 @@ pip install awscli-local
 To create a bucket in localstack, you can use the following command:
 
 ```bash
-awslocal s3 mb s3://my-test-bucket
+awslocal s3 mb s3://upload
 ```
 
 ### Google Cloud Storage
 
+### Azure Blob Storage
+
+You need to install the [Azure Storage Explorer](https://azure.microsoft.com/en-gb/products/storage/storage-explorer/)
+
+After the installation, you can create a new storage.
+You need, to connect, with the emulator account and create a new container.
+
+You should see the following screen:
+
+![azure-storage-explorer-screen.png](.github%2Fassets%2Fazure-storage-explorer-screen.png)
+
+Go to the "(Emulator - Default Ports) (Key)" -> "Blob Containers" and create with right-click a new up"upload" container.
