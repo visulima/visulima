@@ -114,6 +114,7 @@
         "lodash.merge": "^4.6.2",
         "lru-cache": "^7.14.1",
         "mem": "8.1.1",
+        "etag": "^1.8.1",
         "mime": "^3.0.0",
         "multiparty": "^4.2.3",
         "nanoid": "3.3.4",
@@ -123,6 +124,7 @@
         "type-is": "^1.6.18"
     },
     "devDependencies": {
+        "@types/etag": "^1.8.1",
         "@anolilab/eslint-config": "^4.1.1",
         "@anolilab/semantic-release-preset": "^2.1.0",
         "@aws-sdk/client-s3": "^3.241.0",

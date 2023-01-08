@@ -33,12 +33,17 @@ import type { IncomingMessage } from "node:http";
 import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
-import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
+import {
+    ERRORS, mapValues, throwErrorCode, toSeconds,
+} from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
+import {
+    getFileStatus, hasContent, isExpired, partMatch, updateSize,
+} from "../utils/file";
+import type { FileReturn } from "../utils/file/types";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
@@ -62,11 +67,11 @@ const PART_SIZE = 16 * 1024 * 1024;
  * });
  * ```
  */
-class S3Storage extends BaseStorage<S3File> {
+class S3Storage extends BaseStorage<S3File, FileReturn> {
     /**
      * S3 multipart upload does not allow more than 10000 parts.
      */
-    private MAX_PARTS = 10000;
+    private MAX_PARTS = 10_000;
 
     protected bucket: string;
 
@@ -117,10 +122,12 @@ class S3Storage extends BaseStorage<S3File> {
 
         this.client = new S3Client(config);
 
-        if (config.metaStorage) {
-            this.meta = config.metaStorage;
+        const { metaStorage, metaStorageConfig } = config;
+
+        if (metaStorage) {
+            this.meta = metaStorage;
         } else {
-            const metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
             const localMeta = "directory" in metaConfig;
 
             if (localMeta) {
@@ -201,6 +208,7 @@ class S3Storage extends BaseStorage<S3File> {
         return file;
     }
 
+    // eslint-disable-next-line radar/cognitive-complexity
     public async write(part: FilePart | FileQuery): Promise<S3File> {
         const file = await this.getMeta(part.id);
 
@@ -375,12 +383,16 @@ class S3Storage extends BaseStorage<S3File> {
         return items;
     }
 
-    public async get({ id }: FileQuery): Promise<S3File> {
+    public async get({ id }: FileQuery): Promise<FileReturn> {
         const parameters = {
             Bucket: this.bucket,
             Key: id,
         };
-        const { Body, Metadata, ContentType, LastModified, Expires, ContentLength, ETag } = await this.client.send(new GetObjectCommand(parameters));
+        const {
+            Body, Metadata, ContentType, LastModified, Expires, ContentLength, ETag,
+        } = await this.client.send(new GetObjectCommand(parameters));
+
+        await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
         const chunks = [];
 
@@ -394,15 +406,15 @@ class S3Storage extends BaseStorage<S3File> {
         return {
             id,
             name: id,
-            originalName,
-            contentType: ContentType,
-            size: ContentLength,
+            originalName: originalName || id,
+            contentType: ContentType as string,
+            size: Number(ContentLength),
             metadata: meta,
             content: Buffer.concat(chunks),
             expiredAt: Expires,
             modifiedAt: LastModified,
             ETag,
-        } as S3File;
+        };
     }
 
     private async accessCheck(maxWaitTime = 30): Promise<any> {
@@ -502,8 +514,7 @@ class S3Storage extends BaseStorage<S3File> {
     }
 
     // eslint-disable-next-line compat/compat,max-len
-    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> =>
-        Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
 }
 
 export default S3Storage;
