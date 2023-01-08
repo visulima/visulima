@@ -119,7 +119,7 @@
         "zod": "^3.19.1"
     },
     "engines": {
-        "node": ">=16"
+        "node": ">16"
     },
     "publishConfig": {
         "access": "public"

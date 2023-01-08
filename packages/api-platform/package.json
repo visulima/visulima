@@ -216,7 +216,7 @@
         "webpack": "^5.74.0"
     },
     "engines": {
-        "node": ">=16"
+        "node": ">16"
     },
     "publishConfig": {
         "access": "public"
