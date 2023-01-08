@@ -1,3 +1,11 @@
+## @visulima/pagination [2.0.1](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.0...@visulima/pagination@2.0.1) (2023-01-08)
+
+
+### Bug Fixes
+
+* allow higher node versions ([c93d55b](https://github.com/visulima/visulima/commit/c93d55b80135282235e933da52d9c88ade3073a8))
+* allow higher node versions ([faf4780](https://github.com/visulima/visulima/commit/faf478069f3508249db22ed2171ddee4fa380122))
+
 ## @visulima/pagination [2.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@1.1.0...@visulima/pagination@2.0.0) (2022-12-15)
 
 
