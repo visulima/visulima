@@ -19,11 +19,9 @@ exports[`swagger:tus > should match snapshot 1`] = `
         "value": {
           "data": [
             {
-              "value": {
-                "createdAt": "2022-12-16T10:35:17.466Z",
-                "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-                "modifiedAt": "2022-12-16T10:35:17.470Z",
-              },
+              "createdAt": "2022-12-16T10:35:17.466Z",
+              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+              "modifiedAt": "2022-12-16T10:35:17.470Z",
             },
           ],
           "meta": {
@@ -232,11 +230,11 @@ exports[`swagger:tus > should match snapshot 1`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List uploads",
-        "operationId": "TusGetList",
+        "description": "List upload",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
         "parameters": [
           {
-            "description": "Maximum number of elements to retrieve. Use only for pagination.",
+            "description": "Maximum number of elements to retrieve.",
             "in": "query",
             "name": "limit",
             "schema": {
@@ -273,22 +271,6 @@ exports[`swagger:tus > should match snapshot 1`] = `
             },
             "description": "OK",
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "FileNotFound",
-                    "message": "Not found",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Not Found",
-          },
           "default": {
             "content": {
               "application/json": {
@@ -300,13 +282,13 @@ exports[`swagger:tus > should match snapshot 1`] = `
             "description": "Error",
           },
         },
-        "summary": "List uploads",
+        "summary": "List upload",
         "tags": [
           "Tus",
         ],
       },
       "options": {
-        "operationId": "TusOptions",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusOptions",
         "responses": {
           "204": {
             "description": "Success",
@@ -346,7 +328,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
       },
       "post": {
         "description": "Endpoint for the Creation extension. Modified by the Creation With Upload extension.",
-        "operationId": "TusCreate",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusCreate",
         "parameters": [
           {
             "description": "Must be 0 for creation extension. May be a positive number for Creation With Upload extension.",
@@ -379,7 +361,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
             },
           },
           {
-            "description": "Added by the Concatenation extension. The Upload-Concat request and response header MUST be set in both partial and final upload creation requests. It indicates whether the upload is either a partial or final upload. If the upload is a partial one, the header value MUST be partial. In the case of a final upload, its value MUST be final followed by a semicolon and a space-separated list of partial upload URLs that will be concatenated. The partial uploads URLs MAY be absolute or relative and MUST NOT contain spaces as defined in RFC 3986.",
+            "description": "Added by the Concatenation extension. The Upload-Concat request and response header MUST be set in both partial and final upload creation requests. It indicates whether the upload is either a partial or final upload. If the upload is a partial one, the header value MUST be partial. In the case of a final upload, its value MUST be final followed by a semicolon and a space-separated list of partial upload URLs that will be concatenated. The partial upload URLs MAY be absolute or relative and MUST NOT contain spaces as defined in RFC 3986.",
             "in": "header",
             "name": "Upload-Concat",
             "schema": {
@@ -439,7 +421,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
                 },
               },
               "Upload-Expires": {
-                "description": "Added by the Creation With Upload Extension in combination with the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete uploads after a given period of time to prevent abandoned uploads from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired uploads. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
+                "description": "Added by the Creation With Upload Extension in combination with the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                 "schema": {
                   "type": "string",
                 },
@@ -551,7 +533,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
     "/files/{id}": {
       "delete": {
         "description": "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
-        "operationId": "TusFilesDelete",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesDelete",
         "parameters": [
           {
             "in": "path",
@@ -611,7 +593,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
       },
       "get": {
         "description": "Get the uploaded file",
-        "operationId": "TusGetFile",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -634,6 +616,31 @@ exports[`swagger:tus > should match snapshot 1`] = `
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
           },
           "404": {
             "content": {
@@ -669,7 +676,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
       },
       "head": {
         "description": "Used to determine the offset at which the upload should be continued.",
-        "operationId": "TusFilesHead",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesHead",
         "parameters": [
           {
             "in": "path",
@@ -784,7 +791,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
       },
       "patch": {
         "description": "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
-        "operationId": "TusFilePatch",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilePatch",
         "parameters": [
           {
             "in": "path",
@@ -848,7 +855,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
                 },
               },
               "Upload-Expires": {
-                "description": "Added by the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete uploads after a given period of time to prevent abandoned uploads from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired uploads. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
+                "description": "Added by the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                 "schema": {
                   "type": "string",
                 },
@@ -885,7 +892,7 @@ exports[`swagger:tus > should match snapshot 1`] = `
                 },
               },
             },
-            "description": "In the concatenation extension, the Server MUST respond with the 403 Forbidden status to PATCH requests against a final upload URL and MUST NOT modify the final or its partial uploads.",
+            "description": "In the concatenation extension, the Server MUST respond with the 403 Forbidden status to PATCH requests against a final upload URL and MUST NOT modify the final or its partial upload.",
             "headers": {
               "Tus-Resumable": {
                 "schema": {
@@ -1031,11 +1038,9 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
         "value": {
           "data": [
             {
-              "value": {
-                "createdAt": "2022-12-16T10:35:17.466Z",
-                "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-                "modifiedAt": "2022-12-16T10:35:17.470Z",
-              },
+              "createdAt": "2022-12-16T10:35:17.466Z",
+              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+              "modifiedAt": "2022-12-16T10:35:17.470Z",
             },
           ],
           "meta": {
@@ -1244,11 +1249,11 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List uploads",
-        "operationId": "TusGetList",
+        "description": "List upload",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
         "parameters": [
           {
-            "description": "Maximum number of elements to retrieve. Use only for pagination.",
+            "description": "Maximum number of elements to retrieve.",
             "in": "query",
             "name": "limit",
             "schema": {
@@ -1285,22 +1290,6 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
             },
             "description": "OK",
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "FileNotFound",
-                    "message": "Not found",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Not Found",
-          },
           "default": {
             "content": {
               "application/json": {
@@ -1312,13 +1301,13 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
             "description": "Error",
           },
         },
-        "summary": "List uploads",
+        "summary": "List upload",
         "tags": [
           "test",
         ],
       },
       "options": {
-        "operationId": "TusOptions",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusOptions",
         "responses": {
           "204": {
             "description": "Success",
@@ -1358,7 +1347,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
       },
       "post": {
         "description": "Endpoint for the Creation extension. Modified by the Creation With Upload extension.",
-        "operationId": "TusCreate",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusCreate",
         "parameters": [
           {
             "description": "Must be 0 for creation extension. May be a positive number for Creation With Upload extension.",
@@ -1391,7 +1380,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
             },
           },
           {
-            "description": "Added by the Concatenation extension. The Upload-Concat request and response header MUST be set in both partial and final upload creation requests. It indicates whether the upload is either a partial or final upload. If the upload is a partial one, the header value MUST be partial. In the case of a final upload, its value MUST be final followed by a semicolon and a space-separated list of partial upload URLs that will be concatenated. The partial uploads URLs MAY be absolute or relative and MUST NOT contain spaces as defined in RFC 3986.",
+            "description": "Added by the Concatenation extension. The Upload-Concat request and response header MUST be set in both partial and final upload creation requests. It indicates whether the upload is either a partial or final upload. If the upload is a partial one, the header value MUST be partial. In the case of a final upload, its value MUST be final followed by a semicolon and a space-separated list of partial upload URLs that will be concatenated. The partial upload URLs MAY be absolute or relative and MUST NOT contain spaces as defined in RFC 3986.",
             "in": "header",
             "name": "Upload-Concat",
             "schema": {
@@ -1451,7 +1440,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
                 },
               },
               "Upload-Expires": {
-                "description": "Added by the Creation With Upload Extension in combination with the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete uploads after a given period of time to prevent abandoned uploads from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired uploads. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
+                "description": "Added by the Creation With Upload Extension in combination with the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                 "schema": {
                   "type": "string",
                 },
@@ -1563,7 +1552,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
     "/files/{id}": {
       "delete": {
         "description": "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
-        "operationId": "TusFilesDelete",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesDelete",
         "parameters": [
           {
             "in": "path",
@@ -1623,7 +1612,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
       },
       "get": {
         "description": "Get the uploaded file",
-        "operationId": "TusGetFile",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -1646,6 +1635,31 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
           },
           "404": {
             "content": {
@@ -1681,7 +1695,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
       },
       "head": {
         "description": "Used to determine the offset at which the upload should be continued.",
-        "operationId": "TusFilesHead",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesHead",
         "parameters": [
           {
             "in": "path",
@@ -1796,7 +1810,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
       },
       "patch": {
         "description": "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
-        "operationId": "TusFilePatch",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilePatch",
         "parameters": [
           {
             "in": "path",
@@ -1860,7 +1874,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
                 },
               },
               "Upload-Expires": {
-                "description": "Added by the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete uploads after a given period of time to prevent abandoned uploads from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired uploads. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
+                "description": "Added by the expiration extension. The Upload-Expires response header indicates the time after which the unfinished upload expires. A Server MAY wish to remove incomplete upload after a given period of time to prevent abandoned upload from taking up extra storage. The Client SHOULD use this header to determine if an upload is still valid before attempting to resume the upload. This header MUST be included in every PATCH response if the upload is going to expire. If the expiration is known at the creation, the Upload-Expires header MUST be included in the response to the initial POST request. Its value MAY change over time. If a Client does attempt to resume an upload which has since been removed by the Server, the Server SHOULD respond with the 404 Not Found or 410 Gone status. The latter one SHOULD be used if the Server is keeping track of expired upload. In both cases the Client SHOULD start a new upload. The value of the Upload-Expires header MUST be in RFC 7231 datetime format.",
                 "schema": {
                   "type": "string",
                 },
@@ -1897,7 +1911,7 @@ exports[`swagger:tus > should match snapshot with custom options 1`] = `
                 },
               },
             },
-            "description": "In the concatenation extension, the Server MUST respond with the 403 Forbidden status to PATCH requests against a final upload URL and MUST NOT modify the final or its partial uploads.",
+            "description": "In the concatenation extension, the Server MUST respond with the 403 Forbidden status to PATCH requests against a final upload URL and MUST NOT modify the final or its partial upload.",
             "headers": {
               "Tus-Resumable": {
                 "schema": {

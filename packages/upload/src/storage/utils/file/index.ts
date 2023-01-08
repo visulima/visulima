@@ -10,6 +10,6 @@ export { Metadata, isMetadata } from "./metadata";
 export { default as updateMetadata } from "./update-metadata";
 export { default as partMatch } from "./part-match";
 export type {
-    UploadEventType, FilePart, FileQuery, FileInit, Checksum,
+    UploadEventType, FilePart, FileQuery, FileInit, Checksum, FileReturn,
 } from "./types.d";
 export { default as updateSize } from "./update-size";

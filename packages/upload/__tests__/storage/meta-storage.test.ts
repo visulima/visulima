@@ -24,8 +24,4 @@ describe("MetaStorage", () => {
     it("delete", async () => {
         await expect(metaStorage.delete(metafile.id)).rejects.toThrowError(notImplementedMessage);
     });
-
-    it("list", async () => {
-        await expect(metaStorage.list()).rejects.toThrowError(notImplementedMessage);
-    });
 });

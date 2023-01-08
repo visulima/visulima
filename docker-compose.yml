@@ -44,7 +44,7 @@ services:
             - '/var/run/docker.sock:/var/run/docker.sock'
 
     gcs:
-        image: "fsouza/fake-gcs-server:1.39.0"
+        image: "fsouza/fake-gcs-server:1.43.0"
         ports:
             - "4443:4443"
         command: ["-scheme", "http", "-port", "4443"]

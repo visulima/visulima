@@ -7,8 +7,6 @@ import { GoogleAuth } from "google-auth-library";
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { resolve } from "node:url";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import fetch from "node-fetch";
 
 import package_ from "../../../package.json";
 import type { HttpError } from "../../utils";
@@ -16,9 +14,10 @@ import { ERRORS, getHeader, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type { FileInit, FilePart, FileQuery } from "../utils/file";
+import type {
+    FileInit, FilePart, FileQuery, FileReturn,
+} from "../utils/file";
 import { getFileStatus, partMatch } from "../utils/file";
-import type { FileReturn } from "../utils/file/types";
 import FetchError from "./fetch-error";
 import GCSConfig from "./gcs-config";
 import GCSFile from "./gcs-file";
@@ -165,6 +164,8 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
         headers["X-Upload-Content-Length"] = (file.size as number).toString();
         headers["X-Upload-Content-Type"] = file.contentType;
+        headers["X-Goog-Upload-Protocol"] = "resumable";
+        headers["X-Goog-Upload-Command"] = "start";
 
         if (origin) {
             headers.Origin = origin;
@@ -178,6 +179,16 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             url: this.uploadBaseURI,
         };
         const response = await this.makeRequest(options);
+
+        if (response.status !== 200) {
+            throw new Error("Expected 200 response from GCS");
+        }
+
+        const hdr = response.headers["X-Goog-Upload-Status"] || response.headers["x-goog-upload-status"];
+
+        if (hdr !== "active") {
+            throw new Error(`X-Goog-Upload-Status response header expected 'active' got: ${hdr}`);
+        }
 
         file.uri = response.headers.location as string;
 
@@ -301,12 +312,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
         await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
-        //        const response = await this.makeRequest({ params: { alt: "media" }, url: data.uri });
+        const response = await this.makeRequest({ params: { alt: "media" }, url: data.uri });
 
         return {
             ...data,
-            //            content: Buffer.from(response.data),
-            content: Buffer.from(""),
+            content: Buffer.from(response.data),
         };
     }
 
@@ -349,7 +359,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     protected async internalWrite(part: Partial<FilePart> & GCSFile): Promise<number> {
-        const { size, uri = "", body } = part;
+        const {
+            size, uri = "", body, bytesWritten,
+        } = part;
         const contentRange = buildContentRange(part);
         const options: Record<string, any> = { method: "PUT" };
 
@@ -362,10 +374,14 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             options.signal = abortController.signal;
         }
 
-        options.headers = { "Content-Range": contentRange, Accept: "application/json" };
+        options.headers = {
+            "Content-Range": contentRange,
+            Accept: "application/json",
+            ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
+        };
 
         try {
-            const response = await fetch(uri, options);
+            const response = await this.makeRequest({ url: uri, ...options });
 
             if (response.status === 308) {
                 const range = response.headers.get("range");
@@ -373,17 +389,13 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 return range ? getRangeEnd(range) : 0;
             }
 
-            if (response.ok) {
-                const data = (await response.json()) as Record<string, any>;
-
-                this.logger?.debug("uploaded %O", data);
+            if (response.status === 200) {
+                this.logger?.debug("uploaded %O", response.data);
 
                 return size as number;
             }
 
-            const message = await response.text();
-
-            throw new FetchError(message, `GCS${response.status}`, { uri });
+            throw new FetchError(response.data, `GCS${response.status}`, { uri });
         } catch (error) {
             this.logger?.error(uri, error);
 

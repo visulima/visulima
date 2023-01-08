@@ -39,11 +39,12 @@ import {
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type { FileInit, FilePart, FileQuery } from "../utils/file";
+import type {
+    FileInit, FilePart, FileQuery, FileReturn,
+} from "../utils/file";
 import {
     getFileStatus, hasContent, isExpired, partMatch, updateSize,
 } from "../utils/file";
-import type { FileReturn } from "../utils/file/types";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
