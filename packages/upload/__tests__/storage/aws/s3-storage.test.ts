@@ -199,7 +199,7 @@ describe("S3PresignedStorage", () => {
 
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
-    const options = { ...(storageOptions as S3StorageOptions), clientDirectUpload: true, bucket: "bucket" };
+    const options = { ...(storageOptions as S3StorageOptions), clientDirectUpload: true, bucket: "bucket", region: "us-east-1", };
 
     const request = createRequest();
 
