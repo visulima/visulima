@@ -11,7 +11,7 @@ services:
             POSTGRES_DB: "visulima"
             PGDATA: "/var/lib/postgresql/data"
         healthcheck:
-            test: [ "CMD", "pg_isready", "-U", "ckan" ]
+            test: ["CMD", "pg_isready", "-U", "ckan"]
         ports:
             - "5433:5432"
 
@@ -41,7 +41,7 @@ services:
             - "4566-4583:4566-4583"
         volumes:
             - "./data/localstack:/var/lib/localstack/state"
-            - '/var/run/docker.sock:/var/run/docker.sock'
+            - "/var/run/docker.sock:/var/run/docker.sock"
 
     gcs:
         image: "fsouza/fake-gcs-server:1.43.0"
