@@ -15,7 +15,7 @@ import {
 } from "vitest";
 
 import S3Storage from "../../../src/storage/aws/s3-storage";
-import type { S3StorageOptions, AwsError } from "../../../src/storage/aws/types.d";
+import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types.d";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
 vi.mock("aws-crt");
@@ -26,7 +26,7 @@ const s3Mock = mockClient(S3Client);
 describe("S3Storage", () => {
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
-    const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1", };
+    const options = { ...(storageOptions as S3StorageOptions), bucket: "bucket", region: "us-east-1" };
 
     const request = createRequest();
 
@@ -199,7 +199,9 @@ describe("S3PresignedStorage", () => {
 
     vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
 
-    const options = { ...(storageOptions as S3StorageOptions), clientDirectUpload: true, bucket: "bucket", region: "us-east-1", };
+    const options = {
+        ...(storageOptions as S3StorageOptions), clientDirectUpload: true, bucket: "bucket", region: "us-east-1",
+    };
 
     const request = createRequest();
 
