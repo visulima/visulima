@@ -151,7 +151,7 @@
         "react-dom": ">=16.13.1"
     },
     "engines": {
-        "node": ">=16"
+        "node": ">16"
     },
     "publishConfig": {
         "access": "public"
