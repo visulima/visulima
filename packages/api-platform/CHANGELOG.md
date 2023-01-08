@@ -1,3 +1,10 @@
+## @visulima/api-platform [1.2.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.0...@visulima/api-platform@1.2.1) (2023-01-08)
+
+
+### Bug Fixes
+
+* **api-platform:** fixed issue with swagger css loading ([292fcb5](https://github.com/visulima/visulima/commit/292fcb5ef2681fb31f21df1f43fbe38a85a94023))
+
 ## @visulima/api-platform [1.2.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.1.8...@visulima/api-platform@1.2.0) (2022-12-23)
 
 
