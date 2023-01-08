@@ -147,7 +147,7 @@ router.delete("/:petId", async (request, res, next) => {
 /**
  * POST /pet/{petId}/uploadImage
  * @tag pet
- * @summary upload an image
+ * @summary uploads an image
  * @operationId uploadFile
  * @pathParam {int64} petId - ID of pet to update
  * @bodyContent {UploadPetImageObject} multipart/form-data
