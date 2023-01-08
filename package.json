@@ -16,6 +16,7 @@
         "check": "manypkg check",
         "clean": "nx run-many --target=clean --all --parallel && rimraf node_modules",
         "docs:dev": "pnpm --filter \"docs\" run dev",
+        "docs:build": "pnpm --filter \"docs\" run build",
         "example:api-platform:express:4:dev": "pnpm --filter \"express_example_api-platform\" run dev",
         "example:api-platform:next:12:dev": "pnpm --filter \"nextjs_12_example_api-platform\" run dev",
         "example:api-platform:next:13:dev": "pnpm --filter \"nextjs_13_example_api-platform\" run dev",
