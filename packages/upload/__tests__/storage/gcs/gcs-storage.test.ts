@@ -1,4 +1,3 @@
-import { AbortSignal } from "abort-controller";
 import fetch, { Response as NodeFetchResponse } from "node-fetch";
 import { createRequest } from "node-mocks-http";
 import type { MockedFunction } from "vitest";

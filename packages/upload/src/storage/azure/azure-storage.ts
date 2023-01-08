@@ -9,9 +9,10 @@ import { ERRORS, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
 import MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type { FileInit, FilePart, FileQuery } from "../utils/file";
+import type {
+    FileInit, FilePart, FileQuery, FileReturn,
+} from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
-import type { FileReturn } from "../utils/file/types";
 import AzureFile from "./azure-file";
 import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
@@ -214,19 +215,21 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
         const response = await blobClient.getProperties();
 
-        const { metadata } = response;
+        const {
+            metadata, contentType, expiresOn, lastModified, contentLength, etag,
+        } = response;
 
         return {
             id,
             name: metadata?.name || id,
-            contentType: response.contentType as string,
-            expiredAt: response.expiresOn,
+            contentType: contentType as string,
+            expiredAt: expiresOn,
             metadata: metadata as Record<string, string> || {},
-            modifiedAt: response.lastModified,
+            modifiedAt: lastModified,
             originalName: metadata?.originalName || "",
-            size: response.contentLength as number,
+            size: contentLength as number,
             content: await blobClient.downloadToBuffer(),
-            ETag: response.etag,
+            ETag: etag,
         };
     }
 

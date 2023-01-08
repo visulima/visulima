@@ -19,11 +19,9 @@ exports[`swagger:xhr > should match snapshot 1`] = `
         "value": {
           "data": [
             {
-              "value": {
-                "createdAt": "2022-12-16T10:35:17.466Z",
-                "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-                "modifiedAt": "2022-12-16T10:35:17.470Z",
-              },
+              "createdAt": "2022-12-16T10:35:17.466Z",
+              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+              "modifiedAt": "2022-12-16T10:35:17.470Z",
             },
           ],
           "meta": {
@@ -213,11 +211,11 @@ exports[`swagger:xhr > should match snapshot 1`] = `
   "paths": {
     "/": {
       "get": {
-        "description": "List uploads",
-        "operationId": "MultipartGetList",
+        "description": "List upload",
+        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartGetList",
         "parameters": [
           {
-            "description": "Maximum number of elements to retrieve. Use only for pagination.",
+            "description": "Maximum number of elements to retrieve.",
             "in": "query",
             "name": "limit",
             "schema": {
@@ -254,22 +252,6 @@ exports[`swagger:xhr > should match snapshot 1`] = `
             },
             "description": "OK",
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "FileNotFound",
-                    "message": "Not found",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Not Found",
-          },
           "default": {
             "content": {
               "application/json": {
@@ -281,14 +263,14 @@ exports[`swagger:xhr > should match snapshot 1`] = `
             "description": "Error",
           },
         },
-        "summary": "List uploads",
+        "summary": "List upload",
         "tags": [
           "Multipart",
         ],
       },
       "post": {
         "description": "Create upload",
-        "operationId": "MultipartCreate",
+        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartCreate",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -316,6 +298,13 @@ exports[`swagger:xhr > should match snapshot 1`] = `
           "200": {
             "description": "The file already exists, send a resume request",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -337,6 +326,13 @@ exports[`swagger:xhr > should match snapshot 1`] = `
           "201": {
             "description": "Upload accepted, send the file contents",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -458,7 +454,7 @@ exports[`swagger:xhr > should match snapshot 1`] = `
     "//{id}": {
       "delete": {
         "description": "Cancel upload",
-        "operationId": "MultipartCancel",
+        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=MultipartCancel",
         "parameters": [
           {
             "$ref": "#/components/parameters/UploadIDinPath",
@@ -476,7 +472,7 @@ exports[`swagger:xhr > should match snapshot 1`] = `
       },
       "get": {
         "description": "Get the uploaded file",
-        "operationId": "TusGetFile",
+        "operationId": "il7asoJjJEMhngUeSt4tHVu8Zxx4EFG/FDeJfL3+oPE=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -490,6 +486,31 @@ exports[`swagger:xhr > should match snapshot 1`] = `
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
           },
           "404": {
             "content": {
@@ -547,11 +568,9 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
         "value": {
           "data": [
             {
-              "value": {
-                "createdAt": "2022-12-16T10:35:17.466Z",
-                "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-                "modifiedAt": "2022-12-16T10:35:17.470Z",
-              },
+              "createdAt": "2022-12-16T10:35:17.466Z",
+              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+              "modifiedAt": "2022-12-16T10:35:17.470Z",
             },
           ],
           "meta": {
@@ -741,11 +760,11 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List uploads",
-        "operationId": "MultipartGetList",
+        "description": "List upload",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetList",
         "parameters": [
           {
-            "description": "Maximum number of elements to retrieve. Use only for pagination.",
+            "description": "Maximum number of elements to retrieve.",
             "in": "query",
             "name": "limit",
             "schema": {
@@ -782,22 +801,6 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
             },
             "description": "OK",
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "FileNotFound",
-                    "message": "Not found",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Not Found",
-          },
           "default": {
             "content": {
               "application/json": {
@@ -809,14 +812,14 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
             "description": "Error",
           },
         },
-        "summary": "List uploads",
+        "summary": "List upload",
         "tags": [
           "Multipart",
         ],
       },
       "post": {
         "description": "Create upload",
-        "operationId": "MultipartCreate",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCreate",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -844,6 +847,13 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
           "200": {
             "description": "The file already exists, send a resume request",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -865,6 +875,13 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
           "201": {
             "description": "Upload accepted, send the file contents",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -986,7 +1003,7 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
     "/files/{id}": {
       "delete": {
         "description": "Cancel upload",
-        "operationId": "MultipartCancel",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCancel",
         "parameters": [
           {
             "$ref": "#/components/parameters/UploadIDinPath",
@@ -1004,7 +1021,7 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
       },
       "get": {
         "description": "Get the uploaded file",
-        "operationId": "TusGetFile",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -1018,6 +1035,31 @@ exports[`swagger:xhr > should match snapshot with custom options 1`] = `
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
           },
           "404": {
             "content": {
@@ -1075,11 +1117,9 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
         "value": {
           "data": [
             {
-              "value": {
-                "createdAt": "2022-12-16T10:35:17.466Z",
-                "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-                "modifiedAt": "2022-12-16T10:35:17.470Z",
-              },
+              "createdAt": "2022-12-16T10:35:17.466Z",
+              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+              "modifiedAt": "2022-12-16T10:35:17.470Z",
             },
           ],
           "meta": {
@@ -1269,11 +1309,11 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List uploads",
-        "operationId": "MultipartGetList",
+        "description": "List upload",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartGetList",
         "parameters": [
           {
-            "description": "Maximum number of elements to retrieve. Use only for pagination.",
+            "description": "Maximum number of elements to retrieve.",
             "in": "query",
             "name": "limit",
             "schema": {
@@ -1310,22 +1350,6 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
             },
             "description": "OK",
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "error": {
-                    "code": "FileNotFound",
-                    "message": "Not found",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Not Found",
-          },
           "default": {
             "content": {
               "application/json": {
@@ -1337,14 +1361,14 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
             "description": "Error",
           },
         },
-        "summary": "List uploads",
+        "summary": "List upload",
         "tags": [
           "test",
         ],
       },
       "post": {
         "description": "Create upload",
-        "operationId": "MultipartCreate",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCreate",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -1372,6 +1396,13 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
           "200": {
             "description": "The file already exists, send a resume request",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -1393,6 +1424,13 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
           "201": {
             "description": "Upload accepted, send the file contents",
             "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
               "Location": {
                 "description": "Resumable URI",
                 "schema": {
@@ -1514,7 +1552,7 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
     "/files/{id}": {
       "delete": {
         "description": "Cancel upload",
-        "operationId": "MultipartCancel",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=MultipartCancel",
         "parameters": [
           {
             "$ref": "#/components/parameters/UploadIDinPath",
@@ -1532,7 +1570,7 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
       },
       "get": {
         "description": "Get the uploaded file",
-        "operationId": "TusGetFile",
+        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -1546,6 +1584,31 @@ exports[`swagger:xhr > should match snapshot with custom options 2`] = `
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Upload ETag",
+                "schema": {
+                  "example": "d41d8cd98f00b204e9800998ecf8427e",
+                  "type": "string",
+                },
+              },
+              "Last-Modified": {
+                "description": "Upload last modified date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+              "X-Upload-Expires": {
+                "description": "Upload expiration date",
+                "schema": {
+                  "example": "2021-08-25T11:12:26.635Z",
+                  "format": "date-time",
+                  "type": "string",
+                },
+              },
+            },
           },
           "404": {
             "content": {
