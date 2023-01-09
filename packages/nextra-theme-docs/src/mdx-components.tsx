@@ -116,7 +116,8 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 className={cn(
                     "font-semibold tracking-tight",
                     {
-                        h2: "mt-10 border-b pb-1 text-3xl contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400",
+                        // eslint-disable-next-line max-len
+                        h2: "mt-10 border-b pb-1 text-3xl border-neutral-200/70 contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400",
                         h3: "mt-8 text-2xl",
                         h4: "mt-8 text-xl",
                         h5: "mt-8 text-lg",
@@ -166,7 +167,7 @@ const getComponents = ({
         // eslint-disable-next-line react/jsx-props-no-spreading
         ol: (properties: ComponentProps<"ol">) => <ol className="mt-6 list-decimal first:mt-0 ltr:ml-6 rtl:mr-6" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        li: (properties: ComponentProps<"li">) => <li className="my-2" {...properties} />,
+        li: (properties: ComponentProps<"li">) => <li className="my-2 nested-list" {...properties} />,
         blockquote: (properties: ComponentProps<"blockquote">) => (
             <blockquote
                 className={cn(
@@ -180,7 +181,7 @@ const getComponents = ({
         // eslint-disable-next-line react/jsx-props-no-spreading
         hr: (properties: ComponentProps<"hr">) => <hr className="my-8 dark:border-gray-900" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:under]" />,
+        a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />,
         // eslint-disable-next-line react/jsx-props-no-spreading
         table: (properties: ComponentProps<"table">) => <Table className="nextra-scrollbar mt-6 p-0 first:mt-0" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading

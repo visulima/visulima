@@ -52,7 +52,7 @@ const CopyToClipboard = ({
     return (
         // eslint-disable-next-line react/jsx-props-no-spreading
         <Button onClick={handleClick} title="Copy code" tabIndex={0} {...properties}>
-            <IconToUse className="pointer-events-none h-4 w-4" />
+            <IconToUse className="nextra-copy-icon pointer-events-none h-4 w-4" />
         </Button>
     );
 };

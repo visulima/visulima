@@ -14,10 +14,9 @@ const extendMeta = (
         // eslint-disable-next-line no-param-reassign
         meta = { title: meta };
     }
+    const theme = Object.assign({}, fallback.theme, meta.theme);
 
-    const theme = { ...fallback.theme, ...meta.theme };
-
-    return { ...fallback, ...meta, theme };
+    return Object.assign({}, fallback, meta, { theme });
 };
 
 interface DocumentationItem extends MdxFile {
@@ -128,12 +127,11 @@ export function normalizePages({
             (a): a is MdxFile | Folder =>
                 // not meta
                 // eslint-disable-next-line implicit-arrow-linebreak
-                a.kind !== "Meta"
+                a.kind !== "Meta" &&
                 // not hidden routes
-                && !a.name.startsWith("_")
+                !a.name.startsWith("_") &&
                 // locale matches, or fallback to default locale
-                // @ts-expect-error
-                && (a.locale === locale || a.locale === defaultLocale || !a.locale),
+                (!("locale" in a) || !a.locale || [locale, defaultLocale].includes(a.locale)),
         )
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
@@ -213,9 +211,7 @@ export function normalizePages({
         }
 
         // Get the item's meta information.
-        const {
-            display, type = "doc", theme: metaTheme, title: metaTitle,
-        } = extendMeta(meta[a.name] || {}, fallbackMeta);
+        const { display, type = "doc", theme: metaTheme, title: metaTitle } = extendMeta(meta[a.name] || {}, fallbackMeta);
         const extendedPageThemeContext = {
             ...pageThemeContext,
             ...metaTheme,
@@ -224,8 +220,9 @@ export function normalizePages({
         // If the doc is under the active page root.
         const isCurrentDocumentationTree = route.startsWith(documentationRoot);
 
-        const normalizedChildren: any = a.children
-            && normalizePages({
+        const normalizedChildren: any =
+            a.children &&
+            normalizePages({
                 list: a.children,
                 locale,
                 defaultLocale,
@@ -400,11 +397,11 @@ export interface MenuItem extends MdxFile {
     display?: Display;
     children?: PageItem[];
     items?: Record<
-    string,
-    {
-        title: string;
-        href?: string;
-        newWindow?: boolean;
-    }
+        string,
+        {
+            title: string;
+            href?: string;
+            newWindow?: boolean;
+        }
     >;
 }

@@ -16,7 +16,7 @@ const TocSidebar: FC<TOCProperties> = ({
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement>(null);
 
-    const hasHeadings = headings.some((heading) => heading.type === "heading" && heading.depth > 1);
+    const hasHeadings = headings.some((heading) => heading.depth > 1);
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
     const activeSlug = Object.entries(activeAnchor).find(([, { isActive }]) => isActive)?.[0];

@@ -7,6 +7,7 @@ export type { PartialDocumentsThemeConfig as DocumentationThemeConfig };
 export { useMDXComponents } from "@mdx-js/react";
 export { useTheme } from "next-themes";
 export { default as Bleed } from "./components/bleed";
+export { default as Installation } from "./components/installation";
 export { default as Callout } from "./components/callout";
 export { default as Collapse } from "./components/collapse";
 export { default as NotFoundPage } from "./components/not-found";

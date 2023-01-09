@@ -17,7 +17,7 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
         const slugger = new Slugger();
 
         return headings
-            .filter((heading) => heading.type === "heading" && heading.depth > 1)
+            .filter((heading) => heading.depth > 1)
             .map((heading) => {
                 const text = getHeadingText(heading);
 
@@ -44,7 +44,13 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
                             <a
                                 href={`#${slug}`}
                                 className={cn(
-                                    {
+                                    isPage ? {
+                                        2: "font-medium",
+                                        3: "ltr:pl-4 rtl:pr-4",
+                                        4: "ltr:pl-8 rtl:pr-8",
+                                        5: "ltr:pl-12 rtl:pr-12",
+                                        6: "ltr:pl-16 rtl:pr-16",
+                                    }[depth] : {
                                         2: "font-medium",
                                         3: "ltr:ml-4 rtl:mr-4",
                                         4: "ltr:ml-8 rtl:mr-8",

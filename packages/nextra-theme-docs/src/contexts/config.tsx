@@ -207,7 +207,9 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
             ...DEFAULT_THEME,
             ...themeConfig,
             flexsearch: pageOpts.flexsearch,
-            newNextLinkBehavior: pageOpts.newNextLinkBehavior,
+            ...(typeof pageOpts.newNextLinkBehavior === "boolean" && {
+                newNextLinkBehavior: pageOpts.newNextLinkBehavior,
+            }),
             title: pageOpts.title,
             frontMatter: pageOpts.frontMatter,
             ...Object.fromEntries(

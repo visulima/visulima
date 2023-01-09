@@ -1,0 +1,76 @@
+import { Callout } from "@visulima/nextra-theme-docs";
+
+# 데이터 가져오기
+
+```js
+const { data, error } = useSWR(key, fetcher);
+```
+
+이것은 SWR의 아주 핵심적인 API입니다. 여기의 `fetcher`는 SWR의 **`key`를 받고** 데이터를 반환하는 비동기 함수입니다.
+
+반환된 값은 `data`로 전달되며, 만약 throws라면 `error`로 잡힙니다.
+
+<Callout emoji="💡">
+    <code>fetcher</code>가 [전역으로 제공](/docs/global-configuration)된다면 파라미터에서 생략할 수 있습니다.
+</Callout>
+
+## 가져오기
+
+데이터 가져오기를 다루는 어떠한 라이브러리든 사용할 수 있습니다. `fetch` 폴리필 [developit/unfetch](https://github.com/developit/unfetch)를 예로 들어보겠습니다.
+
+```js
+import fetch from "unfetch";
+
+const fetcher = (url) => fetch(url).then((r) => r.json());
+
+function App() {
+    const { data, error } = useSWR("/api/data", fetcher);
+    // ...
+}
+```
+
+<Callout emoji="💡">
+    <strong>Next.js</strong>를 사용 중이라면 폴리필을 임포트할 필요가 없습니다.
+    <br />
+    [새로운 내장 폴리필: fetch(), URL, Object.assign](https://nextjs.org/blog/next-9-1-7#new-built-in-polyfills-fetch-url-and-objectassign)
+</Callout>
+
+## Axios
+
+```js
+import axios from "axios";
+
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
+function App() {
+    const { data, error } = useSWR("/api/data", fetcher);
+    // ...
+}
+```
+
+## GraphQL
+
+또는 [graphql-request](https://github.com/prisma-labs/graphql-request)와 같은 라이브러리로 GraphQL 사용
+
+```js
+import { request } from "graphql-request";
+
+const fetcher = (query) => request("/api/graphql", query);
+
+function App() {
+    const { data, error } = useSWR(
+        `{
+      Movie(title: "Inception") {
+        releaseDate
+        actors {
+          name
+        }
+      }
+    }`,
+        fetcher,
+    );
+    // ...
+}
+```
+
+_GraphQL 쿼리로 변수를 전달하고자 한다면 [다중 인자](/docs/arguments)를 확인하세요._

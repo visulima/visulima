@@ -4,7 +4,8 @@ import "./polyfill";
 import { MDXProvider } from "@mdx-js/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
-import type { PageMapItem, PageOpts } from "nextra";
+import type { NextraThemeLayoutProps, PageMapItem, PageOpts } from "nextra";
+import { useMounted } from "nextra/hooks";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
@@ -57,6 +58,7 @@ const Body: FC<{
     themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route,
 }) => {
     const config = useConfig();
+    const mounted = useMounted();
 
     if (themeContext.layout === "raw") {
         return <div className="w-full overflow-x-hidden">{children}</div>;
@@ -64,7 +66,7 @@ const Body: FC<{
 
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
-    const gitTimestampElement = date ? (
+    const gitTimestampElement = mounted && date ? (
         <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
             {renderComponent(config.gitTimestamp, { timestamp: date })}
         </div>
@@ -120,6 +122,8 @@ const Body: FC<{
     );
 };
 
+const tocClassName = "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block";
+
 const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     filePath,
     pageMap,
@@ -147,7 +151,6 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
 
     const themeContext = { ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
-    const tocClassName = "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block";
     const isDocumentPage = activeType === "doc" || themeContext.toc;
 
     const { locale = DEFAULT_LOCALE, route } = useRouter();
@@ -281,26 +284,11 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-const Theme: FC = (properties) => {
-    const { route } = useRouter();
-    // eslint-disable-next-line no-underscore-dangle
-    const context = globalThis.__nextra_pageContext__[route];
-
-    if (!context) {
-        throw new Error(`No content found for ${route}.`);
-    }
-
-    const { pageOpts, Content } = context;
-
-    return (
-        <ConfigProvider value={context}>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <InnerLayout {...pageOpts}>
-                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                <Content {...properties} />
-            </InnerLayout>
-        </ConfigProvider>
-    );
-};
+const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => (
+    <ConfigProvider value={context}>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
+    </ConfigProvider>
+);
 
 export default Theme;

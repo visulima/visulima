@@ -1,0 +1,76 @@
+import { Callout } from "@visulima/nextra-theme-docs";
+
+# 数据请求
+
+```js
+const { data, error } = useSWR(key, fetcher);
+```
+
+这是 SWR 的基本 API。这里的 `fetcher` 是一个异步函数，它 **接受** SWR 的 **`key`** 并返回数据。
+
+返回值将作为 `data` 传递，如果抛出错误，将作为 `error` 被捕获。
+
+<Callout emoji="💡">
+    注意：如果 <code>fetcher</code> 是[全局配置](/docs/global-configuration)提供的，可以从参数中忽略。
+</Callout>
+
+## Fetch
+
+你可以使用任何库来处理数据请求，比如一个 `fetch` polyfill [developit/unfetch](https://github.com/developit/unfetch)：
+
+```js
+import fetch from "unfetch";
+
+const fetcher = (url) => fetch(url).then((r) => r.json());
+
+function App() {
+    const { data, error } = useSWR("/api/data", fetcher);
+    // ...
+}
+```
+
+<Callout emoji="💡">
+    如果你使用的是 <strong>Next.js</strong>，则不需要引入这个 polyfill：
+    <br />
+    [新的内置 Polyfills： fetch()、URL、和Object.assign](https://nextjs.org/blog/next-9-1-7#new-built-in-polyfills-fetch-url-and-objectassign)
+</Callout>
+
+## Axios
+
+```js
+import axios from "axios";
+
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
+function App() {
+    const { data, error } = useSWR("/api/data", fetcher);
+    // ...
+}
+```
+
+## GraphQL
+
+或者配合类似 [graphql-request](https://github.com/prisma-labs/graphql-request) 的库使用 GraphQL：
+
+```js
+import { request } from "graphql-request";
+
+const fetcher = (query) => request("/api/graphql", query);
+
+function App() {
+    const { data, error } = useSWR(
+        `{
+      Movie(title: "Inception") {
+        releaseDate
+        actors {
+          name
+        }
+      }
+    }`,
+        fetcher,
+    );
+    // ...
+}
+```
+
+_如果要把变量传递给 GraphQL query，请查看 [多参数](/docs/arguments)。_

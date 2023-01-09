@@ -43,7 +43,7 @@ const ServerSideErrorPage = (): ReactElement | null => {
                         labels,
                     })}
                     newWindow
-                    className="text-primary-600 underline decoration-from-font mt-10 block [text-underline-position:under]"
+                    className="text-primary-600 underline decoration-from-font mt-10 block [text-underline-position:from-font]"
                 >
                     {renderComponent(content)}
                 </Anchor>
