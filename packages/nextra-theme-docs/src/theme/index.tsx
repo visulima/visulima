@@ -272,7 +272,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         </h1>
                                     )}
                                     {tocPageContentElement}
-                                    {activeType === "doc" ? <Prose as="article">{mdxContent}</Prose> : mdxContent}
+                                    {["page", "doc"].includes(activeType) ? <Prose as="article">{mdxContent}</Prose> : mdxContent}
                                 </Body>
                             </div>
                         </div>

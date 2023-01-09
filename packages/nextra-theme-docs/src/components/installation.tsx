@@ -4,25 +4,21 @@ import Code from "./code";
 import Pre from "./pre";
 import { Tab, Tabs } from "./tabs";
 
-const Installation: FC<{ packageName: string; tabs: string[], title?: string }> = ({ packageName, tabs = ["npm", "pnpm", "yarn"], title = "Installation" }) => (
+const Installation: FC<{ packageName: string; commands: string[]; title?: string }> = ({ packageName, commands = ["npm i", "pnpm add", "yarn add"], title = "Installation" }) => (
     <>
         <h2>{title}</h2>
-        <Tabs items={tabs}>
-            <Tab>
-                <Pre>
-                    <Code data-language="bash">npm i {packageName}</Code>
-                </Pre>
-            </Tab>
-            <Tab>
-                <Pre>
-                    <Code data-language="bash">pnpm add {packageName}</Code>
-                </Pre>
-            </Tab>
-            <Tab>
-                <Pre>
-                    <Code data-language="bash">yarn add {packageName}</Code>
-                </Pre>
-            </Tab>
+        <Tabs items={commands}>
+            {commands.map((command) => (
+                <Tab>
+                    <div data-rehype-pretty-code-fragment="">
+                        <Pre data-language="bash" data-theme="default">
+                            <Code data-language="bash" data-theme="default">
+                                {command} {packageName}
+                            </Code>
+                        </Pre>
+                    </div>
+                </Tab>
+            ))}
         </Tabs>
     </>
 );
