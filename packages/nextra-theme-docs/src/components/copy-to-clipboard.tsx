@@ -12,10 +12,10 @@ const toastId = "copy-to-clipboard";
 const toastPosition = "bottom-right";
 
 const CopyToClipboard = ({
-    value,
+    getValue,
     ...properties
 }: {
-    value: string;
+    getValue: () => string;
 } & ComponentProps<"button">): ReactElement => {
     const [isCopied, setCopied] = useState(false);
 
@@ -37,7 +37,7 @@ const CopyToClipboard = ({
     const handleClick = useCallback<NonNullable<ComponentProps<"button">["onClick"]>>(async () => {
         setCopied(true);
 
-        if (copy(value)) {
+        if (copy(getValue())) {
             toast.custom(<SuccessToast title="Snippet was copied">Paste it wherever you like it.</SuccessToast>, {
                 id: toastId,
                 position: toastPosition,
@@ -45,7 +45,7 @@ const CopyToClipboard = ({
         } else {
             toast.custom(<ErrorToast>Failed copy to clipboard</ErrorToast>, { id: toastId, position: toastPosition });
         }
-    }, [value]);
+    }, [getValue]);
 
     const IconToUse = isCopied ? CheckIcon : CopyIcon;
 
