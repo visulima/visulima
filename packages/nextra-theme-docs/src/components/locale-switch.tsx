@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import type { FC } from "react";
 
-import type { DocumentationThemeConfig } from "../types";
+import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import Select from "./select";
 
 interface LocaleSwitchProperties {
@@ -11,7 +11,7 @@ interface LocaleSwitchProperties {
     className?: string;
 }
 
-const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite, className }) => {
+const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite = false, className }) => {
     const { locale, asPath } = useRouter();
     const selected = options.find((l) => locale === l.locale);
 
@@ -28,18 +28,18 @@ const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite, className }) 
                 location.href = asPath;
             }}
             selected={{
-                key: selected?.locale || "",
+                key: selected?.locale ?? "",
                 name: (
                     <div className="flex items-center gap-2">
                         <GlobeIcon />
-                        <span className={lite ? "hidden" : ""}>{selected?.text}</span>
+                        <span className={lite ? "hidden" : ""}>{selected?.name}</span>
                     </div>
                 ),
             }}
             options={options.map((l) => {
                 return {
                     key: l.locale,
-                    name: l.text,
+                    name: l.name,
                 };
             })}
         />

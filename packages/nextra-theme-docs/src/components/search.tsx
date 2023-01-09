@@ -2,7 +2,7 @@ import { Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
-import { SpinnerIcon } from "nextra/icons";
+import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
 import {
     Fragment, useCallback, useEffect, useRef, useState,
@@ -10,7 +10,7 @@ import {
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import type { SearchResult } from "../types.d";
+import type { SearchResult } from "../types";
 import { renderComponent, renderString } from "../utils";
 import Anchor from "./anchor";
 import Input from "./input";
@@ -19,9 +19,11 @@ type SearchProperties = {
     className?: string;
     overlayClassName?: string;
     value: string;
-    onChange: (newValue: string) => void;
-    onActive?: (active: boolean) => void;
+    onChange: (newValue: string) => Promise<void>;
+    onActive?: (active: boolean) => Promise<void>;
     loading?: boolean;
+
+    error?: boolean;
     results: SearchResult[];
 };
 
@@ -34,6 +36,7 @@ const Search: FC<SearchProperties> = ({
     onChange,
     onActive,
     loading,
+    error,
     results,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
@@ -48,12 +51,6 @@ const Search: FC<SearchProperties> = ({
     useEffect(() => {
         setActive(0);
     }, [value]);
-
-    useEffect(() => {
-        if (typeof onActive === "function") {
-            onActive(show);
-        }
-    }, [show, onActive]);
 
     useEffect(() => {
         const down = (keyboardEvent: globalThis.KeyboardEvent): void => {
@@ -192,8 +189,10 @@ const Search: FC<SearchProperties> = ({
         </Transition>
     );
 
+    const locale = router.locale ?? DEFAULT_LOCALE;
+
     return (
-        <div className={cn("nextra-search relative md:w-64", className)}>
+        <div className={cn("nextra-search relative lg:w-64", className)}>
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             {renderList && <div className="fixed inset-0 z-10" onClick={() => setShow(false)} />}
 
@@ -206,8 +205,11 @@ const Search: FC<SearchProperties> = ({
                     onChange(eventValue);
                     setShow(Boolean(eventValue));
                 }}
+                onFocus={() => {
+                    onActive?.(true);
+                }}
                 type="search"
-                placeholder={renderString(config.search.placeholder, { locale: router.locale || DEFAULT_LOCALE })}
+                placeholder={renderString(config.search.placeholder, { locale })}
                 onKeyDown={handleKeyDown}
                 suffix={icon}
             />
@@ -225,10 +227,10 @@ const Search: FC<SearchProperties> = ({
                         "nextra-scrollbar",
                         // Using bg-white as background-color when the browser didn't support backdrop-filter
                         "border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900",
-                        "absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl",
+                        "absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-lg py-2.5 shadow-lg",
                         "max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)]",
-                        "md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)]",
-                        "inset-x-0 ltr:md:left-auto rtl:md:right-auto",
+                        "lg:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)]",
+                        "inset-x-0 ltr:lg:left-auto rtl:lg:right-auto",
                         "contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50",
                         overlayClassName,
                     )}
@@ -237,12 +239,17 @@ const Search: FC<SearchProperties> = ({
                         transition: "max-height .2s ease", // don't work with tailwindcss
                     }}
                 >
-                    {loading ? (
+                    {error ? (
+                        <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-red-500">
+                            <InformationCircleIcon className="h-5 w-5" />
+                            {renderString(config.search.error, { locale })}
+                        </span>
+                    ) : (loading ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-gray-400">
                             <SpinnerIcon className="h-5 w-5 animate-spin" />
-                            {renderString(config.search.loading)}
+                            {renderString(config.search.loading, { locale })}
                         </span>
-                    ) : (results.length > 0 ? (
+                    ) : results.length > 0 ? (
                         results.map(({
                             route, prefix, children, id,
                         }, index) => (
@@ -250,7 +257,7 @@ const Search: FC<SearchProperties> = ({
                                 {prefix}
                                 <li
                                     className={cn(
-                                        "mx-2.5 break-words rounded-md",
+                                        "mx-2.5 break-words rounded-lg",
                                         "contrast-more:border",
                                         index === active
                                             ? "bg-primary-500/10 text-primary-600 contrast-more:border-primary-500"

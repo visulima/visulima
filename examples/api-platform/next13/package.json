@@ -5,7 +5,7 @@
     "description": "API Platform distribution for Next.js",
     "scripts": {
         "build": "next build",
-        "clean": "rimraf --no-glob ./.next ./out ./coverage ./tsconfig.tsbuildinfo node_modules",
+        "clean": "rimraf ./.next ./out ./coverage ./tsconfig.tsbuildinfo node_modules",
         "dev": "next dev",
         "lint": "next lint",
         "migrate:deploy": "prisma migrate up --experimental",

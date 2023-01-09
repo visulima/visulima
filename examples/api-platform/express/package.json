@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+        "clean": "rimraf node_modules dist .eslintcache",
         "dev": "tsx watch -r dotenv/config index"
     },
     "dependencies": {
@@ -16,6 +17,7 @@
         "@types/cors": "^2.8.13",
         "@types/express": "^4.17.17",
         "tsx": "^3.12.7",
+        "rimraf": "^5.0.1",
         "typescript": "^5.0.4"
     }
 }

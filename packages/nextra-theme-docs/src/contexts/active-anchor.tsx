@@ -27,8 +27,8 @@ export type ActiveAnchor = Record<string, Anchor>;
 
 // Separate the state as 2 contexts here to avoid
 // re-renders of the content triggered by the state update.
-export const useActiveAnchor = () => useContext(ActiveAnchorContext);
-export const useSetActiveAnchor = () => useContext(SetActiveAnchorContext);
+export const useActiveAnchor = (): ActiveAnchor => useContext(ActiveAnchorContext);
+export const useSetActiveAnchor = (): Dispatch<SetStateAction<ActiveAnchor>> => useContext(SetActiveAnchorContext);
 
 export const useIntersectionObserver = () => useContext(IntersectionObserverContext);
 export const useSlugs = () => useContext(SlugsContext);

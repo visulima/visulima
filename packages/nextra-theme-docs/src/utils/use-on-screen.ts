@@ -1,29 +1,31 @@
 import type { MutableRefObject } from "react";
 import { useEffect, useState } from "react";
 
-const useOnScreen = <T extends Element>(reference: MutableRefObject<T>, rootMargin: string = "0px") => {
+const useOnScreen = <T extends Element>(reference: MutableRefObject<T>, rootMargin: string = "0px"): boolean => {
     const [isIntersecting, setIntersecting] = useState(false);
 
     useEffect(() => {
-        const current = reference?.current;
+        const { current } = reference;
 
         // eslint-disable-next-line compat/compat
         const observer = new IntersectionObserver(
             ([entry]) => {
                 // Update our state when observer callback fires
-                setIntersecting((entry as IntersectionObserverEntry).isIntersecting);
+                setIntersecting(entry!.isIntersecting);
             },
             {
                 rootMargin,
             },
         );
 
-        if (current !== undefined && current !== null) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (current) {
             observer.observe(current);
         }
 
         return () => {
-            if (current !== undefined && current !== null) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (current) {
                 observer.unobserve(current);
             }
         };

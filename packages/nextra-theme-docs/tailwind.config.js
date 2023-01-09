@@ -8,6 +8,9 @@ const makePrimaryColor = (l) => ({ opacityValue }) => {
 };
 
 module.exports = {
+    corePlugins: {
+        preflight: process.env.PREFLIGHT === "yes",
+    },
     content: ["./src/**/*.tsx", "./components/**/*.js", "./pages/**/*.{md,mdx}", "./theme.config.tsx"],
     theme: {
         screens: {
@@ -31,9 +34,6 @@ module.exports = {
             "7xl": ["4.5rem", { lineHeight: "1" }],
             "8xl": ["6rem", { lineHeight: "1" }],
             "9xl": ["8rem", { lineHeight: "1" }],
-        },
-        letterSpacing: {
-            tight: "-0.015em",
         },
         colors: {
             transparent: "transparent",
@@ -75,8 +75,11 @@ module.exports = {
             rotate: {
                 270: "270deg",
             },
+            letterSpacing: {
+                tight: "-0.015em",
+            },
         },
     },
     darkMode: ["class", 'html[class~="dark"]'],
-    plugins: [require("@tailwindcss/typography")],
+    plugins: [require("@tailwindcss/typography"), require("tailwindcss-hyphens")],
 };

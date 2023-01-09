@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 
-export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode, properties?: T) {
+export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode | ((properties: T) => string), properties?: T): ReactNode {
     if (!ComponentOrNode) {
         return null;
     }
@@ -21,5 +21,5 @@ export function renderString<T>(
 ): string {
     const result = typeof stringOrFunction === "function" ? stringOrFunction(properties) : stringOrFunction;
 
-    return result || "";
+    return result ?? "";
 }

@@ -1,6 +1,7 @@
 import type { Folder, MdxFile, PageMapItem } from "nextra";
 
-import { DEFAULT_PAGE_THEME } from "../constants";
+import { DEFAULT_PAGE_THEME, ERROR_ROUTES } from "../constants";
+import type { IMenuItem } from "../theme/meta-schema";
 import type { PageTheme } from "../types";
 
 const extendMeta = (
@@ -14,20 +15,21 @@ const extendMeta = (
         // eslint-disable-next-line no-param-reassign
         meta = { title: meta };
     }
-
     const theme = { ...fallback["theme"], ...meta["theme"] };
 
     return { ...fallback, ...meta, theme };
 };
 
-interface DocumentationItem extends MdxFile {
+type FolderWithoutChildren = Omit<Folder, "children">;
+
+type DocumentationItem = {
     title: string;
     type: string;
     children?: DocumentationItem[];
     firstChildRoute?: string;
     withIndexPage?: boolean;
     isUnderCurrentDocsTree?: boolean;
-}
+} & (FolderWithoutChildren | MdxFile);
 
 const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
     let foundItem: string | undefined;
@@ -51,9 +53,7 @@ const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
     return foundItem;
 };
 
-const CUSTOM_ERROR_PAGES = new Set(["/404", "/500"]);
-
-// eslint-disable-next-line sonarjs/cognitive-complexity
+// eslint-disable-next-line radar/cognitive-complexity
 export function normalizePages({
     list,
     locale,
@@ -132,8 +132,7 @@ export function normalizePages({
                 // not hidden routes
                 && !a.name.startsWith("_")
                 // locale matches, or fallback to default locale
-                // @ts-expect-error
-                && (a.locale === locale || a.locale === defaultLocale || !a.locale),
+                && (!("locale" in a) || !a.locale || [locale, defaultLocale].includes(a.locale)),
         )
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
@@ -169,7 +168,7 @@ export function normalizePages({
                         itemList.push({
                             name: key,
                             route: "",
-                            ...meta[key as string],
+                            ...meta[key!],
                         });
                     }
                 }
@@ -191,7 +190,7 @@ export function normalizePages({
             items.push({
                 name: key,
                 route: "#",
-                ...meta[key as string],
+                ...meta[key!],
             });
         }
     }
@@ -253,7 +252,7 @@ export function normalizePages({
         documentationItem.isUnderCurrentDocsTree = isCurrentDocumentationTree;
 
         // This item is currently active, we collect the active path etc.
-        if (a.route === route || `${a.route}/` === route) {
+        if (a.route === route) {
             activePath = [item];
             activeType = type;
             // There can be multiple matches.
@@ -271,7 +270,7 @@ export function normalizePages({
             }
         }
 
-        if (display === "hidden" || CUSTOM_ERROR_PAGES.has(a.route)) {
+        if ((display === "hidden" && item.kind !== "Folder") || ERROR_ROUTES.has(a.route)) {
             // eslint-disable-next-line no-continue
             continue;
         }
@@ -296,8 +295,8 @@ export function normalizePages({
             }
 
             if (type === "page" || type === "menu") {
-                pageItem?.children?.push(...normalizedChildren.directories);
-                documentsDirectories.push(...normalizedChildren.docsDirectories);
+                pageItem.children?.push(...normalizedChildren.directories);
+                documentsDirectories.push(...normalizedChildren.documentsDirectories);
 
                 // If it's a page with children inside, we inject itself as a page too.
                 if (normalizedChildren.flatDirectories.length > 0) {
@@ -308,7 +307,7 @@ export function normalizePages({
                 }
             } else if (type === "doc") {
                 if (Array.isArray(documentationItem.children)) {
-                    documentationItem.children.push(...normalizedChildren.docsDirectories);
+                    documentationItem.children.push(...normalizedChildren.documentsDirectories);
                 }
                 // Itself is a doc page.
                 if (item.withIndexPage && display !== "children") {
@@ -317,7 +316,7 @@ export function normalizePages({
             }
 
             flatDirectories.push(...normalizedChildren.flatDirectories);
-            flatDocumentsDirectories.push(...normalizedChildren.flatDocsDirectories);
+            flatDocumentsDirectories.push(...normalizedChildren.flatDocumentsDirectories);
 
             if (Array.isArray(item.children)) {
                 item.children.push(...normalizedChildren.directories);
@@ -333,7 +332,7 @@ export function normalizePages({
         }
 
         if (type === "doc" && display === "children") {
-            // Hide the dectory itself and treat all its children as pages
+            // Hide the directory itself and treat all its children as pages
             if (documentationItem.children) {
                 directories.push(...documentationItem.children);
                 documentsDirectories.push(...documentationItem.children);
@@ -358,8 +357,8 @@ export function normalizePages({
         activePath,
         directories,
         flatDirectories,
-        docsDirectories: documentsDirectories,
-        flatDocsDirectories: flatDocumentsDirectories,
+        documentsDirectories,
+        flatDocumentsDirectories,
         topLevelNavbarItems,
     };
 }
@@ -372,7 +371,7 @@ export function normalizePages({
  */
 export type Display = "children" | "hidden" | "normal";
 
-export interface Item extends MdxFile {
+export type Item = {
     title: string;
     type: string;
     children?: Item[];
@@ -380,9 +379,9 @@ export interface Item extends MdxFile {
     withIndexPage?: boolean;
     theme?: PageTheme;
     isUnderCurrentDocsTree?: boolean;
-}
+} & (FolderWithoutChildren | MdxFile);
 
-export interface PageItem extends MdxFile {
+export type PageItem = {
     title: string;
     type: string;
     href?: string;
@@ -392,9 +391,9 @@ export interface PageItem extends MdxFile {
     display?: Display;
     withIndexPage?: boolean;
     isUnderCurrentDocsTree?: boolean;
-}
+} & (FolderWithoutChildren | MdxFile);
 
-export interface MenuItem extends MdxFile {
+export type MenuItem = IMenuItem & {
     title: string;
     type: "menu";
     display?: Display;
@@ -407,4 +406,4 @@ export interface MenuItem extends MdxFile {
         newWindow?: boolean;
     }
     >;
-}
+} & (FolderWithoutChildren | MdxFile);

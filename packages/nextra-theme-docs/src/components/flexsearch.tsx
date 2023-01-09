@@ -100,9 +100,9 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         Object.keys(data[route].data).forEach((heading) => {
             const [hash, text] = heading.split("#");
             const url = route + (hash ? `#${hash}` : "");
-            const title = text || data[route].title;
+            const title = text ?? data[route].title;
 
-            const content = data[route].data[heading] || "";
+            const content = data[route].data[heading] ?? "";
             const paragraphs = content.split("\n").filter(Boolean);
 
             sectionIndex.add({
@@ -155,6 +155,7 @@ const loadIndexes = (basePath: string, locale: string): Promise<void> => {
 const FlexSearch = ({ className }: { className?: string }): ReactElement => {
     const { locale = DEFAULT_LOCALE, basePath } = useRouter();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
     const [results, setResults] = useState<SearchResult[]>([]);
     const [search, setSearch] = useState("");
 
@@ -269,7 +270,11 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
             if (active && !indexes[locale]) {
                 setLoading(true);
 
-                await loadIndexes(basePath, locale);
+                try {
+                    await loadIndexes(basePath, locale);
+                } catch {
+                    setError(true);
+                }
 
                 setLoading(false);
             }
@@ -277,7 +282,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         [locale, basePath],
     );
 
-    const handleChange = async (value: string) => {
+    const handleChange = async (value: string): Promise<void> => {
         setSearch(value);
 
         if (loading) {
@@ -287,16 +292,22 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         if (!indexes[locale]) {
             setLoading(true);
 
-            await loadIndexes(basePath, locale);
+            try {
+                await loadIndexes(basePath, locale);
+            } catch {
+                setError(true);
+            }
 
             setLoading(false);
         }
+
         doSearch(value);
     };
 
     return (
         <Search
             loading={loading}
+            error={error}
             value={search}
             onChange={handleChange}
             onActive={preload}

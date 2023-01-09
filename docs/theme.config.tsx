@@ -3,6 +3,7 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
+import {ReactNode} from "react";
 
 // const Logo = ({ height }) => (
 //
@@ -53,6 +54,10 @@ const config: DocumentationThemeConfig = {
                 <span className="sr-only">Discord</span>
             </Anchor>
         ),
+    },
+    sidebar: {
+        defaultMenuCollapseLevel: 1,
+        toggleButton: true,
     },
     editLink: {
         text: ({ locale }) => {
@@ -147,8 +152,8 @@ const config: DocumentationThemeConfig = {
         },
     },
     notFound: {
-        pages: ({ local }: { local: string }) => {
-            if (local === "en-US") {
+        pages: ({ locale }) => {
+            if (locale === "en-US") {
                 return [
                     {
                         title: "Documentation",

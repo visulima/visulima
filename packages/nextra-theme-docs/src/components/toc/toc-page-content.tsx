@@ -9,7 +9,7 @@ const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
 
     return (
         <div ref={wrapperRef} className="py-8 text-sm [hyphens:auto]">
-            <Toc headings={headings} activeAnchor={activeAnchor} isPage />
+            <Toc headings={headings} activeAnchor={activeAnchor} isPage prefix="content" />
         </div>
     );
 };

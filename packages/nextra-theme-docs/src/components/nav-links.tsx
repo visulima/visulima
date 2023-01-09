@@ -3,27 +3,28 @@ import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
 
 import { useConfig } from "../contexts";
-import type { DocumentationThemeConfig, RecursivePartial } from "../types";
+import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import type { Item } from "../utils";
 import Anchor from "./anchor";
 
 interface NavLinkProperties {
     currentIndex: number;
     flatDirectories: Item[];
+    layout?: string;
 }
 
 const classes = {
     link: cn(
         // eslint-disable-next-line max-len
-        "flex items-center gap-1 py-4 text-base font-medium text-gray-600 transition-colors [word-break:break-word] hover:text-primary-600 dark:text-gray-300 md:text-lg",
+        "flex items-center gap-1 py-4 text-base font-medium text-gray-600 transition-colors [word-break:break-word] hover:text-primary-600 dark:text-gray-300 lg:text-lg",
     ),
     icon: cn("inline h-5 shrink-0"),
 };
 
-const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
+const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex, layout }) => {
     const config = useConfig();
     const nav = config.navigation;
-    const navigation: Exclude<RecursivePartial<DocumentationThemeConfig>["navigation"], boolean> = typeof nav === "boolean" ? { prev: nav, next: nav } : nav;
+    const navigation: Exclude<DocumentationThemeConfig["navigation"], boolean> = typeof nav === "boolean" ? { prev: nav, next: nav } : nav;
     const previous = navigation.prev && flatDirectories[currentIndex - 1];
     const next = navigation.next && flatDirectories[currentIndex + 1];
 
@@ -34,8 +35,9 @@ const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
     return (
         <div
             className={cn(
-                "mb-8 flex items-center items-stretch border-t pt-8 dark:border-neutral-800",
+                "flex items-center items-stretch border-t pt-8 dark:border-neutral-800",
                 "contrast-more:border-neutral-400 dark:contrast-more:border-neutral-400",
+                layout === "full" && "mb-8",
             )}
         >
             {previous && (

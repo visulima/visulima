@@ -1,6 +1,6 @@
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
+import { ArrowRightIcon } from "nextra/icons";
 import type { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
@@ -17,14 +17,14 @@ const NotFoundPage = (): ReactElement | null => {
         return null;
     }
 
-    const list = pages({ local: locale as string });
+    const list = pages({ locale: locale! });
 
     return (
-        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:px-6 lg:py-16">
+        <div className="mx-auto max-w-screen-xl p-8 lg:px-4 xl:py-16 xl:px-6">
             <div className="mx-auto max-w-screen-sm">
                 <div className="text-center">
-                    <h1 className="mb-4 text-7xl font-extrabold tracking-tight text-primary-600 dark:text-primary-500 lg:text-9xl">404</h1>
-                    <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">This page does not exist.</p>
+                    <h1 className="mb-4 text-7xl font-extrabold tracking-tight text-primary-600 dark:text-primary-500 xl:text-9xl">404</h1>
+                    <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-4xl">This page does not exist.</p>
                     <p className="mb-4 text-lg font-normal text-gray-500 dark:text-gray-400">The page you are looking for could not be found.</p>
                 </div>
 
@@ -35,25 +35,23 @@ const NotFoundPage = (): ReactElement | null => {
                         <div className="mt-4 flex flex-col items-stretch">
                             {list.map((page) => (
                                 <div
-                                    key={page.title + (page.subtitle || "")}
+                                    key={page.title + (page.subtitle ?? "")}
                                     className="flex flex-row border-t px-4 py-8 transition-all delay-100 duration-200 hover:cursor-pointer"
                                 >
                                     {/* eslint-disable-next-line max-len */}
-                                    {page.icon && (
-                                        <div className="rounded-md bg-primary-100 p-2 md:p-3 md:py-4 lg:p-4">
-                                            {page.icon as JSX.Element}
-                                        </div>
-                                    )}
+                                    {page.icon && <div className="rounded-lg bg-primary-100 p-2 lg:p-3 lg:py-4 xl:p-4">{page.icon as JSX.Element}</div>}
+                                    {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
                                     <a href={page.url} title={page.title} className="hover:no-underline! group flex grow flex-col pl-5">
-                                        <div className="text-sm font-bold md:text-lg lg:text-xl lg:font-semibold">{page.title}</div>
+                                        <div className="text-sm font-bold lg:text-lg xl:text-xl xl:font-semibold">{page.title}</div>
                                         {page.subtitle && (
-                                            <div className="md:text-md text-sm font-semibold text-gray-400 group-hover:text-gray-500 lg:text-lg lg:font-medium">
+                                            // eslint-disable-next-line max-len
+                                            <div className="text-sm font-semibold text-gray-400 group-hover:text-gray-500 lg:text-base xl:text-lg xl:font-medium">
                                                 {page.subtitle}
                                             </div>
                                         )}
                                     </a>
                                     {/* eslint-disable-next-line max-len */}
-                                    <ChevronRightIcon className="my-auto h-8 w-8 pr-2 text-gray-400 transition-all delay-100 duration-200 group-hover:text-gray-700" />
+                                    <ArrowRightIcon className="my-auto h-8 w-8 pr-2 text-gray-400 transition-all delay-100 duration-200 group-hover:text-gray-700" />
                                 </div>
                             ))}
                             <hr />
@@ -71,7 +69,7 @@ const NotFoundPage = (): ReactElement | null => {
                             labels,
                         })}
                         newWindow
-                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:under]"
+                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                     >
                         {renderComponent(content)}
                     </Anchor>

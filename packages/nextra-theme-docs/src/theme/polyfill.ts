@@ -1,11 +1,13 @@
 import { IS_BROWSER } from "../constants";
 
 if (IS_BROWSER) {
-    let resizeTimer: any;
+    let resizeTimer: NodeJS.Timeout;
 
     const addResizingClass = () => {
         document.body.classList.add("resizing");
+
         clearTimeout(resizeTimer);
+
         resizeTimer = setTimeout(() => {
             document.body.classList.remove("resizing");
         }, 200);

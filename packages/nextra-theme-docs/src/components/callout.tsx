@@ -40,7 +40,7 @@ const Callout = ({ children, type = "default", emoji = TypeToEmoji[type] }: Call
         >
             {emoji}
         </div>
-        <div className="min-w-0">{children}</div>
+        <div className="w-full min-w-0 leading-7">{children}</div>
     </div>
 );
 

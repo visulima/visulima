@@ -22,7 +22,8 @@
         "nextra": "2.6.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "yargs": "^17.7.2"
+        "yargs": "^17.7.2",
+        "zod": "^3.21.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^5.0.5",
@@ -31,8 +32,8 @@
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.9",
-        "@types/node": "20.2.3",
-        "@types/react": "18.2.7",
+        "@types/node": "18.16.3",
+        "@types/react": "18.2.6",
         "@types/react-dom": "18.2.4",
         "autoprefixer": "^10.4.14",
         "cross-env": "^7.0.3",

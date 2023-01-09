@@ -23,15 +23,17 @@ export const Tabs = ({
     defaultIndex,
     onChange,
     children,
+    prefix = "tabs",
 }: {
     items: ReactNode[] | ReadonlyArray<ReactNode> | TabItem[];
     selectedIndex?: number;
     defaultIndex?: number;
     onChange?: (index: number) => void;
     children: ReactNode;
+    prefix?: string;
 }): ReactElement => (
     <HeadlessTab.Group selectedIndex={selectedIndex} defaultIndex={defaultIndex} onChange={onChange}>
-        <div className="no-scrollbar -m-2 overflow-x-auto overflow-y-hidden overscroll-x-contain p-2">
+        <div className="nextra-scrollbar overflow-x-auto overflow-y-hidden overscroll-x-contain">
             <HeadlessTab.List className="mt-4 flex w-max min-w-full border-b border-gray-400 pb-px dark:border-neutral-800">
                 {items.map((item, index) => {
                     const disabled = !!(item && typeof item === "object" && "disabled" in item && item.disabled);
@@ -39,15 +41,15 @@ export const Tabs = ({
                     return (
                         <HeadlessTab
                             // eslint-disable-next-line react/no-array-index-key
-                            key={index}
+                            key={`${prefix}-tab-${index}`}
                             disabled={disabled}
                             className={({ selected }) => cn(
                                 "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
                                 "-mb-0.5 select-none border-b-2",
                                 selected
                                     ? "border-primary-500 text-primary-600"
-                                    // eslint-disable-next-line max-len
-                                    : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
+                                    : // eslint-disable-next-line max-len
+                                    "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
                                 disabled && "pointer-events-none text-gray-400 dark:text-neutral-600",
                             )}
                         >
