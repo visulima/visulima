@@ -4,7 +4,11 @@ import Code from "./code";
 import Pre from "./pre";
 import { Tab, Tabs } from "./tabs";
 
-const Installation: FC<{ packageName: string; commands: string[]; title?: string }> = ({ packageName, commands = ["npm i", "pnpm add", "yarn add"], title = "Installation" }) => (
+const Installation: FC<{ packageName: string; commands: string[]; title?: string }> = ({
+    packageName,
+    commands = ["npm i", "pnpm add", "yarn add"],
+    title = "Installation",
+}) => (
     <>
         <h2>{title}</h2>
         <Tabs items={commands}>
