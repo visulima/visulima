@@ -64,7 +64,7 @@ ComponentProps<"pre"> & {
                 <Button tabIndex={-1} onClick={toggleWordWrap} className="md:hidden" title="Toggle word wrap">
                     <WordWrapIcon className="pointer-events-none h-4 w-4" />
                 </Button>
-                {codeString && <CopyToClipboard tabIndex={-1} value={codeString} />}
+                {codeString && <CopyToClipboard tabIndex={-1} getValue={() => reference.current?.querySelector('code')?.textContent || ''} />}
             </div>
         </>
     );
