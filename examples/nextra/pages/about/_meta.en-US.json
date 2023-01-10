@@ -1,0 +1,12 @@
+{
+    "team": "👥 Team",
+    "acknowledgement": "🧩 Acknowledgement",
+    "a-page": {
+        "title": "A Page",
+        "type": "page",
+        "display": "hidden",
+        "theme": {
+            "layout": "raw"
+        }
+    }
+}

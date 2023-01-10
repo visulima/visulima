@@ -44,7 +44,6 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
                                         )}
                                         newWindow={newWindow}
                                     >
-                                        {title || key}
                                         <span className="absolute">{title || key}</span>
                                         <span className="invisible font-medium">{title || key}</span>
                                     </Anchor>
@@ -176,13 +175,14 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                                     key={String(String(page.route) + index + page.type)}
                                     className={cn(
                                         classes.link,
-                                        "-ml-2 hidden whitespace-nowrap p-2 md:inline-block",
+                                        "relative -ml-2 hidden whitespace-nowrap p-2 md:inline-block",
                                         isInactive ? classes.inactive : classes.active,
                                     )}
                                     newWindow={page.newWindow}
                                     aria-current={!page.newWindow && isActive}
                                 >
-                                    {page.title}
+                                    <span className="absolute inset-x-0 text-center">{page.title}</span>
+                                    <span className="invisible font-medium">{page.title}</span>
                                 </Anchor>
                             );
                         })}

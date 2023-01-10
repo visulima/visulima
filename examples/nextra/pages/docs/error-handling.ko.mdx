@@ -1,0 +1,104 @@
+import { Callout } from "@visulima/nextra-theme-docs";
+
+# 에러 처리
+
+[`fetcher`](/docs/data-fetching) 안에서 에러가 발생했다면 hook에 의해 `error`로 반환됩니다.
+
+```js
+const fetcher = (url) => fetch(url).then((r) => r.json());
+
+// ...
+const { data, error } = useSWR("/api/user", fetcher);
+```
+
+fetch 프로미스가 거부되면 `error` 객체가 정의됩니다.
+
+## 상태 코드와 에러 객체
+
+때로는 API가 상태 코드와 함께 에러 객체를 반환하기를 원합니다.
+모두 클라이언트에게 유용합니다.
+
+`fetcher`가 더 많은 정보를 반환하도록 커스터마이징 할 수 있습니다. 상태 코드가 `2xx`이 아니라면
+JSON으로 파싱할 수 있더라도 이를 에러로 간주합니다.
+
+```js
+const fetcher = async (url) => {
+    const res = await fetch(url);
+
+    // 상태 코드가 200-299 범위가 아니더라도,
+    // 파싱 시도를 하고 에러를 던집니다.
+    if (!res.ok) {
+        const error = new Error("An error occurred while fetching the data.");
+        // 에러 객체에 부가 정보를 추가합니다.
+        error.info = await res.json();
+        error.status = res.status;
+        throw error;
+    }
+
+    return res.json();
+};
+
+// ...
+const { data, error } = useSWR("/api/user", fetcher);
+// error.info === {
+//   message: "You are not authorized to access this resource.",
+//   documentation_url: "..."
+// }
+// error.status === 403
+```
+
+<Callout emoji="💡">
+    <code>데이터</code>와 <code>에러</code>는 동시에 존재할 수 있습니다. 따라서 UI는 예정된 요청이 실패했음을 알면서도 기존 데이터를 보여줄 수 있습니다.
+</Callout>
+
+[여기](/examples/error-handling)에 예시가 있습니다.
+
+## 에러 재시도
+
+SWR은 [지수 백오프 알고리즘](https://en.wikipedia.org/wiki/Exponential_backoff)를 사용해 에러 시 요청을 재시도합니다.
+이 알고리즘을 사용하면 에러로부터 앱을 빠르게 복구할 수 있으며 너무 자주 재시도하여 리소스를 낭비하지도 않습니다.
+
+[onErrorRetry](/docs/options#options) 옵션을 통해 이 동작을 오버라이드할 수도 있습니다.
+
+```js
+useSWR("/api/user", fetcher, {
+    onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // 404에서 재시도 안함
+        if (error.status === 404) return;
+
+        // 특정 키에 대해 재시도 안함
+        if (key === "/api/user") return;
+
+        // 10번까지만 재시도함
+        if (retryCount >= 10) return;
+
+        // 5초 후에 재시도
+        setTimeout(() => revalidate({ retryCount }), 5000);
+    },
+});
+```
+
+이 콜백을 사용하면 다양한 조건을 기반으로 유연하게 재시도할 수 있습니다. `shouldRetryOnError: false` 설정으로 비활성화할 수도 있습니다.
+
+[전역 설정](/docs/global-configuration) 컨텍스트를 통해 제공하는 것도 가능합니다.
+
+## 전역 에러 기록
+
+항상 컴포넌트 내에서 반응적으로 `error` 객체를 얻을 수 있습니다.
+하지만 UI에 [토스트](https://vercel.com/design/toast) 또는 [스낵바](https://material.io/components/snackbars)를 보여주거나 [Sentry](https://sentry.io)와 같은 어딘가에 기록하기 위해 에러를 전역으로 처리하길 원할 경우,
+[`onError`](/docs/options#options) 이벤트가 있습니다.
+
+```jsx
+<SWRConfig
+    value={{
+        onError: (error, key) => {
+            if (error.status !== 403 && error.status !== 404) {
+                // Sentry로 에러를 보내거나,
+                // 알림 UI를 보여줄 수 있습니다.
+            }
+        },
+    }}
+>
+    <MyApp />
+</SWRConfig>
+```

@@ -1,0 +1,333 @@
+import { Callout } from "@visulima/nextra-theme-docs";
+
+# 分页
+
+<Callout emoji="✅">
+    请更新到最新版本 (≥ 0.3.0) 来用此 API。原来的 <code>useSWRPages</code> API 已废弃。
+</Callout>
+
+SWR 提供了一个专用 API `useSWRInfinite` 来支持常见的 UI 模式，比如 **分页** 和 **无限加载**。
+
+## 何时应该继续使用 `useSWR`
+
+### 分页
+
+首先，我们可能 **并不** 需要 `useSWRInfinite`，如果我们正在构建如下内容，可以只使用 `useSWR`：
+
+import { Pagination } from "@components/diagrams/pagination";
+
+<div className="mt-8">
+    <Pagination />
+</div>
+
+...这是一个典型的分页 UI。我们来看看如何用 `useSWR` 轻松实现它：
+
+```jsx {5}
+function App() {
+    const [pageIndex, setPageIndex] = useState(0);
+
+    // API URL 包括页面索引，它是一个 React state。
+    const { data } = useSWR(`/api/data?page=${pageIndex}`, fetcher);
+
+    // ... 处理加载和错误状态
+
+    return (
+        <div>
+            {data.map((item) => (
+                <div key={item.id}>{item.name}</div>
+            ))}
+            <button onClick={() => setPageIndex(pageIndex - 1)}>Previous</button>
+            <button onClick={() => setPageIndex(pageIndex + 1)}>Next</button>
+        </div>
+    );
+}
+```
+
+此外，我们可以为这个 "page 组件" 创建一个抽象：
+
+```jsx {13}
+function Page({ index }) {
+    const { data } = useSWR(`/api/data?page=${index}`, fetcher);
+
+    // ... 处理加载和错误状态
+
+    return data.map((item) => <div key={item.id}>{item.name}</div>);
+}
+
+function App() {
+    const [pageIndex, setPageIndex] = useState(0);
+
+    return (
+        <div>
+            <Page index={pageIndex} />
+            <button onClick={() => setPageIndex(pageIndex - 1)}>Previous</button>
+            <button onClick={() => setPageIndex(pageIndex + 1)}>Next</button>
+        </div>
+    );
+}
+```
+
+SWR 的缓存会让我们在预先加载下一页方面受益匪浅。我们在一个 hidden 的 div 中渲染下一页，所以 SWR 将触发对下一页的数据请求。当用户导航到下一页时，数据已经加载好了：
+
+```jsx {6}
+function App() {
+    const [pageIndex, setPageIndex] = useState(0);
+
+    return (
+        <div>
+            <Page index={pageIndex} />
+            <div style={{ display: "none" }}>
+                <Page index={pageIndex + 1} />
+            </div>
+            <button onClick={() => setPageIndex(pageIndex - 1)}>Previous</button>
+            <button onClick={() => setPageIndex(pageIndex + 1)}>Next</button>
+        </div>
+    );
+}
+```
+
+仅用一行代码，我们就获得了非常好的用户体验。`useSWR` hook 非常强大，它涵盖了大多数场景。
+
+### 无限加载
+
+有时我们想构建一个**无限加载** UI，用一个 "Load More" 按钮向列表追加数据（或者在滚动时自动完成）：
+
+import { Infinite } from "@components/diagrams/infinite";
+
+<div className="mt-8">
+    <Infinite />
+</div>
+
+要实现这一点，我们需要在这个页面 **动态生成请求数**。React Hooks 有 [2 个规则](https://reactjs.org/docs/hooks-rules.html)，所以我们 **不能** 写下面的代码：
+
+```jsx {5-9}
+function App() {
+    const [cnt, setCnt] = useState(1);
+
+    const list = [];
+    for (let i = 0; i < cnt; i++) {
+        // 🚨 出错了！通常来说，你不能在循环里使用 hooks。
+        const { data } = useSWR(`/api/data?page=${i}`);
+        list.push(data);
+    }
+
+    return (
+        <div>
+            {list.map((data, i) => (
+                <div key={i}>
+                    {data.map((item) => (
+                        <div key={item.id}>{item.name}</div>
+                    ))}
+                </div>
+            ))}
+            <button onClick={() => setCnt(cnt + 1)}>Load More</button>
+        </div>
+    );
+}
+```
+
+相反，我们可以使用创建的 `<Page />` 抽象来实现它：
+
+```jsx {5-7}
+function App() {
+    const [cnt, setCnt] = useState(1);
+
+    const pages = [];
+    for (let i = 0; i < cnt; i++) {
+        pages.push(<Page index={i} key={i} />);
+    }
+
+    return (
+        <div>
+            {pages}
+            <button onClick={() => setCnt(cnt + 1)}>Load More</button>
+        </div>
+    );
+}
+```
+
+### 高级用例
+
+但是，在某些高级用例中，上面的解决方案并不起作用。
+
+比如，我们仍然实现相同的 "Load More" UI，但还需要显示一个 item 总数的数字。我们不能再使用 `<Page />` 这个解决方案了，因为顶级 UI (`<App />`) 需要每个页面的数据：
+
+```jsx {10}
+function App() {
+    const [cnt, setCnt] = useState(1);
+
+    const pages = [];
+    for (let i = 0; i < cnt; i++) {
+        pages.push(<Page index={i} key={i} />);
+    }
+
+    return (
+        <div>
+            <p>??? items</p>
+            {pages}
+            <button onClick={() => setCnt(cnt + 1)}>Load More</button>
+        </div>
+    );
+}
+```
+
+另外，如果分页 API 是 **基于游标的**，那么这个解决方案也不起作用。因为每个页面都需要上一页的数据，它们不是孤立的。
+
+这就是这个新 `useSWRInfinite` Hook 的作用。
+
+## useSWRInfinite
+
+`useSWRInfinite` 让我们能够通过一个 Hook 触发多个请求。就像下面这样：
+
+```jsx
+import useSWRInfinite from 'swr/infinite'
+
+// ...
+const { data, error, isValidating, mutate, size, setSize } = useSWRInfinite(
+  getKey, fetcher?, options?
+)
+```
+
+和 `useSWR` 类似，这个新的 Hook 接受一个函数，该函数返回请求的 key、1 个 fetcher 函数和 options。它返回 `useSWR` 的所有返回值，还包括 2 个额外的值：page size 和 page size setter，类似一个 React state。
+
+在无限加载中，一个 _页面_ 是一个请求，我们的目标是请求多页面并渲染它们。
+
+<Callout emoji="⚠️">
+    如果你使用的是 SWR 0.x 版本，则需要从 `swr` 导入 `useSWRInfinite`：
+    <br />
+    `import {useSWRInfinite} from 'swr'`
+</Callout>
+
+### API
+
+#### 参数
+
+-   `getKey`: 一个函数，接受索引和上一页数据，返回页面的 key
+-   `fetcher`: 和 `useSWR` 的 [fetcher 函数](/docs/data-fetching) 一样
+-   `options`: 接受 `useSWR` 支持的所有选项，以及 3 个额外选项：
+    -   `initialSize = 1`: 最初应加载的页面数量
+    -   `revalidateAll = false`: 始终尝试重新验证所有页面
+    -   `revalidateFirstPage = true`: 始终尝试重新验证第一页
+    -   `persistSize = false`: 当第一页的 key 发生变化时，不将 page size（或者 `initialSize` 如果设置了该参数）重置为 1
+
+<Callout>请注意，`initialSize` 选项并不支持在渲染过程中发生改变。</Callout>
+
+#### 返回值
+
+-   `data`: 一个数组，每个页面请求的响应值
+-   `error`: 与 `useSWR` 的 `error` 返回值相同
+-   `isValidating`: 与 `useSWR` 的 `isValidating` 返回值相同
+-   `mutate`: 和 `useSWR` 的绑定 mutate 函数一样，但是操作 data 数组
+-   `size`: *即将*请求和返回的页面数
+-   `setSize`: 设置需要请求的页面数
+
+### 示例 1：基于索引的分页 API
+
+普通的基于索引的 API：
+
+```
+GET /users?page=0&limit=10
+[
+  { name: 'Alice', ... },
+  { name: 'Bob', ... },
+  { name: 'Cathy', ... },
+  ...
+]
+```
+
+```jsx {4-7,10}
+// 一个函数，拿到每个页面的 key，
+// `fetcher` 接受它的返回值。
+// 如果返回是 `null`，该页面不会开始请求。
+const getKey = (pageIndex, previousPageData) => {
+    if (previousPageData && !previousPageData.length) return null; // reached the end
+    return `/users?page=${pageIndex}&limit=10`; // SWR key
+};
+
+function App() {
+    const { data, size, setSize } = useSWRInfinite(getKey, fetcher);
+    if (!data) return "loading";
+
+    // 我们现在可以计算出所有用户的数量
+    let totalUsers = 0;
+    for (let i = 0; i < data.length; i++) {
+        totalUsers += data[i].length;
+    }
+
+    return (
+        <div>
+            <p>{totalUsers} users listed</p>
+            {data.map((users, index) => {
+                // `data` 是每个页面 API 响应的数组。
+                return users.map((user) => <div key={user.id}>{user.name}</div>);
+            })}
+            <button onClick={() => setSize(size + 1)}>Load More</button>
+        </div>
+    );
+}
+```
+
+`getKey` 函数是 `useSWRInfinite` 和 `useSWR` 之间的主要区别。它接受当前页的索引以及上一页的数据。因此可以很好地支持基于索引和基于游标的分页 API。
+
+此外，`data` 不再只是一个 API 响应。它是多个 API 响应的数组：
+
+```js
+// `data` 将如下所示
+[
+  [
+    { name: 'Alice', ... },
+    { name: 'Bob', ... },
+    { name: 'Cathy', ... },
+    ...
+  ],
+  [
+    { name: 'John', ... },
+    { name: 'Paul', ... },
+    { name: 'George', ... },
+    ...
+  ],
+  ...
+]
+```
+
+### 示例 2：基于游标或偏移的分页 API
+
+假设现在 API 需要一个游标，并将下一个游标和数据一起返回：
+
+```plaintext
+GET /users?cursor=123&limit=10
+{
+  data: [
+    { name: 'Alice' },
+    { name: 'Bob' },
+    { name: 'Cathy' },
+    ...
+  ],
+  nextCursor: 456
+}
+```
+
+我们可以将 `getKey` 函数改为下面这样：
+
+```jsx
+const getKey = (pageIndex, previousPageData) => {
+    // reached the end
+    if (previousPageData && !previousPageData.data) return null;
+
+    // 首页，没有 `previousPageData`
+    if (pageIndex === 0) return `/users?limit=10`;
+
+    // 将游标添加到 API
+    return `/users?cursor=${previousPageData.nextCursor}&limit=10`;
+};
+```
+
+### 高级特性
+
+[这里有一个示例](/examples/infinite-loading) 演示如何使用 `useSWRInfinite` 实现以下功能：
+
+-   加载状态
+-   如果为空，显示一个特殊的 UI
+-   如果 reached the end，禁用 "Load More" 按钮
+-   数据源可变
+-   刷新整个列表

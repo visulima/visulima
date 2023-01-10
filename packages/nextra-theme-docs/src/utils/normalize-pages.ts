@@ -14,7 +14,6 @@ const extendMeta = (
         // eslint-disable-next-line no-param-reassign
         meta = { title: meta };
     }
-
     const theme = { ...fallback.theme, ...meta.theme };
 
     return { ...fallback, ...meta, theme };
@@ -132,8 +131,7 @@ export function normalizePages({
                 // not hidden routes
                 && !a.name.startsWith("_")
                 // locale matches, or fallback to default locale
-                // @ts-expect-error
-                && (a.locale === locale || a.locale === defaultLocale || !a.locale),
+                && (!("locale" in a) || !a.locale || [locale, defaultLocale].includes(a.locale)),
         )
         .sort((a, b) => {
             const indexA = metaKeys.indexOf(a.name);
@@ -253,7 +251,7 @@ export function normalizePages({
         documentationItem.isUnderCurrentDocsTree = isCurrentDocumentationTree;
 
         // This item is currently active, we collect the active path etc.
-        if (a.route === route || `${a.route}/` === route) {
+        if (a.route === route) {
             activePath = [item];
             activeType = type;
             // There can be multiple matches.

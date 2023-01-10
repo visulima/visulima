@@ -281,10 +281,11 @@ const Sidebar: FC<SideBarProperties> = ({
 }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
+    const router = useRouter();
     const [focused, setFocused] = useState<null | string>(null);
     const anchors = useMemo(
         () => headings
-            .filter((v) => v.children && v.depth === 2 && v.type === "heading")
+            .filter((v) => v.depth === 2)
             .map((heading) => getHeadingText(heading))
             .filter(Boolean),
         [headings],
@@ -320,6 +321,11 @@ const Sidebar: FC<SideBarProperties> = ({
             }
         }
     }, [menu]);
+
+    // Always close mobile nav when route was changed (e.g. logo click)
+    useEffect(() => {
+        setMenu(false);
+    }, [router.asPath, setMenu]);
 
     const hasMenu = config.i18n.length > 0 || config.darkMode;
 

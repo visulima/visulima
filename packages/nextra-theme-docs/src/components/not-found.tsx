@@ -71,7 +71,7 @@ const NotFoundPage = (): ReactElement | null => {
                             labels,
                         })}
                         newWindow
-                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:under]"
+                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                     >
                         {renderComponent(content)}
                     </Anchor>

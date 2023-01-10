@@ -5,7 +5,9 @@ if (IS_BROWSER) {
 
     const addResizingClass = () => {
         document.body.classList.add("resizing");
+
         clearTimeout(resizeTimer);
+
         resizeTimer = setTimeout(() => {
             document.body.classList.remove("resizing");
         }, 200);

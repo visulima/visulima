@@ -1,0 +1,99 @@
+import { Callout } from "@visulima/nextra-theme-docs";
+
+# 错误处理
+
+如果在 [`fetcher`](/docs/data-fetching) 中抛出错误，hook 会将其作为 `error` 返回。
+
+```js
+const fetcher = (url) => fetch(url).then((r) => r.json());
+
+// ...
+const { data, error } = useSWR("/api/user", fetcher);
+```
+
+如果 fetch promise 被拒绝，将定义 `error` 对象。
+
+## 状态码和错误对象
+
+有时我们希望 API 在返回状态码的同时返回一个错误对象。它们对客户端都是有用的。
+
+我们可以自定义 `fetcher` 以返回更多信息。如果状态码不是 `2xx`，我们则认为它是一个错误，即使它可以被解析为 JSON：
+
+```js
+const fetcher = async (url) => {
+    const res = await fetch(url);
+
+    // 如果状态码不在 200-299 的范围内，
+    // 我们仍然尝试解析并抛出它。
+    if (!res.ok) {
+        const error = new Error("An error occurred while fetching the data.");
+        // 将额外的信息附加到错误对象上。
+        error.info = await res.json();
+        error.status = res.status;
+        throw error;
+    }
+
+    return res.json();
+};
+
+// ...
+const { data, error } = useSWR("/api/user", fetcher);
+// error.info === {
+//   message: "You are not authorized to access this resource.",
+//   documentation_url: "..."
+// }
+// error.status === 403
+```
+
+<Callout emoji="💡">
+    注意：<code>data</code> 和 <code>error</code> 可以同时存在。所以 UI 可以在知道即将到来的请求失败时显示现有数据。
+</Callout>
+
+[这里](/examples/error-handling)有一个示例。
+
+## 错误重试
+
+在出现错误时 SWR 使用[指数退避算法](https://en.wikipedia.org/wiki/Exponential_backoff)重发请求。该算法允许应用从错误中快速恢复，而不会浪费资源频繁地重试。
+
+你还可以通过 [onErrorRetry](/docs/options#options) 选项覆盖该行为：
+
+```js
+useSWR("/api/user", fetcher, {
+    onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // 404 时不重试。
+        if (error.status === 404) return;
+
+        // 特定的 key 时不重试。
+        if (key === "/api/user") return;
+
+        // 最多重试 10 次。
+        if (retryCount >= 10) return;
+
+        // 5秒后重试。
+        setTimeout(() => revalidate({ retryCount: retryCount }), 5000);
+    },
+});
+```
+
+这个回调让你可以灵活的根据各种条件重试。你也可以通过设置 `shouldRetryOnError: false` 来禁用它。
+
+也可以通过[全局配置](/docs/global-configuration) context 来提供它。
+
+## 全局错误报告
+
+你总是可以响应性的在组件内部得到 `error` 对象。但如果你想要全局处理错误，通知 UI 显示一个 [toast](https://vercel.com/design/toast) 或者一个 [snackbar](https://material.io/components/snackbars)，或在某处报告它，比如 [Sentry](https://sentry.io)，可以用 [`onError`](/docs/options#options) 事件：
+
+```jsx
+<SWRConfig
+    value={{
+        onError: (error, key) => {
+            if (error.status !== 403 && error.status !== 404) {
+                // 我们可以把错误发送给 Sentry，
+                // 或显示一个通知 UI。
+            }
+        },
+    }}
+>
+    <MyApp />
+</SWRConfig>
+```

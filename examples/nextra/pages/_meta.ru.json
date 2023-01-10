@@ -1,0 +1,23 @@
+{
+    "index": {
+        "title": "Введение",
+        "type": "page",
+        "display": "hidden",
+        "theme": {
+            "layout": "full",
+            "toc": false
+        }
+    },
+    "docs": {
+        "title": "Документация",
+        "type": "page"
+    },
+    "examples": {
+        "title": "Примеры",
+        "type": "page"
+    },
+    "blog": {
+        "title": "Блог",
+        "type": "page"
+    }
+}

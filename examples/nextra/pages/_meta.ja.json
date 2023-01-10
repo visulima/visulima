@@ -1,0 +1,23 @@
+{
+    "index": {
+        "title": "前書き",
+        "type": "page",
+        "display": "hidden",
+        "theme": {
+            "layout": "full",
+            "toc": false
+        }
+    },
+    "docs": {
+        "title": "ドキュメント",
+        "type": "page"
+    },
+    "examples": {
+        "title": "例",
+        "type": "page"
+    },
+    "blog": {
+        "title": "ブログ",
+        "type": "page"
+    }
+}
