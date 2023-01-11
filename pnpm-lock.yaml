@@ -922,7 +922,7 @@ importers:
       next: ^12.3.1
       next-test-api-route-handler: ^4.0.0-canary.1
       node-mocks-http: ^1.11.0
-      pingman: ^1.1.5
+      pingman: ^2.0.0
       prettier: ^2.7.1
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -935,7 +935,7 @@ importers:
     dependencies:
       cacheable-lookup: 7.0.0
       http-status-codes: 2.2.0
-      pingman: 1.1.5
+      pingman: 2.0.0
     optionalDependencies:
       next: 12.3.4_biqbaboplfbrettd7655fr4n2y
     devDependencies:
@@ -17616,8 +17616,8 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /pingman/1.1.5:
-    resolution: {integrity: sha512-Uu1KCjplFlKnspr1qgA1p0rBgshjkaoM70QvpsbRGBOUh4oN/FVxRi5t6/TaQax/fBTNeGYmWxKUV3CSDSRurQ==}
+  /pingman/2.0.0:
+    resolution: {integrity: sha512-7v2e+nk8LH8nTbzn71T/Et8Oxbmi/1lTQQHk9vy+FKM6Tu7bKnDa48vdDu4CeOGWYlwtbv0ZasFVsij8rTjkBw==}
     engines: {node: '>=10'}
     dev: false
 
