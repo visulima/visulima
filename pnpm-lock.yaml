@@ -919,7 +919,7 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore: ^6.12.0
       eslint-plugin-you-dont-need-momentjs: ^1.6.0
       http-status-codes: ^2.2.0
-      next: ^12.3.1
+      next: ^13.0.0
       next-test-api-route-handler: ^4.0.0-canary.1
       node-mocks-http: ^1.11.0
       pingman: ^1.1.5
@@ -937,7 +937,7 @@ importers:
       http-status-codes: 2.2.0
       pingman: 1.1.5
     optionalDependencies:
-      next: 12.3.4_biqbaboplfbrettd7655fr4n2y
+      next: 13.1.0_biqbaboplfbrettd7655fr4n2y
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_rmayb2veg2btbq6mbmnyivgasy
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@20.0.0
@@ -970,7 +970,7 @@ importers:
       eslint-plugin-unicorn: 45.0.0_eslint@8.27.0
       eslint-plugin-you-dont-need-lodash-underscore: 6.12.0
       eslint-plugin-you-dont-need-momentjs: 1.6.0_eslint@8.27.0
-      next-test-api-route-handler: 4.0.0-canary.1_next@12.3.4
+      next-test-api-route-handler: 4.0.0-canary.1_next@13.1.0
       node-mocks-http: 1.11.0
       prettier: 2.7.1
       react: 18.2.0
@@ -3162,6 +3162,7 @@ packages:
 
   /@next/env/12.3.4:
     resolution: {integrity: sha512-H/69Lc5Q02dq3o+dxxy5O/oNxFsZpdL6WREtOOtOM1B/weonIwDXkekr1KV5DPVPr12IHFPrMrcJQ6bgPMfn7A==}
+    dev: false
 
   /@next/env/13.0.3:
     resolution: {integrity: sha512-/4WzeG61Ot/PxsghXkSqQJ6UohFfwXoZ3dtsypmR9EBP+OIax9JRq0trq8Z/LCT9Aq4JbihVkaazRWguORjTAw==}
@@ -3205,6 +3206,7 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-android-arm-eabi/13.0.3:
@@ -3246,6 +3248,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-android-arm64/13.0.3:
@@ -3287,6 +3290,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-darwin-arm64/13.0.3:
@@ -3328,6 +3332,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-darwin-x64/13.0.3:
@@ -3369,6 +3374,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-freebsd-x64/13.0.3:
@@ -3410,6 +3416,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm-gnueabihf/13.0.3:
@@ -3451,6 +3458,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm64-gnu/13.0.3:
@@ -3492,6 +3500,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm64-musl/13.0.3:
@@ -3533,6 +3542,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-x64-gnu/13.0.3:
@@ -3574,6 +3584,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-x64-musl/13.0.3:
@@ -3615,6 +3626,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-arm64-msvc/13.0.3:
@@ -3656,6 +3668,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-ia32-msvc/13.0.3:
@@ -3697,6 +3710,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-x64-msvc/13.0.3:
@@ -16189,19 +16203,6 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /next-test-api-route-handler/4.0.0-canary.1_next@12.3.4:
-    resolution: {integrity: sha512-Qr71T8vi2LquQyVhNdoipjxV++lfY9PqGVSYmYEawyOMyPQvn9WGwgXAY1FgKI+4lCyJW4GHBL9eUO9zlG5QFQ==}
-    engines: {node: '>=14.19.0'}
-    peerDependencies:
-      next: '>=9'
-    dependencies:
-      cookie: 0.4.2
-      next: 12.3.4_biqbaboplfbrettd7655fr4n2y
-      node-fetch: 2.6.7
-    transitivePeerDependencies:
-      - encoding
-    dev: true
-
   /next-test-api-route-handler/4.0.0-canary.1_next@13.0.3:
     resolution: {integrity: sha512-Qr71T8vi2LquQyVhNdoipjxV++lfY9PqGVSYmYEawyOMyPQvn9WGwgXAY1FgKI+4lCyJW4GHBL9eUO9zlG5QFQ==}
     engines: {node: '>=14.19.0'}
@@ -16283,6 +16284,7 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    dev: false
 
   /next/13.0.3:
     resolution: {integrity: sha512-rFQeepcenRxKzeKlh1CsmEnxsJwhIERtbUjmYnKZyDInZsU06lvaGw5DT44rlNp1Rv2MT/e9vffZ8vK+ytwXHA==}
@@ -19985,6 +19987,7 @@ packages:
         optional: true
     dependencies:
       react: 18.2.0
+    dev: false
 
   /styled-jsx/5.1.0:
     resolution: {integrity: sha512-/iHaRJt9U7T+5tp6TRelLnqBqiaIT0HsO0+vgyj8hK2KUk7aejFqRrumqPUlAqDwAj8IbS/1hk3IhBAAK/FCUQ==}
@@ -21528,6 +21531,7 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.2.0
+    dev: false
 
   /util-deprecate/1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
