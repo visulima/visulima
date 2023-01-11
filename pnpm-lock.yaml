@@ -1163,7 +1163,7 @@ importers:
       react-hot-toast: ^2.4.0
       read-pkg: ^7.1.0
       rimraf: ^3.0.2
-      scroll-into-view-if-needed: ^2.2.29
+      scroll-into-view-if-needed: ^3.0.0
       semantic-release: ^20.0.0
       tailwindcss: ^3.1.8
       tsup: ^6.2.3
@@ -1186,7 +1186,7 @@ importers:
       next-seo: 5.15.0_6jx7hpii6hgsrmhxgqrmo3277u
       next-themes: 0.2.1_6jx7hpii6hgsrmhxgqrmo3277u
       react-hot-toast: 2.4.0_biqbaboplfbrettd7655fr4n2y
-      scroll-into-view-if-needed: 2.2.31
+      scroll-into-view-if-needed: 3.0.4
     devDependencies:
       '@anolilab/eslint-config': 4.1.1_ha6vam6werchizxrnqvarmz2zu
       '@anolilab/semantic-release-preset': 2.1.0_semantic-release@20.0.0
@@ -8129,8 +8129,8 @@ packages:
       readable-stream: 3.6.0
     dev: false
 
-  /compute-scroll-into-view/1.0.20:
-    resolution: {integrity: sha512-UCB0ioiyj8CRjtrvaceBLqqhZCVP+1B8+NWQhmdsm0VXOJtobBCf1dBQmebCCo34qZmUwZfIH2MZLqNHazrfjg==}
+  /compute-scroll-into-view/2.0.4:
+    resolution: {integrity: sha512-y/ZA3BGnxoM/QHHQ2Uy49CLtnWPbt4tTPpEEZiEmmiWBFKjej7nEyH8Ryz54jH0MLXflUYA3Er2zUxPSJu5R+g==}
     dev: false
 
   /concat-map/0.0.1:
@@ -19181,10 +19181,10 @@ packages:
       ajv: 6.12.6
       ajv-keywords: 3.5.2_ajv@6.12.6
 
-  /scroll-into-view-if-needed/2.2.31:
-    resolution: {integrity: sha512-dGCXy99wZQivjmjIqihaBQNjryrz5rueJY7eHfTdyWEiR4ttYpsajb14rn9s5d4DY4EcY6+4+U/maARBXJedkA==}
+  /scroll-into-view-if-needed/3.0.4:
+    resolution: {integrity: sha512-s+/F50jwTOUt+u5oEIAzum9MN2lUQNvWBe/zfEsVQcbaERjGkKLq1s+2wCHkahMLC8nMLbzMVKivx9JhunXaZg==}
     dependencies:
-      compute-scroll-into-view: 1.0.20
+      compute-scroll-into-view: 2.0.4
     dev: false
 
   /scss-parser/1.0.5:
