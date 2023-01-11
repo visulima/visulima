@@ -93,7 +93,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.1.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -152,7 +152,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.31.0
       eslint-plugin-radar: 0.2.1_eslint@8.31.0
-      eslint-plugin-react: 7.31.11_eslint@8.31.0
+      eslint-plugin-react: 7.32.0_eslint@8.31.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.31.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.31.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -540,7 +540,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -650,7 +650,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-radar: 0.2.1_eslint@8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.26.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -806,7 +806,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -861,7 +861,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-radar: 0.2.1_eslint@8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.26.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -910,7 +910,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -962,7 +962,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-radar: 0.2.1_eslint@8.27.0
-      eslint-plugin-react: 7.31.11_eslint@8.27.0
+      eslint-plugin-react: 7.32.0_eslint@8.27.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.27.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.27.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -1134,7 +1134,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -1221,7 +1221,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.29.0
       eslint-plugin-radar: 0.2.1_eslint@8.29.0
-      eslint-plugin-react: 7.31.11_eslint@8.29.0
+      eslint-plugin-react: 7.32.0_eslint@8.29.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.29.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.29.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -1273,7 +1273,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -1317,7 +1317,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-radar: 0.2.1_eslint@8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.26.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -1365,7 +1365,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -1412,7 +1412,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       eslint-plugin-radar: 0.2.1_eslint@8.27.0
-      eslint-plugin-react: 7.31.11_eslint@8.27.0
+      eslint-plugin-react: 7.32.0_eslint@8.27.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.27.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.27.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -1454,7 +1454,7 @@ importers:
       eslint-plugin-optimize-regex: ^1.2.1
       eslint-plugin-promise: ^6.0.1
       eslint-plugin-radar: ^0.2.1
-      eslint-plugin-react: 7.31.11
+      eslint-plugin-react: 7.32.0
       eslint-plugin-react-hooks: 4.6.0
       eslint-plugin-simple-import-sort: ^8.0.0
       eslint-plugin-sort-keys-fix: ^1.1.2
@@ -1496,7 +1496,7 @@ importers:
       eslint-plugin-optimize-regex: 1.2.1
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-radar: 0.2.1_eslint@8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.26.0
       eslint-plugin-simple-import-sort: 8.0.0_eslint@8.26.0
       eslint-plugin-sort-keys-fix: 1.1.2
@@ -1573,9 +1573,9 @@ packages:
       eslint-plugin-mdx: 2.0.5_eslint@8.29.0
       eslint-plugin-node: 11.1.0_eslint@8.29.0
       eslint-plugin-prefer-object-spread: 1.2.1_eslint@8.29.0
-      eslint-plugin-react: 7.31.11_eslint@8.29.0
+      eslint-plugin-react: 7.32.0_eslint@8.29.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.29.0
-      eslint-plugin-react-redux: 4.0.0_syk2r5typipp4epokovq3pnmau
+      eslint-plugin-react-redux: 4.0.0_4e3zqimwffvnpogger6n2yem5m
       eslint-plugin-testing-library: 5.9.1_ha6vam6werchizxrnqvarmz2zu
       eslint-plugin-typescript-sort-keys: 2.1.0_ae7js2nxcehzgwzde5imjp6fde
     transitivePeerDependencies:
@@ -1637,9 +1637,9 @@ packages:
       eslint-plugin-mdx: 2.0.5_eslint@8.31.0
       eslint-plugin-node: 11.1.0_eslint@8.31.0
       eslint-plugin-prefer-object-spread: 1.2.1_eslint@8.31.0
-      eslint-plugin-react: 7.31.11_eslint@8.31.0
+      eslint-plugin-react: 7.32.0_eslint@8.31.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.31.0
-      eslint-plugin-react-redux: 4.0.0_u7ucuxqgc7dywdp3zysmwex5im
+      eslint-plugin-react-redux: 4.0.0_cyihhqyylnhilsgsmopefzo2p4
       eslint-plugin-testing-library: 5.9.1_iukboom6ndih5an6iafl45j2fe
       eslint-plugin-typescript-sort-keys: 2.1.0_jkkz4kxbd5nyogjcmr76b7sdgi
     transitivePeerDependencies:
@@ -1701,9 +1701,9 @@ packages:
       eslint-plugin-mdx: 2.0.5_eslint@8.27.0
       eslint-plugin-node: 11.1.0_eslint@8.27.0
       eslint-plugin-prefer-object-spread: 1.2.1_eslint@8.27.0
-      eslint-plugin-react: 7.31.11_eslint@8.27.0
+      eslint-plugin-react: 7.32.0_eslint@8.27.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.27.0
-      eslint-plugin-react-redux: 4.0.0_fakln6sbmeujocj2wf7wkwexkq
+      eslint-plugin-react-redux: 4.0.0_zcw4nzgygnyxqkzvq32y5epzsi
       eslint-plugin-testing-library: 5.9.1_rmayb2veg2btbq6mbmnyivgasy
       eslint-plugin-typescript-sort-keys: 2.1.0_yy4vf4gcvxiubmg7fqa55dqe2i
     transitivePeerDependencies:
@@ -1765,9 +1765,9 @@ packages:
       eslint-plugin-mdx: 2.0.5_eslint@8.26.0
       eslint-plugin-node: 11.1.0_eslint@8.26.0
       eslint-plugin-prefer-object-spread: 1.2.1_eslint@8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.26.0
-      eslint-plugin-react-redux: 4.0.0_a535kcop35cziwdrsdekpy3yby
+      eslint-plugin-react-redux: 4.0.0_txo7qiaa4osn2ab2wjvvsnrmqq
       eslint-plugin-testing-library: 5.9.1_wyqvi574yv7oiwfeinomdzmc3m
       eslint-plugin-typescript-sort-keys: 2.1.0_7w2tbcun6i747ll53gq7rjihs4
     transitivePeerDependencies:
@@ -9250,7 +9250,7 @@ packages:
       eslint-import-resolver-typescript: 2.7.1_dcpv4nbdr5ks2h5677xdltrk6e
       eslint-plugin-import: 2.26.0_ttnp75sbivpcvanbhjbkcsh3ly
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.27.0
-      eslint-plugin-react: 7.31.11_eslint@8.27.0
+      eslint-plugin-react: 7.32.0_eslint@8.27.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.27.0
       typescript: 4.9.3
     transitivePeerDependencies:
@@ -9275,7 +9275,7 @@ packages:
       eslint-import-resolver-typescript: 2.7.1_ktrec6dplf4now6nlbc6d67jee
       eslint-plugin-import: 2.26.0_dkuuphulyfke3q3ewdtmlbkase
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.28.0
-      eslint-plugin-react: 7.31.11_eslint@8.28.0
+      eslint-plugin-react: 7.32.0_eslint@8.28.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.28.0
       typescript: 4.9.3
     transitivePeerDependencies:
@@ -9300,7 +9300,7 @@ packages:
       eslint-import-resolver-typescript: 3.5.2_ktrec6dplf4now6nlbc6d67jee
       eslint-plugin-import: 2.26.0_d5vn4nsvkp5ugznurcfxmdkaeu
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.28.0
-      eslint-plugin-react: 7.31.11_eslint@8.28.0
+      eslint-plugin-react: 7.32.0_eslint@8.28.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.28.0
       typescript: 4.9.3
     transitivePeerDependencies:
@@ -9325,7 +9325,7 @@ packages:
       eslint-import-resolver-typescript: 3.5.2_lt3hqehuojhfcbzgzqfngbtmrq
       eslint-plugin-import: 2.26.0_erpyzm3pnjyis665623ynjnney
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.29.0
-      eslint-plugin-react: 7.31.11_eslint@8.29.0
+      eslint-plugin-react: 7.32.0_eslint@8.29.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.29.0
       typescript: 4.9.4
     transitivePeerDependencies:
@@ -9350,7 +9350,7 @@ packages:
       eslint-import-resolver-typescript: 3.5.2_2lbwmhbr7bncddqbzzpg77o75m
       eslint-plugin-import: 2.26.0_2sed4z73yqqlvcffzkihwieq4e
       eslint-plugin-jsx-a11y: 6.6.1_eslint@8.30.0
-      eslint-plugin-react: 7.31.11_eslint@8.30.0
+      eslint-plugin-react: 7.32.0_eslint@8.30.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.30.0
       typescript: 4.9.4
     transitivePeerDependencies:
@@ -11220,35 +11220,7 @@ packages:
       eslint: 8.31.0
     dev: true
 
-  /eslint-plugin-react-redux/4.0.0_a535kcop35cziwdrsdekpy3yby:
-    resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
-    engines: {node: '>=12.0.0'}
-    requiresBuild: true
-    peerDependencies:
-      eslint: ^7 || ^8
-      eslint-plugin-react: ^7.28.0
-    dependencies:
-      eslint: 8.26.0
-      eslint-plugin-react: 7.31.11_eslint@8.26.0
-      eslint-rule-composer: 0.3.0
-    dev: true
-    optional: true
-
-  /eslint-plugin-react-redux/4.0.0_fakln6sbmeujocj2wf7wkwexkq:
-    resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
-    engines: {node: '>=12.0.0'}
-    requiresBuild: true
-    peerDependencies:
-      eslint: ^7 || ^8
-      eslint-plugin-react: ^7.28.0
-    dependencies:
-      eslint: 8.27.0
-      eslint-plugin-react: 7.31.11_eslint@8.27.0
-      eslint-rule-composer: 0.3.0
-    dev: true
-    optional: true
-
-  /eslint-plugin-react-redux/4.0.0_syk2r5typipp4epokovq3pnmau:
+  /eslint-plugin-react-redux/4.0.0_4e3zqimwffvnpogger6n2yem5m:
     resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
     engines: {node: '>=12.0.0'}
     requiresBuild: true
@@ -11257,12 +11229,12 @@ packages:
       eslint-plugin-react: ^7.28.0
     dependencies:
       eslint: 8.29.0
-      eslint-plugin-react: 7.31.11_eslint@8.29.0
+      eslint-plugin-react: 7.32.0_eslint@8.29.0
       eslint-rule-composer: 0.3.0
     dev: true
     optional: true
 
-  /eslint-plugin-react-redux/4.0.0_u7ucuxqgc7dywdp3zysmwex5im:
+  /eslint-plugin-react-redux/4.0.0_cyihhqyylnhilsgsmopefzo2p4:
     resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
     engines: {node: '>=12.0.0'}
     requiresBuild: true
@@ -11271,13 +11243,41 @@ packages:
       eslint-plugin-react: ^7.28.0
     dependencies:
       eslint: 8.31.0
-      eslint-plugin-react: 7.31.11_eslint@8.31.0
+      eslint-plugin-react: 7.32.0_eslint@8.31.0
       eslint-rule-composer: 0.3.0
     dev: true
     optional: true
 
-  /eslint-plugin-react/7.31.11_eslint@8.26.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react-redux/4.0.0_txo7qiaa4osn2ab2wjvvsnrmqq:
+    resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
+    engines: {node: '>=12.0.0'}
+    requiresBuild: true
+    peerDependencies:
+      eslint: ^7 || ^8
+      eslint-plugin-react: ^7.28.0
+    dependencies:
+      eslint: 8.26.0
+      eslint-plugin-react: 7.32.0_eslint@8.26.0
+      eslint-rule-composer: 0.3.0
+    dev: true
+    optional: true
+
+  /eslint-plugin-react-redux/4.0.0_zcw4nzgygnyxqkzvq32y5epzsi:
+    resolution: {integrity: sha512-oT43AoOgqsXjYKm7JiQCD1Mxp2tjO/ywv/WJn0cVNVirpd91xfvxWnYU93tqKSZwdryxdZ/S+ea2iIYeRdeaZg==}
+    engines: {node: '>=12.0.0'}
+    requiresBuild: true
+    peerDependencies:
+      eslint: ^7 || ^8
+      eslint-plugin-react: ^7.28.0
+    dependencies:
+      eslint: 8.27.0
+      eslint-plugin-react: 7.32.0_eslint@8.27.0
+      eslint-rule-composer: 0.3.0
+    dev: true
+    optional: true
+
+  /eslint-plugin-react/7.32.0_eslint@8.26.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
@@ -11300,8 +11300,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: true
 
-  /eslint-plugin-react/7.31.11_eslint@8.27.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react/7.32.0_eslint@8.27.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
@@ -11324,8 +11324,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: true
 
-  /eslint-plugin-react/7.31.11_eslint@8.28.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react/7.32.0_eslint@8.28.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
@@ -11348,8 +11348,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: true
 
-  /eslint-plugin-react/7.31.11_eslint@8.29.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react/7.32.0_eslint@8.29.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
@@ -11371,8 +11371,8 @@ packages:
       semver: 6.3.0
       string.prototype.matchall: 4.0.8
 
-  /eslint-plugin-react/7.31.11_eslint@8.30.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react/7.32.0_eslint@8.30.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
@@ -11395,8 +11395,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: true
 
-  /eslint-plugin-react/7.31.11_eslint@8.31.0:
-    resolution: {integrity: sha512-TTvq5JsT5v56wPa9OYHzsrOlHzKZKjV+aLgS+55NJP/cuzdiQPC7PfYoUjMoxlffKtvijpk7vA/jmuqRb9nohw==}
+  /eslint-plugin-react/7.32.0_eslint@8.31.0:
+    resolution: {integrity: sha512-vSBi1+SrPiLZCGvxpiZIa28fMEUaMjXtCplrvxcIxGzmFiYdsXQDwInEjuv5/i/2CTTxbkS87tE8lsQ0Qxinbw==}
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
