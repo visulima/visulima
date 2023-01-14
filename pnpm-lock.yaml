@@ -34,10 +34,10 @@ importers:
       '@anolilab/prettier-config': 3.1.0_prettier@2.8.1
       '@anolilab/textlint-config': 4.1.2_textlint@12.2.4
       '@manypkg/cli': 0.19.2
-      '@nrwl/cli': 15.5.0
+      '@nrwl/cli': 15.5.1
       '@nrwl/nx-cloud': 15.0.2
       '@nrwl/tao': 15.3.0
-      '@nrwl/workspace': 15.5.0_2gbcgqmzq2pxiocqw2qs7hdeqe
+      '@nrwl/workspace': 15.5.1_2gbcgqmzq2pxiocqw2qs7hdeqe
       '@octokit/rest': 19.0.5
       '@qiwi/multi-semantic-release': 6.5.1
       '@types/node': 18.11.12
@@ -45,7 +45,7 @@ importers:
       commitizen: 4.2.6
       core-js: 3.26.1
       depcheck: 1.4.3
-      nx: 15.5.0
+      nx: 15.5.1
       plop: 3.1.1
       prettier: 2.8.1
       prettier-plugin-prisma: 4.4.0_prettier@2.8.1
@@ -1154,7 +1154,7 @@ importers:
       next-themes: ^0.2.1
       nextra: ^2.0.1
       postcss: ^8.4.14
-      postcss-cli: ^9.0.0
+      postcss-cli: ^10.0.0
       postcss-focus-visible: ^7.1.0
       postcss-import: ^14.1.0
       prettier: ^2.7.1
@@ -1233,7 +1233,7 @@ importers:
       next: 13.0.6_biqbaboplfbrettd7655fr4n2y
       nextra: 2.0.1_6jx7hpii6hgsrmhxgqrmo3277u
       postcss: 8.4.19
-      postcss-cli: 9.1.0_postcss@8.4.19
+      postcss-cli: 10.1.0_postcss@8.4.19
       postcss-focus-visible: 7.1.0_postcss@8.4.19
       postcss-import: 14.1.0_postcss@8.4.19
       prettier: 2.8.1
@@ -3760,40 +3760,40 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/cli/15.5.0:
-    resolution: {integrity: sha512-bHO0kn3pTARDCSDkNtRtGge2a08yWTW/Kjg1vBXqUUv5+Bwu7XndHi/Mfy87ZCxW78hedtQYSnNc84p5d7kYAg==}
+  /@nrwl/cli/15.5.1:
+    resolution: {integrity: sha512-JIypwCrNI7XfouS/9DNNtKPKX5kK6FMPrr8xN7sKfiRPdEwxJXUzFbMQODqudH/mRmUv9EFplA6H/iEeEzd92A==}
     dependencies:
-      nx: 15.5.0
+      nx: 15.5.1
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/devkit/15.5.0_nx@15.5.0+typescript@4.9.4:
-    resolution: {integrity: sha512-qJcOG1FpLhL1HpNm7kSZZ9JxGRjuwgciz2l348RZHUyFSA3fM/OeoygHS3E+Nl7OZQgjzFM3w7FtqvLJ4y5a3g==}
+  /@nrwl/devkit/15.5.1_nx@15.5.1+typescript@4.9.4:
+    resolution: {integrity: sha512-SETS7nOr5ady18+rNBCz4bGW64uSYcGmVbMTrYtbl/IZHIAAaTxqd7MoOcOVWfIPWbf2SfhXb6xBiSfo6cbzOQ==}
     peerDependencies:
       nx: '>= 14 <= 16'
     dependencies:
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       ejs: 3.1.8
       ignore: 5.2.0
-      nx: 15.5.0
+      nx: 15.5.1
       semver: 7.3.4
       tslib: 2.4.0
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@nrwl/linter/15.5.0_nx@15.5.0+typescript@4.9.4:
-    resolution: {integrity: sha512-30X6zr/LqGkVWeuvao9/c4JFWt+h1bb8PfksVynclLRT/Va9h9ukN02B8zl6DlqBczugW6L8TPnDJX9XEKpTNg==}
+  /@nrwl/linter/15.5.1_nx@15.5.1+typescript@4.9.4:
+    resolution: {integrity: sha512-r+AHmPVBVtPOjyPL3YDJUQ1xlUuORC6HS3gJb7gh9zM2qFGRMqDemycUCNjSncDwOAs/SZJmAKBhHeUTRDQXEw==}
     peerDependencies:
       eslint: ^8.0.0
     peerDependenciesMeta:
       eslint:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.5.0_nx@15.5.0+typescript@4.9.4
+      '@nrwl/devkit': 15.5.1_nx@15.5.1+typescript@4.9.4
       '@phenomnomnominal/tsquery': 4.1.1_typescript@4.9.4
       tmp: 0.2.1
       tslib: 2.4.0
@@ -3829,27 +3829,27 @@ packages:
       - debug
     dev: false
 
-  /@nrwl/tao/15.5.0:
-    resolution: {integrity: sha512-50blIKmbjkd8JvUNkAe9nPYX1bTrPS1n5vUh5rLJAvShGSKfulORPmght5I6M8JhBtRgYOsqyqsB0s0LZll85A==}
+  /@nrwl/tao/15.5.1:
+    resolution: {integrity: sha512-MUaqIsbEXLF8l4qpk/5Q7o+1mzvyCTQOm0usVh96RGowU7SjOvoHErCA2aIQvRK4MKLK9AH8U0AlbpLVLI+5cQ==}
     hasBin: true
     dependencies:
-      nx: 15.5.0
+      nx: 15.5.1
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
     dev: false
 
-  /@nrwl/workspace/15.5.0_2gbcgqmzq2pxiocqw2qs7hdeqe:
-    resolution: {integrity: sha512-HGCwr1kFD1dSxJJ1fktN6AOEsGEiLuFntTrfyZ8b7h+u+biXb5qgDwJxT1m1CzCMCn7Wfz91KY0axGJoZU9Ajw==}
+  /@nrwl/workspace/15.5.1_2gbcgqmzq2pxiocqw2qs7hdeqe:
+    resolution: {integrity: sha512-UmivhlIzQa3zz+N+sKcwBte7T9caNbpCWRmoC0WDXWCVYE0Som6yo+EeX5oGABZsGxtfJUoRBULm89DNsvYdLQ==}
     peerDependencies:
       prettier: ^2.6.2
     peerDependenciesMeta:
       prettier:
         optional: true
     dependencies:
-      '@nrwl/devkit': 15.5.0_nx@15.5.0+typescript@4.9.4
-      '@nrwl/linter': 15.5.0_nx@15.5.0+typescript@4.9.4
+      '@nrwl/devkit': 15.5.1_nx@15.5.1+typescript@4.9.4
+      '@nrwl/linter': 15.5.1_nx@15.5.1+typescript@4.9.4
       '@parcel/watcher': 2.0.4
       chalk: 4.1.0
       chokidar: 3.5.3
@@ -3865,7 +3865,7 @@ packages:
       jsonc-parser: 3.2.0
       minimatch: 3.0.5
       npm-run-path: 4.0.1
-      nx: 15.5.0
+      nx: 15.5.1
       open: 8.4.0
       prettier: 2.8.1
       rxjs: 6.6.7
@@ -7211,11 +7211,6 @@ packages:
   /array-union/2.1.0:
     resolution: {integrity: sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==}
     engines: {node: '>=8'}
-
-  /array-union/3.0.1:
-    resolution: {integrity: sha512-1OvF9IbWwaeiM9VhzYXVQacMibxpXOMYVNIvMtKRyX9SImBXpKcFr8XvFDeEslCyuH/t6KRt7HEO94AlP8Iatw==}
-    engines: {node: '>=12'}
-    dev: true
 
   /array.prototype.flat/1.3.0:
     resolution: {integrity: sha512-12IUEkHsAhA4DY5s0FPgNXIdc8VRSqD9Zp78a5au9abH/SOBrsp082JOWFNTjkMozh8mqcdiKuaLGhPeYztxSw==}
@@ -13384,18 +13379,6 @@ packages:
       merge2: 1.4.1
       slash: 3.0.0
 
-  /globby/12.2.0:
-    resolution: {integrity: sha512-wiSuFQLZ+urS9x2gGPl1H5drc5twabmm4m2gTR27XDFyjUHJUNsS8o/2aKyIF6IoBaR630atdher0XJ5g6OMmA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      array-union: 3.0.1
-      dir-glob: 3.0.1
-      fast-glob: 3.2.12
-      ignore: 5.2.0
-      merge2: 1.4.1
-      slash: 4.0.0
-    dev: true
-
   /globby/13.1.1:
     resolution: {integrity: sha512-XMzoDZbGZ37tufiv7g0N4F/zp3zkwdFtVbV3EHsVl1KQr4RPLfNoT068/97RPshz2J5xYNEjLKKBKaGHifBd3Q==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -16875,8 +16858,8 @@ packages:
       - debug
     dev: false
 
-  /nx/15.5.0:
-    resolution: {integrity: sha512-N6gp339SS6YaDClY1Vpxad9OsdGyVmkXWEUpUbdm+YZw1GVCAD7MQd5jy9xU/byccTlv32eZ0/tTAfvTf+HQzA==}
+  /nx/15.5.1:
+    resolution: {integrity: sha512-7yvcT6Dc/raLtO7bNK0POmavrV3R1YxfSUVzWylaEgCG6U+rrcDPE+iJMt0TL/ea6szBwvZPi4SmQSE++QMTIA==}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -16888,8 +16871,8 @@ packages:
       '@swc/core':
         optional: true
     dependencies:
-      '@nrwl/cli': 15.5.0
-      '@nrwl/tao': 15.5.0
+      '@nrwl/cli': 15.5.1
+      '@nrwl/tao': 15.5.1
       '@parcel/watcher': 2.0.4
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.22
@@ -17745,30 +17728,6 @@ packages:
       pretty-hrtime: 1.0.3
       read-cache: 1.0.0
       slash: 5.0.0
-      yargs: 17.6.2
-    transitivePeerDependencies:
-      - ts-node
-    dev: true
-
-  /postcss-cli/9.1.0_postcss@8.4.19:
-    resolution: {integrity: sha512-zvDN2ADbWfza42sAnj+O2uUWyL0eRL1V+6giM2vi4SqTR3gTYy8XzcpfwccayF2szcUif0HMmXiEaDv9iEhcpw==}
-    engines: {node: '>=12'}
-    hasBin: true
-    peerDependencies:
-      postcss: ^8.0.0
-    dependencies:
-      chokidar: 3.5.3
-      dependency-graph: 0.11.0
-      fs-extra: 10.1.0
-      get-stdin: 9.0.0
-      globby: 12.2.0
-      picocolors: 1.0.0
-      postcss: 8.4.19
-      postcss-load-config: 3.1.4_postcss@8.4.19
-      postcss-reporter: 7.0.5_postcss@8.4.19
-      pretty-hrtime: 1.0.3
-      read-cache: 1.0.0
-      slash: 4.0.0
       yargs: 17.6.2
     transitivePeerDependencies:
       - ts-node
