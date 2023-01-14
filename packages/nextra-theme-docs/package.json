@@ -130,7 +130,7 @@
         "next": "^13.0.5",
         "nextra": "^2.0.1",
         "postcss": "^8.4.14",
-        "postcss-cli": "^9.0.0",
+        "postcss-cli": "^10.0.0",
         "postcss-focus-visible": "^7.1.0",
         "postcss-import": "^14.1.0",
         "prettier": "^2.7.1",
