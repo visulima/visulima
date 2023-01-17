@@ -65,8 +65,8 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "4.8.1",
-        "@prisma/internals": "4.8.1"
+        "@prisma/generator-helper": "4.9.0",
+        "@prisma/internals": "4.9.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^4.0.9",
