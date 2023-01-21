@@ -2,7 +2,7 @@ import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import mergeWith from "lodash.mergewith";
 
-import { OpenApiObject, PathsObject } from "../exported";
+import type { OpenApiObject, PathsObject } from "../exported.d";
 import customizer from "../util/customizer";
 
 // The security object has a bizare setup...

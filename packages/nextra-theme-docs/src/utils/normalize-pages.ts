@@ -15,7 +15,7 @@ const extendMeta = (
         meta = { title: meta };
     }
 
-    const theme = { ...fallback.theme, ...meta.theme };
+    const theme = { ...fallback["theme"], ...meta["theme"] };
 
     return { ...fallback, ...meta, theme };
 };

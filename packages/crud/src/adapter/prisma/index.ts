@@ -124,8 +124,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             parsed.include = parsePrismaRecursiveField(query.include, "include");
         }
 
-        if (query.originalQuery?.where) {
-            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery.where), this.manyRelations[resourceName] ?? []);
+        if (query.originalQuery?.["where"]) {
+            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery["where"]), this.manyRelations[resourceName] ?? []);
         }
 
         if (query.orderBy) {
@@ -140,8 +140,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             parsed.skip = query.skip;
         }
 
-        if (query.originalQuery?.cursor) {
-            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery.cursor));
+        if (query.originalQuery?.["cursor"]) {
+            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery["cursor"]));
         }
 
         if (query.distinct) {
@@ -171,7 +171,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
          * On prisma v2.12, findOne has been deprecated in favor of findUnique
          * We use findUnique in priority only if it's available
          */
-        const findFunction = delegate.findUnique || delegate.findOne;
+        const findFunction = delegate["findUnique"] || delegate["findOne"];
 
         // @ts-ignore
         return findFunction({

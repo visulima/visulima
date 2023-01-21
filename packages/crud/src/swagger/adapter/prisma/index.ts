@@ -33,7 +33,7 @@ const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, exa
                                     && typeof examples[example as keyof typeof examples]?.value !== undefined
                                 ) {
                                     // eslint-disable-next-line no-param-reassign
-                                    (contentSpec as OpenAPIV3.MediaTypeObject).example = (examples[example as keyof typeof examples] as typeof examples).value;
+                                    (contentSpec as OpenAPIV3.MediaTypeObject).example = (examples[example as keyof typeof examples] as typeof examples)["value"];
                                 }
                             }
                         });

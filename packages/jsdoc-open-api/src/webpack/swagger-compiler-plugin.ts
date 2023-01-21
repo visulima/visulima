@@ -6,7 +6,7 @@ import { exit } from "node:process";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Compiler } from "webpack";
 
-import type { BaseDefinition } from "../exported";
+import type { BaseDefinition } from "../exported.d";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";

@@ -12,18 +12,18 @@
     "dependencies": {
         "@visulima/connect": "workspace:*",
         "cookie": "^0.5.0",
-        "next": "13.0.3",
+        "next": "13.1.4",
         "react": "18.2.0",
         "react-dom": "18.2.0"
     },
     "devDependencies": {
         "@types/cookie": "^0.5.1",
-        "@types/node": "18.11.9",
-        "@types/react": "18.0.25",
-        "@types/react-dom": "18.0.9",
-        "eslint": "8.27.0",
-        "eslint-config-next": "13.0.3",
-        "rimraf": "^3.0.2",
-        "typescript": "4.9.3"
+        "@types/node": "18.11.18",
+        "@types/react": "18.0.27",
+        "@types/react-dom": "18.0.10",
+        "eslint": "8.32.0",
+        "eslint-config-next": "13.1.4",
+        "rimraf": "^4.1.1",
+        "typescript": "4.9.4"
     }
 }

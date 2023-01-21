@@ -7,7 +7,7 @@ const DISPLAY_NAME = "Node Environment Check";
  * variable is defined.
  */
 const nodeEnvironmentCheck = (expectedEnvironment?: string): Checker => async () => {
-    const environment = process.env.NODE_ENV;
+    const environment = process.env["NODE_ENV"];
 
     let errorMessage: string | undefined;
 

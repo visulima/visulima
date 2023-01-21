@@ -12,7 +12,7 @@ export const mergeDeep = (first?: object, second?: object) => mergeWith({}, firs
 /**
  * Checks if there is any properties of the input object which are an empty object
  * @param {object} object - the object to check
- * @returns {boolean}
+ * @returns boolean
  */
 export const hasEmptyProperty = (object: Record<string, any>): boolean => Object.keys(object)
     .map((key) => object[key])
@@ -21,7 +21,7 @@ export const hasEmptyProperty = (object: Record<string, any>): boolean => Object
 /**
  * @param {object} tag
  * @param {array} tags
- * @returns {boolean}
+ * @returns boolean
  */
 export const isTagPresentInTags = (tag: Spec, tags: Spec[]) => tags.some((targetTag) => tag.name === targetTag.name);
 

@@ -10,8 +10,8 @@ export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true
     const payload: HealthCheckApiPayload = {
         status: healthy ? "ok" : "error",
         message: healthy ? "Health check successful" : "Health check failed",
-        appName: process.env.APP_NAME ?? "unknown",
-        appVersion: process.env.APP_VERSION ?? "unknown",
+        appName: process.env["APP_NAME"] ?? "unknown",
+        appVersion: process.env["APP_VERSION"] ?? "unknown",
         timestamp: new Date().toISOString(),
         reports: report,
     };

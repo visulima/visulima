@@ -3,7 +3,7 @@ import { parse as parseComments } from "comment-parser";
 import mergeWith from "lodash.mergewith";
 import yaml, { YAMLError } from "yaml";
 
-import { OpenApiObject } from "../exported";
+import type { OpenApiObject } from "../exported.d";
 import customizer from "../util/customizer";
 import organizeSwaggerObject from "./organize-swagger-object";
 import { getSwaggerVersionFromSpec, hasEmptyProperty } from "./utils";

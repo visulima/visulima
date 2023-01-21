@@ -1,6 +1,6 @@
 import {
     Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry,
-} from "./types";
+} from "./types.d";
 
 class Healthcheck implements HealthcheckInterface {
     /**

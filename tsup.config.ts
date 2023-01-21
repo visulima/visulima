@@ -24,15 +24,23 @@ export default defineConfig((options) => {
     return {
         ...options,
         entry: sources,
+        treeshake: true,
         // react external https://github.com/vercel/turborepo/issues/360#issuecomment-1013885148
         external: [
             "index-browser.cjs",
             "index-browser.mjs",
-            "index.cjs",
+            "index-server.cjs",
+            "index-server.mjs",
             "react",
             "next",
             "next/dynamic",
             "next/head",
+            "next/link",
+            "next/router",
+            "nextra",
+            "nextra/icons",
+            "nextra/components",
+            "nextra/hooks",
             "zod",
             ...peerDependenciesKeys,
             ...Object.keys(packageJsonContent?.optionalDependencies || {}),
@@ -45,11 +53,16 @@ export default defineConfig((options) => {
         sourcemap: true,
         clean: true,
         splitting: true,
+        target: "ES2021",
         env: {
             NODE_ENV: process.env.NODE_ENV,
         },
+        declaration: true,
         rollup: {
             emitCJS: true,
+            esbuild: {
+                target: ["ES2021"],
+            }
         },
         esbuildOptions(options) {
             if (process.env.NODE_ENV !== "production" && peerDependenciesKeys.includes("react")) {

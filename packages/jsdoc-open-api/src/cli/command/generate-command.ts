@@ -5,7 +5,7 @@ import cliProgress from "cli-progress";
 import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-import type { BaseDefinition } from "../../exported";
+import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";

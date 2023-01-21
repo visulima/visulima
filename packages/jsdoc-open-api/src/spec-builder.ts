@@ -8,7 +8,7 @@ import {
     SecurityRequirementObject,
     ServerObject,
     TagObject,
-} from "./exported";
+} from "./exported.d";
 import objectMerge from "./util/object-merge";
 
 class SpecBuilder implements OpenApiObject {

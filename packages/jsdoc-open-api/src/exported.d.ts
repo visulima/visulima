@@ -1,16 +1,3 @@
-declare function openapi(options?: ParserOptions): OpenApiObject;
-
-export default openapi;
-
-export interface ParserOptions {
-    cwd: string;
-    extension?: string[];
-    include?: string[];
-    exclude?: string[];
-    excludeNodeModules?: boolean;
-    verbose?: boolean;
-}
-
 export interface BaseDefinition {
     openapi: string;
     info: InfoObject;

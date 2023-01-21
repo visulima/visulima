@@ -10,7 +10,7 @@ import {
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import { SearchResult } from "../types";
+import type { SearchResult } from "../types.d";
 import { renderComponent, renderString } from "../utils";
 import Anchor from "./anchor";
 import Input from "./input";
