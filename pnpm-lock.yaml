@@ -1155,7 +1155,7 @@ importers:
       nextra: ^2.0.1
       postcss: ^8.4.14
       postcss-cli: ^10.0.0
-      postcss-focus-visible: ^7.1.0
+      postcss-focus-visible: ^8.0.0
       postcss-import: ^14.1.0
       prettier: ^2.7.1
       react: ^18.2.0
@@ -1234,7 +1234,7 @@ importers:
       nextra: 2.0.1_6jx7hpii6hgsrmhxgqrmo3277u
       postcss: 8.4.19
       postcss-cli: 10.1.0_postcss@8.4.19
-      postcss-focus-visible: 7.1.0_postcss@8.4.19
+      postcss-focus-visible: 8.0.0_postcss@8.4.19
       postcss-import: 14.1.0_postcss@8.4.19
       prettier: 2.8.1
       react: 18.2.0
@@ -17861,11 +17861,11 @@ packages:
       - ts-node
     dev: true
 
-  /postcss-focus-visible/7.1.0_postcss@8.4.19:
-    resolution: {integrity: sha512-OGxO+eCXVkF94us4uOVLHDPaoJuV8HQhaqmVPo2DtECdjqzWNkmwhFRSRRDT5Sg04JQsAECzgIhpyX0JRTgwlQ==}
-    engines: {node: ^12 || ^14 || >=16}
+  /postcss-focus-visible/8.0.0_postcss@8.4.19:
+    resolution: {integrity: sha512-mLIYkOFGXJSJtFwj9VX5LYUfWbxuwBWQxOqcdKk2p4apCAvsxji0jFpZhOPEpwD9YFbcTi0RWb+9Zam5y7qw5g==}
+    engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
-      postcss: ^8.2
+      postcss: ^8.4
     dependencies:
       postcss: 8.4.19
       postcss-selector-parser: 6.0.10
