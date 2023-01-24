@@ -63,7 +63,7 @@
     "dependencies": {
         "@anolilab/prettier-config": "^3.1.0",
         "@anolilab/textlint-config": "^4.1.2",
-        "@manypkg/cli": "^0.19.2",
+        "@manypkg/cli": "^0.20.0",
         "@nrwl/cli": "latest",
         "@nrwl/nx-cloud": "latest",
         "@nrwl/tao": "^15.3.0",
