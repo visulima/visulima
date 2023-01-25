@@ -1,9 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import type { PrismaClient } from "@prisma/client";
 import type { OpenAPIV3 } from "openapi-types";
 
 import modelsToRouteNames from "../../../adapter/prisma/utils/models-to-route-names";
-import type { ModelsOptions } from "../../../types.d";
+import type { FakePrismaClient, ModelsOptions } from "../../../types.d";
 import PrismaJsonSchemaParser from "../../json-schema-parser";
 import type { SwaggerModelsConfig } from "../../types.d";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
@@ -40,13 +38,13 @@ const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, exa
     return swaggerPaths;
 };
 
-const modelsToOpenApi = async <M extends string = string>({
+const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePrismaClient>({
     prismaClient,
     models: ctorModels,
     swagger = { models: {}, allowedMediaTypes: { "application/json": true } },
     crud = { models: {} },
     defaultExposeStrategy = "all",
-}: ModelsToOpenApiParameters<M>): Promise<{
+}: ModelsToOpenApiParameters<M, PrismaClient>): Promise<{
     schemas: {
         [key: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject;
     };
@@ -60,12 +58,12 @@ const modelsToOpenApi = async <M extends string = string>({
     let prismaDmmfModels: any;
 
     // eslint-disable-next-line no-underscore-dangle
-    if (prismaClient._dmmf) {
+    if (prismaClient._dmmf !== undefined) {
         // eslint-disable-next-line no-underscore-dangle
         dmmf = prismaClient._dmmf;
         prismaDmmfModels = dmmf?.mappingsMap;
         // eslint-disable-next-line no-underscore-dangle
-    } else if (prismaClient._getDmmf) {
+    } else if (prismaClient._getDmmf !== undefined) {
         // eslint-disable-next-line no-underscore-dangle
         dmmf = await prismaClient._getDmmf();
         prismaDmmfModels = dmmf.mappingsMap;
@@ -116,8 +114,8 @@ const modelsToOpenApi = async <M extends string = string>({
     };
 };
 
-export interface ModelsToOpenApiParameters<M extends string = string> {
-    prismaClient: PrismaClient;
+export interface ModelsToOpenApiParameters<M extends string, PrismaClient> {
+    prismaClient: FakePrismaClient & PrismaClient;
     defaultExposeStrategy?: "all" | "none";
     models?: M[];
     swagger?: Partial<{

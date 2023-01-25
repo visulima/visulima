@@ -120,3 +120,12 @@ export interface ParsedQueryParameters {
 }
 
 export type ExecuteHandler<Request, Response> = (request: Request, response: Response) => Promise<void>;
+
+export type FakePrismaClient = {
+    _dmmf?: any;
+    _getDmmf?: () => any;
+    $connect: () => void;
+    $disconnect: () => Promise<void>;
+
+    [key: string]: any
+};

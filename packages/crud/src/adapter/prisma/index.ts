@@ -1,14 +1,14 @@
-// This @typescript-eslint/consistent-type-imports is need to be disabled because of the dts in the tsup.config.ts file.
-// eslint-disable-next-line import/no-extraneous-dependencies,@typescript-eslint/consistent-type-imports
-import {
+// eslint-disable-next-line import/no-extraneous-dependencies
+import type {
     // @ts-expect-error
     PrismaAction,
-    PrismaClient,
 } from "@prisma/client";
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, PaginationData, ParsedQueryParameters } from "../../types.d";
+import type {
+    Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters,
+} from "../../types.d";
 import type { PrismaParsedQueryParameters } from "./types.d";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
@@ -16,7 +16,7 @@ import parsePrismaOrderBy from "./utils/parse-order-by";
 import parsePrismaRecursiveField from "./utils/parse-recursive";
 import parsePrismaWhere from "./utils/parse-where";
 
-interface AdapterCtorArguments<M extends string = string> {
+interface AdapterCtorArguments<M extends string, PrismaClient> {
     primaryKey?: string;
     manyRelations?: {
         [key in M]?: string[];
@@ -25,14 +25,16 @@ interface AdapterCtorArguments<M extends string = string> {
     models?: M[];
 }
 
-export default class PrismaAdapter<T, M extends string> implements Adapter<T, PrismaParsedQueryParameters, M> {
+type Delegate<T> = Record<PrismaAction, (...arguments_: any[]) => Promise<T>>;
+
+export default class PrismaAdapter<T, M extends string, PrismaClient> implements Adapter<T, PrismaParsedQueryParameters, M> {
     private readonly primaryKey: string;
 
     private readonly manyRelations: {
         [key in M]?: string[];
     };
 
-    private readonly prismaClient: PrismaClient;
+    private readonly prismaClient: FakePrismaClient & PrismaClient;
 
     public models?: M[];
 
@@ -42,7 +44,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
     public constructor({
         primaryKey = "id", prismaClient, manyRelations = {}, models,
-    }: AdapterCtorArguments<M>) {
+    }: AdapterCtorArguments<M, FakePrismaClient & PrismaClient>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
@@ -51,7 +53,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
     private getPrismaClientModels = async () => {
         // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._dmmf) {
+        if (this.prismaClient._dmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
             this.dmmf = this.prismaClient._dmmf;
 
@@ -59,7 +61,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         }
 
         // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._getDmmf) {
+        if (this.prismaClient._getDmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
             this.dmmf = await this.prismaClient._getDmmf();
 
@@ -235,7 +237,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         return modelsToRouteNames(await this.getPrismaClientModels(), this.getModels());
     }
 
-    private getPrismaDelegate(resourceName: M): Record<PrismaAction, (...arguments_: any[]) => Promise<T>> {
-        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`];
+    private getPrismaDelegate(resourceName: M): Delegate<T> {
+        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`] as Delegate<T>;
     }
 }
