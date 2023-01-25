@@ -7,13 +7,15 @@ const DISPLAY_NAME = "Node Environment Check";
  * variable is defined.
  */
 const nodeEnvironmentCheck = (expectedEnvironment?: string): Checker => async () => {
-    const environment = process.env["NODE_ENV"];
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const environment: string | undefined = process.env["NODE_ENV"];
 
     let errorMessage: string | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (environment !== undefined && expectedEnvironment !== undefined && environment !== expectedEnvironment) {
         errorMessage = `NODE_ENV environment variable is set to "${environment}" instead of "${expectedEnvironment}".`;
-    } else if (environment === undefined) {
+    } else if (!environment) {
         errorMessage = ["Missing NODE_ENV environment variable.", "It can make some parts of the application misbehave"].join(" ");
     }
 

@@ -5,14 +5,14 @@ export type PaginationMeta = {
     page: number;
     lastPage: number;
     firstPage: number;
-    firstPageUrl: null | string;
-    lastPageUrl: null | string;
-    nextPageUrl: null | string;
-    previousPageUrl: null | string;
+    firstPageUrl: string | null;
+    lastPageUrl: string | null;
+    nextPageUrl: string | null;
+    previousPageUrl: string | null;
 };
 
 export interface Paginator<Result> extends Array<Result> {
-    all(): Result[];
+    all: () => Result[];
 
     readonly firstPage: number;
     readonly perPage: number;
@@ -24,12 +24,12 @@ export interface Paginator<Result> extends Array<Result> {
     readonly total: number;
     readonly hasTotal: boolean;
 
-    baseUrl(url: string): this;
-    queryString(values: { [key: string]: any }): this;
-    getUrl(page: number): string;
-    getMeta(): PaginationMeta;
-    getNextPageUrl(): string | null;
-    getPreviousPageUrl(): string | null;
-    getUrlsForRange(start: number, end: number): { url: string; page: number; isActive: boolean }[];
-    toJSON(): PaginationResult<Result>;
+    baseUrl: (url: string) => this;
+    queryString: (values: { [key: string]: any }) => this;
+    getUrl: (page: number) => string;
+    getMeta: () => PaginationMeta;
+    getNextPageUrl: () => string | null;
+    getPreviousPageUrl: () => string | null;
+    getUrlsForRange: (start: number, end: number) => { url: string; page: number; isActive: boolean }[];
+    toJSON: () => PaginationResult<Result>;
 }

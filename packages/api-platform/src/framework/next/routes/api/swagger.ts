@@ -1,3 +1,5 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import type { SwaggerHandlerOptions } from "../../../../swagger/api/swagger-handler";
 import swaggerHandler from "../../../../swagger/api/swagger-handler";
 
@@ -6,6 +8,6 @@ import swaggerHandler from "../../../../swagger/api/swagger-handler";
  */
 const swaggerApiRoute = (
     options: Partial<SwaggerHandlerOptions> = {},
-) => swaggerHandler(options);
+): (request: IncomingMessage, response: ServerResponse) => Promise<void> => swaggerHandler(options);
 
 export default swaggerApiRoute;

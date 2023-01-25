@@ -1,5 +1,5 @@
-import type { NextHandler } from "@visulima/connect";
-import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
+import type { NextHandler, ValueOrPromise } from "@visulima/connect";
+import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "node:http";
 
 const exceptions = {
     alpn: "ALPN",
@@ -62,29 +62,30 @@ const defaults = {
  * That's why NodeJS makes them lower case by default.
  * While sensible, sometimes, for example for compatibility reasons, you might need them in their more common form.
  */
-const httpHeaderNormalizerMiddleware = (options_?: { canonical?: boolean; normalizeHeaderKey?: (key: string, canonical: boolean) => string }) => {
+const httpHeaderNormalizerMiddleware = (options_?: {
+    canonical?: boolean;
+    normalizeHeaderKey?: (key: string, canonical: boolean) => string;
+}): ((request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void>) => {
     const options = { ...defaults, ...options_ };
 
     return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler) => {
-        if (request.headers) {
-            const rawHeaders: IncomingHttpHeaders = {};
-            const headers: IncomingHttpHeaders = {};
+        const rawHeaders: IncomingHttpHeaders = {};
+        const headers: IncomingHttpHeaders = {};
 
-            Object.keys(request.headers).forEach((key) => {
-                rawHeaders[key] = request.headers[key];
+        Object.keys(request.headers).forEach((key) => {
+            rawHeaders[key] = request.headers[key];
 
-                const normalizedKey = options.normalizeHeaderKey(key, options.canonical);
+            const normalizedKey = options.normalizeHeaderKey(key, options.canonical);
 
-                if (normalizedKey !== undefined) {
-                    headers[normalizedKey] = request.headers[key];
-                }
-            });
+            if (normalizedKey) {
+                headers[normalizedKey] = request.headers[key];
+            }
+        });
 
-            request.headers = headers;
-            // @TODO at type `request.rawHeaders` to global scope
-            // @ts-ignore
-            request.rawHeaders = rawHeaders;
-        }
+        request.headers = headers;
+        // @TODO at type `request.rawHeaders` to global scope
+        // @ts-expect-error
+        request.rawHeaders = rawHeaders;
 
         return next();
     };

@@ -10,7 +10,7 @@ export interface BaseDefinition {
 }
 
 export interface OpenApiObject extends BaseDefinition {
-    paths: PathsObject;
+    paths?: PathsObject;
 }
 
 export interface InfoObject {
@@ -46,11 +46,11 @@ export interface ServerVariable {
 }
 
 export interface ComponentsObject {
-    schemas?: Map<SchemaObject | ReferenceObject>;
-    responses?: Map<ResponseObject | ReferenceObject>;
+    schemas?: Map<ReferenceObject | SchemaObject>;
+    responses?: Map<ReferenceObject | ResponseObject>;
     parameters?: Map<ParameterObject | ReferenceObject>;
     examples?: Map<ExampleObject | ReferenceObject>;
-    requestBodies?: Map<RequestBodyObject | ReferenceObject>;
+    requestBodies?: Map<ReferenceObject | RequestBodyObject>;
     headers?: Map<HeaderObject | ReferenceObject>;
     securitySchemes?: Map<
     ApiKeySecuritySchemeObject | HttpSecuritySchemeObject | Oauth2SecuritySchemeObject | OpenIdConnectSecuritySchemeObject | ReferenceObject
@@ -87,7 +87,7 @@ export interface OperationObject {
     externalDocs?: ExternalDocumentationObject;
     operationId?: string;
     parameters?: (ParameterObject | ReferenceObject)[];
-    requestBody?: RequestBodyObject | ReferenceObject;
+    requestBody?: ReferenceObject | RequestBodyObject;
     callbacks?: Map<CallbackObject | ReferenceObject>;
     deprecated?: boolean;
     security?: SecurityRequirementObject[];
@@ -110,7 +110,7 @@ export interface ParameterObject {
     style?: string;
     explode?: string;
     allowReserved?: boolean;
-    schema?: SchemaObject | ReferenceObject;
+    schema?: ReferenceObject | SchemaObject;
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     //
@@ -126,7 +126,7 @@ export interface RequestBodyObject {
 }
 
 export interface MediaTypeObject {
-    schema?: SchemaObject | ReferenceObject;
+    schema?: ReferenceObject | SchemaObject;
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     encoding?: Map<EncodingObject>;
@@ -141,7 +141,7 @@ export interface EncodingObject {
 }
 
 export interface ResponsesObject {
-    [code: string]: ResponseObject | ReferenceObject;
+    [code: string]: ReferenceObject | ResponseObject;
 }
 
 export interface ResponseObject {
@@ -180,7 +180,7 @@ export interface HeaderObject {
     style?: string;
     explode?: string;
     allowReserved?: boolean;
-    schema?: SchemaObject | ReferenceObject;
+    schema?: ReferenceObject | SchemaObject;
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     //

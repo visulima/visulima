@@ -45,6 +45,24 @@ module.exports = {
                 // eslint-disable-next-line no-undef
                 tsconfigRootDir: __dirname,
             },
+
+            rules: {
+                "@typescript-eslint/no-unnecessary-condition": "off",
+                "@typescript-eslint/no-non-null-assertion": "off",
+                " @typescript-eslint/prefer-nullish-coalescing": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/prefer-nullish-coalescing": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/explicit-module-boundary-types": "off",
+                "@typescript-eslint/no-dynamic-delete": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-misused-promises": "off",
+
+                "tailwindcss/no-custom-classname": "off",
+                "tailwindcss/no-contradicting-classname": "off",
+            }
         },
     ],
 };

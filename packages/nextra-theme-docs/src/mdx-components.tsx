@@ -135,7 +135,7 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
 };
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const A: FC<{ href?: string } & Omit<ComponentProps<"a">, "ref">> = ({ href = "", ...properties }) => (
+const A: FC<Omit<ComponentProps<"a">, "ref"> & { href?: string }> = ({ href = "", ...properties }) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />
 );

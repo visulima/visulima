@@ -24,7 +24,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
         const apiRouteFileContent = readFileSync(apiRouteFile, "utf8");
 
         apiRouteFileContent.split(/\r?\n/).forEach((line) => {
-            const match = line.match(/[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/);
+            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/.exec(line);
 
             if (match) {
                 let [, method] = match;

@@ -1,9 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import Hapi, { Server } from "@hapi/hapi";
+import type { Server } from "@hapi/hapi";
+import Hapi from "@hapi/hapi";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Router from "@koa/router";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import express, { Express } from "express";
+import type { Express } from "express";
+import express from "express";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { FastifyInstance } from "fastify";
 // eslint-disable-next-line import/no-extraneous-dependencies

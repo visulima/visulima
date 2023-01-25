@@ -27,7 +27,7 @@ export const onError = <Request extends IncomingMessage, Response extends Server
     }
 
     // eslint-disable-next-line no-param-reassign
-    (error as { expose: boolean } & Error).expose = showTrace;
+    (error as Error & { expose: boolean }).expose = showTrace;
 
     errorHandler(error, request, response);
 };

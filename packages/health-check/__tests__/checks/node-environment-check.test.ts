@@ -56,6 +56,7 @@ describe("node-environment-check", () => {
     it("should return unhealthy when the node env is not set", async () => {
         const oldEnvironment = process.env["NODE_ENV"];
 
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete process.env["NODE_ENV"];
 
         const result = await nodeEnvironmentCheck()();

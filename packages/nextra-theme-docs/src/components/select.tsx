@@ -68,7 +68,7 @@ const Select: FC<MenuProperties> = ({
                     {selected.name}
                     <Portal>
                         <Transition
-                            // @ts-ignore
+                            // @ts-expect-error
                             ref={container}
                             show={open}
                             as={Listbox.Options}

@@ -15,7 +15,7 @@ import extendSwaggerSpec from "../extend-swagger-spec";
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
-const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
+const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const {
         allowedMediaTypes = {
             "application/json": true,
@@ -26,7 +26,7 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
     } = options;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response) => {
-        const swaggerPath = path.join(process.cwd(), swaggerFilePath || "swagger/swagger.json");
+        const swaggerPath = path.join(process.cwd(), swaggerFilePath ?? "swagger/swagger.json");
 
         if (!existsSync(swaggerPath)) {
             throw new Error(`Swagger file not found at "${swaggerPath}".`);
@@ -43,7 +43,7 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
 
                 crudSwagger = {
                     components: { schemas: modelsOpenApi.schemas, examples: modelsOpenApi.examples },
-                    tags: modelsOpenApi.tags as OpenAPIV3.TagObject[],
+                    tags: modelsOpenApi.tags,
                     paths: modelsOpenApi.paths,
                 };
 
@@ -66,7 +66,7 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}) => {
             });
         }
 
-        let data: string | Buffer | Uint8Array;
+        let data: Buffer | Uint8Array | string;
 
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);

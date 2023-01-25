@@ -57,7 +57,7 @@
         "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind && pnpm minify:css",
         "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind && pnpm minify:css",
         "build:tailwind": "NODE_ENV=production pnpm postcss css/styles.css -o style.css --verbose",
-        "clean": "rimraf node_modules dist",
+        "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm predev && pnpm run build --watch",
         "lint:eslint": "cross-env NO_LOGS=true eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
@@ -86,7 +86,7 @@
         "scroll-into-view-if-needed": "^3.0.4"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^5.0.0",
+        "@anolilab/eslint-config": "^5.0.2",
         "@anolilab/semantic-release-preset": "^2.2.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",

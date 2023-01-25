@@ -2,10 +2,11 @@ import { SkipNavLink } from "@visulima/nextra-theme-docs";
 import Document, {
  Head, Html, Main, NextScript,
 } from "next/document";
+import type { ReactElement } from "react";
 import React from "react";
 
 class MyDocument extends Document {
-    render() {
+    public render(): ReactElement {
         return (
             <Html lang="en">
                 <Head />

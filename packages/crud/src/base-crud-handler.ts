@@ -22,7 +22,7 @@ import validateAdapterMethods from "./utils/validate-adapter-methods";
 
 type ResponseConfig = { status: number; data: any };
 
-async function baseHandler<R extends Request, Context extends unknown, T, Q extends ParsedQueryParameters = any, M extends string = string>(
+async function baseHandler<R extends Request, Context, T, Q extends ParsedQueryParameters = any, M extends string = string>(
     responseExecutor: (responseOrContext: Context, responseConfig: ResponseConfig) => Promise<Response>,
     finalExecutor: (responseOrContext: Context) => Promise<void>,
     adapter: Adapter<T, Q>,
@@ -65,11 +65,11 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
     const modelRoutes: { [key in M]?: string } = {};
 
     adapter.getModels().forEach((modelName) => {
-        modelRoutes[modelName as M] = config?.models?.[modelName as M]?.name || routeNames?.[modelName] || modelName;
+        modelRoutes[modelName as M] = config.models?.[modelName as M]?.name ?? routeNames?.[modelName] ?? modelName;
     });
 
     return async (request, responseOrContext) => {
-        const { resourceName, modelName } = getResourceNameFromUrl(request.url as string, modelRoutes);
+        const { resourceName, modelName } = getResourceNameFromUrl(request.url, modelRoutes as { [key in M]: string });
 
         if (!resourceName) {
             if (process.env.NODE_ENV === "development") {
@@ -83,7 +83,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
             throw createHttpError(404, `Resource not found: ${request.url}`);
         }
 
-        const { routeType, resourceId } = getRouteType(request.method as string, request.url as string, resourceName);
+        const { routeType, resourceId } = getRouteType(request.method, request.url, resourceName);
 
         if (routeType === null) {
             throw createHttpError(404, `Route not found: ${request.url}`);
@@ -91,7 +91,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
 
         const modelConfig = options?.models?.[modelName as M];
 
-        const accessibleRoutes = getAccessibleRoutes(modelConfig?.only, modelConfig?.exclude, options?.exposeStrategy || "all");
+        const accessibleRoutes = getAccessibleRoutes(modelConfig?.only, modelConfig?.exclude, options?.exposeStrategy ?? "all");
 
         if (!accessibleRoutes.includes(routeType)) {
             throw createHttpError(404, `Route not found: ${request.url}`);
@@ -106,7 +106,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
             const parameters: HandlerParameters<T, Q> = {
                 adapter,
                 query: adapter.parseQuery(modelName as M, parsedQuery),
-                resourceName: modelName as string,
+                resourceName: modelName,
             };
 
             try {
@@ -114,14 +114,14 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
 
                 switch (routeType) {
                     case RouteType.READ_ONE: {
-                        responseConfig = await (config?.handlers?.get || readHandler)<T, Q>({
+                        responseConfig = await (config.handlers?.get ?? readHandler)<T, Q>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                         });
                         break;
                     }
                     case RouteType.READ_ALL: {
-                        responseConfig = await (config?.handlers?.list || listHandler)<T, Q>({
+                        responseConfig = await (config.handlers?.list ?? listHandler)<T, Q>({
                             ...parameters,
                             query: {
                                 ...parameters.query,
@@ -133,14 +133,14 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
                         break;
                     }
                     case RouteType.CREATE: {
-                        responseConfig = await (config?.handlers?.create || createHandler)<T, Q, R>({
+                        responseConfig = await (config.handlers?.create ?? createHandler)<T, Q, R>({
                             ...parameters,
                             request: request as R & { body: Record<string, any> },
                         });
                         break;
                     }
                     case RouteType.UPDATE: {
-                        responseConfig = await (config?.handlers?.update || updateHandler)<T, Q, R>({
+                        responseConfig = await (config.handlers?.update ?? updateHandler)<T, Q, R>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                             request: request as R & { body: Partial<T> },
@@ -148,7 +148,7 @@ async function baseHandler<R extends { url: string; method: string }, RResponse,
                         break;
                     }
                     case RouteType.DELETE: {
-                        responseConfig = await (config?.handlers?.delete || deleteHandler)<T, Q>({
+                        responseConfig = await (config.handlers?.delete ?? deleteHandler)<T, Q>({
                             ...parameters,
                             resourceId: resourceIdFormatted,
                         });

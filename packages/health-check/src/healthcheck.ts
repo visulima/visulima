@@ -1,4 +1,4 @@
-import {
+import type {
     Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry,
 } from "./types.d";
 
@@ -30,7 +30,7 @@ class Healthcheck implements HealthcheckInterface {
         } catch (error: any) {
             report = {
                 displayName: service,
-                health: { healthy: false, message: error.message, timestamp: new Date().toISOString() },
+                health: { healthy: false, message: (error as Error).message, timestamp: new Date().toISOString() },
                 meta: { fatal: true },
             };
         }

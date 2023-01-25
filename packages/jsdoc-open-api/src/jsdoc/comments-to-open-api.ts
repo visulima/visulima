@@ -31,15 +31,10 @@ const formatMap: { [key: string]: string } = {
     binary: "string",
 };
 
-function parseDescription(tag: any) {
+function parseDescription(tag: Spec): { name: string; description: string | undefined; required: boolean; schema: object | undefined; rawType: string } {
     const rawType = tag.type;
-    const isArray = rawType && rawType.endsWith("[]");
-
-    let parsedType;
-
-    if (rawType) {
-        parsedType = rawType.replace(/\[]$/, "");
-    }
+    const isArray = rawType.endsWith("[]");
+    const parsedType = rawType.replace(/\[]$/, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
     const isFormat = Object.keys(formatMap).includes(parsedType);
@@ -81,7 +76,7 @@ function parseDescription(tag: any) {
         rootType = { $ref: `#/components/schemas/${parsedType}` };
     }
 
-    let schema: undefined | object = isArray
+    let schema: object | undefined = isArray
         ? {
             type: "array",
             items: {
@@ -92,12 +87,12 @@ function parseDescription(tag: any) {
             ...rootType,
         };
 
-    if (parsedType === undefined) {
+    if (parsedType === "") {
         schema = undefined;
     }
 
     // remove the optional dash from the description.
-    let description = tag.description.trim().replace(/^- /, "");
+    let description: string | undefined = tag.description.trim().replace(/^- /, "");
 
     if (description === "") {
         description = undefined;
@@ -112,7 +107,7 @@ function parseDescription(tag: any) {
     };
 }
 
-// @ts-ignore
+// @ts-expect-error
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function tagsToObjects(tags: Spec[], verbose?: boolean) {
     return tags.map((tag) => {
@@ -196,12 +191,13 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "bodyExample": {
                 const [contentType, example] = parsedResponse.name.split(".");
+
                 return {
                     requestBody: {
                         content: {
-                            [contentType]: {
+                            [contentType as string]: {
                                 examples: {
-                                    [example]: {
+                                    [example as string]: {
                                         $ref: `#/components/examples/${parsedResponse.rawType}`,
                                     },
                                 },
@@ -244,9 +240,9 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
                 return {
                     responses: {
-                        [status]: {
+                        [status as string]: {
                             content: {
-                                [contentType]: {
+                                [contentType as string]: {
                                     schema: parsedResponse.schema,
                                 },
                             },
@@ -257,11 +253,12 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "responseHeaderComponent": {
                 const [status, header] = parsedResponse.name.split(".");
+
                 return {
                     responses: {
-                        [status]: {
+                        [status as string]: {
                             headers: {
-                                [header]: {
+                                [header as string]: {
                                     $ref: `#/components/headers/${parsedResponse.rawType}`,
                                 },
                             },
@@ -272,11 +269,12 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "responseHeader": {
                 const [status, header] = parsedResponse.name.split(".");
+
                 return {
                     responses: {
-                        [status]: {
+                        [status as string]: {
                             headers: {
-                                [header]: {
+                                [header as string]: {
                                     description: parsedResponse.description,
                                     schema: parsedResponse.schema,
                                 },
@@ -288,13 +286,14 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "responseExample": {
                 const [status, contentType, example] = parsedResponse.name.split(".");
+
                 return {
                     responses: {
-                        [status]: {
+                        [status as string]: {
                             content: {
-                                [contentType]: {
+                                [contentType as string]: {
                                     examples: {
-                                        [example]: {
+                                        [example as string]: {
                                             $ref: `#/components/examples/${parsedResponse.rawType}`,
                                         },
                                     },
@@ -307,11 +306,12 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "responseLink": {
                 const [status, link] = parsedResponse.name.split(".");
+
                 return {
                     responses: {
-                        [status]: {
+                        [status as string]: {
                             links: {
-                                [link]: {
+                                [link as string]: {
                                     $ref: `#/components/links/${parsedResponse.rawType}`,
                                 },
                             },
@@ -346,12 +346,15 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
 
             case "security": {
                 const [security, scopeItem] = parsedResponse.name.split(".");
+
                 let scope: string[] = [];
+
                 if (scopeItem) {
                     scope = [scopeItem];
                 }
+
                 return {
-                    security: { [security]: scope },
+                    security: { [security as string]: scope },
                 };
             }
 

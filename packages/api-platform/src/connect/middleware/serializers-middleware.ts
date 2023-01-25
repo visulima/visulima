@@ -1,4 +1,4 @@
-import type { NextHandler } from "@visulima/connect";
+import type { NextHandler, ValueOrPromise } from "@visulima/connect";
 import debug from "debug";
 import type { NextApiResponse } from "next";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -10,7 +10,7 @@ import { serialize } from "../../serializers";
 const log = debug("api-platform:connect:serializers-middleware");
 
 // eslint-disable-next-line max-len
-const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response | NextApiResponse, next: NextHandler) => {
+const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler): Promise<ValueOrPromise<void>> => {
     if (typeof (response as NextApiResponse)?.send === "function") {
         const oldSend = (response as NextApiResponse).send;
 
@@ -18,8 +18,9 @@ const serializersMiddleware = (serializers: Serializers = [], defaultContentType
             (response as NextApiResponse).send = oldSend;
 
             // eslint-disable-next-line no-param-reassign
-            data = serialize<Request, Response | NextApiResponse>(serializers, request, response, data, { defaultContentType });
+            data = serialize<Request, NextApiResponse | Response>(serializers, request, response, data, { defaultContentType });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return (response as NextApiResponse).send(data);
         };
     } else if (typeof (response as NextApiResponse)?.json === "function") {
@@ -27,18 +28,20 @@ const serializersMiddleware = (serializers: Serializers = [], defaultContentType
     } else {
         const oldEnd = response.end;
 
-        // @ts-ignore
+        // @ts-expect-error
         response.end = (data, ...arguments_) => {
             response.end = oldEnd;
 
             // eslint-disable-next-line no-param-reassign
-            data = serialize<Request, Response | NextApiResponse>(serializers, request, response, data, { defaultContentType });
+            data = serialize<Request, NextApiResponse | Response>(serializers, request, response, data, { defaultContentType });
 
-            // @ts-ignore
+            // @ts-expect-error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'BufferEncoding'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return response.end(data, ...arguments_);
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return next();
 };
 

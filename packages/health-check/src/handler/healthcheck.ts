@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HealthCheck, HealthReport } from "../types";
 
 // eslint-disable-next-line max-len
-export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true) => async <Request extends IncomingMessage, Response extends ServerResponse>(_: Request, response: Response) => {
+export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true) => async <Request extends IncomingMessage, Response extends ServerResponse>(_: Request, response: Response): Promise<void> => {
     const { healthy, report } = await healthCheck.getReport();
 
     const payload: HealthCheckApiPayload = {
@@ -26,7 +26,7 @@ export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true
 };
 
 export type HealthCheckApiPayload = {
-    status: "ok" | "error";
+    status: "error" | "ok";
     message: string;
     appName: string;
     appVersion: string;

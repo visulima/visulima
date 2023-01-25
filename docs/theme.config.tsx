@@ -1,4 +1,3 @@
-import { BookOpenIcon } from "@heroicons/react/24/outline";
 import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
 import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
@@ -31,7 +30,8 @@ const config: DocumentationThemeConfig = {
         content: () => {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             const { locale } = useRouter();
-            return FEEDBACK_LINK_WITH_TRANSLATIONS[locale] || FEEDBACK_LINK_WITH_TRANSLATIONS["en-US"];
+            // eslint-disable-next-line  @typescript-eslint/no-unsafe-return
+            return FEEDBACK_LINK_WITH_TRANSLATIONS[locale as string] || FEEDBACK_LINK_WITH_TRANSLATIONS["en-US"];
         },
     },
     logo: () => {
@@ -40,7 +40,7 @@ const config: DocumentationThemeConfig = {
         return (
             <>
                 {/* <Logo height={12} /> */}
-                <span className="mx-2 font-extrabold inline select-none" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale] || ""}`}>
+                <span className="mx-2 inline select-none font-extrabold" title={`Visulima: ${TITLE_WITH_TRANSLATIONS[locale as string] || ""}`}>
                     Visulima
                 </span>
             </>
@@ -123,16 +123,17 @@ const config: DocumentationThemeConfig = {
 
             // eslint-disable-next-line react/no-array-index-key
             return (
-                <div className="grid grid-cols-12 md:gap-x-8 gap-y-12 md:p-0 md:border-0">
+                <div className="grid grid-cols-12 gap-y-12 md:gap-x-8 md:border-0 md:p-0">
                     {menu.map((item, index) => (
                         // eslint-disable-next-line react/no-array-index-key
-                        <div key={`group-${index}-${item.title}`} className="text-ms col-span-6 md:col-span-3 lg:col-span-2">
-                            <p className="text-sm tracking-widest text-gray-400 uppercase">{item.title}</p>
+                        <div key={`group-${index}-${item.title}`} className="col-span-6 text-sm md:col-span-3 lg:col-span-2">
+                            {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
+                            <p className="text-sm uppercase tracking-widest text-gray-400">{item.title}</p>
                             <ul className="mt-3 space-y-2">
                                 {item.links.map((link) => (
                                     // eslint-disable-next-line react/no-array-index-key
                                     <li key={`li-${link.title}`}>
-                                        <Anchor href={link.href} title={link.title} className={linkClasses} newWindow={link.href[0] !== "/"}>
+                                        <Anchor href={link.href} title={link.title} className={linkClasses} newWindow={!link.href.startsWith("/")}>
                                             {link.title}{" "}
                                         </Anchor>
                                     </li>
@@ -152,7 +153,6 @@ const config: DocumentationThemeConfig = {
                         title: "Documentation",
                         subtitle: "Learn how to use Visulima",
                         href: "/docs/getting-started",
-                        icon: <BookOpenIcon className="h-6 w-6 lg:h-8 lg:w-8 mx-auto text-primary-700 text-2xl md:text-3xl" />,
                     },
                 ];
             }
@@ -185,9 +185,9 @@ const config: DocumentationThemeConfig = {
     i18n: [{ locale: "en-US", text: "English" }],
 
     comments: {
-        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
-        repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID,
-        categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID,
+        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO as string,
+        repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
+        categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
     },
 };
 

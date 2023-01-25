@@ -63,7 +63,7 @@ importers:
 
   docs:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@axe-core/react': ^4.5.2
       '@giscus/react': ^2.2.6
       '@heroicons/react': ^2.0.13
@@ -128,7 +128,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       yargs: 17.6.2
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@axe-core/react': 4.5.2
       '@next/eslint-plugin-next': 13.1.4
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
@@ -492,7 +492,7 @@ importers:
 
   packages/api-platform:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@hapi/hapi': ^21.2.0
       '@koa/router': ^12.0.0
@@ -613,7 +613,7 @@ importers:
       swagger-ui-react: 4.15.5_biqbaboplfbrettd7655fr4n2y
       webpack: 5.75.0
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@testing-library/react': 13.4.0_biqbaboplfbrettd7655fr4n2y
@@ -687,7 +687,7 @@ importers:
 
   packages/connect:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@types/http-errors': ^2.0.1
@@ -735,7 +735,7 @@ importers:
       http-errors: 2.0.0
       regexparam: 2.0.1
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@types/http-errors': 2.0.1
@@ -780,7 +780,7 @@ importers:
 
   packages/crud:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@prisma/client': ^4.9.0
       '@rushstack/eslint-plugin-security': ^0.5.0
@@ -839,7 +839,7 @@ importers:
       lodash.set: 4.3.2
       path-to-regexp: 6.2.1
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@prisma/client': 4.9.0
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
@@ -892,7 +892,7 @@ importers:
 
   packages/health-check:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@types/node': ^18.11.18
@@ -945,7 +945,7 @@ importers:
     optionalDependencies:
       next: 13.1.4_biqbaboplfbrettd7655fr4n2y
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@types/node': 18.11.18
@@ -990,7 +990,7 @@ importers:
 
   packages/jsdoc-open-api:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@apidevtools/swagger-parser': ^10.1.0
       '@rushstack/eslint-plugin-security': ^0.5.0
@@ -1050,7 +1050,7 @@ importers:
       commander: 10.0.0
       webpack: 5.75.0
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@types/cli-progress': 3.11.0
@@ -1100,7 +1100,7 @@ importers:
 
   packages/nextra-theme-docs:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@giscus/react': ^2.2.6
       '@headlessui/react': ^1.7.7
@@ -1194,7 +1194,7 @@ importers:
       react-hot-toast: 2.4.0_biqbaboplfbrettd7655fr4n2y
       scroll-into-view-if-needed: 3.0.4
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@tailwindcss/nesting': 0.0.0-insiders.565cd3e_postcss@8.4.21
@@ -1255,7 +1255,7 @@ importers:
 
   packages/pagination:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@types/micromatch': ^4.0.2
@@ -1299,7 +1299,7 @@ importers:
     dependencies:
       qs: 6.11.0
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@types/micromatch': 4.0.2
@@ -1342,7 +1342,7 @@ importers:
 
   packages/prisma-dmmf-transformer:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@prisma/client': 4.9.0
       '@prisma/generator-helper': 4.9.0
@@ -1391,7 +1391,7 @@ importers:
       '@prisma/generator-helper': 4.9.0
       '@prisma/internals': 4.9.0
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@prisma/client': 4.9.0_prisma@4.9.0
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
@@ -1437,7 +1437,7 @@ importers:
 
   packages/readdir:
     specifiers:
-      '@anolilab/eslint-config': ^5.0.0
+      '@anolilab/eslint-config': ^5.0.2
       '@anolilab/semantic-release-preset': ^2.2.0
       '@rushstack/eslint-plugin-security': ^0.5.0
       '@types/micromatch': ^4.0.2
@@ -1479,7 +1479,7 @@ importers:
     dependencies:
       micromatch: 4.0.5
     devDependencies:
-      '@anolilab/eslint-config': 5.0.0_7uibuqfxkfaozanbtbziikiqje
+      '@anolilab/eslint-config': 5.0.2_7uibuqfxkfaozanbtbziikiqje
       '@anolilab/semantic-release-preset': 2.2.0_semantic-release@20.0.2
       '@rushstack/eslint-plugin-security': 0.5.0_7uibuqfxkfaozanbtbziikiqje
       '@types/micromatch': 4.0.2
@@ -1528,8 +1528,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.14
     dev: true
 
-  /@anolilab/eslint-config/5.0.0_7uibuqfxkfaozanbtbziikiqje:
-    resolution: {integrity: sha512-sbgo/n/TxRnRMizxEb//K7Xzb9KOCKscHPNg5psxWmFbEiUuGiCrDN5Q4DW5DCUVfcC+UvR49ifH6xanUOxRYg==}
+  /@anolilab/eslint-config/5.0.2_7uibuqfxkfaozanbtbziikiqje:
+    resolution: {integrity: sha512-AsN57k2pkmdjHpPJW6q56LQEXXMol+a3ZK8eymkBa7bNwHYPWiw29iGlqLPBfU01wnADDg29ogLo4oFprB87bA==}
     engines: {node: '>=16'}
     requiresBuild: true
     peerDependencies:

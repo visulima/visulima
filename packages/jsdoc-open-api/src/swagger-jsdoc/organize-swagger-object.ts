@@ -6,7 +6,7 @@ import { isTagPresentInTags, mergeDeep } from "./utils";
  * @param {string} property
  */
 // eslint-disable-next-line radar/no-duplicate-string
-const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: Record<string, any>, property: string) => {
+const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: Record<string, any>, property: string): void => {
     // Root property on purpose.
     // eslint-disable-next-line no-secrets/no-secrets
     // @see https://github.com/OAI/OpenAPI-Specification/blob/master/proposals/002_Webhooks.md#proposed-solution
@@ -34,6 +34,7 @@ const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: R
         "definitions",
         "channels",
     ];
+
     if (commonProperties.includes(property)) {
         Object.keys(annotation[property]).forEach((definition) => {
             // eslint-disable-next-line no-param-reassign

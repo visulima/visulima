@@ -13,7 +13,7 @@ interface GenerateSwaggerPathObjectParameters<M extends string> {
     hasId?: boolean;
 }
 
-type HttpMethod = "get" | "post" | "put" | "delete";
+type HttpMethod = "delete" | "get" | "post" | "put";
 
 const generateContentForSchema = (schemaName: string, isArray?: boolean) => {
     if (isArray) {
@@ -100,6 +100,7 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { sta
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (routeType === RouteType.UPDATE) {
         return {
             statusCode: 200,
@@ -153,12 +154,13 @@ const getRouteTypeMethod = (routeType: RouteType): HttpMethod => {
 
 const generateSwaggerPathObject = <M extends string>({
     tag, routeTypes, modelName, modelsConfig, hasId,
-}: GenerateSwaggerPathObjectParameters<M>) => {
+}: GenerateSwaggerPathObjectParameters<M>): { [key: string]: any } => {
     const methods: { [key: string]: any } = {};
 
     routeTypes.forEach((routeType) => {
         if (routeTypes.includes(routeType)) {
-            const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response?.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
             const method: HttpMethod = getRouteTypeMethod(routeType);
             const response = generateSwaggerResponse(routeType, returnType);
 
@@ -166,20 +168,22 @@ const generateSwaggerPathObject = <M extends string>({
                 throw new TypeError(`Route type ${routeType}; response config was not found.`);
             }
 
-            methods[method as HttpMethod] = {
+            methods[method] = {
                 tags: [tag],
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 summary: modelsConfig?.[modelName]?.routeTypes?.[routeType]?.summary,
                 parameters: getQueryParameters(routeType).map((queryParameter) => {
                     return { ...queryParameter, in: "query" };
                 }),
                 responses: {
                     [response.statusCode]: response.content,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     ...modelsConfig?.[modelName]?.routeTypes?.[routeType]?.responses,
                 },
             };
 
             if (hasId) {
-                methods[method as HttpMethod].parameters.push({
+                methods[method].parameters.push({
                     in: "path",
                     name: "id",
                     description: `ID of the ${modelName}`,
@@ -190,12 +194,10 @@ const generateSwaggerPathObject = <M extends string>({
                 });
             }
 
-            if (routeType === RouteType.UPDATE || routeType === RouteType.CREATE) {
-                if (routeType === RouteType.UPDATE) {
-                    methods[method as HttpMethod].requestBody = generateRequestBody("Update", returnType);
-                } else if (routeType === RouteType.CREATE) {
-                    methods[method as HttpMethod].requestBody = generateRequestBody("Create", returnType);
-                }
+            if (routeType === RouteType.UPDATE) {
+                methods[method].requestBody = generateRequestBody("Update", returnType);
+            } else if (routeType === RouteType.CREATE) {
+                methods[method].requestBody = generateRequestBody("Create", returnType);
             }
         }
     });
@@ -212,10 +214,12 @@ interface GetSwaggerPathsParameters<M extends string> {
 
 const getSwaggerPaths = <M extends string>({
     routes, models, modelsConfig, routesMap,
-}: GetSwaggerPathsParameters<M>) => Object.keys(routes).reduce((accumulator: { [key: string]: any }, value: string | M) => {
+}: GetSwaggerPathsParameters<M>): { [key: string]: any } => Object.keys(routes).reduce((accumulator: { [key: string]: any }, value: M | string) => {
         const routeTypes = routes[value] as RouteType[];
-        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] || value;
-        const tag = modelsConfig?.[value]?.tag?.name || value;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] ?? value;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const tag = modelsConfig?.[value]?.tag.name ?? value;
 
         if (routeTypes.includes(RouteType.CREATE) || routeTypes.includes(RouteType.READ_ALL)) {
             const path = `/${resourceName}`;

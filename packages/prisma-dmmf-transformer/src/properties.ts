@@ -6,11 +6,11 @@ import type {
     ModelMetaData, PrismaPrimitive, PropertyMap, PropertyMetaData, TransformOptions,
 } from "./types.d";
 
-function isDefined<T>(value: T | undefined | null): value is T {
+function isDefined<T>(value: T | null | undefined): value is T {
     return value !== undefined && value !== null;
 }
 
-const getJSONSchemaScalar = (fieldType: PrismaPrimitive): JSONSchema7TypeName | Array<JSONSchema7TypeName> => {
+const getJSONSchemaScalar = (fieldType: PrismaPrimitive): Array<JSONSchema7TypeName> | JSONSchema7TypeName => {
     switch (fieldType) {
         case "Int":
         case "BigInt": {

@@ -7,7 +7,7 @@ const updateHandler: Handler = async ({
 }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
-    if (resource) {
+    if (typeof resource === "object") {
         const updatedResource = await adapter.update(resourceName, resourceId, request.body, query);
 
         return {

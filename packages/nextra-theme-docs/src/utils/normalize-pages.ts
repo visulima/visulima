@@ -4,7 +4,7 @@ import { DEFAULT_PAGE_THEME } from "../constants";
 import type { PageTheme } from "../types";
 
 const extendMeta = (
-    meta: string | Record<string, any>,
+    meta: Record<string, any> | string,
     fallback: Record<string, any>,
 ): {
     theme: PageTheme;
@@ -30,7 +30,7 @@ interface DocumentationItem extends MdxFile {
 }
 
 const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
-    let foundItem: undefined | string;
+    let foundItem: string | undefined;
 
     items.forEach((item) => {
         if (typeof foundItem === "string") {
@@ -125,7 +125,7 @@ export function normalizePages({
     // Normalize items based on files and _meta.json.
     const items = list
         .filter(
-            (a): a is MdxFile | Folder =>
+            (a): a is Folder | MdxFile =>
                 // not meta
                 // eslint-disable-next-line implicit-arrow-linebreak
                 a.kind !== "Meta"
@@ -370,7 +370,7 @@ export function normalizePages({
  * - `hidden`: the item will not be displayed in the sidebar entirely
  * - `children`: if the item is a folder, itself will be hidden but all its children will still be processed
  */
-export type Display = "normal" | "hidden" | "children";
+export type Display = "children" | "hidden" | "normal";
 
 export interface Item extends MdxFile {
     title: string;

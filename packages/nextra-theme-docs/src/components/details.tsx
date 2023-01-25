@@ -32,7 +32,7 @@ const findSummary = (children: ReactNode) => {
             restChildren.push(
                 cloneElement(child, {
                     ...child.props,
-                    // @ts-ignore
+                    // @ts-expect-error
                     children: result[1]?.length ? result[1] : undefined,
                     // eslint-disable-next-line react/no-array-index-key
                     key: index,

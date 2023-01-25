@@ -3,12 +3,12 @@ import { readPackageSync } from "read-pkg";
 import { defineConfig } from "tsup";
 
 function getPackageSources(packageContent: NormalizedPackageJson) {
-    if (typeof packageContent.source === "string") {
-        return [packageContent.source];
+    if (typeof packageContent["source"] === "string") {
+        return [packageContent["source"]];
     }
 
-    if (Array.isArray(packageContent.sources)) {
-        return packageContent.sources;
+    if (Array.isArray(packageContent["sources"])) {
+        return packageContent["sources"];
     }
 
     throw new TypeError("Please define a source or sources key in the package.json.");

@@ -46,9 +46,9 @@ const isRelation = (key: string, manyRelations: string[]): boolean => {
     return manyRelations.includes(splitKey.join("."));
 };
 
-const parseSimpleField = (value: Condition): undefined | { [key: string]: Condition } => {
+const parseSimpleField = (value: Condition): { [key: string]: Condition } | undefined => {
     const operator = Object.keys(value)[0];
-    const prismaOperator: undefined | PrismaWhereOperator = operatorsAssociation[operator as keyof typeof operatorsAssociation];
+    const prismaOperator: PrismaWhereOperator | undefined = operatorsAssociation[operator as keyof typeof operatorsAssociation];
 
     if (prismaOperator) {
         return {
@@ -60,7 +60,7 @@ const parseSimpleField = (value: Condition): undefined | { [key: string]: Condit
 };
 
 const parseRelation = (
-    value: string | number | boolean | Date | Condition | WhereCondition,
+    value: Condition | Date | WhereCondition | boolean | number | string,
     key: string,
     parsed: PrismaWhereField,
     manyRelations: string[],
@@ -94,8 +94,9 @@ const parseRelation = (
     // eslint-disable-next-line no-param-reassign
     parsed[initialFieldKey] = {
         some: {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             ...(oldParsed?.some as object),
-            ...(formatFields[initialFieldKey as string]?.some as object),
+            ...(formatFields[initialFieldKey]?.some),
         },
     };
 };
@@ -122,7 +123,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
     return parsed;
 };
 
-const basicParse = (value: string | number | boolean | Condition | Date | WhereCondition, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
+const basicParse = (value: Condition | Date | WhereCondition | boolean | number | string, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
     if (isPrimitive(value)) {
         // eslint-disable-next-line no-param-reassign
         parsed[key] = getSearchValue(value);

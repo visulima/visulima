@@ -2,7 +2,7 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "@tsconfig/node16-strictest/tsconfig.json",
     "display": "React + Node 16",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "compilerOptions": {
         "module": "ESNext",
         "lib": ["DOM", "DOM.Iterable"],
@@ -29,6 +29,8 @@
         "removeComments": true,
         "incremental": true,
         "tsBuildInfoFile": ".tsbuildinfo",
+
+        "noPropertyAccessFromIndexSignature": true,
 
         // @TODO enable this when we have a better way to handle the types
         "exactOptionalPropertyTypes": false,

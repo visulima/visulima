@@ -21,15 +21,15 @@ type RenderOptions = {
 };
 
 const listCommand = async (
-    framework: "express" | "koa" | "hapi" | "fastify" | "next" | undefined,
+    framework: "express" | "fastify" | "hapi" | "koa" | "next" | undefined,
     path: string,
     options: Partial<
-    {
+    RenderOptions & {
         verbose: boolean;
-    } & RenderOptions
+    }
     > = {},
     // eslint-disable-next-line radar/cognitive-complexity
-) => {
+): Promise<void> => {
     const frameworkPath = join(process.cwd(), path);
 
     if (!existsSync(frameworkPath)) {
@@ -53,10 +53,10 @@ const listCommand = async (
         framework = frameworkName;
     }
 
-    let routes: null | Route[] = null;
+    let routes: Route[] | null = null;
 
     if (framework === "next") {
-        routes = await getRoutes(frameworkPath, "next", options.verbose || false);
+        routes = await getRoutes(frameworkPath, "next", options.verbose ?? false);
     } else {
         if (!statSync(frameworkPath).isFile()) {
             throw new Error(`${frameworkPath} is directory, but file expected.`);
@@ -108,9 +108,10 @@ const listCommand = async (
             const { default: defaultExport } = await import(appJsFilePath);
 
             routes = await getRoutes(
-                ["AsyncFunction", "Function"].includes(defaultExport.constructor.name) ? await defaultExport() : getApp(defaultExport, framework),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return
+                ["AsyncFunction", "Function"].includes(defaultExport.constructor.name as string) ? await defaultExport() : getApp(defaultExport, framework),
                 framework,
-                options.verbose || false,
+                options.verbose ?? false,
             );
         } finally {
             if (isTypeScriptApp) {
@@ -140,7 +141,7 @@ const listCommand = async (
                 return route.path.replace("/pages", "").split("/")[1];
             }
 
-            return route.tags[0] || "unsorted";
+            return route.tags[0] ?? "unsorted";
         });
 
         let counter = 0;

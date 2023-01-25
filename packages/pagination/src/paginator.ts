@@ -1,6 +1,8 @@
 import qs from "qs";
 
-import type { Paginator as IPaginator } from "./types";
+import type { PaginationMeta, PaginationResult, Paginator as IPaginator } from "./types";
+
+type UrlsForRange = {url: string; page: number; isActive: boolean}[];
 
 /**
  * Simple paginator works with the data set provided by the standard
@@ -11,7 +13,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
 
     private url: string = "/";
 
-    private readonly rows: any[];
+    private readonly rows: T[];
 
     /**
      * The first page is always 1
@@ -23,7 +25,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      */
     public readonly isEmpty: boolean;
 
-    constructor(private readonly totalNumber: number, public readonly perPage: number, public currentPage: number, ...rows: any[]) {
+    public constructor(private readonly totalNumber: number, public readonly perPage: number, public currentPage: number, ...rows: any[]) {
         super(...rows);
 
         this.totalNumber = Number(totalNumber);
@@ -39,28 +41,28 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      * The `isEmpty` reports about the current set of results. However, `hasTotal`
      * reports about the total number of records, regardless of the current.
      */
-    get hasTotal(): boolean {
+    public get hasTotal(): boolean {
         return this.total > 0;
     }
 
     /**
      * Find if there are more pages to come
      */
-    get hasMorePages(): boolean {
+    public get hasMorePages(): boolean {
         return this.lastPage > this.currentPage;
     }
 
     /**
      * Find if there are enough results to be paginated or not
      */
-    get hasPages(): boolean {
+    public get hasPages(): boolean {
         return this.lastPage !== 1;
     }
 
     /**
      * The Last page number
      */
-    get lastPage(): number {
+    public get lastPage(): number {
         return Math.max(Math.ceil(this.total / this.perPage), 1);
     }
 
@@ -68,21 +70,21 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      * Casting `total` to a number. Later, we can think of situations
      * to cast it to a bigint
      */
-    get total(): number {
+    public get total(): number {
         return Number(this.totalNumber);
     }
 
     /**
      * A reference to the result rows
      */
-    public all() {
+    public all(): T[] {
         return this.rows;
     }
 
     /**
      * Returns JSON meta data
      */
-    public getMeta() {
+    public getMeta(): PaginationMeta {
         return {
             total: this.total,
             perPage: this.perPage,
@@ -100,7 +102,7 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
      * Returns JSON representation of the paginated
      * data
      */
-    public toJSON() {
+    public toJSON(): PaginationResult<T> {
         return {
             meta: this.getMeta(),
             data: this.all(),
@@ -160,8 +162,8 @@ export default class Paginator<T = any> extends Array implements IPaginator<T> {
     /**
      * Returns an array of urls under a given range
      */
-    public getUrlsForRange(start: number, end: number) {
-        const urls: { url: string; page: number; isActive: boolean }[] = [];
+    public getUrlsForRange(start: number, end: number): UrlsForRange {
+        const urls: UrlsForRange = [];
 
         // eslint-disable-next-line no-plusplus
         for (let index = start; index <= end; index++) {

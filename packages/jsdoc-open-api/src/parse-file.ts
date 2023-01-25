@@ -8,7 +8,7 @@ import yamlLoc from "./util/yaml-loc";
 const ALLOWED_KEYS = new Set(["openapi", "info", "servers", "security", "tags", "externalDocs", "components", "paths"]);
 
 class ParseError extends Error {
-    filePath?: string;
+    public filePath?: string;
 }
 
 const parseFile = (

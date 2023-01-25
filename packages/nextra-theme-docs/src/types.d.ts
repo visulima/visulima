@@ -22,10 +22,10 @@ export interface DocumentationThemeConfig {
     banner: {
         dismissible: boolean;
         key: string;
-        text?: ReactNode | FC;
+        text?: FC | ReactNode;
     };
     chat?: {
-        icon: ReactNode | FC;
+        icon: FC | ReactNode;
         link?: string;
     };
     components?: Record<string, FC>;
@@ -42,25 +42,25 @@ export interface DocumentationThemeConfig {
     };
     faviconGlyph?: string;
     feedback: {
-        content?: ReactNode | FC<{ locale }>;
+        content?: FC<{ locale }> | ReactNode;
         link?: (currentTitle: string, currentURL: string) => string;
         labels?: string;
     };
     footer: {
-        component?: ReactNode | FC;
-        logo?: ReactNode | FC;
-        copyright?: ReactNode | FC<{ activeType: string }>;
+        component?: FC | ReactNode;
+        logo?: FC | ReactNode;
+        copyright?: FC<{ activeType: string }> | ReactNode;
     };
     getNextSeoProps?: () => NextSeoProps;
-    gitTimestamp: ReactNode | FC<{ timestamp: Date }>;
-    head: ReactNode | FC;
+    gitTimestamp: FC<{ timestamp: Date }> | ReactNode;
+    head: FC | ReactNode;
     i18n: { direction?: string; locale: string; text: string }[];
-    logo: ReactNode | FC;
+    logo: FC | ReactNode;
     logoLink?: boolean | string;
     main?: FC<{ children: ReactNode }>;
     navbar: {
-        component: ReactNode | FC<NavBarProperties>;
-        linkBack?: ReactNode | FC<{ locale: string }>;
+        component: FC<NavBarProperties> | ReactNode;
+        linkBack?: FC<{ locale: string }> | ReactNode;
     };
     navigation:
     | boolean
@@ -68,15 +68,15 @@ export interface DocumentationThemeConfig {
         next: boolean;
         prev: boolean;
     };
-    nextThemes: Pick<ThemeProviderProps, "defaultTheme" | "storageKey" | "forcedTheme">;
+    nextThemes: Pick<ThemeProviderProps, "defaultTheme" | "forcedTheme" | "storageKey">;
     notFound: {
-        content: ReactNode | FC;
+        content: FC | ReactNode;
         labels: string;
         pages?: ({ local: string }) => {
             url: string;
             title: string;
             subtitle?: string;
-            icon?: ReactNode | FC;
+            icon?: FC | ReactNode;
         }[];
     };
 
@@ -88,49 +88,48 @@ export interface DocumentationThemeConfig {
     };
 
     project: {
-        icon: ReactNode | FC;
+        icon: FC | ReactNode;
         link?: string;
     };
 
     search: {
         component:
-        | ReactNode
-        | FC<{
+        FC<{
             className?: string;
             directories: Item[];
-        }>;
-        emptyResult: ReactNode | FC;
+        }> | ReactNode;
+        emptyResult: FC | ReactNode;
         loading: string | (() => string);
         // Can't be React component
         placeholder: string | (({ locale }: { locale: string }) => string);
     };
 
     serverSideError: {
-        content: ReactNode | FC;
+        content: FC | ReactNode;
         labels: string;
     };
 
     sidebar: {
         defaultMenuCollapseLevel: number;
-        titleComponent: ReactNode | FC<{ title: string; type: string }>;
+        titleComponent: FC<{ title: string; type: string }> | ReactNode;
     };
 
     tocSidebar: {
-        component: ReactNode | FC<TOCSidebarProperties>;
-        extraContent?: ReactNode | FC;
+        component: FC<TOCSidebarProperties> | ReactNode;
+        extraContent?: FC | ReactNode;
         float: boolean;
-        title: ReactNode | FC<{ locale: string }>;
+        title: FC<{ locale: string }> | ReactNode;
     };
 
     tocContent: {
-        component: ReactNode | FC<TOCPageContentProperties>;
-        extraContent?: ReactNode | FC;
+        component: FC<TOCPageContentProperties> | ReactNode;
+        extraContent?: FC | ReactNode;
         float: boolean;
-        title: ReactNode | FC<{ locale: string }>;
+        title: FC<{ locale: string }> | ReactNode;
     };
 
     hero?: {
-        component: ReactNode | FC;
+        component: FC | ReactNode;
         height: number | string;
     };
 
@@ -151,7 +150,7 @@ export type PageTheme = {
     sidebar: boolean;
     timestamp: boolean;
     toc: boolean;
-    typesetting: "default" | "article";
+    typesetting: "article" | "default";
 };
 
 export type Context = {

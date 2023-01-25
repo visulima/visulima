@@ -7,7 +7,7 @@ import mergeWith from "lodash.mergewith";
  * @param {object} first the first object to get merged
  * @param {object} second the second object to get merged
  */
-export const mergeDeep = (first?: object, second?: object) => mergeWith({}, first, second, (a, b) => (b === null ? a : undefined));
+export const mergeDeep = (first?: object, second?: object): object => mergeWith({}, first, second, (a, b) => (b === null ? a : undefined));
 
 /**
  * Checks if there is any properties of the input object which are an empty object
@@ -23,9 +23,9 @@ export const hasEmptyProperty = (object: Record<string, any>): boolean => Object
  * @param {array} tags
  * @returns boolean
  */
-export const isTagPresentInTags = (tag: Spec, tags: Spec[]) => tags.some((targetTag) => tag.name === targetTag.name);
+export const isTagPresentInTags = (tag: Spec, tags: Spec[]): boolean => tags.some((targetTag) => tag.name === targetTag.name);
 
-export const getSwaggerVersionFromSpec = (tag: Spec) => {
+export const getSwaggerVersionFromSpec = (tag: Spec): "v2" | "v3" | "v4" => {
     switch (tag.tag) {
         case "openapi": {
             return "v3";

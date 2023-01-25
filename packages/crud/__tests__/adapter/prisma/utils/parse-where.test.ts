@@ -68,7 +68,7 @@ describe("Prisma parse where", () => {
         };
 
         expect(parsePrismaWhere(baseQuery, [])).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 AND: {
                     username: {
@@ -92,7 +92,7 @@ describe("Prisma parse where", () => {
             // eslint-disable-next-line radar/no-duplicate-string
             parsePrismaWhere(baseQuery, ["posts.author"]),
         ).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 AND: {
                     username: {
@@ -123,7 +123,7 @@ describe("Prisma parse where", () => {
         };
 
         expect(parsePrismaWhere(baseQuery, [])).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 OR: {
                     username: {
@@ -146,7 +146,7 @@ describe("Prisma parse where", () => {
         expect(
             parsePrismaWhere(baseQuery, ["posts.author"]),
         ).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 OR: {
                     username: {
@@ -177,7 +177,7 @@ describe("Prisma parse where", () => {
         };
 
         expect(parsePrismaWhere(baseQuery, [])).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 NOT: {
                     username: {
@@ -200,7 +200,7 @@ describe("Prisma parse where", () => {
         expect(
             parsePrismaWhere(baseQuery, ["posts.author"]),
         ).toEqual<PrismaWhereField>(
-            // @ts-ignore
+            // @ts-expect-error
             {
                 NOT: {
                     username: {

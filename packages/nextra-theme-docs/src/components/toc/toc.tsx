@@ -35,7 +35,7 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
         return (
             <div ref={tocReference}>
                 {/* eslint-disable-next-line max-len */}
-                <p className="text-gray-500 dark:text-gray-400 contrast-more:text-gray-800 contrast-more:dark:text-gray-50 uppercase mb-2 font-semibold tracking-wide">
+                <p className="tracking-wide mb-2 font-semibold uppercase text-gray-500 contrast-more:text-gray-800 dark:text-gray-400 contrast-more:dark:text-gray-50">
                     {renderComponent(config.tocSidebar.title)}
                 </p>
                 <ul className="leading-normal">
@@ -63,7 +63,7 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false }) => {
                             >
                                 <span>{text}</span>
                                 {isPage && (
-                                    <span className="flex-grow-0 flex-shrink-0 h-4">
+                                    <span className="h-4 shrink-0 grow-0">
                                         <ChevronRightIcon className="block h-full h-4 w-4" />
                                     </span>
                                 )}

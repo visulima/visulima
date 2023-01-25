@@ -1,5 +1,5 @@
 import accepts from "accepts";
-import { IncomingMessage, ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { toHeaderCase } from "../utils";
 import hasJsonStructure from "./has-json-structure";
@@ -14,17 +14,17 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
     serializers: Serializers,
     request: Request,
     response: Response,
-    data: any,
+    data: unknown,
     options: {
         defaultContentType: string;
     },
     // eslint-disable-next-line radar/cognitive-complexity
-) => {
+): Buffer | Uint8Array | string => {
     const contentType = response.getHeader(contentTypeKey) as string | undefined;
 
     // skip serialization when Content-Type is already set
     if (typeof contentType === "string") {
-        return data;
+        return data as string;
     }
 
     const accept = accepts(request);
@@ -48,19 +48,18 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
             if (/yaml|yml/.test(type)) {
                 response.setHeader(contentTypeKey, type);
 
-                serializedData = yamlTransformer(hasJsonStructure(data) ? JSON.parse(data) : data);
-            } else if (/xml/.test(type)) {
+                serializedData = yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data);
+            } else if (type.includes("xml")) {
                 response.setHeader(contentTypeKey, type);
 
                 serializedData = xmlTransformer({
-                    [toHeaderCase(`${request.url?.replace("/api/", "")}`.trim())]: hasJsonStructure(data) ? JSON.parse(data) : data,
+                    [toHeaderCase(`${request.url?.replace("/api/", "")}`.trim())]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
                 });
             }
         }
     });
 
-    // eslint-disable-next-line no-param-reassign
-    return serializedData;
+    return serializedData as Buffer | Uint8Array | string;
 };
 
 export default serialize;

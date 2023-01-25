@@ -19,9 +19,9 @@ export type SwaggerOperation = {
 export type SwaggerParameter = {
     name: string;
     description?: string;
-    schema: {
+    schema: any & {
         type: string;
-    } & any;
+    };
 };
 
 export type ModelsConfig = {

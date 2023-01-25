@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { IRoute, PathParams } from "@types/express-serve-static-core";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Router } from "express";
+import type { Router } from "express";
 
 export interface Route extends IRoute {
     stack: Layer[];
@@ -12,7 +12,7 @@ export interface Route extends IRoute {
 export interface Layer {
     handle?: Route | Router;
     stack: Layer[];
-    route: Route;
+    route?: Route;
     name: string;
     params?: PathParams;
     path?: string;

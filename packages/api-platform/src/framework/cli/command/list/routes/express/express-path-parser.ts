@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Express, Router } from "express";
+import type { Express, Router } from "express";
 
 import pathRegexParser from "./path-regex-parser";
 import type {
@@ -14,11 +14,12 @@ import type {
  * @param basePath The base path as it was initial declared for this route
  * @returns A ExpressPath object holding the metadata for a given route
  */
-const parseRouteLayer = (layer: Layer, keys: Key[], basePath: string): RouteMetaData => {
+const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string): RouteMetaData => {
     const lastRequestHandler = layer.route.stack[layer.route.stack.length - 1] as Layer;
     const pathParameters: Parameter[] = keys.map((key) => {
         return { name: key.name, in: "path", required: !key.optional };
     });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const filtered = layer.route.stack.filter((element) => (element?.handle as Route)?.metadata);
 
     if (filtered.length > 1) {
@@ -65,7 +66,7 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
         return;
     }
 
-    routes.push(parseRouteLayer(layer, keys, path));
+    routes.push(parseRouteLayer(layer as Required<Layer>, keys, path));
 };
 
 // @TODO use this to parse the express swagger
@@ -84,16 +85,14 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
  *
  * @returns List of routes for this express app with meta-data that has been picked up
  */
-const expressPathParser = (app: Express) => {
+const expressPathParser = (app: Express): RouteMetaData[] => {
     // eslint-disable-next-line no-underscore-dangle
     const router: Router = app._router || app.router;
     const routes: RouteMetaData[] = [];
 
-    if (router) {
-        router.stack.forEach((layer: Layer) => {
-            traverse(routes, "", layer, []);
-        });
-    }
+    router.stack.forEach((layer: Layer) => {
+        traverse(routes, "", layer, []);
+    });
 
     return routes;
 };

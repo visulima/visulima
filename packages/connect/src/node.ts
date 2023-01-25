@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AnyZodObject } from "zod";
-import { ZodObject } from "zod";
+import type { AnyZodObject, ZodObject } from "zod";
 
 import withZod from "./adapter/with-zod";
 import type { Route } from "./router";
@@ -30,7 +29,7 @@ const onError = async (error: unknown, _request: IncomingMessage, response: Serv
     response.end("Internal Server Error");
 };
 
-export function getPathname(url: string) {
+export function getPathname(url: string): string {
     const queryIndex = url.indexOf("?");
 
     return queryIndex === -1 ? url : url.slice(0, Math.max(0, queryIndex));
@@ -52,15 +51,15 @@ export class NodeRouter<
         ...arguments_: Parameters<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>
     ) => ReturnType<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>;
 
-    constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
-        this.onNoMatch = options.onNoMatch || onNoMatch;
-        this.onError = options.onError || onError;
+    public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
+        this.onNoMatch = options.onNoMatch ?? onNoMatch;
+        this.onError = options.onError ?? onError;
     }
 
     private add(
         method: HttpMethod | "",
-        routeOrFunction: RouteMatch | Nextable<RequestHandler<Request, Response>>,
-        zodOrRouteOrFunction?: RouteMatch | Schema | Nextable<RequestHandler<Request, Response>>,
+        routeOrFunction: Nextable<RequestHandler<Request, Response>> | RouteMatch,
+        zodOrRouteOrFunction?: Nextable<RequestHandler<Request, Response>> | RouteMatch | Schema,
         ...fns: Nextable<RequestHandler<Request, Response>>[]
     ) {
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
@@ -70,10 +69,7 @@ export class NodeRouter<
             // eslint-disable-next-line unicorn/prefer-ternary
             if (typeof routeOrFunction === "function") {
                 // eslint-disable-next-line no-param-reassign
-                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(
-                    zodOrRouteOrFunction as Schema,
-                    routeOrFunction,
-                )];
+                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
             } else {
                 // eslint-disable-next-line no-param-reassign,max-len
                 fns = fns.map((function_) => withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_));
@@ -103,9 +99,9 @@ export class NodeRouter<
     public delete: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "DELETE");
 
     public use(
-        base: RouteMatch | Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>,
+        base: Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema> | RouteMatch,
         ...fns: (Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>)[]
-    ) {
+    ): this {
         if (typeof base === "function" || base instanceof NodeRouter) {
             fns.unshift(base);
             // eslint-disable-next-line no-param-reassign
@@ -124,7 +120,7 @@ export class NodeRouter<
         };
     }
 
-    public clone() {
+    public clone(): NodeRouter<Request, Response, Schema> {
         const r = new NodeRouter<Request, Response, Schema>({ onNoMatch: this.onNoMatch, onError: this.onError });
 
         r.router = this.router.clone();
@@ -132,7 +128,7 @@ export class NodeRouter<
         return r;
     }
 
-    async run(request: Request, response: Response): Promise<unknown> {
+    public async run(request: Request, response: Response): Promise<unknown> {
         // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
         const result = this.router.find(request.method as HttpMethod, getPathname(request.url as string));
 
@@ -146,7 +142,7 @@ export class NodeRouter<
         return Router.exec(result.fns, request, response);
     }
 
-    handler() {
+    public handler(): (request: Request, response: Response) => Promise<void> {
         const { routes } = this.router as Router<FunctionLike>;
 
         return async (request: Request, response: Response) => {
@@ -170,4 +166,4 @@ export const createRouter = <
     Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
 >(
         options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
-    ) => new NodeRouter<Request, Response, Schema>(options);
+    ): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);

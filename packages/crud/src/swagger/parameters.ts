@@ -63,21 +63,21 @@ const queryParameters: Record<string, SwaggerParameter> = {
     },
 };
 
-export const commonQueryParameters = [queryParameters.select, queryParameters.include];
+export const commonQueryParameters = [queryParameters["select"], queryParameters["include"]];
 export const listQueryParameters = [
     ...commonQueryParameters,
-    queryParameters.limit,
-    queryParameters.skip,
-    queryParameters.where,
-    queryParameters.orderBy,
-    queryParameters.page,
-    queryParameters.distinct,
+    queryParameters["limit"],
+    queryParameters["skip"],
+    queryParameters["where"],
+    queryParameters["orderBy"],
+    queryParameters["page"],
+    queryParameters["distinct"],
 ];
 
-export const getQueryParameters = (routeType: RouteType, additionalQueryParameters: SwaggerParameter[] = []) => {
+export const getQueryParameters = (routeType: RouteType, additionalQueryParameters: SwaggerParameter[] = []): SwaggerParameter[] => {
     if (routeType === RouteType.READ_ALL) {
-        return [...listQueryParameters, ...additionalQueryParameters];
+        return [...listQueryParameters, ...additionalQueryParameters].filter(Boolean) as SwaggerParameter[];
     }
 
-    return [...commonQueryParameters, ...additionalQueryParameters];
+    return [...commonQueryParameters, ...additionalQueryParameters].filter(Boolean) as SwaggerParameter[];
 };

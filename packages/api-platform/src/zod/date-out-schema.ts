@@ -12,7 +12,7 @@ export interface ZodDateOutDef extends ZodTypeDef {
 
 export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
     // eslint-disable-next-line no-underscore-dangle
-    _parse(input: ParseInput): ParseReturnType<string> {
+    public _parse(input: ParseInput): ParseReturnType<string> {
         // eslint-disable-next-line no-underscore-dangle
         const { status, ctx } = this._processInputParams(input);
 
@@ -35,7 +35,7 @@ export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
         return { status: status.value, value: (ctx.data as Date).toISOString() };
     }
 
-    static create = () => new ZodDateOut({
+    public static create = (): ZodDateOut => new ZodDateOut({
         typeName: zodDateOutKind,
     });
 }
