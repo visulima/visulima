@@ -41,6 +41,7 @@ export default defineConfig((options) => {
             "nextra/icons",
             "nextra/components",
             "nextra/hooks",
+            "@prisma/client",
             "zod",
             ...peerDependenciesKeys,
             ...Object.keys(packageJsonContent?.optionalDependencies || {}),
