@@ -15,7 +15,7 @@ import extendSwaggerSpec from "../extend-swagger-spec";
 // eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
-const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
+const swaggerHandler = <M extends string, PrismaClient>(options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {}): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const {
         allowedMediaTypes = {
             "application/json": true,
@@ -83,12 +83,12 @@ const swaggerHandler = (options: Partial<SwaggerHandlerOptions> = {}): ((request
     };
 };
 
-export type SwaggerHandlerOptions = {
+export type SwaggerHandlerOptions<M extends string, PrismaClient> = {
     allowedMediaTypes: { [key: string]: boolean };
     swaggerFilePath: string;
-    crud: Exclude<ModelsToOpenApiParameters, "swagger"> & {
+    crud: Exclude<ModelsToOpenApiParameters<M, PrismaClient>, "swagger"> & {
         swagger?: {
-            models?: SwaggerModelsConfig<string>;
+            models?: SwaggerModelsConfig<M>;
         };
     };
     specs?: Partial<OpenAPIV3.Document>[];

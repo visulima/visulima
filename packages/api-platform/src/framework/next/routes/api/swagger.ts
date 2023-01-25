@@ -6,8 +6,8 @@ import swaggerHandler from "../../../../swagger/api/swagger-handler";
 /**
  * @deprecated Use `import { swaggerHandler } from "@visulima/api-framework"` instead.
  */
-const swaggerApiRoute = (
-    options: Partial<SwaggerHandlerOptions> = {},
+const swaggerApiRoute = <M extends string, PrismaClient>(
+    options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {},
 ): (request: IncomingMessage, response: ServerResponse) => Promise<void> => swaggerHandler(options);
 
 export default swaggerApiRoute;
