@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.0.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.3...@visulima/nextra-theme-docs@1.0.4) (2023-01-25)
+
+
+### Bug Fixes
+
+* updated tsconfig to use module esnext and target es2021 ([#107](https://github.com/visulima/visulima/issues/107)) ([e888fe8](https://github.com/visulima/visulima/commit/e888fe8d15c99453a3c04f2cf9d2f6c69c158648))
+
 ## @visulima/nextra-theme-docs [1.0.3](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.2...@visulima/nextra-theme-docs@1.0.3) (2023-01-08)
 
 
