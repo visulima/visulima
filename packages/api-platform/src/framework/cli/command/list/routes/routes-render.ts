@@ -34,7 +34,7 @@ const renderRoute = (method: string, routePath: string): string => {
     const routeText = routePath
         .split("/")
         .map((segment) => {
-            const isDynamicSegment = ["[", ":"].includes(segment[0] || "");
+            const isDynamicSegment = ["[", ":"].includes(segment[0] ?? "");
 
             return isDynamicSegment ? colors.yellowBright(segment) : segment;
         })
@@ -43,7 +43,7 @@ const renderRoute = (method: string, routePath: string): string => {
     return `  ${methodText}${spaces}${routeText}${colors.grey(dots)}`;
 };
 
-const routesRender = (routesMap: Route[], options: { methods?: string[]; } = {}) => routesMap
+const routesRender = (routesMap: Route[], options: { methods?: string[]; } = {}): (string | undefined)[] => routesMap
     .map((route) => {
         if (Array.isArray(options.methods) && options.methods.includes(route.method)) {
             return;

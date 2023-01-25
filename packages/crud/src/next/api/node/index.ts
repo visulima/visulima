@@ -17,7 +17,7 @@ async function handler<
             response.status(responseConfig.status).send(responseConfig.data);
         },
         async (response) => {
-            (response as Response).end();
+            response.end();
         },
         adapter,
         options,

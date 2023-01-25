@@ -50,7 +50,7 @@ const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
                     )}
                 >
                     <ArrowRightIcon className={cn(classes.icon, "ltr:rotate-180 ml-4")} />
-                    <div className="flex flex-col items-end flex-grow">
+                    <div className="flex grow flex-col items-end">
                         <span className="text-xs">Previous</span>
                         <span>{previous.title}</span>
                     </div>
@@ -67,7 +67,7 @@ const NavLinks: FC<NavLinkProperties> = ({ flatDirectories, currentIndex }) => {
                         "flex-grow ml-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}
                 >
-                    <div className="flex flex-col items-start flex-grow">
+                    <div className="flex grow flex-col items-start">
                         <span className="text-xs">Next</span>
                         <span>{next.title}</span>
                     </div>

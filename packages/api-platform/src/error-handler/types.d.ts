@@ -4,7 +4,7 @@ export type ErrorHandler = <Request extends IncomingMessage, Response extends Se
     error: any,
     request: Request,
     response: Response,
-) => any | Promise<any>;
+) => Promise<any> | any;
 
 export type ErrorHandlers = {
     regex: RegExp;

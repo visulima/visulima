@@ -1,3 +1,3 @@
-const formatResourceId = (resourceId: string): string | number => (Number.isSafeInteger(+resourceId) ? +resourceId : resourceId);
+const formatResourceId = (resourceId: string): number | string => (Number.isSafeInteger(+resourceId) ? +resourceId : resourceId);
 
 export default formatResourceId;

@@ -1,9 +1,10 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import mergeWith from "lodash.mergewith";
-import yaml, { YAMLError } from "yaml";
+import type { YAMLError } from "yaml";
+import yaml from "yaml";
 
-import { OpenApiObject } from "../exported";
+import type { OpenApiObject } from "../exported.d";
 import customizer from "../util/customizer";
 import organizeSwaggerObject from "./organize-swagger-object";
 import { getSwaggerVersionFromSpec, hasEmptyProperty } from "./utils";
@@ -21,7 +22,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) => specs.map((spec: Spe
     if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && spec.description !== "") {
         const parsed = yaml.parseDocument(spec.description);
 
-        if (parsed.errors && parsed.errors.length > 0) {
+        if (parsed.errors.length > 0) {
             parsed.errors.map<ExtendedYAMLError>((error) => {
                 const newError: ExtendedYAMLError = error;
 
@@ -34,7 +35,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) => specs.map((spec: Spe
 
             errorString += verbose
                 ? (parsed.errors as ExtendedYAMLError[])
-                    .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error?.annotation?.replace(/\n/g, "\n  ")}\n\`\`\``)
+                    .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replace(/\n/g, "\n  ")}\n\`\`\``)
                     .join("\n")
                 : parsed.errors.map((error) => error.toString()).join("\n");
 
@@ -72,6 +73,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { spec: Ope
 
         ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {
             if (result[property] !== undefined && hasEmptyProperty(result[property])) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete result[property];
             }
         });

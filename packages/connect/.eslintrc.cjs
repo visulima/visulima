@@ -40,5 +40,22 @@ module.exports = {
                 tsconfigRootDir: __dirname,
             },
         },
+        {
+            files: ["*.ts", "*.tsx"],
+
+            parserOptions: {
+                project: "./tsconfig.eslint.json",
+                // eslint-disable-next-line no-undef
+                tsconfigRootDir: __dirname,
+            },
+
+            rules: {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+            }
+        },
     ],
 };

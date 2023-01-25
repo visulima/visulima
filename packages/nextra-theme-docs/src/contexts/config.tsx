@@ -270,4 +270,4 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
     );
 };
 
-export type Config = DocumentationThemeConfig & Pick<PageOpts, "flexsearch" | "newNextLinkBehavior" | "title" | "frontMatter">;
+export type Config = DocumentationThemeConfig & Pick<PageOpts, "flexsearch" | "frontMatter" | "newNextLinkBehavior" | "title">;

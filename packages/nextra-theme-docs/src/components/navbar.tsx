@@ -96,13 +96,13 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
     return (
         <>
             {config.navbar?.linkBack && (
-                <div className="md:hidden bg-gray-100 text-center p-4 font-medium">
+                <div className="bg-gray-100 p-4 text-center font-medium md:hidden">
                     {renderComponent(config.navbar.linkBack, {
                         locale,
                     })}
                 </div>
             )}
-            <div className="nextra-nav-container sticky top-0 z-20 w-full header-border dark:header-border">
+            <div className="nextra-nav-container header-border dark:header-border sticky top-0 z-20 w-full">
                 <div
                     className={cn(
                         "pointer-events-none absolute z-[-1] h-full w-full",
@@ -132,7 +132,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="grow h-[var(--nextra-navbar-height)] hidden md:flex items-center justify-center space-x-12">
+                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-center space-x-12 md:flex">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;
@@ -187,20 +187,20 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                             );
                         })}
                     </div>
-                    <div className="flex items-center h-[var(--nextra-navbar-height)] mr-2">
+                    <div className="mr-2 flex h-[var(--nextra-navbar-height)] items-center">
                         {renderComponent(config.search.component, {
                             directories: flatDirectories,
                             className: "hidden md:inline-block mx-min-w-[200px]",
                         })}
                     </div>
-                    <div className="flex items-center h-[var(--nextra-navbar-height)]">
+                    <div className="flex h-[var(--nextra-navbar-height)] items-center">
                         {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
                         <>
                             {projectLink}
                             {chatLink}
                         </>
                     </div>
-                    <div className="flex items-center h-[var(--nextra-navbar-height)]">
+                    <div className="flex h-[var(--nextra-navbar-height)] items-center">
                         <button
                             type="button"
                             aria-label="Menu"
@@ -211,7 +211,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
                         </button>
                     </div>
                     {config.navbar?.linkBack && (
-                        <div className="items-center h-[var(--nextra-navbar-height)] hidden md:flex ml-4">
+                        <div className="ml-4 hidden h-[var(--nextra-navbar-height)] items-center md:flex">
                             {renderComponent(config.navbar.linkBack, {
                                 locale,
                             })}
@@ -225,7 +225,7 @@ const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) =>
 
 export type NavBarProperties = {
     flatDirectories: Item[];
-    items: (PageItem | MenuItem)[];
+    items: (MenuItem | PageItem)[];
     activeType: string;
 };
 

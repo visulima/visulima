@@ -75,7 +75,7 @@ describe("HealthCheck", () => {
                     health: {
                         healthy: false,
                         message: "boom",
-                        // @ts-ignore
+                        // @ts-expect-error
                         timestamp: report.report["event-loop"].health.timestamp,
                     },
                     meta: {
@@ -105,7 +105,7 @@ describe("HealthCheck", () => {
                     health: {
                         healthy: false,
                         message: "boom",
-                        // @ts-ignore
+                        // @ts-expect-error
                         timestamp: report.report["event-loop"].health.timestamp,
                     },
                     meta: {

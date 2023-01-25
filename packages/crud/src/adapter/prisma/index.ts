@@ -1,13 +1,14 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-    // @ts-ignore
+import type {
+    // @ts-expect-error
     PrismaAction,
-    // @ts-ignore
-    PrismaClient,
 } from "@prisma/client";
+import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, PaginationData, ParsedQueryParameters } from "../../types.d";
+import type {
+    Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters,
+} from "../../types.d";
 import type { PrismaParsedQueryParameters } from "./types.d";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
@@ -15,7 +16,7 @@ import parsePrismaOrderBy from "./utils/parse-order-by";
 import parsePrismaRecursiveField from "./utils/parse-recursive";
 import parsePrismaWhere from "./utils/parse-where";
 
-interface AdapterCtorArguments<M extends string = string> {
+interface AdapterCtorArguments<M extends string, PrismaClient> {
     primaryKey?: string;
     manyRelations?: {
         [key in M]?: string[];
@@ -24,24 +25,26 @@ interface AdapterCtorArguments<M extends string = string> {
     models?: M[];
 }
 
-export default class PrismaAdapter<T, M extends string> implements Adapter<T, PrismaParsedQueryParameters, M> {
+type Delegate<T> = Record<PrismaAction, (...arguments_: any[]) => Promise<T>>;
+
+export default class PrismaAdapter<T, M extends string, PrismaClient> implements Adapter<T, PrismaParsedQueryParameters, M> {
     private readonly primaryKey: string;
 
     private readonly manyRelations: {
         [key in M]?: string[];
     };
 
-    private readonly prismaClient: PrismaClient;
+    private readonly prismaClient: FakePrismaClient & PrismaClient;
 
-    models?: M[];
+    public models?: M[];
 
     private readonly ctorModels?: M[];
 
     private dmmf: any;
 
-    constructor({
+    public constructor({
         primaryKey = "id", prismaClient, manyRelations = {}, models,
-    }: AdapterCtorArguments<M>) {
+    }: AdapterCtorArguments<M, FakePrismaClient & PrismaClient>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
@@ -50,7 +53,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
     private getPrismaClientModels = async () => {
         // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._dmmf) {
+        if (this.prismaClient._dmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
             this.dmmf = this.prismaClient._dmmf;
 
@@ -58,7 +61,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         }
 
         // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._getDmmf) {
+        if (this.prismaClient._getDmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
             this.dmmf = await this.prismaClient._getDmmf();
 
@@ -68,7 +71,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         throw new Error("Couldn't get prisma client models");
     };
 
-    async init() {
+    public async init(): Promise<void> {
         const models = this.ctorModels;
         const prismaDmmfModels = await this.getPrismaClientModels();
 
@@ -80,12 +83,11 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             });
         }
 
-        // @ts-ignore
         this.models = models ?? (Object.keys(prismaDmmfModels) as M[]); // Retrieve model names from dmmf for prisma v2
     }
 
-    async getPaginationData(resourceName: M, query: PrismaParsedQueryParameters): Promise<PaginationData> {
-        // @ts-ignore
+    public async getPaginationData(resourceName: M, query: PrismaParsedQueryParameters): Promise<PaginationData> {
+        // @ts-expect-error
         const total: number = await this.getPrismaDelegate(resourceName).count({
             where: query.where,
             distinct: query.distinct,
@@ -93,13 +95,13 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
 
         return {
             total,
-            pageCount: Math.ceil(total / (query.take as number)),
-            page: Math.ceil((query.skip as number) / (query.take as number)) + 1,
+            pageCount: Math.ceil(total / (query.take ?? 0)),
+            page: Math.ceil((query.skip ?? 0) / (query.take ?? 0)) + 1,
         };
     }
 
     // eslint-disable-next-line class-methods-use-this
-    handleError(error: any) {
+    public handleError(error: Error): HttpError {
         // eslint-disable-next-line no-console
         console.error(error);
 
@@ -113,7 +115,7 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             : createHttpError(500, "an unknown error occured, check your server logs for more info");
     }
 
-    parseQuery(resourceName: M, query: ParsedQueryParameters) {
+    public parseQuery(resourceName: M, query: ParsedQueryParameters): PrismaParsedQueryParameters {
         const parsed: PrismaParsedQueryParameters = {};
 
         if (query.select) {
@@ -124,8 +126,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             parsed.include = parsePrismaRecursiveField(query.include, "include");
         }
 
-        if (query.originalQuery?.where) {
-            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery.where), this.manyRelations[resourceName] ?? []);
+        if (query.originalQuery?.["where"]) {
+            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery["where"]), this.manyRelations[resourceName] ?? []);
         }
 
         if (query.orderBy) {
@@ -140,8 +142,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
             parsed.skip = query.skip;
         }
 
-        if (query.originalQuery?.cursor) {
-            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery.cursor));
+        if (query.originalQuery?.["cursor"]) {
+            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery["cursor"]));
         }
 
         if (query.distinct) {
@@ -151,8 +153,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         return parsed;
     }
 
-    async getAll(resourceName: M, query: PrismaParsedQueryParameters): Promise<T[]> {
-        // @ts-ignore
+    public async getAll(resourceName: M, query: PrismaParsedQueryParameters): Promise<T[]> {
+        // @ts-expect-error
         return (await this.getPrismaDelegate(resourceName).findMany({
             select: query.select,
             include: query.include,
@@ -165,15 +167,15 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         })) as T[];
     }
 
-    async getOne(resourceName: M, resourceId: string | number, query: PrismaParsedQueryParameters): Promise<T> {
+    public async getOne(resourceName: M, resourceId: number | string, query: PrismaParsedQueryParameters): Promise<T> {
         const delegate = this.getPrismaDelegate(resourceName);
         /**
          * On prisma v2.12, findOne has been deprecated in favor of findUnique
          * We use findUnique in priority only if it's available
          */
-        const findFunction = delegate.findUnique || delegate.findOne;
+        const findFunction = delegate["findUnique"] ?? delegate["findOne"];
 
-        // @ts-ignore
+        // @ts-expect-error
         return findFunction({
             where: {
                 [this.primaryKey]: resourceId,
@@ -183,8 +185,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         });
     }
 
-    async create(resourceName: M, data: any, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-ignore
+    public async create(resourceName: M, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
+        // @ts-expect-error
         return this.getPrismaDelegate(resourceName).create({
             data,
             select: query.select,
@@ -192,8 +194,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         });
     }
 
-    async update(resourceName: M, resourceId: string | number, data: any, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-ignore
+    public async update(resourceName: M, resourceId: number | string, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
+        // @ts-expect-error
         return this.getPrismaDelegate(resourceName).update({
             where: {
                 [this.primaryKey]: resourceId,
@@ -204,8 +206,8 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         });
     }
 
-    async delete(resourceName: M, resourceId: string | number, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-ignore
+    public async delete(resourceName: M, resourceId: number | string, query: PrismaParsedQueryParameters): Promise<T> {
+        // @ts-expect-error
         return this.getPrismaDelegate(resourceName).delete({
             where: {
                 [this.primaryKey]: resourceId,
@@ -215,27 +217,27 @@ export default class PrismaAdapter<T, M extends string> implements Adapter<T, Pr
         });
     }
 
-    connect() {
-        return this.prismaClient.$connect();
+    public async connect(): Promise<void> {
+        this.prismaClient.$connect();
     }
 
-    disconnect() {
-        return this.prismaClient.$disconnect();
+    public async disconnect(): Promise<void> {
+        this.prismaClient.$disconnect();
     }
 
-    get client() {
+    public get client(): PrismaClient {
         return this.prismaClient;
     }
 
-    getModels() {
-        return this.models || [];
+    public getModels(): M[] {
+        return this.models ?? [];
     }
 
-    private getPrismaDelegate(resourceName: M): Record<PrismaAction, (...arguments_: any[]) => Promise<T>> {
-        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`];
-    }
-
-    public async mapModelsToRouteNames() {
+    public async mapModelsToRouteNames(): Promise<{ [key in M]?: string }> {
         return modelsToRouteNames(await this.getPrismaClientModels(), this.getModels());
+    }
+
+    private getPrismaDelegate(resourceName: M): Delegate<T> {
+        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`] as Delegate<T>;
     }
 }

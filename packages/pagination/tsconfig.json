@@ -3,9 +3,5 @@
     "display": "Node 16",
     "extends": "../../tsconfig.json",
     "baseUrl": "./",
-    "include": ["src/**/*", "*.d.ts"],
-    "compilerOptions": {
-        "target": "esnext",
-        "module": "esnext",
-    }
+    "include": ["src/**/*", "*.d.ts"]
 }

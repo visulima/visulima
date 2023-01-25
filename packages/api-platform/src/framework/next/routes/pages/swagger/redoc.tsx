@@ -7,7 +7,7 @@ import type { RedocStandaloneProps } from "redoc";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { RedocStandalone } from "redoc";
 
-import getStaticProps from "./get-static-properties-swagger";
+import type getStaticProps from "./get-static-properties-swagger";
 
 // eslint-disable-next-line max-len
 const RedocApiDocument: (

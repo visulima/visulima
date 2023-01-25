@@ -5,7 +5,7 @@ import cliProgress from "cli-progress";
 import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-import type { BaseDefinition } from "../../exported";
+import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
@@ -17,7 +17,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
     verbose?: boolean;
     veryVerbose?: boolean;
     // eslint-disable-next-line radar/cognitive-complexity
-}) => {
+}): Promise<void> => {
     let openapiConfig: {
         exclude: string[];
         followSymlinks?: boolean;
@@ -31,9 +31,9 @@ const generateCommand = async (configName: string, paths: string[], options: {
 
     try {
         // eslint-disable-next-line unicorn/prefer-module,import/no-dynamic-require
-        openapiConfig = await import(resolve(options.config || configName));
+        openapiConfig = await import(resolve(options.config ?? configName));
     } catch {
-        throw new Error(`No config file found, on: ${options.config || ".openapirc.js"}\n`);
+        throw new Error(`No config file found, on: ${options.config ?? ".openapirc.js"}\n`);
     }
 
     const multibar = new cliProgress.MultiBar(
@@ -54,8 +54,8 @@ const generateCommand = async (configName: string, paths: string[], options: {
         const files = await collect(dir, {
             // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
             skip: [...openapiConfig.exclude, "node_modules/**"],
-            extensions: openapiConfig.extensions || [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
-            followSymlinks: openapiConfig.followSymlinks || false,
+            extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
+            followSymlinks: openapiConfig.followSymlinks ?? false,
             match: openapiConfig.include,
             minimatchOptions: {
                 match: {
@@ -69,7 +69,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
             },
         });
 
-        if (options.verbose || options.veryVerbose) {
+        if (options.verbose ?? options.veryVerbose) {
             // eslint-disable-next-line no-console
             console.log(`\nFound ${files.length} files in ${dir}`);
         }
@@ -111,7 +111,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
 
     await SwaggerParser.validate(JSON.parse(JSON.stringify(spec)));
 
-    const output = options.output || "swagger.json";
+    const output = options.output ?? "swagger.json";
 
     multibar.stop();
 

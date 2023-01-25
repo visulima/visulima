@@ -6,7 +6,7 @@ import { isTagPresentInTags, mergeDeep } from "./utils";
  * @param {string} property
  */
 // eslint-disable-next-line radar/no-duplicate-string
-const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: Record<string, any>, property: string) => {
+const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: Record<string, any>, property: string): void => {
     // Root property on purpose.
     // eslint-disable-next-line no-secrets/no-secrets
     // @see https://github.com/OAI/OpenAPI-Specification/blob/master/proposals/002_Webhooks.md#proposed-solution
@@ -34,6 +34,7 @@ const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: R
         "definitions",
         "channels",
     ];
+
     if (commonProperties.includes(property)) {
         Object.keys(annotation[property]).forEach((definition) => {
             // eslint-disable-next-line no-param-reassign
@@ -44,22 +45,22 @@ const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: R
 
         if (Array.isArray(tags)) {
             tags.forEach((tag) => {
-                if (!isTagPresentInTags(tag, swaggerObject.tags)) {
-                    swaggerObject.tags.push(tag);
+                if (!isTagPresentInTags(tag, swaggerObject["tags"])) {
+                    swaggerObject["tags"].push(tag);
                 }
             });
-        } else if (!isTagPresentInTags(tags, swaggerObject.tags)) {
-            swaggerObject.tags.push(tags);
+        } else if (!isTagPresentInTags(tags, swaggerObject["tags"])) {
+            swaggerObject["tags"].push(tags);
         }
     } else if (property === "security") {
         const { security } = annotation;
 
         // eslint-disable-next-line no-param-reassign
-        swaggerObject.security = security;
+        swaggerObject["security"] = security;
     } else if (property.startsWith("/")) {
         // Paths which are not defined as "paths" property, starting with a slash "/"
         // eslint-disable-next-line no-param-reassign
-        swaggerObject.paths[property] = mergeDeep(swaggerObject.paths[property], annotation[property]);
+        swaggerObject["paths"][property] = mergeDeep(swaggerObject["paths"][property], annotation[property]);
     }
 };
 

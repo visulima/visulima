@@ -11,22 +11,22 @@ const DISPLAY_NAME = "DNS check for";
 const dnsCheck = (
     host: string,
     expectedAddresses?: string[],
-    options?: {
+    options?: Options & {
         family?: IPFamily | "all";
         hints?: number;
-    } & Options,
+    },
 ): Checker => async () => {
-    const { hints, family = "all", ...config } = options || {};
+    const { hints, family = "all", ...config } = options ?? {};
 
     const cacheable = new CacheableLookup(config);
 
     try {
         const meta = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
             hints,
-            ...(family === "all" ? { all: true } : { family: family as IPFamily }),
+            ...(family === "all" ? { all: true } : { family }),
         });
 
-        if (Array.isArray(expectedAddresses) && !expectedAddresses?.includes(meta.address)) {
+        if (Array.isArray(expectedAddresses) && !expectedAddresses.includes(meta.address)) {
             return {
                 displayName: `${DISPLAY_NAME} ${host}`,
                 health: {
@@ -58,7 +58,7 @@ const dnsCheck = (
             displayName: `${DISPLAY_NAME} ${host}`,
             health: {
                 healthy: false,
-                message: error.message,
+                message: (error as Error).message,
                 timestamp: new Date().toISOString(),
             },
             meta: {

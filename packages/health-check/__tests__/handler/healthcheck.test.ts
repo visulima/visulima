@@ -18,8 +18,8 @@ describe("health check route", () => {
             test: async ({ fetch }) => {
                 const response = await fetch();
 
-                expect(response.status).toBe(200);
-                expect(response.headers.get("content-type")).toBe("application/json");
+                expect(response["status"]).toBe(200);
+                expect(response["headers"].get("content-type")).toBe("application/json");
 
                 const jsonResponse = await response.json();
 
@@ -49,16 +49,16 @@ describe("health check route", () => {
     it("endpoint returns health checks reports with custom app name and version", async () => {
         expect.assertions(3);
 
-        process.env.APP_NAME = "my-app";
-        process.env.APP_VERSION = "1.0.0";
+        process.env["APP_NAME"] = "my-app";
+        process.env["APP_VERSION"] = "1.0.0";
 
         await testApiHandler({
             handler: healthCheckHandler(HealthCheckService),
             test: async ({ fetch }) => {
                 const response = await fetch();
 
-                expect(response.status).toBe(200);
-                expect(response.headers.get("content-type")).toBe("application/json");
+                expect(response["status"]).toBe(200);
+                expect(response["headers"].get("content-type")).toBe("application/json");
 
                 const jsonResponse = await response.json();
 
@@ -84,7 +84,7 @@ describe("health check route", () => {
             },
         });
 
-        process.env.APP_NAME = undefined;
-        process.env.APP_VERSION = undefined;
+        process.env["APP_NAME"] = undefined;
+        process.env["APP_VERSION"] = undefined;
     });
 });

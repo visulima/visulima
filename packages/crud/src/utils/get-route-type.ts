@@ -30,7 +30,7 @@ const getRouteType: (
             const pathMatch = entityMatcher(realPath);
 
             // If we got a /something after the resource name, we are reading 1 entity
-            if (pathMatch && pathMatch.params.id) {
+            if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
                     routeType: RouteType.READ_ONE,
                     resourceId: pathMatch.params.id,
@@ -58,7 +58,7 @@ const getRouteType: (
         case "PATCH": {
             const pathMatch = entityMatcher(realPath);
 
-            if (pathMatch && pathMatch.params.id) {
+            if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
                     routeType: RouteType.UPDATE,
                     resourceId: pathMatch.params.id,
@@ -72,7 +72,7 @@ const getRouteType: (
         case "DELETE": {
             const pathMatch = entityMatcher(realPath);
 
-            if (pathMatch && pathMatch.params.id) {
+            if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
                     routeType: RouteType.DELETE,
                     resourceId: pathMatch.params.id,

@@ -5,7 +5,7 @@ import type { CorsOptions, CorsOptionsDelegate } from "cors";
 import cors from "cors";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-// eslint-disable-next-line max-len
+// eslint-disable-next-line max-len,@typescript-eslint/explicit-module-boundary-types
 const corsMiddleware = <Request extends IncomingMessage, Response extends ServerResponse>(options?: CorsOptions | CorsOptionsDelegate) => expressWrapper<Request, Response>(cors(options));
 
 export default corsMiddleware;

@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync } from "node:fs";
 
-const initCommand = (configName: string) => {
+const initCommand = (configName: string): void => {
     if (existsSync(configName)) {
         throw new Error("Config file already exists");
     }

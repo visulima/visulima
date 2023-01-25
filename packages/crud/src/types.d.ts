@@ -16,7 +16,7 @@ export type ModelOption = {
     name?: string
     only?: RouteType[]
     exclude?: RouteType[]
-    formatResourceId?: (resourceId: string) => string | number
+    formatResourceId?: (resourceId: string) => number | string
 };
 
 export type ModelsOptions<M extends string = string> = {
@@ -24,7 +24,7 @@ export type ModelsOptions<M extends string = string> = {
 };
 
 export type HandlerOptions<M extends string = string> = {
-    formatResourceId?: (resourceId: string) => string | number;
+    formatResourceId?: (resourceId: string) => number | string;
     models?: ModelsOptions<M>;
     exposeStrategy?: "all" | "none";
     pagination?: PaginationConfig,
@@ -51,20 +51,20 @@ export interface UniqueResourceHandlerParameters<T, Q> {
     adapter: Adapter<T, Q>;
     query: Q;
     resourceName: string;
-    resourceId: string | number;
+    resourceId: number | string;
 }
 
 export interface Adapter<T, Q, M extends string = string> {
     models?: M[];
     init?: () => Promise<void>;
-    parseQuery(resourceName: M, query: ParsedQueryParameters): Q;
-    getAll(resourceName: M, query: Q): Promise<T[]>;
-    getOne(resourceName: M, resourceId: string | number, query: Q): Promise<T>;
-    create(resourceName: M, data: any, query: Q): Promise<T>;
-    update(resourceName: M, resourceId: string | number, data: any, query: Q): Promise<T>;
-    delete(resourceName: M, resourceId: string | number, query: Q): Promise<T>;
-    getPaginationData(resourceName: M, query: Q): Promise<PaginationData>;
-    getModels(): M[];
+    parseQuery: (resourceName: M, query: ParsedQueryParameters) => Q;
+    getAll: (resourceName: M, query: Q) => Promise<T[]>;
+    getOne: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
+    create: (resourceName: M, data: any, query: Q) => Promise<T>;
+    update: (resourceName: M, resourceId: number | string, data: any, query: Q) => Promise<T>;
+    delete: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
+    getPaginationData: (resourceName: M, query: Q) => Promise<PaginationData>;
+    getModels: () => M[];
     connect?: () => Promise<void>;
     disconnect?: () => Promise<void>;
     handleError?: (error: Error) => void;
@@ -78,19 +78,19 @@ export type PaginationData = {
 };
 
 export type RecursiveField = {
-    [key: string]: boolean | TRecursiveField;
+    [key: string]: TRecursiveField | boolean;
 };
 
-export type WhereOperator = "$eq" | "$neq" | "$in" | "$notin" | "$lt" | "$lte" | "$gt" | "$gte" | "$cont" | "$starts" | "$ends" | "$isnull";
+export type WhereOperator = "$cont" | "$ends" | "$eq" | "$gt" | "$gte" | "$in" | "$isnull" | "$lt" | "$lte" | "$neq" | "$notin" | "$starts";
 
-export type SearchCondition = string | boolean | number | Date | null;
+export type SearchCondition = Date | boolean | number | string | null;
 
 export type WhereCondition = {
     [key in TWhereOperator]?: TSearchCondition;
 };
 
 export type Condition = {
-    [key: string]: TSearchCondition | TWhereCondition | TCondition;
+    [key: string]: TCondition | TSearchCondition | TWhereCondition;
 };
 
 export type WhereField = Condition & {
@@ -119,6 +119,13 @@ export interface ParsedQueryParameters {
     };
 }
 
-export interface ExecuteHandler<Request, Response> {
-    (request: Request, response: Response): Promise<void>;
-}
+export type ExecuteHandler<Request, Response> = (request: Request, response: Response) => Promise<void>;
+
+export type FakePrismaClient = {
+    _dmmf?: any;
+    _getDmmf?: () => any;
+    $connect: () => void;
+    $disconnect: () => Promise<void>;
+
+    [key: string]: any
+};

@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import yaml from "yaml";
 
-import { OpenApiObject } from "./exported";
+import type { OpenApiObject } from "./exported.d";
 import yamlLoc from "./util/yaml-loc";
 
 const ALLOWED_KEYS = new Set(["openapi", "info", "servers", "security", "tags", "externalDocs", "components", "paths"]);
 
 class ParseError extends Error {
-    filePath?: string;
+    public filePath?: string;
 }
 
 const parseFile = (

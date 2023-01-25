@@ -1,3 +1,4 @@
+import type { HttpError } from "http-errors";
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
@@ -21,8 +22,8 @@ describe("connect/handler", () => {
                 },
             ]);
         } catch (error: any) {
-            expect(error.message).toStrictEqual("No route with [POST] method found.");
-            expect(error.statusCode).toStrictEqual(405);
+            expect((error as HttpError).message).toStrictEqual("No route with [POST] method found.");
+            expect((error as HttpError).statusCode).toStrictEqual(405);
 
             // eslint-disable-next-line no-underscore-dangle
             expect(res._getStatusCode()).toStrictEqual(405);
@@ -73,8 +74,8 @@ describe("connect/handler", () => {
                 {
                     regex: /application\/yaml/,
                     handler: (error: any, _, response) => {
-                        response.statusCode = error.statusCode;
-                        response.end(error.message);
+                        response.statusCode = (error as HttpError).statusCode;
+                        response.end((error as HttpError).message);
                     },
                 },
             ],

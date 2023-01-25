@@ -38,7 +38,7 @@ const pingCheck = (host: string, options?: extendedPingOptions): Checker => asyn
             displayName: `${DISPLAY_NAME} ${host}`,
             health: {
                 healthy: false,
-                message: error.message,
+                message: (error as Error).message,
                 timestamp: new Date().toISOString(),
             },
         };

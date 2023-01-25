@@ -1,4 +1,4 @@
-export type Serializer = (data: any) => string | Buffer | Uint8Array;
+export type Serializer = (data: any) => Buffer | Uint8Array | string;
 
 export type Serializers = {
     regex: RegExp;

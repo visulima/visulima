@@ -7,7 +7,7 @@ const collect = async (directory: string, options: Partial<Options & { extension
         ...options,
     } as Options;
 
-    // eslint-disable-next-line compat/compat,no-async-promise-executor
+    // eslint-disable-next-line compat/compat,no-async-promise-executor,@typescript-eslint/no-misused-promises
     return new Promise<string[]>(async (resolve, reject) => {
         const entries: string[] = [];
 
@@ -17,7 +17,7 @@ const collect = async (directory: string, options: Partial<Options & { extension
                 entries.push(entry.path);
             }
 
-            resolve(entries as string[]);
+            resolve(entries);
         } catch (error: any) {
             reject(error);
         }

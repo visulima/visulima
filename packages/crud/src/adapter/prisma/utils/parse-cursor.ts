@@ -2,7 +2,7 @@ import isPrimitive from "../../../utils/is-primitive";
 import type { PrismaCursor } from "../types.d";
 
 const parsePrismaCursor = (
-    cursor: Record<string, string | number | boolean>,
+    cursor: Record<string, boolean | number | string>,
 ): PrismaCursor => {
     const parsed: PrismaCursor = {};
 
@@ -10,7 +10,7 @@ const parsePrismaCursor = (
         const value = cursor[key];
 
         if (isPrimitive(value)) {
-            parsed[key as keyof typeof cursor] = value as string | number | boolean;
+            parsed[key] = value as boolean | number | string;
         }
     });
 

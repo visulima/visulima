@@ -9,7 +9,7 @@ import type { ExpressRegex, Key } from "./types.d";
  * @returns The regex for a path variable converted to original string on the express route
  */
 const mapKeysToPath = (layerRegexPath: ExpressRegex, keys: Key[]): string => {
-    if (!keys || keys.length === 0) {
+    if (keys.length === 0) {
         throw new Error("must include atleast one key to map");
     }
 

@@ -1,6 +1,6 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
-import { ComponentProps, FC } from "react";
+import type { ComponentProps, FC } from "react";
 
 import { useDetails } from "../contexts";
 

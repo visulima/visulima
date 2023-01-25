@@ -7,7 +7,7 @@ import { addStatusCodeToResponse, sendJson, setErrorHeaders } from "./utils";
 
 const defaultTitle = "An error occurred";
 
-const jsonapiErrorHandler: ErrorHandler = (error: HttpError | tsJapi.JapiError | Error, _request, response) => {
+const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.JapiError, _request, response) => {
     addStatusCodeToResponse(response, error);
 
     setErrorHeaders(response, error);

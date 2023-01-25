@@ -1,10 +1,10 @@
 import type { Condition, SearchCondition } from "../../types.d";
 
-export type PrismaRecursiveField = "select" | "include";
+export type PrismaRecursiveField = "include" | "select";
 
 export type PrismaRecursive<T extends PrismaRecursiveField> = Record<string, boolean | { [key in T]: PrismaRecursive<T> }>;
 
-export type PrismaWhereOperator = "equals" | "not" | "in" | "notIn" | "lt" | "lte" | "gt" | "gte" | "contains" | "startsWith" | "endsWith";
+export type PrismaWhereOperator = "contains" | "endsWith" | "equals" | "gt" | "gte" | "in" | "lt" | "lte" | "not" | "notIn" | "startsWith";
 
 export type PrismaOrderByOperator = "asc" | "desc";
 
@@ -13,7 +13,7 @@ export type PrismaFieldFilterOperator = {
 };
 
 export type PrismaFieldFilter = {
-    [key: string]: SearchCondition | PrismaFieldFilterOperator | PrismaRelationFilter | Condition | undefined;
+    [key: string]: Condition | PrismaFieldFilterOperator | PrismaRelationFilter | SearchCondition | undefined;
 };
 
 export type PrismaWhereField = PrismaFieldFilter & {
@@ -23,7 +23,7 @@ export type PrismaWhereField = PrismaFieldFilter & {
 };
 
 export type PrismaRelationFilter = {
-    some: SearchCondition | PrismaFieldFilter;
+    some?: PrismaFieldFilter | SearchCondition;
 };
 
 export type PrismaOrderBy = {
@@ -31,7 +31,7 @@ export type PrismaOrderBy = {
 };
 
 export type PrismaCursor = {
-    [key: string]: string | number | boolean;
+    [key: string]: boolean | number | string;
 };
 
 export interface PrismaParsedQueryParameters {

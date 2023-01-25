@@ -416,22 +416,22 @@ describe("Router", async () => {
         // eslint-disable-next-line radar/no-duplicate-string
         expect(foo1.fns.length, '~> does match "/api/v1" directly').toStrictEqual(1);
         // eslint-disable-next-line radar/no-duplicate-string
-        expect(foo1.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(foo1.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         // eslint-disable-next-line radar/no-duplicate-string
         const foo2 = find(context2, "/api/v1/users");
         expect(foo2.fns.length, '~> does not match "/api/v1/users" - too long').toStrictEqual(0);
-        expect(foo2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
+        expect(foo2.params["version"], '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
         expect(find(context3, "/api").fns.length, '~> does match "/api" because optional').toStrictEqual(1);
 
         const bar1 = find(context3, "/api/v1");
         expect(bar1.fns.length, '~> does match "/api/v1" directly').toStrictEqual(1);
-        expect(bar1.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(bar1.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         const bar2 = find(context3, "/api/v1/users");
         expect(bar2.fns.length, '~> does match "/api/v1/users" - too long').toStrictEqual(0);
-        expect(bar2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
+        expect(bar2.params["version"], '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
         expect(find(context4, "/movies").fns.length, '~> does not match "/movies" directly').toStrictEqual(0);
         expect(find(context4, "/movies/narnia").fns.length, '~> does not match "/movies/narnia" directly').toStrictEqual(0);
@@ -466,21 +466,21 @@ describe("Router", async () => {
 
         const foo1 = find(context2, "/api/v1");
         expect(foo1.fns.length, '~> does match "/api/v1" directly').toStrictEqual(1);
-        expect(foo1.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(foo1.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         const foo2 = find(context2, "/api/v1/users");
         expect(foo2.fns.length, '~> does match "/api/v1/users" loosely').toStrictEqual(1);
-        expect(foo2.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(foo2.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         expect(find(context3, "/api").fns.length, '~> does match "/api" because optional').toStrictEqual(1);
 
         const bar1 = find(context3, "/api/v1");
         expect(bar1.fns.length, '~> does match "/api/v1" directly').toStrictEqual(1);
-        expect(bar1.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(bar1.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         const bar2 = find(context3, "/api/v1/users");
         expect(bar2.fns.length, '~> does match "/api/v1/users" loosely').toStrictEqual(1);
-        expect(bar2.params.version, '~> parses the "version" correctly').toStrictEqual("v1");
+        expect(bar2.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
         expect(find(context4, "/movies").fns.length, '~> does not match "/movies" directly').toStrictEqual(0);
         expect(find(context4, "/movies/narnia").fns.length, '~> does not match "/movies/narnia" directly').toStrictEqual(0);

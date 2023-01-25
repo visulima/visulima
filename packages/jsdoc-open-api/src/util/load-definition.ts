@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import yaml from "yaml";
 
-import type { BaseDefinition } from "../exported";
+import type { BaseDefinition } from "../exported.d";
 
 function parseFile(file: string): BaseDefinition {
     const extension = path.extname(file);

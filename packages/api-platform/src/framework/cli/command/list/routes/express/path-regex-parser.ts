@@ -24,17 +24,16 @@ const pathRegexParser = (layerRegexPath: ExpressRegex | string, keys: Key[]): st
 
     let mappedPath = "";
 
-    if (keys && keys.length > 0) {
+    if (keys.length > 0) {
         mappedPath = mapKeysToPath(layerRegexPath, keys);
     }
 
-    const match = layerRegexPath
+    const match = /^\/\^((?:\\[$()*+./?[\\\]^{|}]|[^$()*+./?[\\\]^{|}])*)\$\//.exec(layerRegexPath
         .toString()
         .replace("\\/?", "")
-        .replace("(?=\\/|$)", "$")
-        .match(/^\/\^((?:\\[$()*+./?[\\\]^{|}]|[^$()*+./?[\\\]^{|}])*)\$\//) as string[];
+        .replace("(?=\\/|$)", "$")) as string[];
 
-    if (match) {
+    if (Array.isArray(match) && match.length > 1) {
         return (match[1] as string).replace(/\\(.)/g, "$1").slice(1);
     }
 

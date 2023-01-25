@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import type { SwaggerUIProps } from "swagger-ui-react";
 
-import getStaticProps from "./get-static-properties-swagger";
+import type getStaticProps from "./get-static-properties-swagger";
 // eslint-disable-next-line import/no-extraneous-dependencies
 const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
 

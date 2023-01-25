@@ -6,7 +6,7 @@ import type { ServerResponse } from "node:http";
  * @param {number} statusCode
  * @param {any} jsonBody of data
  */
-const sendJson = (response: ServerResponse, statusCode: number, jsonBody: any): void => {
+const sendJson = (response: ServerResponse, statusCode: number, jsonBody: unknown): void => {
     // Set header to application/json
     response.setHeader("content-type", "application/json; charset=utf-8");
 
