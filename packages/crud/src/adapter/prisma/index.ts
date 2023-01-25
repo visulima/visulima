@@ -1,5 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import type {
+// This @typescript-eslint/consistent-type-imports is need to be disabled because of the dts in the tsup.config.ts file.
+// eslint-disable-next-line import/no-extraneous-dependencies,@typescript-eslint/consistent-type-imports
+import {
     // @ts-expect-error
     PrismaAction,
     PrismaClient,
