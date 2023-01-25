@@ -146,13 +146,13 @@ const config: DocumentationThemeConfig = {
         },
     },
     notFound: {
-        pages: ({ local }) => {
+        pages: ({ local }: { local: string }) => {
             if (local === "en-US") {
                 return [
                     {
                         title: "Documentation",
                         subtitle: "Learn how to use Visulima",
-                        href: "/docs/getting-started",
+                        url: "/docs/getting-started",
                     },
                 ];
             }

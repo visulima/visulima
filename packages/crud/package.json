@@ -74,8 +74,6 @@
         "path-to-regexp": "^6.2.1"
     },
     "devDependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
         "@anolilab/eslint-config": "^5.0.2",
         "@anolilab/semantic-release-preset": "^2.2.0",
         "@prisma/client": "^4.9.0",
@@ -115,6 +113,8 @@
         "node-mocks-http": "^1.12.1",
         "openapi-types": "^12.1.0",
         "prettier": "^2.8.3",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "read-pkg": "^7.1.0",
         "rimraf": "^4.1.2",
         "semantic-release": "^20.1.0",

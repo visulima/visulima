@@ -11,7 +11,7 @@ const log = debug("api-platform:connect:serializers-middleware");
 
 // eslint-disable-next-line max-len
 const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler): Promise<ValueOrPromise<void>> => {
-    if (typeof (response as NextApiResponse)?.send === "function") {
+    if (typeof (response as NextApiResponse).send === "function") {
         const oldSend = (response as NextApiResponse).send;
 
         (response as NextApiResponse).send = (data) => {
@@ -23,7 +23,7 @@ const serializersMiddleware = (serializers: Serializers = [], defaultContentType
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return (response as NextApiResponse).send(data);
         };
-    } else if (typeof (response as NextApiResponse)?.json === "function") {
+    } else if (typeof (response as NextApiResponse).json === "function") {
         log("response.json() is not supported by @visulima/api-platform serializer. Use response.send() or response.end() instead.");
     } else {
         const oldEnd = response.end;
