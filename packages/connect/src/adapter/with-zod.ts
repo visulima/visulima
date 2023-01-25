@@ -1,12 +1,12 @@
 import createHttpError from "http-errors";
-import type { AnyZodObject } from "zod";
-import { ZodError, ZodObject } from "zod";
+import type { AnyZodObject, ZodObject } from "zod";
+import { ZodError } from "zod";
 
 import type { Nextable, NextHandler } from "../types";
 
 const withZod = <
-        Request extends object,
-        Response extends unknown,
+        Request,
+        Response,
         Handler extends Nextable<any>,
         Schema extends ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
     >(

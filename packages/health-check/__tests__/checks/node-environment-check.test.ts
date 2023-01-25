@@ -14,15 +14,15 @@ describe("node-environment-check", () => {
                 timestamp: expect.any(String),
             },
             meta: {
-                env: process.env.NODE_ENV,
+                env: process.env["NODE_ENV"],
             },
         });
     });
 
     it("should return healthy when the node env is set to production", async () => {
-        const oldEnvironment = process.env.NODE_ENV;
+        const oldEnvironment = process.env["NODE_ENV"];
 
-        process.env.NODE_ENV = "production";
+        process.env["NODE_ENV"] = "production";
 
         const result = await nodeEnvironmentCheck("production")();
 
@@ -33,11 +33,11 @@ describe("node-environment-check", () => {
                 timestamp: expect.any(String),
             },
             meta: {
-                env: process.env.NODE_ENV,
+                env: process.env["NODE_ENV"],
             },
         });
 
-        process.env.NODE_ENV = oldEnvironment;
+        process.env["NODE_ENV"] = oldEnvironment;
     });
 
     it("should return unhealthy when the node env is set to production", async () => {
@@ -54,9 +54,10 @@ describe("node-environment-check", () => {
     });
 
     it("should return unhealthy when the node env is not set", async () => {
-        const oldEnvironment = process.env.NODE_ENV;
+        const oldEnvironment = process.env["NODE_ENV"];
 
-        delete process.env.NODE_ENV;
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete process.env["NODE_ENV"];
 
         const result = await nodeEnvironmentCheck()();
 
@@ -69,6 +70,6 @@ describe("node-environment-check", () => {
             },
         });
 
-        process.env.NODE_ENV = oldEnvironment;
+        process.env["NODE_ENV"] = oldEnvironment;
     });
 });

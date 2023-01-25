@@ -35,11 +35,11 @@ import { forwardRef } from "react";
 const DEFAULT_ID = "nextra-skip-nav";
 const DEFAULT_LABEL = "Skip to content";
 
-type SkipNavLinkProperties = Omit<ComponentProps<"a">, "ref" | "href" | "children"> & {
+type SkipNavLinkProperties = Omit<ComponentProps<"a">, "children" | "href" | "ref"> & {
     label?: string;
 };
 
-type SkipNavContentProperties = Omit<ComponentProps<"div">, "ref" | "children">;
+type SkipNavContentProperties = Omit<ComponentProps<"div">, "children" | "ref">;
 
 export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
     ({

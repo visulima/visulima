@@ -1,10 +1,10 @@
 import type { AnyZodObject } from "zod";
 
-export type HttpMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE";
+export type HttpMethod = "DELETE" | "GET" | "HEAD" | "PATCH" | "POST" | "PUT";
 
 export type FunctionLike = (...arguments_: any[]) => unknown;
 
-export type RouteMatch = string | RegExp;
+export type RouteMatch = RegExp | string;
 
 export type NextHandler = () => ValueOrPromise<any>;
 
@@ -16,10 +16,11 @@ export type FindResult<H extends FunctionLike> = {
     middleOnly: boolean;
 };
 
-export type RoutesExtendedRequestHandler<Request extends object, Context extends unknown, RResponse extends unknown, Routes> = (
+export type RoutesExtendedRequestHandler<Request extends object, Context, RResponse, Routes> = (
     request: Request,
     response: Context,
     routes: Routes,
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 ) => ValueOrPromise<RResponse | void>;
 
 export interface HandlerOptions<Handler extends FunctionLike> {
@@ -27,10 +28,10 @@ export interface HandlerOptions<Handler extends FunctionLike> {
     onError?: (error: unknown, ...arguments_: Parameters<Handler>) => ReturnType<Handler>;
 }
 
-export type ValueOrPromise<T> = T | Promise<T>;
+export type ValueOrPromise<T> = Promise<T> | T;
 
 export type RouteShortcutMethod<This, Schema extends AnyZodObject, H extends FunctionLike> = (
-    route: RouteMatch | Nextable<H>,
-    zodSchemaOrRouteOrFns?: Schema | RouteMatch | Nextable<H> | string,
+    route: Nextable<H> | RouteMatch,
+    zodSchemaOrRouteOrFns?: Nextable<H> | RouteMatch | Schema | string,
     ...fns: Nextable<H>[]
 ) => This;

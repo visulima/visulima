@@ -5,3 +5,4 @@ coverage
 
 inject-react-import.js
 vitest.config.ts
+._*.*

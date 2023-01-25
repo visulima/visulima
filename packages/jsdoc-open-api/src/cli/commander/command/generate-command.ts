@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Command } from "commander";
+import type { Command } from "commander";
 import { exit } from "node:process";
 
 import baseGenerateCommand from "../../command/generate-command";
 
-const generateCommand = (program: Command, commandName: string = "generate", configName: string = ".openapirc.js") => {
+const generateCommand = (program: Command, commandName: string = "generate", configName: string = ".openapirc.js"): void => {
     program
         .command(commandName)
         .description("Generates OpenAPI (Swagger) documentation from JSDoc's")

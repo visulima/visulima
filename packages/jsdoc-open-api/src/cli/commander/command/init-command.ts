@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Command } from "commander";
+import type { Command } from "commander";
 import { exit } from "node:process";
 
 import baseInitCommand from "../../command/init-command";
@@ -9,7 +9,7 @@ const initCommand = (
     commandName: string = "init",
     description: string = "Inits a pre-configured @visulima/jsdoc-open-api config file.",
     configName: string = ".openapirc.js",
-) => {
+): void => {
     program
         .command(commandName)
         .description(description)

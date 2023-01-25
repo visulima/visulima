@@ -1,3 +1,4 @@
+import type { XmlElement } from "jstoxml";
 import xml from "jstoxml";
 import type { OpenAPIV3 } from "openapi-types";
 import { stringify } from "yaml";
@@ -8,13 +9,13 @@ type Transformers = { regex: RegExp; transformer: (data: any) => string }[];
 
 const jsonMediaType = "application/json";
 
-const prepareStatusContent = (methodSpec: OpenAPIV3.OperationObject<{}>, status: string, mediaType: string) => {
-    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content === undefined) {
+const prepareStatusContent = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string) => {
+    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content === undefined) {
         // eslint-disable-next-line no-param-reassign
         ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content = {};
     }
 
-    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType] === undefined) {
+    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType] === undefined) {
         (
             // eslint-disable-next-line no-param-reassign
             ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as {
@@ -44,7 +45,7 @@ const extendComponentSchemas = (spec: Partial<OpenAPIV3.Document>, schemaName: s
 const extendResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string, schemaName: string, schemaIsArray: boolean) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
-    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.schema === undefined) {
+    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.schema === undefined) {
         (
             (
                 // eslint-disable-next-line no-param-reassign
@@ -84,13 +85,13 @@ const extendSwaggerWithMediaTypeSchema = (
 ): {
     example?: any;
     examples?: {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     };
 } => {
     let example: any | undefined;
     let examples:
     | {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     }
     | undefined;
 
@@ -107,14 +108,14 @@ const extendSwaggerWithMediaTypeSchema = (
 
             const schemaIsArray = (schema as OpenAPIV3.SchemaObject).type === "array";
 
-            Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+            Object.entries(allowedMediaTypes ?? {}).forEach(([mediaType, allowed]) => {
                 if (!allowed) {
                     return;
                 }
 
                 let schemaName: string;
 
-                if ((schema as OpenAPIV3.ReferenceObject).$ref === undefined) {
+                if (schema?.$ref === undefined) {
                     // eslint-disable-next-line max-len
                     schemaName = `${toHeaderCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
 
@@ -145,7 +146,7 @@ const extendSwaggerWithMediaTypeExample = (
             return;
         }
 
-        Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+        Object.entries(allowedMediaTypes ?? {}).forEach(([mediaType, allowed]) => {
             if (!allowed) {
                 return;
             }
@@ -153,7 +154,7 @@ const extendSwaggerWithMediaTypeExample = (
             prepareStatusContent(methodSpec, status, mediaType);
 
             if (
-                ((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.example
+                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.example
                 === undefined
             ) {
                 (
@@ -166,7 +167,7 @@ const extendSwaggerWithMediaTypeExample = (
                 ).example = {};
             }
 
-            let transformed = false;
+            let transformed: boolean = false;
 
             transformers.forEach(({ regex, transformer }) => {
                 if (!transformed && regex.test(mediaType)) {
@@ -183,6 +184,7 @@ const extendSwaggerWithMediaTypeExample = (
                 }
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!transformed) {
                 (
                     (
@@ -201,7 +203,7 @@ const extendComponentExamples = (
     spec: Partial<OpenAPIV3.Document>,
     exampleName: string,
     examples: {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     },
 ) => {
     if (typeof spec.components !== "object") {
@@ -227,13 +229,13 @@ const prepareResponseExamples = (
     mediaType: string,
     transformers: Transformers,
     examples: {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     },
     // eslint-disable-next-line radar/cognitive-complexity
 ) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
-    if (((methodSpec?.responses as unknown as OpenAPIV3.ResponsesObject)?.[status] as OpenAPIV3.ResponseObject)?.content?.[mediaType]?.examples === undefined) {
+    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.examples === undefined) {
         (
             (
                 // eslint-disable-next-line no-param-reassign
@@ -245,25 +247,25 @@ const prepareResponseExamples = (
     }
 
     const transformedExamples: {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     } = {};
 
     Object.entries(examples).forEach(([exampleName, example]) => {
-        let transformed = false;
+        let transformed: boolean = false;
 
         transformers.forEach(({ regex, transformer }) => {
             if (!transformed && regex.test(mediaType)) {
                 let data: any = "";
 
-                if ((spec.components?.examples?.[exampleName] as OpenAPIV3.ExampleObject) !== undefined) {
-                    data = (spec.components?.examples?.[exampleName] as OpenAPIV3.ExampleObject).value;
-                } else if (example as OpenAPIV3.ReferenceObject) {
+                if (spec.components?.examples?.[exampleName]) {
+                    data = (spec.components.examples[exampleName] as OpenAPIV3.ExampleObject).value;
+                } else if ((example as OpenAPIV3.ReferenceObject).$ref) {
                     data = (
                         spec.components?.examples?.[
                             (example as OpenAPIV3.ReferenceObject).$ref.replace("#/components/examples/", "")
                         ] as OpenAPIV3.ExampleObject
                     ).value;
-                } else if (typeof (example as OpenAPIV3.ExampleObject)?.value === "string") {
+                } else if (typeof (example as OpenAPIV3.ExampleObject).value === "string") {
                     data = (example as OpenAPIV3.ExampleObject).value;
                 }
 
@@ -275,6 +277,7 @@ const prepareResponseExamples = (
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!transformed) {
             transformedExamples[exampleName] = spec.components?.examples?.[exampleName] === undefined
                 ? example
@@ -303,7 +306,7 @@ const extendSwaggerWithMediaTypeExamples = (
     pathKey: string,
     transformers: Transformers,
     examples: {
-        [media: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.ExampleObject;
+        [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     },
 ) => {
     const examplesName = `${toHeaderCase(pathKey.trim().replace("/", ""))}`;
@@ -313,7 +316,7 @@ const extendSwaggerWithMediaTypeExamples = (
             return;
         }
 
-        Object.entries(allowedMediaTypes || {}).forEach(([mediaType, allowed]) => {
+        Object.entries(allowedMediaTypes ?? {}).forEach(([mediaType, allowed]) => {
             if (!allowed) {
                 return;
             }
@@ -332,7 +335,7 @@ export default function extendSwaggerSpec(
     transformers: Transformers = [
         {
             regex: /xml/,
-            transformer: (value) => xml.toXML(value, {
+            transformer: (value: XmlElement | XmlElement[] | undefined) => xml.toXML(value, {
                 header: true,
                 indent: "  ",
             }),
@@ -345,7 +348,7 @@ export default function extendSwaggerSpec(
 ): Partial<OpenAPIV3.Document> {
     if (typeof spec === "object" && typeof spec.paths === "object") {
         Object.entries(spec.paths).forEach(([pathKey, pathSpec]) => {
-            Object.values(pathSpec as OpenAPIV3.PathsObject & OpenAPIV3.OperationObject).forEach((methodSpec) => {
+            Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
                 if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
                     Object.entries((methodSpec as OpenAPIV3.OperationObject).responses).forEach(([status, responseSpec]) => {
                         if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {

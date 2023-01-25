@@ -45,9 +45,9 @@ ComponentProps<"pre"> & {
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <pre className={className} ref={reference as LegacyRef<HTMLPreElement> | undefined} {...properties}>
                 {filename && (
-                    <div className="mt-2 flex space-x-2 text-xs mb-4">
-                        <div className="flex h-6 rounded-full bg-gradient-to-r from-sky-400/30 via-sky-400 to-sky-400/30 p-px font-medium text-sky-300">
-                            <div className="flex items-center rounded-full px-2.5 bg-slate-800">{filename}</div>
+                    <div className="mt-2 mb-4 flex space-x-2 text-xs">
+                        <div className="from-sky-400/30 via-sky-400 to-sky-400/30 text-sky-300 flex h-6 rounded-full bg-gradient-to-r p-px font-medium">
+                            <div className="flex items-center rounded-full bg-slate-800 px-2.5">{filename}</div>
                         </div>
                     </div>
                 )}

@@ -13,14 +13,14 @@ const listHandler: Handler = async ({
     let isPaginated = false;
     let paginationOptions: PaginationOptions | undefined;
 
-    if (query?.page !== undefined) {
-        if (query?.page <= 0) {
+    if (query.page !== undefined) {
+        if (query.page <= 0) {
             throw new Error("page query must be a strictly positive number");
         }
 
         paginationOptions = {
-            page: query?.page,
-            perPage: query?.limit || pagination.perPage,
+            page: query.page,
+            perPage: query.limit ?? pagination.perPage,
         };
     }
 
@@ -38,7 +38,7 @@ const listHandler: Handler = async ({
     if (isPaginated) {
         const { page, total } = await adapter.getPaginationData(resourceName, query);
 
-        const paginator = paginate(page, (paginationOptions as PaginationOptions).perPage as number, total, resources);
+        const paginator = paginate(page, (paginationOptions as PaginationOptions).perPage, total, resources);
 
         return {
             data: paginator.toJSON(),

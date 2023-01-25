@@ -1,7 +1,6 @@
 import { NodeRouter } from "@visulima/connect";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AnyZodObject } from "zod";
-import { ZodObject } from "zod";
+import type { AnyZodObject, ZodObject } from "zod";
 
 import type { ErrorHandlers } from "../error-handler/types";
 import type { Serializers } from "../serializers";
@@ -25,18 +24,18 @@ const createNodeRouter = <
             errorHandlers?: ErrorHandlers;
             showTrace?: boolean;
         } = {},
-    ) => {
+    ): NodeRouter<Request, Response, Schema> => {
     const router = new NodeRouter<Request, Response, Schema>({
         onNoMatch,
-        onError: onError(options.errorHandlers || [], options.showTrace || false),
+        onError: onError(options.errorHandlers ?? [], options.showTrace ?? false),
     });
 
     return router
-        .use(httpHeaderNormalizerMiddleware(options?.middlewares?.["http-header-normalizer"] || {}))
+        .use(httpHeaderNormalizerMiddleware(options.middlewares?.["http-header-normalizer"] ?? {}))
         .use(
             serializersMiddleware(
-                options?.middlewares?.serializers?.serializers || [],
-                options?.middlewares?.serializers?.defaultContentType || "application/json; charset=utf-8",
+                options.middlewares?.serializers?.serializers ?? [],
+                options.middlewares?.serializers?.defaultContentType ?? "application/json; charset=utf-8",
             ),
         );
 };

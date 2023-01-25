@@ -1,4 +1,4 @@
-import { IncomingMessage } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { parse as urlParse } from "node:url";
 
 type IncomingApiRequest<TApiRequest = IncomingMessage> = TApiRequest & {
@@ -6,13 +6,13 @@ type IncomingApiRequest<TApiRequest = IncomingMessage> = TApiRequest & {
     query?: any;
 };
 
-export const jsonResponse = (response: any, status: number, data?: unknown): void => {
+export const jsonResponse = (response: ServerResponse, status: number, data?: unknown): void => {
     response.statusCode = status;
     response.setHeader("Content-Type", "application/json");
     response.end(data ? JSON.stringify(data) : "");
 };
 
-export const parseBody = async (request: IncomingApiRequest): Promise<unknown> => {
+export const parseBody = async (request: IncomingApiRequest): Promise<any> => {
     if (request.body) {
         return request.body;
     }

@@ -5,7 +5,7 @@ import type { OpenAPIV3 } from "openapi-types";
 
 import formatSchemaReference from "./utils/format-schema-ref";
 
-const getJSONSchemaScalar = (fieldType: string | object) => {
+const getJSONSchemaScalar = (fieldType: object | string) => {
     switch (fieldType) {
         case "Int":
         case "BigInt": {
@@ -43,9 +43,10 @@ const methodsNames = [
 ];
 
 class PrismaJsonSchemaParser {
-    schemaInputTypes: Map<string, any> = new Map<string, any>();
+    private schemaInputTypes: Map<string, any> = new Map<string, any>();
 
-    constructor(private dmmf: any) {}
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    public constructor(private dmmf: any) {}
 
     public parseModels(): {
         [key: string]: JSONSchema7;
@@ -54,9 +55,9 @@ class PrismaJsonSchemaParser {
             [key: string]: JSONSchema7;
         };
 
-        Object.keys(modelsDefinitions || {})?.forEach((definition: string | number) => {
+        Object.keys(modelsDefinitions).forEach((definition: number | string) => {
             // @TODO: added the correct type
-            // @ts-ignore
+            // @ts-expect-error
             const { properties } = modelsDefinitions[definition];
 
             Object.keys(properties).forEach((property: string) => {
@@ -77,7 +78,7 @@ class PrismaJsonSchemaParser {
     }
 
     // eslint-disable-next-line radar/cognitive-complexity
-    public parseInputTypes(models: string[]) {
+    public parseInputTypes(models: string[]): { [key: string]: JSONSchema7 } {
         // eslint-disable-next-line radar/cognitive-complexity
         const definitions = models.reduce((accumulator: { [key: string]: any }, modelName) => {
             const methods = methodsNames.map((method) => {
@@ -88,7 +89,6 @@ class PrismaJsonSchemaParser {
             });
 
             methods.forEach(({ name: method, schemaName }) => {
-                // @ts-ignore
                 const dataFields = this.dmmf.mutationType.fieldMap[method].args[0].inputTypes[0].type.fields;
                 const requiredProperties: string[] = [];
                 const properties = dataFields.reduce((propertiesAccumulator: any, field: any) => {
@@ -102,7 +102,7 @@ class PrismaJsonSchemaParser {
                         });
 
                         // @TODO: added the correct type
-                        // @ts-ignore
+                        // @ts-expect-error
                         const { type: schemaType } = schema[1];
 
                         if (schemaType && Array.isArray(schemaType)) {
@@ -171,7 +171,7 @@ class PrismaJsonSchemaParser {
         return definitions;
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
     public formatInputTypeData(inputType: any) {
         if (inputType.kind === "object") {
             const reference = formatSchemaReference(inputType.type.name);
@@ -210,8 +210,8 @@ class PrismaJsonSchemaParser {
         return { type };
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity
-    public parseObjectInputType(fieldType: any) {
+    // eslint-disable-next-line radar/cognitive-complexity,@typescript-eslint/explicit-module-boundary-types
+    public parseObjectInputType(fieldType: any): { $ref?: string; type?: string } {
         if (fieldType.kind === "object") {
             if (!this.schemaInputTypes.has(fieldType.type.name)) {
                 this.schemaInputTypes.set(fieldType.type.name, {});
@@ -220,7 +220,7 @@ class PrismaJsonSchemaParser {
                     let fieldData: Record<string, any> = {};
 
                     if (field.inputTypes.length > 1) {
-                        let nullable = false;
+                        let nullable: boolean = false;
 
                         const anyOf = field.inputTypes
                             .map((inputType: any) => {
@@ -241,11 +241,12 @@ class PrismaJsonSchemaParser {
                             // eslint-disable-next-line prefer-destructuring
                             fieldData = anyOf[0];
                         } else {
-                            fieldData.anyOf = anyOf;
+                            fieldData["anyOf"] = anyOf;
                         }
 
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         if (nullable) {
-                            fieldData.nullable = true;
+                            fieldData["nullable"] = true;
                         }
                     } else {
                         const inputType = field.inputTypes[0];
@@ -273,7 +274,7 @@ class PrismaJsonSchemaParser {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public getPaginationDataSchema() {
+    public getPaginationDataSchema(): { [p: string]: OpenAPIV3.SchemaObject } {
         return createPaginationMetaSchemaObject(PAGINATION_SCHEMA_NAME);
     }
 
@@ -282,14 +283,14 @@ class PrismaJsonSchemaParser {
         schemas: {
             [key: string]: OpenAPIV3.SchemaObject;
         },
-    ) {
+    ): { [key: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject } {
         const referenceToSchema = (reference: string) => {
             const name = reference.replace("#/components/schemas/", "");
             const model = schemas[name] as OpenAPIV3.SchemaObject;
 
-            const values: { [key: string]: string | object[] } = {};
+            const values: { [key: string]: object[] | string } = {};
 
-            Object.entries((model?.properties as OpenAPIV3.SchemaObject) || {}).forEach(([key, v]) => {
+            Object.entries((model.properties as OpenAPIV3.SchemaObject | undefined) ?? {}).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -300,11 +301,11 @@ class PrismaJsonSchemaParser {
         };
 
         const objectPropertiesToSchema = (objectProperties: { [name: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject }) => {
-            const values: { [key: string]: string | object | object[] } = {};
+            const values: { [key: string]: object[] | object | string } = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
                 // eslint-disable-next-line max-len
-                values[key] = (value as OpenAPIV3.ReferenceObject).$ref === undefined
+                values[key] = (value as { $ref?: string }).$ref === undefined
                     ? ((value as OpenAPIV3.SchemaObject).type as string)
                     : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
             });
@@ -313,7 +314,7 @@ class PrismaJsonSchemaParser {
         };
 
         const arrayItemsToSchema = (items: OpenAPIV3.ArraySchemaObject) => {
-            const values: { [key: string]: object | object[] } = {};
+            const values: { [key: string]: object[] | object } = {};
 
             Object.entries(items).forEach(([key, value]) => {
                 if (value.items.$ref !== undefined) {
@@ -331,7 +332,7 @@ class PrismaJsonSchemaParser {
         };
 
         return modelNames.reduce((accumulator, modelName) => {
-            const value: { [key: string]: string | object | object[] } = {};
+            const value: { [key: string]: object[] | object | string } = {};
             const model = schemas[modelName] as OpenAPIV3.SchemaObject;
 
             Object.entries(model.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
@@ -372,7 +373,7 @@ class PrismaJsonSchemaParser {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public getPaginatedModelsSchemas(modelNames: string[]) {
+    public getPaginatedModelsSchemas(modelNames: string[]): { [key: string]: OpenAPIV3.SchemaObject } {
         return modelNames.reduce((accumulator, modelName) => {
             return {
                 ...accumulator,

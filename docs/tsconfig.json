@@ -1,5 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
+    "baseUrl": "./",
     "compilerOptions": {
         "baseUrl": ".",
         "target": "es2015",
@@ -12,6 +13,7 @@
         "incremental": true,
         "esModuleInterop": true,
         "isolatedModules": true,
+        "strictNullChecks": true,
         "moduleResolution": "node",
         "jsx": "preserve",
         "module": "esnext",

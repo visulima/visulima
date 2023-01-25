@@ -1,47 +1,39 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "@tsconfig/node16-strictest/tsconfig.json",
     "display": "React + Node 16",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "compilerOptions": {
         "module": "ESNext",
-        "target": "ES6",
-        "lib": ["DOM", "DOM.Iterable", "ES2019", "ES2020.promise", "ES2020.bigint", "ES2020.string", "ES2021.string"],
+        "lib": ["DOM", "DOM.Iterable"],
+
         "noEmit": true,
-        "jsx": "react",
-        "strict": true,
         "alwaysStrict": true,
         "declaration": true,
         "allowJs": true,
 
-        /* Additional Checks */
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-
-        // "strictNullChecks": true,
-        // "strictBindCallApply": true,
+        "strictNullChecks": true,
+        "strictBindCallApply": true,
         "strictFunctionTypes": true,
         // "strictPropertyInitialization": true,
         // "noImplicitAny": true,
-        // "noImplicitThis": true,
-        "useUnknownInCatchVariables": true,
         "stripInternal": true,
+        "noImplicitThis": true,
+        "useUnknownInCatchVariables": true,
 
-        /* Module Resolution Options */
-        "moduleResolution": "node",
         "isolatedModules": true,
-        //        "importsNotUsedAsValues": "error",
+        "importsNotUsedAsValues": "preserve",
         "resolveJsonModule": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
         "inlineSources": false,
 
         "removeComments": true,
         "incremental": true,
-        "tsBuildInfoFile": ".tsbuildinfo"
+        "tsBuildInfoFile": ".tsbuildinfo",
+
+        "noPropertyAccessFromIndexSignature": true,
+
+        // @TODO enable this when we have a better way to handle the types
+        "exactOptionalPropertyTypes": false,
     },
-    "exclude": ["dist", "node_modules", "build", "scripts"]
+    "exclude": ["dist", "node_modules", "build", "scripts", "verify-node-version.cjs"]
 }

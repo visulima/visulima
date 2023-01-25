@@ -18,7 +18,7 @@ describe("Parse prisma cursor", () => {
             articles: { id: 1 },
         };
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(parsePrismaCursor(query)).toEqual<PrismaCursor>({
             id: 1,
         });
@@ -30,7 +30,7 @@ describe("Parse prisma cursor", () => {
             article: [{ id: 1 }],
         };
 
-        // @ts-ignore
+        // @ts-expect-error
         expect(parsePrismaCursor(query)).toEqual<PrismaCursor>({
             id: 1,
         });

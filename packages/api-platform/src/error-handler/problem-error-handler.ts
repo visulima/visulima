@@ -11,7 +11,7 @@ const defaultTitle = "An error occurred";
  *
  * @see https://tools.ietf.org/html/rfc7807
  */
-const problemErrorHandler: ErrorHandler = (error: HttpError | Error, _request, response) => {
+const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, response) => {
     const { stack, message } = error;
 
     if (error instanceof HttpError) {
@@ -36,7 +36,7 @@ const problemErrorHandler: ErrorHandler = (error: HttpError | Error, _request, r
             type: defaultType,
             title: getReasonPhrase(response.statusCode) || defaultTitle,
             details: message,
-            ...((error as { expose: boolean } & Error).expose ? { trace: stack } : {}),
+            ...((error as Error & { expose: boolean }).expose ? { trace: stack } : {}),
         });
     }
 };

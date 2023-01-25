@@ -33,10 +33,10 @@ const parseOrderBy = (orderBy: string): OrderByField => {
     const orderByObject = JSON.parse(orderBy);
 
     if (Object.keys(orderByObject).length > 0) {
-        const key = Object.keys(orderByObject)[0];
+        const key = Object.keys(orderByObject)[0] as string;
 
         if (orderByObject[key as keyof typeof orderByObject] === "$asc" || orderByObject[key as keyof typeof orderByObject] === "$desc") {
-            parsed[key as string] = orderByObject[key as keyof typeof orderByObject];
+            parsed[key] = orderByObject[key as keyof typeof orderByObject];
         }
     }
 
@@ -53,35 +53,35 @@ const parseQuery = (queryString?: string): ParsedQueryParameters => {
         const { query } = parse(queryString, true);
         const parsedQuery: ParsedQueryParameters = {};
 
-        if (query.select) {
-            parsedQuery.select = parseRecursive(query.select as string);
+        if (query["select"]) {
+            parsedQuery.select = parseRecursive(query["select"] as string);
         }
 
-        if (query.include) {
-            parsedQuery.include = parseRecursive(query.include as string);
+        if (query["include"]) {
+            parsedQuery.include = parseRecursive(query["include"] as string);
         }
 
-        if (query.where) {
-            parsedQuery.where = parseWhere(query.where as string);
+        if (query["where"]) {
+            parsedQuery.where = parseWhere(query["where"] as string);
         }
 
-        if (query.orderBy) {
-            parsedQuery.orderBy = parseOrderBy(query.orderBy as string);
+        if (query["orderBy"]) {
+            parsedQuery.orderBy = parseOrderBy(query["orderBy"] as string);
         }
 
-        if (query.limit !== undefined) {
-            parsedQuery.limit = Number.isFinite(+query.limit) ? +query.limit : undefined;
+        if (query["limit"] !== undefined) {
+            parsedQuery.limit = Number.isFinite(+query["limit"]) ? +query["limit"] : undefined;
         }
-        if (query.skip !== undefined) {
-            parsedQuery.skip = Number.isFinite(+query.skip) ? +query.skip : undefined;
-        }
-
-        if (query.distinct) {
-            parsedQuery.distinct = query.distinct as string;
+        if (query["skip"] !== undefined) {
+            parsedQuery.skip = Number.isFinite(+query["skip"]) ? +query["skip"] : undefined;
         }
 
-        if (query.page) {
-            parsedQuery.page = Number.isFinite(+query.page) ? +query.page : undefined;
+        if (query["distinct"]) {
+            parsedQuery.distinct = query["distinct"] as string;
+        }
+
+        if (query["page"]) {
+            parsedQuery.page = Number.isFinite(+query["page"]) ? +query["page"] : undefined;
         }
 
         return {

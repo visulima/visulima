@@ -4,9 +4,9 @@ import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
 import { exit } from "node:process";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Compiler } from "webpack";
+import type { Compiler } from "webpack";
 
-import type { BaseDefinition } from "../exported";
+import type { BaseDefinition } from "../exported.d";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
@@ -52,28 +52,29 @@ class SwaggerCompilerPlugin {
 
     private readonly verbose: boolean;
 
-    private readonly ignore: string | ReadonlyArray<string>;
+    private readonly ignore: ReadonlyArray<string> | string;
 
-    assetsPath: string;
+    private readonly assetsPath: string;
 
-    constructor(
+    public constructor(
         assetsPath: string,
         sources: string[],
         swaggerDefinition: BaseDefinition,
         options: {
             verbose?: boolean;
-            ignore?: string | ReadonlyArray<string>;
+            ignore?: ReadonlyArray<string> | string;
         },
     ) {
         this.assetsPath = assetsPath;
         this.swaggerDefinition = swaggerDefinition;
         this.sources = sources;
-        this.verbose = options.verbose || false;
-        this.ignore = options.ignore || [];
+        this.verbose = options.verbose ?? false;
+        this.ignore = options.ignore ?? [];
     }
 
-    apply(compiler: Compiler) {
-        compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction) => {
+    public apply(compiler: Compiler): void {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
 

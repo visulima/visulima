@@ -14,9 +14,9 @@ const toastPosition = "bottom-right";
 const CopyToClipboard = ({
     value,
     ...properties
-}: {
+}: ComponentProps<"button"> & {
     value: string;
-} & ComponentProps<"button">): ReactElement => {
+}): ReactElement => {
     const [isCopied, setCopied] = useState(false);
 
     useEffect(() => {

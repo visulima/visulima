@@ -21,7 +21,7 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
 
     const segments = lines.reduce((allSegments: Segment[], line, index) => {
         const segment = getSegment(line);
-        const previousSegment = getSegment(lines[index - 1] || "");
+        const previousSegment = getSegment(lines[index - 1] ?? "");
 
         if (previousSegment === segment) {
             const entries: Segment[] = allSegments.filter((item) => item.index < index && item.segment === segment);

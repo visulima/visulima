@@ -1,8 +1,8 @@
-import type { AnyZodObject } from "zod";
-import { ZodObject } from "zod";
+import type { AnyZodObject, ZodObject } from "zod";
 
 import withZod from "./adapter/with-zod";
-import { Route, Router } from "./router";
+import type { Route } from "./router";
+import { Router } from "./router";
 import type {
     FindResult,
     FunctionLike,
@@ -24,12 +24,12 @@ const onError = async (error: unknown) => {
     return new Response("Internal Server Error", { status: 500 });
 };
 
-export function getPathname(request: Request & { nextUrl?: URL }) {
+export function getPathname(request: Request & { nextUrl?: URL }): string {
     // eslint-disable-next-line compat/compat
-    return (request.nextUrl || new URL(request.url)).pathname;
+    return (request.nextUrl ?? new URL(request.url)).pathname;
 }
 
-// eslint-disable-next-line max-len
+// eslint-disable-next-line max-len,@typescript-eslint/no-invalid-void-type
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | void>;
 
 export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends AnyZodObject = ZodObject<any>> {
@@ -42,10 +42,10 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
     ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>;
 
-    constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
-        this.onNoMatch = options.onNoMatch || onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>;
+    public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
+        this.onNoMatch = options.onNoMatch ?? onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>;
         this.onError = options.onError
-            || (onError as unknown as (
+            ?? (onError as unknown as (
                 error: unknown,
                 ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
             ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
@@ -53,8 +53,8 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
     private add(
         method: HttpMethod | "",
-        routeOrFunction: RouteMatch | Nextable<RequestHandler<R, Context>>,
-        zodOrRouteOrFunction?: RouteMatch | Schema | Nextable<RequestHandler<R, Context>>,
+        routeOrFunction: Nextable<RequestHandler<R, Context>> | RouteMatch,
+        zodOrRouteOrFunction?: Nextable<RequestHandler<R, Context>> | RouteMatch | Schema,
         ...fns: Nextable<RequestHandler<R, Context>>[]
     ) {
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
@@ -94,11 +94,11 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
     public delete: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "DELETE");
 
     public use(
-        base: RouteMatch | Nextable<RequestHandler<R, Context>> | EdgeRouter<R, Context>,
-        ...fns: (Nextable<RequestHandler<R, Context>> | EdgeRouter<R, Context>)[]
-    ) {
+        base: EdgeRouter<R, Context> | Nextable<RequestHandler<R, Context>> | RouteMatch,
+        ...fns: (EdgeRouter<R, Context> | Nextable<RequestHandler<R, Context>>)[]
+    ): this {
         if (typeof base === "function" || base instanceof EdgeRouter) {
-            fns.unshift(base);
+            fns.unshift(base as EdgeRouter<R, Context>);
             // eslint-disable-next-line no-param-reassign
             base = "/";
         }
@@ -116,7 +116,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         };
     }
 
-    public clone() {
+    public clone(): EdgeRouter<R, Context, RResponse, Schema> {
         const r = new EdgeRouter<R, Context, RResponse, Schema>({ onNoMatch: this.onNoMatch, onError: this.onError });
 
         r.router = this.router.clone();
@@ -124,7 +124,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         return r;
     }
 
-    async run(request: R, context_: Context) {
+    public async run(request: R, context_: Context): Promise<unknown> {
         // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
         const result = this.router.find(request.method as HttpMethod, getPathname(request));
 
@@ -138,7 +138,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         return Router.exec(result.fns, request, context_);
     }
 
-    handler() {
+    public handler(): (request: R, context_: Context) => Promise<any> | ReturnType<FunctionLike> | ValueOrPromise<RResponse> {
         const { routes } = this.router as Router<FunctionLike>;
 
         return async (request: R, context_: Context): Promise<any> => {
@@ -160,6 +160,6 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
 export function createEdgeRouter<R extends Request, Context>(
     options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, Response, Route<Nextable<FunctionLike>>[]>> = {},
-) {
+): EdgeRouter<R, Context> {
     return new EdgeRouter<R, Context, Response>(options);
 }

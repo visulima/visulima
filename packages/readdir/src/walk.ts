@@ -1,12 +1,14 @@
-import micromatch, { Options as MicromatchOptions } from "micromatch";
-import { Dirent, promises } from "node:fs";
+import type { Options as MicromatchOptions } from "micromatch";
+import micromatch from "micromatch";
+import type { Dirent } from "node:fs";
+import { promises } from "node:fs";
 import { basename, join, normalize } from "node:path";
 
 function include(
     path: string,
     extensions?: string[],
-    match?: string | ReadonlyArray<string>,
-    skip?: string | ReadonlyArray<string>,
+    match?: ReadonlyArray<string> | string,
+    skip?: ReadonlyArray<string> | string,
     minimatchOptions: {
         match?: MicromatchOptions;
         skip?: MicromatchOptions;
@@ -46,15 +48,15 @@ export type Options = {
     includeDirs?: boolean;
     followSymlinks?: boolean;
     extensions?: string[];
-    match?: string | ReadonlyArray<string>;
-    skip?: string | ReadonlyArray<string>;
+    match?: ReadonlyArray<string> | string;
+    skip?: ReadonlyArray<string> | string;
     minimatchOptions?: {
         match?: MicromatchOptions;
         skip?: MicromatchOptions;
     };
 };
 
-export interface WalkEntry extends Pick<Dirent, "name" | "isFile" | "isDirectory" | "isSymbolicLink"> {
+export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSymbolicLink" | "name"> {
     path: string;
 }
 
@@ -100,7 +102,7 @@ export default async function* walk(
     for await (const entry of await promises.readdir(directory, {
         withFileTypes: true,
     })) {
-        if (entry.name === null) {
+        if (!entry.name) {
             throw new Error("Null Entry");
         }
 

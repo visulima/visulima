@@ -19,7 +19,7 @@ export interface ZodDateInDef extends ZodTypeDef {
 
 export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
     // eslint-disable-next-line no-underscore-dangle
-    _parse(input: ParseInput): ParseReturnType<Date> {
+    public _parse(input: ParseInput): ParseReturnType<Date> {
         // eslint-disable-next-line no-underscore-dangle
         const { status, ctx } = this._processInputParams(input);
         if (ctx.parsedType !== ZodParsedType.string) {
@@ -39,7 +39,7 @@ export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
             status.dirty();
         }
 
-        const date = new Date(ctx.data);
+        const date = new Date(ctx.data as string);
 
         if (Number.isNaN(date.getTime())) {
             addIssueToContext(ctx, {
@@ -51,7 +51,7 @@ export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
         return { status: status.value, value: date };
     }
 
-    static create = () => new ZodDateIn({
+    public static create = (): ZodDateIn => new ZodDateIn({
         typeName: zodDateInKind,
     });
 }

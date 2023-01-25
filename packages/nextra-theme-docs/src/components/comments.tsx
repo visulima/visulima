@@ -1,9 +1,9 @@
 import type { Repo } from "@giscus/react";
 import Giscus from "@giscus/react";
 import { useTheme } from "next-themes";
-import { FC } from "react";
+import type { FC } from "react";
 
-import { Config } from "../contexts/config";
+import type { Config } from "../contexts/config";
 
 const Comments: FC<{ config: Config }> = ({ config }) => {
     const { theme, systemTheme } = useTheme();

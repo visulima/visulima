@@ -1,4 +1,4 @@
-import {
+import type {
     BaseDefinition,
     ComponentsObject,
     ExternalDocumentationObject,
@@ -8,50 +8,50 @@ import {
     SecurityRequirementObject,
     ServerObject,
     TagObject,
-} from "./exported";
+} from "./exported.d";
 import objectMerge from "./util/object-merge";
 
 class SpecBuilder implements OpenApiObject {
-    openapi: string;
+    public openapi: string;
 
-    info: InfoObject;
+    public info: InfoObject;
 
-    servers?: ServerObject[];
+    public servers?: ServerObject[];
 
-    paths: PathsObject;
+    public paths: PathsObject;
 
-    components?: ComponentsObject;
+    public components?: ComponentsObject;
 
-    security?: SecurityRequirementObject[];
+    public security?: SecurityRequirementObject[];
 
-    tags?: TagObject[];
+    public tags?: TagObject[];
 
-    externalDocs?: ExternalDocumentationObject;
+    public externalDocs?: ExternalDocumentationObject;
 
-    constructor(baseDefinition: BaseDefinition) {
+    public constructor(baseDefinition: BaseDefinition) {
         this.openapi = baseDefinition.openapi;
         this.info = baseDefinition.info;
         this.servers = baseDefinition.servers;
-        this.paths = baseDefinition.paths || {};
+        this.paths = baseDefinition.paths ?? {};
         this.components = baseDefinition.components;
         this.security = baseDefinition.security;
         this.tags = baseDefinition.tags;
         this.externalDocs = baseDefinition.externalDocs;
     }
 
-    addData(parsedFile: OpenApiObject[]) {
+    public addData(parsedFile: OpenApiObject[]): void {
         parsedFile.forEach((file) => {
             const { paths, components, ...rest } = file;
 
             // only merge paths and components
             objectMerge(this, {
-                paths: paths || {},
-                components: components || {},
+                paths: paths ?? {},
+                components: components ?? {},
             } as OpenApiObject);
 
             // overwrite everything else:
             Object.entries(rest).forEach(([key, value]) => {
-                // @ts-ignore
+                // @ts-expect-error
                 this[key as keyof OpenApiObject] = value;
             });
         });

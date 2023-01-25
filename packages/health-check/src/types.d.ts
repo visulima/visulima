@@ -26,7 +26,7 @@ export type HealthReport = {
  */
 export interface HealthCheck {
     servicesList: string[];
-    addChecker(service: string, checker: Checker): void;
-    isLive(): Promise<boolean>;
-    getReport(): Promise<{ healthy: boolean; report: HealthReport }>;
+    addChecker: (service: string, checker: Checker) => void;
+    isLive: () => Promise<boolean>;
+    getReport: () => Promise<{ healthy: boolean; report: HealthReport }>;
 }

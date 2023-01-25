@@ -5,15 +5,15 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { RateLimiterAbstract, RateLimiterRes } from "rate-limiter-flexible";
 
 // eslint-disable-next-line max-len
-const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined = (request) => request?.ip
-    || (request.headers["x-forwarded-for"] as string | undefined)
-    || (request.headers["x-real-ip"] as string | undefined)
-    || request.connection.remoteAddress;
+const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined = (request) => request.ip
+    ?? (request.headers["x-forwarded-for"] as string | undefined)
+    ?? (request.headers["x-real-ip"] as string | undefined)
+    ?? request.connection.remoteAddress;
 
-type HeaderValue = string | number | ReadonlyArray<string>;
+type HeaderValue = ReadonlyArray<string> | number | string;
 
 // eslint-disable-next-line max-len
-const rateLimiterMiddleware = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => { [key: string]: HeaderValue }) => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response | NextApiResponse, next: NextHandler) => {
+const rateLimiterMiddleware = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => { [key: string]: HeaderValue }) => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler): Promise<void> => {
     const ip = getIP(request);
 
     if (ip === undefined) {

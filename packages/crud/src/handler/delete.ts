@@ -7,7 +7,7 @@ const deleteHandler: Handler = async ({
 }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
-    if (resource) {
+    if (typeof resource === "object") {
         const deletedResource = await adapter.delete(resourceName, resourceId, query);
 
         return {
@@ -15,6 +15,7 @@ const deleteHandler: Handler = async ({
             status: 200,
         };
     }
+
     throw createHttpError(404, `${resourceName} ${resourceId} not found`);
 };
 

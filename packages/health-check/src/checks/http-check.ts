@@ -13,19 +13,19 @@ const httpCheck = (host: RequestInfo | URL, options?: {
 }): Checker => async () => {
     try {
         // eslint-disable-next-line compat/compat
-        const response = await fetch(host, options?.fetchOptions || {});
+        const response = await fetch(host, options?.fetchOptions ?? {});
 
-        if (options?.expected?.status !== undefined && options?.expected?.status !== response.status) {
-            throw new Error(`${DISPLAY_NAME} ${host} returned status ${response.status} instead of ${options?.expected.status}`);
+        if (options?.expected?.status !== undefined && options.expected.status !== response.status) {
+            throw new Error(`${DISPLAY_NAME} ${host} returned status ${response.status} instead of ${options.expected.status}`);
         }
 
         if (options?.expected?.body !== undefined) {
             const textBody = await response.text();
 
             try {
-                deepStrictEqual(textBody, options?.expected.body);
+                deepStrictEqual(textBody, options.expected.body);
             } catch {
-                throw new Error(`${DISPLAY_NAME} ${host} returned body ${JSON.stringify(textBody)} instead of ${JSON.stringify(options?.expected.body)}`);
+                throw new Error(`${DISPLAY_NAME} ${host} returned body ${JSON.stringify(textBody)} instead of ${JSON.stringify(options.expected.body)}`);
             }
         }
 
@@ -38,7 +38,7 @@ const httpCheck = (host: RequestInfo | URL, options?: {
             },
             meta: {
                 host,
-                method: options?.fetchOptions?.method || "GET",
+                method: options?.fetchOptions?.method ?? "GET",
                 status: response.status,
             },
         };
@@ -47,12 +47,12 @@ const httpCheck = (host: RequestInfo | URL, options?: {
             displayName: `${DISPLAY_NAME} ${host}`,
             health: {
                 healthy: false,
-                message: error.message,
+                message: (error as Error).message,
                 timestamp: new Date().toISOString(),
             },
             meta: {
                 host,
-                method: options?.fetchOptions?.method || "GET",
+                method: options?.fetchOptions?.method ?? "GET",
             },
         };
     }

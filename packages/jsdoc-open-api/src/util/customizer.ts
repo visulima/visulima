@@ -1,4 +1,4 @@
-const customizer = (objectValue: any, sourceValue: any) => {
+const customizer = (objectValue: unknown, sourceValue: Array<unknown>): unknown[] | undefined => {
     if (Array.isArray(objectValue)) {
         return [...objectValue, ...sourceValue];
     }

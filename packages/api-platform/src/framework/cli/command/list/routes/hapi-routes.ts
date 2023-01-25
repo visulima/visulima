@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Server } from "@hapi/hapi";
+import type { Server } from "@hapi/hapi";
 
 import type { Route } from "./types";
 

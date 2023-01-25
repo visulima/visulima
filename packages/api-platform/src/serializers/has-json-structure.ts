@@ -1,10 +1,10 @@
-const hasJsonStructure = (string_: any): boolean => {
-    if (typeof string_ !== "string") {
+const hasJsonStructure = (data: unknown): boolean => {
+    if (typeof data !== "string") {
         return false;
     }
 
     try {
-        const result = JSON.parse(string_);
+        const result = JSON.parse(data);
         const type = Object.prototype.toString.call(result);
 
         return type === "[object Object]" || type === "[object Array]";

@@ -18,8 +18,8 @@ describe("health ready route", () => {
             test: async ({ fetch }) => {
                 const response = await fetch();
 
-                expect(response.status).toBe(204);
-                expect(response.headers.get("content-type")).toBeNull();
+                expect(response["status"]).toBe(204);
+                expect(response["headers"].get("content-type")).toBeNull();
             },
         });
     });

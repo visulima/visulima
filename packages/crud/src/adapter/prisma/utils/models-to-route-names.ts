@@ -1,8 +1,10 @@
-const modelsToRouteNames = <M extends string = string>(mappingsMap: { [key: string]: object }, models: M[]) => {
-    const routesMap: { [key in M]?: string } = {};
+type RouteMap<M extends string> = { [key in M]?: string };
 
-    models?.forEach((model) => {
-        // @ts-ignore
+const modelsToRouteNames = <M extends string = string>(mappingsMap: { [key: string]: object }, models: M[]): RouteMap<M> => {
+    const routesMap: RouteMap<M> = {};
+
+    models.forEach((model) => {
+        // @ts-expect-error
         routesMap[model] = mappingsMap[model].plural;
     });
 

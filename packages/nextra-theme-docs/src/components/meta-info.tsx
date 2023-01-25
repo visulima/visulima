@@ -1,7 +1,7 @@
 import cn from "clsx";
-import { FC } from "react";
+import type { FC } from "react";
 
-import { Config } from "../contexts/config";
+import type { Config } from "../contexts/config";
 import { getGitIssueUrl, renderComponent, renderString } from "../utils";
 import Anchor from "./anchor";
 

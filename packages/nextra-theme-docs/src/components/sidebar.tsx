@@ -20,9 +20,9 @@ import ThemeSwitch from "./theme-switch";
 
 const TreeState: Record<string, boolean> = Object.create(null);
 
-const FocusedItemContext = createContext<null | string>(null);
+const FocusedItemContext = createContext<string | null>(null);
 // eslint-disable-next-line no-spaced-func
-const OnFocuseItemContext = createContext<null | ((item: string | null) => any)>(null);
+const OnFocuseItemContext = createContext<((item: string | null) => any) | null>(null);
 
 const classes = {
     link: cn(
@@ -45,7 +45,7 @@ const classes = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,radar/cognitive-complexity
-const FolderImpl: FC<{ item: PageItem | MenuItem | Item; anchors: string[] }> = ({ item, anchors }) => {
+const FolderImpl: FC<{ item: Item | MenuItem | PageItem; anchors: string[] }> = ({ item, anchors }) => {
     const { asPath, locale = DEFAULT_LOCALE } = useRouter();
     const routeOriginal = getFSRoute(asPath, locale);
     const [route] = routeOriginal.split("#");
@@ -172,7 +172,7 @@ const Separator: FC<{ title: string }> = ({ title }) => {
     );
 };
 
-const File: FC<{ item: PageItem | Item; anchors: string[] }> = ({ item, anchors }) => {
+const File: FC<{ item: Item | PageItem; anchors: string[] }> = ({ item, anchors }) => {
     const { asPath, locale = DEFAULT_LOCALE } = useRouter();
     const route = getFSRoute(asPath, locale);
     const onFocus = useContext(OnFocuseItemContext);
@@ -239,7 +239,7 @@ const File: FC<{ item: PageItem | Item; anchors: string[] }> = ({ item, anchors 
 };
 
 interface MenuProperties {
-    directories: PageItem[] | Item[];
+    directories: Item[] | PageItem[];
     anchors: string[];
     className?: string;
     onlyCurrentDocs?: boolean;
@@ -281,7 +281,7 @@ const Sidebar: FC<SideBarProperties> = ({
 }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
-    const [focused, setFocused] = useState<null | string>(null);
+    const [focused, setFocused] = useState<string | null>(null);
     const anchors = useMemo(
         () => headings
             .filter((v) => v.children && v.depth === 2 && v.type === "heading")

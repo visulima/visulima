@@ -22,9 +22,9 @@ export type Route<H> = {
 );
 
 export class Router<H extends FunctionLike> {
-    constructor(public base: string = "/", public routes: Route<Nextable<H>>[] = []) {}
+    public constructor(public base: string = "/", public routes: Route<Nextable<H>>[] = []) {}
 
-    public add(method: HttpMethod | "", route: RouteMatch | Nextable<H>, ...fns: Nextable<H>[]): this {
+    public add(method: HttpMethod | "", route: Nextable<H> | RouteMatch, ...fns: Nextable<H>[]): this {
         if (typeof route === "function") {
             fns.unshift(route);
             // eslint-disable-next-line no-param-reassign
@@ -53,7 +53,7 @@ export class Router<H extends FunctionLike> {
         return this;
     }
 
-    public use(base: RouteMatch | Nextable<H> | Router<H>, ...fns: (Nextable<H> | Router<H>)[]) {
+    public use(base: Nextable<H> | RouteMatch | Router<H>, ...fns: (Nextable<H> | Router<H>)[]): this {
         if (typeof base === "function" || base instanceof Router) {
             fns.unshift(base);
             // eslint-disable-next-line no-param-reassign
@@ -82,11 +82,11 @@ export class Router<H extends FunctionLike> {
         return this;
     }
 
-    public clone(base?: string) {
+    public clone(base?: string): Router<H> {
         return new Router<H>(base, [...this.routes]);
     }
 
-    static async exec<H extends FunctionLike>(fns: Nextable<H>[], ...arguments_: Parameters<H>): Promise<unknown> {
+    public static async exec<H extends FunctionLike>(fns: Nextable<H>[], ...arguments_: Parameters<H>): Promise<unknown> {
         let index = 0;
 
         // eslint-disable-next-line no-plusplus
@@ -96,7 +96,7 @@ export class Router<H extends FunctionLike> {
     }
 
     // eslint-disable-next-line radar/cognitive-complexity
-    find(method: HttpMethod, pathname: string): FindResult<H> {
+    public find(method: HttpMethod, pathname: string): FindResult<H> {
         let middleOnly = true;
 
         const fns: Nextable<H>[] = [];
@@ -130,7 +130,7 @@ export class Router<H extends FunctionLike> {
                 // eslint-disable-next-line no-void
                 if (matches.groups !== void 0) {
                     Object.keys(matches.groups).forEach((key) => {
-                        // @ts-ignore @TODO: fix this
+                        // @ts-expect-error @TODO: fix this
                         parameters[key] = matches.groups[key] as string;
                     });
                 }
@@ -146,7 +146,7 @@ export class Router<H extends FunctionLike> {
                 for (let index = 0; index < route.keys.length;) {
                     const parameterKey = route.keys[index];
 
-                    // @ts-ignore @TODO: fix this
+                    // @ts-expect-error @TODO: fix this
                     // eslint-disable-next-line no-plusplus
                     parameters[parameterKey] = matches[++index];
                 }
@@ -160,13 +160,13 @@ export class Router<H extends FunctionLike> {
                 fns.push(
                     ...route.fns.flatMap((function_) => {
                         if (function_ instanceof Router) {
-                            const base = function_.base as string;
+                            const { base } = function_;
 
                             let stripPathname = pathname.slice(base.length);
 
                             // fix stripped pathname, not sure why this happens
                             // eslint-disable-next-line eqeqeq
-                            if (stripPathname[0] != "/") {
+                            if (!stripPathname.startsWith("/")) {
                                 stripPathname = `/${stripPathname}`;
                             }
 

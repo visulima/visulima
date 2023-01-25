@@ -17,7 +17,7 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
                 activeType === "doc" && "md:bg-x-gradient-gray-200-gray-200-50-white-50 md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
             )}
         >
-            <div className="mx-auto flex flex-col md:flex-row md:max-w-[90rem] bg-white dark:bg-darker-800">
+            <div className="mx-auto flex flex-col bg-white dark:bg-darker-800 md:max-w-[90rem] md:flex-row">
                 <div
                     className={cn(
                         "flex md:flex-col py-6 md:py-12 md:w-64 md:shrink-0",
@@ -41,7 +41,7 @@ const Footer = ({ activeType }: { activeType: string }): ReactElement => {
                 >
                     {renderComponent(config.footer.component)}
                 </div>
-                <div className="block mt-8 md:hidden md:mb-0 footer-border dark:footer-border py-8 md:py-0 w-full">
+                <div className="footer-border dark:footer-border mt-8 block w-full py-8 md:mb-0 md:hidden md:py-0">
                     {config.footer?.copyright && renderComponent(config.footer.copyright, { activeType })}
                 </div>
             </div>

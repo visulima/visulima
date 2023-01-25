@@ -6,7 +6,7 @@ import pingCheck from "../../src/checks/ping-check";
 
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
-        if (process.env.CI) {
+        if (process.env["CI"]) {
             // eslint-disable-next-line no-console
             console.log("Skipping DNS check in CI environment");
             return;

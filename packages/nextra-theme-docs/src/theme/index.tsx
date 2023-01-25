@@ -78,7 +78,7 @@ const Body: FC<{
             <hr className="my-8 md:hidden" />
             {/* eslint-disable-next-line max-len */}
             {activeType === "doc" && (
-                <div className="flex md:hidden flex-col justify-items-end text-right gap-2">
+                <div className="flex flex-col justify-items-end gap-2 text-right md:hidden">
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
@@ -264,7 +264,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     filePath={filePath}
                                 >
                                     {activeType === "doc" && (
-                                        <h1 className="md:text-4xl lg:text-5xl text-3xl leading-tall tracking-tight font-bold hyphenated mt-4">
+                                        <h1 className="leading-tall hyphenated mt-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
                                             {(activePath[Object.keys(activePath).length - 1] as Item).title}
                                         </h1>
                                     )}

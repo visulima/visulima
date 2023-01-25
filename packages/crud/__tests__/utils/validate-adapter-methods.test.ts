@@ -16,7 +16,7 @@ describe("validateAdapterMethods", () => {
                 prismaClient: vi.mock("@prisma/client", () => {
                     return {
                         PrismaClient: class {
-                            constructor() {
+                            public constructor() {
                                 // eslint-disable-next-line no-constructor-return
                                 return {
                                     // eslint-disable-next-line compat/compat
