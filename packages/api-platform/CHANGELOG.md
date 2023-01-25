@@ -1,3 +1,19 @@
+## @visulima/api-platform [1.2.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.2...@visulima/api-platform@1.2.3) (2023-01-25)
+
+
+### Bug Fixes
+
+* updated tsconfig to use module esnext and target es2021 ([#107](https://github.com/visulima/visulima/issues/107)) ([e888fe8](https://github.com/visulima/visulima/commit/e888fe8d15c99453a3c04f2cf9d2f6c69c158648))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.3
+* **@visulima/jsdoc-open-api:** upgraded to 1.3.2
+* **@visulima/crud:** upgraded to 1.0.10
+* **@visulima/readdir:** upgraded to 1.3.4
+
 ## @visulima/api-platform [1.2.2](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.1...@visulima/api-platform@1.2.2) (2023-01-08)
 
 
