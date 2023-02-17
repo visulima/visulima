@@ -78,7 +78,7 @@
         "@anolilab/semantic-release-preset": "^2.2.0",
         "@prisma/client": "^4.9.0",
         "@rushstack/eslint-plugin-security": "^0.5.0",
-        "@testing-library/react": "^13.4.0",
+        "@testing-library/react": "^14.0.0",
         "@testing-library/react-hooks": "^8.0.1",
         "@types/http-errors": "^2.0.1",
         "@types/json-schema": "7.0.11",
