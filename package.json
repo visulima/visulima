@@ -113,7 +113,7 @@
         "read-pkg": "^7.1.0",
         "tsup": "^6.5.0"
     },
-    "packageManager": "pnpm@7.27.0",
+    "packageManager": "pnpm@7.27.1",
     "engines": {
         "node": ">=16.18.0 <=19.*"
     }
