@@ -183,7 +183,7 @@
         "read-pkg": "^7.1.0",
         "redoc": "^2.0.0",
         "rimraf": "^4.1.2",
-        "semantic-release": "^20.1.0",
+        "semantic-release": "^21.0.0",
         "styled-components": "^5.3.6",
         "swagger-ui-dist": "^4.15.5",
         "swagger-ui-react": "^4.15.5",
