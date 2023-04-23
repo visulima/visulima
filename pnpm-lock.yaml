@@ -1158,7 +1158,7 @@ importers:
       lightningcss-cli: ^1.18.0
       match-sorter: ^6.3.1
       next: ^13.1.4
-      next-seo: ^5.15.0
+      next-seo: ^6.0.0
       next-themes: ^0.2.1
       nextra: 2.0.1
       postcss: ^8.4.21
@@ -1191,7 +1191,7 @@ importers:
       github-slugger: 2.0.0
       intersection-observer: 0.12.2
       match-sorter: 6.3.1
-      next-seo: 5.15.0_gru2niblrprbai56sdagiiy5sa
+      next-seo: 6.0.0_gru2niblrprbai56sdagiiy5sa
       next-themes: 0.2.1_gru2niblrprbai56sdagiiy5sa
       react-hot-toast: 2.4.0_biqbaboplfbrettd7655fr4n2y
       scroll-into-view-if-needed: 3.0.4
@@ -3498,7 +3498,7 @@ packages:
       rxjs: 6.6.7
       tmp: 0.2.1
       tslib: 2.4.0
-      yargs: 17.6.2
+      yargs: 17.7.1
       yargs-parser: 21.1.1
     transitivePeerDependencies:
       - '@swc-node/register'
@@ -13124,8 +13124,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /next-seo/5.15.0_gru2niblrprbai56sdagiiy5sa:
-    resolution: {integrity: sha512-LGbcY91yDKGMb7YI+28n3g+RuChUkt6pXNpa8FkfKkEmNiJkeRDEXTnnjVtwT9FmMhG6NH8qwHTelGrlYm9rgg==}
+  /next-seo/6.0.0_gru2niblrprbai56sdagiiy5sa:
+    resolution: {integrity: sha512-jKKt1p1z4otMA28AyeoAONixVjdYmgFCWwpEFtu+DwRHQDllVX3RjtyXbuCQiUZEfQ9rFPBpAI90vDeLZlMBdg==}
     peerDependencies:
       next: ^8.1.1-canary.54 || >=9.0.0
       react: '>=16.0.0'
@@ -13830,7 +13830,7 @@ packages:
       tsconfig-paths: 4.1.2
       tslib: 2.4.0
       v8-compile-cache: 2.3.0
-      yargs: 17.6.2
+      yargs: 17.7.1
       yargs-parser: 21.1.1
     optionalDependencies:
       '@nrwl/nx-darwin-arm64': 15.9.2
