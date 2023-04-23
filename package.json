@@ -110,7 +110,7 @@
         "typescript": "^4.9.4"
     },
     "devDependencies": {
-        "read-pkg": "^7.1.0",
+        "read-pkg": "^8.0.0",
         "tsup": "^6.5.0"
     },
     "packageManager": "pnpm@7.32.2",
