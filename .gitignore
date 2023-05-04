@@ -113,6 +113,9 @@ dist
 
 .tmp
 
+# JetBrains
+.idea
+
 # Storybook
 .storybook/
 storybook-static/
