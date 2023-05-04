@@ -6,11 +6,11 @@
         "dev": "tsnd -r dotenv/config index"
     },
     "dependencies": {
-        "@aws-sdk/abort-controller": "^3.226.0",
-        "@aws-sdk/client-s3": "^3.238.0",
-        "@aws-sdk/credential-providers": "^3.238.0",
-        "@aws-sdk/s3-request-presigner": "^3.238.0",
-        "@aws-sdk/types": "^3.226.0",
+        "@aws-sdk/abort-controller": "^3.310.0",
+        "@aws-sdk/client-s3": "^3.321.1",
+        "@aws-sdk/credential-providers": "^3.321.1",
+        "@aws-sdk/s3-request-presigner": "^3.321.1",
+        "@aws-sdk/types": "^3.310.0",
         "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
         "cp-file": "^10.0.0",
@@ -20,7 +20,7 @@
     },
     "devDependencies": {
         "@types/cors": "^2.8.13",
-        "@types/express": "^4.17.15",
+        "@types/express": "^4.17.17",
         "ts-node-dev": "^2.0.0"
     }
 }
