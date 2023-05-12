@@ -1,9 +1,9 @@
 import "cross-fetch/polyfill";
 
-import { testApiHandler } from "next-test-api-route-handler";
 import { describe, expect, it } from "vitest";
 
 import { HealthCheck, healthCheckHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
+import {createRequest, createResponse} from "node-mocks-http";
 
 const HealthCheckService = new HealthCheck();
 
@@ -13,36 +13,36 @@ describe("health check route", () => {
     it("endpoint returns health checks reports", async () => {
         expect.assertions(3);
 
-        await testApiHandler({
-            handler: healthCheckHandler(HealthCheckService),
-            test: async ({ fetch }) => {
-                const response = await fetch();
+        const callback = healthCheckHandler(HealthCheckService);
 
-                expect(response["status"]).toBe(200);
-                expect(response["headers"].get("content-type")).toBe("application/json");
+        const requestMock = createRequest();
+        const responseMock = createResponse();
 
-                const jsonResponse = await response.json();
+        await callback(requestMock, responseMock);
 
-                expect(jsonResponse).toStrictEqual({
-                    appName: "unknown",
-                    appVersion: "unknown",
-                    message: "Health check successful",
-                    reports: {
-                        "node-env": {
-                            displayName: "Node Environment Check",
-                            health: {
-                                healthy: true,
-                                timestamp: expect.any(String),
-                            },
-                            meta: {
-                                env: "test",
-                            },
-                        },
+        expect(responseMock._getStatusCode()).toBe(200);
+        expect(responseMock.getHeader("content-type")).toBe("application/json");
+
+        const jsonResponse = responseMock._getJSONData();
+
+        expect(jsonResponse).toStrictEqual({
+            appName: "unknown",
+            appVersion: "unknown",
+            message: "Health check successful",
+            reports: {
+                "node-env": {
+                    displayName: "Node Environment Check",
+                    health: {
+                        healthy: true,
+                        timestamp: expect.any(String),
                     },
-                    status: "ok",
-                    timestamp: jsonResponse.timestamp,
-                });
+                    meta: {
+                        env: "test",
+                    },
+                },
             },
+            status: "ok",
+            timestamp: jsonResponse.timestamp,
         });
     });
 
@@ -52,36 +52,36 @@ describe("health check route", () => {
         process.env["APP_NAME"] = "my-app";
         process.env["APP_VERSION"] = "1.0.0";
 
-        await testApiHandler({
-            handler: healthCheckHandler(HealthCheckService),
-            test: async ({ fetch }) => {
-                const response = await fetch();
+        const callback = healthCheckHandler(HealthCheckService);
 
-                expect(response["status"]).toBe(200);
-                expect(response["headers"].get("content-type")).toBe("application/json");
+        const requestMock = createRequest();
+        const responseMock = createResponse();
 
-                const jsonResponse = await response.json();
+        await callback(requestMock, responseMock);
 
-                expect(jsonResponse).toStrictEqual({
-                    appName: "my-app",
-                    appVersion: "1.0.0",
-                    message: "Health check successful",
-                    reports: {
-                        "node-env": {
-                            displayName: "Node Environment Check",
-                            health: {
-                                healthy: true,
-                                timestamp: expect.any(String),
-                            },
-                            meta: {
-                                env: "test",
-                            },
-                        },
+        expect(responseMock._getStatusCode()).toBe(200);
+        expect(responseMock.getHeader("content-type")).toBe("application/json");
+
+        const jsonResponse = responseMock._getJSONData();
+
+        expect(jsonResponse).toStrictEqual({
+            appName: "my-app",
+            appVersion: "1.0.0",
+            message: "Health check successful",
+            reports: {
+                "node-env": {
+                    displayName: "Node Environment Check",
+                    health: {
+                        healthy: true,
+                        timestamp: expect.any(String),
                     },
-                    status: "ok",
-                    timestamp: jsonResponse.timestamp,
-                });
+                    meta: {
+                        env: "test",
+                    },
+                },
             },
+            status: "ok",
+            timestamp: jsonResponse.timestamp,
         });
 
         process.env["APP_NAME"] = undefined;
