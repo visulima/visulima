@@ -126,7 +126,7 @@
     "overrides": {
       "load-tsconfig": "^0.2.5",
       "vite": "4.3.4",
-      "tsconfig-paths": "^4.0.0"
+      "ts-node": "TypeStrong/ts-node#main"
     }
   }
 }
