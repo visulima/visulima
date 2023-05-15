@@ -66,7 +66,7 @@ const config: DocumentationThemeConfig = {
     },
     footer: {
         copyright: ({ activeType }) => (
-            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType as string) ? "w-full" : "")}>
+            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
                 © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
             </span>
         ),

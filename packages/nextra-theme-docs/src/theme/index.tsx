@@ -65,7 +65,7 @@ const Body: FC<{
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
     const gitTimestampElement = date ? (
-        <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
+        <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
             {renderComponent(config.gitTimestamp, { timestamp: date })}
         </div>
     ) : (
