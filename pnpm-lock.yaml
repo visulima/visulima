@@ -3,7 +3,6 @@ lockfileVersion: 5.4
 overrides:
   load-tsconfig: ^0.2.5
   vite: 4.3.4
-  ts-node: TypeStrong/ts-node#main
 
 importers:
 
@@ -20034,12 +20033,11 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
   github.com/TypeStrong/ts-node/7af5c48864b60576e471da03c064f325ce37d850_7d6xsihq32xp7hx6ta4a3u7eky:
-    resolution: {tarball: https://codeload.github.com/TypeStrong/ts-node/tar.gz/7af5c48864b60576e471da03c064f325ce37d850}
+    resolution: {registry: https://registry.npmjs.org/, tarball: https://codeload.github.com/TypeStrong/ts-node/tar.gz/7af5c48864b60576e471da03c064f325ce37d850}
     id: github.com/TypeStrong/ts-node/7af5c48864b60576e471da03c064f325ce37d850
     name: ts-node
     version: 10.9.1
     hasBin: true
-    prepare: true
     requiresBuild: true
     peerDependencies:
       '@swc/core': '>=1.2.50'

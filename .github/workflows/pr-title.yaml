@@ -62,5 +62,9 @@ jobs:
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
 
+            - name: "Workaround for ts-node issue https://github.com/TypeStrong/ts-node/issues/2000"
+              run: |
+                awk 'NR==3 {$0="\"extends\": \"@tsconfig/node16/tsconfig\","} { print }' tsconfig.json > tsconfig.json
+
             - name: "Check if PR title follows conventional commit guidelines"
               run: "echo \"${{ github.event.pull_request.title }}\" | pnpm commitlint"

@@ -218,7 +218,7 @@
         "webpack": "^5.82.1"
     },
     "engines": {
-        "node": ">=16.8.0 <=20.*"
+        "node": ">=16.18.0 <=20.*"
     },
     "publishConfig": {
         "access": "public"

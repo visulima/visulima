@@ -120,13 +120,12 @@
   },
   "packageManager": "pnpm@7.32.2",
   "engines": {
-    "node": ">=16.8.0 <=20.*"
+    "node": ">=16.18.0 <=20.*"
   },
   "pnpm": {
     "overrides": {
       "load-tsconfig": "^0.2.5",
-      "vite": "4.3.4",
-      "ts-node": "TypeStrong/ts-node#main"
+      "vite": "4.3.4"
     }
   }
 }
