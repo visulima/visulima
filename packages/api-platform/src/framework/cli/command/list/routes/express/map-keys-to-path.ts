@@ -22,14 +22,10 @@ const mapKeysToPath = (layerRegexPath: ExpressRegex, keys: Key[]): string => {
     });
 
     return convertedSubPath
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
         .replace("/?(?=\\/|$)/i", "")
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
         .replace("/^", "")
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        .replace(/\\/gi, "")
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        .replace(/\/{2,}/gi, "/");
+        .replaceAll(/\\/gi, "")
+        .replaceAll(/\/{2,}/gi, "/");
 };
 
 export default mapKeysToPath;

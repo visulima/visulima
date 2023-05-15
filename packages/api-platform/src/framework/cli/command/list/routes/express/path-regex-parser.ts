@@ -34,8 +34,7 @@ const pathRegexParser = (layerRegexPath: ExpressRegex | string, keys: Key[]): st
         .replace("(?=\\/|$)", "$")) as string[];
 
     if (Array.isArray(match) && match.length > 1) {
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        return (match[1] as string).replace(/\\(.)/g, "$1").slice(1);
+        return (match[1] as string).replaceAll(/\\(.)/g, "$1").slice(1);
     }
 
     if (mappedPath) {

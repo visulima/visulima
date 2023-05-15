@@ -39,10 +39,7 @@ export const parseQuery = (request: IncomingApiRequest): unknown => {
 
 export const toHeaderCase = (string_: string): string => string_
     .toLowerCase()
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
-    .replace(/[^\s\w]/g, " ") // Remove all non-word characters
+    .replaceAll(/[^\s\w]/g, " ") // Remove all non-word characters
     .trimEnd() // Remove trailing spaces
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
-    .replace(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
-    // eslint-disable-next-line unicorn/prefer-string-replace-all
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replaceAll(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
+    .replaceAll(/\b\w/g, (c) => c.toUpperCase());
