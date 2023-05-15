@@ -102,7 +102,7 @@
         "vitest": "^0.31.0"
     },
     "engines": {
-        "node": ">=16.18.0 <=19.*"
+        "node": ">=16.8.0 <=20.*"
     },
     "publishConfig": {
         "access": "public"

@@ -53,12 +53,12 @@ class Healthcheck implements HealthcheckInterface {
         const report: HealthReport = {};
 
         // eslint-disable-next-line compat/compat
-        await Promise.all(Object.keys(this.healthCheckers)?.map((service) => this.invokeChecker(service, report)));
+        await Promise.all(Object.keys(this.healthCheckers).map((service) => this.invokeChecker(service, report)));
 
         /**
          * Finding unhealthy service to know if system is healthy or not
          */
-        const unhealthyService = Object.keys(report)?.find((service) => !(report[service] as HealthReportEntry).health.healthy);
+        const unhealthyService = Object.keys(report).find((service) => !(report[service] as HealthReportEntry).health.healthy);
 
         return { healthy: !unhealthyService, report };
     }

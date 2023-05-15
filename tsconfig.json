@@ -5,7 +5,8 @@
     "baseUrl": "./",
     "compilerOptions": {
         "module": "ESNext",
-        "lib": ["DOM", "DOM.Iterable"],
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "target": "ESNext",
 
         "noEmit": true,
         "alwaysStrict": true,
@@ -33,7 +34,7 @@
         "noPropertyAccessFromIndexSignature": true,
 
         // @TODO enable this when we have a better way to handle the types
-        "exactOptionalPropertyTypes": false,
+        "exactOptionalPropertyTypes": false
     },
     "exclude": ["dist", "node_modules", "build", "scripts", "verify-node-version.cjs"]
 }

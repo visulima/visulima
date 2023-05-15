@@ -103,7 +103,7 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
         models: crud.models,
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
     });
-    const schemas = JSON.parse(schema.replace(/#\/definitions/g, "#/components/schemas"));
+    const schemas = JSON.parse(schema.replaceAll("#/definitions", "#/components/schemas"));
     const examples = parser.getExampleModelsSchemas(dModels, schemas);
 
     return {

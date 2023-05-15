@@ -1,9 +1,9 @@
 import "cross-fetch/polyfill";
 
+import { createRequest, createResponse } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
 import { HealthCheck, healthCheckHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
-import {createRequest, createResponse} from "node-mocks-http";
 
 const HealthCheckService = new HealthCheck();
 
@@ -20,9 +20,11 @@ describe("health check route", () => {
 
         await callback(requestMock, responseMock);
 
+        // eslint-disable-next-line no-underscore-dangle
         expect(responseMock._getStatusCode()).toBe(200);
         expect(responseMock.getHeader("content-type")).toBe("application/json");
 
+        // eslint-disable-next-line no-underscore-dangle
         const jsonResponse = responseMock._getJSONData();
 
         expect(jsonResponse).toStrictEqual({
@@ -59,9 +61,11 @@ describe("health check route", () => {
 
         await callback(requestMock, responseMock);
 
+        // eslint-disable-next-line no-underscore-dangle
         expect(responseMock._getStatusCode()).toBe(200);
         expect(responseMock.getHeader("content-type")).toBe("application/json");
 
+        // eslint-disable-next-line no-underscore-dangle
         const jsonResponse = responseMock._getJSONData();
 
         expect(jsonResponse).toStrictEqual({

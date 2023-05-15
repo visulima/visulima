@@ -28,6 +28,7 @@
     "example:nextra:dev": "pnpm --filter \"nextra_example\" run dev",
     "graph": "nx dep-graph",
     "preinstall": "node verify-node-version.cjs && pnpx only-allow pnpm",
+    "lint:types": "tsc",
     "lint:eslint": "nx run-many --target=lint:eslint --all --parallel",
     "lint:eslint:api-platform": "pnpm --filter \"api-platform\" run lint:eslint",
     "lint:eslint:connect": "pnpm --filter \"connect\" run lint:eslint",
@@ -120,7 +121,7 @@
   },
   "packageManager": "pnpm@7.32.2",
   "engines": {
-    "node": ">=16.18.0 <=19.*"
+    "node": ">=16.8.0 <=20.*"
   },
   "pnpm": {
     "overrides": {
