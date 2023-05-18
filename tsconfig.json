@@ -1,11 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "@tsconfig/node16-strictest/tsconfig.json",
+    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node16/tsconfig"],
     "display": "React + Node 16",
     "baseUrl": "./",
     "compilerOptions": {
         "module": "ESNext",
-        "lib": ["DOM", "DOM.Iterable"],
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "target": "ESNext",
 
         "noEmit": true,
         "alwaysStrict": true,
@@ -22,7 +23,7 @@
         "useUnknownInCatchVariables": true,
 
         "isolatedModules": true,
-        "importsNotUsedAsValues": "preserve",
+        "verbatimModuleSyntax": true,
         "resolveJsonModule": true,
         "inlineSources": false,
 
@@ -33,7 +34,7 @@
         "noPropertyAccessFromIndexSignature": true,
 
         // @TODO enable this when we have a better way to handle the types
-        "exactOptionalPropertyTypes": false,
+        "exactOptionalPropertyTypes": false
     },
-    "exclude": ["dist", "node_modules", "build", "scripts", "verify-node-version.cjs"]
+    "exclude": ["dist", "node_modules", "build", "scripts", "verify-node-version.cjs", "plopfile.js", "plop", "packages/*/dist", "packages/*/__fixtures__", "examples", "docs"]
 }
