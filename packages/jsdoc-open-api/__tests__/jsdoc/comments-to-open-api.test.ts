@@ -16,7 +16,7 @@ describe("code blocks", () => {
  * bye\n\
  *\n\
  * @response 200 - ok\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -89,7 +89,7 @@ describe("commentsToOpenApi", () => {
  *\n\
  * @security ExampleSecurity2.write:pets\n\
  * @security ExampleSecurity2.read:pets\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
@@ -270,7 +270,7 @@ describe("commentsToOpenApi", () => {
  * @summary List API versions\n\
  * @response 200 - 200 response\n\
  * @response 300 - 300 response\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -302,7 +302,7 @@ describe("commentsToOpenApi", () => {
  * GET /hello\n\
  * @description Get a "hello world" message.\n\
  * @response 200 - hello world.\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -341,7 +341,7 @@ describe("commentsToOpenApi", () => {
   * @description Get a "hello world" message.\n\
   * @response 200 - hello world.\n\
   * @responseContent {string} 200.text/plain\n\
-  */'.replace(/\r\n/g, "\n");
+  */'.replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
@@ -408,7 +408,7 @@ describe("commentsToOpenApi", () => {
  * @response 200 - A list of cars.\n\
  * @responseContent {string[]} 200.application/json\n\
  * @response 400 - Example Error.\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -524,7 +524,7 @@ describe("commentsToOpenApi", () => {
  * @bodyContent {boolean} application/json\n\
  * @bodyDescription Whether or not to say hello world.\n\
  * @response 200 - hello world.\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -564,7 +564,7 @@ describe("commentsToOpenApi", () => {
  * @bodyContent {ExampleObject} application/x-www-form-urlencoded\n\
  * @bodyDescription A more complicated object.\n\
  * @response 200 - hello world.\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -616,7 +616,7 @@ describe("commentsToOpenApi", () => {
  * @responseHeader {string} 400.fake-header - A fake header\n\
  * @responseExample {Example} 400.application/json.example1\n\
  * @response 400 - error.\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -722,7 +722,7 @@ describe("commentsToOpenApi", () => {
  * @response 300 - 300 response\n\
  * @responseContent 300.application/json\n\
  * @responseExample {Foo} 300.application/json.foo\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -775,7 +775,7 @@ describe("commentsToOpenApi", () => {
   * @response 201 - subscription successfully created\n\
   * @responseContent {Custom} 201.application/json\n\
   * @callback {Callback} onData\n\
-  */'.replace(/\r\n/g, "\n");
+  */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -829,7 +829,7 @@ describe("commentsToOpenApi", () => {
  * @response 200 - The User\n\
  * @responseContent {User} 200.application/json\n\
  * @responseLink {UserRepositories} 200.userRepositories\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -906,7 +906,7 @@ describe("commentsToOpenApi", () => {
  * @responseContent {Pets} 200.application/json\n\
  * @response default - unexpected error\n\
  * @responseContent {Error} default.application/json\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
@@ -1047,7 +1047,7 @@ describe("commentsToOpenApi", () => {
  * @response 200 - OK\n\
  * @responseContent {Pet} 200.application/json\n\
  * @responseContent {Pet} 200.application/xml\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -1083,7 +1083,7 @@ describe("commentsToOpenApi", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
         const comment = '/**\n\
  * normal comment\n\
- */'.replace(/\r\n/g, "\n");
+ */'.replaceAll("\r\n", "\n");
 
         const specification = commentsToOpenApi(comment).map((index) => index.spec);
 
