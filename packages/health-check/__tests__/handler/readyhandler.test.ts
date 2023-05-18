@@ -1,6 +1,6 @@
 import "cross-fetch/polyfill";
 
-import { testApiHandler } from "next-test-api-route-handler";
+import { createRequest, createResponse } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
 import { HealthCheck, healthReadyHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
@@ -13,14 +13,15 @@ describe("health ready route", () => {
     it("endpoint returns health checks reports", async () => {
         expect.assertions(2);
 
-        await testApiHandler({
-            handler: healthReadyHandler(HealthCheckService),
-            test: async ({ fetch }) => {
-                const response = await fetch();
+        const callback = healthReadyHandler(HealthCheckService);
 
-                expect(response["status"]).toBe(204);
-                expect(response["headers"].get("content-type")).toBeNull();
-            },
-        });
+        const requestMock = createRequest();
+        const responseMock = createResponse();
+
+        await callback(requestMock, responseMock);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(responseMock._getStatusCode()).toBe(204);
+        expect(responseMock.getHeader("content-type")).toBeUndefined();
     });
 });
