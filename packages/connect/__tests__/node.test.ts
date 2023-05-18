@@ -273,7 +273,7 @@ describe("createRouter", () => {
                 expect(this.statusCode, "set 500 status code").toStrictEqual(500);
                 // eslint-disable-next-line radar/no-duplicate-string
                 expect(chunk).toStrictEqual("Internal Server Error");
-                expect(consoleSpy.calls[index], `called console.error ${index}`).toStrictEqual([error]);
+                expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
             },
@@ -300,7 +300,7 @@ describe("createRouter", () => {
             end(chunk) {
                 expect(response.statusCode).toStrictEqual(500);
                 expect(chunk).toStrictEqual("Internal Server Error");
-                expect(consoleSpy.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             },
         } as ServerResponse;
         await createRouter()
@@ -327,7 +327,7 @@ describe("createRouter", () => {
             end(chunk) {
                 expect(this.statusCode, "set 500 status code").toStrictEqual(500);
                 expect(chunk).toStrictEqual("Internal Server Error");
-                expect(consoleSpy.calls[index], `called console.error ${index}`).toStrictEqual([error]);
+                expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
             },
@@ -431,7 +431,7 @@ describe("createRouter", () => {
             onError(error) {
                 expect((error as Error).message, "💥");
             },
-        }).handler()({ url: "/foo/bar", method: "GET" } as IncomingMessage, {} as ServerResponse);
+        }).handler()({ url: "/foo/bar", method: "GET" } as IncomingMessage, {} as never);
     });
 
     it("prepareRequest() - attach params", async () => {

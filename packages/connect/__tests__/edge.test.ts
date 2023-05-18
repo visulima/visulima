@@ -274,11 +274,12 @@ describe("edge", () => {
             expect(response.status, "set 500 status code").toStrictEqual(500);
             // eslint-disable-next-line radar/no-duplicate-string
             expect(await response.text()).toStrictEqual("Internal Server Error");
-            expect(consoleSpy.calls[index], `called console.error ${index}`).toStrictEqual([error]);
+            expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
             index += 1;
         };
 
         const request = { method: "GET", url: "http://localhost/" } as Request;
+
         await createEdgeRouter()
             .use(baseFunction)
             .use(() => {
@@ -287,6 +288,7 @@ describe("edge", () => {
             .get(badFunction)
             .handler()(request, {})
             .then(testResponse);
+
         await createEdgeRouter()
             .use(baseFunction)
             .use((_request, _event, next) => {
@@ -310,7 +312,7 @@ describe("edge", () => {
             .then(async (response: Response) => {
                 expect(response.status, `called console.error ${index}`).toStrictEqual(500);
                 expect(await response.text()).toStrictEqual("Internal Server Error");
-                expect(consoleSpy.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             });
     });
 
@@ -324,7 +326,7 @@ describe("edge", () => {
         const testResponse = async (response: Response) => {
             expect(response.status, "set 500 status code").toStrictEqual(500);
             expect(await response.text(), "Internal Server Error");
-            expect(consoleSpy.calls[index], `called console.error ${index}`).toStrictEqual([error]);
+            expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
             index += 1;
         };
