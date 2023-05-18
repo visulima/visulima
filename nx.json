@@ -1,40 +1,42 @@
 {
-    "extends": "@nrwl/workspace/presets/npm.json",
-    "npmScope": "thehoneybee",
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "@nrwl/workspace/tasks-runners/default",
-            "options": {
-                "cacheableOperations": ["build", "test", "lint", "package", "prepare"]
-            }
-        }
-    },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ],
-        "prepare": [
-            {
-                "target": "prepare",
-                "projects": "dependencies"
-            }
-        ],
-        "package": [
-            {
-                "target": "package",
-                "projects": "dependencies"
-            }
-        ]
-    },
-    "affected": {
-        "defaultBase": "main"
-    },
-    "pluginsConfig": {
-        "@nrwl/js": {
-            "analyzeSourceFiles": false
-        }
+  "extends": "@nrwl/workspace/presets/npm.json",
+  "npmScope": "thehoneybee",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx-cloud",
+      "options": {
+        "cacheableOperations": [],
+        "accessToken": "MGQ2NjYwY2ItNTk3MC00MzQ2LWIyNjUtMWY1MWIzYzBjNDExfHJlYWQtd3JpdGU="
+      }
     }
+  },
+  "targetDependencies": {
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ],
+    "prepare": [
+      {
+        "target": "prepare",
+        "projects": "dependencies"
+      }
+    ],
+    "package": [
+      {
+        "target": "package",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "affected": {
+    "defaultBase": "main"
+  },
+  "pluginsConfig": {
+    "@nrwl/js": {
+      "analyzeSourceFiles": false
+    }
+  },
+  "defaultBase": "main"
 }
