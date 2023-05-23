@@ -88,7 +88,7 @@
         "@manypkg/cli": "^0.20.0",
         "@nrwl/cli": "latest",
         "@nrwl/nx-cloud": "latest",
-        "@nrwl/tao": "^15.6.2",
+        "@nrwl/tao": "^16.0.0",
         "@nrwl/workspace": "latest",
         "@octokit/rest": "^19.0.7",
         "@qiwi/multi-semantic-release": "6.5.1",
