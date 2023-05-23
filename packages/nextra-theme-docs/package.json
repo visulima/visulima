@@ -124,7 +124,7 @@
         "eslint-plugin-simple-import-sort": "^10.0.0",
         "eslint-plugin-sort-keys-fix": "^1.1.2",
         "eslint-plugin-testing-library": "^5.10.0",
-        "eslint-plugin-unicorn": "^46.0.0",
+        "eslint-plugin-unicorn": "^47.0.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
         "lightningcss-cli": "^1.18.0",
