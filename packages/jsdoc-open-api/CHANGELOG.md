@@ -1,3 +1,18 @@
+## @visulima/jsdoc-open-api [1.3.3](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.2...@visulima/jsdoc-open-api@1.3.3) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the deps, changed replace to replaceAll and the engine to allow node v20 ([6298590](https://github.com/visulima/visulima/commit/62985907cc9a1b0067f7603e6623294d1c9fec75))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
+
+
+### Dependencies
+
+* **@visulima/readdir:** upgraded to 1.3.5
+
 ## @visulima/jsdoc-open-api [1.3.2](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.1...@visulima/jsdoc-open-api@1.3.2) (2023-01-25)
 
 
