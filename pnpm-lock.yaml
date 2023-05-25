@@ -112,9 +112,6 @@ importers:
 
   docs:
     dependencies:
-      '@axe-core/react':
-        specifier: ^4.7.0
-        version: 4.7.0
       '@giscus/react':
         specifier: ^2.2.8
         version: 2.2.8(react-dom@18.2.0)(react@18.2.0)
@@ -152,6 +149,9 @@ importers:
       '@anolilab/eslint-config':
         specifier: ^5.0.3
         version: 5.0.3(eslint@8.40.0)(tailwindcss@3.3.2)(typescript@5.0.4)
+      '@axe-core/react':
+        specifier: ^4.7.0
+        version: 4.7.0
       '@next/eslint-plugin-next':
         specifier: ^13.4.2
         version: 13.4.2
@@ -2431,7 +2431,7 @@ packages:
     dependencies:
       axe-core: 4.7.0
       requestidlecallback: 0.3.0
-    dev: false
+    dev: true
 
   /@azu/format-text@1.0.2:
     resolution: {integrity: sha512-Swi4N7Edy1Eqq82GxgEECXSSLyn6GOb5htRFPzBDdUkECGXtlf12ynO5oJSpWKPwCaUssOu7NfhDcCWpIC6Ywg==}
@@ -16663,7 +16663,7 @@ packages:
 
   /requestidlecallback@0.3.0:
     resolution: {integrity: sha512-TWHFkT7S9p7IxLC5A1hYmAYQx2Eb9w1skrXmQ+dS1URyvR8tenMLl4lHbqEOUnpEYxNKpkVMXUgknVpBZWXXfQ==}
-    dev: false
+    dev: true
 
   /require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}

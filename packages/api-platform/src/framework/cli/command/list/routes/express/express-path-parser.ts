@@ -15,7 +15,7 @@ import type {
  * @returns A ExpressPath object holding the metadata for a given route
  */
 const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string): RouteMetaData => {
-    const lastRequestHandler = layer.route.stack[layer.route.stack.length - 1] as Layer;
+    const lastRequestHandler = layer.route.stack.at(-1) as Layer;
     const pathParameters: Parameter[] = keys.map((key) => {
         return { name: key.name, in: "path", required: !key.optional };
     });
@@ -26,7 +26,7 @@ const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string):
         throw new Error("Only one metadata middleware is allowed per route");
     }
 
-    const path = (basePath + layer.route.path).replace(/\/{2,}/gi, "/");
+    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/gi, "/");
 
     if (filtered.length === 0) {
         return { path, pathParams: pathParameters, method: lastRequestHandler.method };
