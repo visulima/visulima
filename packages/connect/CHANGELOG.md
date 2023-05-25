@@ -1,3 +1,12 @@
+## @visulima/connect [1.3.4](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.3...@visulima/connect@1.3.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the deps and the engine to allow node v20 ([c8607af](https://github.com/visulima/visulima/commit/c8607afe426f4940dc00dfcbf2baa0f635d68a6b))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
 ## @visulima/connect [1.3.3](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.2...@visulima/connect@1.3.3) (2023-01-25)
 
 
