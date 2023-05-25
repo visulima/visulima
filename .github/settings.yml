@@ -1,0 +1,185 @@
+# https://github.com/probot/settings
+
+branches:
+    - name: "main"
+
+      # https://docs.github.com/en/rest/reference/repos#delete-branch-protection
+      # https://docs.github.com/en/rest/reference/repos#update-branch-protection
+
+      protection:
+          enforce_admins: false
+
+          required_pull_request_reviews:
+              dismiss_stale_reviews: true
+              require_code_owner_reviews: true
+              required_approving_review_count: 1
+
+          required_status_checks:
+              contexts: []
+
+              strict: false
+
+          restrictions:
+              # https://developer.github.com/v3/repos/branches/#parameters-1
+
+              # Note: User, app, and team restrictions are only available for organization-owned repositories.
+              # Set to null to disable when using this configuration for a repository on a personal account.
+
+              apps:
+                  - "semantic-release-bot"
+                  - "renovate"
+              teams: []
+#               users: []
+
+# https://docs.github.com/en/rest/reference/issues#create-a-label
+# https://docs.github.com/en/rest/reference/issues#update-a-label
+
+labels:
+    - name: "s: needs decision"
+      description: "Needs team/maintainer decision"
+      color: "C453C3"
+
+    - name: "s: needs proposal"
+      description: "Changelog Fixed"
+      color: "fbca04"
+
+    - name: "s: needs design"
+      description: "Changelog Fixed"
+      color: "fbca04"
+
+    - name: "s: accepted"
+      description: "Accepted feature / Confirmed bug"
+      color: "0E8A16"
+
+    - name: "s: awaiting more info"
+      description: "Additional information are requested"
+      color: "B76026"
+
+    - name: "s: invalid"
+      description: "This doesn't seem right"
+      color: "E4E669"
+
+    - name: "s: on hold"
+      description: "Blocked by something or frozen to avoid conflicts"
+      color: "A03F0B"
+
+    - name: "s: pending triage"
+      description: "Pending Triage"
+      color: "dddddd"
+
+    - name: "s: waiting for user interest"
+      description: "Waiting for more users interested in this feature"
+      color: "4B02CE"
+
+    - name: "wontfix"
+      description: "This will not be worked on"
+      color: "ffffff"
+
+    - name: "question"
+      description: "Further information is requested"
+      color: "956692"
+
+    - name: "p: 1-normal"
+      description: "Nothing urgent"
+      color: "BFDADC"
+
+    - name: "p: 2-high"
+      description: "Fix main branch"
+      color: "FF4d4d"
+
+    - name: "p: 3-urgent"
+      description: "Fix and release ASAP"
+      color: "FF0000"
+
+    - name: "needs test"
+      description: "More tests are needed"
+      color: "FAF1A2"
+
+    - name: "needs rebase"
+      description: "There is a merge conflict"
+      color: "32345B"
+
+    - name: "c: bug"
+      description: "Something isn't working"
+      color: "FFA500"
+
+    - name: "c: chore"
+      description: "PR that doesn't affect the runtime behavior"
+      color: "40E0D0"
+
+    - name: "c: docs"
+      description: "Improvements or additions to documentation"
+      color: "FFFF00"
+
+    - name: "c: dependencies"
+      description: "Pull requests that adds/updates a dependency"
+      color: "AFEEEE"
+
+    - name: "c: feature"
+      description: "Request for new feature"
+      color: "2878FF"
+
+    - name: "c: infra"
+      description: "Changes to our infrastructure or project setup"
+      color: "2c3e50"
+
+    - name: "c: refactor"
+      description: "PR that affects the runtime behavior, but doesn't add new features or fixes bugs"
+      color: "40E0D0"
+
+    - name: "c: security"
+      description: "Indicates a vulnarability"
+      color: "B60205"
+
+    - name: "deprecation"
+      description: "A deprecation was made in the PR"
+      color: "C5DEF5"
+
+    - name: "do NOT merge yet"
+      description: "Do not merge this PR into the target branch yet"
+      color: "FF0205"
+
+    - name: "duplicate"
+      description: "Duplicate of another issue/PR"
+      color: "fef2c0"
+
+    - name: "good first issue"
+      description: "Good for newcomers"
+      color: "7057ff"
+
+    - name: "has workaround"
+      description: "Workaround provided or linked"
+      color: "4049AD"
+
+    - name: "help wanted"
+      description: "Extra attention is needed"
+      color: "008672"
+
+    - name: "breaking change"
+      description: "Cannot be merged when next version is not a major release"
+      color: "B05D08"
+
+# https://docs.github.com/en/rest/reference/repos#update-a-repository
+
+repository:
+    allow_merge_commit: true
+    allow_rebase_merge: false
+    allow_squash_merge: false
+    archived: false
+    default_branch: "main"
+    delete_branch_on_merge: true
+    description: "Visulima is the next-gen JavaScript framework for JAMStack blogs, sites & apps."
+    has_discussions: true
+    has_downloads: true
+    has_issues: true
+    has_pages: false
+    has_projects: false
+    has_wiki: false
+    enable_vulnerability_alerts: true
+    enable_automated_security_fixes: true
+    name: "visulima"
+    private: false
+
+    # https://developer.github.com/v3/repos/branches/#remove-branch-protection
+
+    topics: "anolilab, typescript, nodejs, javascript, nextjs, next, react, reactjs, api, swagger, openapi, api-platform, api"
