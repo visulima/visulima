@@ -62,6 +62,7 @@ export const Tabs = ({
 );
 
 export const Tab = ({ children, ...properties }: ComponentProps<"div">): ReactElement => (
+    // @ts-expect-error TS2322: Type 'string' is not assignable to type 'Ref<HTMLElement> | undefined'
     // eslint-disable-next-line react/jsx-props-no-spreading
     <HeadlessTab.Panel {...properties} className="rounded pt-6">
         {children}

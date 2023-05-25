@@ -7,7 +7,7 @@ type MatchArguments = {
 
 const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments) => {
     const splitText = value ? [...value] : [];
-    const escapedSearch = match.trim().replace(/[$()*+.?[\\\]^{|}]/g, "\\$&");
+    const escapedSearch = match.trim().replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
     const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "ig");
 

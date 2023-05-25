@@ -119,6 +119,7 @@ export interface DocumentationThemeConfig {
         extraContent?: FC | ReactNode;
         float: boolean;
         title: FC<{ locale: string }> | ReactNode;
+        headingComponent?: FC<{ id: string; children: string }>;
     };
 
     tocContent: {
@@ -126,6 +127,7 @@ export interface DocumentationThemeConfig {
         extraContent?: FC | ReactNode;
         float: boolean;
         title: FC<{ locale: string }> | ReactNode;
+        headingComponent?: FC<{ id: string; children: string }>;
     };
 
     hero?: {
@@ -154,7 +156,6 @@ export type PageTheme = {
 };
 
 export type Context = {
-    Content: FC;
     pageOpts: PageOpts;
     themeConfig: DocumentationThemeConfig;
 };

@@ -20,7 +20,7 @@ const NotFoundPage = (): ReactElement | null => {
     const list = pages({ local: locale as string });
 
     return (
-        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:py-16 lg:px-6">
+        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:px-6 lg:py-16">
             <div className="mx-auto max-w-screen-sm">
                 <div className="text-center">
                     <h1 className="mb-4 text-7xl font-extrabold tracking-tight text-primary-600 dark:text-primary-500 lg:text-9xl">404</h1>

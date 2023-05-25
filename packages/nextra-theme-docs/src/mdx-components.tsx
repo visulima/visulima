@@ -1,117 +1,52 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import {
-    Table, Td, Th, Tr,
-} from "nextra/components";
-import type {
-    ComponentProps, FC, ReactElement,
-} from "react";
-import {
-    useEffect, useRef,
-} from "react";
+import { Table, Td, Th, Tr } from "nextra/components";
+import type { ComponentProps, FC, ReactElement } from "react";
+import { useEffect, useRef } from "react";
 
 import Anchor from "./components/anchor";
 import Code from "./components/code";
 import Details from "./components/details";
 import Pre from "./components/pre";
 import Summary from "./components/summary";
-import { IS_BROWSER } from "./constants";
 import { useSetActiveAnchor } from "./contexts";
-import type { ActiveAnchorItem } from "./contexts/active-anchor";
 import type { DocumentationThemeConfig } from "./types";
-
-let observer: IntersectionObserver;
-let setActiveAnchor: ReturnType<typeof useSetActiveAnchor>;
-const slugs = new WeakMap();
-
-if (IS_BROWSER) {
-    observer ||= new IntersectionObserver(
-        (entries) => {
-            // eslint-disable-next-line radar/cognitive-complexity
-            setActiveAnchor((f) => {
-                const returnValue = { ...f };
-
-                entries.forEach((entry) => {
-                    if (entry?.rootBounds && slugs.has(entry.target)) {
-                        const [slug, index] = slugs.get(entry.target);
-                        const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
-                        const insideHalfViewport = entry.intersectionRatio > 0;
-                        returnValue[slug] = {
-                            index,
-                            aboveHalfViewport,
-                            insideHalfViewport,
-                        };
-                    }
-                });
-
-                let activeSlug = "";
-                let smallestIndexInViewport = Number.POSITIVE_INFINITY;
-                let largestIndexAboveViewport = -1;
-
-                Object.keys(returnValue).forEach((s) => {
-                    (returnValue[s] as ActiveAnchorItem).isActive = false;
-
-                    if ((returnValue[s] as ActiveAnchorItem).insideHalfViewport && (returnValue[s] as ActiveAnchorItem).index < smallestIndexInViewport) {
-                        smallestIndexInViewport = (returnValue[s] as ActiveAnchorItem).index;
-                        activeSlug = s;
-                    }
-
-                    if (
-                        smallestIndexInViewport === Number.POSITIVE_INFINITY
-                        && (returnValue[s] as ActiveAnchorItem).aboveHalfViewport
-                        && (returnValue[s] as ActiveAnchorItem).index > largestIndexAboveViewport
-                    ) {
-                        largestIndexAboveViewport = (returnValue[s] as ActiveAnchorItem).index;
-                        activeSlug = s;
-                    }
-                });
-
-                if (returnValue[activeSlug]) {
-                    (returnValue[activeSlug] as ActiveAnchorItem).isActive = true;
-                }
-
-                return returnValue;
-            });
-        },
-        {
-            rootMargin: "0px 0px -50%",
-            threshold: [0, 1],
-        },
-    );
-}
+import { useIntersectionObserver, useSlugs } from "./contexts/active-anchor";
 
 // Anchor links
 // eslint-disable-next-line max-len
-const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    setActiveAnchor ??= useSetActiveAnchor();
+const createHeaderLink =
+    (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) =>
+    ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
+        const setActiveAnchor = useSetActiveAnchor();
+        const slugs = useSlugs();
+        const observer = useIntersectionObserver();
+        const obReference = useRef<HTMLAnchorElement>(null);
 
-    const obReference = useRef<HTMLAnchorElement>(null);
+        useEffect(() => {
+            const heading = obReference.current;
+            if (!heading) {
+                return;
+            }
 
-    useEffect(() => {
-        const heading = obReference.current;
-        if (!heading) {
-            return;
-        }
+            slugs.set(heading, [id, (context.index += 1)]);
+            observer?.observe(heading);
 
-        slugs.set(heading, [id, (context.index += 1)]);
-        observer.observe(heading);
+            // eslint-disable-next-line consistent-return
+            return () => {
+                observer?.disconnect();
+                slugs.delete(heading);
 
-        // eslint-disable-next-line consistent-return
-        return () => {
-            observer.disconnect();
-            slugs.delete(heading);
+                setActiveAnchor((f) => {
+                    const returnValue = { ...f };
+                    delete returnValue[id!];
+                    return returnValue;
+                });
+            };
+        }, [id, context, slugs, observer, setActiveAnchor]);
 
-            setActiveAnchor((f) => {
-                const returnValue = { ...f };
-                delete returnValue[id!];
-                return returnValue;
-            });
-        };
-    }, [id]);
-
-    return (
+        return (
             <Tag
                 className={cn(
                     "font-semibold tracking-tight",
@@ -131,8 +66,8 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
                 <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
             </Tag>
-    );
-};
+        );
+    };
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const A: FC<Omit<ComponentProps<"a">, "ref"> & { href?: string }> = ({ href = "", ...properties }) => (
