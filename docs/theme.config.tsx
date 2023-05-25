@@ -66,6 +66,7 @@ const config: DocumentationThemeConfig = {
     },
     footer: {
         copyright: ({ activeType }) => (
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType as string) ? "w-full" : "")}>
                 © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
             </span>

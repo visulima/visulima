@@ -67,4 +67,4 @@ jobs:
               run: "pnpm install --frozen-lockfile"
 
             - name: "Check if PR title follows conventional commit guidelines"
-              run: 'echo "${{ github.event.pull_request.title }}" | pnpm commitlint'
+              run: "echo \"${{ github.event.pull_request.title }}\" | pnpm commitlint"
