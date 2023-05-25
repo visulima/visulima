@@ -7,7 +7,7 @@ describe("node-environment-check", () => {
         const result = await nodeEnvironmentCheck()();
 
         expect(result).toStrictEqual({
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             displayName: "Node Environment Check",
             health: {
                 healthy: true,

@@ -58,7 +58,7 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
     );
 };
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE, asPath } = useRouter();

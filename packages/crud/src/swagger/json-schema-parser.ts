@@ -77,9 +77,9 @@ class PrismaJsonSchemaParser {
         return modelsDefinitions;
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public parseInputTypes(models: string[]): { [key: string]: JSONSchema7 } {
-        // eslint-disable-next-line radar/cognitive-complexity
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         const definitions = models.reduce((accumulator: { [key: string]: any }, modelName) => {
             const methods = methodsNames.map((method) => {
                 return {
@@ -210,7 +210,7 @@ class PrismaJsonSchemaParser {
         return { type };
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity,@typescript-eslint/explicit-module-boundary-types
+    // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/explicit-module-boundary-types
     public parseObjectInputType(fieldType: any): { $ref?: string; type?: string } {
         if (fieldType.kind === "object") {
             if (!this.schemaInputTypes.has(fieldType.type.name)) {

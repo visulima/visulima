@@ -79,7 +79,7 @@ describe("JSON Schema Generator", () => {
                         properties: {
                             id: { type: "integer" },
                             user: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                             },
                         },
@@ -93,7 +93,7 @@ describe("JSON Schema Generator", () => {
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
                                 type: "string",
                             },
@@ -102,7 +102,7 @@ describe("JSON Schema Generator", () => {
                                 default: "34534535435353",
                             },
                             bytes: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
                                 type: "string",
                             },
@@ -121,7 +121,7 @@ describe("JSON Schema Generator", () => {
                                 type: ["string", "null"],
                             },
                             posts: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 items: { $ref: "#/definitions/Post" },
                                 type: "array",
                             },
@@ -262,7 +262,7 @@ describe("JSON Schema Generator", () => {
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
                                 type: "string",
                             },
@@ -440,7 +440,7 @@ describe("JSON Schema Generator", () => {
                         properties: {
                             id: { type: "integer" },
                             user: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 anyOf: [{ $ref: "schemaId#/definitions/User" }, { type: "null" }],
                             },
                             userId: {

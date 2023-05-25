@@ -20,10 +20,10 @@ const fixturesDirectory = `${__dirname}/../../../__fixtures__`;
 describe("generate command", () => {
     it("throws an error when no config file is found", async () => {
         const paths = ["/path/to/dir"];
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const options = { config: "/path/to/nonexistent/config.js" };
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow(
             "No config file found, on: /path/to/nonexistent/config.js",
         );

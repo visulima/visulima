@@ -43,7 +43,7 @@ describe("Router", async () => {
     it("add()", async () => {
         const context = new Router<AnyHandler>();
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const out = context.add("GET", "/foo/:hello", noop);
 
         expect(out, "returns the Router instance (chainable)").toStrictEqual(context);
@@ -167,16 +167,16 @@ describe("Router", async () => {
 
         const foo = context.find("HEAD", "/greet/Bob") as any;
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo.params.name, '~> "params.name" is expected').toStrictEqual("Bob");
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo.fns.length, '~~> "handlers" has 1 item').toStrictEqual(1);
 
         foo.chain = 0;
         // eslint-disable-next-line @typescript-eslint/no-shadow
         foo.fns.forEach((function__: (argument0: any) => any) => function__(foo));
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo.chain, "~~> handler executed successfully").toStrictEqual(1);
 
         const bar = context.find("GET", "/greet/Judy") as any;
@@ -252,7 +252,7 @@ describe("Router", async () => {
 
         const out = context.find("GET", "/foo/bar") as any;
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(out, "returns an object").toBeTypeOf("object");
         expect(out.params, '~> has "params" key (object)').toBeTypeOf("object");
         expect(out.params.title, '~~> "params.title" value is correct').toStrictEqual("bar");
@@ -294,19 +294,19 @@ describe("Router", async () => {
             .add("GET", "/foo", ((request) => {
                 expect(true, '~> ran "GET /foo" route').toBeTruthy();
 
-                // eslint-disable-next-line no-plusplus,radar/no-duplicate-string
+                // eslint-disable-next-line no-plusplus,sonarjs/no-duplicate-string
                 expect(request.chain++, "~~> ran 2nd").toStrictEqual(1);
             }) as AnyHandler)
             .add("GET", "/foo/:title?", ((request) => {
                 expect(true, '~> ran "GET /foo/:title?" route').toBeTruthy(); // x2
 
                 if (!isRoot) {
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     expect(request.params.title, '~~> saw "params.title" value').toStrictEqual("bar");
                 }
 
                 if (isRoot) {
-                    // eslint-disable-next-line radar/no-duplicate-string,no-plusplus
+                    // eslint-disable-next-line sonarjs/no-duplicate-string,no-plusplus
                     expect(request.chain++, "~~> ran 3rd").toStrictEqual(2);
                 } else {
                     // eslint-disable-next-line no-plusplus
@@ -323,7 +323,7 @@ describe("Router", async () => {
             }) as AnyHandler);
 
         const foo = context.find("GET", "/foo") as any;
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo.fns.length, "found 3 handlers").toStrictEqual(3);
 
         foo.chain = 0;
@@ -405,20 +405,20 @@ describe("Router", async () => {
         const context3 = new Router<AnyHandler>().add("", "api/:version?", noop);
         const context4 = new Router<AnyHandler>().add("", "movies/:title.mp4", noop);
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(find(context1, "/api").fns.length, "~> exact match").toStrictEqual(1);
         expect(find(context1, "/api/foo").fns.length, '~> does not match "/api/foo" - too long').toStrictEqual(0);
 
         expect(find(context2, "/api").fns.length, '~> does not match "/api" only').toStrictEqual(0);
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const foo1 = find(context2, "/api/v1");
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo1.fns.length, '~> does match "/api/v1" directly').toStrictEqual(1);
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(foo1.params["version"], '~> parses the "version" correctly').toStrictEqual("v1");
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const foo2 = find(context2, "/api/v1/users");
         expect(foo2.fns.length, '~> does not match "/api/v1/users" - too long').toStrictEqual(0);
         expect(foo2.params["version"], '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
@@ -438,7 +438,7 @@ describe("Router", async () => {
 
         const baz1 = find(context4, "/movies/narnia.mp4");
         expect(baz1.fns.length, '~> does match "/movies/narnia.mp4" directly').toStrictEqual(1);
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         expect(baz1.params.title, '~> parses the "title" correctly').toStrictEqual("narnia");
 
         const baz2 = find(context4, "/movies/narnia.mp4/cast");
@@ -541,7 +541,7 @@ describe("Router", async () => {
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 1st").toStrictEqual(0);
             }) as AnyHandler)
-            // eslint-disable-next-line radar/no-identical-functions
+            // eslint-disable-next-line sonarjs/no-identical-functions
             .add("GET", "/foo", ((request) => {
                 expect(true, '~> ran "GET /foo" route').toBeTruthy();
                 // eslint-disable-next-line no-plusplus
@@ -629,7 +629,7 @@ describe("Router", async () => {
             fns: [function_],
             isMiddleware: true,
             method: "",
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             route: "/some/wacky/route",
         });
     });
@@ -824,7 +824,7 @@ describe("Router", async () => {
 
         const fns: Nextable<(argument0: Record<string, unknown>, argument1: Record<string, unknown>) => void>[] = [
             async (request, response, next) => {
-                // eslint-disable-next-line no-plusplus,radar/no-duplicate-string
+                // eslint-disable-next-line no-plusplus,sonarjs/no-duplicate-string
                 expect(index++, "correct execution order").toStrictEqual(0);
                 expect(request, "~~> passes all args").toStrictEqual(rreq);
                 expect(response, "~~> passes all args").toStrictEqual(rres);

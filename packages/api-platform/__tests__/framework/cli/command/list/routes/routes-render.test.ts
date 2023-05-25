@@ -11,7 +11,7 @@ describe("list printer", () => {
                     path: "/api/cors",
                     method: "GET",
                     tags: ["root"],
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     file: "__fixtures__/pages/api/corsheader.ts",
                 },
             ],

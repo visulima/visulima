@@ -95,7 +95,7 @@ export class Router<H extends FunctionLike> {
         return (fns[index] as FunctionLike)(...arguments_, next);
     }
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public find(method: HttpMethod, pathname: string): FindResult<H> {
         let middleOnly = true;
 
@@ -103,7 +103,7 @@ export class Router<H extends FunctionLike> {
         const parameters: Record<string, string> = {};
         const isHead = method === "HEAD";
 
-        // eslint-disable-next-line radar/cognitive-complexity
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         Object.values(this.routes).forEach((route) => {
             if (
                 route.method !== method

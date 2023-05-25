@@ -35,7 +35,7 @@ const Search: FC<SearchProperties> = ({
     onActive,
     loading,
     results,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const [show, setShow] = useState(false);
     const config = useConfig();

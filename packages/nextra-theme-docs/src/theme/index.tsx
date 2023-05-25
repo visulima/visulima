@@ -129,7 +129,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     headings,
     timestamp,
     children,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
     const {

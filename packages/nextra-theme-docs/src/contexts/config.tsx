@@ -197,7 +197,7 @@ const ConfigContext = createContext<Config>(theme);
 
 export const useConfig = () => useContext(ConfigContext);
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: { children: ReactNode; value: Context }): ReactElement => {
     const [menu, setMenu] = useState(false);
 

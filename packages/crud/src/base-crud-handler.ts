@@ -36,7 +36,7 @@ async function baseHandler<R extends IncomingMessage, RResponse extends ServerRe
     options?: HandlerOptions<M>,
 ): Promise<ExecuteHandler<R, RResponse>>;
 
-// eslint-disable-next-line radar/cognitive-complexity,max-len
+// eslint-disable-next-line sonarjs/cognitive-complexity,max-len
 async function baseHandler<R extends { url: string; method: string }, RResponse, T, Q extends ParsedQueryParameters = any, M extends string = string>(
     responseExecutor: (responseOrContext: RResponse, responseConfig: ResponseConfig) => Promise<RResponse>,
     finalExecutor: (responseOrContext: RResponse) => Promise<void>,

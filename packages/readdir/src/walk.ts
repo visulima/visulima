@@ -72,7 +72,7 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
  * - match?: string | ReadonlyArray<string>;
  * - skip?: string | ReadonlyArray<string>;
  */
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function* walk(
     directory: string,
     {

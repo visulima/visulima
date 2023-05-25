@@ -223,9 +223,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -926,9 +923,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -1090,9 +1084,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-simple-import-sort:
         specifier: ^10.0.0
         version: 10.0.0(eslint@8.41.0)
@@ -1241,9 +1232,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -1398,9 +1386,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -1565,9 +1550,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-simple-import-sort:
         specifier: ^10.0.0
         version: 10.0.0(eslint@8.41.0)
@@ -1768,9 +1750,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -1925,9 +1904,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -2067,9 +2043,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -2194,9 +2167,6 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.1.1(eslint@8.41.0)
-      eslint-plugin-radar:
-        specifier: ^0.2.1
-        version: 0.2.1(eslint@8.41.0)
       eslint-plugin-react:
         specifier: 7.32.2
         version: 7.32.2(eslint@8.41.0)
@@ -9396,15 +9366,6 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
-    dependencies:
-      eslint: 8.41.0
-    dev: true
-
-  /eslint-plugin-radar@0.2.1(eslint@8.41.0):
-    resolution: {integrity: sha512-aOc1MK6ddL45X6mS6zEqFIKy/c/qnwjhNycDecaFMw5acUsD744ZCZf2cG7yxLhMv71mBSwr6pZdu+26+Zzk5A==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      eslint: '>= 3.0.0 <= 7.x.x'
     dependencies:
       eslint: 8.41.0
     dev: true

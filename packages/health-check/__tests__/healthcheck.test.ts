@@ -16,7 +16,7 @@ const getDatabaseChecker = async () => {
 
 const getEventChecker = async () => {
     return {
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         displayName: "event-loop",
         health: {
             healthy: true,
@@ -29,7 +29,7 @@ describe("HealthCheck", () => {
     it("get health checks report", async () => {
         const healthCheck = new HealthCheck();
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         healthCheck.addChecker("event-loop", async () => {
             return {
                 displayName: "event loop",

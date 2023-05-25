@@ -4,7 +4,7 @@ import dnsCheck from "../../src/checks/dns-check";
 
 describe("dnsCheck", () => {
     it("should return healthy when the host is resolved", async () => {
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const result = await dnsCheck("example.com")();
 
         expect(result).toStrictEqual({

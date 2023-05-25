@@ -33,13 +33,14 @@ export const useSetActiveAnchor = () => useContext(SetActiveAnchorContext);
 export const useIntersectionObserver = () => useContext(IntersectionObserverContext);
 export const useSlugs = () => useContext(SlugsContext);
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({});
     const observerReference = useRef<IntersectionObserver | null>(null);
 
     if (IS_BROWSER && !observerReference.current) {
         observerReference.current = new IntersectionObserver(
+            // eslint-disable-next-line sonarjs/cognitive-complexity
             (entries) => {
                 setActiveAnchor((anchor) => {
                     const returnValue: ActiveAnchor = { ...anchor };

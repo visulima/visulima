@@ -56,7 +56,7 @@ const config: DocumentationThemeConfig = {
     },
     editLink: {
         text: ({ locale }) => {
-            // eslint-disable-next-line radar/no-small-switch
+            // eslint-disable-next-line sonarjs/no-small-switch
             switch (locale) {
                 default: {
                     return "Edit this page on GitHub →";
@@ -66,7 +66,7 @@ const config: DocumentationThemeConfig = {
     },
     footer: {
         copyright: ({ activeType }) => (
-            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType) ? "w-full" : "")}>
+            <span className={cn("text-sm text-gray-500 dark:text-gray-400", ["page", "hidden"].includes(activeType as string) ? "w-full" : "")}>
                 © {new Date().getFullYear()} Visulima <br /> All Rights Reserved.
             </span>
         ),
@@ -162,7 +162,7 @@ const config: DocumentationThemeConfig = {
     },
     search: {
         placeholder: ({ locale }) => {
-            // eslint-disable-next-line radar/no-small-switch
+            // eslint-disable-next-line sonarjs/no-small-switch
             switch (locale) {
                 default: {
                     return "Search";

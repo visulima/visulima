@@ -47,7 +47,7 @@ describe("Paginator", () => {
             page: 1,
             lastPage: 10,
             firstPage: 1,
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             firstPageUrl: "/api/v1?page=1",
             lastPageUrl: "/api/v1?page=10",
             nextPageUrl: "/api/v1?page=2",

@@ -114,17 +114,17 @@ describe("createRouter", () => {
         const response = {} as ServerResponse;
 
         context.use("/", (reqq, ress, next) => {
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(ress, "passes along req").toStrictEqual(response);
 
             return next();
         });
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         context.use("/not/match", badFunction);
         context.get("/", badFunction);
         context.get("/foo/bar", badFunction);
-        // eslint-disable-next-line radar/no-identical-functions
+        // eslint-disable-next-line sonarjs/no-identical-functions
         context.post("/foo/bar", async (reqq, ress, next) => {
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(ress, "passes along req").toStrictEqual(response);
@@ -271,7 +271,7 @@ describe("createRouter", () => {
         const response = {
             end(chunk) {
                 expect(this.statusCode, "set 500 status code").toStrictEqual(500);
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 expect(chunk).toStrictEqual("Internal Server Error");
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
@@ -323,7 +323,7 @@ describe("createRouter", () => {
         let index = 0;
 
         const response = {
-            // eslint-disable-next-line radar/no-identical-functions
+            // eslint-disable-next-line sonarjs/no-identical-functions
             end(chunk) {
                 expect(this.statusCode, "set 500 status code").toStrictEqual(500);
                 expect(chunk).toStrictEqual("Internal Server Error");
@@ -333,7 +333,7 @@ describe("createRouter", () => {
             },
         } as ServerResponse;
 
-        // eslint-disable-next-line radar/no-identical-functions
+        // eslint-disable-next-line sonarjs/no-identical-functions
         const baseFunction = async (_request: IncomingMessage, response_: ServerResponse, next: any) => {
             // eslint-disable-next-line no-param-reassign
             response_.statusCode = 200;
@@ -442,7 +442,7 @@ describe("createRouter", () => {
         context2.prepareRequest(
             request,
             // @ts-expect-error: internal
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             context2.router.find("GET", "/hello/world"),
         );
         // @ts-expect-error: extra prop

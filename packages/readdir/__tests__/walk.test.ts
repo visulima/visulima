@@ -15,11 +15,11 @@ describe("walk", () => {
         }
 
         expect(files).toEqual([
-            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            // eslint-disable-next-line unicorn/prefer-module,sonarjs/no-duplicate-string
             path.join(__dirname, "..", "/__fixtures__"),
-            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            // eslint-disable-next-line unicorn/prefer-module,sonarjs/no-duplicate-string
             path.join(__dirname, "..", "/__fixtures__", "/test.js"),
-            // eslint-disable-next-line unicorn/prefer-module,radar/no-duplicate-string
+            // eslint-disable-next-line unicorn/prefer-module,sonarjs/no-duplicate-string
             path.join(__dirname, "..", "/__fixtures__", "/test2.ts"),
         ]);
     });

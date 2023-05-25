@@ -9,7 +9,7 @@ import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
 const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: { [key: string]: OpenAPIV3.ExampleObject }): OpenAPIV3.PathsObject => {
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     Object.values(swaggerPaths).forEach((pathSpec) => {
         Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
             if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {

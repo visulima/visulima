@@ -8,7 +8,7 @@ import serialize from "../../src/serializers/serialize";
 describe("serialize", () => {
     it("should correctly sets the Content-Type header in the response when a serializer is found for the given type in the accept header", () => {
         const request = {} as IncomingMessage;
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         request.headers = { accept: "application/json" };
 
         const response = {} as ServerResponse;

@@ -44,7 +44,7 @@ const classes = {
     ),
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,radar/cognitive-complexity
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 const FolderImpl: FC<{ item: Item | MenuItem | PageItem; anchors: string[] }> = ({ item, anchors }) => {
     const { asPath, locale = DEFAULT_LOCALE } = useRouter();
     const routeOriginal = getFSRoute(asPath, locale);
@@ -277,7 +277,7 @@ const Sidebar: FC<SideBarProperties> = ({
     asPopover = false,
     headings = emptyHeading,
     includePlaceholder,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();

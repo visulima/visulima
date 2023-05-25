@@ -57,7 +57,7 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Test",
                                         },
                                     },
@@ -128,7 +128,7 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                         examples: {
                                             Test2: {
-                                                // eslint-disable-next-line radar/no-duplicate-string
+                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 $ref: "#/components/examples/Test2",
                                             },
                                         },
@@ -145,7 +145,7 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Test3",
                                         },
                                         example: {
@@ -217,7 +217,7 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                         examples: {
                                             Test: {
-                                                // eslint-disable-next-line radar/no-duplicate-string
+                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                             },
                                         },
@@ -225,7 +225,7 @@ describe("swagger/extend-swagger-spec", () => {
                                     "application/x-yaml": {
                                         examples: {
                                             Test: {
-                                                // eslint-disable-next-line radar/no-duplicate-string
+                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 value: "test: test\n",
                                             },
                                         },
@@ -246,7 +246,7 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Test2",
                                         },
                                         examples: {
@@ -288,7 +288,7 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Test3",
                                         },
                                         example: {

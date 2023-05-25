@@ -125,7 +125,7 @@ describe("commentsToOpenApi", () => {
                             {
                                 name: "limit",
                                 in: "query",
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "the limit to fetch",
                                 required: false,
                                 schema: {
@@ -161,7 +161,7 @@ describe("commentsToOpenApi", () => {
                                 "application/json": {
                                     examples: {
                                         ExampleExample: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/examples/ExampleExample",
                                         },
                                     },
@@ -308,11 +308,11 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/hello": {
                     get: {
-                        // eslint-disable-next-line radar/no-duplicate-string
+                        // eslint-disable-next-line sonarjs/no-duplicate-string
                         description: 'Get a "hello world" message.',
                         responses: {
                             200: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "hello world.",
                             },
                         },
@@ -530,7 +530,7 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/hello": {
                     post: {
-                        // eslint-disable-next-line radar/no-duplicate-string
+                        // eslint-disable-next-line sonarjs/no-duplicate-string
                         description: 'Post a "hello world" message.',
                         requestBody: {
                             description: "Whether or not to say hello world.",
@@ -576,7 +576,7 @@ describe("commentsToOpenApi", () => {
                             content: {
                                 "application/x-www-form-urlencoded": {
                                     schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        // eslint-disable-next-line sonarjs/no-duplicate-string
                                         $ref: "#/components/schemas/ExampleObject",
                                     },
                                 },
@@ -947,12 +947,12 @@ describe("commentsToOpenApi", () => {
                                 },
                             },
                             default: {
-                                // eslint-disable-next-line radar/no-duplicate-string
+                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "unexpected error",
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line radar/no-duplicate-string
+                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Error",
                                         },
                                     },
