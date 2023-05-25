@@ -1,3 +1,19 @@
+## @visulima/crud [1.0.11](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.10...@visulima/crud@1.0.11) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the deps, changed replace to replaceAll and the engine to allow node v20 ([b21eac9](https://github.com/visulima/visulima/commit/b21eac970db2f10be9033d4e1279373a4a4c1ef7))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 2.0.3
+* **@visulima/prisma-dmmf-transformer:** upgraded to 1.0.6
+
 ## @visulima/crud [1.0.10](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.9...@visulima/crud@1.0.10) (2023-01-25)
 
 
