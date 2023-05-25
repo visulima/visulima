@@ -1,3 +1,12 @@
+## @visulima/prisma-dmmf-transformer [1.0.6](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.5...@visulima/prisma-dmmf-transformer@1.0.6) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the dev deps and changed the engine to allow node v20 ([892f9f2](https://github.com/visulima/visulima/commit/892f9f29f03b4704fa0199f4431400ec88bb6525))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
 ## @visulima/prisma-dmmf-transformer [1.0.5](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.4...@visulima/prisma-dmmf-transformer@1.0.5) (2023-01-25)
 
 
