@@ -1,72 +1,53 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:base",
-        ":timezone(Europe/Berlin)"
+    $schema: "https://docs.renovatebot.com/renovate-schema.json",
+    extends: ["config:base", "schedule:earlyMondays", "group:allNonMajor", ":prHourlyLimitNone"],
+    labels: ["c: dependencies"],
+    reviewersFromCodeOwners: true,
+    rangeStrategy: "bump",
+    packageRules: [
+        {
+            groupName: "devDependencies",
+            matchDepTypes: ["devDependencies"],
+            rangeStrategy: "bump",
+        },
+        {
+            groupName: "dependencies",
+            matchDepTypes: ["dependencies"],
+            rangeStrategy: "replace",
+        },
+        {
+            groupName: "peerDependencies",
+            matchDepTypes: ["peerDependencies"],
+            rangeStrategy: "widen",
+        },
+        {
+            groupName: "engines",
+            matchDepTypes: ["engines"],
+            rangeStrategy: "replace",
+        },
+        {
+            groupName: "typescript-eslint",
+            matchPackagePrefixes: ["@typescript-eslint/"],
+        },
+        {
+            groupName: "vitest",
+            matchPackageNames: ["@vitest/coverage-c8", "@vitest/ui", "vitest"],
+        },
+        {
+            groupName: "prettier",
+            matchPackageNames: ["@types/prettier", "prettier"],
+        },
+        {
+            groupName: "typescript",
+            matchPackageNames: ["typescript"],
+        },
+        {
+            groupName: "doc-dependencies",
+            matchPackageNames: ["@algolia/client-search", "@types/react", "react", "react-dom", "typedoc", "typedoc-plugin-missing-exports", "vitepress"],
+        },
     ],
-    "ignoreUnstable": true,
-    "pinVersions": false,
-    "rebaseStalePrs": true,
-    "separateMultipleMajor": true,
-    "labels": ["dependency", "Changed"],
-    "composer": {
-        "enabled": true
+    vulnerabilityAlerts: {
+        labels: ["c: security"],
+        assignees: ["team:maintainers"],
     },
-    "major": {
-        "semanticCommitType": "chore",
-        "semanticCommitScope": "deps"
-    },
-    "vulnerabilityAlerts": {
-        "enabled": true,
-        "labels": ["Security", "Type: Critical"]
-    },
-    "packageRules": [
-        {
-            "groupName": "renovate-meta",
-            "automerge": true,
-            "updateTypes": ["lockFileMaintenance", "minor", "patch", "pin", "digest"],
-            "labels": ["dependency", "Changed"],
-            "semanticCommitType": "chore",
-            "semanticCommitScope": "deps",
-            "semanticCommits": "enabled",
-            "datasources": ["npm"]
-        },
-        {
-            "groupName": "dependencies (major)",
-            "automerge": false,
-            "depTypeList": ["require"],
-            "updateTypes": ["major"],
-            "semanticCommitType": "deps",
-            "semanticCommits": "enabled"
-        },
-        {
-            "groupName": "dependencies (non-major)",
-            "automerge": true,
-            "depTypeList": ["dependencies", "require"],
-            "updateTypes": ["patch", "minor", "pin", "digest"],
-            "semanticCommitType": "chore",
-            "semanticCommitScope": "deps",
-            "semanticCommits": "enabled"
-        },
-        {
-            "groupName": "devDependencies (major)",
-            "automerge": true,
-            "depTypeList": ["devDependencies", "require-dev"],
-            "updateTypes": ["major"],
-            "labels": ["dependency", "Changed"],
-            "semanticCommitType": "chore",
-            "semanticCommitScope": "deps",
-            "semanticCommits": "enabled"
-        },
-        {
-            "groupName": "devDependencies (non-major)",
-            "automerge": true,
-            "depTypeList": ["devDependencies", "require-dev"],
-            "updateTypes": ["patch", "minor", "pin", "digest"],
-            "labels": ["dependency", "Changed"],
-            "semanticCommitType": "chore",
-            "semanticCommitScope": "deps",
-            "semanticCommits": "enabled"
-        }
-    ]
 }
