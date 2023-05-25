@@ -1,3 +1,12 @@
+## @visulima/readdir [1.3.5](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.4...@visulima/readdir@1.3.5) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the dev deps and changed the engine to allow node v20 ([be62cb4](https://github.com/visulima/visulima/commit/be62cb4f36cb99904a7d3354b850c04618055b31))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
 ## @visulima/readdir [1.3.4](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.3...@visulima/readdir@1.3.4) (2023-01-25)
 
 
