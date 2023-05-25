@@ -1,5 +1,5 @@
 ---
-name: Freestyle Report
-about: Create a report to help us improve
-labels: 'Type: pending triage' # This will automatically assign the 'pending triage' label
+name: "Freestyle Report"
+about: "Create a report to help us improve"
+labels: "s: pending triage" # This will automatically assign the 'pending triage' label
 ---
