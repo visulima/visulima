@@ -92,7 +92,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^5.0.3",
         "@anolilab/semantic-release-preset": "^2.2.0",
-        "@rushstack/eslint-plugin-security": "^0.5.0",
+        "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/cli-progress": "^3.11.0",
         "@types/http-errors": "^2.0.1",
         "@types/lodash.mergewith": "^4.6.7",

@@ -113,7 +113,7 @@
   },
   "devDependencies": {
     "load-tsconfig": "^0.2.5",
-    "nx": "16.1.4",
+    "nx": "16.2.2",
     "nx-cloud": "latest",
     "read-pkg": "^8.0.0",
     "tsup": "^6.7.0"
