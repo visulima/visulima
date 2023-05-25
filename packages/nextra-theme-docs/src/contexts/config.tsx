@@ -206,9 +206,9 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
             ...DEFAULT_THEME,
             ...themeConfig,
             flexsearch: pageOpts.flexsearch,
-            ...(typeof pageOpts.newNextLinkBehavior === 'boolean' && {
-                  newNextLinkBehavior: pageOpts.newNextLinkBehavior
-                }),
+            ...(typeof pageOpts.newNextLinkBehavior === "boolean" && {
+                newNextLinkBehavior: pageOpts.newNextLinkBehavior,
+            }),
             title: pageOpts.title,
             frontMatter: pageOpts.frontMatter,
             ...Object.fromEntries(
