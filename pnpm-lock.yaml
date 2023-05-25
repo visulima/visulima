@@ -1003,6 +1003,10 @@ importers:
 
   packages/api-platform/next: {}
 
+  packages/api-platform/next/pages/redoc: {}
+
+  packages/api-platform/next/pages/swagger: {}
+
   packages/connect:
     dependencies:
       http-errors:
