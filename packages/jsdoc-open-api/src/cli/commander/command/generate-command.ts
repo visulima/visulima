@@ -14,7 +14,7 @@ const generateCommand = (program: Command, commandName: string = "generate", con
         .option("-o, --output [swaggerSpec.json]", "Output swagger specification.")
         .option("-v, --verbose", "Verbose output.")
         .option("-vv, --very-verbose", "Very verbose output.")
-        // eslint-disable-next-line radar/cognitive-complexity
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         .action(async (paths, options) => {
             try {
                 await baseGenerateCommand(configName, paths, options);

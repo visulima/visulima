@@ -97,7 +97,6 @@
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-optimize-regex": "^1.2.1",
         "eslint-plugin-promise": "^6.1.1",
-        "eslint-plugin-radar": "^0.2.1",
         "eslint-plugin-simple-import-sort": "^10.0.0",
         "eslint-plugin-sort-keys-fix": "^1.1.2",
         "eslint-plugin-testing-library": "^5.11.0",

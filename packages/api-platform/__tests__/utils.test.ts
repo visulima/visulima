@@ -9,7 +9,7 @@ import {
 describe("utils", () => {
     describe("toHeaderCase", () => {
         it("should convert a string to header case", () => {
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(toHeaderCase("Hello World")).toEqual("Hello-World");
             expect(toHeaderCase("hello world")).toEqual("Hello-World");
             expect(toHeaderCase("Hello, World!")).toEqual("Hello-World");

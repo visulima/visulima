@@ -16,7 +16,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
     output?: string;
     verbose?: boolean;
     veryVerbose?: boolean;
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<void> => {
     let openapiConfig: {
         exclude: string[];

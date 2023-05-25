@@ -21,10 +21,10 @@ describe("api-route-file-parser", () => {
             [
                 {
                     method: "GET|HEAD",
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     path: "/pages/api/[customerId]",
                     tags: [],
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     file: "__fixtures__/pages/api/[customerId].js",
                 },
                 {

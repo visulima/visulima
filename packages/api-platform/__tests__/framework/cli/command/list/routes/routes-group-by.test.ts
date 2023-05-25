@@ -14,10 +14,10 @@ describe("routes-group-by", () => {
         const routes: Route[] = [
             {
                 method: "GET|HEAD",
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 path: "/pages/api/[customerId]",
                 tags: ["test"],
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 file: "__fixtures__/pages/api/[customerId].js",
             },
             {
@@ -39,10 +39,10 @@ describe("routes-group-by", () => {
         expect(result.get("test")).toEqual([
             {
                 method: "GET|HEAD",
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 path: "/pages/api/[customerId]",
                 tags: ["test"],
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 file: "__fixtures__/pages/api/[customerId].js",
             },
             {

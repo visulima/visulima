@@ -115,19 +115,19 @@ describe("edge", () => {
         const event = {};
 
         context.use("/", (reqq, evtt, next) => {
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(reqq, "passes along req").toStrictEqual(request);
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(evtt, "passes along evt").toStrictEqual(event);
 
             return next();
         });
 
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         context.use("/not/match", badFunction);
         context.get("/", badFunction);
         context.get("/foo/bar", badFunction);
-        // eslint-disable-next-line radar/no-identical-functions
+        // eslint-disable-next-line sonarjs/no-identical-functions
         context.post("/foo/bar", async (reqq, evtt, next) => {
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(evtt, "passes along evt").toStrictEqual(event);
@@ -144,7 +144,7 @@ describe("edge", () => {
     });
 
     it("run() - propagates error", async () => {
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const request = { url: "http://localhost/", method: "GET" } as Request;
         const event = {};
         const error = new Error("💥");
@@ -241,7 +241,7 @@ describe("edge", () => {
                 // eslint-disable-next-line @typescript-eslint/return-await
                 return await next();
             })
-            // eslint-disable-next-line radar/no-identical-functions
+            // eslint-disable-next-line sonarjs/no-identical-functions
             .use((_request, _event, next) => {
                 // eslint-disable-next-line no-plusplus
                 expect(++index).toStrictEqual(2);
@@ -250,7 +250,7 @@ describe("edge", () => {
             })
             .post(badFunction)
             .get("/not/match", badFunction)
-            // eslint-disable-next-line radar/no-identical-functions
+            // eslint-disable-next-line sonarjs/no-identical-functions
             .get(async () => {
                 // eslint-disable-next-line no-plusplus
                 expect(++index).toStrictEqual(3);
@@ -272,7 +272,7 @@ describe("edge", () => {
         let index = 0;
         const testResponse = async (response: Response) => {
             expect(response.status, "set 500 status code").toStrictEqual(500);
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(await response.text()).toStrictEqual("Internal Server Error");
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
             index += 1;
@@ -424,7 +424,7 @@ describe("edge", () => {
 
         const context2 = createEdgeRouter().get("/hello/:name");
         // @ts-expect-error: internal
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         context2.prepareRequest(request, context2.router.find("GET", "/hello/world"));
         expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 

@@ -158,7 +158,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [search, setSearch] = useState("");
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const doSearch = (searchString: string) => {
         if (!searchString) {
             return;

@@ -2,10 +2,10 @@ import cn from "clsx";
 import type { FC, PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = ({ children, className, open }) => {
-    const containerReference = useRef<HTMLDivElement>(null);
-    const innerReference = useRef<HTMLDivElement>(null);
+    const containerReference = useRef<HTMLDivElement | null>(null);
+    const innerReference = useRef<HTMLDivElement | null>(null);
     const animationReference = useRef<any>();
     const initialRender = useRef(true);
     const initialState = useRef(open);
@@ -23,7 +23,7 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
         const inner = innerReference.current;
 
         if (open) {
-            if (container && inner) {
+            if (container && inner && innerReference.current) {
                 const contentHeight = innerReference.current.clientHeight;
 
                 container.style.maxHeight = `${contentHeight}px`;
@@ -33,13 +33,11 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
                 inner.style.opacity = "1";
 
                 animationReference.current = setTimeout(() => {
-                    if (container) {
-                        // should be style property in kebab-case, not css class name
-                        container.style.removeProperty("max-height");
-                    }
+                    // should be style property in kebab-case, not css class name
+                    container.style.removeProperty("max-height");
                 }, 300);
             }
-        } else if (container && inner) {
+        } else if (container && inner && innerReference.current) {
             const contentHeight = innerReference.current.clientHeight;
 
             container.style.maxHeight = `${contentHeight}px`;
@@ -49,9 +47,7 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
             inner.style.opacity = "0";
 
             setTimeout(() => {
-                if (container) {
-                    container.style.maxHeight = "0px";
-                }
+                container.style.maxHeight = "0px";
             }, 0);
         }
     }, [open]);

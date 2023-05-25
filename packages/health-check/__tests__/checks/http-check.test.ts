@@ -6,16 +6,16 @@ import httpCheck from "../../src/checks/http-check";
 
 describe("httpCheck", () => {
     it("should return healthy when the host is reachable", async () => {
-        // eslint-disable-next-line radar/no-duplicate-string
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         const result = await httpCheck("https://example.com")();
 
         expect(result).toStrictEqual({
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             displayName: "HTTP check for https://example.com",
             health: {
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 healthy: true,
-                // eslint-disable-next-line radar/no-duplicate-string
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 message: "HTTP check for https://example.com was successful.",
                 timestamp: expect.any(String),
             },

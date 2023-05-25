@@ -95,7 +95,7 @@ const extendSwaggerWithMediaTypeSchema = (
     }
     | undefined;
 
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     Object.entries(responseSpec.content as object).forEach(([mediaName, contentSpec]) => {
         if (typeof contentSpec.schema === "object") {
             const { schema } = contentSpec;
@@ -231,7 +231,7 @@ const prepareResponseExamples = (
     examples: {
         [media: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
     },
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
@@ -328,7 +328,7 @@ const extendSwaggerWithMediaTypeExamples = (
     });
 };
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function extendSwaggerSpec(
     spec: Partial<OpenAPIV3.Document>,
     allowedMediaTypes?: { [key: string]: boolean },

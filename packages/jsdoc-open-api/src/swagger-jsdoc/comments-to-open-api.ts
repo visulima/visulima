@@ -23,6 +23,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) => specs.map((spec: Spe
         const parsed = yaml.parseDocument(spec.description);
 
         if (parsed.errors.length > 0) {
+            // eslint-disable-next-line sonarjs/no-ignored-return
             parsed.errors.map<ExtendedYAMLError>((error) => {
                 const newError: ExtendedYAMLError = error;
 

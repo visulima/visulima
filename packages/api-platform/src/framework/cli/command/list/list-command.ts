@@ -28,7 +28,7 @@ const listCommand = async (
         verbose: boolean;
     }
     > = {},
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
     const frameworkPath = join(process.cwd(), path);
 
@@ -96,7 +96,7 @@ const listCommand = async (
                     // eslint-disable-next-line no-console
                     console.log(error);
 
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     rmSync(join(appWorkingDirectoryPath, "framework-list"), { recursive: true });
                 }
             }

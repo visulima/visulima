@@ -27,15 +27,15 @@ describe("getRoutes", () => {
 
             app.get("/", (_request, response) => response.sendStatus(200));
             app.get("/activity", (_request, response) => response.sendStatus(200));
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             app.get("/activity/:id", (_request, response) => response.sendStatus(200));
 
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             app.get("/users", (_request, response) => response.sendStatus(200));
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             app.get("/users/:id", (_request, response) => response.sendStatus(200));
             app.put("/users/:id", (_request, response) => response.sendStatus(200));
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             app.get("/users/following", (_request, response) => response.sendStatus(200));
         });
 

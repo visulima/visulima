@@ -53,7 +53,7 @@ const findFirstRoute = (items: DocumentationItem[]): string | undefined => {
 
 const CUSTOM_ERROR_PAGES = new Set(["/404", "/500"]);
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function normalizePages({
     list,
     locale,

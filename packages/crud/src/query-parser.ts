@@ -47,7 +47,7 @@ const parseOrderBy = (orderBy: string): OrderByField => {
     return parsed;
 };
 
-// eslint-disable-next-line radar/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const parseQuery = (queryString?: string): ParsedQueryParameters => {
     if (queryString) {
         const { query } = parse(queryString, true);

@@ -8,7 +8,7 @@ describe("objectMerge", () => {
             paths: {},
         };
         const b = {
-            // eslint-disable-next-line radar/no-duplicate-string
+            // eslint-disable-next-line sonarjs/no-duplicate-string
             paths: { path1: { name: "test", description: "this is a test" } },
         };
         const expected = {
@@ -83,7 +83,7 @@ describe("objectMerge", () => {
             a: {
                 b: {
                     name: "test2",
-                    // eslint-disable-next-line radar/no-duplicate-string
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     description: "this is a test2",
                 },
             },
