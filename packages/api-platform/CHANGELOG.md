@@ -1,3 +1,21 @@
+## @visulima/api-platform [1.2.4](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.3...@visulima/api-platform@1.2.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* fixed not working export of swagger and redoc pages, renamed replace to replaceAll and updated deps ([3e95fc0](https://github.com/visulima/visulima/commit/3e95fc0841003ec316d773b66fe0f94a3c6f126b))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.4
+* **@visulima/jsdoc-open-api:** upgraded to 1.3.3
+* **@visulima/crud:** upgraded to 1.0.11
+* **@visulima/readdir:** upgraded to 1.3.5
+
 ## @visulima/api-platform [1.2.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.2...@visulima/api-platform@1.2.3) (2023-01-25)
 
 
