@@ -5,7 +5,7 @@ import { MDXProvider } from "@mdx-js/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { PageMapItem, PageOpts } from "nextra";
-import type { FC, PropsWithChildren, ReactNode } from "react";
+import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -26,6 +26,7 @@ import type { PageTheme } from "../types";
 import type { Item } from "../utils";
 import { getFSRoute, normalizePages, renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
+import type { NextraThemeLayoutProps } from "nextra";
 
 const useDirectoryInfo = (pageMap: PageMapItem[]) => {
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -53,9 +54,7 @@ const Body: FC<{
     filePath: string;
     locale: string;
     route: string;
-}> = ({
-    themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route,
-}) => {
+}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route }) => {
     const config = useConfig();
 
     if (themeContext.layout === "raw") {
@@ -65,7 +64,7 @@ const Body: FC<{
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
     const gitTimestampElement = date ? (
-        <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
+        <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
             {renderComponent(config.gitTimestamp, { timestamp: date })}
         </div>
     ) : (
@@ -163,8 +162,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             })}
         </nav>
     );
-    const tocPageContentElement = isDocumentPage
-        && renderComponent(config.tocContent.component, {
+    const tocPageContentElement =
+        isDocumentPage &&
+        renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference,
         });
@@ -205,8 +205,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar
-                    && renderComponent(config.navbar.component, {
+                {themeContext.navbar &&
+                    renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -226,9 +226,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <div
                                     className={`absolute w-full ${
                                         config.hero?.height
-                                            ? (typeof config.hero.height === "string"
+                                            ? typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`)
+                                                : `h-[${config.hero.height}px]`
                                             : ""
                                     }`}
                                 >
@@ -238,9 +238,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                             <div
                                 className={`flex w-full${
                                     config.hero?.height
-                                        ? (typeof config.hero.height === "string"
+                                        ? typeof config.hero.height === "string"
                                             ? ` mt-[${config.hero.height}]`
-                                            : ` mt-[${config.hero.height}px]`)
+                                            : ` mt-[${config.hero.height}px]`
                                         : ""
                                 }`}
                             >
@@ -281,24 +281,11 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-const Theme: FC = (properties) => {
-    const { route } = useRouter();
-    // eslint-disable-next-line no-underscore-dangle
-    const context = globalThis.__nextra_pageContext__[route];
-
-    if (!context) {
-        throw new Error(`No content found for ${route}.`);
-    }
-
-    const { pageOpts, Content } = context;
-
+const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }): ReactElement => {
     return (
         <ConfigProvider value={context}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <InnerLayout {...pageOpts}>
-                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                <Content {...properties} />
-            </InnerLayout>
+            <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
         </ConfigProvider>
     );
 };

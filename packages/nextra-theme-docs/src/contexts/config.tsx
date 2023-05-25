@@ -13,7 +13,7 @@ import MatchSorterSearch from "../components/match-sorter-search";
 import Navbar from "../components/navbar";
 import TocPageContent from "../components/toc/toc-page-content";
 import TocSidebar from "../components/toc/toc-sidebar";
-import { DEFAULT_LOCALE, LEGACY_CONFIG_OPTIONS } from "../constants";
+import { DEFAULT_LOCALE } from "../constants";
 import type { Context, DocumentationThemeConfig } from "../types";
 import { getGitEditUrl } from "../utils";
 import { MenuProvider } from "./menu";
@@ -198,16 +198,17 @@ const ConfigContext = createContext<Config>(theme);
 export const useConfig = () => useContext(ConfigContext);
 
 // eslint-disable-next-line radar/cognitive-complexity
-export const ConfigProvider = ({ children, value }: { children: ReactNode; value: Context }): ReactElement => {
+export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: { children: ReactNode; value: Context }): ReactElement => {
     const [menu, setMenu] = useState(false);
 
-    const { themeConfig, pageOpts } = value;
     const extendedConfig: Config = useMemo(() => {
         return {
             ...DEFAULT_THEME,
             ...themeConfig,
             flexsearch: pageOpts.flexsearch,
-            newNextLinkBehavior: pageOpts.newNextLinkBehavior,
+            ...(typeof pageOpts.newNextLinkBehavior === 'boolean' && {
+                  newNextLinkBehavior: pageOpts.newNextLinkBehavior
+                }),
             title: pageOpts.title,
             frontMatter: pageOpts.frontMatter,
             ...Object.fromEntries(
@@ -223,37 +224,6 @@ export const ConfigProvider = ({ children, value }: { children: ReactNode; value
     }, [themeConfig, pageOpts.flexsearch, pageOpts.newNextLinkBehavior, pageOpts.title, pageOpts.frontMatter]);
 
     const { nextThemes } = extendedConfig;
-
-    if (process.env.NODE_ENV === "development") {
-        const notice = "[nextra-theme-docs] ⚠️  You are using a legacy theme config";
-
-        // eslint-disable-next-line no-restricted-syntax
-        for (const [legacyOption, newPath] of Object.entries(LEGACY_CONFIG_OPTIONS)) {
-            if (legacyOption in themeConfig) {
-                const [object, key] = newPath.split(".");
-                const renameTo = key ? `${object}: { ${key}: ... }` : object;
-
-                // eslint-disable-next-line no-console
-                console.warn(`${notice} \`${legacyOption}\`. Rename it to \`${renameTo}\` for future compatibility.`);
-            }
-        }
-
-        (["search", "footer"] as const).forEach((key) => {
-            if (key in themeConfig) {
-                const option = themeConfig[key];
-
-                if (typeof option === "boolean" || option == null) {
-                    // eslint-disable-next-line no-console
-                    console.warn(`${notice} \`${key}\`.`, option ? "Remove it" : `Rename it to \`${key}: { component: null }\` for future compatibility.`);
-                }
-            }
-        });
-
-        if (typeof themeConfig.banner === "string") {
-            // eslint-disable-next-line no-console
-            console.warn(notice, "`banner`. Rename it to `banner: { content: ... }` for future compatibility.");
-        }
-    }
 
     return (
         <ThemeProvider

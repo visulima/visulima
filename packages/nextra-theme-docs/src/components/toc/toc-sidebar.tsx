@@ -1,7 +1,7 @@
 import cn from "clsx";
 import type { Heading } from "nextra";
 import type { FC } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
@@ -14,9 +14,14 @@ const TocSidebar: FC<TOCProperties> = ({
 }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
-    const tocReference = useRef<HTMLDivElement>(null);
+    const tocReference = useRef<HTMLDivElement | null>(null);
 
-    const hasHeadings = headings.some((heading) => heading.type === "heading" && heading.depth > 1);
+    const items = useMemo(
+        () => headings.filter((heading) => heading.depth > 1),
+        [headings],
+    );
+
+    const hasHeadings = items.length > 0;
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
     const activeSlug = Object.entries(activeAnchor).find(([, { isActive }]) => isActive)?.[0];
@@ -26,7 +31,7 @@ const TocSidebar: FC<TOCProperties> = ({
             return;
         }
 
-        const anchor = tocReference.current?.querySelector(`li > a[href="#${activeSlug}"]`);
+        const anchor = tocReference?.current?.querySelector(`li > a[href="#${activeSlug}"]`);
 
         if (anchor) {
             scrollIntoView(anchor, {

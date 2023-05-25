@@ -16,7 +16,7 @@ const ServerSideErrorPage = (): ReactElement | null => {
     }
 
     return (
-        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:py-16 lg:px-6">
+        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:px-6 lg:py-16">
             <div className="text-center">
                 <div className="mb-8 inline-flex rounded-full bg-red-100 p-4">
                     <div className="rounded-full bg-red-200 stroke-red-600 p-4">
