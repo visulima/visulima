@@ -1,4 +1,4 @@
 {
     "upgrade": true,
-    "reject": ["read-pkg", "chalk", "next", "@types/node@"]
+    "reject": ["read-pkg", "chalk", "next", "@types/node"]
 }
