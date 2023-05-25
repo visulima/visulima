@@ -1,12 +1,10 @@
 {
   "extends": "@nrwl/workspace/presets/npm.json",
-  "npmScope": "thehoneybee",
   "tasksRunnerOptions": {
     "default": {
-      "runner": "nx-cloud",
+      "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": [],
-        "accessToken": "MGQ2NjYwY2ItNTk3MC00MzQ2LWIyNjUtMWY1MWIzYzBjNDExfHJlYWQtd3JpdGU="
+        "cacheableOperations": ["build", "build:packages", "build:prod:packages", "build:prod:readdir", "build:readdir", "test", "lint:eslint", "lint:eslint:fix"]
       }
     }
   },
