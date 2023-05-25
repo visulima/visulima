@@ -1,3 +1,12 @@
+## @visulima/nextra-theme-docs [1.0.5](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.4...@visulima/nextra-theme-docs@1.0.5) (2023-05-25)
+
+
+### Bug Fixes
+
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* fixed nextra doc theme to support newest version ([ef62092](https://github.com/visulima/visulima/commit/ef62092bdbe0d88f6b77cedcd3727ba2062af393))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
 ## @visulima/nextra-theme-docs [1.0.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.3...@visulima/nextra-theme-docs@1.0.4) (2023-01-25)
 
 
