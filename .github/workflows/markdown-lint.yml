@@ -28,7 +28,7 @@ jobs:
 
             - uses: "pnpm/action-setup@v2.2.4"
               with:
-                  version: 7
+                  version: 8
                   run_install: false
 
             - name: "Use Node.js 16.x"
@@ -63,6 +63,8 @@ jobs:
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
+              env:
+                  SKIP_CHECK: "true"
 
             - name: "lint"
               run: "pnpm run lint:text"
