@@ -1,3 +1,12 @@
+## @visulima/pagination [2.0.3](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.2...@visulima/pagination@2.0.3) (2023-05-25)
+
+
+### Bug Fixes
+
+* chore updated the deps and changed the engine to allow node v20 ([c479f37](https://github.com/visulima/visulima/commit/c479f373550886c6c79c7d525a3aead82daf078b))
+* fixed all calls to radar with sonarjs, removed radar eslint package ([001aecf](https://github.com/visulima/visulima/commit/001aecf78dde134bade44f382698d52eedbd3bbe))
+* updated package deps ([5f605aa](https://github.com/visulima/visulima/commit/5f605aab74a7c1f4cbdfe4502363e36d57716921))
+
 ## @visulima/pagination [2.0.2](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.1...@visulima/pagination@2.0.2) (2023-01-25)
 
 
