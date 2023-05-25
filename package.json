@@ -87,9 +87,9 @@
     "@commitlint/config-conventional": "^17.6.3",
     "@manypkg/cli": "^0.20.0",
     "@nrwl/cli": "latest",
-    "@nrwl/nx-cloud": "latest",
-    "@nrwl/tao": "^16.2.2",
-    "@nrwl/workspace": "latest",
+    "@nrwl/nx-cloud": "16.0.5",
+    "@nrwl/tao": "16.2.2",
+    "@nrwl/workspace": "16.2.2",
     "@octokit/rest": "^19.0.11",
     "@qiwi/multi-semantic-release": "6.7.0",
     "@tsconfig/node16": "^1.0.4",
@@ -114,7 +114,7 @@
   "devDependencies": {
     "load-tsconfig": "^0.2.5",
     "nx": "16.2.2",
-    "nx-cloud": "latest",
+    "nx-cloud": "16.0.5",
     "read-pkg": "^8.0.0",
     "tsup": "^6.7.0"
   },
@@ -132,3 +132,4 @@
     }
   }
 }
+
