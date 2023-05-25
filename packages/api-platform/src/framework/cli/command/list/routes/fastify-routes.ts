@@ -4,7 +4,7 @@ import type { FastifyInstance } from "fastify";
 import type { Route } from "./types";
 
 // "<spaces> activity (GET)" -> "activity"
-const getSegment = (line: string) => line.replace(/ \(.*\)/g, "").trim();
+const getSegment = (line: string) => line.replaceAll(/ \(.*\)/g, "").trim();
 
 // "<spaces> activity (GET)" -> "GET"
 const getMethod = (line: string) => (line.trim().split(" ")[1] as string).slice(1, -1);
@@ -14,7 +14,7 @@ type Segment = { index: number; segment: string; methods: string[] | null, depth
 const fastifyRoutes = (app: FastifyInstance): Route[] => {
     const printedRoutes = app
         .printRoutes()
-        .replace(/[─│└├]/g, " ")
+        .replaceAll(/[─│└├]/g, " ")
         .trimEnd();
 
     const lines = printedRoutes.split("\n");
@@ -26,7 +26,7 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
         if (previousSegment === segment) {
             const entries: Segment[] = allSegments.filter((item) => item.index < index && item.segment === segment);
 
-            const { methods } = entries[entries.length - 1] as Segment;
+            const { methods } = entries.at(-1) as Segment;
 
             if (methods !== null) {
                 methods.push(getMethod(line));
@@ -36,7 +36,7 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
         }
 
         // spaces preceding segment / not counting single space between segment and (METHOD)
-        const spaces = line.replace(/ \(.*\)/g, "").match(/ /g);
+        const spaces = line.replaceAll(/ \(.*\)/g, "").match(/ /g);
 
         if (spaces === null) {
             throw new Error("Invalid spaces");

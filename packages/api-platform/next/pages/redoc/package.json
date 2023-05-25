@@ -1,0 +1,19 @@
+{
+    "name": "@visulima/api-platform-next-pages-redoc",
+    "version": "0.0.0",
+    "description": "Visulima API platform is a set of tools to build and consume web APIs; Next.js version",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../../../dist/framework/next/routes/pages/redoc/index.d.ts",
+            "browser": "./../../../dist/framework/next/routes/pages/redoc/index.js",
+            "require": "./../../../dist/framework/next/routes/pages/redoc/index.js",
+            "import": "./../../../dist/framework/next/routes/pages/redoc/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../../../dist/framework/next/routes/pages/redoc/index.js",
+    "module": "../../../dist/framework/next/routes/pages/redoc/index.mjs",
+    "browser": "../../../dist/framework/next/routes/pages/redoc/index.mjs",
+    "types": "../../../dist/framework/next/routes/pages/redoc/index.d.ts"
+}
