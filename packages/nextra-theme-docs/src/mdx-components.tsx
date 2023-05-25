@@ -1,7 +1,9 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import { Table, Td, Th, Tr } from "nextra/components";
+import {
+    Table, Td, Th, Tr,
+} from "nextra/components";
 import type { ComponentProps, FC, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 
@@ -11,42 +13,40 @@ import Details from "./components/details";
 import Pre from "./components/pre";
 import Summary from "./components/summary";
 import { useSetActiveAnchor } from "./contexts";
-import type { DocumentationThemeConfig } from "./types";
 import { useIntersectionObserver, useSlugs } from "./contexts/active-anchor";
+import type { DocumentationThemeConfig } from "./types";
 
 // Anchor links
 // eslint-disable-next-line max-len
-const createHeaderLink =
-    (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) =>
-    ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
-        const setActiveAnchor = useSetActiveAnchor();
-        const slugs = useSlugs();
-        const observer = useIntersectionObserver();
-        const obReference = useRef<HTMLAnchorElement>(null);
+const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
+    const setActiveAnchor = useSetActiveAnchor();
+    const slugs = useSlugs();
+    const observer = useIntersectionObserver();
+    const obReference = useRef<HTMLAnchorElement>(null);
 
-        useEffect(() => {
-            const heading = obReference.current;
-            if (!heading) {
-                return;
-            }
+    useEffect(() => {
+        const heading = obReference.current;
+        if (!heading) {
+            return;
+        }
 
-            slugs.set(heading, [id, (context.index += 1)]);
-            observer?.observe(heading);
+        slugs.set(heading, [id, (context.index += 1)]);
+        observer?.observe(heading);
 
-            // eslint-disable-next-line consistent-return
-            return () => {
-                observer?.disconnect();
-                slugs.delete(heading);
+        // eslint-disable-next-line consistent-return
+        return () => {
+            observer?.disconnect();
+            slugs.delete(heading);
 
-                setActiveAnchor((f) => {
-                    const returnValue = { ...f };
-                    delete returnValue[id!];
-                    return returnValue;
-                });
-            };
-        }, [id, context, slugs, observer, setActiveAnchor]);
+            setActiveAnchor((f) => {
+                const returnValue = { ...f };
+                delete returnValue[id!];
+                return returnValue;
+            });
+        };
+    }, [id, slugs, observer, setActiveAnchor]);
 
-        return (
+    return (
             <Tag
                 className={cn(
                     "font-semibold tracking-tight",
@@ -66,8 +66,8 @@ const createHeaderLink =
                 {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
                 <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
             </Tag>
-        );
-    };
+    );
+};
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const A: FC<Omit<ComponentProps<"a">, "ref"> & { href?: string }> = ({ href = "", ...properties }) => (

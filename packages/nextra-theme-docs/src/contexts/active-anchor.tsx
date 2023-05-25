@@ -1,6 +1,12 @@
-import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
 import "intersection-observer";
-import { createContext, useContext, useRef, useState } from "react";
+
+import type {
+    Dispatch, ReactElement, ReactNode, SetStateAction,
+} from "react";
+import {
+    createContext, useContext, useRef, useState,
+} from "react";
+
 import { IS_BROWSER } from "../constants";
 
 type Anchor = {
@@ -27,53 +33,59 @@ export const useSetActiveAnchor = () => useContext(SetActiveAnchorContext);
 export const useIntersectionObserver = () => useContext(IntersectionObserverContext);
 export const useSlugs = () => useContext(SlugsContext);
 
+// eslint-disable-next-line radar/cognitive-complexity
 export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({});
-    const observerRef = useRef<IntersectionObserver | null>(null);
+    const observerReference = useRef<IntersectionObserver | null>(null);
 
-    if (IS_BROWSER && !observerRef.current) {
-        observerRef.current = new IntersectionObserver(
+    if (IS_BROWSER && !observerReference.current) {
+        observerReference.current = new IntersectionObserver(
             (entries) => {
                 setActiveAnchor((anchor) => {
-                    const ret: ActiveAnchor = { ...anchor };
+                    const returnValue: ActiveAnchor = { ...anchor };
 
-                    for (const entry of entries) {
+                    entries.forEach((entry) => {
                         if (entry?.rootBounds && slugs.has(entry.target)) {
                             const [slug, index] = slugs.get(entry.target);
-                            const aboveHalfViewport =
-                                entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
+                            // eslint-disable-next-line max-len
+                            const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 
-                            ret[slug] = {
+                            returnValue[slug] = {
                                 index,
                                 aboveHalfViewport,
                                 insideHalfViewport,
                             };
                         }
-                    }
+                    });
 
                     let activeSlug: keyof ActiveAnchor = "";
-                    let smallestIndexInViewport = Infinity;
+                    let smallestIndexInViewport = Number.POSITIVE_INFINITY;
                     let largestIndexAboveViewport = -1;
 
-                    Object.entries(ret).forEach(([slug, ret]) => {
-                        ret.isActive = false;
+                    Object.entries(returnValue).forEach(([slug, returnValue_]) => {
+                        // eslint-disable-next-line no-param-reassign
+                        returnValue_.isActive = false;
 
-                        if (ret.insideHalfViewport && ret.index < smallestIndexInViewport) {
-                            smallestIndexInViewport = ret.index;
+                        if (returnValue_.insideHalfViewport && returnValue_.index < smallestIndexInViewport) {
+                            smallestIndexInViewport = returnValue_.index;
                             activeSlug = slug;
                         }
-                        if (smallestIndexInViewport === Infinity && ret.aboveHalfViewport && ret.index > largestIndexAboveViewport) {
-                            largestIndexAboveViewport = ret.index;
+                        if (
+                            smallestIndexInViewport === Number.POSITIVE_INFINITY
+                            && returnValue_.aboveHalfViewport
+                            && returnValue_.index > largestIndexAboveViewport
+                        ) {
+                            largestIndexAboveViewport = returnValue_.index;
                             activeSlug = slug;
                         }
                     });
 
-                    if (ret[activeSlug]) {
-                        (ret[activeSlug] as Anchor).isActive = true;
+                    if (returnValue[activeSlug]) {
+                        (returnValue[activeSlug] as Anchor).isActive = true;
                     }
 
-                    return ret;
+                    return returnValue;
                 });
             },
             {
@@ -87,7 +99,7 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
         <ActiveAnchorContext.Provider value={activeAnchor}>
             <SetActiveAnchorContext.Provider value={setActiveAnchor}>
                 <SlugsContext.Provider value={slugs}>
-                    <IntersectionObserverContext.Provider value={observerRef.current}>{children}</IntersectionObserverContext.Provider>
+                    <IntersectionObserverContext.Provider value={observerReference.current}>{children}</IntersectionObserverContext.Provider>
                 </SlugsContext.Provider>
             </SetActiveAnchorContext.Provider>
         </ActiveAnchorContext.Provider>

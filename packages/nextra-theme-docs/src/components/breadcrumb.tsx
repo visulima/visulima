@@ -7,7 +7,7 @@ import type { Item } from "../utils";
 import Anchor from "./anchor";
 
 const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (
-    <div className="nextra-breadcrumb mt-2.5 flex items-center gap-1 overflow-hidden text-sm text-gray-500 dark:nx-text-gray-400 contrast-more:text-current">
+    <div className="nextra-breadcrumb dark:nx-text-gray-400 mt-2.5 flex items-center gap-1 overflow-hidden text-sm text-gray-500 contrast-more:text-current">
         {activePath.map((item, index) => {
             const isLink = !item.children || item.withIndexPage;
             const isActive = index === activePath.length - 1;
