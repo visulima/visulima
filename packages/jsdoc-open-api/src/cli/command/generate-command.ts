@@ -31,7 +31,13 @@ const generateCommand = async (configName: string, paths: string[], options: {
 
     try {
         // eslint-disable-next-line unicorn/prefer-module,import/no-dynamic-require
-        openapiConfig = await import(resolve(options.config ?? configName));
+        let config = await import(resolve(options.config ?? configName));
+
+        if (config?.default) {
+            config = config.default;
+        }
+
+        openapiConfig = config;
     } catch {
         throw new Error(`No config file found, on: ${options.config ?? ".openapirc.js"}\n`);
     }
