@@ -55,7 +55,7 @@ const Body: FC<{
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
     const gitTimestampElement = mounted && date ? (
-            <div className="mt-12 mb-8 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
+            <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
                 {renderComponent(config.gitTimestamp, { timestamp: date, locale })}
             </div>
     ) : (
@@ -156,7 +156,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const themeContext = { ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
     const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["raw", "full"].includes(themeContext.layout);
-    console.log(activeType, themeContext.layout);
+
     const tocSidebarElement = isDocumentPage && (
         <nav className={cn(classes.toc, "px-4")} aria-label="table of contents">
             {renderComponent(config.tocSidebar.component, {

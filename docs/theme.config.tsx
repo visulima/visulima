@@ -3,7 +3,7 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-import {ReactNode} from "react";
+import {ReactElement} from "react";
 
 // const Logo = ({ height }) => (
 //
@@ -57,10 +57,9 @@ const config: DocumentationThemeConfig = {
     },
     sidebar: {
         defaultMenuCollapseLevel: 1,
-        toggleButton: true,
     },
     editLink: {
-        text: ({ locale }) => {
+        content: ({ locale }): ReactElement => {
             // eslint-disable-next-line sonarjs/no-small-switch
             switch (locale) {
                 default: {
@@ -188,13 +187,13 @@ const config: DocumentationThemeConfig = {
     //         return null;
     //     },
     // },
-    i18n: [{ locale: "en-US", text: "English" }],
+    i18n: [{ locale: "en-US", name: "English" }],
 
-    comments: {
+    comments: process.env.NEXT_PUBLIC_COMMENTS_REPO ? {
         repository: process.env.NEXT_PUBLIC_COMMENTS_REPO as string,
         repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
         categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
-    },
+    } : undefined,
 };
 
 export default config;

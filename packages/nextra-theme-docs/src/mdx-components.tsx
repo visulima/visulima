@@ -15,8 +15,8 @@ import Th from "./components/th";
 import Tr from "./components/tr";
 import Ul from "./components/ul";
 import { useSetActiveAnchor } from "./contexts";
-import type { DocumentationThemeConfig } from "./theme/theme-schema";
 import { useIntersectionObserver, useSlugs } from "./contexts/active-anchor";
+import type { DocumentationThemeConfig } from "./theme/theme-schema";
 
 // Anchor links
 // eslint-disable-next-line max-len
@@ -40,16 +40,16 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
             observer?.disconnect();
             slugs.delete(heading);
 
-                setActiveAnchor((f) => {
-                    const returnValue = { ...f };
+            setActiveAnchor((f) => {
+                const returnValue = { ...f };
 
-                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                    delete returnValue[id!];
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete returnValue[id!];
 
-                    return returnValue;
-                });
-            };
-        }, [id, context, slugs, observer, setActiveAnchor]);
+                return returnValue;
+            });
+        };
+    }, [id, context, slugs, observer, setActiveAnchor]);
 
     return (
             <Tag

@@ -32,7 +32,7 @@ const TocSidebar: FC<TOCProperties> = ({
             return;
         }
 
-        const anchor = tocReference?.current?.querySelector(`li > a[href="#${activeSlug}"]`);
+        const anchor = tocReference.current?.querySelector(`li > a[href="#${activeSlug}"]`);
 
         if (anchor) {
             scrollIntoView(anchor, {

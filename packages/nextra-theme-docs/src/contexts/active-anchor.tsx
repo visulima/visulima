@@ -46,7 +46,7 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                     const returnValue: ActiveAnchor = { ...anchor };
 
                     entries.forEach((entry) => {
-                        if (entry?.rootBounds && slugs.has(entry.target)) {
+                        if (entry.rootBounds && slugs.has(entry.target)) {
                             const [slug, index] = slugs.get(entry.target);
                             // eslint-disable-next-line max-len
                             const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;

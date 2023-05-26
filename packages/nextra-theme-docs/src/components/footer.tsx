@@ -15,6 +15,7 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
         <footer
             className={cn(
                 "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
+                // eslint-disable-next-line max-len
                 ["page", "hidden"].includes(activeType) || isLayoutRaw ? "px-2 md:px-6 lg:px-8" : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
             )}
         >
@@ -22,6 +23,7 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
                 <div
                     className={cn(
                         "flex lg:flex-col py-6 lg:py-12 lg:w-64 lg:shrink-0",
+                        // eslint-disable-next-line max-len
                         ["page", "hidden"].includes(activeType) || isLayoutRaw ? "" : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >

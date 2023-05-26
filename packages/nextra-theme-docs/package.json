@@ -89,8 +89,8 @@
         "tailwind-merge": "^1.12.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^5.0.3",
-        "@anolilab/semantic-release-preset": "^2.2.0",
+        "@anolilab/eslint-config": "^5.0.5",
+        "@anolilab/semantic-release-preset": "^2.2.1",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.9",

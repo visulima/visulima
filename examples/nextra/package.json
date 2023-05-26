@@ -15,7 +15,7 @@
         "@visulima/nextra-theme-docs": "workspace:*",
         "clsx": "^1.2.1",
         "eslint": "8.41.0",
-        "eslint-config-next": "13.4.3",
+        "eslint-config-next": "13.4.4",
         "framer-motion": "^10.12.16",
         "next": "13.3.1",
         "nextra": "^2.6.1",

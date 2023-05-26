@@ -2,7 +2,6 @@
     "index": {
         "title": "Home",
         "type": "page",
-        "hidden": true,
         "theme": {
             "layout": "full",
             "toc": false
@@ -10,8 +9,8 @@
     },
     "impress": {
         "title": "Impressum",
-        "hidden": true,
-        "type": "hidden",
+        "display": "hidden",
+        "type": "page",
         "theme": {
             "layout": "full",
             "toc": false
@@ -19,8 +18,7 @@
     },
     "docs": {
         "title": "Documentation",
-        "type": "page",
-        "hidden": true
+        "type": "page"
     },
     "examples": {
         "title": "Examples",

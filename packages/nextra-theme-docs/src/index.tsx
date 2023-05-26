@@ -16,7 +16,9 @@ export { default as Navbar } from "./components/navbar";
 export { default as ThemeSwitch } from "./components/theme-switch";
 export { default as Anchor } from "./components/anchor";
 export { default as Prose } from "./components/prose";
+// @deprecated Use Steps instead
 export { default as StepContainer } from "./components/step-container";
+export { default as Steps } from "./components/step-container";
 export { SkipNavLink } from "./components/skip-nav";
 export { Card, Cards } from "./components/card";
 

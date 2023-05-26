@@ -1,4 +1,5 @@
 import type { ComponentProps, FC } from "react";
+
 import { cn } from "../utils";
 
 const Code: FC<ComponentProps<"code">> = ({ children, className = "", ...properties }) => {

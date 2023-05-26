@@ -22,7 +22,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "redoc": "^2.0.0",
-        "styled-components": "^5.3.10",
+        "styled-components": "^5.3.11",
         "swagger-ui-react": "^4.19.0",
         "zod": "^3.21.4"
     },
@@ -31,7 +31,7 @@
         "@types/react": "18.2.7",
         "@types/react-dom": "^18.2.4",
         "eslint": "^8.41.0",
-        "eslint-config-next": "13.4.3",
+        "eslint-config-next": "13.4.4",
         "rimraf": "^5.0.1",
         "typescript": "^5.0.4"
     }

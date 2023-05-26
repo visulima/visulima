@@ -100,11 +100,11 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
             <Anchor
                 href={(item as Item).withIndexPage ? item.route : ""}
                 className={cn("items-center justify-between gap-2", classes.link, active ? classes.active : classes.inactive)}
-                onClick={(e) => {
-                    const clickedToggleIcon = ["svg", "path"].includes((e.target as HTMLElement).tagName.toLowerCase());
+                onClick={(event) => {
+                    const clickedToggleIcon = ["svg", "path"].includes((event.target as HTMLElement).tagName.toLowerCase());
 
                     if (clickedToggleIcon) {
-                        e.preventDefault();
+                        event.preventDefault();
                     }
 
                     if ((item as Item).withIndexPage) {
@@ -256,15 +256,17 @@ const Menu: FC<{
     onlyCurrentDocs?: boolean;
 }> = ({ directories, anchors, className, onlyCurrentDocs }) => (
     <ul className={cn(classes.list, className)}>
-        {directories.map((item) =>
-            !onlyCurrentDocs || item.isUnderCurrentDocsTree ? (
-                item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage)) ? (
-                    <Folder key={item.name} item={item} anchors={anchors} />
-                ) : (
-                    <File key={item.name} item={item} anchors={anchors} />
-                )
-            ) : null,
-        )}
+        {directories.map((item) => {
+            if (!onlyCurrentDocs || item.isUnderCurrentDocsTree) {
+                if (item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage))) {
+                    return <Folder key={item.name} item={item} anchors={anchors} />;
+                } else {
+                    return <File key={item.name} item={item} anchors={anchors} />;
+                }
+            }
+
+            return null;
+        })}
     </ul>
 );
 
@@ -374,9 +376,9 @@ const Sidebar: FC<SideBarProperties> = ({
                             )}
                             ref={sidebarReference}
                         >
-                            <div className="motion-reduce:transition-none ease-in-out transform-gpu">
+                            <div className="transform-gpu ease-in-out motion-reduce:transition-none">
                                 <Menu
-                                    className="max-lg:hidden"
+                                    className="max-md:hidden"
                                     // The sidebar menu, shows only the docs directories.
                                     directories={documentsDirectories}
                                     // When the viewport size is larger than `md`, hide the anchors in
@@ -385,7 +387,7 @@ const Sidebar: FC<SideBarProperties> = ({
                                     onlyCurrentDocs
                                 />
                                 <Menu
-                                    className="lg:hidden"
+                                    className="md:hidden"
                                     // The mobile dropdown menu, shows all the directories.
                                     directories={fullDirectories}
                                     // Always show the anchor links on mobile (`md`).

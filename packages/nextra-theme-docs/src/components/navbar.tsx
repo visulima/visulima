@@ -30,10 +30,10 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
                 <Transition leave="transition-opacity" leaveFrom="opacity-100" leaveTo="opacity-0">
                     {/* eslint-disable-next-line max-len */}
                     <Menu.Items
+                        // eslint-disable-next-line max-len
                         className="absolute right-0 z-20 mt-1 max-h-64 min-w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:ring-white/20"
-                        tabIndex={0}
                     >
-                        {Object.entries(items ?? {}).map(([key, item]) => {
+                        {Object.entries(items).map(([key, item]) => {
                             const { href, newWindow, title } = item;
                             const { route } = menu;
 
@@ -63,7 +63,6 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
     );
 };
 
-// eslint-disable-next-line radar/cognitive-complexity
 const Navbar: FC<NavBarProperties> = ({
     flatDirectories, items, activeType, themeContext,
 }) => {
@@ -126,6 +125,7 @@ const Navbar: FC<NavBarProperties> = ({
                     <div
                         className={cn(
                             "grow lg:grow-0 w-2/4 lg:w-64 h-[var(--nextra-navbar-height)] flex items-center",
+                            // eslint-disable-next-line max-len
                             ["page", "hidden"].includes(activeType) || isLayoutRaw ? "" : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-6 xl:pl-8",
                         )}
                     >
@@ -140,7 +140,7 @@ const Navbar: FC<NavBarProperties> = ({
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-center space-x-12 lg:flex">
+                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 lg:flex pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;

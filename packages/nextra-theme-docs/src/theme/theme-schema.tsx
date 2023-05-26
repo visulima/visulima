@@ -52,7 +52,7 @@ export const themeSchema = z
                 repositoryId: z.string(),
                 categoryId: z.string(),
             })
-            .or(z.undefined()),
+            .optional(),
         components: z.record(z.custom<FC>(...fc)).optional(),
         darkMode: z.boolean(),
         direction: z.enum(["ltr", "rtl"]),
@@ -60,12 +60,12 @@ export const themeSchema = z
         editLink: z.object({
             component: z
                 .custom<
-            FC<{
-                children: ReactNode;
-                className?: string;
-                filePath?: string;
-            }>
-            >(...fc)
+                    FC<{
+                        children: ReactNode;
+                        className?: string;
+                        filePath?: string;
+                    }>
+                >(...fc)
                 .optional(),
             content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode),
         }),
@@ -73,9 +73,18 @@ export const themeSchema = z
         feedback: z.object({
             content: z.custom<FC | ReactNode>(...reactNode).optional(),
             labels: z.string(),
-            link: z.function().args(z.object({
-                title: z.string(), route: z.string(), docsRepositoryBase: z.string(), labels: z.string(),
-            })).returns(z.string()).optional(),
+            link: z
+                .function()
+                .args(
+                    z.object({
+                        title: z.string(),
+                        route: z.string(),
+                        docsRepositoryBase: z.string(),
+                        labels: z.string(),
+                    }),
+                )
+                .returns(z.string())
+                .optional(),
         }),
         backToTop: z.object({
             active: z.boolean(),
@@ -177,19 +186,21 @@ export const themeSchema = z
             labels: z.string(),
         }),
         sidebar: z.object({
-            defaultMenuCollapseLevel: z.number().min(2).int(),
+            defaultMenuCollapseLevel: z.number().min(1).int(),
             titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
         }),
         tocContent: z.object({
             component: z.custom<FC<TOCPageContentProperties>>(...fc),
             float: z.boolean(),
             title: z.custom<FC | ReactNode>(...reactNode),
+            headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
         }),
         tocSidebar: z.object({
             title: z.string(),
             component: z.custom<FC<TOCSidebarProperties>>(...fc),
             extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
             float: z.boolean(),
+            headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
         }),
         useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
         themeSwitch: z.object({

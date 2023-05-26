@@ -64,7 +64,7 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
     return (
         <div
             ref={containerReference}
-            className="transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none -m-1"
+            className="-m-1 transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
             style={{
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 maxHeight: !initialOpen && !horizontal ? 0 : undefined,

@@ -1,6 +1,6 @@
-import { ArrowRightIcon } from "nextra/icons";
 import cn from "clsx";
 import type { Heading } from "nextra";
+import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
 import { useMemo, useRef } from "react";
 
@@ -8,7 +8,9 @@ import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { renderComponent } from "../../utils";
 
-const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false, prefix = "" }) => {
+const Toc: FC<TOCProperties> = ({
+    headings, activeAnchor, isPage = false, prefix = "",
+}) => {
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 
@@ -56,7 +58,7 @@ const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false, prefix
                                 )}
                             >
                                 <span>
-                                    {tocConfig?.headingComponent?.({
+                                    {tocConfig.headingComponent?.({
                                         id,
                                         children: value,
                                     }) ?? value}

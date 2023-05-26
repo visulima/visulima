@@ -16,7 +16,7 @@ const useFSRoute = () => {
 
         const cleanedPath = locale ? pathname.replace(new RegExp(`\\.${locale}(\\/|$)`), "$1") : pathname;
 
-        return cleanedPath.replace(/\/index(\/|$)/, '$1').replace(/\/$/, '') || '/'
+        return cleanedPath.replace(/\/index(\/|$)/, "$1").replace(/\/$/, "") || "/";
     }, [asPath, locale, route]);
 };
 
