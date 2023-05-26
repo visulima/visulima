@@ -1,3 +1,10 @@
+## @visulima/jsdoc-open-api [1.3.4](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.3...@visulima/jsdoc-open-api@1.3.4) (2023-05-26)
+
+
+### Bug Fixes
+
+* **#146:** check if config is a commonjs file ([e8f4522](https://github.com/visulima/visulima/commit/e8f45227b5df10a7b1652326141c5d4e47399b61)), closes [#146](https://github.com/visulima/visulima/issues/146)
+
 ## @visulima/jsdoc-open-api [1.3.3](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.2...@visulima/jsdoc-open-api@1.3.3) (2023-05-25)
 
 
