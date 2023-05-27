@@ -1,1 +1,5 @@
-export { default } from "../../tsup.config";
+import { createConfig } from "../../tsup.config";
+
+const config = createConfig();
+
+export default config;
