@@ -1,4 +1,5 @@
 import type { NextSeoProps } from "next-seo";
+import type { Item } from "nextra/normalize-pages";
 import type { FC, ReactNode } from "react";
 import { isValidElement } from "react";
 import { z } from "zod";
@@ -7,7 +8,6 @@ import type { NavBarProperties } from "../components/navbar";
 import type { TOCProperties as TOCPageContentProperties } from "../components/toc/toc-page-content";
 import type { TOCProperties as TOCSidebarProperties } from "../components/toc/toc-sidebar";
 import type { ActiveType } from "../types";
-import type { Item } from "../utils";
 
 function isString(value: unknown): boolean {
     return typeof value === "string";
@@ -60,12 +60,12 @@ export const themeSchema = z
         editLink: z.object({
             component: z
                 .custom<
-                    FC<{
-                        children: ReactNode;
-                        className?: string;
-                        filePath?: string;
-                    }>
-                >(...fc)
+            FC<{
+                children: ReactNode;
+                className?: string;
+                filePath?: string;
+            }>
+            >(...fc)
                 .optional(),
             content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode),
         }),

@@ -3,7 +3,7 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-import {ReactElement} from "react";
+import type { ReactElement } from "react";
 
 // const Logo = ({ height }) => (
 //
@@ -190,7 +190,7 @@ const config: DocumentationThemeConfig = {
     i18n: [{ locale: "en-US", name: "English" }],
 
     comments: process.env.NEXT_PUBLIC_COMMENTS_REPO ? {
-        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO as string,
+        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
         repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
         categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
     } : undefined,

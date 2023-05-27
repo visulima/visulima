@@ -6,6 +6,8 @@ import { useRouter } from "next/router";
 import type { NextraThemeLayoutProps, PageOpts } from "nextra";
 import { useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
+import type { PageTheme } from "nextra/normalize-pages";
+import { normalizePages } from "nextra/normalize-pages";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
@@ -23,8 +25,7 @@ import { SkipNavContent } from "../components/skip-nav";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
-import type { PageTheme } from "../types";
-import { normalizePages, renderComponent, useFSRoute } from "../utils";
+import { renderComponent, useFSRoute } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
@@ -137,9 +138,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
         activeThemeContext,
         activePath,
         topLevelNavbarItems,
-        documentsDirectories,
+        docsDirectories: documentsDirectories,
         flatDirectories,
-        flatDocumentsDirectories,
+        flatDocsDirectories: flatDocumentsDirectories,
         directories,
     } = useMemo(
         () => normalizePages({

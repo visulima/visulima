@@ -17,7 +17,7 @@
     "check": "manypkg check",
     "clean": "nx run-many --target=clean --all --parallel && rimraf ./node_modules",
     "docs:build": "pnpm --filter \"docs\" run build",
-    "docs:dev": "nx run-many --target=dev --parallel --projects=nextra-theme-docs,docs",
+    "docs:dev": "pnpm run docs:copy:docs && nx run-many --target=dev --parallel --projects=nextra-theme-docs,docs",
     "docs:copy:docs": "pnpm --filter \"docs\" run docs:copy",
     "example:api-platform:express:4:dev": "pnpm --filter \"express_example_api-platform\" run dev",
     "example:api-platform:next:12:dev": "pnpm --filter \"nextjs_12_example_api-platform\" run dev",

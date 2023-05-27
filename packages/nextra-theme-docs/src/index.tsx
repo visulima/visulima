@@ -16,6 +16,7 @@ export { default as Navbar } from "./components/navbar";
 export { default as ThemeSwitch } from "./components/theme-switch";
 export { default as Anchor } from "./components/anchor";
 export { default as Prose } from "./components/prose";
+export { default as FileTree } from "./components/file-tree";
 // @deprecated Use Steps instead
 export { default as StepContainer } from "./components/step-container";
 export { default as Steps } from "./components/step-container";

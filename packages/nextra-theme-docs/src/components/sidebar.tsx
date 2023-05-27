@@ -2,13 +2,15 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import type { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
+import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
 import type { FC } from "react";
-import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+    createContext, memo, useContext, useEffect, useMemo, useRef, useState,
+} from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
-import type { Item, MenuItem, PageItem } from "../utils";
 import { renderComponent, useFSRoute } from "../utils";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
@@ -27,7 +29,7 @@ const classes = {
         "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
     inactive: cn(
-        "text-gray-500 hover:bg-gray-200 hover:text-gray-700",
+        "text-gray-500 hover:bg-gray-200 hover:text-gray-700 rounded",
         "dark:text-gray-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-200",
         "contrast-more:text-gray-900 contrast-more:dark:text-gray-50",
         "contrast-more:border-transparent contrast-more:hover:border-gray-900 contrast-more:dark:hover:border-gray-50",
@@ -48,7 +50,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const routeOriginal = useFSRoute();
     const [route] = routeOriginal.split("#");
     const active = [route, `${route}/`].includes(`${item.route}/`);
-    const activeRouteInside = active || route!.startsWith(`${item.route}/`);
+    const activeRouteInside = active || route?.startsWith(`${item.route}/`);
 
     const focusedRoute = useContext(FocusedItemContext);
     const focusedRouteInside = !!focusedRoute?.startsWith(`${item.route}/`);
@@ -58,16 +60,15 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const config = useConfig();
     const { theme } = item as Item;
     // eslint-disable-next-line unicorn/no-negated-condition
-    const isOpen =
-        TreeState[item.route] === undefined
-            ? active ||
+    const isOpen = TreeState[item.route] === undefined
+        ? active
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              activeRouteInside ||
+              || activeRouteInside
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              focusedRouteInside ||
+              || focusedRouteInside
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
-            : TreeState[item.route] ?? focusedRouteInside;
+              || (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
+        : TreeState[item.route] ?? focusedRouteInside;
 
     const rerender = useState({})[1];
 
@@ -95,11 +96,15 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
         });
     }
 
+    const isLink = "withIndexPage" in item && item.withIndexPage;
+    // use button when link don't have href because it impacts on SEO
+    const ComponentToUse = isLink ? Anchor : "button";
+
     return (
         <li className={cn(active, isOpen ? "open" : "")}>
-            <Anchor
-                href={(item as Item).withIndexPage ? item.route : ""}
-                className={cn("items-center justify-between gap-2", classes.link, active ? classes.active : classes.inactive)}
+            <ComponentToUse
+                href={isLink ? item.route : undefined}
+                className={cn("items-center justify-between gap-2 w-full text-left", classes.link, active ? classes.active : classes.inactive)}
                 onClick={(event) => {
                     const clickedToggleIcon = ["svg", "path"].includes((event.target as HTMLElement).tagName.toLowerCase());
 
@@ -107,7 +112,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
                         event.preventDefault();
                     }
 
-                    if ((item as Item).withIndexPage) {
+                    if (isLink) {
                         // If it's focused, we toggle it. Otherwise, always open it.
                         if (active || clickedToggleIcon) {
                             TreeState[item.route] = !isOpen;
@@ -139,7 +144,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
                     className="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"
                     pathClassName={cn("origin-center transition-transform", isOpen ? "ltr:rotate-90 rtl:rotate-[-270deg]" : "rtl:-rotate-180")}
                 />
-            </Anchor>
+            </ComponentToUse>
             <Collapse className="ltr:pr-0 rtl:pl-0" isOpen={isOpen}>
                 {Array.isArray(item.children) ? (
                     <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} anchors={anchors} />
@@ -254,15 +259,16 @@ const Menu: FC<{
     anchors: Heading[];
     className?: string;
     onlyCurrentDocs?: boolean;
-}> = ({ directories, anchors, className, onlyCurrentDocs }) => (
+}> = ({
+    directories, anchors, className, onlyCurrentDocs,
+}) => (
     <ul className={cn(classes.list, className)}>
         {directories.map((item) => {
             if (!onlyCurrentDocs || item.isUnderCurrentDocsTree) {
                 if (item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage))) {
                     return <Folder key={item.name} item={item} anchors={anchors} />;
-                } else {
-                    return <File key={item.name} item={item} anchors={anchors} />;
                 }
+                return <File key={item.name} item={item} anchors={anchors} />;
             }
 
             return null;

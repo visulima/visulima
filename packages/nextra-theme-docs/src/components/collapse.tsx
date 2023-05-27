@@ -11,22 +11,18 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
 }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const innerReference = useRef<HTMLDivElement>(null);
-    const animationReference = useRef<number>(0);
-    const initialOpen = useRef<boolean>(isOpen);
+    const animationReference = useRef(0);
+    const initialOpen = useRef(isOpen);
     const initialRender = useRef(true);
 
     useEffect(() => {
         const container = containerReference.current;
         const inner = innerReference.current;
-        const animationId = animationReference.current;
-
-        if (animationId) {
-            clearTimeout(animationId);
+        const animation = animationReference.current;
+        if (animation) {
+            clearTimeout(animation);
         }
-
-        if (initialRender.current || !container || !inner) {
-            return;
-        }
+        if (initialRender.current || !container || !inner) return;
 
         container.classList.toggle("duration-500", !isOpen);
         container.classList.toggle("duration-300", isOpen);
@@ -34,9 +30,9 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
         if (horizontal) {
             // save initial width to avoid word wrapping when container width will be changed
             inner.style.width = `${inner.clientWidth}px`;
-            container.style.width = `${isOpen ? inner.clientWidth : 0}px`;
+            container.style.width = `${inner.clientWidth}px`;
         } else {
-            container.style.height = `${isOpen ? inner.clientHeight : 0}px`;
+            container.style.height = `${inner.clientHeight}px`;
         }
 
         if (isOpen) {
@@ -44,17 +40,15 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
                 // should be style property in kebab-case, not css class name
                 container.style.removeProperty("height");
             }, 300);
-
-            return;
+        } else {
+            setTimeout(() => {
+                if (horizontal) {
+                    container.style.width = "0px";
+                } else {
+                    container.style.height = "0px";
+                }
+            }, 0);
         }
-
-        setTimeout(() => {
-            if (horizontal) {
-                container.style.width = ".5rem";
-            } else {
-                container.style.height = ".5rem";
-            }
-        }, 0);
     }, [horizontal, isOpen]);
 
     useEffect(() => {
@@ -64,18 +58,14 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
     return (
         <div
             ref={containerReference}
-            className="-m-1 transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
-            style={{
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                maxHeight: !initialOpen && !horizontal ? 0 : undefined,
-            }}
+            className="transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
+            style={initialOpen.current || horizontal ? undefined : { height: 0 }}
         >
             <div
                 ref={innerReference}
                 className={cn(
-                    "transform-gpu transition-opacity duration-500 ease-in-out motion-reduce:transition-none p-1",
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    initialOpen ? "opacity-100" : "opacity-0",
+                    "transition-opacity duration-500 ease-in-out motion-reduce:transition-none",
+                    isOpen ? "opacity-100" : "opacity-0",
                     className,
                 )}
             >

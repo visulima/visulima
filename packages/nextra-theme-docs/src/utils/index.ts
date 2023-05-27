@@ -5,8 +5,6 @@ import { twMerge } from "tailwind-merge";
 export { default as useFSRoute } from "./use-fs-route";
 export { default as getGitEditUrl } from "./get-git-edit-url";
 export { default as getGitIssueUrl } from "./get-git-issue-url";
-export type { Item, PageItem, MenuItem } from "./normalize-pages";
-export { normalizePages } from "./normalize-pages";
 export { renderComponent, renderString } from "./render";
 export { default as usePopper } from "./use-popper";
 

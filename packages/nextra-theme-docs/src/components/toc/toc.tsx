@@ -34,14 +34,14 @@ const Toc: FC<TOCProperties> = ({
                                 className={cn(
                                     isPage
                                         ? {
-                                            2: "font-medium",
+                                            2: "font-semibold",
                                             3: "ltr:pl-4 rtl:pr-4",
                                             4: "ltr:pl-8 rtl:pr-8",
                                             5: "ltr:pl-12 rtl:pr-12",
                                             6: "ltr:pl-16 rtl:pr-16",
                                         }[depth as Exclude<typeof depth, 1>]
                                         : {
-                                            2: "font-medium",
+                                            2: "font-semibold",
                                             3: "ltr:ml-4 rtl:mr-4",
                                             4: "ltr:ml-8 rtl:mr-8",
                                             5: "ltr:ml-12 rtl:mr-12",
@@ -54,7 +54,7 @@ const Toc: FC<TOCProperties> = ({
                                     activeAnchor[id]?.isActive
                                         ? "text-primary-500 subpixel-antialiased contrast-more:!text-primary-500"
                                         : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300",
-                                    "contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50",
+                                    "contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words",
                                 )}
                             >
                                 <span>

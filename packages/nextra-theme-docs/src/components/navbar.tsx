@@ -140,7 +140,7 @@ const Navbar: FC<NavBarProperties> = ({
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 lg:flex pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]">
+                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] lg:flex">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;

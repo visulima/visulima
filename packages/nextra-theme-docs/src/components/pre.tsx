@@ -21,7 +21,7 @@ ComponentProps<"pre"> & {
         const hasWordWrap = "nextraWordWrap" in htmlDataset;
 
         if (hasWordWrap) {
-            delete htmlDataset["nextraWordWrap"];
+            delete htmlDataset.nextraWordWrap;
         } else {
             htmlDataset["nextraWordWrap"] = "";
         }
