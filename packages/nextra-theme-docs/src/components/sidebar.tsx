@@ -1,6 +1,7 @@
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { Heading } from "nextra";
+import { useFSRoute } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
 import type { FC } from "react";
@@ -11,7 +12,7 @@ import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
-import { renderComponent, useFSRoute } from "../utils";
+import { renderComponent } from "../utils";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
@@ -73,11 +74,20 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const rerender = useState({})[1];
 
     useEffect(() => {
-        if (activeRouteInside || focusedRouteInside) {
-            TreeState[item.route] = true;
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeRouteInside || focusedRouteInside, item.route]);
+        const updateTreeState = () => {
+            if (activeRouteInside || focusedRouteInside) {
+                TreeState[item.route] = true;
+            }
+        };
+        const updateAndPruneTreeState = () => {
+            if (activeRouteInside && focusedRouteInside) {
+                TreeState[item.route] = true;
+            } else {
+                delete TreeState[item.route];
+            }
+        };
+        config.sidebar.autoCollapse ? updateAndPruneTreeState() : updateTreeState();
+    }, [activeRouteInside, focusedRouteInside, item.route, config.sidebar.autoCollapse]);
 
     if (item.type === "menu") {
         const menu = item as MenuItem;

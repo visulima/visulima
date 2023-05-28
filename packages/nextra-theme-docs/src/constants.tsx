@@ -1,4 +1,5 @@
 import { GitHubIcon } from "nextra/icons";
+import type { PageTheme } from "nextra/normalize-pages";
 import { isValidElement } from "react";
 
 import Anchor from "./components/anchor";
@@ -7,7 +8,6 @@ import Navbar from "./components/navbar";
 import TocPageContent from "./components/toc/toc-page-content";
 import TocSidebar from "./components/toc/toc-sidebar";
 import type { DocumentationThemeConfig } from "./theme/theme-schema";
-import type { PageTheme } from "./types";
 import { getGitEditUrl } from "./utils";
 
 export const DEFAULT_LOCALE = "en-US";
@@ -207,6 +207,7 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         labels: "bug",
     },
     sidebar: {
+        autoCollapse: true,
         defaultMenuCollapseLevel: 2,
         // eslint-disable-next-line react/jsx-no-useless-fragment
         titleComponent: ({ title }) => <>{title}</>,

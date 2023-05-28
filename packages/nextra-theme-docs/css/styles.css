@@ -205,3 +205,7 @@ li.nested-list ul {
 .nextra-content iframe {
     @apply w-full h-full mt-8 pb-8 !bg-white dark:!bg-dark;
 }
+
+.prose .nextra-callout p {
+  @apply m-0;
+}

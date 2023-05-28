@@ -1,14 +1,16 @@
 import { Menu, Transition } from "@headlessui/react";
 import cn from "clsx";
 import { useRouter } from "next/router";
+import { useFSRoute } from "nextra/hooks";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
+import type {
+    Item, MenuItem, PageItem, PageTheme,
+} from "nextra/normalize-pages";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
-import type { PageTheme } from "../types";
-import type { Item, MenuItem, PageItem } from "../utils";
-import { renderComponent, useFSRoute } from "../utils";
+import { renderComponent } from "../utils";
 import Anchor from "./anchor";
 
 const classes = {
@@ -177,7 +179,8 @@ const Navbar: FC<NavBarProperties> = ({
                                 href = (page.withIndexPage ? page.route : page.firstChildRoute) ?? href;
                             }
 
-                            const isActive = page.route === activeRoute || activeRoute.startsWith(`${page.route}/`);
+                            const route = page.href || page.route;
+                            const isActive = route === activeRoute || activeRoute.startsWith(`${route}/`);
                             const isInactive = !isActive || page.newWindow;
 
                             return (

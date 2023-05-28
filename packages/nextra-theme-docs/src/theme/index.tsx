@@ -4,7 +4,7 @@ import "./polyfill";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import type { NextraThemeLayoutProps, PageOpts } from "nextra";
-import { useMounted } from "nextra/hooks";
+import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
@@ -25,7 +25,7 @@ import { SkipNavContent } from "../components/skip-nav";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
-import { renderComponent, useFSRoute } from "../utils";
+import { renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
 const classes = {

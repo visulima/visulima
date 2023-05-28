@@ -1,9 +1,9 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
+import type { Item } from "nextra/normalize-pages";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
 
-import type { Item } from "../utils";
 import Anchor from "./anchor";
 
 const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (

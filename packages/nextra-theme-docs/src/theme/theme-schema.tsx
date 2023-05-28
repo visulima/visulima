@@ -127,6 +127,7 @@ export const themeSchema = z
             defaultTheme: z.string(),
             forcedTheme: z.string().optional(),
             storageKey: z.string(),
+            attribute: z.string().optional(),
         }),
         notFound: z.object({
             content: z.custom<FC | ReactNode>(...reactNode),
@@ -186,6 +187,7 @@ export const themeSchema = z
             labels: z.string(),
         }),
         sidebar: z.object({
+            autoCollapse: z.boolean().optional(),
             defaultMenuCollapseLevel: z.number().min(1).int(),
             titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
         }),

@@ -47,6 +47,7 @@ const Search: FC<SearchProperties> = ({
     const { setMenu } = useMenu();
     const input = useRef<HTMLInputElement>(null);
     const ulReference = useRef<HTMLUListElement>(null);
+    const [focused, setFocused] = useState(false);
 
     useEffect(() => {
         setActive(0);
@@ -175,7 +176,7 @@ const Search: FC<SearchProperties> = ({
                     onChange("");
                 }}
             >
-                {value
+                {value && focused
                     ? "ESC"
                     : mounted
                       && (navigator.userAgent.includes("Macintosh") ? (
@@ -207,6 +208,10 @@ const Search: FC<SearchProperties> = ({
                 }}
                 onFocus={() => {
                     onActive?.(true);
+                    setFocused(true);
+                }}
+                onBlur={() => {
+                    setFocused(false);
                 }}
                 type="search"
                 placeholder={renderString(config.search.placeholder, { locale })}

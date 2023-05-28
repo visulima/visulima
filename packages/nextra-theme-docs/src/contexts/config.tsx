@@ -1,5 +1,6 @@
 import { ThemeProvider } from "next-themes";
 import type { FrontMatter, PageMapItem, PageOpts } from "nextra";
+import { metaSchema } from "nextra/normalize-pages";
 import type { ReactElement, ReactNode } from "react";
 import {
     createContext, useContext, useMemo, useState,
@@ -7,7 +8,6 @@ import {
 import type { ZodError } from "zod";
 
 import { DEEP_OBJECT_KEYS, DEFAULT_THEME } from "../constants";
-import { metaSchema } from "../theme/meta-schema";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import { themeSchema } from "../theme/theme-schema";
 import type { Context } from "../types";
@@ -98,7 +98,7 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
 
     return (
         <ThemeProvider
-            attribute="class"
+            attribute={nextThemes.attribute ?? "class"}
             disableTransitionOnChange
             defaultTheme={nextThemes.defaultTheme}
             storageKey={nextThemes.storageKey}
