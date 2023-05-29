@@ -22,8 +22,8 @@ jobs:
     test:
         strategy:
             matrix:
-                os: ["ubuntu-latest"]
-                node_version: ["16", "17", "18", "19"]
+                os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+                node_version: ["16", "17", "18", "19", "20"]
             fail-fast: false
 
         name: "Build & Unit Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
