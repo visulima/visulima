@@ -162,9 +162,9 @@ labels:
 # https://docs.github.com/en/rest/reference/repos#update-a-repository
 
 repository:
-    allow_merge_commit: true
+    allow_merge_commit: false
     allow_rebase_merge: false
-    allow_squash_merge: false
+    allow_squash_merge: true
     archived: false
     default_branch: "main"
     delete_branch_on_merge: true
