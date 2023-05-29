@@ -56,7 +56,7 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind && pnpm minify:css",
         "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind && pnpm minify:css",
-        "build:tailwind": "NODE_ENV=production pnpm postcss css/styles.css -o style.css --verbose",
+        "build:tailwind": "cross-env NODE_ENV=production pnpm postcss css/styles.css -o style.css --verbose",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm predev && pnpm run build --watch",
