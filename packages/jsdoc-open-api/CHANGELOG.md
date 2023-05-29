@@ -1,3 +1,11 @@
+## @visulima/jsdoc-open-api [1.3.6](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.5...@visulima/jsdoc-open-api@1.3.6) (2023-05-29)
+
+
+### Bug Fixes
+
+* fixed wrong path for windows ([53cb491](https://github.com/visulima/visulima/commit/53cb4916dc072af385255936da2e054509f9b712))
+* There's a difference in Node's handling of imports across OSes. You can find more info + the recommended solution in this issue: nodejs/node[#31710](https://github.com/visulima/visulima/issues/31710) ([c8709c2](https://github.com/visulima/visulima/commit/c8709c24c13a1fb90a029f17713157722f703107))
+
 ## @visulima/jsdoc-open-api [1.3.5](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.4...@visulima/jsdoc-open-api@1.3.5) (2023-05-29)
 
 
