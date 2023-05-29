@@ -32,19 +32,6 @@ jobs:
                   node-version: "16.x"
                   cache: "pnpm"
 
-            - name: "Get pnpm store directory"
-              id: "pnpm-cache"
-              run: |
-                  echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-            - uses: "actions/cache@v3"
-              name: "Setup pnpm cache"
-              with:
-                  path: "${{ steps.pnpm-cache.outputs.STORE_PATH }}"
-                  key: "${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}"
-                  restore-keys: |
-                      ${{ runner.os }}-pnpm-store-
-
             # @see: https://github.com/pnpm/pnpm/issues/4348
             - name: "Upgrade npm to 8.4 version"
               run: "npm install --global npm@8.4"
