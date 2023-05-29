@@ -15,6 +15,8 @@ vi.mock("node:fs", () => {
     };
 });
 
+const isWin = process.platform === "win32";
+
 describe("init command", () => {
     it("should throw an error when the config file already exists", () => {
         vi.spyOn(fs, "existsSync").mockReturnValue(true);
@@ -89,7 +91,7 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        expect(consoleInfoMock).toHaveBeenCalledWith(`Found package.json at "${fixturePath}/package.json"`);
+        expect(consoleInfoMock).toHaveBeenCalledWith(`Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
         expect(consoleInfoMock).toHaveBeenCalledWith("Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments
         expect(writeFileSyncMock).toHaveBeenCalledWith(

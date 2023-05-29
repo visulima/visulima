@@ -7,6 +7,8 @@ import apiRouteFileParser from "../../../../../../../src/framework/cli/command/l
 const cwdPath = path.resolve(__dirname, "../../../../../../../", "__fixtures__");
 const apiRoutesPath = path.resolve(cwdPath, "pages/api");
 
+const isWin = process.platform === "win32";
+
 describe("api-route-file-parser", () => {
     it("parse all files in pages/api", () => {
         const parsedApiRouteFiles = [
@@ -25,19 +27,19 @@ describe("api-route-file-parser", () => {
                     path: "/pages/api/[customerId]",
                     tags: [],
                     // eslint-disable-next-line sonarjs/no-duplicate-string
-                    file: "__fixtures__/pages/api/[customerId].js",
+                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                 },
                 {
                     method: "DELETE",
                     path: "/pages/api/[customerId]",
                     tags: [],
-                    file: "__fixtures__/pages/api/[customerId].js",
+                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                 },
                 {
                     method: "POST",
                     path: "/pages/api/[customerId]",
                     tags: [],
-                    file: "__fixtures__/pages/api/[customerId].js",
+                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
@@ -45,7 +47,7 @@ describe("api-route-file-parser", () => {
                     path: "/api/cors",
                     method: "GET",
                     tags: ["root"],
-                    file: "__fixtures__/pages/api/corsheader.ts",
+                    file: "__fixtures__/pages/api/corsheader.ts".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
@@ -53,7 +55,7 @@ describe("api-route-file-parser", () => {
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/defaultroute",
                     tags: [],
-                    file: "__fixtures__/pages/api/defaultroute.ts",
+                    file: "__fixtures__/pages/api/defaultroute.ts".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
@@ -61,7 +63,7 @@ describe("api-route-file-parser", () => {
                     path: "/api/hello",
                     method: "GET",
                     tags: ["root"],
-                    file: "__fixtures__/pages/api/hello.ts",
+                    file: "__fixtures__/pages/api/hello.ts".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
@@ -69,7 +71,7 @@ describe("api-route-file-parser", () => {
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/jsdefaultroute",
                     tags: [],
-                    file: "__fixtures__/pages/api/jsdefaultroute.js",
+                    file: "__fixtures__/pages/api/jsdefaultroute.js".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
         ]);
