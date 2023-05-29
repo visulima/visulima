@@ -789,8 +789,8 @@ importers:
         specifier: ^2.14.2
         version: 2.14.2
       next:
-        specifier: ^13.1.5
-        version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^13.4.4
+        version: 13.4.4(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
       rate-limiter-flexible:
         specifier: ^2.4.1
         version: 2.4.1
@@ -953,7 +953,7 @@ importers:
         version: 6.9.0
       next-test-api-route-handler:
         specifier: ^4.0.0-canary.1
-        version: 4.0.0-canary.1(next@13.1.5)
+        version: 4.0.0-canary.1(next@13.4.4)
       node-mocks-http:
         specifier: ^1.12.2
         version: 1.12.2
@@ -1303,8 +1303,8 @@ importers:
         version: 2.0.0
     optionalDependencies:
       next:
-        specifier: ^13.1.4
-        version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^13.4.4
+        version: 13.4.4(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^5.0.5
@@ -3683,6 +3683,7 @@ packages:
 
   /@next/env@13.1.5:
     resolution: {integrity: sha512-0Ry4NhJy6qLbXhvxPRUQ1H6RzgtryGdUto7hfgAK0Iw/bScgeVjwLZdfhm2iT7qsOS32apo9cWzLCxjc6iGPsA==}
+    dev: false
 
   /@next/env@13.3.1:
     resolution: {integrity: sha512-EDtCoedIZC7JlUQ3uaQpSc4aVmyhbLHmQVALg7pFfQgOTjgSnn7mKtA0DiCMkYvvsx6aFb5octGMtWrOtGXW9A==}
@@ -3720,6 +3721,7 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-android-arm64@12.3.4:
@@ -3737,6 +3739,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-darwin-arm64@12.3.4:
@@ -3754,6 +3757,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-darwin-arm64@13.3.1:
@@ -3787,6 +3791,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-darwin-x64@13.3.1:
@@ -3820,6 +3825,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm-gnueabihf@12.3.4:
@@ -3837,6 +3843,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm64-gnu@12.3.4:
@@ -3854,6 +3861,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm64-gnu@13.3.1:
@@ -3887,6 +3895,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-arm64-musl@13.3.1:
@@ -3920,6 +3929,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-x64-gnu@13.3.1:
@@ -3953,6 +3963,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-linux-x64-musl@13.3.1:
@@ -3986,6 +3997,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-arm64-msvc@13.3.1:
@@ -4019,6 +4031,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-ia32-msvc@13.3.1:
@@ -4052,6 +4065,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: false
     optional: true
 
   /@next/swc-win32-x64-msvc@13.3.1:
@@ -5227,6 +5241,7 @@ packages:
     resolution: {integrity: sha512-4C7nX/dvpzB7za4Ql9K81xK3HPxCpHMgwTZVyf+9JQ6VUbn9jjZVN7/Nkdz/Ugzs2CSjqnL/UPXroiVBVHUWUw==}
     dependencies:
       tslib: 2.5.2
+    dev: false
 
   /@swc/helpers@0.5.0:
     resolution: {integrity: sha512-SjY/p4MmECVVEWspzSRpQEM3sjR17sP8PbGxELWrT+YZMBfiUyt1MRUNjMV23zohwlG2HYtCQOsCwsTHguXkyg==}
@@ -13772,19 +13787,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /next-test-api-route-handler@4.0.0-canary.1(next@13.1.5):
-    resolution: {integrity: sha512-Qr71T8vi2LquQyVhNdoipjxV++lfY9PqGVSYmYEawyOMyPQvn9WGwgXAY1FgKI+4lCyJW4GHBL9eUO9zlG5QFQ==}
-    engines: {node: '>=14.19.0'}
-    peerDependencies:
-      next: '>=9'
-    dependencies:
-      cookie: 0.4.2
-      next: 13.1.5(react-dom@18.2.0)(react@18.2.0)
-      node-fetch: 2.6.11(encoding@0.1.13)
-    transitivePeerDependencies:
-      - encoding
-    dev: true
-
   /next-test-api-route-handler@4.0.0-canary.1(next@13.3.1):
     resolution: {integrity: sha512-Qr71T8vi2LquQyVhNdoipjxV++lfY9PqGVSYmYEawyOMyPQvn9WGwgXAY1FgKI+4lCyJW4GHBL9eUO9zlG5QFQ==}
     engines: {node: '>=14.19.0'}
@@ -13793,6 +13795,19 @@ packages:
     dependencies:
       cookie: 0.4.2
       next: 13.3.1(react-dom@18.2.0)(react@18.2.0)
+      node-fetch: 2.6.11(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
+    dev: true
+
+  /next-test-api-route-handler@4.0.0-canary.1(next@13.4.4):
+    resolution: {integrity: sha512-Qr71T8vi2LquQyVhNdoipjxV++lfY9PqGVSYmYEawyOMyPQvn9WGwgXAY1FgKI+4lCyJW4GHBL9eUO9zlG5QFQ==}
+    engines: {node: '>=14.19.0'}
+    peerDependencies:
+      next: '>=9'
+    dependencies:
+      cookie: 0.4.2
+      next: 13.4.4(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
       node-fetch: 2.6.11(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
@@ -13897,6 +13912,7 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    dev: false
 
   /next@13.3.1(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-eByWRxPzKHs2oQz1yE41LX35umhz86ZSZ+mYyXBqn2IBi2hyUqxBA88avywdr4uyH+hCJczegGsDGWbzQA5Rqw==}
@@ -16958,6 +16974,7 @@ packages:
 
   /semver@6.3.0:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
+    hasBin: true
 
   /semver@7.3.4:
     resolution: {integrity: sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==}
