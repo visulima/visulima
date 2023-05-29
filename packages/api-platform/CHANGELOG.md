@@ -1,3 +1,16 @@
+## @visulima/api-platform [1.2.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.6...@visulima/api-platform@1.2.7) (2023-05-29)
+
+
+### Bug Fixes
+
+* fixed wrong path for windows ([53cb491](https://github.com/visulima/visulima/commit/53cb4916dc072af385255936da2e054509f9b712))
+
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 1.3.6
+
 ## @visulima/api-platform [1.2.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.5...@visulima/api-platform@1.2.6) (2023-05-29)
 
 
