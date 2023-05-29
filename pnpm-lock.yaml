@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 overrides:
   load-tsconfig: ^0.2.5
@@ -966,8 +970,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1112,8 +1116,8 @@ importers:
         specifier: ^2.8.8
         version: 2.8.8
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1275,8 +1279,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1420,8 +1424,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1452,6 +1456,9 @@ importers:
       lodash.mergewith:
         specifier: ^4.6.2
         version: 4.6.2
+      read-pkg-up:
+        specifier: ^7.0.1
+        version: 7.0.1
       yaml:
         specifier: ^2.3.0
         version: 2.3.0
@@ -1571,9 +1578,6 @@ importers:
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
-      read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1802,8 +1806,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1932,8 +1936,8 @@ importers:
         specifier: ^2.8.8
         version: 2.8.8
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -2071,8 +2075,8 @@ importers:
         specifier: 4.14.1
         version: 4.14.1
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -2192,8 +2196,8 @@ importers:
         specifier: ^2.8.8
         version: 2.8.8
       read-pkg:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.4)
+        specifier: ^6.0.0
+        version: 6.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -15920,7 +15924,6 @@ packages:
       normalize-package-data: 3.0.3
       parse-json: 5.2.0
       type-fest: 1.4.0
-    dev: false
 
   /read-pkg@7.1.0:
     resolution: {integrity: sha512-5iOehe+WF75IccPc30bWTbpdDQLOCc3Uu8bi3Dte3Eueij81yx1Mrufk8qBx/YAbR4uL1FdUr+7BKXDwEtisXg==}
