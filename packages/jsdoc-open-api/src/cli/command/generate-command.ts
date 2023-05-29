@@ -3,7 +3,8 @@ import { collect } from "@visulima/readdir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import cliProgress from "cli-progress";
 import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, normalize } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
@@ -31,7 +32,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
 
     try {
         // eslint-disable-next-line unicorn/prefer-module,import/no-dynamic-require
-        let config = await import(resolve(options.config ?? configName));
+        let config = await import(pathToFileURL(normalize(options.config ?? configName)).href);
 
         if (config?.default) {
             config = config.default;
@@ -131,7 +132,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
     writeFileSync(output, JSON.stringify(spec, null, 2));
 
     // eslint-disable-next-line no-console
-    console.log(`\nSwagger specification is ready, check the${output}file.`);
+    console.log(`\nSwagger specification is ready, check the "${output}" file.`);
 };
 
 export default generateCommand;

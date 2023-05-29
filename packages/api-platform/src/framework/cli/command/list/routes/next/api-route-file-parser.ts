@@ -7,6 +7,7 @@ import type { Route } from "../types.d";
 
 const extensionRegex = /\.(js|ts|mjs|cjs)$/;
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: boolean = false): Route[] => {
     let specs: OpenApiObject[] = [];
 
@@ -35,9 +36,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
 
                 routes.push({
                     method: method as string,
-                    path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, ""),
+                    path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
-                    file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 });
             }
         });
@@ -45,9 +46,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
         if (routes.length === 0) {
             routes.push({
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
-                path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, ""),
+                path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
-                file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
             });
         }
 
@@ -62,7 +63,10 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    path, method: method.toUpperCase(), tags: methodSpec.tags, file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                    path: path.replaceAll("\\", "/"),
+                    method: method.toUpperCase(),
+                    tags: methodSpec.tags,
+                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 });
             });
         });
