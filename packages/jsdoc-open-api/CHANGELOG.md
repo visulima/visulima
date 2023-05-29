@@ -1,3 +1,10 @@
+## @visulima/jsdoc-open-api [1.3.5](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.4...@visulima/jsdoc-open-api@1.3.5) (2023-05-29)
+
+
+### Bug Fixes
+
+* added read-pkg-up to check if the first found package.json has the type key to create the correct config file export ([edc0e6e](https://github.com/visulima/visulima/commit/edc0e6e5cfef0b93a4280f67cd2dec37581e0dc6))
+
 ## @visulima/jsdoc-open-api [1.3.4](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.3...@visulima/jsdoc-open-api@1.3.4) (2023-05-26)
 
 
