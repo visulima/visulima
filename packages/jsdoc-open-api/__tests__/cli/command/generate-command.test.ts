@@ -36,6 +36,6 @@ describe("generate command", () => {
         await generateCommand(".openapirc.js", [fixturesDirectory], { config: join(fixturesDirectory, ".openapirc.js") });
 
         expect(writeFileSyncSpy).toMatchSnapshot();
-        expect(consoleLogMock).toHaveBeenCalledWith("\nSwagger specification is ready, check theswagger.jsonfile.");
+        expect(consoleLogMock).toHaveBeenCalledWith("\nSwagger specification is ready, check the \"swagger.json\" file.");
     });
 });

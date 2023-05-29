@@ -54,7 +54,7 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind && pnpm minify:css",
+        "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind",
         "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind && pnpm minify:css",
         "build:tailwind": "cross-env NODE_ENV=production pnpm postcss css/styles.css -o style.css --verbose",
         "clean": "rimraf node_modules dist .eslintcache",
