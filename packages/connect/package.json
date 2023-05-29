@@ -107,7 +107,6 @@
         "fastify": "^4.17.0",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^2.8.8",
-        "read-pkg": "^8.0.0",
         "rimraf": "^5.0.1",
         "semantic-release": "^21.0.2",
         "tsup": "^6.7.0",
