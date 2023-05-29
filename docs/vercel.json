@@ -3,7 +3,8 @@
     "trailingSlash": false,
     "env": {
         "NEXT_TELEMETRY_DISABLED": "1",
-        "NO_LOGS": "true"
+        "NO_LOGS": "true",
+        "ENABLE_EXPERIMENTAL_COREPACK": "1"
     },
     "rewrites": [
         { "source": "/docs", "destination": "/docs/introduction" }
