@@ -132,7 +132,7 @@ const generateCommand = async (configName: string, paths: string[], options: {
     writeFileSync(output, JSON.stringify(spec, null, 2));
 
     // eslint-disable-next-line no-console
-    console.log(`\nSwagger specification is ready, check the${output}file.`);
+    console.log(`\nSwagger specification is ready, check the "${output}" file.`);
 };
 
 export default generateCommand;
