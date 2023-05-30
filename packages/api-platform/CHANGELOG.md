@@ -1,3 +1,16 @@
+## @visulima/api-platform [1.2.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.7...@visulima/api-platform@1.2.8) (2023-05-30)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updates theme to be nextra compatible ([#87](https://github.com/visulima/visulima/issues/87)) ([b9fbeb2](https://github.com/visulima/visulima/commit/b9fbeb2e59d842a8755b0c8f19a67f93778ba979))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.5
+
 ## @visulima/api-platform [1.2.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.6...@visulima/api-platform@1.2.7) (2023-05-29)
 
 
