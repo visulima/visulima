@@ -100,9 +100,9 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         Object.keys(data[route].data).forEach((heading) => {
             const [hash, text] = heading.split("#");
             const url = route + (hash ? `#${hash}` : "");
-            const title = text || data[route].title;
+            const title = text ?? data[route].title;
 
-            const content = data[route].data[heading] || "";
+            const content = data[route].data[heading] ?? "";
             const paragraphs = content.split("\n").filter(Boolean);
 
             sectionIndex.add({
@@ -138,10 +138,11 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     indexes[locale] = [pageIndex, sectionIndex];
 };
 
-const loadIndexes = (basePath: string, locale: string): Promise<void> => {
+const loadIndexes = (basePath: string, locale: string): Promise<unknown> => {
     const key = `${basePath}@${locale}`;
 
     if (loadIndexesPromises.has(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return loadIndexesPromises.get(key)!;
     }
 
@@ -155,6 +156,7 @@ const loadIndexes = (basePath: string, locale: string): Promise<void> => {
 const FlexSearch = ({ className }: { className?: string }): ReactElement => {
     const { locale = DEFAULT_LOCALE, basePath } = useRouter();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
     const [results, setResults] = useState<SearchResult[]>([]);
     const [search, setSearch] = useState("");
 
@@ -228,6 +230,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
                                 <HighlightMatches match={searchString} value={title} />
                             </div>
                             {content && (
+                                // eslint-disable-next-line tailwindcss/no-custom-classname
                                 <div className="excerpt mt-1 text-sm leading-[1.35rem] text-gray-600 dark:text-gray-400 contrast-more:dark:text-gray-50">
                                     <HighlightMatches match={searchString} value={content} />
                                 </div>
@@ -269,7 +272,11 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
             if (active && !indexes[locale]) {
                 setLoading(true);
 
-                await loadIndexes(basePath, locale);
+                try {
+                    await loadIndexes(basePath, locale);
+                } catch {
+                    setError(true);
+                }
 
                 setLoading(false);
             }
@@ -277,7 +284,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         [locale, basePath],
     );
 
-    const handleChange = async (value: string) => {
+    const handleChange = async (value: string): Promise<void> => {
         setSearch(value);
 
         if (loading) {
@@ -287,16 +294,22 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         if (!indexes[locale]) {
             setLoading(true);
 
-            await loadIndexes(basePath, locale);
+            try {
+                await loadIndexes(basePath, locale);
+            } catch {
+                setError(true);
+            }
 
             setLoading(false);
         }
+
         doSearch(value);
     };
 
     return (
         <Search
             loading={loading}
+            error={error}
             value={search}
             onChange={handleChange}
             onActive={preload}

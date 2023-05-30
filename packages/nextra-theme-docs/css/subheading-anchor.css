@@ -13,6 +13,7 @@
     }
 
     &:after {
+        @apply absolute /* for not including # in focus ring border */;
         @apply content-['#'] px-1;
         @apply text-gray-300 dark:text-neutral-700;
         span:target + & {

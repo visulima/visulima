@@ -1,0 +1,32 @@
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .nextra-search ul {
+        @apply backdrop-blur-lg bg-white/70 dark:bg-dark/80;
+    }
+}
+
+input[type="search"] {
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button,
+    &::-webkit-search-results-button,
+    &::-webkit-search-results-decoration {
+        -webkit-appearance: none;
+    }
+}
+
+@media (max-width: 1024px) {
+    .nextra-search .nextra-excerpt {
+        @apply overflow-hidden text-ellipsis;
+        display: -webkit-box;
+        line-clamp: 1;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+    }
+}
+
+.nextra-search .nextra-excerpt {
+  @apply overflow-hidden text-ellipsis;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

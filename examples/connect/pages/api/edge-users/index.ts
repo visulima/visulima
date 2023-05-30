@@ -11,15 +11,12 @@ export const config = {
 
 const router = createEdgeRouter<NextRequest, NextResponse>({
     onError(err) {
-        return new NextResponse(
-            JSON.stringify({ error: (err as Error).message }),
-            {
-                status: 500,
-                headers: {
-                    "content-type": "application/json",
-                },
-            }
-        );
+        return new NextResponse(JSON.stringify({ error: (err as Error).message }), {
+            status: 500,
+            headers: {
+                "content-type": "application/json",
+            },
+        });
     },
 });
 
@@ -51,7 +48,7 @@ router.post(async (req) => {
             headers: {
                 "content-type": "application/json",
             },
-        }
+        },
     );
     saveUsers(res, users);
     return res;

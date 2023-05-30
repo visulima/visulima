@@ -1,9 +1,6 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import {
-    Table, Td, Th, Tr,
-} from "nextra/components";
 import type { ComponentProps, FC, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 
@@ -12,9 +9,14 @@ import Code from "./components/code";
 import Details from "./components/details";
 import Pre from "./components/pre";
 import Summary from "./components/summary";
+import Table from "./components/table";
+import Td from "./components/td";
+import Th from "./components/th";
+import Tr from "./components/tr";
+import Ul from "./components/ul";
 import { useSetActiveAnchor } from "./contexts";
 import { useIntersectionObserver, useSlugs } from "./contexts/active-anchor";
-import type { DocumentationThemeConfig } from "./types";
+import type { DocumentationThemeConfig } from "./theme/theme-schema";
 
 // Anchor links
 // eslint-disable-next-line max-len
@@ -40,7 +42,12 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
 
             setActiveAnchor((f) => {
                 const returnValue = { ...f };
-                delete returnValue[id!];
+
+                if (id && id in returnValue) {
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                    delete returnValue[id];
+                }
+
                 return returnValue;
             });
         };
@@ -51,7 +58,8 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
                 className={cn(
                     "font-semibold tracking-tight",
                     {
-                        h2: "mt-10 border-b pb-1 text-3xl contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400",
+                        // eslint-disable-next-line max-len
+                        h2: "mt-10 border-b pb-1 text-3xl border-neutral-200/70 contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400",
                         h3: "mt-8 text-2xl",
                         h4: "mt-8 text-xl",
                         h5: "mt-8 text-lg",
@@ -97,15 +105,15 @@ const getComponents = ({
         h5: createHeaderLink("h5", context),
         h6: createHeaderLink("h6", context),
         // eslint-disable-next-line react/jsx-props-no-spreading
-        ul: (properties: ComponentProps<"ul">) => <ul className="mt-6 list-disc first:mt-0 ltr:ml-6 rtl:mr-6" {...properties} />,
+        ul: (properties: ComponentProps<"ul">) => <Ul {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        ol: (properties: ComponentProps<"ol">) => <ol className="mt-6 list-decimal first:mt-0 ltr:ml-6 rtl:mr-6" {...properties} />,
+        ol: (properties: ComponentProps<"ol">) => <ol className="mt-5 list-decimal first:mt-0 ltr:ml-6 rtl:mr-6" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        li: (properties: ComponentProps<"li">) => <li className="my-2" {...properties} />,
+        li: (properties: ComponentProps<"li">) => <li className="nested-list my-2" {...properties} />,
         blockquote: (properties: ComponentProps<"blockquote">) => (
             <blockquote
                 className={cn(
-                    "mt-6 border-gray-300 italic text-gray-700 dark:border-darker-700 dark:text-gray-400",
+                    "mt-5 border-gray-300 italic text-gray-700 dark:border-darker-700 dark:text-gray-400",
                     "first:mt-0 ltr:border-l-2 ltr:pl-6 rtl:border-r-2 rtl:pr-6",
                 )}
                 // eslint-disable-next-line react/jsx-props-no-spreading
@@ -115,11 +123,11 @@ const getComponents = ({
         // eslint-disable-next-line react/jsx-props-no-spreading
         hr: (properties: ComponentProps<"hr">) => <hr className="my-8 dark:border-gray-900" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:under]" />,
+        a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        table: (properties: ComponentProps<"table">) => <Table className="nextra-scrollbar mt-6 p-0 first:mt-0" {...properties} />,
+        table: (properties: ComponentProps<"table">) => <Table className="nextra-scrollbar mt-5 p-0 first:mt-0" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        p: (properties: ComponentProps<"p">) => <p className="mt-6 leading-7 first:mt-0" {...properties} />,
+        p: (properties: ComponentProps<"p">) => <p className="mt-5 leading-7 first:mt-0" {...properties} />,
         tr: Tr,
         th: Th,
         td: Td,

@@ -8,9 +8,9 @@ interface Menu {
 
 const MenuContext = createContext<Menu>({
     menu: false,
-    setMenu: () => {},
+    setMenu: () => false,
 });
 
-export const useMenu = () => useContext(MenuContext);
+export const useMenu = (): Menu => useContext(MenuContext);
 
 export const MenuProvider = MenuContext.Provider;

@@ -39,6 +39,7 @@
             "require": "./dist/index.js",
             "import": "./dist/index.mjs"
         },
+        "./component-style.css": "./component-style.css",
         "./style.css": "./style.css",
         "./package.json": "./package.json"
     },
@@ -48,6 +49,7 @@
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
+        "component-style.css",
         "style.css",
         "README.md",
         "CHANGELOG.md",
@@ -56,34 +58,35 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind",
         "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind && pnpm minify:css",
-        "build:tailwind": "cross-env NODE_ENV=production pnpm postcss css/styles.css -o style.css --verbose",
-        "clean": "rimraf node_modules dist .eslintcache",
+        "build:tailwind": "cross-env NODE_ENV=production PREFLIGHT=true pnpm postcss css/styles.css -o component-style.css --verbose && cross-env NODE_ENV=production PREFLIGHT=false pnpm postcss css/styles.css -o style.css --verbose",
+        "clean": "rimraf node_modules dist .eslintcache ./style.css",
         "coverage": "vitest run --coverage",
-        "dev": "pnpm predev && pnpm run build --watch",
+        "dev": "cross-env NODE_ENV=development concurrently \"tsup --watch\" \"pnpm dev:tailwind\"",
+        "dev:tailwind": "cross-env TAILWIND_MODE=watch PREFLIGHT=true pnpm postcss css/styles.css -o style.css --watch",
         "lint:eslint": "cross-env NO_LOGS=true eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
-        "minify:css": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' style.css -o style.css",
+        "minify:css": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' component-style.css -o component-style.css && lightningcss --minify --nesting --bundle --targets '>= 0.25%' style.css -o style.css",
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "types": "tsup --dts-only",
+        "types:check": "tsc --noEmit"
     },
     "dependencies": {
         "@giscus/react": "^2.2.8",
         "@headlessui/react": "^1.7.14",
-        "@heroicons/react": "^2.0.18",
-        "@mdx-js/react": "^2.3.0",
         "@popperjs/core": "^2.11.7",
         "clsx": "^1.2.1",
         "copy-to-clipboard": "^3.3.3",
         "flexsearch": "^0.7.31",
         "focus-visible": "^5.2.0",
         "git-url-parse": "^13.1.0",
-        "github-slugger": "^2.0.0",
         "intersection-observer": "^0.12.2",
         "match-sorter": "^6.3.1",
         "next-seo": "^6.0.0",
         "next-themes": "^0.2.1",
         "react-hot-toast": "^2.4.1",
-        "scroll-into-view-if-needed": "^3.0.10"
+        "scroll-into-view-if-needed": "^3.0.10",
+        "tailwind-merge": "^1.12.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^5.0.5",
@@ -91,9 +94,9 @@
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.9",
+        "@testing-library/react": "^14.0.0",
         "@types/flexsearch": "^0.7.3",
         "@types/git-url-parse": "^9.0.1",
-        "@types/github-slugger": "^1.3.0",
         "@types/micromatch": "^4.0.2",
         "@types/node": "18.16.16",
         "@types/react": "^18.2.7",
@@ -101,7 +104,7 @@
         "@typescript-eslint/eslint-plugin": "^5.59.7",
         "@typescript-eslint/parser": "^5.59.7",
         "@vitejs/plugin-react": "^4.0.0",
-        "@vitest/coverage-c8": "^0.31.1",
+        "@vitest/coverage-c8": "^0.31.2",
         "autoprefixer": "^10.4.14",
         "concurrently": "^8.0.1",
         "cross-env": "^7.0.3",
@@ -127,6 +130,7 @@
         "eslint-plugin-unicorn": "^47.0.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.12.0",
         "eslint-plugin-you-dont-need-momentjs": "^1.6.0",
+        "jsdom": "^22.0.0",
         "lightningcss-cli": "^1.20.0",
         "next": "^13.4.4",
         "nextra": "2.6.2",
@@ -137,18 +141,23 @@
         "prettier": "^2.8.8",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "read-pkg": "^7.1.0",
         "rimraf": "^5.0.1",
+        "rxjs": "^7.8.1",
         "semantic-release": "^21.0.2",
         "tailwindcss": "^3.3.2",
+        "tailwindcss-hyphens": "^0.1.0",
         "tsup": "^6.7.0",
         "typescript": "^5.0.4",
-        "vitest": "^0.31.1"
+        "vitest": "^0.31.1",
+        "zod": "^3.21.4"
     },
     "peerDependencies": {
         "next": ">=9.5.3",
-        "nextra": ">=2.0.0",
+        "nextra": ">=2.2.13",
         "react": ">=16.13.1",
-        "react-dom": ">=16.13.1"
+        "react-dom": ">=16.13.1",
+        "zod": "^3.20.2"
     },
     "engines": {
         "node": ">=16.18.0 <=20.*"

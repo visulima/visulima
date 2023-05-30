@@ -1,9 +1,9 @@
 import { matchSorter } from "match-sorter";
+import type { Item as NormalItem } from "nextra/normalize-pages";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 
 import type { SearchResult } from "../types";
-import type { Item as NormalItem } from "../utils";
 import HighlightMatches from "./highlight-matches";
 import Search from "./search";
 
@@ -25,7 +25,17 @@ const MatchSorterSearch = ({ className, directories = [] }: { className?: string
         [search, directories],
     );
 
-    return <Search value={search} onChange={setSearch} className={className} overlayClassName="w-full" results={results} />;
+    return (
+        <Search
+            value={search}
+            onChange={async (value) => {
+                setSearch(value);
+            }}
+            className={className}
+            overlayClassName="w-full"
+            results={results}
+        />
+    );
 };
 
 export default MatchSorterSearch;

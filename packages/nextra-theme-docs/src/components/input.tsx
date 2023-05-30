@@ -12,7 +12,7 @@ const Input = forwardRef<HTMLInputElement, InputProperties>(({ className, suffix
             className={cn(
                 className,
                 "block w-full appearance-none rounded-lg px-3 py-2 transition-colors",
-                "text-base leading-tight md:text-sm",
+                "text-base leading-tight lg:text-sm",
                 "bg-black/[.05] dark:bg-gray-50/10",
                 "focus:bg-white dark:focus:bg-dark",
                 "placeholder:text-gray-500 dark:placeholder:text-gray-400",

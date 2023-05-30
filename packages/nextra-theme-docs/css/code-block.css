@@ -13,10 +13,10 @@ code {
 
     .line {
         &.highlighted {
-            @apply border-primary-600/60 bg-primary-600/10;
+            @apply bg-primary-600/10 text-primary-600/50 shadow-[2px_0_currentColor_inset];
         }
         .highlighted {
-            @apply rounded-sm shadow-[0_0_0_3px_rgba(0,0,0,.3)];
+            @apply rounded-sm shadow-[0_0_0_2px_rgba(0,0,0,.3)];
             @apply bg-primary-800/10 shadow-primary-800/10;
             @apply dark:bg-primary-300/10 dark:shadow-primary-300/10;
         }
@@ -27,10 +27,10 @@ pre {
     /* content-visibility: auto; */
     contain: paint;
     code {
-        @apply grid min-w-full rounded-none border-none !bg-transparent !p-0 text-sm leading-5 text-current dark:!bg-transparent;
+        @apply min-w-full rounded-none border-none !bg-transparent !p-0 text-sm leading-5 text-current dark:!bg-transparent;
 
         .line {
-            @apply border-l-2 border-transparent px-4;
+            @apply px-4;
         }
     }
 
@@ -41,7 +41,21 @@ pre {
             @apply inline-block;
         }
     }
+
+    .nextra-copy-icon {
+        animation: fade-in 0.3s ease forwards;
+    }
 }
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* workaround: no way to overwrite the pre component */
 [data-rehype-pretty-code-fragment] {
     @apply relative mt-6 first:mt-0;

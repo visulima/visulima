@@ -16,12 +16,10 @@ const TocSidebar: FC<TOCProperties> = ({
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement | null>(null);
 
-    const items = useMemo(
-        () => headings.filter((heading) => heading.depth > 1),
-        [headings],
-    );
+    const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
 
     const hasHeadings = items.length > 0;
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
     const activeSlug = Object.entries(activeAnchor).find(([, { isActive }]) => isActive)?.[0];
@@ -31,7 +29,7 @@ const TocSidebar: FC<TOCProperties> = ({
             return;
         }
 
-        const anchor = tocReference?.current?.querySelector(`li > a[href="#${activeSlug}"]`);
+        const anchor = tocReference.current?.querySelector(`li > a[href="#${activeSlug}"]`);
 
         if (anchor) {
             scrollIntoView(anchor, {
@@ -48,13 +46,13 @@ const TocSidebar: FC<TOCProperties> = ({
         <div
             ref={tocReference}
             className={cn(
-                "nextra-scrollbar sticky top-16 overflow-y-auto pr-4 pt-8 text-sm [hyphens:auto]",
+                "nextra-scrollbar sticky top-16 overflow-y-auto pt-8 text-sm [hyphens:auto]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
+                isOnScreen ? "opacity-100" : "pointer-events-none opacity-0",
                 "transition-all duration-200",
-                isOnScreen ? "!opacity-100 !visibility" : "pointer-events-none opacity-0 visibility-hidden",
             )}
         >
-            <Toc headings={headings} activeAnchor={activeAnchor} />
+            <Toc headings={headings} activeAnchor={activeAnchor} prefix="sidebar" />
 
             {hasMetaInfo && (
                 <div

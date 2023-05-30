@@ -17,9 +17,9 @@ ComponentProps<"summary"> & {
     return (
         <summary
             className={cn(
-                variant === "default" ? "p-1 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800" : "",
-                "cursor-pointer list-none flex items-center",
-                "[&::-webkit-details-marker]:hidden",
+                variant === "default" ? "flex items-center cursor-pointer list-none p-1 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800" : "",
+                "before:mr-1 before:inline-block before:transition-transform before:content-[''] dark:before:invert",
+                "rtl:before:rotate-180 [[data-expanded]>&]:before:rotate-90",
                 className,
             )}
             // eslint-disable-next-line react/jsx-props-no-spreading

@@ -62,7 +62,7 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
                 ref={forwardedReference}
-                href={`#${id || DEFAULT_ID}`}
+                href={`#${id ?? DEFAULT_ID}`}
                 className={className}
             >
                 {label}
@@ -73,5 +73,5 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
 
 export const SkipNavContent = forwardRef<HTMLDivElement, SkipNavContentProperties>(
     // eslint-disable-next-line max-len,react/jsx-props-no-spreading
-    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} ref={forwardedReference} id={id || DEFAULT_ID} />,
+    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} ref={forwardedReference} id={id ?? DEFAULT_ID} />,
 );

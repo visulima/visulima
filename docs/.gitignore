@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+pages/docs/*
+!pages/docs/getting-started
+!pages/docs/prologue
+!pages/docs/_meta.en-US.json
+!pages/docs/_meta.json

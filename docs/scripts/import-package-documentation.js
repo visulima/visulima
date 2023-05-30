@@ -14,7 +14,7 @@ const path = require("node:path");
 const process = require("node:process");
 
 // eslint-disable-next-line no-undef, unicorn/prefer-module
-const packagesPath = path.join(__dirname, "..", "pages", "docs", "packages");
+const packagesPath = path.join(__dirname, "..", "pages", "docs");
 
 const argv = yargs(hideBin(process.argv))
     .option("path", {
@@ -51,8 +51,6 @@ if (typeof pathOption !== "string") {
 async function command() {
     const searchPath = path.join(process.cwd(), pathOption);
 
-    fs.rmSync(packagesPath, { recursive: true, force: true });
-
     // eslint-disable-next-line no-console
     console.log("Searching for docs in", searchPath);
     // eslint-disable-next-line no-console
@@ -64,16 +62,17 @@ async function command() {
         includeFiles: true,
         includeDirs: true,
         followSymlinks: false,
-        extensions: [".mdx"],
+        extensions: [".mdx", ".json"],
         skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
     })) {
-        // eslint-disable-next-line no-console
-        console.log("Found", result.path);
-
         if (result.isFile && result.path.includes("/docs/")) {
+            // eslint-disable-next-line no-console
+            console.log("Found", result.path);
+
             const destination = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
 
             if (copy) {
+                fs.rmSync(destination, { force: true });
                 fse.copySync(result.path, destination);
             } else if (symlink) {
                 // eslint-disable-next-line no-console

@@ -14,4 +14,4 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
     const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
 
     await handler(request, response);
-}
+};

@@ -6,8 +6,7 @@
         "NO_LOGS": "true",
         "ENABLE_EXPERIMENTAL_COREPACK": "1"
     },
-    "rewrites": [
-        { "source": "/docs", "destination": "/docs/introduction" }
-    ],
-    "buildCommand": "pnpm run -w build:prod:readdir && pnpm run -w build:prod:nextra-theme-docs && pnpm run docs:copy && pnpm run build"
+    "rewrites": [{ "source": "/docs", "destination": "/docs/introduction" }],
+    "buildCommand": "pnpm run -w build:prod:readdir && pnpm run -w build:prod:nextra-theme-docs && pnpm run docs:copy && pnpm run build",
+    "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1"
 }

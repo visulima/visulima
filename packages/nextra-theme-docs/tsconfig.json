@@ -6,5 +6,10 @@
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "jsx": "react-jsx"
-    }
+    },
+    "plugins": [
+        {
+            "name": "next"
+        }
+    ]
 }

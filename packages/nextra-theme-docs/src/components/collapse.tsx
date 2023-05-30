@@ -2,55 +2,54 @@ import cn from "clsx";
 import type { FC, PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = ({ children, className, open }) => {
-    const containerReference = useRef<HTMLDivElement | null>(null);
-    const innerReference = useRef<HTMLDivElement | null>(null);
-    const animationReference = useRef<any>();
+const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; horizontal?: boolean }>> = ({
+    children,
+    className,
+    isOpen,
+    horizontal = false,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+}) => {
+    const containerReference = useRef<HTMLDivElement>(null);
+    const innerReference = useRef<HTMLDivElement>(null);
+    const animationReference = useRef(0);
+    const initialOpen = useRef(isOpen);
     const initialRender = useRef(true);
-    const initialState = useRef(open);
 
     useEffect(() => {
-        if (initialRender.current) {
-            return;
-        }
-
-        if (animationReference.current) {
-            clearTimeout(animationReference.current);
-        }
-
         const container = containerReference.current;
         const inner = innerReference.current;
+        const animation = animationReference.current;
+        if (animation) {
+            clearTimeout(animation);
+        }
+        if (initialRender.current || !container || !inner) return;
 
-        if (open) {
-            if (container && inner && innerReference.current) {
-                const contentHeight = innerReference.current.clientHeight;
+        container.classList.toggle("duration-500", !isOpen);
+        container.classList.toggle("duration-300", isOpen);
 
-                container.style.maxHeight = `${contentHeight}px`;
-                container.classList.remove("duration-500");
-                container.classList.add("duration-300");
+        if (horizontal) {
+            // save initial width to avoid word wrapping when container width will be changed
+            inner.style.width = `${inner.clientWidth}px`;
+            container.style.width = `${inner.clientWidth}px`;
+        } else {
+            container.style.height = `${inner.clientHeight}px`;
+        }
 
-                inner.style.opacity = "1";
-
-                animationReference.current = setTimeout(() => {
-                    // should be style property in kebab-case, not css class name
-                    container.style.removeProperty("max-height");
-                }, 300);
-            }
-        } else if (container && inner && innerReference.current) {
-            const contentHeight = innerReference.current.clientHeight;
-
-            container.style.maxHeight = `${contentHeight}px`;
-            container.classList.remove("duration-300");
-            container.classList.add("duration-500");
-
-            inner.style.opacity = "0";
-
+        if (isOpen) {
+            animationReference.current = window.setTimeout(() => {
+                // should be style property in kebab-case, not css class name
+                container.style.removeProperty("height");
+            }, 300);
+        } else {
             setTimeout(() => {
-                container.style.maxHeight = "0px";
+                if (horizontal) {
+                    container.style.width = "0px";
+                } else {
+                    container.style.height = "0px";
+                }
             }, 0);
         }
-    }, [open]);
+    }, [horizontal, isOpen]);
 
     useEffect(() => {
         initialRender.current = false;
@@ -59,17 +58,12 @@ const Collapse: FC<PropsWithChildren<{ className?: string; open: boolean }>> = (
     return (
         <div
             ref={containerReference}
-            className="transform-gpu overflow-hidden transition-all duration-300 ease-in-out motion-reduce:transition-none"
-            style={{
-                maxHeight: initialState.current ? undefined : 0,
-            }}
+            className="transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
+            style={initialOpen.current || horizontal ? undefined : { height: 0 }}
         >
             <div
                 ref={innerReference}
-                className={cn("transform-gpu overflow-hidden p-2 transition-opacity duration-500 ease-in-out motion-reduce:transition-none", className)}
-                style={{
-                    opacity: initialState.current ? 1 : 0,
-                }}
+                className={cn("transition-opacity duration-500 ease-in-out motion-reduce:transition-none", isOpen ? "opacity-100" : "opacity-0", className)}
             >
                 {children}
             </div>

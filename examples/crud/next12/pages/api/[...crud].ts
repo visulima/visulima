@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createNodeRouter } from "@visulima/api-platform";
 import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler }  from "@visulima/crud/next";
+import { nodeHandler } from "@visulima/crud/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";

@@ -1,43 +1,50 @@
 import { useTheme } from "next-themes";
 import { useMounted } from "nextra/hooks";
 import { MoonIcon, SunIcon } from "nextra/icons";
-import type { ReactElement } from "react";
+import type { FC, ReactElement } from "react";
+import { useMemo } from "react";
 
+import { useConfig } from "../contexts/config";
+import { renderString } from "../utils";
 import Select from "./select";
 
-type ThemeSwitchProperties = {
+const ThemeSwitch: FC<{
     lite?: boolean;
-};
-
-const OPTIONS = [
-    { key: "light", name: "Light" },
-    { key: "dark", name: "Dark" },
-    { key: "system", name: "System" },
-];
-
-const ThemeSwitch = ({ lite }: ThemeSwitchProperties): ReactElement => {
+    className?: string;
+    locale: string;
+}> = ({ lite, className, locale }): ReactElement => {
+    const config = useConfig();
     const { setTheme, resolvedTheme, theme = "" } = useTheme();
     const mounted = useMounted();
+
     const IconToUse = mounted && resolvedTheme === "dark" ? MoonIcon : SunIcon;
+    const OPTIONS = useMemo(
+        () => [
+            { key: "light", name: renderString(config.themeSwitch.light, { locale }) },
+            { key: "dark", name: renderString(config.themeSwitch.dark, { locale }) },
+            { key: "system", name: renderString(config.themeSwitch.system, { locale }) },
+        ],
+        [config.themeSwitch, locale],
+    );
+
     return (
-        <div className="relative">
-            <Select
-                title="Change theme"
-                options={OPTIONS}
-                onChange={(option) => {
-                    setTheme(option.key);
-                }}
-                selected={{
-                    key: theme,
-                    name: (
-                        <div className="flex items-center gap-2 capitalize">
-                            <IconToUse />
-                            <span className={lite ? "md:hidden" : ""}>{mounted ? theme : "light"}</span>
-                        </div>
-                    ),
-                }}
-            />
-        </div>
+        <Select
+            title={renderString(config.themeSwitch.title, { locale })}
+            options={OPTIONS}
+            onChange={(option) => {
+                setTheme(option.key);
+            }}
+            className={className}
+            selected={{
+                key: theme,
+                name: (
+                    <div className="flex items-center gap-2 capitalize">
+                        <IconToUse />
+                        <span className={lite ? "lg:hidden" : ""}>{mounted ? theme : "light"}</span>
+                    </div>
+                ),
+            }}
+        />
     );
 };
 

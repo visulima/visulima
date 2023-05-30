@@ -1,6 +1,6 @@
 import cn from "clsx";
 import type {
-    ComponentProps, FC, ReactElement, ReactNode,
+    ComponentProps, FC, PropsWithChildren, ReactElement, ReactNode,
 } from "react";
 import {
     Children, cloneElement, useEffect, useState,
@@ -24,16 +24,16 @@ const findSummary = (children: ReactNode) => {
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         if (!summary && child && typeof child === "object" && (child as ReactElement).type !== Details && "props" in child && child.props) {
-            const result = findSummary(child.props.children);
+            const result = findSummary((child.props as PropsWithChildren).children);
 
             // eslint-disable-next-line prefer-destructuring
             summary = result[0];
 
             restChildren.push(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 cloneElement(child, {
                     ...child.props,
-                    // @ts-expect-error
-                    children: result[1]?.length ? result[1] : undefined,
+                    children: result[1]?.length ? result[1] : null,
                     // eslint-disable-next-line react/no-array-index-key
                     key: index,
                 }),
@@ -49,11 +49,13 @@ const findSummary = (children: ReactNode) => {
 const Details: FC<
 ComponentProps<"details"> & {
     variant?: "default" | "raw";
+    collapseClassName?: string;
+    collapseHorizontal?: boolean;
 }
 > = ({
-    children, open, className = "", variant = "default", ...properties
+    children, open = false, collapseClassName, collapseHorizontal = false, className, variant = "default", ...properties
 }) => {
-    const [openState, setOpen] = useState(!!open);
+    const [openState, setOpen] = useState(open);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const [summary, restChildren] = findSummary(children);
 
@@ -63,13 +65,13 @@ ComponentProps<"details"> & {
     // @ts-expect-error TS7030: Not all code paths return a value
     // eslint-disable-next-line consistent-return
     useEffect(() => {
-        if (openState) {
-            setDelayedOpenState(true);
-        } else {
+        if (!openState) {
             const timeout = setTimeout(() => setDelayedOpenState(openState), 500);
 
             return () => clearTimeout(timeout);
         }
+
+        setDelayedOpenState(true);
     }, [openState]);
 
     return (
@@ -87,7 +89,9 @@ ComponentProps<"details"> & {
             {...(openState && { "data-expanded": true })}
         >
             <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-            <Collapse open={openState}>{restChildren}</Collapse>
+            <Collapse className={collapseClassName} isOpen={openState} horizontal={collapseHorizontal}>
+                {restChildren}
+            </Collapse>
         </details>
     );
 };
