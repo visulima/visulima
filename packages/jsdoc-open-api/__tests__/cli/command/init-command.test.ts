@@ -27,7 +27,7 @@ describe("init command", () => {
     });
 
     it("should create a new config file with the correct module.exports content", () => {
-    // Create a mock for the existsSync function to return false
+        // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
 
@@ -141,6 +141,6 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        expect(consoleLogMock).toHaveBeenCalledWith("Created \"config.js\"");
+        expect(consoleLogMock).toHaveBeenCalledWith('Created "config.js"');
     });
 });

@@ -2,7 +2,7 @@
   <h3>Visulima jsdoc-open-api</h3>
   <p>
 
-  Visulima jsdoc-open-api parser and generator is a forked version of [openapi-comment-parser](https://github.com/bee-travels/openapi-comment-parser) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc) its built on top of [swagger](https://swagger.io/) and [JSDoc](https://jsdoc.app/), for speed and minimal runtime overhead.
+Visulima jsdoc-open-api parser and generator is a forked version of [openapi-comment-parser](https://github.com/bee-travels/openapi-comment-parser) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc) its built on top of [swagger](https://swagger.io/) and [JSDoc](https://jsdoc.app/), for speed and minimal runtime overhead.
 
   </p>
 </div>
@@ -51,7 +51,6 @@ Choose the syntax you want to use for your OpenAPI definitions:
 
 #### To use the CLI, you need to install this missing packages:
 
-
 ```sh
 npm install cli-progress commander
 ```
@@ -77,8 +76,8 @@ jsdoc-open-api generate src/
 ### As Next.js webpack plugin:
 
 #### with-open-api.js
-```js
 
+```js
 const path = require("node:path");
 const fs = require("node:fs");
 const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
@@ -91,52 +90,60 @@ const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
  *
  * @returns {function(*): *&{webpack: function(Configuration, *): (Configuration)}}
  */
-const withOpenApi = ({ definition, sources, verbose, output = "swagger/swagger.json" }) => (nextConfig) => {
-    return {
-        ...nextConfig,
-        webpack: (config, options) => {
-            if (!options.isServer) {
+const withOpenApi =
+    ({ definition, sources, verbose, output = "swagger/swagger.json" }) =>
+    (nextConfig) => {
+        return {
+            ...nextConfig,
+            webpack: (config, options) => {
+                if (!options.isServer) {
+                    return config;
+                }
+
+                if (output.startsWith("/")) {
+                    output = output.slice(1);
+                }
+
+                if (!output.endsWith(".json")) {
+                    throw new Error("The output path must end with .json");
+                }
+
+                // eslint-disable-next-line no-param-reassign
+                config = {
+                    ...config,
+                    plugins: [
+                        // @ts-ignore
+                        ...config.plugins,
+                        new SwaggerCompilerPlugin(
+                            `${options.dir}/${output}`,
+                            sources.map((source) => {
+                                const combinedPath = path.join(options.dir, source.replace("./", ""));
+
+                                // Check if the path is a directory
+                                fs.lstatSync(combinedPath).isDirectory();
+
+                                return combinedPath;
+                            }),
+                            definition,
+                            { verbose },
+                        ),
+                    ],
+                };
+
+                if (typeof nextConfig.webpack === "function") {
+                    return nextConfig.webpack(config, options);
+                }
+
                 return config;
-            }
-
-            if (output.startsWith("/")) {
-                output = output.slice(1);
-            }
-
-            if (!output.endsWith(".json")) {
-                throw new Error("The output path must end with .json");
-            }
-
-            // eslint-disable-next-line no-param-reassign
-            config = {
-                ...config,
-                plugins: [
-                // @ts-ignore
-                    ...config.plugins,
-                    new SwaggerCompilerPlugin(`${options.dir}/${output}`, sources.map((source) => {
-                        const combinedPath = path.join(options.dir, source.replace("./", ""));
-
-                        // Check if the path is a directory
-                        fs.lstatSync(combinedPath).isDirectory();
-
-                        return combinedPath;
-                    }), definition, { verbose }),
-                ],
-            };
-
-            if (typeof nextConfig.webpack === "function") {
-                return nextConfig.webpack(config, options);
-            }
-
-            return config;
-        },
+            },
+        };
     };
-};
 
 module.exports = withOpenApi;
 ```
 
 #### Next.config.js
+
 ```js
 const withOpenApi = require("./with-open-api");
 
@@ -146,7 +153,7 @@ const nextConfig = {
     swcMinify: true,
     env: {
         NEXT_PUBLIC_APP_ORIGIN: process.env.VERCEL_URL || "http://localhost:3001",
-    }
+    },
 };
 
 module.exports = withOpenApi({
@@ -157,9 +164,7 @@ module.exports = withOpenApi({
             version: "1.0.0",
         },
     },
-    sources: [
-         "pages/api",
-    ],
+    sources: ["pages/api"],
     verbose: false, // default is false
 })(nextConfig);
 ```
@@ -178,12 +183,12 @@ The library will take the contents of @openapi (or @swagger):
  *       200:
  *         description: Returns a mysterious string.
  */
-
 ```
 
 ## OpenApi short syntax
 
 ### Basic structure
+
 You can write OpenAPI definitions in JSDoc comments or YAML files.
 In this guide, we use only JSDoc comments examples. However, YAML files work equally as well.
 
@@ -201,6 +206,7 @@ For example, `GET /users` can be described as:
 ```
 
 #### Parameters
+
 Operations can have parameters passed via URL path (`/users/{userId}`), query string (`/users?role=admin`),
 headers (`X-CustomHeader: Value`) or cookies (`Cookie: debug=0`).
 You can define the parameter data types, format, whether they are required or optional, and other details:
@@ -217,6 +223,7 @@ You can define the parameter data types, format, whether they are required or op
 For more information, see [Describing Parameters](/docs/short/describing-parameters.md).
 
 #### Request body
+
 If an operation sends a request body, use the `bodyContent` keyword to describe the body content and media type.
 Use `bodyRequired` to indicate that a request body is required.
 
@@ -233,6 +240,7 @@ Use `bodyRequired` to indicate that a request body is required.
 For more information, see [Describing Request Body](/docs/short/describing-request-body.md).
 
 #### Responses
+
 For each operation, you can define possible status codes, such as 200 OK or 404 Not Found, and the response body content.
 You can also provide example responses for different content types:
 
@@ -252,14 +260,15 @@ You can also provide example responses for different content types:
 For more information, see [Describing Responses](/docs/short/describing-responses.md).
 
 #### Input and output models
+
 You can create global `components/schemas` section lets you define common data structures used in your API.
 They can be referenced by name whenever a schema is required – in parameters, request bodies, and response bodies.
 For example, this JSON object:
 
 ```json
 {
-  "id": 4,
-  "name": "Arthur Dent"
+    "id": 4,
+    "name": "Arthur Dent"
 }
 ```
 
@@ -267,17 +276,17 @@ Can be represented as:
 
 ```yaml
 components:
-  schemas:
-    User:
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-      # Both properties are required
-      required:
-        - id
-        - name
+    schemas:
+        User:
+            properties:
+                id:
+                    type: integer
+                name:
+                    type: string
+            # Both properties are required
+            required:
+                - id
+                - name
 ```
 
 And then referenced in the request body schema and response body schema as follows:
@@ -301,13 +310,15 @@ And then referenced in the request body schema and response body schema as follo
 ```
 
 #### Authentication
+
 The `securitySchemes` and `security` keywords are used to describe the authentication methods used in your API.
+
 ```yaml
 components:
-  securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
+    securitySchemes:
+        BasicAuth:
+            type: http
+            scheme: basic
 ```
 
 ```js
@@ -318,10 +329,11 @@ components:
 ```
 
 Supported authentication methods are:
-- HTTP authentication: Basic, Bearer, and so on.
-- API key as a header or query parameter or in cookies
-- OAuth 2
-- OpenID Connect Discovery
+
+-   HTTP authentication: Basic, Bearer, and so on.
+-   API key as a header or query parameter or in cookies
+-   OAuth 2
+-   OpenID Connect Discovery
 
 For more information, see [Authentication](/docs/short/authentication.md).
 

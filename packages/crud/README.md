@@ -3,9 +3,9 @@
   <p>
   Visulima crud is built on top of
 
-   [OpenAPI (Swagger) specification](https://swagger.io/specification/),
-   [node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
-   [@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
+[OpenAPI (Swagger) specification](https://swagger.io/specification/),
+[node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
+[@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
 
 With a more intuitive API for creating HTTP API endpoints.
 
@@ -58,7 +58,7 @@ To use the `@visulima/crud` package, you need to have a [Prisma](https://www.pri
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler }  from "@visulima/crud/next";
+import { nodeHandler } from "@visulima/crud/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
@@ -83,7 +83,7 @@ To use it with `api-platform connect` you need to install the `@visulima/api-pla
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createNodeRouter } from "@visulima/api-platform";
 import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler }  from "@visulima/crud/next";
+import { nodeHandler } from "@visulima/crud/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
@@ -128,4 +128,3 @@ The visulima crud is open-sourced software licensed under the [MIT][license-url]
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/crud/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/crud/v/latest "npm"
-

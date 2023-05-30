@@ -9,7 +9,7 @@ const getSegment = (line: string) => line.replaceAll(/ \(.*\)/g, "").trim();
 // "<spaces> activity (GET)" -> "GET"
 const getMethod = (line: string) => (line.trim().split(" ")[1] as string).slice(1, -1);
 
-type Segment = { index: number; segment: string; methods: string[] | null, depth: number, isRoute: boolean };
+type Segment = { index: number; segment: string; methods: string[] | null; depth: number; isRoute: boolean };
 
 const fastifyRoutes = (app: FastifyInstance): Route[] => {
     const printedRoutes = app
@@ -47,7 +47,11 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
         const methods = isRoute ? [getMethod(line)] : null;
 
         allSegments.push({
-            segment, index, depth, isRoute, methods,
+            segment,
+            index,
+            depth,
+            isRoute,
+            methods,
         });
 
         return allSegments;

@@ -3,9 +3,9 @@
   <p>
   Visulima api platform is built on top of
 
-   [OpenAPI (Swagger) specification](https://swagger.io/specification/),
-   [node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
-   [@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
+[OpenAPI (Swagger) specification](https://swagger.io/specification/),
+[node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
+[@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
 
 With a more intuitive API for creating HTTP API endpoints.
 
@@ -37,6 +37,7 @@ With a more intuitive API for creating HTTP API endpoints.
 ## Installation
 
 ### Npm
+
 ```sh
 npm install @visulima/api-platform zod
 ```
@@ -80,8 +81,9 @@ npm install swagger-ui-react
 To have a styled version of the swagger-ui you need to add the following css to your project:
 
 ```ts
-import "swagger-ui-react/swagger-ui.css"
+import "swagger-ui-react/swagger-ui.css";
 ```
+
 > Note: For `next.js` you can add it to your `_app.tsx` file
 
 Or
@@ -90,13 +92,11 @@ Or
 npm install redoc
 ```
 
-
 ## Usage
 
 ### CLI:
 
 #### To use the CLI, you need to install this missing packages:
-
 
 ```sh
 npm install cli-progress commander chalk
@@ -111,7 +111,6 @@ pnpm add cli-progress commander chalk
 ```
 
 #### Then you can use the CLI like this:
-
 
 ```bash
 // Shows the help with all available commands
@@ -134,10 +133,9 @@ import cors from "cors";
 // You may want to pass in NextApiRequest and NextApiResponse
 const router = createNodeRouter<NextApiRequest, NextApiResponse>();
 
-router
-  .get((req, res) => {
+router.get((req, res) => {
     res.send("Hello world");
-  });
+});
 
 export default router.nodeHandler();
 ```
@@ -169,4 +167,3 @@ The visulima api-platform is open-sourced software licensed under the [MIT][lice
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/api-platform/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/api-platform/v/latest "npm"
-

@@ -24,9 +24,7 @@ describe("generate command", () => {
         const options = { config: "/path/to/nonexistent/config.js" };
 
         // eslint-disable-next-line sonarjs/no-duplicate-string
-        await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow(
-            "No config file found, on: /path/to/nonexistent/config.js",
-        );
+        await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow("No config file found, on: /path/to/nonexistent/config.js");
     });
 
     it("collects the correct files from the given directories", async () => {
@@ -36,6 +34,6 @@ describe("generate command", () => {
         await generateCommand(".openapirc.js", [fixturesDirectory], { config: join(fixturesDirectory, ".openapirc.js") });
 
         expect(writeFileSyncSpy).toMatchSnapshot();
-        expect(consoleLogMock).toHaveBeenCalledWith("\nSwagger specification is ready, check the \"swagger.json\" file.");
+        expect(consoleLogMock).toHaveBeenCalledWith('\nSwagger specification is ready, check the "swagger.json" file.');
     });
 });

@@ -121,59 +121,61 @@ describe("commentsToOpenApi", () => {
 
         const result = commentsToOpenApi(fileContents);
 
-        expect(result).toEqual([{
-            spec: {
-                components: {
-                    schemas: {
-                        user: {
-                            properties: {
-                                age: {
-                                    format: "int32",
-                                    minimum: 0,
-                                    type: "integer",
-                                },
-                                name: {
-                                    type: "string",
-                                },
-                            },
-                            required: ["name"],
-                            type: "object",
-                        },
-                    },
-                },
-                channels: {
-                    "/user/signedup": {
-                        description: "This channel is used to exchange messages about users signing up",
-                        subscribe: {
-                            message: {
-                                description: "A longer description of the message",
-                                payload: {
-                                    properties: {
-                                        user: {
-                                            properties: {
-                                                age: {
-                                                    format: "int32",
-                                                    minimum: 0,
-                                                    type: "integer",
-                                                },
-                                                name: {
-                                                    type: "string",
-                                                },
-                                            },
-                                            required: ["name"],
-                                            type: "object",
-                                        },
+        expect(result).toEqual([
+            {
+                spec: {
+                    components: {
+                        schemas: {
+                            user: {
+                                properties: {
+                                    age: {
+                                        format: "int32",
+                                        minimum: 0,
+                                        type: "integer",
                                     },
-                                    type: "object",
+                                    name: {
+                                        type: "string",
+                                    },
                                 },
+                                required: ["name"],
+                                type: "object",
                             },
-                            summary: "A user signed up.",
+                        },
+                    },
+                    channels: {
+                        "/user/signedup": {
+                            description: "This channel is used to exchange messages about users signing up",
+                            subscribe: {
+                                message: {
+                                    description: "A longer description of the message",
+                                    payload: {
+                                        properties: {
+                                            user: {
+                                                properties: {
+                                                    age: {
+                                                        format: "int32",
+                                                        minimum: 0,
+                                                        type: "integer",
+                                                    },
+                                                    name: {
+                                                        type: "string",
+                                                    },
+                                                },
+                                                required: ["name"],
+                                                type: "object",
+                                            },
+                                        },
+                                        type: "object",
+                                    },
+                                },
+                                summary: "A user signed up.",
+                            },
                         },
                     },
                 },
+                loc: 2,
             },
-            loc: 2,
-        }]);
+        ]);
     });
 
     it("openapi with Square Bracket", () => {
@@ -220,38 +222,40 @@ describe("commentsToOpenApi", () => {
  `;
         const result = commentsToOpenApi(fileContents);
 
-        expect(result).toEqual([{
-            spec: {
-                paths: {
-                    "/v1/getToken": {
-                        get: {
-                            responses: {
-                                200: {
-                                    description: "successful operation",
-                                    content: {
-                                        "application/json": {
-                                            schema: {
-                                                type: "object",
-                                                properties: {
-                                                    success: {
-                                                        type: "boolean",
-                                                    },
-                                                    data: {
-                                                        type: "object",
-                                                        items: {
-                                                            properties: {
-                                                                access_token: {
-                                                                    // eslint-disable-next-line no-secrets/no-secrets
-                                                                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                                                                    type: "string",
-                                                                },
-                                                                current_time: {
-                                                                    example: "2022-09-04T06:17:59Z",
-                                                                    type: "string",
-                                                                },
-                                                                expires_at: {
-                                                                    example: "2022-09-04T06:17:59Z",
-                                                                    type: "string",
+        expect(result).toEqual([
+            {
+                spec: {
+                    paths: {
+                        "/v1/getToken": {
+                            get: {
+                                responses: {
+                                    200: {
+                                        description: "successful operation",
+                                        content: {
+                                            "application/json": {
+                                                schema: {
+                                                    type: "object",
+                                                    properties: {
+                                                        success: {
+                                                            type: "boolean",
+                                                        },
+                                                        data: {
+                                                            type: "object",
+                                                            items: {
+                                                                properties: {
+                                                                    access_token: {
+                                                                        // eslint-disable-next-line no-secrets/no-secrets
+                                                                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                                                                        type: "string",
+                                                                    },
+                                                                    current_time: {
+                                                                        example: "2022-09-04T06:17:59Z",
+                                                                        type: "string",
+                                                                    },
+                                                                    expires_at: {
+                                                                        example: "2022-09-04T06:17:59Z",
+                                                                        type: "string",
+                                                                    },
                                                                 },
                                                             },
                                                         },
@@ -261,15 +265,15 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                security: [],
+                                tags: ["getToken"],
                             },
-                            security: [],
-                            tags: ["getToken"],
                         },
                     },
                 },
+                loc: 7,
             },
-            loc: 7,
-        }]);
+        ]);
     });
 
     it("openapi with formData", () => {
@@ -299,35 +303,39 @@ describe("commentsToOpenApi", () => {
 `;
         const result = commentsToOpenApi(fileContents);
 
-        expect(result).toEqual([{
-            spec: {
-                paths: {
-                    "/accessories-centers": {
-                        post: {
-                            consumes: ["multipart/form-data"],
-                            parameters: [{
-                                collectionFormat: "multi",
-                                description: "Ids Main Specialities Of accessories center",
-                                in: "formData",
-                                items: {
-                                    type: "string",
+        expect(result).toEqual([
+            {
+                spec: {
+                    paths: {
+                        "/accessories-centers": {
+                            post: {
+                                consumes: ["multipart/form-data"],
+                                parameters: [
+                                    {
+                                        collectionFormat: "multi",
+                                        description: "Ids Main Specialities Of accessories center",
+                                        in: "formData",
+                                        items: {
+                                            type: "string",
+                                        },
+                                        name: "mainSpecialities[]",
+                                        required: false,
+                                        type: "array",
+                                    },
+                                ],
+                                responses: {
+                                    201: {
+                                        description: "Returns Created accessories-Center",
+                                    },
                                 },
-                                name: "mainSpecialities[]",
-                                required: false,
-                                type: "array",
-                            }],
-                            responses: {
-                                201: {
-                                    description: "Returns Created accessories-Center",
-                                },
+                                tags: ["Accessories-Centers"],
+                                summary: "Create a new Accessories center",
                             },
-                            tags: ["Accessories-Centers"],
-                            summary: "Create a new Accessories center",
                         },
                     },
                 },
+                loc: 2,
             },
-            loc: 2,
-        }]);
+        ]);
     });
 });

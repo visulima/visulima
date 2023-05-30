@@ -158,7 +158,12 @@ describe("Paginator", () => {
     });
 
     it("should return a paginator instance if paginate method is used", () => {
-        const paginator = paginate(1, 10, 100, Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = paginate(
+            1,
+            10,
+            100,
+            Array.from({ length: 10 }).map((_, index) => index),
+        );
 
         expect(paginator.total).toBe(100);
         expect(paginator.perPage).toBe(10);

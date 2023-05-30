@@ -3,7 +3,7 @@
     "display": "React + Node 16",
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
+        "baseUrl": "."
     },
     "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts"]
 }

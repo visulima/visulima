@@ -36,5 +36,17 @@
         // @TODO enable this when we have a better way to handle the types
         "exactOptionalPropertyTypes": false
     },
-    "exclude": ["dist", "node_modules", "build", "scripts", "verify-node-version.cjs", "plopfile.js", "plop", "packages/*/dist", "packages/*/__fixtures__", "examples", "docs"]
+    "exclude": [
+        "dist",
+        "node_modules",
+        "build",
+        "scripts",
+        "verify-node-version.cjs",
+        "plopfile.js",
+        "plop",
+        "packages/*/dist",
+        "packages/*/__fixtures__",
+        "examples",
+        "docs"
+    ]
 }

@@ -12,13 +12,17 @@ import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../../swagger-jsdoc/comments-to-open-api";
 
-const generateCommand = async (configName: string, paths: string[], options: {
-    config?: string;
-    output?: string;
-    verbose?: boolean;
-    veryVerbose?: boolean;
+const generateCommand = async (
+    configName: string,
+    paths: string[],
+    options: {
+        config?: string;
+        output?: string;
+        verbose?: boolean;
+        veryVerbose?: boolean;
+    },
     // eslint-disable-next-line sonarjs/cognitive-complexity
-}): Promise<void> => {
+): Promise<void> => {
     let openapiConfig: {
         exclude: string[];
         followSymlinks?: boolean;

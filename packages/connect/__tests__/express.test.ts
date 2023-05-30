@@ -1,7 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import {
-    describe, expect, it,
-} from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { ExpressRequestHandler } from "../src";
 import { expressWrapper, NodeRouter } from "../src";

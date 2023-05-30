@@ -3,10 +3,9 @@
   <p>
   The promise-based method routing and middleware layer with zod validation for <a href="https://nextjs.org/" title="Next.js">Next.js</a> (API Routes, Edge API Routes, getServerSideProps, Middleware) and many other frameworks is built on top of
 
-   [next-connect](https://github.com/hoangvvo/next-connect),
-   [http-errors](https://github.com/jshttp/http-errors),
-   [regexparam](https://github.com/lukeed/regexparam)
-
+[next-connect](https://github.com/hoangvvo/next-connect),
+[http-errors](https://github.com/jshttp/http-errors),
+[regexparam](https://github.com/lukeed/regexparam)
 
   </p>
 </div>
@@ -33,11 +32,11 @@
 
 ## Features
 
-- Async middleware
-- [Lightweight](https://bundlephobia.com/scan-results?packages=express,@visulima/connect,koa,micro) => Suitable for serverless environment
-- [way faster](https://github.com/visulima/packages/connect/tree/main/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
-- Works with async handlers (with error catching)
-- TypeScript support
+-   Async middleware
+-   [Lightweight](https://bundlephobia.com/scan-results?packages=express,@visulima/connect,koa,micro) => Suitable for serverless environment
+-   [way faster](https://github.com/visulima/packages/connect/tree/main/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
+-   Works with async handlers (with error catching)
+-   TypeScript support
 
 ## Installation
 
@@ -72,44 +71,44 @@ import cors from "cors";
 // Default Req and Res are IncomingMessage and ServerResponse
 // You may want to pass in NextApiRequest and NextApiResponse
 const router = createNodeRouter<NextApiRequest, NextApiResponse>({
-  onError: (err, req, res) => {
-    console.error(err.stack);
-    res.status(500).end("Something broke!");
-  },
-  onNoMatch: (req, res) => {
-    res.status(404).end("Page is not found");
-  },
+    onError: (err, req, res) => {
+        console.error(err.stack);
+        res.status(500).end("Something broke!");
+    },
+    onNoMatch: (req, res) => {
+        res.status(404).end("Page is not found");
+    },
 });
 
 router
-  .use(expressWrapper(cors())) // express middleware are supported if you wrap it with expressWrapper
-  .use(async (req, res, next) => {
-    const start = Date.now();
-    await next(); // call next in chain
-    const end = Date.now();
-    console.log(`Request took ${end - start}ms`);
-  })
-  .get((req, res) => {
-    res.send("Hello world");
-  })
-  .post(async (req, res) => {
-    // use async/await
-    const user = await insertUser(req.body.user);
-    res.json({ user });
-  })
-  .put(
-    async (req, res, next) => {
-      // You may want to pass in NextApiRequest & { isLoggedIn: true }
-      // in createNodeRouter generics to define this extra property
-      if (!req.isLoggedIn) throw new Error("thrown stuff will be caught");
-      // go to the next in chain
-      return next();
-    },
-    async (req, res) => {
-      const user = await updateUser(req.body.user);
-      res.json({ user });
-    }
-  );
+    .use(expressWrapper(cors())) // express middleware are supported if you wrap it with expressWrapper
+    .use(async (req, res, next) => {
+        const start = Date.now();
+        await next(); // call next in chain
+        const end = Date.now();
+        console.log(`Request took ${end - start}ms`);
+    })
+    .get((req, res) => {
+        res.send("Hello world");
+    })
+    .post(async (req, res) => {
+        // use async/await
+        const user = await insertUser(req.body.user);
+        res.json({ user });
+    })
+    .put(
+        async (req, res, next) => {
+            // You may want to pass in NextApiRequest & { isLoggedIn: true }
+            // in createNodeRouter generics to define this extra property
+            if (!req.isLoggedIn) throw new Error("thrown stuff will be caught");
+            // go to the next in chain
+            return next();
+        },
+        async (req, res) => {
+            const user = await updateUser(req.body.user);
+            res.json({ user });
+        },
+    );
 
 export default router.nodeHandler();
 ```
@@ -121,45 +120,45 @@ export default router.nodeHandler();
 import { createNodeRouter } from "@visulima/connect";
 
 export default function Page({ user, updated }) {
-  return (
-    <div>
-      {updated && <p>User has been updated</p>}
-      <div>{JSON.stringify(user)}</div>
-      <form method="POST">{/* User update form */}</form>
-    </div>
-  );
+    return (
+        <div>
+            {updated && <p>User has been updated</p>}
+            <div>{JSON.stringify(user)}</div>
+            <form method="POST">{/* User update form */}</form>
+        </div>
+    );
 }
 
 const router = createNodeRouter()
-  .use(async (req, res, next) => {
-    // this serve as the error handling middleware
-    try {
-      return await next();
-    } catch (e) {
-      return {
-        props: { error: e.message },
-      };
-    }
-  })
-  .use(async (req, res, next) => {
-    logRequest(req);
-    return next();
-  })
-  .get(async (req, res) => {
-    const user = await getUser(req.params.id);
-    if (!user) {
-      // https://nextjs.org/docs/api-reference/data-fetching/get-server-side-props#notfound
-      return { props: { notFound: true } };
-    }
-    return { props: { user } };
-  })
-  .post(async (req, res) => {
-    const user = await updateUser(req);
-    return { props: { user, updated: true } };
-  });
+    .use(async (req, res, next) => {
+        // this serve as the error handling middleware
+        try {
+            return await next();
+        } catch (e) {
+            return {
+                props: { error: e.message },
+            };
+        }
+    })
+    .use(async (req, res, next) => {
+        logRequest(req);
+        return next();
+    })
+    .get(async (req, res) => {
+        const user = await getUser(req.params.id);
+        if (!user) {
+            // https://nextjs.org/docs/api-reference/data-fetching/get-server-side-props#notfound
+            return { props: { notFound: true } };
+        }
+        return { props: { user } };
+    })
+    .post(async (req, res) => {
+        const user = await updateUser(req);
+        return { props: { user, updated: true } };
+    });
 
 export async function getServerSideProps({ req, res }) {
-  return router.run(req, res);
+    return router.run(req, res);
 }
 ```
 
@@ -175,50 +174,50 @@ import cors from "cors";
 // Default Req and Evt are Request and unknown
 // You may want to pass in NextRequest and NextFetchEvent
 const router = createEdgeRouter<NextRequest, NextFetchEvent>({
-  onError: (err, req, evt) => {
-    console.error(err.stack);
-    return new NextResponse("Something broke!", {
-      status: 500,
-    });
-  },
-  onNoMatch: (req, res) => {
-    return new NextResponse("Page is not found", {
-      status: 404,
-    });
-  },
+    onError: (err, req, evt) => {
+        console.error(err.stack);
+        return new NextResponse("Something broke!", {
+            status: 500,
+        });
+    },
+    onNoMatch: (req, res) => {
+        return new NextResponse("Page is not found", {
+            status: 404,
+        });
+    },
 });
 
 router
-  .use(expressWrapper(cors())) // express middleware are supported if you wrap it with expressWrapper
-  .use(async (req, evt, next) => {
-    const start = Date.now();
-    await next(); // call next in chain
-    const end = Date.now();
-    console.log(`Request took ${end - start}ms`);
-  })
-  .get((req, res) => {
-    return new Response("Hello world");
-  })
-  .post(async (req, res) => {
-    // use async/await
-    const user = await insertUser(req.body.user);
-    res.json({ user });
-    return new Response(JSON.stringify({ user }), {
-      status: 200,
-      headerList: {
-        "content-type": "application/json",
-      },
+    .use(expressWrapper(cors())) // express middleware are supported if you wrap it with expressWrapper
+    .use(async (req, evt, next) => {
+        const start = Date.now();
+        await next(); // call next in chain
+        const end = Date.now();
+        console.log(`Request took ${end - start}ms`);
+    })
+    .get((req, res) => {
+        return new Response("Hello world");
+    })
+    .post(async (req, res) => {
+        // use async/await
+        const user = await insertUser(req.body.user);
+        res.json({ user });
+        return new Response(JSON.stringify({ user }), {
+            status: 200,
+            headerList: {
+                "content-type": "application/json",
+            },
+        });
+    })
+    .put(async (req, res) => {
+        const user = await updateUser(req.body.user);
+        return new Response(JSON.stringify({ user }), {
+            status: 200,
+            headerList: {
+                "content-type": "application/json",
+            },
+        });
     });
-  })
-  .put(async (req, res) => {
-    const user = await updateUser(req.body.user);
-    return new Response(JSON.stringify({ user }), {
-      status: 200,
-      headerList: {
-        "content-type": "application/json",
-      },
-    });
-  });
 
 export default router.nodeHandler();
 ```
@@ -238,28 +237,28 @@ import { createEdgeRouter } from "@visulima/connect";
 const router = createEdgeRouter<NextRequest, NextFetchEvent>();
 
 router.use(async (request, _, next) => {
-  await logRequest(request);
-  return next();
+    await logRequest(request);
+    return next();
 });
 
 router.get("/about", (request) => {
-  return NextResponse.redirect(new URL("/about-2", request.url));
+    return NextResponse.redirect(new URL("/about-2", request.url));
 });
 
 router.use("/dashboard", (request) => {
-  if (!isAuthenticated(request)) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-  return NextResponse.next();
+    if (!isAuthenticated(request)) {
+        return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.next();
 });
 
 router.all((request) => {
-  // default if none of the above matches
-  return NextResponse.next();
+    // default if none of the above matches
+    return NextResponse.next();
 });
 
 export function middleware(request: NextRequest) {
-  return NextResponse.redirect(new URL("/about-2", request.url));
+    return NextResponse.redirect(new URL("/about-2", request.url));
 }
 ```
 
@@ -277,8 +276,8 @@ Create an instance Node.js router.
 
 `fn`(s) can either be:
 
-- functions of `(req, res[, next])`
-- **or** a router instance
+-   functions of `(req, res[, next])`
+-   **or** a router instance
 
 ```javascript
 // Mount a middleware function
@@ -294,11 +293,7 @@ router2.use("/foo", fn); // Only run in /foo/**
 // mount an instance of router
 const sub1 = createNodeRouter().use(fn1, fn2);
 const sub2 = createNodeRouter().use("/dashboard", auth);
-const sub3 = createNodeRouter()
-    .use("/waldo", subby)
-    .get(getty)
-    .post("/baz", posty)
-    .put("/", putty);
+const sub3 = createNodeRouter().use("/waldo", subby).get(getty).post("/baz", posty).put("/", putty);
 router3
     // - fn1 and fn2 always run
     // - auth runs only on /dashboard
@@ -320,20 +315,20 @@ router3
 
 ```javascript
 router.get("/api/user", (req, res, next) => {
-  res.json(req.user);
+    res.json(req.user);
 });
 router.post("/api/users", (req, res, next) => {
-  res.end("User created");
+    res.end("User created");
 });
 router.put("/api/user/:id", (req, res, next) => {
-  // https://nextjs.org/docs/routing/dynamic-routes
-  res.end(`User ${req.params.id} updated`);
+    // https://nextjs.org/docs/routing/dynamic-routes
+    res.end(`User ${req.params.id} updated`);
 });
 
 // Next.js already handles routing (including dynamic routes), we often
 // omit `pattern` in `.METHOD`
 router.get((req, res, next) => {
-  res.end("This matches whatever route");
+    res.end("This matches whatever route");
 });
 ```
 
@@ -361,7 +356,7 @@ function onError(err, req, res) {
     res.status(500).end("Internal server error");
 }
 
-const router = createNodeRouter({onError});
+const router = createNodeRouter({ onError });
 
 export default router.nodeHandler();
 ```
@@ -376,7 +371,7 @@ function onNoMatch(req, res) {
     res.status(404).end("page is not found... or is it!?");
 }
 
-const router = createNodeRouter({onNoMatch});
+const router = createNodeRouter({ onNoMatch });
 
 export default router.nodeHandler();
 ```
@@ -387,15 +382,15 @@ Runs `req` and `res` through the middleware chain and returns a **promise**. It 
 
 ```js
 router
-  .use(async (req, res, next) => {
-    return (await next()) + 1;
-  })
-  .use(async () => {
-    return (await next()) + 2;
-  })
-  .use(async () => {
-    return 3;
-  });
+    .use(async (req, res, next) => {
+        return (await next()) + 1;
+    })
+    .use(async () => {
+        return (await next()) + 2;
+    })
+    .use(async () => {
+        return 3;
+    });
 
 console.log(await router.run(req, res));
 // The above will print "6"
@@ -405,10 +400,10 @@ If an error in thrown within the chain, `router.run` will reject. You can also a
 
 ```js
 router
-  .use(async (req, res, next) => {
-    return next().catch(errorHandler);
-  })
-  .use(thisMiddlewarewareMightThrow);
+    .use(async (req, res, next) => {
+        return next().catch(errorHandler);
+    })
+    .use(thisMiddlewarewareMightThrow);
 
 await router.run(req, res);
 ```
@@ -424,56 +419,56 @@ If `next()` is not awaited, errors will not be caught if they are thrown in asyn
 ```javascript
 // OK: we don't use async so no need to await
 router
-  .use((req, res, next) => {
-    next();
-  })
-  .use((req, res, next) => {
-    next();
-  })
-  .use(() => {
-    throw new Error("💥");
-  });
+    .use((req, res, next) => {
+        next();
+    })
+    .use((req, res, next) => {
+        next();
+    })
+    .use(() => {
+        throw new Error("💥");
+    });
 
 // BAD: This will lead to UnhandledPromiseRejection
 router
-  .use(async (req, res, next) => {
-    next();
-  })
-  .use(async (req, res, next) => {
-    next();
-  })
-  .use(async () => {
-    throw new Error("💥");
-  });
+    .use(async (req, res, next) => {
+        next();
+    })
+    .use(async (req, res, next) => {
+        next();
+    })
+    .use(async () => {
+        throw new Error("💥");
+    });
 
 // GOOD
 router
-  .use(async (req, res, next) => {
-    await next(); // next() is awaited, so errors are caught properly
-  })
-  .use((req, res, next) => {
-    return next(); // this works as well since we forward the rejected promise
-  })
-  .use(async () => {
-    throw new Error("💥");
-    // return new Promise.reject("💥");
-  });
+    .use(async (req, res, next) => {
+        await next(); // next() is awaited, so errors are caught properly
+    })
+    .use((req, res, next) => {
+        return next(); // this works as well since we forward the rejected promise
+    })
+    .use(async () => {
+        throw new Error("💥");
+        // return new Promise.reject("💥");
+    });
 ```
 
 Another issue is that the nodeHandler would resolve before all the code in each layer runs.
 
 ```javascript
 const nodeHandler = router
-  .use(async (req, res, next) => {
-    next(); // this is not returned or await
-  })
-  .get(async () => {
-    // simulate a long task
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    res.send("ok");
-    console.log("request is completed");
-  })
-  .nodeHandler();
+    .use(async (req, res, next) => {
+        next(); // this is not returned or await
+    })
+    .get(async () => {
+        // simulate a long task
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        res.send("ok");
+        console.log("request is completed");
+    })
+    .nodeHandler();
 
 await nodeHandler(req, res);
 console.log("finally"); // this will run before the get layer gets to finish
@@ -533,7 +528,7 @@ const nodeHandler = createNodeRouter()
         res.end("bar");
     });
 
-export async function getServerSideProps({req, res}) {
+export async function getServerSideProps({ req, res }) {
     await router.run(req, res);
     return {
         props: {},
@@ -548,7 +543,7 @@ export async function getServerSideProps({req, res}) {
 const router = createNodeRouter().use(foo).use(bar);
 const nodeHandler = router.nodeHandler();
 
-export async function getServerSideProps({req, res}) {
+export async function getServerSideProps({ req, res }) {
     await nodeHandler(req, res); // BAD: You should call router.run(req, res);
     return {
         props: {},
@@ -572,10 +567,10 @@ If you need to create all handlers for all routes in one file (similar to `Expre
 import { createNodeRouter } from "@visulima/connect";
 
 const router = createNodeRouter()
-  .use("/api/hello", someMiddleware())
-  .get("/api/user/:userId", (req, res) => {
-    res.send(`Hello ${req.params.userId}`);
-  });
+    .use("/api/hello", someMiddleware())
+    .get("/api/user/:userId", (req, res) => {
+        res.send(`Hello ${req.params.userId}`);
+    });
 
 export default router.nodeHandler();
 ```

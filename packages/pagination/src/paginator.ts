@@ -2,7 +2,7 @@ import qs from "qs";
 
 import type { PaginationMeta, PaginationResult, Paginator as IPaginator } from "./types";
 
-type UrlsForRange = {url: string; page: number; isActive: boolean}[];
+type UrlsForRange = { url: string; page: number; isActive: boolean }[];
 
 /**
  * Simple paginator works with the data set provided by the standard

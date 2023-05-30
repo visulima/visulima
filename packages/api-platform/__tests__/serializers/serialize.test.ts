@@ -37,7 +37,7 @@ describe("serialize", () => {
         {
             accept: "application/x-xml",
             data: { test: "data" },
-            expected: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Undefined>\n  <test>data</test>\n</Undefined>",
+            expected: '<?xml version="1.0" encoding="UTF-8"?>\n<Undefined>\n  <test>data</test>\n</Undefined>',
         },
     ])("should correctly serializes the data using the correct serializer when a serializer is found for the given type in the accept header", (test) => {
         const { accept, expected, data } = test;

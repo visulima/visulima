@@ -41,7 +41,7 @@ pnpm add @visulima/health-check
 
 ## Usecases for API health check endpoints
 
-Keeping the API health check endpoints generic allows  to use them for multiple purposes. In this section, we will review  of the everyday use cases of an API health check endpoint
+Keeping the API health check endpoints generic allows to use them for multiple purposes. In this section, we will review of the everyday use cases of an API health check endpoint
 
 -   Container orchestrators and API load balancers can use API health check endpoint to find out about the process status
 -   Usage of memory, disk, and other server resources can be monitored via API health check endpoints
@@ -63,7 +63,7 @@ export default healthCheckHandler(HealthCheckService); // returns a http handler
 
 There are at least three different types of API health check endpoints designed to serve specific purposes.
 
--   _The readiness endpoint_, often available via `/health/ready`, returns the readiness state to accept incoming requests from the gateway or the upstream proxy. Readiness signals that the app is running normally but isn’t ready to receive requests  yet.
+-   _The readiness endpoint_, often available via `/health/ready`, returns the readiness state to accept incoming requests from the gateway or the upstream proxy. Readiness signals that the app is running normally but isn’t ready to receive requests yet.
 
 -   _The liveness endpoint_, often available via `/health/live`, returns the liveness of a microservice. If the check does not return the expected response, it means that the process is unhealthy or dead and should be replaced as soon as possible.
 
@@ -71,7 +71,7 @@ There are at least three different types of API health check endpoints designed 
 
 Consider the following example: an API that loads JSON-based data into memory to serve requests.
 
-The `/health/ready` continues to respond with `NOT_READY` signal while the API is loading the JSON file since the API cannot serve any request without the file in memory. Therefore, it may take  time for the API to process the entire file.
+The `/health/ready` continues to respond with `NOT_READY` signal while the API is loading the JSON file since the API cannot serve any request without the file in memory. Therefore, it may take time for the API to process the entire file.
 
 The `/health/live` immediately signals `LIVE`, even though the app is not ready, to prevent the container orchestrator layer from restarting the app.
 
