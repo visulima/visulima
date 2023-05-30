@@ -1332,7 +1332,7 @@ importers:
         version: 2.0.0
     optionalDependencies:
       next:
-        specifier: ^13.1.5
+        specifier: ^13.4.4
         version: 13.4.4(@babel/core@7.22.1)(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@anolilab/eslint-config':
