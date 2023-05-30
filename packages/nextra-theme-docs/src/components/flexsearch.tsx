@@ -230,6 +230,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
                                 <HighlightMatches match={searchString} value={title} />
                             </div>
                             {content && (
+                                // eslint-disable-next-line tailwindcss/no-custom-classname
                                 <div className="excerpt mt-1 text-sm leading-[1.35rem] text-gray-600 dark:text-gray-400 contrast-more:dark:text-gray-50">
                                     <HighlightMatches match={searchString} value={content} />
                                 </div>

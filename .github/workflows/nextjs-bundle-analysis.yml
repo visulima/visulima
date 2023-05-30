@@ -60,6 +60,9 @@ jobs:
                   # change this if you prefer a more strict cache
                   key: "${{ runner.os }}-build-${{ env.cache-name }}"
 
+            - name: "Build @visulima/nextra-theme-docs"
+              run: "pnpm run build:prod:nextra-theme-docs"
+
             - name: "Build Next.js App"
               # change this if your site requires a custom build command
               run: "cd examples/nextra && ./node_modules/.bin/next build"

@@ -11,6 +11,7 @@ const NotFoundPage = (): ReactElement | null => {
     const config = useConfig();
     const mounted = useMounted();
     const { asPath, locale } = useRouter();
+    // eslint-disable-next-line no-empty-pattern
     const { content, labels, pages = ({}: { locale: string }) => [] } = config.notFound;
 
     if (!content) {

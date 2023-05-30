@@ -1313,7 +1313,7 @@ importers:
     optionalDependencies:
       next:
         specifier: ^13.1.5
-        version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
+        version: 13.4.4(@babel/core@7.22.1)(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^5.0.5
@@ -1688,6 +1688,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.0.0
         version: 4.0.0(vite@4.3.9)
+      '@vitest/coverage-c8':
+        specifier: ^0.31.2
+        version: 0.31.2(vitest@0.31.1)
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.24)
@@ -6491,6 +6494,19 @@ packages:
       vitest: 0.31.1(jsdom@22.0.0)
     dev: true
 
+  /@vitest/coverage-c8@0.31.2(vitest@0.31.1):
+    resolution: {integrity: sha512-RznxfxFtoV8xYt8e0h57OeulqOfFZJsa5pxXKW+xFW9ZHamSZ0wJC57FS4oh3Xbe0JNaHwSJ0KeClXgnuW1fkw==}
+    peerDependencies:
+      vitest: '>=0.30.0 <1'
+    dependencies:
+      '@ampproject/remapping': 2.2.1
+      c8: 7.14.0
+      magic-string: 0.30.0
+      picocolors: 1.0.0
+      std-env: 3.3.3
+      vitest: 0.31.1(jsdom@22.0.0)
+    dev: true
+
   /@vitest/expect@0.31.1:
     resolution: {integrity: sha512-BV1LyNvhnX+eNYzJxlHIGPWZpwJFZaCcOIzp2CNG0P+bbetenTupk6EO0LANm4QFt0TTit+yqx7Rxd1qxi/SQA==}
     dependencies:
@@ -10717,7 +10733,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.0.5
+      minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
     dev: false
@@ -20112,7 +20128,7 @@ packages:
   /wide-align@1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 1.0.2
+      string-width: 4.2.3
     dev: false
     optional: true
 
