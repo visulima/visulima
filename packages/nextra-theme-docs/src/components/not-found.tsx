@@ -11,13 +11,13 @@ const NotFoundPage = (): ReactElement | null => {
     const config = useConfig();
     const mounted = useMounted();
     const { asPath, locale } = useRouter();
-    const { content, labels, pages = () => [] } = config.notFound;
+    const { content, labels, pages = ({}: { locale: string }) => [] } = config.notFound;
 
     if (!content) {
         return null;
     }
 
-    const list = pages({ locale });
+    const list = pages({ locale: locale as string });
 
     return (
         <div className="mx-auto max-w-screen-xl p-8 lg:px-4 xl:px-6 xl:py-16">

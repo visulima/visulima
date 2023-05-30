@@ -9,7 +9,7 @@ import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
 import type {
-    FC, MutableRefObject, PropsWithChildren, ReactNode,
+    FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject,
 } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
@@ -175,7 +175,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const tocPageContentElement = isDocumentPage
         && renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
-            wrapperRef: reference as MutableRefObject<Element>,
+            wrapperRef: reference as RefObject<HTMLDivElement>,
         });
     const localeConfig = config.i18n.find((l) => l.locale === locale);
     const isRTL = localeConfig ? localeConfig.direction === "rtl" : config.direction === "rtl";

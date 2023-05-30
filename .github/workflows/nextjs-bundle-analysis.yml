@@ -1,11 +1,11 @@
 name: "Next.js Bundle Analysis"
 
-on:
-    pull_request:
+on: # yamllint disable-line rule:truthy
+    pull_request: # yamllint disable-line rule:empty-values
     push:
         branches:
             - "main"
-    workflow_dispatch:
+    workflow_dispatch: # yamllint disable-line rule:empty-values
 
 defaults:
     run:
@@ -15,20 +15,38 @@ jobs:
     analyze:
         runs-on: "ubuntu-latest"
         steps:
-            - uses: "actions/checkout@v3"
+            - name: "Git checkout"
+              uses: "actions/checkout@v3"
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - uses: "pnpm/action-setup@v2.2.4"
               with:
-                  version: 7
+                  version: 8
 
-            - name: "Install Node.js"
+            - name: "Set node version to 16"
               uses: "actions/setup-node@v3"
               with:
-                  node-version: 18
+                  node-version: "16"
                   cache: "pnpm"
 
-            - name: "Install Dependencies"
-              run: "pnpm i"
+            # @see: https://github.com/pnpm/pnpm/issues/4348
+            - name: "Upgrade npm to 8.4 version"
+              run: "npm install --global npm@8.4"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Check npm version"
+              run: "npm -v"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile"
+              env:
+                  SKIP_CHECK: "true"
 
             - name: "Restore Next.js Build"
               uses: "actions/cache@v3"
