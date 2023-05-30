@@ -59,7 +59,7 @@ const config: DocumentationThemeConfig = {
         defaultMenuCollapseLevel: 1,
     },
     editLink: {
-        content: ({ locale }): ReactElement => {
+        content: ({ locale }) => {
             // eslint-disable-next-line sonarjs/no-small-switch
             switch (locale) {
                 default: {

@@ -60,14 +60,19 @@ export const themeSchema = z
         editLink: z.object({
             component: z
                 .custom<
-            FC<{
-                children: ReactNode;
-                className?: string;
-                filePath?: string;
-            }>
-            >(...fc)
+                    FC<{
+                        children: ReactNode;
+                        className?: string;
+                        filePath?: string;
+                    }>
+                >(...fc)
                 .optional(),
-            content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode),
+            content: z.string().or(
+                z
+                    .function()
+                    .args(z.object({ locale: z.string() }))
+                    .returns(z.string()).or(z.custom<FC<{ locale: string }> | ReactNode>(...reactNode)),
+            ),
         }),
         faviconGlyph: z.string().optional(),
         feedback: z.object({
