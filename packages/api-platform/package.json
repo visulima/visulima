@@ -220,7 +220,7 @@
         "express": "^4.18.2",
         "fastify": "^4.17.0",
         "koa": "^2.14.2",
-        "next": "^13.1.5",
+        "next": "^13.4.4",
         "rate-limiter-flexible": "^2.4.1",
         "redoc": "^2.0.0",
         "swagger-ui-dist": "^4.19.0",
