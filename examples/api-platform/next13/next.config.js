@@ -20,10 +20,8 @@ module.exports = withOpenApi({
             title: packageJson.name,
             version: packageJson.version,
             description: packageJson.description,
-        }
+        },
     },
-    sources: [
-        "pages/api",
-    ],
+    sources: ["pages/api"],
     verbose: false,
 })(nextConfig);

@@ -7,9 +7,11 @@ import { renderComponent } from "../utils";
 
 const Banner = (): ReactElement | null => {
     const { banner } = useConfig();
-    if (!banner.text) {
+
+    if (!banner.content) {
         return null;
     }
+
     const hideBannerScript = `try{if(localStorage.getItem(${JSON.stringify(
         banner.key,
     )})==='0'){document.body.classList.add('nextra-banner-hidden')}}catch(e){}`;
@@ -20,17 +22,26 @@ const Banner = (): ReactElement | null => {
             <script dangerouslySetInnerHTML={{ __html: hideBannerScript }} />
             <div
                 className={cn(
-                    "relative z-20 flex items-center justify-center",
-                    "bg-neutral-900 text-sm font-medium text-slate-50",
+                    "nextra-banner-container sticky top-0 z-20 flex items-center lg:relative",
+                    "bg-neutral-900 text-sm text-slate-50",
                     "h-[var(--nextra-banner-height)] [body.nextra-banner-hidden_&]:hidden",
                     "dark:bg-[linear-gradient(1deg,#383838,#212121)] dark:text-white",
-                    "py-1 pl-[max(env(safe-area-inset-left),2.5rem)] pr-[max(env(safe-area-inset-right),2.5rem)]",
+                    "ltr:pl-10 rtl:pr-10",
                 )}
             >
-                <div className="max-w-[90rem] truncate">{renderComponent(banner.text)}</div>
+                <div
+                    className={cn(
+                        "mx-auto w-full max-w-[90rem]",
+                        "truncate whitespace-nowrap",
+                        "py-1 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]",
+                        "text-center font-medium",
+                    )}
+                >
+                    {renderComponent(banner.content)}
+                </div>
                 {banner.dismissible && (
                     <button
-                        className="absolute opacity-80 hover:opacity-100 ltr:right-0 rtl:left-0"
+                        className="w-8 opacity-80 hover:opacity-100 ltr:mr-2 rtl:ml-2"
                         type="button"
                         onClick={() => {
                             try {
@@ -40,7 +51,7 @@ const Banner = (): ReactElement | null => {
                             document.body.classList.add("nextra-banner-hidden");
                         }}
                     >
-                        <XIcon className="mx-4 h-4 w-4" />
+                        <XIcon className="mx-auto h-4 w-4" />
                     </button>
                 )}
             </div>

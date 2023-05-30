@@ -1,9 +1,7 @@
 import cn from "clsx";
 import { WordWrapIcon } from "nextra/icons";
 import type { ComponentProps, FC, LegacyRef } from "react";
-import {
-    useCallback, useEffect, useRef, useState,
-} from "react";
+import { useCallback, useRef } from "react";
 
 import Button from "./button";
 import CopyToClipboard from "./copy-to-clipboard";
@@ -11,62 +9,71 @@ import CopyToClipboard from "./copy-to-clipboard";
 const Pre: FC<
 ComponentProps<"pre"> & {
     filename?: string;
-    value?: string;
+    hasCopyCode?: boolean;
 }
 > = ({
-    children, className = "code-block", filename, value, ...properties
+    children, className = "code-block", filename, hasCopyCode, ...properties
 }) => {
     const reference = useRef<HTMLPreElement | undefined>();
-    const [codeString, setCodeString] = useState<string | undefined>(value);
 
     const toggleWordWrap = useCallback(() => {
         const htmlDataset = document.documentElement.dataset;
         const hasWordWrap = "nextraWordWrap" in htmlDataset;
 
         if (hasWordWrap) {
-            delete htmlDataset.nextraWordWrap;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete htmlDataset["nextraWordWrap"];
         } else {
-            htmlDataset.nextraWordWrap = "";
+            htmlDataset["nextraWordWrap"] = "";
         }
     }, []);
 
-    useEffect(() => {
-        if (reference.current !== undefined) {
-            const code = reference.current.querySelector("code");
-
-            if (typeof code?.textContent === "string") {
-                setCodeString(code.textContent);
-            }
-        }
-    }, [reference]);
-
     return (
-        <>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <pre className={className} ref={reference as LegacyRef<HTMLPreElement> | undefined} {...properties}>
-                {filename && (
-                    <div className="mb-4 mt-2 flex space-x-2 text-xs">
-                        <div className="from-sky-400/30 via-sky-400 to-sky-400/30 text-sky-300 flex h-6 rounded-full bg-gradient-to-r p-px font-medium">
-                            <div className="flex items-center rounded-full bg-slate-800 px-2.5">{filename}</div>
-                        </div>
+        <div
+            className={cn(
+                "nextra-code-block",
+                "mt-5 mb-8 first:mt-0 last:mb-0 py-2",
+                "bg-gray-800 dark:bg-gray-800/60",
+                "shadow-lg dark:shadow-none",
+                "dark:ring-1 dark:ring-gray-300/10",
+                "rounded-lg overflow-hidden relative",
+            )}
+        >
+            {filename ? (
+                <div className="flex text-xs leading-6 text-slate-400">
+                    <div className="flex flex-none items-center border-y border-b-blue-300 border-t-transparent px-4 py-1 text-blue-300">{filename}</div>
+                    <div className="flex h-8 flex-auto items-center justify-items-end rounded-tl border border-slate-500/30 bg-slate-700/50 pr-4">
+                        <div className="grow" />
+                        {/* eslint-disable-next-line max-len */}
+                        <button
+                            tabIndex={-1}
+                            type="button"
+                            onClick={toggleWordWrap}
+                            className="text-slate-500 hover:text-slate-400 lg:hidden"
+                            title="Toggle word wrap"
+                        >
+                            <WordWrapIcon className="pointer-events-none h-4 w-4" />
+                        </button>
+                        {hasCopyCode && (
+                            <CopyToClipboard as="button" tabIndex={-1} getValue={() => reference.current?.querySelector("code")?.textContent ?? ""} />
+                        )}
                     </div>
-                )}
+                </div>
+            ) : (
+                <div
+                    className={cn(["opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100", "flex gap-1 absolute m-2 right-0 z-10"])}
+                >
+                    <Button tabIndex={-1} onClick={toggleWordWrap} className="lg:hidden" title="Toggle word wrap">
+                        <WordWrapIcon className="pointer-events-none h-4 w-4" />
+                    </Button>
+                    {hasCopyCode && <CopyToClipboard tabIndex={-1} getValue={() => reference.current?.querySelector("code")?.textContent ?? ""} />}
+                </div>
+            )}
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <pre className={[className, "bg-transparent shadow-none my-0"].join(" ")} ref={reference as LegacyRef<HTMLPreElement> | undefined} {...properties}>
                 {children}
             </pre>
-            {/* eslint-disable-next-line max-len */}
-            <div
-                className={cn([
-                    "opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100",
-                    "flex gap-1 absolute m-2 right-0",
-                    filename ? "top-10" : "top-0",
-                ])}
-            >
-                <Button tabIndex={-1} onClick={toggleWordWrap} className="md:hidden" title="Toggle word wrap">
-                    <WordWrapIcon className="pointer-events-none h-4 w-4" />
-                </Button>
-                {codeString && <CopyToClipboard tabIndex={-1} value={codeString} />}
-            </div>
-        </>
+        </div>
     );
 };
 

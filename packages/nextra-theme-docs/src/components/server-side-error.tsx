@@ -16,7 +16,7 @@ const ServerSideErrorPage = (): ReactElement | null => {
     }
 
     return (
-        <div className="mx-auto max-w-screen-xl p-8 md:px-4 lg:px-6 lg:py-16">
+        <div className="mx-auto max-w-screen-xl p-8 lg:px-4 xl:px-6 xl:py-16">
             <div className="text-center">
                 <div className="mb-8 inline-flex rounded-full bg-red-100 p-4">
                     <div className="rounded-full bg-red-200 stroke-red-600 p-4">
@@ -32,7 +32,7 @@ const ServerSideErrorPage = (): ReactElement | null => {
                         </svg>
                     </div>
                 </div>
-                <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">500 - Server error</h1>
+                <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-4xl">500 - Server error</h1>
                 <p className="mb-4 text-lg font-normal text-gray-500 dark:text-gray-400">
                     Oops something went wrong. Try to refresh this page or <br /> feel free to contact us if the problem presists.
                 </p>
@@ -43,7 +43,7 @@ const ServerSideErrorPage = (): ReactElement | null => {
                         labels,
                     })}
                     newWindow
-                    className="mt-10 block text-primary-600 underline decoration-from-font [text-underline-position:under]"
+                    className="mt-10 block text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                 >
                     {renderComponent(content)}
                 </Anchor>

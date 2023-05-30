@@ -3,7 +3,9 @@
 @import "tailwindcss/utilities";
 
 @import "./variables.css";
+@import "./card.css";
 @import "./code-block.css";
+@import "./search.css";
 @import "./subheading-anchor.css";
 
 @import "./hamburger.css";
@@ -13,8 +15,15 @@
 
 html {
     @apply antialiased text-base;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "ss06" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
     -webkit-tap-highlight-color: transparent;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    /* this will target only Mac Safari and Chrome browsers */
+    html {
+        font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "ss06" 1;
+    }
 }
 
 body {
@@ -41,7 +50,7 @@ summary {
     @apply rounded;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
     .nextra-sidebar-container {
         @apply fixed pt-[calc(var(--nextra-navbar-height))] top-0 w-full bottom-0 z-[15] overscroll-contain bg-white dark:bg-dark;
         transition: transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1);
@@ -54,7 +63,7 @@ summary {
             @apply pt-[6.5rem];
         }
         &.nextra-nav-container {
-            @apply top-10 md:top-0;
+            @apply top-10 lg:top-0;
         }
     }
     .nextra-banner-hidden {
@@ -65,16 +74,9 @@ summary {
             @apply !top-0;
         }
     }
-    .nextra-search .excerpt {
-        @apply overflow-hidden text-ellipsis;
-        display: -webkit-box;
-        line-clamp: 1;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-    }
 }
 
-@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
+@media (prefers-reduced-motion: reduce) and (max-width: 1024px) {
     article:before,
     .nextra-sidebar-container,
     .nextra-sidebar-container.open,
@@ -103,21 +105,6 @@ article details > summary {
     }
 }
 
-@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .nextra-search ul {
-        @apply backdrop-blur-lg bg-white/70 dark:bg-dark/80;
-    }
-}
-
-input[type="search"] {
-    &::-webkit-search-decoration,
-    &::-webkit-search-cancel-button,
-    &::-webkit-search-results-button,
-    &::-webkit-search-results-decoration {
-        -webkit-appearance: none;
-    }
-}
-
 .contains-task-list {
     @apply ml-0 list-none;
 
@@ -130,20 +117,20 @@ input[type="search"] {
     @apply hidden;
 }
 
-@media (min-width: 768px) {
-    .md\:bg-x-gradient-gray-200-gray-200-50-white-50 {
+@media (min-width: 1024px) {
+    .lg\:bg-x-gradient-gray-200-gray-200-50-white-50 {
         background-image: linear-gradient(90deg, #f5f5fa, #f5f5fa 50%, #fff 0);
     }
 
-    .dark .md\:dark\:bg-x-gradient-dark-700-dark-700-50-dark-800 {
+    .dark .lg\:dark\:bg-x-gradient-dark-700-dark-700-50-dark-800 {
         background-image: linear-gradient(90deg, #171923, #171923 50%, #12141c 0);
     }
 
-    .md\:bg-x-gradient-gray-200-gray-400-75 {
+    .lg\:bg-x-gradient-gray-200-gray-400-75 {
         background-image: linear-gradient(90deg, #f5f5fa 75%, #ebebf0);
     }
 
-    .dark .md\:dark\:bg-x-gradient-dark-700-dark-800-65 {
+    .dark .lg\:dark\:bg-x-gradient-dark-700-dark-800-65 {
         background-image: linear-gradient(90deg, #171923 65%, #12141c);
     }
 }
@@ -180,4 +167,45 @@ input[type="search"] {
 
 .dark .dark\:footer-border {
     border-color: #171923;
+}
+
+li.nested-list ul {
+    @apply mt-3;
+}
+
+.nextra-sidebar-container {
+  [data-toggle-animation='show'] button {
+    opacity: 0;
+    animation: nextra-fadein 1s ease 0.2s forwards;
+  }
+  [data-toggle-animation='hide'] button {
+    opacity: 0;
+    animation: nextra-fadein2 1s ease 0.2s forwards;
+  }
+}
+
+@keyframes nextra-fadein {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes nextra-fadein2 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.nextra-content iframe {
+    @apply w-full h-full mt-8 pb-8 !bg-white dark:!bg-dark;
+}
+
+.prose .nextra-callout p {
+  @apply m-0;
 }

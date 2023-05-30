@@ -54,8 +54,11 @@ const config: DocumentationThemeConfig = {
             </Anchor>
         ),
     },
+    sidebar: {
+        defaultMenuCollapseLevel: 1,
+    },
     editLink: {
-        text: ({ locale }) => {
+        content: ({ locale }) => {
             // eslint-disable-next-line sonarjs/no-small-switch
             switch (locale) {
                 default: {
@@ -147,8 +150,8 @@ const config: DocumentationThemeConfig = {
         },
     },
     notFound: {
-        pages: ({ local }: { local: string }) => {
-            if (local === "en-US") {
+        pages: ({ locale }) => {
+            if (locale === "en-US") {
                 return [
                     {
                         title: "Documentation",
@@ -183,13 +186,15 @@ const config: DocumentationThemeConfig = {
     //         return null;
     //     },
     // },
-    i18n: [{ locale: "en-US", text: "English" }],
+    i18n: [{ locale: "en-US", name: "English" }],
 
-    comments: {
-        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO as string,
-        repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
-        categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
-    },
+    comments: process.env.NEXT_PUBLIC_COMMENTS_REPO
+        ? {
+              repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
+              repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
+              categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
+          }
+        : undefined,
 };
 
 export default config;

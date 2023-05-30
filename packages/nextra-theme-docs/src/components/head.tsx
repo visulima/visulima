@@ -27,7 +27,7 @@ const Head = (): ReactElement => {
                 canonical={frontMatter.canonical}
                 openGraph={frontMatter.openGraph}
                 // eslint-disable-next-line react/jsx-props-no-spreading
-                {...config.getNextSeoProps?.()}
+                {...config.useNextSeoProps()}
             />
             <NextHead>
                 {config.faviconGlyph ? (

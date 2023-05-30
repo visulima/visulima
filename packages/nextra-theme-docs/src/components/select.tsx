@@ -1,11 +1,11 @@
 import { Listbox, Transition } from "@headlessui/react";
-import cn from "clsx";
+import clsx from "clsx";
 import { useMounted } from "nextra/hooks";
 import { CheckIcon } from "nextra/icons";
 import type { FC, PropsWithChildren, ReactElement } from "react";
 import { createPortal } from "react-dom";
 
-import { usePopper } from "../utils";
+import { cn, usePopper } from "../utils";
 
 interface MenuOption {
     key: string;
@@ -58,7 +58,7 @@ const Select: FC<MenuProperties> = ({
                     ref={trigger}
                     title={title}
                     className={cn(
-                        "h-7 rounded-md px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400",
+                        "h-7 rounded-lg px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400",
                         open
                             ? "bg-gray-200 text-gray-900 dark:bg-primary-100/10 dark:text-gray-50"
                             : "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-primary-100/5 dark:hover:text-gray-50",
@@ -73,7 +73,7 @@ const Select: FC<MenuProperties> = ({
                             show={open}
                             as={Listbox.Options}
                             // eslint-disable-next-line max-len
-                            className="z-20 max-h-64 overflow-auto rounded-md border border-black/5 bg-white py-1 text-sm shadow-lg dark:border-white/20 dark:bg-neutral-800"
+                            className="z-20 max-h-64 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:ring-white/20"
                             leave="transition-opacity"
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
@@ -82,10 +82,10 @@ const Select: FC<MenuProperties> = ({
                                 <Listbox.Option
                                     key={option.key}
                                     value={option}
-                                    className={({ active }) => cn(
+                                    className={({ active }) => clsx(
                                         active ? "bg-primary-50 text-primary-600 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
                                         "relative cursor-pointer whitespace-nowrap py-1.5",
-                                        "ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
+                                        "ltr:pl-3 ltr:pr-9 rtl:pl-9 rtl:pr-3",
                                     )}
                                 >
                                     {option.name}

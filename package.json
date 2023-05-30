@@ -26,6 +26,7 @@
         "example:crud:next:12:dev": "pnpm --filter \"nextjs_12_example_crud\" run dev",
         "example:crud:next:13:dev": "pnpm --filter \"nextjs_13_example_crud\" run dev",
         "example:health-check:dev": "pnpm --filter \"nextjs_example_health_check\" run dev",
+        "example:nextra:build": "nx run-many --target=build --parallel --projects=nextra-theme-docs,nextra_example",
         "example:nextra:dev": "nx run-many --target=dev --parallel --projects=nextra-theme-docs,nextra_example",
         "graph": "nx dep-graph",
         "preinstall": "node verify-node-version.cjs && pnpx only-allow pnpm",
@@ -53,7 +54,7 @@
         "lint:text": "textlint ./.github/ISSUE_TEMPLATE/** ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --dry-run",
         "lint:text:fix": "textlint ./.github/ISSUE_TEMPLATE/** ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --fix",
         "plop": "plop",
-        "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
+        "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{js,jsx,tsx,mjs,ts,less,md,json}'",
         "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json docs/package.json",
         "storybook": "pnpm --filter \"storybook\" run dev",
         "test": "nx run-many --target=test --all --parallel",
@@ -127,7 +128,9 @@
             "vite": "4.3.4",
             "tsconfig-paths": "^4.0.0",
             "cosmiconfig-typescript-loader": "^4.3.0",
-            "semantic-release": "^21.0.2"
+            "semantic-release": "^21.0.2",
+            "@mdx-js/react": "^2.3.0",
+            "estree-util-build-jsx": "^2.2.2"
         }
     }
 }
