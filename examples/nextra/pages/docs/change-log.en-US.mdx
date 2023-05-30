@@ -1,15 +1,15 @@
 # Change Log
 
-import { useSSG } from "nextra/ssg";
+import { useSSG } from 'nextra/ssg'
 
 export const ReleasesRenderer = () => {
-    const releases = useSSG();
-    return <i>{releases}</i>;
-};
+  const releases = useSSG()
+  return <i>{releases}</i>
+}
 
-export const getStaticProps = ({ params }) => {
-    return { props: { ssg: "Test SSG " + Date.now() }, revalidate: 10 };
-};
+export const getStaticProps = () => {
+  return { props: { ssg: 'Test SSG ' + Date.now() }, revalidate: 10 }
+}
 
 <ReleasesRenderer />
 

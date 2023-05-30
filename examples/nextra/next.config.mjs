@@ -3,22 +3,22 @@ import nextra from "nextra";
 const withNextra = nextra({
     theme: "@visulima/nextra-theme-docs",
     themeConfig: "./theme.config.tsx",
-    staticImage: true,
-    search: {
-        codeblocks: false,
+    flexsearch: {
+        codeblocks: true,
     },
+    staticImage: true,
     defaultShowCopyCode: true,
     transform(content, { route }) {
         if (route.startsWith("/docs/advanced/more/tree/two")) {
             return `
-${content}
-export function getStaticProps() {
-  return {
-    props: {
-      foo: 'from nextra config'
-    }
-  }
-}`;
+                ${content}
+                export function getStaticProps() {
+                  return {
+                    props: {
+                      foo: 'from nextra config'
+                    }
+                  }
+                }`;
         }
         return content;
     },
@@ -28,11 +28,10 @@ export function getStaticProps() {
  * @type {import('next').NextConfig}
  */
 export default withNextra({
-    reactStrictMode: true,
     i18n: {
         locales: ["en-US", "es-ES", "ru"],
         defaultLocale: "en-US",
-    },
+    }, // basePath: "/some-base-path",
     distDir: "./.next", // Nextra supports custom `nextConfig.distDir`
     redirects: () => [
         // {
@@ -81,4 +80,5 @@ export default withNextra({
             statusCode: 302,
         },
     ],
+    reactStrictMode: true,
 });
