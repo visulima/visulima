@@ -7,10 +7,13 @@ const DISPLAY_NAME = "HTTP check for";
 /**
  * Register the `http` checker to ensure http body and status is correct.
  */
-const httpCheck = (host: RequestInfo | URL, options?: {
-    fetchOptions?: RequestInit,
-    expected?: { status?: number; body?: string }
-}): Checker => async () => {
+const httpCheck = (
+    host: RequestInfo | URL,
+    options?: {
+        fetchOptions?: RequestInit;
+        expected?: { status?: number; body?: string };
+    },
+): Checker => async () => {
     try {
         // eslint-disable-next-line compat/compat
         const response = await fetch(host, options?.fetchOptions ?? {});

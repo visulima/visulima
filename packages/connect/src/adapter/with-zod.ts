@@ -4,15 +4,11 @@ import { ZodError } from "zod";
 
 import type { Nextable, NextHandler } from "../types";
 
-const withZod = <
-        Request,
-        Response,
-        Handler extends Nextable<any>,
-        Schema extends ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
-    >(
-        schema: Schema,
-        handler: Handler,
-    ): ((request: Request, response: Response, next: NextHandler) => Promise<Response>) => async (request: Request, response: Response, next) => {
+// eslint-disable-next-line max-len
+const withZod = <Request, Response, Handler extends Nextable<any>, Schema extends ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>>(
+    schema: Schema,
+    handler: Handler,
+): ((request: Request, response: Response, next: NextHandler) => Promise<Response>) => async (request: Request, response: Response, next) => {
         let transformedRequest: Request = request;
 
         try {

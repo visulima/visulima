@@ -9,9 +9,17 @@ import path from "node:path";
 import type { Configuration } from "webpack";
 
 const withOpenApi = ({
-    definition, sources, verbose, output = "swagger/swagger.json",
-// eslint-disable-next-line max-len
-}: { definition: Exclude<BaseDefinition, "openapi"> & { openapi?: string }; sources: string[]; verbose?: boolean; output: string }) => (nextConfig: NextConfig): NextConfig => ({
+    definition,
+    sources,
+    verbose,
+    output = "swagger/swagger.json",
+}: // eslint-disable-next-line max-len
+{
+    definition: Exclude<BaseDefinition, "openapi"> & { openapi?: string };
+    sources: string[];
+    verbose?: boolean;
+    output: string;
+}) => (nextConfig: NextConfig): NextConfig => ({
     ...nextConfig,
     webpack: (config: Configuration, options: any) => {
         if (!options.isServer) {

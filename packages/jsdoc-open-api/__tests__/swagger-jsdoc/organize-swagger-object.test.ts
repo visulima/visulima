@@ -88,8 +88,7 @@ describe("organize", () => {
             securityDefinitions: {
                 basicAuth: {
                     type: "basic",
-                    description:
-              "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
+                    description: "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
                 },
             },
         };
@@ -99,8 +98,7 @@ describe("organize", () => {
         expect(swaggerObject.securityDefinitions).toEqual({
             basicAuth: {
                 type: "basic",
-                description:
-            "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
+                description: "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
             },
         });
     });

@@ -62,7 +62,7 @@ export const getApp = (appExport: AppExport, frameworkName: "express" | "fastify
     if (frameworkName === "hapi") {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (typeof (appExport.app as { app?: string })?.app === "string") {
-            return (appExport.app as { app: string });
+            return appExport.app as { app: string };
         }
 
         return appExport;

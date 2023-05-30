@@ -5,7 +5,7 @@ import commentsToOpenApi from "../../src/jsdoc/comments-to-open-api";
 describe("code blocks", () => {
     it("keeps spacing", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /\n\
  * @description List API versions\n\
  * ```xml\n\
@@ -16,14 +16,13 @@ describe("code blocks", () => {
  * bye\n\
  *\n\
  * @response 200 - ok\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
                 "/": {
                     get: {
-                        description:
-                            "List API versions\n```xml\n<Fun>\n  <InTheSun>😎</InTheSun>\n</Fun>\n```\nbye",
+                        description: "List API versions\n```xml\n<Fun>\n  <InTheSun>😎</InTheSun>\n</Fun>\n```\nbye",
                         responses: {
                             200: {
                                 description: "ok",
@@ -43,7 +42,7 @@ describe("code blocks", () => {
 describe("commentsToOpenApi", () => {
     it("big stuff", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * POST /pet\n\
  *\n\
  * @externalDocs https://example.com - Find more info here\n\
@@ -89,7 +88,7 @@ describe("commentsToOpenApi", () => {
  *\n\
  * @security ExampleSecurity2.write:pets\n\
  * @security ExampleSecurity2.read:pets\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
@@ -264,13 +263,13 @@ describe("commentsToOpenApi", () => {
 
     it("random properities I don't normally use", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
  * @summary List API versions\n\
  * @response 200 - 200 response\n\
  * @response 300 - 300 response\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -394,7 +393,7 @@ describe("commentsToOpenApi", () => {
 
     it("complex example", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /api/v1/cars/{country}/{city}\n\
  * @description Get a list of cars at a location.\n\
  * @pathParam {string} country - Country of the rental company.\n\
@@ -408,7 +407,7 @@ describe("commentsToOpenApi", () => {
  * @response 200 - A list of cars.\n\
  * @responseContent {string[]} 200.application/json\n\
  * @response 400 - Example Error.\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -712,7 +711,7 @@ describe("commentsToOpenApi", () => {
 
     it("api-with-examples", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
  * @summary List API versions\n\
@@ -722,7 +721,7 @@ describe("commentsToOpenApi", () => {
  * @response 300 - 300 response\n\
  * @responseContent 300.application/json\n\
  * @responseExample {Foo} 300.application/json.foo\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -767,7 +766,7 @@ describe("commentsToOpenApi", () => {
 
     it("callback", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
   * POST /streams\n\
   * @description subscribes a client to receive out-of-band data\n\
   * @queryParam {uri} callbackUrl - the location where data will be sent.  Must be network accessible\n\
@@ -775,7 +774,7 @@ describe("commentsToOpenApi", () => {
   * @response 201 - subscription successfully created\n\
   * @responseContent {Custom} 201.application/json\n\
   * @callback {Callback} onData\n\
-  */'.replaceAll("\r\n", "\n");
+  */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -787,8 +786,7 @@ describe("commentsToOpenApi", () => {
                                 name: "callbackUrl",
                                 in: "query",
                                 required: true,
-                                description:
-                                    "the location where data will be sent.  Must be network accessible\nby the source server",
+                                description: "the location where data will be sent.  Must be network accessible\nby the source server",
                                 schema: {
                                     $ref: "#/components/schemas/uri",
                                 },
@@ -822,14 +820,14 @@ describe("commentsToOpenApi", () => {
 
     it("links", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /users/{username}\n\
  * @operationId getUserByName\n\
  * @pathParam {string} username\n\
  * @response 200 - The User\n\
  * @responseContent {User} 200.application/json\n\
  * @responseLink {UserRepositories} 200.userRepositories\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -874,7 +872,7 @@ describe("commentsToOpenApi", () => {
 
     it("petstore", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /pets\n\
  * @summary List all pets\n\
  * @operationId listPets\n\
@@ -906,7 +904,7 @@ describe("commentsToOpenApi", () => {
  * @responseContent {Pets} 200.application/json\n\
  * @response default - unexpected error\n\
  * @responseContent {Error} default.application/json\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected1 = {
             paths: {
@@ -1042,12 +1040,12 @@ describe("commentsToOpenApi", () => {
 
     it("multiple response content types", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * GET /\n\
  * @response 200 - OK\n\
  * @responseContent {Pet} 200.application/json\n\
  * @responseContent {Pet} 200.application/xml\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const expected = {
             paths: {
@@ -1081,9 +1079,9 @@ describe("commentsToOpenApi", () => {
 
     it("does nothing for normal comment", () => {
         // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
-        const comment = '/**\n\
+        const comment = "/**\n\
  * normal comment\n\
- */'.replaceAll("\r\n", "\n");
+ */".replaceAll("\r\n", "\n");
 
         const specification = commentsToOpenApi(comment).map((index) => index.spec);
 

@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createRouter } from "@visulima/api-platform"
+import { createRouter } from "@visulima/api-platform";
 import { z } from "zod";
 
 type Data = {
@@ -10,8 +10,8 @@ type Data = {
 const schema = z.object({
     query: z.object({
         name: z.string().optional(),
-    })
-})
+    }),
+});
 
 export const swagger = {};
 

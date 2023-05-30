@@ -113,74 +113,58 @@ Into:
 
 ```json5
 {
-    $schema: 'http://json-schema.org/draft-07/schema#',
+    $schema: "http://json-schema.org/draft-07/schema#",
     definitions: {
         Post: {
             properties: {
-                id: { type: 'integer' },
+                id: { type: "integer" },
                 user: {
-                    anyOf: [
-                        { $ref: '#/definitions/User' },
-                        { type: 'null' },
-                    ],
+                    anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                 },
             },
-            type: 'object',
+            type: "object",
         },
         User: {
             properties: {
                 biography: {
-                    type: [
-                        'number',
-                        'string',
-                        'boolean',
-                        'object',
-                        'array',
-                        'null'
-                    ],
+                    type: ["number", "string", "boolean", "object", "array", "null"],
                 },
-                createdAt: { format: 'date-time', type: 'string' },
+                createdAt: { format: "date-time", type: "string" },
                 email: {
-                    description: 'Triple Slash Comment: Will show up in JSON schema [EMAIL]',
-                    type: 'string'
+                    description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
+                    type: "string",
                 },
-                id: { type: 'integer' },
-                is18: { type: ['boolean', 'null'] },
-                keywords: { items: { type: 'string' }, type: 'array' },
-                name: { type: ['string', 'null'] },
-                number: { type: 'integer', default: '34534535435353' },
+                id: { type: "integer" },
+                is18: { type: ["boolean", "null"] },
+                keywords: { items: { type: "string" }, type: "array" },
+                name: { type: ["string", "null"] },
+                number: { type: "integer", default: "34534535435353" },
                 bytes: {
-                    description: 'Triple Slash Inline Comment: Will show up in JSON schema [BYTES]',
-                    type: 'string'
+                    description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                    type: "string",
                 },
-                favouriteDecimal: { type: 'number' },
+                favouriteDecimal: { type: "number" },
                 posts: {
-                    items: { $ref: '#/definitions/Post' },
-                    type: 'array',
+                    items: { $ref: "#/definitions/Post" },
+                    type: "array",
                 },
                 predecessor: {
-                    anyOf: [
-                        { $ref: '#/definitions/User' },
-                        { type: 'null' },
-                    ],
+                    anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                 },
-                role: { enum: ['USER', 'ADMIN'], type: 'string', default: 'USER' },
+                role: { enum: ["USER", "ADMIN"], type: "string", default: "USER" },
                 successor: {
-                    anyOf: [
-                        { $ref: '#/definitions/User' },
-                        { type: 'null' },
-                    ],
+                    anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                 },
-                weight: { type: ['integer', 'null'] },
+                weight: { type: ["integer", "null"] },
             },
-            type: 'object',
+            type: "object",
         },
     },
     properties: {
-        post: { $ref: '#/definitions/Post' },
-        user: { $ref: '#/definitions/User' },
+        post: { $ref: "#/definitions/Post" },
+        user: { $ref: "#/definitions/User" },
     },
-    type: 'object',
+    type: "object",
 }
 ```
 
@@ -210,39 +194,39 @@ Output:
 
 ```json5
 {
-    $schema: 'http://json-schema.org/draft-07/schema#',
+    $schema: "http://json-schema.org/draft-07/schema#",
     definitions: {
         User: {
             properties: {
-                id: { type: 'string' },
+                id: { type: "string" },
                 photos: {
-                    items: { $ref: '#/definitions/Photo' },
-                    type: 'array',
+                    items: { $ref: "#/definitions/Photo" },
+                    type: "array",
                 },
             },
-            type: 'object',
+            type: "object",
         },
         Photo: {
             properties: {
                 height: {
-                    type: 'integer',
+                    type: "integer",
                     default: 200,
                 },
                 width: {
-                    type: 'integer',
+                    type: "integer",
                     default: 100,
                 },
                 url: {
-                    type: 'string',
+                    type: "string",
                 },
             },
-            type: 'object',
+            type: "object",
         },
     },
     properties: {
-        user: { $ref: '#/definitions/User' },
+        user: { $ref: "#/definitions/User" },
     },
-    type: 'object',
+    type: "object",
 }
 ```
 

@@ -1,9 +1,7 @@
 import isPrimitive from "../../../utils/is-primitive";
 import type { PrismaCursor } from "../types.d";
 
-const parsePrismaCursor = (
-    cursor: Record<string, boolean | number | string>,
-): PrismaCursor => {
+const parsePrismaCursor = (cursor: Record<string, boolean | number | string>): PrismaCursor => {
     const parsed: PrismaCursor = {};
 
     Object.keys(cursor).forEach((key) => {
@@ -15,9 +13,7 @@ const parsePrismaCursor = (
     });
 
     if (Object.keys(parsed).length !== 1) {
-        throw new Error(
-            "cursor needs to be an object with exactly 1 property with a primitive value",
-        );
+        throw new Error("cursor needs to be an object with exactly 1 property with a primitive value");
     }
 
     return parsed;

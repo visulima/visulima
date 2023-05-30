@@ -1,4 +1,5 @@
 ## Describing Responses
+
 An API specification needs to specify the `responses` for all API operations.
 Each operation must have at least one response defined, usually a successful response.
 A response is defined by its HTTP status code and the data returned in the response body and/or headers.
@@ -13,6 +14,7 @@ Here is a minimal example:
 ```
 
 ### Response media types
+
 An API can respond with various media types.
 JSON is the most common format for data exchange, but not the only one possible.
 To specify the response media types, use `@responseContent`.
@@ -37,6 +39,7 @@ To specify the response media types, use `@responseContent`.
 ```
 
 ### HTTP status codes
+
 Each response definition starts with a status code, such as 200 or 404.
 An operation typically returns one successful status code and one or more error statuses.
 To define a range of response codes, you may use the following range definitions: 1XX, 2XX, 3XX, 4XX, and 5XX.
@@ -56,31 +59,33 @@ Markdown ([CommonMark](https://commonmark.org/help/)) can be used for rich text 
  */
 ```
 
- An API specification does not necessarily need to cover all possible HTTP response codes, since they may not be known in advance.
+An API specification does not necessarily need to cover all possible HTTP response codes, since they may not be known in advance.
 However, it’s expected to cover successful responses and any known errors.
 By "known errors" we mean, for example, a 404 Not Found response for an operation that returns a resource by ID,
 or a 400 Bad Request response in case of invalid operation parameters.
 
 ### Response body
+
 A response body can define:
-- An `object` or an `array` — typically used with JSON and XML APIs
-- A primitive data type such as a `number` or `string` – used for plain text responses
-- A file – (see below)
+
+-   An `object` or an `array` — typically used with JSON and XML APIs
+-   A primitive data type such as a `number` or `string` – used for plain text responses
+-   A file – (see below)
 
 Objects can be defined in `components`:
 
 ```yaml
 components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The user ID.
-        username:
-          type: string
-          description: The user name.
+    schemas:
+        User:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: The user ID.
+                username:
+                    type: string
+                    description: The user name.
 ```
 
 And be used with:
@@ -93,6 +98,7 @@ And be used with:
 ```
 
 ### Response that returns a file
+
 An API operation can return a file, such as an image or PDF.
 If the response returns the file alone,
 you would typically use the `binary` type and specify the appropriate media type for the response content:
@@ -120,20 +126,21 @@ In this case, you would use something like:
 
 ```yaml
 components:
-  schemas:
-    User:
-      type: object
-      properties:
-        username:
-          type: string
-        avatar:          # <-- image embedded into JSON
-          type: string
-          format: byte
-          description: Base64-encoded contents of the avatar image
+    schemas:
+        User:
+            type: object
+            properties:
+                username:
+                    type: string
+                avatar: # <-- image embedded into JSON
+                    type: string
+                    format: byte
+                    description: Base64-encoded contents of the avatar image
 ```
 
 ### Empty response body
- Responses, such as 204 No Content, have no body.
+
+Responses, such as 204 No Content, have no body.
 To indicate the response body is empty, do not specify `@responseContent`:
 
 ```js
@@ -143,6 +150,7 @@ To indicate the response body is empty, do not specify `@responseContent`:
 ```
 
 ### Response headers
+
 Responses from an API can include custom headers to provide additional information on the result of an API call.
 For example, a rate-limited API may provide the rate limit status via response headers as follows:
 
@@ -173,19 +181,20 @@ OpenAPI Specification does not permit to define common response headers for diff
 You need to define the headers for each response individually.
 
 ### Response examples
+
 Examples can be defined in `components`:
 
 ```yaml
 components:
-  examples:
-    Jessica:
-      value:
-        id: 10
-        name: Jessica Smith
-    Ron:
-      value:
-        id: 11
-        name: Ron Stewart
+    examples:
+        Jessica:
+            value:
+                id: 10
+                name: Jessica Smith
+        Ron:
+            value:
+                id: 11
+                name: Ron Stewart
 ```
 
 And be used as:
@@ -202,6 +211,7 @@ And be used as:
 ```
 
 ### Default response
+
 Sometimes, an operation can return multiple errors with different HTTP status codes,
 but all of them have the same response structure:
 
@@ -232,36 +242,37 @@ You can use the default response to describe these errors collectively, not indi
 ```
 
 ### Reusing responses
+
 Responses can be defined in `components` to be reused elsewhere.
 The following response definition:
 
 ```yaml
 components:
-  responses:
-    NotFound:
-      description: The specified resource was not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-  schemas:
-    # Schema for error response body
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-        - code
-        - message
+    responses:
+        NotFound:
+            description: The specified resource was not found
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        Unauthorized:
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+    schemas:
+        # Schema for error response body
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                message:
+                    type: string
+            required:
+                - code
+                - message
 ```
 
 Can be reused as:

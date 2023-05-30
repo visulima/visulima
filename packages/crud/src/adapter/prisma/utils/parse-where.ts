@@ -96,7 +96,7 @@ const parseRelation = (
         some: {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             ...(oldParsed?.some as object),
-            ...(formatFields[initialFieldKey]?.some),
+            ...formatFields[initialFieldKey]?.some,
         },
     };
 };

@@ -13,7 +13,11 @@ const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined 
 type HeaderValue = ReadonlyArray<string> | number | string;
 
 // eslint-disable-next-line max-len
-const rateLimiterMiddleware = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => { [key: string]: HeaderValue }) => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler): Promise<void> => {
+const rateLimiterMiddleware = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => { [key: string]: HeaderValue }) => async <Request extends IncomingMessage, Response extends ServerResponse>(
+    request: Request,
+    response: NextApiResponse | Response,
+    next: NextHandler,
+): Promise<void> => {
     const ip = getIP(request);
 
     if (ip === undefined) {

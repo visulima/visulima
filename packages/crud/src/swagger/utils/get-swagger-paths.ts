@@ -153,7 +153,11 @@ const getRouteTypeMethod = (routeType: RouteType): HttpMethod => {
 };
 
 const generateSwaggerPathObject = <M extends string>({
-    tag, routeTypes, modelName, modelsConfig, hasId,
+    tag,
+    routeTypes,
+    modelName,
+    modelsConfig,
+    hasId,
 }: GenerateSwaggerPathObjectParameters<M>): { [key: string]: any } => {
     const methods: { [key: string]: any } = {};
 

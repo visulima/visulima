@@ -4,11 +4,7 @@ import { RouteType } from "../types.d";
 
 type PathMatch = { id: string };
 
-const getRouteType: (
-    method: string,
-    url: string,
-    resourceName: string,
-) => GetRouteType = (method, url, resourceName) => {
+const getRouteType: (method: string, url: string, resourceName: string) => GetRouteType = (method, url, resourceName) => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
 

@@ -66,7 +66,6 @@ console.log(pagination);
 //     previousPageUrl: null,
 //   }
 // }
-
 ```
 
 ## Supported Node.js Versions
@@ -96,4 +95,3 @@ The visulima pagination is open-sourced software licensed under the [MIT][licens
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/pagination/alpha.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/pagination/v/alpha "npm"
-

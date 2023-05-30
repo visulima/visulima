@@ -11,9 +11,7 @@ describe("Prisma parse where", () => {
             id: 1,
         };
 
-        expect(parsePrismaWhere(baseQuery, [])).toEqual<PrismaWhereField>(
-            baseQuery,
-        );
+        expect(parsePrismaWhere(baseQuery, [])).toEqual<PrismaWhereField>(baseQuery);
     });
 
     it("should handle a date value", () => {
@@ -143,9 +141,7 @@ describe("Prisma parse where", () => {
             },
         };
 
-        expect(
-            parsePrismaWhere(baseQuery, ["posts.author"]),
-        ).toEqual<PrismaWhereField>(
+        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toEqual<PrismaWhereField>(
             // @ts-expect-error
             {
                 OR: {
@@ -197,9 +193,7 @@ describe("Prisma parse where", () => {
             },
         };
 
-        expect(
-            parsePrismaWhere(baseQuery, ["posts.author"]),
-        ).toEqual<PrismaWhereField>(
+        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toEqual<PrismaWhereField>(
             // @ts-expect-error
             {
                 NOT: {
@@ -247,9 +241,7 @@ describe("Prisma parse where", () => {
             "posts.id": 1,
         };
 
-        expect(
-            parsePrismaWhere(baseQuery, ["posts", "posts.author"]),
-        ).toEqual<PrismaWhereField>({
+        expect(parsePrismaWhere(baseQuery, ["posts", "posts.author"])).toEqual<PrismaWhereField>({
             posts: {
                 some: {
                     id: 1,

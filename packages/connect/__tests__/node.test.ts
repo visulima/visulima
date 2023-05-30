@@ -145,36 +145,30 @@ describe("createRouter", () => {
         const serverResponse = {} as ServerResponse;
         const error = new Error("💥");
 
-        await expect(
-            () => createRouter()
-                .use((_, __, next) => {
-                    next();
-                })
-                .use(() => {
-                    throw error;
-                })
-                .run(request, serverResponse),
-        ).rejects.toThrow(error);
+        await expect(() => createRouter()
+            .use((_, __, next) => {
+                next();
+            })
+            .use(() => {
+                throw error;
+            })
+            .run(request, serverResponse)).rejects.toThrow(error);
 
-        await expect(
-            () => createRouter()
-                .use((_, __, next) => next())
-                .use(async () => {
-                    throw error;
-                })
-                .run(request, serverResponse),
-        ).rejects.toThrow(error);
+        await expect(() => createRouter()
+            .use((_, __, next) => next())
+            .use(async () => {
+                throw error;
+            })
+            .run(request, serverResponse)).rejects.toThrow(error);
 
-        await expect(
-            () => createRouter()
-                .use((_, __, next) => next())
-                .use(async (_, __, next) => {
-                    await next();
-                })
-                // eslint-disable-next-line compat/compat
-                .use(() => Promise.reject(error))
-                .run(request, serverResponse),
-        ).rejects.toThrow(error);
+        await expect(() => createRouter()
+            .use((_, __, next) => next())
+            .use(async (_, __, next) => {
+                await next();
+            })
+        // eslint-disable-next-line compat/compat
+            .use(() => Promise.reject(error))
+            .run(request, serverResponse)).rejects.toThrow(error);
     });
 
     it("run() - returns if no fns", async () => {

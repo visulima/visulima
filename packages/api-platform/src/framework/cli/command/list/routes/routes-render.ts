@@ -43,7 +43,7 @@ const renderRoute = (method: string, routePath: string): string => {
     return `  ${methodText}${spaces}${routeText}${colors.grey(dots)}`;
 };
 
-const routesRender = (routesMap: Route[], options: { methods?: string[]; } = {}): (string | undefined)[] => routesMap
+const routesRender = (routesMap: Route[], options: { methods?: string[] } = {}): (string | undefined)[] => routesMap
     .map((route) => {
         if (Array.isArray(options.methods) && options.methods.includes(route.method)) {
             return;

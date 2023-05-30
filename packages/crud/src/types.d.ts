@@ -13,32 +13,32 @@ export enum RouteType {
 }
 
 export type ModelOption = {
-    name?: string
-    only?: RouteType[]
-    exclude?: RouteType[]
-    formatResourceId?: (resourceId: string) => number | string
+    name?: string;
+    only?: RouteType[];
+    exclude?: RouteType[];
+    formatResourceId?: (resourceId: string) => number | string;
 };
 
 export type ModelsOptions<M extends string = string> = {
-    [key in M]?: ModelOption
+    [key in M]?: ModelOption;
 };
 
 export type HandlerOptions<M extends string = string> = {
     formatResourceId?: (resourceId: string) => number | string;
     models?: ModelsOptions<M>;
     exposeStrategy?: "all" | "none";
-    pagination?: PaginationConfig,
+    pagination?: PaginationConfig;
     handlers?: {
         create?: CreateHandler;
         delete?: DeleteHandler;
         get?: GetHandler;
         list?: ListHandler;
         update?: UpdateHandler;
-    },
+    };
 };
 
 export type PaginationConfig = {
-    perPage: number
+    perPage: number;
 };
 
 export interface HandlerParameters<T, Q> {
@@ -72,9 +72,9 @@ export interface Adapter<T, Q, M extends string = string> {
 }
 
 export type PaginationData = {
-    total: number
-    pageCount: number
-    page: number
+    total: number;
+    pageCount: number;
+    page: number;
 };
 
 export type RecursiveField = {
@@ -127,5 +127,5 @@ export type FakePrismaClient = {
     $connect: () => void;
     $disconnect: () => Promise<void>;
 
-    [key: string]: any
+    [key: string]: any;
 };

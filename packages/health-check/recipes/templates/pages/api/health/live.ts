@@ -1,4 +1,4 @@
-import type { NextApiResponse, NextApiRequest } from "next"
+import type { NextApiResponse, NextApiRequest } from "next";
 
 /**
  * @openapi
@@ -13,6 +13,6 @@ import type { NextApiResponse, NextApiRequest } from "next"
  *         description: "Successful operation"
  */
 export default (_request: NextApiRequest, response: NextApiResponse) => {
-    response.status(200)
+    response.status(200);
     response.end();
-}
+};

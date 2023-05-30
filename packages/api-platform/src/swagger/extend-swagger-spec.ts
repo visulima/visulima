@@ -154,8 +154,7 @@ const extendSwaggerWithMediaTypeExample = (
             prepareStatusContent(methodSpec, status, mediaType);
 
             if (
-                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.example
-                === undefined
+                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.example === undefined
             ) {
                 (
                     (

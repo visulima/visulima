@@ -10,7 +10,11 @@ import { serialize } from "../../serializers";
 const log = debug("api-platform:connect:serializers-middleware");
 
 // eslint-disable-next-line max-len
-const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler): Promise<ValueOrPromise<void>> => {
+const serializersMiddleware = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8") => async <Request extends IncomingMessage, Response extends ServerResponse>(
+    request: Request,
+    response: NextApiResponse | Response,
+    next: NextHandler,
+): Promise<ValueOrPromise<void>> => {
     if (typeof (response as NextApiResponse).send === "function") {
         const oldSend = (response as NextApiResponse).send;
 

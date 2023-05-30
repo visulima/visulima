@@ -1,9 +1,12 @@
 export const ensureCamelCase = (string_: string): string => `${string_.charAt(0).toLowerCase()}${string_.slice(1)}`;
 
-export const getResourceNameFromUrl = <M extends string = string>(url: string, models: { [key in M]: string }): {
-    modelName: string,
-    resourceName: string,
-} => {
+export const getResourceNameFromUrl = <M extends string = string>(
+    url: string,
+    models: { [key in M]: string },
+): {
+        modelName: string;
+        resourceName: string;
+    } => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
 

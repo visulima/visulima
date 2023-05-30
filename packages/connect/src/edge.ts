@@ -43,7 +43,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
     ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>;
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
-        this.onNoMatch = options.onNoMatch ?? onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>;
+        this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);
         this.onError = options.onError
             ?? (onError as unknown as (
                 error: unknown,

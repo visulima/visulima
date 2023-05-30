@@ -7,9 +7,7 @@ import type { OpenAPIV3 } from "openapi-types";
 const swaggerDebug = debug("visulima:api-platform:swagger:get-static-properties-swagger");
 
 // eslint-disable-next-line unicorn/consistent-function-scoping
-const getStaticProps: (
-    swaggerUrl: string,
-) => GetStaticProps = (swaggerUrl) => async (): Promise<{
+const getStaticProps: (swaggerUrl: string) => GetStaticProps = (swaggerUrl) => async (): Promise<{
     props: {
         swaggerUrl: string;
         swaggerData: OpenAPIV3.Document;

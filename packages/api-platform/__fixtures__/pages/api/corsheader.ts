@@ -1,10 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { corsMiddleware, createRouter } from "@visulima/api-platform"
+import { corsMiddleware, createRouter } from "@visulima/api-platform";
 import { z } from "zod";
 
-
-const schema = z.object({})
+const schema = z.object({});
 
 export const swagger = {};
 
@@ -34,8 +33,10 @@ export const swagger = {};
  *                 name:
  *                   type: string
  */
-const router = createRouter<NextApiRequest, NextApiResponse>().use(corsMiddleware()).get(async (request, response) => {
-    response.status(200).json({});
-}, schema);
+const router = createRouter<NextApiRequest, NextApiResponse>()
+    .use(corsMiddleware())
+    .get(async (request, response) => {
+        response.status(200).json({});
+    }, schema);
 
 export default router.handler();
