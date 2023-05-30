@@ -6,7 +6,7 @@
     "license": "Apache-2.0",
     "author": "Shu Ding",
     "scripts": {
-        "build": "next build",
+        "build": "cross-env NODE_ENV=develoment next build",
         "dev": "next",
         "lint": "next lint",
         "start": "next start"

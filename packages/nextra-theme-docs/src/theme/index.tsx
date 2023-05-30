@@ -277,8 +277,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 >
                                     {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && (
                                         <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
-                                            {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
-                                            {activePath[Object.keys(activePath).length - 1]!.title}
+                                            {activePath[Object.keys(activePath).length - 1]?.title}
                                         </h1>
                                     )}
                                     {tocPageContentElement}
