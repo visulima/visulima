@@ -4,21 +4,24 @@
     "display": "React + Node 16",
     "baseUrl": "./",
     "compilerOptions": {
-        "module": "ESNext",
+        "target": "es2021",
+
         "lib": ["DOM", "DOM.Iterable", "ES2021"],
-        "target": "ESNext",
+
+        "jsx": "react-jsx",
 
         "noEmit": true,
-        "alwaysStrict": true,
         "declaration": true,
         "allowJs": true,
 
+        "alwaysStrict": true,
         "strictNullChecks": true,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
-        // "strictPropertyInitialization": true,
-        // "noImplicitAny": true,
         "stripInternal": true,
+
+        "strictPropertyInitialization": true,
+
         "noImplicitThis": true,
         "useUnknownInCatchVariables": true,
 
@@ -33,8 +36,9 @@
 
         "noPropertyAccessFromIndexSignature": true,
 
-        // @TODO enable this when we have a better way to handle the types
-        "exactOptionalPropertyTypes": false
+        "exactOptionalPropertyTypes": false,
+
+        "moduleResolution": "node"
     },
     "exclude": [
         "dist",
