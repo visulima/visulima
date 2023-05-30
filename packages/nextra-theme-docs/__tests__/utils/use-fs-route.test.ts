@@ -15,7 +15,9 @@ vi.mock("next/router", () => {
 
 function mockAndRenderHook({ asPath, locale, route }: { asPath: string; locale?: string; route?: string }) {
     (useRouter as Mock).mockReturnValue({ asPath, locale, route });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const { result } = renderHook(useFSRoute);
+
     return result.current;
 }
 

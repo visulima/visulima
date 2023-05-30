@@ -8,7 +8,9 @@ import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
-import type { FC, PropsWithChildren, ReactNode } from "react";
+import type {
+    FC, MutableRefObject, PropsWithChildren, ReactNode,
+} from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -124,7 +126,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     headings,
     timestamp,
     children,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
@@ -151,8 +153,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
         }),
         [pageMap, locale, defaultLocale, fsPath],
     );
-    const reference: any = useRef<HTMLDivElement>();
-    const isOnScreen = useOnScreen(reference, `-${(reference?.current?.clientHeight || 0) + 50}px`);
+    const reference: any = useRef<HTMLDivElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const isOnScreen = useOnScreen(reference as MutableRefObject<Element>, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
     const themeContext = { ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
@@ -172,7 +175,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const tocPageContentElement = isDocumentPage
         && renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
-            wrapperRef: reference,
+            wrapperRef: reference as MutableRefObject<Element>,
         });
     const localeConfig = config.i18n.find((l) => l.locale === locale);
     const isRTL = localeConfig ? localeConfig.direction === "rtl" : config.direction === "rtl";
@@ -231,13 +234,12 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                         <div className="relative w-full">
                             {activeType === "doc" && config.hero?.component && (
                                 <div
+                                    // eslint-disable-next-line tailwindcss/no-custom-classname
                                     className={`absolute w-full ${
                                         config.hero.height
                                             ? (typeof config.hero.height === "string"
-                                                ? // eslint-disable-next-line tailwindcss/no-custom-classname
-                                                `h-[${config.hero.height}]`
-                                                : // eslint-disable-next-line tailwindcss/no-custom-classname
-                                                `h-[${config.hero.height}px]`)
+                                                ? `h-[${config.hero.height}]`
+                                                : `h-[${config.hero.height}px]`)
                                             : ""
                                     }`}
                                 >
@@ -275,11 +277,17 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 >
                                     {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && (
                                         <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
+                                            {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                                             {activePath[Object.keys(activePath).length - 1]!.title}
                                         </h1>
                                     )}
                                     {tocPageContentElement}
-                                    {["page", "doc"].includes(activeType) ? <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose> : mdxContent}
+                                    {/* eslint-disable-next-line max-len */}
+                                    {["page", "doc"].includes(activeType) ? (
+                                        <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose>
+                                    ) : (
+                                        mdxContent
+                                    )}
                                 </Body>
                             </div>
                         </div>

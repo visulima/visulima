@@ -189,11 +189,13 @@ const config: DocumentationThemeConfig = {
     // },
     i18n: [{ locale: "en-US", name: "English" }],
 
-    comments: process.env.NEXT_PUBLIC_COMMENTS_REPO ? {
-        repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
-        repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
-        categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
-    } : undefined,
+    comments: process.env.NEXT_PUBLIC_COMMENTS_REPO
+        ? {
+              repository: process.env.NEXT_PUBLIC_COMMENTS_REPO,
+              repositoryId: process.env.NEXT_PUBLIC_COMMENTS_REPO_ID as string,
+              categoryId: process.env.NEXT_PUBLIC_COMMENTS_CATEGORY_ID as string,
+          }
+        : undefined,
 };
 
 export default config;

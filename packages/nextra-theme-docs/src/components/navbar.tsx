@@ -123,12 +123,19 @@ const Navbar: FC<NavBarProperties> = ({
                     )}
                 />
                 {/* eslint-disable-next-line max-len */}
-                <nav className={cn("mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800", ["page", "hidden"].includes(activeType) || isLayoutRaw ? "px-2 md:px-6 lg:px-8" : "pr-6 xl:pr-0")}>
+                <nav
+                    className={cn(
+                        "mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800",
+                        ["page", "hidden"].includes(activeType) || isLayoutRaw ? "px-2 md:px-6 lg:px-8" : "pr-6 xl:pr-0",
+                    )}
+                >
                     <div
                         className={cn(
                             "grow lg:grow-0 w-2/4 lg:w-64 h-[var(--nextra-navbar-height)] flex items-center",
                             // eslint-disable-next-line max-len
-                            ["page", "hidden"].includes(activeType) || isLayoutRaw ? "" : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-6 xl:pl-8",
+                            ["page", "hidden"].includes(activeType) || isLayoutRaw
+                                ? ""
+                                : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-6 xl:pl-8",
                         )}
                     >
                         {config.logoLink ? (
@@ -142,6 +149,7 @@ const Navbar: FC<NavBarProperties> = ({
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
+                    {/* eslint-disable-next-line max-len */}
                     <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] lg:flex">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
@@ -179,7 +187,7 @@ const Navbar: FC<NavBarProperties> = ({
                                 href = (page.withIndexPage ? page.route : page.firstChildRoute) ?? href;
                             }
 
-                            const route = page.href || page.route;
+                            const route = page.href ?? page.route;
                             const isActive = route === activeRoute || activeRoute.startsWith(`${route}/`);
                             const isInactive = !isActive || page.newWindow;
 

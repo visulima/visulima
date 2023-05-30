@@ -20,7 +20,10 @@ const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: st
                 href={
                     config.feedback.link
                         ? config.feedback.link({
-                            title: config.title, route, docsRepositoryBase: config.docsRepositoryBase, labels: config.feedback.labels,
+                            title: config.title,
+                            route,
+                            docsRepositoryBase: config.docsRepositoryBase,
+                            labels: config.feedback.labels,
                         })
                         : getGitIssueUrl({
                             repository: config.docsRepositoryBase,

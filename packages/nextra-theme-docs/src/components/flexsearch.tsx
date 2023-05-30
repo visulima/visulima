@@ -138,10 +138,11 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     indexes[locale] = [pageIndex, sectionIndex];
 };
 
-const loadIndexes = (basePath: string, locale: string): Promise<void> => {
+const loadIndexes = (basePath: string, locale: string): Promise<unknown> => {
     const key = `${basePath}@${locale}`;
 
     if (loadIndexesPromises.has(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return loadIndexesPromises.get(key)!;
     }
 

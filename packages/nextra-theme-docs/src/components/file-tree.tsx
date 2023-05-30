@@ -1,13 +1,15 @@
 import cn from "clsx";
-import type { ReactElement, ReactNode } from "react";
+import type {
+    FC, PropsWithChildren, ReactElement, ReactNode,
+} from "react";
 import {
     createContext, memo, useCallback, useContext, useState,
 } from "react";
 
-const ctx = createContext(0);
+const context = createContext(0);
 
 function useIndent() {
-    return useContext(ctx);
+    return useContext(context);
 }
 
 interface FolderProperties {
@@ -25,7 +27,7 @@ interface FileProperties {
     active?: boolean;
 }
 
-const Tree = ({ children }: { children: ReactNode }): ReactElement => (
+const Tree: FC<PropsWithChildren> = ({ children }) => (
     <div className="mt-6 select-none text-sm text-gray-800 dark:text-gray-300">
         <div className="inline-flex flex-col rounded-lg border px-4 py-2 dark:border-neutral-800">{children}</div>
     </div>
@@ -36,16 +38,18 @@ const Ident = (): ReactElement => {
 
     return (
         <>
-            {[...new Array(indent)].map((_, index) => (
+            {/* eslint-disable-next-line unicorn/no-new-array */}
+            {new Array(indent).map((_, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <span className="inline-block w-5" key={index} />
             ))}
         </>
     );
 };
 
-const Folder = memo<FolderProperties>(({
+const Folder: FC<FolderProperties> = memo<FolderProperties>(({
     label, name, open, children, defaultOpen = false, onToggle,
-}) => {
+}: FolderProperties) => {
     const indent = useIndent();
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -58,7 +62,7 @@ const Folder = memo<FolderProperties>(({
 
     return (
         <li className="flex list-none flex-col">
-            <a onClick={toggle} title={name} className="inline-flex cursor-pointer items-center py-1 hover:opacity-60">
+            <button type="button" onClick={toggle} title={name} className="inline-flex cursor-pointer items-center py-1 hover:opacity-60">
                 <Ident />
                 <svg width="1em" height="1em" viewBox="0 0 24 24">
                     <path
@@ -69,16 +73,17 @@ const Folder = memo<FolderProperties>(({
                         strokeWidth="2"
                         d={
                             isFolderOpen
+                                // eslint-disable-next-line max-len
                                 ? "M5 19a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2 2h4a2 2 0 0 1 2 2v1M5 19h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2Z"
                                 : "M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2Z"
                         }
                     />
                 </svg>
                 <span className="ml-1">{label ?? name}</span>
-            </a>
+            </button>
             {isFolderOpen && (
                 <ul>
-                    <ctx.Provider value={indent + 1}>{children}</ctx.Provider>
+                    <context.Provider value={indent + 1}>{children}</context.Provider>
                 </ul>
             )}
         </li>
@@ -86,9 +91,9 @@ const Folder = memo<FolderProperties>(({
 });
 Folder.displayName = "Folder";
 
-const File = memo<FileProperties>(({ label, name, active }) => (
+const File: FC<FileProperties> = memo<FileProperties>(({ label, name, active }: FileProperties) => (
     <li className={cn("flex list-none", active && "text-primary-600 contrast-more:underline")}>
-        <a className="inline-flex cursor-default items-center py-1">
+        <button type="button" className="inline-flex cursor-default items-center py-1">
             <Ident />
             <svg width="1em" height="1em" viewBox="0 0 24 24">
                 <path
@@ -101,7 +106,7 @@ const File = memo<FileProperties>(({ label, name, active }) => (
                 />
             </svg>
             <span className="ml-1">{label ?? name}</span>
-        </a>
+        </button>
     </li>
 ));
 File.displayName = "File";

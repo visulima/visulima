@@ -204,6 +204,7 @@ export const themeSchema = z
             float: z.boolean(),
             headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
         }),
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
         useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
         themeSwitch: z.object({
             title: z.string().or(

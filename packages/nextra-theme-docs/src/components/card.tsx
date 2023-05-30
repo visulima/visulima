@@ -27,6 +27,7 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
                     "active:shadow-sm active:shadow-gray-200",
                     className,
                 )}
+                // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
                 {children}
@@ -53,6 +54,7 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
                 "hover:shadow-gray-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-900 dark:hover:shadow-none",
                 "active:shadow-sm active:shadow-gray-200",
             )}
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >
             <span className={cn("nextra-card-title", "gap-2 p-4 text-gray-700 dark:text-neutral-200", "hover:text-gray-900 dark:hover:text-neutral-50")}>
@@ -73,6 +75,7 @@ export const Cards: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { num: numb
 }) => (
     <div
         className={cn("nextra-cards", "mt-4 gap-4", className)}
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...properties}
         style={{
             "--rows": String(num || 3),

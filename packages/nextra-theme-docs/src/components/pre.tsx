@@ -21,7 +21,8 @@ ComponentProps<"pre"> & {
         const hasWordWrap = "nextraWordWrap" in htmlDataset;
 
         if (hasWordWrap) {
-            delete htmlDataset.nextraWordWrap;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete htmlDataset["nextraWordWrap"];
         } else {
             htmlDataset["nextraWordWrap"] = "";
         }
@@ -43,7 +44,14 @@ ComponentProps<"pre"> & {
                     <div className="flex flex-none items-center border-y border-b-blue-300 border-t-transparent px-4 py-1 text-blue-300">{filename}</div>
                     <div className="flex h-8 flex-auto items-center justify-items-end rounded-tl border border-slate-500/30 bg-slate-700/50 pr-4">
                         <div className="grow" />
-                        <button tabIndex={-1} type="button" onClick={toggleWordWrap} className="text-slate-500 hover:text-slate-400 lg:hidden" title="Toggle word wrap">
+                        {/* eslint-disable-next-line max-len */}
+                        <button
+                            tabIndex={-1}
+                            type="button"
+                            onClick={toggleWordWrap}
+                            className="text-slate-500 hover:text-slate-400 lg:hidden"
+                            title="Toggle word wrap"
+                        >
                             <WordWrapIcon className="pointer-events-none h-4 w-4" />
                         </button>
                         {hasCopyCode && (

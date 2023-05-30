@@ -2,7 +2,7 @@ import type { FC, PropsWithChildren } from "react";
 
 import { cn } from "../utils";
 
-const Prose: FC<PropsWithChildren<{ as?: any, className?: string }>> = ({ as: Component = "div", children, className }) => (
+const Prose: FC<PropsWithChildren<{ as?: any; className?: string }>> = ({ as: Component = "div", children, className }) => (
     <Component
         className={cn(
             "prose prose-slate max-w-none dark:prose-invert dark:text-gray-400",

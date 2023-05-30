@@ -43,13 +43,15 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
             setActiveAnchor((f) => {
                 const returnValue = { ...f };
 
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete returnValue[id!];
+                if (id && id in returnValue) {
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                    delete returnValue[id];
+                }
 
                 return returnValue;
             });
         };
-    }, [id, context, slugs, observer, setActiveAnchor]);
+    }, [id, slugs, observer, setActiveAnchor]);
 
     return (
             <Tag

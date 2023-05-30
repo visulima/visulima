@@ -20,8 +20,8 @@ const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
 
 const IntersectionObserverContext = createContext<IntersectionObserver | null>(null);
-const slugs = new WeakMap();
-const SlugsContext = createContext<WeakMap<any, any>>(slugs);
+const slugs = new WeakMap<HTMLAnchorElement, [string, number]>();
+const SlugsContext = createContext<WeakMap<HTMLAnchorElement, [string, number]>>(slugs);
 
 export type ActiveAnchor = Record<string, Anchor>;
 
@@ -30,8 +30,8 @@ export type ActiveAnchor = Record<string, Anchor>;
 export const useActiveAnchor = (): ActiveAnchor => useContext(ActiveAnchorContext);
 export const useSetActiveAnchor = (): Dispatch<SetStateAction<ActiveAnchor>> => useContext(SetActiveAnchorContext);
 
-export const useIntersectionObserver = () => useContext(IntersectionObserverContext);
-export const useSlugs = () => useContext(SlugsContext);
+export const useIntersectionObserver = (): IntersectionObserver | null => useContext(IntersectionObserverContext);
+export const useSlugs = (): WeakMap<HTMLAnchorElement, [string, number]> => useContext(SlugsContext);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
@@ -46,8 +46,8 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                     const returnValue: ActiveAnchor = { ...anchor };
 
                     entries.forEach((entry) => {
-                        if (entry.rootBounds && slugs.has(entry.target)) {
-                            const [slug, index] = slugs.get(entry.target);
+                        if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
+                            const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
                             // eslint-disable-next-line max-len
                             const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;

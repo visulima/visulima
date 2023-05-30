@@ -18,7 +18,7 @@ import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 
-const TreeState: Record<string, boolean> = Object.create(null);
+const TreeState: Record<string, boolean> = Object.create(null) as Record<string, boolean>;
 
 const FocusedItemContext = createContext<string | null>(null);
 // eslint-disable-next-line no-spaced-func
@@ -46,7 +46,12 @@ const classes = {
 
 const FolderLevelContext = createContext(0);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,radar/cognitive-complexity
+type FolderProperties = {
+    item: Item | MenuItem | PageItem;
+    anchors: Heading[];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const routeOriginal = useFSRoute();
     const [route] = routeOriginal.split("#");
@@ -83,18 +88,21 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
             if (activeRouteInside && focusedRouteInside) {
                 TreeState[item.route] = true;
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete TreeState[item.route];
             }
         };
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         config.sidebar.autoCollapse ? updateAndPruneTreeState() : updateTreeState();
     }, [activeRouteInside, focusedRouteInside, item.route, config.sidebar.autoCollapse]);
 
     if (item.type === "menu") {
         const menu = item as MenuItem;
-        const routes = Object.fromEntries((menu.children ?? []).map((mRoute) => [mRoute.name, mRoute]));
+        const routes = Object.fromEntries(menu.children.map((mRoute) => [mRoute.name, mRoute]));
 
         // eslint-disable-next-line no-param-reassign
-        item.children = Object.entries(menu.items ?? {}).map(([key, value]) => {
+        item.children = Object.entries(menu.items).map(([key, value]) => {
             return {
                 ...(routes[key] ?? {
                     name: key,
@@ -157,6 +165,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
             </ComponentToUse>
             <Collapse className="ltr:pr-0 rtl:pl-0" isOpen={isOpen}>
                 {Array.isArray(item.children) ? (
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define
                     <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} anchors={anchors} />
                 ) : null}
             </Collapse>
@@ -164,16 +173,12 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     );
 };
 
-type FolderProperties = {
-    item: Item | MenuItem | PageItem;
-    anchors: Heading[];
-};
-
 const Folder = memo((properties: FolderProperties) => {
     const level = useContext(FolderLevelContext);
 
     return (
         <FolderLevelContext.Provider value={level + 1}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <FolderImpl {...properties} />
         </FolderLevelContext.Provider>
     );
@@ -302,7 +307,7 @@ const Sidebar: FC<SideBarProperties> = ({
     asPopover = false,
     headings = [],
     includePlaceholder,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
@@ -353,7 +358,9 @@ const Sidebar: FC<SideBarProperties> = ({
 
     return (
         <>
+            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
             {includePlaceholder && asPopover ? <div className="h-0 shrink-0 max-xl:hidden" /> : null}
+            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
             <div
                 className={cn(
                     "motion-reduce:transition-none [transition:background-color_1.5s_ease]",
@@ -379,8 +386,10 @@ const Sidebar: FC<SideBarProperties> = ({
                         directories: flatDirectories,
                     })}
                 </div>
+                {/* eslint-disable-next-line react/jsx-no-constructed-context-values */}
                 <FocusedItemContext.Provider value={focused}>
                     <OnFocuseItemContext.Provider
+                        // eslint-disable-next-line react/jsx-no-constructed-context-values
                         value={(item) => {
                             setFocused(item);
                         }}

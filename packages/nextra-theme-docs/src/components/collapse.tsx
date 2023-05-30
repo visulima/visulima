@@ -7,7 +7,7 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
     className,
     isOpen,
     horizontal = false,
-    // eslint-disable-next-line radar/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const innerReference = useRef<HTMLDivElement>(null);
@@ -63,11 +63,7 @@ const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; hori
         >
             <div
                 ref={innerReference}
-                className={cn(
-                    "transition-opacity duration-500 ease-in-out motion-reduce:transition-none",
-                    isOpen ? "opacity-100" : "opacity-0",
-                    className,
-                )}
+                className={cn("transition-opacity duration-500 ease-in-out motion-reduce:transition-none", isOpen ? "opacity-100" : "opacity-0", className)}
             >
                 {children}
             </div>

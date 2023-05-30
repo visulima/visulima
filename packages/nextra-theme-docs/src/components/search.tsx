@@ -254,10 +254,11 @@ const Search: FC<SearchProperties> = ({
                             <SpinnerIcon className="h-5 w-5 animate-spin" />
                             {renderString(config.search.loading, { locale })}
                         </span>
-                    ) : results.length > 0 ? (
-                        results.map(({
-                            route, prefix, children, id,
-                        }, index) => (
+                    ) // eslint-disable-next-line unicorn/no-nested-ternary
+                        : results.length > 0 ? (
+                            results.map(({
+                                route, prefix, children, id,
+                            }, index) => (
                             <Fragment key={id}>
                                 {prefix}
                                 <li
@@ -282,10 +283,10 @@ const Search: FC<SearchProperties> = ({
                                     </Anchor>
                                 </li>
                             </Fragment>
-                        ))
-                    ) : (
-                        renderComponent(config.search.emptyResult)
-                    ))}
+                            ))
+                        ) : (
+                            renderComponent(config.search.emptyResult)
+                        ))}
                 </ul>
             </Transition>
         </div>

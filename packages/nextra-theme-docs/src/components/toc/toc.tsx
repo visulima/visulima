@@ -17,7 +17,7 @@ const Toc: FC<TOCProperties> = ({
     const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
     const hasHeadings = items.length > 0;
 
-    const tocConfig = config.tocSidebar ?? config.tocContent;
+    const tocConfig = prefix === "sidebar" ? config.tocSidebar : config.tocContent;
 
     if (hasHeadings) {
         return (

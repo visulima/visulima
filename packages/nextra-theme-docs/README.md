@@ -6,11 +6,12 @@
   <br/>
   Visulima nextra-theme-doc is built on top of
 
-   [Nextra](https://nextra.site/),
-   [Tailwind CSS](https://tailwindcss.com/),
-   [Next.js](https://nextjs.org/),
-   [giscus](https://giscus.app/),
-   [react-hot-toast](https://react-hot-toast.com/),
+[Nextra](https://nextra.site/),
+[Tailwind CSS](https://tailwindcss.com/),
+[Next.js](https://nextjs.org/),
+[giscus](https://giscus.app/),
+[react-hot-toast](https://react-hot-toast.com/),
+
   </p>
 </div>
 
@@ -94,18 +95,18 @@ import Document, { Html, Head, Main, NextScript } from "next/document";
 import { SkipNavLink } from "nextra-theme-docs";
 
 class MyDocument extends Document {
-  render() {
-    return (
-      <Html lang="en">
-        <Head />
-        <body>
-          <SkipNavLink />
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+    render() {
+        return (
+            <Html lang="en">
+                <Head />
+                <body>
+                    <SkipNavLink />
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        );
+    }
 }
 export default MyDocument;
 ```
@@ -132,7 +133,6 @@ Now, you can create your first MDX page as `pages/index.mdx`:
 ## Welcome to Nextra
 
 Hello, world!
-
 ```
 
 For more information, check out the [Nextra documentation](https://nextra.site/docs).

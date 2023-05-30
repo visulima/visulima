@@ -16,10 +16,7 @@ const TocSidebar: FC<TOCProperties> = ({
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement | null>(null);
 
-    const items = useMemo(
-        () => headings.filter((heading) => heading.depth > 1),
-        [headings],
-    );
+    const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
 
     const hasHeadings = items.length > 0;
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

@@ -28,8 +28,8 @@ const MatchSorterSearch = ({ className, directories = [] }: { className?: string
     return (
         <Search
             value={search}
-            onChange={async (search) => {
-                setSearch(search);
+            onChange={async (value) => {
+                setSearch(value);
             }}
             className={className}
             overlayClassName="w-full"

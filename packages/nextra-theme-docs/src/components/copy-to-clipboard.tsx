@@ -54,12 +54,12 @@ const CopyToClipboard = ({
     const Component = as ?? Button;
 
     return (
-        // eslint-disable-next-line react/jsx-props-no-spreading
         <Component
             onClick={handleClick}
             title="Copy code"
             tabIndex={0}
             className={["text-slate-500 hover:text-slate-400", className].join(" ")}
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >
             <IconToUse className="nextra-copy-icon pointer-events-none h-4 w-4" />
