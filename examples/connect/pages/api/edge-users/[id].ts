@@ -7,20 +7,14 @@ export const config = {
     runtime: "experimental-edge",
 };
 
-const router = createEdgeRouter<
-    NextRequest & { params?: Record<string, string> },
-    NextFetchEvent
->({
+const router = createEdgeRouter<NextRequest & { params?: Record<string, string> }, NextFetchEvent>({
     onError(err) {
-        return new NextResponse(
-            JSON.stringify({ error: (err as Error).message }),
-            {
-                status: 500,
-                headers: {
-                    "content-type": "application/json",
-                },
-            }
-        );
+        return new NextResponse(JSON.stringify({ error: (err as Error).message }), {
+            status: 500,
+            headers: {
+                "content-type": "application/json",
+            },
+        });
     },
 });
 

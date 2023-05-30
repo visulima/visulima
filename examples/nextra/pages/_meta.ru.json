@@ -1,19 +1,19 @@
 {
-  "index": {
-    "title": "Введение",
-    "type": "page",
-    "display": "hidden"
-  },
-  "docs": {
-    "title": "Документация",
-    "type": "page"
-  },
-  "examples": {
-    "title": "Примеры",
-    "type": "page"
-  },
-  "blog": {
-    "title": "Блог",
-    "type": "page"
-  }
+    "index": {
+        "title": "Введение",
+        "type": "page",
+        "display": "hidden"
+    },
+    "docs": {
+        "title": "Документация",
+        "type": "page"
+    },
+    "examples": {
+        "title": "Примеры",
+        "type": "page"
+    },
+    "blog": {
+        "title": "Блог",
+        "type": "page"
+    }
 }

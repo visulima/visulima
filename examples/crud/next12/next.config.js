@@ -22,11 +22,9 @@ module.exports = withOpenApi({
         servers: [
             {
                 url: `${process.env.VERCEL_URL || "http://localhost:3000"}/api`,
-            }
-        ]
+            },
+        ],
     },
-    sources: [
-        "pages/api",
-    ],
+    sources: ["pages/api"],
     verbose: false,
 })(nextConfig);
