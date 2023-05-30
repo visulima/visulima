@@ -3,7 +3,6 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-import type { ReactElement } from "react";
 
 // const Logo = ({ height }) => (
 //

@@ -60,12 +60,12 @@ export const themeSchema = z
         editLink: z.object({
             component: z
                 .custom<
-                    FC<{
-                        children: ReactNode;
-                        className?: string;
-                        filePath?: string;
-                    }>
-                >(...fc)
+            FC<{
+                children: ReactNode;
+                className?: string;
+                filePath?: string;
+            }>
+            >(...fc)
                 .optional(),
             content: z.string().or(
                 z
