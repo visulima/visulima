@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.0.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.6...@visulima/nextra-theme-docs@1.0.7) (2023-05-30)
+
+
+### Bug Fixes
+
+* added new gitignore file, with component-style.css and style.css ([5fd3f22](https://github.com/visulima/visulima/commit/5fd3f22e4f0b76fda9303e63e157546214547447))
+
 ## @visulima/nextra-theme-docs [1.0.6](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.5...@visulima/nextra-theme-docs@1.0.6) (2023-05-30)
 
 
