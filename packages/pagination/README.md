@@ -53,7 +53,7 @@ const pagination = paginate(1, 5, items.length, items);
 
 console.log(pagination);
 // {
-//   items: [1, 2, 3, 4, 5],
+//   data: [1, 2, 3, 4, 5],
 //   meta: {
 //     total: 10,
 //     perPage: 5,
