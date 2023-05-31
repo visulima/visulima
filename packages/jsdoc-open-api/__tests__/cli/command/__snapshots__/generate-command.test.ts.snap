@@ -850,9 +850,6 @@ exports[`generate command > collects the correct files from the given directorie
               \\"wrapped\\": true
             },
             \\"items\\": {
-              \\"xml\\": {
-                \\"name\\": \\"tag\\"
-              },
               \\"$ref\\": \\"#/components/schemas/Tag\\"
             }
           }

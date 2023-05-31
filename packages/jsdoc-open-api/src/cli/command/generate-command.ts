@@ -1,4 +1,3 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { collect } from "@visulima/readdir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import cliProgress from "cli-progress";
@@ -11,6 +10,7 @@ import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../../swagger-jsdoc/comments-to-open-api";
+import validate from "../../validate";
 
 const generateCommand = async (
     configName: string,
@@ -120,7 +120,7 @@ const generateCommand = async (
         console.log(JSON.stringify(spec, null, 2));
     }
 
-    await SwaggerParser.validate(JSON.parse(JSON.stringify(spec)));
+    await validate(JSON.parse(JSON.stringify(spec)));
 
     const output = options.output ?? "swagger.json";
 

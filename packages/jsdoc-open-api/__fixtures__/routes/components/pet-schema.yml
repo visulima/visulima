@@ -38,8 +38,6 @@ components:
           xml:
             wrapped: true
           items:
-            xml:
-              name: tag
             $ref: '#/components/schemas/Tag'
 
     Tag:

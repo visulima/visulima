@@ -1,4 +1,3 @@
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { collect } from "@visulima/readdir";
 import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
@@ -11,6 +10,7 @@ import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
+import validate from "../validate";
 
 const exclude = [
     "coverage/**",
@@ -136,7 +136,7 @@ class SwaggerCompilerPlugin {
                     console.log(JSON.stringify(spec, null, 2));
                 }
 
-                await SwaggerParser.validate(JSON.parse(JSON.stringify(spec)));
+                await validate(JSON.parse(JSON.stringify(spec)));
             } catch (error: any) {
                 // eslint-disable-next-line no-console
                 console.error(error.toJSON());
