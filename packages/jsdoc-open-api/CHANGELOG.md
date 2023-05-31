@@ -1,3 +1,10 @@
+## @visulima/jsdoc-open-api [1.3.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.6...@visulima/jsdoc-open-api@1.3.7) (2023-05-31)
+
+
+### Bug Fixes
+
+* switched the oas validator to @stoplight/spectral-core to support OpenAPI v2 & v3.x and AsyncAPI validation ([4d416ff](https://github.com/visulima/visulima/commit/4d416ff425eeb0c68a9e389982cbd4be4b3eaaee))
+
 ## @visulima/jsdoc-open-api [1.3.6](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.5...@visulima/jsdoc-open-api@1.3.6) (2023-05-29)
 
 
