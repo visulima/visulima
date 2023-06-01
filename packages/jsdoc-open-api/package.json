@@ -76,7 +76,7 @@
         "build:prod": "cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
-        "dev": "pnpm predev && pnpm run build --watch",
+        "dev": "pnpm run build --watch",
         "lint:eslint": "cross-env NO_LOGS=true eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.cjs --cache --cache-strategy content .",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
         "test": "vitest run",
