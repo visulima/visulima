@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.8...@visulima/nextra-theme-docs@1.1.0) (2023-06-01)
+
+
+### Features
+
+* added a new theme options to configure prose use on a page or doc page ([6f77d8c](https://github.com/visulima/visulima/commit/6f77d8c4925eae2ee111e41fca11360f23eed16d))
+
 ## @visulima/nextra-theme-docs [1.0.8](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.7...@visulima/nextra-theme-docs@1.0.8) (2023-06-01)
 
 
