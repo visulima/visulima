@@ -24,7 +24,7 @@ export const createConfig = (config?: Options & Object) =>
 
         const sources = getPackageSources(packageJsonContent);
         const peerDependenciesKeys = Object.keys(packageJsonContent?.peerDependencies || {});
-        console.log(packageJsonContent);
+
         return {
             ...options,
             entry: sources,
