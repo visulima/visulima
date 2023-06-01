@@ -8,6 +8,7 @@
         "dev": "next dev",
         "docs:copy": "node scripts/import-package-documentation.js --path ../packages --copy",
         "docs:symlink": "node scripts/import-package-documentation.js --path ../packages --symlink",
+        "clean": "rimraf ./.next ./out ./coverage ./tsconfig.tsbuildinfo node_modules",
         "lint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --cache",
         "lint:eslint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
@@ -81,6 +82,7 @@
         "prettier": "^3.0.3",
         "sort-package-json": "^2.6.0",
         "symlink-dir": "^5.2.0",
+        "rimraf": "^5.0.1",
         "tailwindcss": "^3.3.3",
         "typescript": "5.2.2",
         "vitest": "^0.34.6"

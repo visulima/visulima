@@ -1,4 +1,4 @@
-import { swaggerApiRoute } from "@visulima/api-platform/next";
+import { swaggerApiRoute } from "../../../../../packages/api-platform/framework/next";
 
 export default swaggerApiRoute({
     allowedMediaTypes: {

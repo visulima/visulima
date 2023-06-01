@@ -1,0 +1,80 @@
+Visulima CRUD provides a support for Swagger.
+
+The support for Swagger has still improvements to be made, feel free to submit an issue if you see any bug or if you need a new feature!
+
+You can configure that through the configuration of the `Visulima CRUD modelsToOpenApi` function using the following shape:
+
+```typescript
+import type { OpenAPIV3 } from "openapi-types";
+
+enum RouteType {
+    CREATE = "CREATE",
+    READ_ALL = "READ_ALL",
+    READ_ONE = "READ_ONE",
+    UPDATE = "UPDATE",
+    DELETE = "DELETE",
+}
+
+type SwaggerType = {
+    name: string;
+    isArray?: boolean;
+    description?: string;
+    required?: boolean;
+};
+
+type SwaggerOperation = {
+    summary?: string;
+    responses?: Record<number, any>;
+    body?: SwaggerType;
+    response: SwaggerType;
+};
+
+type SwaggerParameter = {
+    name: string;
+    description?: string;
+    schema: any & {
+        type: string;
+    };
+}
+
+type ModelsConfig = {
+    tag: OpenAPIV3.TagObject;
+    type?: SwaggerType;
+    routeTypes?: {
+        [RouteType.READ_ALL]?: SwaggerOperation;
+        [RouteType.READ_ONE]?: SwaggerOperation;
+        [RouteType.CREATE]?: SwaggerOperation;
+        [RouteType.UPDATE]?: SwaggerOperation;
+        [RouteType.DELETE]?: SwaggerOperation;
+    };
+    additionalQueryParams?: SwaggerParameter[];
+};
+
+type SwaggerModelsConfig<M extends string> = {
+    [key in M]?: ModelsConfig;
+};
+
+type ModelOption = {
+    name?: string;
+    only?: RouteType[];
+    exclude?: RouteType[];
+    formatResourceId?: (resourceId: string) => number | string;
+};
+
+type ModelsOptions<M extends string = string> = {
+    [key in M]?: ModelOption;
+}
+
+interface ModelsToOpenApiParameters<M extends string, PrismaClient> {
+    prismaClient: PrismaClient;
+    exposeStrategy?: "all" | "none";
+    models?: M[];
+    swagger?: Partial<{
+        models: SwaggerModelsConfig<M>;
+        allowedMediaTypes: { [key: string]: boolean };
+    }>;
+    crud?: {
+        models: ModelsOptions<M>;
+    };
+}
+```

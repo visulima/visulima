@@ -1,4 +1,4 @@
-const { withOpenApi } = require("@visulima/api-platform/next");
+const { withOpenApi } = require("packages/api-platform/framework/next");
 
 const packageJson = require("./package.json");
 

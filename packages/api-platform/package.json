@@ -28,7 +28,17 @@
         "hapi.js",
         "restify",
         "swagger",
-        "openapi"
+        "openapi",
+        "oas",
+        "openapi specification",
+        "graphql",
+        "translation",
+        "wrap",
+        "create",
+        "rest",
+        "restful",
+        "api",
+        "apiharmony"
     ],
     "homepage": "https://visulima.com/packages/api-platform",
     "repository": {
@@ -65,7 +75,7 @@
                 "default": "./dist/index-server.mjs"
             }
         },
-        "./next": {
+        "./framework/next": {
             "types": "./dist/framework/next/index-server.d.ts",
             "browser": "./dist/framework/next/index-browser.js",
             "require": {
@@ -77,7 +87,7 @@
                 "default": "./dist/framework/next/index-server.mjs"
             }
         },
-        "./next/pages/swagger": {
+        "./framework/next/pages/swagger": {
             "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/swagger/index.js",
             "require": {
@@ -89,7 +99,7 @@
                 "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
             }
         },
-        "./next/pages/redoc": {
+        "./framework/next/pages/redoc": {
             "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/redoc/index.js",
             "require": {
@@ -123,7 +133,7 @@
     },
     "files": [
         "bin/**",
-        "next/**",
+        "framework/next/**",
         "dist/**",
         "recipes/**",
         "README.md",

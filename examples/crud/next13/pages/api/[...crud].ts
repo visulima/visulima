@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler } from "@visulima/crud/next";
+import PrismaAdapter from "@visulima/crud/adapter/prisma";
+import { nodeHandler } from "@visulima/crud/framework/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
