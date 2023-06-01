@@ -36,11 +36,28 @@ function validateMeta(pageMap: PageMapItem[]) {
     pageMap.forEach((pageMapItem) => {
         if (pageMapItem.kind === "Meta") {
             Object.entries(pageMapItem.data).forEach(([key, value]) => {
+                let prose = true;
+
+                // This workaround is needed because of the missing "prose" property in the theme schema
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                if (typeof value === "object" && typeof value["theme"] === "object" && typeof value["theme"].prose === "boolean") {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign,@typescript-eslint/no-unsafe-assignment
+                    prose = value["theme"].prose;
+
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,no-param-reassign
+                    delete value["theme"].prose;
+                }
+
                 try {
                     metaSchema.parse(value);
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.error(`[nextra-theme-docs] Error validating _meta.json file for "${key}" property.\n\n${normalizeZodMessage(error)}`);
+                }
+
+                if (typeof value === "object" && typeof value["theme"] === "object") {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign
+                    value["theme"].prose = prose;
                 }
             });
         } else if (pageMapItem.kind === "Folder") {
