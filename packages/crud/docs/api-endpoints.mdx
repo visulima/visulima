@@ -1,0 +1,85 @@
+Visulima CRUD generates the following API endpoints:
+
+### Get many resources
+
+`GET /heroes`
+
+`GET /heroes/:heroId/perks`
+
+Result: array of resources | pagination object with data
+
+Status Codes: 200
+
+### Get one resource
+`GET /heroes/:id`
+
+`GET /heroes/:heroId/perks:id`
+
+Request Params: :id - some resource field (slug)
+
+Result: resource object | error object
+Status Codes: 200 | 404
+
+### Create one resource
+`POST /heroes`
+
+`POST /heroes/:heroId/perks`
+
+Request Body: resource object | resource object with nested (relational) resources
+
+Result: created resource object | error object
+
+Status Codes: 201 | 400
+
+### Create many resources
+`POST /heroes/bulk`
+
+`POST /heroes/:heroId/perks/bulk`
+
+Request Body: array of resources objects | array of resources objects with nested (relational) resources
+
+```json
+{
+  "bulk": [{ "name": "Batman" }, { "name": "Batgirl" }]
+}
+```
+Result: array of created resources | error object
+
+Status codes: 201 | 400
+
+### Update one resource
+`PATCH /heroes/:id`
+
+`PATCH /heroes/:heroId/perks/:id`
+
+Request Params: `:id` - some resource field (slug)
+
+Request Body: resource object (or partial) | resource object with nested (relational) resources (or partial)
+
+Result:: updated partial resource object | error object
+
+Status codes: 200 | 400 | 404
+
+### Replace one resource
+`PUT /heroes/:id`
+
+`PUT /heroes/:heroId/perks/:id`
+
+Request Params: `:id` - some resource field (slug)
+
+Request Body: resource object | resource object with nested (relational) resources (or partial)
+
+Result:: replaced resource object | error object
+
+Status codes: 200 | 400
+
+### Delete one resource
+`DELETE /heroes/:id`
+
+`DELETE /heroes/:heroId/perks/:id`
+
+Request Params: `:id` - some resource field (slug)
+
+Result:: empty | resource object | error object
+
+Status codes: 200 | 404

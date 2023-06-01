@@ -28,7 +28,17 @@
         "hapi.js",
         "restify",
         "swagger",
-        "openapi"
+        "openapi",
+        "oas",
+        "openapi specification",
+        "graphql",
+        "translation",
+        "wrap",
+        "create",
+        "rest",
+        "restful",
+        "api",
+        "apiharmony"
     ],
     "homepage": "https://www.visulima.com/docs/package/api-platform",
     "repository": {
@@ -64,7 +74,8 @@
                 "default": "./dist/index-server.mjs"
             }
         },
-        "./next": {
+        "./framework/next": {
+            "types": "./dist/framework/next/index-server.d.ts",
             "browser": "./dist/framework/next/index-browser.js",
             "require": {
                 "types": "./dist/framework/next/index-server.d.ts",
@@ -75,7 +86,8 @@
                 "default": "./dist/framework/next/index-server.mjs"
             }
         },
-        "./next/pages/swagger": {
+        "./framework/next/pages/swagger": {
+            "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/swagger/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
@@ -86,7 +98,8 @@
                 "default": "./dist/framework/next/routes/pages/swagger/index.mjs"
             }
         },
-        "./next/pages/redoc": {
+        "./framework/next/pages/redoc": {
+            "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/redoc/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
@@ -99,12 +112,12 @@
         },
         "./cli": {
             "require": {
-                "types": "./dist/framework/cli/index.d.ts",
-                "default": "./dist/framework/cli/index.js"
+                "types": "./dist/framework/cli/index-server.d.ts",
+                "default": "./dist/framework/cli/index-server.js"
             },
             "import": {
-                "types": "./dist/framework/cli/index.d.mts",
-                "default": "./dist/framework/cli/index.mjs"
+                "types": "./dist/framework/cli/index-server.d.mts",
+                "default": "./dist/framework/cli/index-server.mjs"
             }
         },
         "./package.json": "./package.json"
@@ -118,6 +131,7 @@
     },
     "files": [
         "bin/**",
+        "framework/next/**",
         "dist/**",
         "recipes/**",
         "README.md",

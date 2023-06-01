@@ -1,0 +1,105 @@
+import Link from "next/link";
+
+# Options
+
+The `Visulima CRUD` function accepts two arguments which is the adapter object and the options object with the following keys
+
+#### models
+
+An object with the following shape:
+
+```typescript
+enum RouteType {
+    CREATE = "CREATE",
+    READ_ALL = "READ_ALL",
+    READ_ONE = "READ_ONE",
+    UPDATE = "UPDATE",
+    DELETE = "DELETE",
+}
+
+type ModelOption = {
+    name?: string;
+    only?: RouteType[];
+    exclude?: RouteType[];
+    formatResourceId?: (resourceId: string) => number | string;
+};
+
+type ModelsOptions<M extends string = string> = {
+    [key in M]?: ModelOption;
+};
+```
+
+Each key of the object must correspond to the models passed to your adapter, see <Link href="/api-docs/adapters">this section</Link>.
+
+Example:
+
+```typescript
+import { nodeHandler } from "@visulima/crud/next";
+
+const myPrismaClient = new PrismaClient();
+const adapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
+    prismaClient: myPrismaClient,
+});
+
+const handler = nodeHandler(adapter, {
+    models: {
+        [Prisma.ModelName.User]: {
+            name: "users",
+            only: [RouteType.READ_ALL],
+        },
+    },
+    defaultExposeStrategy: "all",
+});
+```
+
+`only` and `exclude` can have the following values:
+
+-   `CREATE`
+-   `READ_ONE`
+-   `READ_ALL`
+-   `UPDATE`
+-   `DELETE`
+
+_TypeScript users: you can import the following enum and use it in the array_
+
+```javascript
+import { RouteType } from "@visulima/crud";
+```
+
+#### adapter
+
+A required instance of an adaptater class, see <Link href="/api-docs/adapters">this section</Link>.
+
+#### defaultExposeStrategy
+
+If `all`, all routes are exposed, if `none`, only the routes specified in the `only` option are exposed. Default to `all`.
+
+#### formatResourceId
+
+An optional function that allows you to format the retrieve resource id for the routes implying a single resource. By default it transforms number strings as numbers, else keep them as strings.
+
+#### onRequest
+
+An optional function, see <Link href="/api-docs/callbacks">this section</Link>
+
+#### onSuccess
+
+An optional function, see <Link href="/api-docs/callbacks">this section</Link>
+
+#### onError
+
+An optional function, see <Link href="/api-docs/callbacks">this section</Link>
+
+#### middlewares
+
+An optional array of functions, see <Link href="/api-docs/middlewares">this section</Link>
+
+#### pagination
+
+The pagination config accepts the following shape:
+
+```typescript
+interface IPaginationConfig {
+    perPage: number; // default number of elements to display on each page
+}
+```

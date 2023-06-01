@@ -1,0 +1,18 @@
+{
+    "name": "@visulima/crud-swagger",
+    "private": true,
+    "version": "0.0.0",
+    "description": "visulima crud swagger",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/swagger/index.d.ts",
+            "require": "./../dist/swagger/index.js",
+            "import": "./../dist/swagger/index.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../dist/swagger/index.js",
+    "module": "../dist/swagger/index.mjs",
+    "types": "../dist/swagger/index.d.ts"
+}

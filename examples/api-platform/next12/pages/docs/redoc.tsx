@@ -1,4 +1,4 @@
-import { getSwaggerStaticProps as getSwaggerStaticProperties } from "@visulima/api-platform/next";
+import { getSwaggerStaticProps as getSwaggerStaticProperties } from "../../../../../packages/api-platform/framework/next";
 import RedocPage from "@visulima/api-platform/next/pages/redoc";
 
 export const getStaticProps = getSwaggerStaticProperties(`${process.env.NEXT_PUBLIC_APP_ORIGIN}/api/swagger`);

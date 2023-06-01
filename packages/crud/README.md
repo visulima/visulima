@@ -3,11 +3,10 @@
   <p>
   Visulima crud is built on top of
 
-[OpenAPI (Swagger) specification](https://swagger.io/specification/),
-[node-rate-limiter-flexible](https://github.com/animir/node-rate-limiter-flexible),
-[@visulima/connect](https://github.com/visulima/visulima/tree/main/packages/connect)
+[OpenAPI (Swagger) specification](https://swagger.io/specification/)
+and [Prisma](https://www.prisma.io/)
 
-With a more intuitive API for creating HTTP API endpoints.
+With a more intuitive API for creating HTTP [CRUD API routes](https://de.wikipedia.org/wiki/CRUD).
 
   </p>
 </div>
@@ -32,33 +31,69 @@ With a more intuitive API for creating HTTP API endpoints.
 
 ---
 
-## Features
-
 ## Installation
 
-```sh
-npm install @visulima/crud prisma @prisma/client
-```
+### Npm
 
 ```sh
-yarn add @visulima/crud prisma @prisma/client
+npm install @visulima/crud
 ```
 
+Prisma adapter
+
 ```sh
-pnpm add @visulima/crud prisma @prisma/client
+npm install prisma @prisma/client @visulima/prisma-dmmf-transformer
+```
+
+### Yarn
+
+```sh
+yarn add @visulima/crud
+```
+
+Prisma adapter
+
+```sh
+yarn install prisma @prisma/client @visulima/prisma-dmmf-transformer
+```
+
+### Pnpm
+
+```sh
+pnpm add @visulima/crud
+```
+
+Prisma adapter
+
+```sh
+pnpm install prisma @prisma/client @visulima/prisma-dmmf-transformer
 ```
 
 ## Usage
 
 To use the `@visulima/crud` package, you need to have a [Prisma](https://www.prisma.io/) schema.
 
+Given the following Prisma schema:
+
+```sql
+model User {
+  id              Int        @id @default(autoincrement())
+  name            String?
+  email           String?
+}
+```
+
+Next.js CRUD API routes can be created with the following:
+
+Create the file `/pages/api/[...crud].ts` with:
+
 ```ts
 // pages/api/[...crud].ts
 
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler } from "@visulima/crud/next";
+import PrismaAdapter from "@visulima/crud/adapter/prisma";
+import { nodeHandler } from "@visulima/crud/framework/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
@@ -82,8 +117,8 @@ To use it with `api-platform connect` you need to install the `@visulima/api-pla
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createNodeRouter } from "@visulima/api-platform";
-import { PrismaAdapter } from "@visulima/crud";
-import { nodeHandler } from "@visulima/crud/next";
+import PrismaAdapter from "@visulima/crud/adapter/prisma";
+import { nodeHandler } from "@visulima/crud/framework/next";
 import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
@@ -100,6 +135,21 @@ const router = createNodeRouter<NextApiRequest, NextApiResponse>().all(async (re
 
 export default router.handler();
 ```
+
+And get your full-featured CRUD routes!
+
+|              | Endpoint                | Description               |
+| ------------ | ----------------------- | ------------------------- |
+| List         | GET `/api/users`        | Get all the users         |
+| Get          | GET `/api/users/[id]`   | Get one user              |
+| Add          | POST `/api/users`       | Create one user           |
+| Edit         | PUT `/api/users/[id]`   | Update one user           |
+| Partial edit | PATCH `/api/users/[id]` | Update one user (partial) |
+| Delete       | DELETE`/api/users/[id]` | Delete one user           |
+
+You can add multiple query parameters in the URL to make your request more precise, especially for requests where you get data.
+
+You can then try a simple request using a tool like Postman, Insomnia or just your web browser on one of those routes.
 
 ## Supported Node.js Versions
 

@@ -1,4 +1,5 @@
-import { getSwaggerStaticProps as getSwaggerStaticProperties, RedocPage } from "@visulima/api-platform/next";
+import { getSwaggerStaticProps as getSwaggerStaticProperties } from "../../../../../packages/api-platform/framework/next";
+import RedocPage from "@visulima/api-platform/next/pages/redoc";
 
 import { prisma } from "../../lib/prisma-client";
 

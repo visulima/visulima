@@ -12,6 +12,7 @@ packages:
     - "apps/**"
     - "examples/**"
     - "packages/**"
+    - "packages/crud/__tests__/integration/adapter/prisma"
     - "packages/boxen/__fixtures__/package/cjs"
     - "packages/boxen/__fixtures__/package/mjs"
     - "packages/colorize/__fixtures__/package/cjs"

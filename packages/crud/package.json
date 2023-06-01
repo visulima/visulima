@@ -1,14 +1,20 @@
 {
     "name": "@visulima/crud",
     "version": "2.0.21",
-    "description": "visulima crud",
+    "description": "The Visulima CRUD is full-featured CRUD routes generator based on your Database schema.",
     "keywords": [
         "anolilab",
         "visulima",
         "api-platform",
         "api",
         "crud",
-        "prisma"
+        "bulk",
+        "prisma",
+        "serialization",
+        "nextjs",
+        "next.js",
+        "next",
+        "json"
     ],
     "homepage": "https://www.visulima.com/docs/package/crud",
     "repository": {
@@ -43,15 +49,25 @@
                 "default": "./dist/index.mjs"
             }
         },
-        "./next": {
-            "require": {
-                "types": "./dist/next/index.d.ts",
-                "default": "./dist/next/index.js"
-            },
-            "import": {
-                "types": "./dist/next/index.d.mts",
-                "default": "./dist/next/index.mjs"
-            }
+        "./adapter/prisma": {
+            "types": "./dist/adapter/prisma/index.d.ts",
+            "require": "./dist/adapter/prisma/index.js",
+            "import": "./dist/adapter/prisma/index.mjs"
+        },
+        "./framework/next": {
+            "types": "./dist/framework/next/index.d.ts",
+            "require": "./dist/framework/next/index.js",
+            "import": "./dist/framework/next/index.mjs"
+        },
+        "./swagger": {
+            "types": "./dist/swagger/index.d.ts",
+            "require": "./dist/swagger/index.js",
+            "import": "./dist/swagger/index.mjs"
+        },
+        "./swagger/prisma": {
+            "types": "./dist/swagger/adapter/prisma/index.d.ts",
+            "require": "./dist/swagger/adapter/prisma/index.js",
+            "import": "./dist/swagger/adapter/prisma/index.mjs"
         },
         "./package.json": "./package.json"
     },
@@ -59,6 +75,7 @@
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
+        "framework/next/**",
         "dist/**",
         "README.md",
         "CHANGELOG.md",
@@ -67,7 +84,7 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
-        "clean": "rimraf node_modules dist .eslintcache",
+        "clean": "rimraf node_modules dist .eslintcache __tests__/integration/adapter/prisma/node_modules",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
@@ -150,10 +167,16 @@
     },
     "optionalDependenciest": {
         "next": "^12.0.0 || ^13.0.0",
+        "@visulima/prisma-dmmf-transformer": "1.0.6",
         "@prisma/client": "^3.0.0 || ^4.0.0"
     },
     "sources": [
         "src/index.ts",
-        "src/next/index.ts"
+        "src/framework/next/index.ts",
+        "src/swagger/index.ts",
+        "src/swagger/adapter/prisma/index.ts",
+        "src/adapter/prisma/index.ts",
+        "src/serialization/json.ts",
+        "src/serialization/superjson.ts"
     ]
 }

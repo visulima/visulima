@@ -1,24 +1,22 @@
-export { default as PrismaAdapter } from "./adapter/prisma";
-export type { ModelsToOpenApiParameters } from "./swagger/adapter/prisma";
-export { default as modelsToOpenApi } from "./swagger/adapter/prisma";
-export type { SwaggerModelsConfig } from "./swagger/types";
+export { RouteType } from "./types.d";
 export type {
-    Adapter,
-    Condition,
-    HandlerOptions as CrudHandlerOptions,
+    ParsedQueryParameters,
+    PaginationConfig,
     HandlerParameters,
-    ModelOption,
+    Adapter,
     ModelsOptions,
+    HandlerOptions as CrudHandlerOptions,
+    ModelOption,
+    UniqueResourceHandlerParameters,
+    Condition,
     OrderByField,
     OrderByOperator,
-    PaginationConfig,
-    PaginationData,
-    ParsedQueryParameters,
     RecursiveField,
-    SearchCondition,
-    UniqueResourceHandlerParameters,
-    WhereCondition,
     WhereField,
     WhereOperator,
-} from "./types";
-export { RouteType } from "./types";
+    WhereCondition,
+    SearchCondition,
+    PaginationData,
+} from "./types.d";
+
+export { default as abstractHandler } from "./base-crud-handler";

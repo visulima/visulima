@@ -1,4 +1,4 @@
-import { getSwaggerStaticProps } from "@visulima/api-platform/next";
+import { getSwaggerStaticProps } from "../../../../../packages/api-platform/framework/next";
 import SwaggerPage from "@visulima/api-platform/next/pages/swagger";
 
 export const getStaticProps = getSwaggerStaticProps(`${process.env.NEXT_PUBLIC_APP_ORIGIN}/api/swagger`);
