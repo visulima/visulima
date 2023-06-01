@@ -55,17 +55,6 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
 
     return (
             <Tag
-                className={cn(
-                    "font-semibold tracking-tight",
-                    {
-                        // eslint-disable-next-line max-len
-                        h2: "mt-10 border-b pb-1 text-3xl border-neutral-200/70 contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400",
-                        h3: "mt-8 text-2xl",
-                        h4: "mt-8 text-xl",
-                        h5: "mt-8 text-lg",
-                        h6: "mt-8 text-base",
-                    }[Tag],
-                )}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
@@ -127,7 +116,7 @@ const getComponents = ({
         // eslint-disable-next-line react/jsx-props-no-spreading
         table: (properties: ComponentProps<"table">) => <Table className="nextra-scrollbar mt-5 p-0 first:mt-0" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
-        p: (properties: ComponentProps<"p">) => <p className="mt-5 leading-7 first:mt-0" {...properties} />,
+        p: (properties: ComponentProps<"p">) => <p {...properties} />,
         tr: Tr,
         th: Th,
         td: Td,
