@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.0.8](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.7...@visulima/nextra-theme-docs@1.0.8) (2023-06-01)
+
+
+### Bug Fixes
+
+* removed not needed classes from all typography elements ([71fd20a](https://github.com/visulima/visulima/commit/71fd20a7692151fec8ed48374b1a4b111a5b6b84))
+
 ## @visulima/nextra-theme-docs [1.0.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.6...@visulima/nextra-theme-docs@1.0.7) (2023-05-30)
 
 
