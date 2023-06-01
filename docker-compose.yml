@@ -5,8 +5,6 @@ services:
         image: "postgres:15.3-alpine"
         volumes:
             - "data:/var/lib/postgresql/data"
-        # Here we are using the already existing .env.local file
-        env_file: "./visulima/.env.local"
         ports:
             - "5432:5432"
 
