@@ -1,5 +1,4 @@
 import { GitHubIcon } from "nextra/icons";
-import type { PageTheme } from "nextra/normalize-pages";
 import { isValidElement } from "react";
 
 import Anchor from "./components/anchor";
@@ -13,19 +12,6 @@ import { getGitEditUrl } from "./utils";
 export const DEFAULT_LOCALE = "en-US";
 
 export const IS_BROWSER = typeof window !== "undefined";
-
-export const DEFAULT_PAGE_THEME: PageTheme = {
-    breadcrumb: true,
-    collapsed: false,
-    footer: true,
-    layout: "default",
-    navbar: true,
-    pagination: true,
-    sidebar: true,
-    timestamp: true,
-    toc: true,
-    typesetting: "default",
-};
 
 export const DEFAULT_THEME: DocumentationThemeConfig = {
     newNextLinkBehavior: false,

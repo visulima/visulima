@@ -157,7 +157,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const isOnScreen = useOnScreen(reference as MutableRefObject<Element>, `-${(reference?.current?.clientHeight || 0) + 50}px`);
 
-    const themeContext = { ...activeThemeContext, ...frontMatter };
+    const themeContext = { prose: true, ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
     const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["raw", "full"].includes(themeContext.layout);
 
@@ -282,7 +282,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     )}
                                     {tocPageContentElement}
                                     {/* eslint-disable-next-line max-len */}
-                                    {["page", "doc"].includes(activeType) ? (
+                                    {themeContext.prose && ["page", "doc"].includes(activeType) ? (
                                         <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose>
                                     ) : (
                                         mdxContent
