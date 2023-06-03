@@ -71,7 +71,8 @@ export const themeSchema = z
                 z
                     .function()
                     .args(z.object({ locale: z.string() }))
-                    .returns(z.string()).or(z.custom<FC<{ locale: string }> | ReactNode>(...reactNode)),
+                    .returns(z.string())
+                    .or(z.custom<FC<{ locale: string }> | ReactNode>(...reactNode)),
             ),
         }),
         faviconGlyph: z.string().optional(),
@@ -211,6 +212,14 @@ export const themeSchema = z
         }),
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
         useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
+        localSwitch: z.object({
+            title: z.string().or(
+                z
+                    .function()
+                    .args(z.object({ locale: z.string() }))
+                    .returns(z.string()),
+            ),
+        }),
         themeSwitch: z.object({
             title: z.string().or(
                 z

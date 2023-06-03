@@ -68,7 +68,7 @@ const Body: FC<{
     const content = (
         <>
             {children}
-            <hr className="my-8 lg:hidden" />
+            {activeType === "doc" && (<hr className="my-8 lg:hidden" />)}
             {/* eslint-disable-next-line max-len */}
             {activeType === "doc" && (
                 <div className="flex flex-col justify-items-end gap-2 text-right lg:hidden">
@@ -155,7 +155,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
     const reference: any = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const isOnScreen = useOnScreen(reference as MutableRefObject<Element>, `-${(reference?.current?.clientHeight || 0) + 50}px`);
+    const isOnScreen = useOnScreen(reference as MutableRefObject<Element>);
 
     const themeContext = { prose: true, ...activeThemeContext, ...frontMatter };
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);

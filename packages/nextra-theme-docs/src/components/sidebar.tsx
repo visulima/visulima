@@ -13,6 +13,7 @@ import scrollIntoView from "scroll-into-view-if-needed";
 import { DEFAULT_LOCALE } from "../constants";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
 import { renderComponent } from "../utils";
+import useCurrentWidth from "../utils/use-current-width";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
@@ -99,7 +100,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
 
     if (item.type === "menu") {
         const menu = item as MenuItem;
-        const routes = Object.fromEntries(menu.children.map((mRoute) => [mRoute.name, mRoute]));
+        const routes = Object.fromEntries((menu.children ?? []).map((mRoute) => [mRoute.name, mRoute]));
 
         // eslint-disable-next-line no-param-reassign
         item.children = Object.entries(menu.items).map(([key, value]) => {
@@ -314,6 +315,7 @@ const Sidebar: FC<SideBarProperties> = ({
     const router = useRouter();
     const anchors = useMemo(() => headings.filter((v) => v.depth === 2), [headings]);
     const [focused, setFocused] = useState<string | null>(null);
+    const currentWidth = useCurrentWidth();
 
     const containerReference = useRef<HTMLDivElement>(null);
     const sidebarReference = useRef<HTMLDivElement>(null);
@@ -353,7 +355,13 @@ const Sidebar: FC<SideBarProperties> = ({
         setMenu(false);
     }, [router.asPath, setMenu]);
 
-    const hasI18n = config.i18n.length > 0;
+    useEffect(() => {
+        if (currentWidth > 1024) {
+            setMenu(false);
+        }
+    }, [currentWidth, setMenu]);
+
+    const hasI18n = config.i18n.length > 1;
     const hasMenu = config.darkMode || hasI18n;
 
     return (
@@ -403,7 +411,7 @@ const Sidebar: FC<SideBarProperties> = ({
                         >
                             <div className="transform-gpu ease-in-out motion-reduce:transition-none">
                                 <Menu
-                                    className="max-md:hidden"
+                                    className="max-lg:hidden"
                                     // The sidebar menu, shows only the docs directories.
                                     directories={documentsDirectories}
                                     // When the viewport size is larger than `md`, hide the anchors in
@@ -412,7 +420,7 @@ const Sidebar: FC<SideBarProperties> = ({
                                     onlyCurrentDocs
                                 />
                                 <Menu
-                                    className="md:hidden"
+                                    className="lg:hidden"
                                     // The mobile dropdown menu, shows all the directories.
                                     directories={fullDirectories}
                                     // Always show the anchor links on mobile (`md`).
@@ -429,14 +437,15 @@ const Sidebar: FC<SideBarProperties> = ({
                             "sticky bottom-0 border-t border-gray-200 dark:border-gray-800 py-4",
                             "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
                             "relative z-[1]", // for top box shadow
-                            "flex justify-end items-center gap-2",
-                            "px-6", // hide ring on focused sidebar links
+                            "flex items-center gap-2",
+                            "px-6 -ml-2", // hide ring on focused sidebar links
                             "h-[var(--nextra-menu-height)]",
+                            { "justify-end": hasI18n },
                         )}
                         data-toggle-animation="off"
                     >
                         {hasI18n && <LocaleSwitch options={config.i18n} className="ltr:mr-auto rtl:ml-auto" />}
-                        <div className="grow" />
+                        {hasI18n && config.darkMode && <div className="grow" />}
                         {config.darkMode && <ThemeSwitch locale={router.locale ?? DEFAULT_LOCALE} />}
                     </div>
                 )}

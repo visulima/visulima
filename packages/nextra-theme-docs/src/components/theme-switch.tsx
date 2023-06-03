@@ -4,7 +4,7 @@ import { MoonIcon, SunIcon } from "nextra/icons";
 import type { FC, ReactElement } from "react";
 import { useMemo } from "react";
 
-import { useConfig } from "../contexts/config";
+import { useConfig } from "../contexts";
 import { renderString } from "../utils";
 import Select from "./select";
 
