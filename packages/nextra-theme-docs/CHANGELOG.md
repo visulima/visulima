@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.0...@visulima/nextra-theme-docs@1.1.1) (2023-06-03)
+
+
+### Bug Fixes
+
+* fixed broken toc-sidebar visibility check, fixed design of the footer with only one select dropdown, added missing translations for the locale-switch, fixed mobile menu didn't closed on resize ([78578d4](https://github.com/visulima/visulima/commit/78578d4fdab720a64b285863b9d964dabafbdd0b))
+
 ## @visulima/nextra-theme-docs [1.1.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.0.8...@visulima/nextra-theme-docs@1.1.0) (2023-06-01)
 
 
