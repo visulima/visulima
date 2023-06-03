@@ -211,6 +211,23 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     useNextSeoProps: () => {
         return { titleTemplate: "%s – Nextra" };
     },
+    localSwitch: {
+        title: ({ locale }) => {
+            if (locale === "zh-CN") {
+                return "切换语言";
+            }
+
+            if (locale === "ru") {
+                return "Переключить язык";
+            }
+
+            if (locale === "fr") {
+                return "Changer de langue";
+            }
+
+            return "Switch language";
+        },
+    },
     themeSwitch: {
         title: ({ locale }) => {
             if (locale === "zh-CN") {

@@ -11,6 +11,8 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
     const config = useConfig();
     const isLayoutRaw = themeContext.layout === "raw";
 
+    const hasI18n = config.i18n.length > 1;
+
     return (
         <footer
             className={cn(
@@ -31,16 +33,25 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
                             : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
-                    {(config.i18n.length > 0 || config.darkMode) && (
-                        <div className={cn("mx-auto lg:mx-0 flex", activeType === "doc" && !isLayoutRaw ? "lg:hidden" : "mb-6 lg:mb-12")}>
-                            {config.i18n.length > 0 && <LocaleSwitch options={config.i18n} />}
-                            <div className="grow" />
+                    {(hasI18n || config.darkMode) && (
+                        <div
+                            className={cn(
+                                "ml-auto mr-auto flex gap-2 lg:px-6 lg:-ml-2",
+                                activeType === "doc" && !isLayoutRaw ? "lg:hidden" : "lg:mb-12",
+                                {
+                                    "items-center": hasI18n && config.darkMode,
+                                },
+                            )}
+                        >
+                            {hasI18n && <LocaleSwitch options={config.i18n} />}
+                            {hasI18n && config.darkMode && <div className="grow" />}
                             {config.darkMode && <ThemeSwitch locale={locale} />}
                         </div>
                     )}
                     {/*  eslint-disable-next-line max-len */}
                     <div className="hidden px-6 lg:block">{config.footer.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
                 </div>
+                <div className="footer-border dark:footer-border mb-6 lg:hidden" />
                 <div
                     className={cn(
                         "lg:grow lg:py-12 text-gray-600 dark:text-gray-400",

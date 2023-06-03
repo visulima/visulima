@@ -16,7 +16,6 @@ const Toc: FC<TOCProperties> = ({
 
     const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
     const hasHeadings = items.length > 0;
-
     const tocConfig = prefix === "sidebar" ? config.tocSidebar : config.tocContent;
 
     if (hasHeadings) {
@@ -28,7 +27,7 @@ const Toc: FC<TOCProperties> = ({
                 </p>
                 <ul className="leading-normal" key={prefix}>
                     {items.map(({ id, value, depth }) => (
-                        <li className="group" key={`${prefix}${id}`}>
+                        <li className={isPage ? "" : "scroll-my-6 scroll-py-6"} key={`${prefix}${id}`}>
                             <a
                                 href={`#${id}`}
                                 className={cn(

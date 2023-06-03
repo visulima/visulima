@@ -1,11 +1,10 @@
-import cn from "clsx";
 import type { Heading } from "nextra";
 import type { FC } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
-import { renderComponent } from "../../utils";
+import { cn, renderComponent } from "../../utils";
 import MetaInfo from "../meta-info";
 import Toc from "./toc";
 
@@ -48,7 +47,11 @@ const TocSidebar: FC<TOCProperties> = ({
             className={cn(
                 "nextra-scrollbar sticky top-16 overflow-y-auto pt-8 text-sm [hyphens:auto]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
-                isOnScreen ? "opacity-100" : "pointer-events-none opacity-0",
+                "opacity-0",
+                {
+                    "opacity-100": isOnScreen,
+                    "pointer-events-none": !isOnScreen,
+                },
                 "transition-all duration-200",
             )}
         >

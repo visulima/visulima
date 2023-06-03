@@ -2,7 +2,10 @@ import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import type { FC } from "react";
 
+import { DEFAULT_LOCALE } from "../constants";
+import { useConfig } from "../contexts";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
+import { renderString } from "../utils";
 import Select from "./select";
 
 interface LocaleSwitchProperties {
@@ -12,12 +15,13 @@ interface LocaleSwitchProperties {
 }
 
 const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite = false, className }) => {
+    const config = useConfig();
     const { locale, asPath } = useRouter();
     const selected = options.find((l) => locale === l.locale);
 
     return (
         <Select
-            title="Change language"
+            title={renderString(config.localSwitch.title, { locale: locale ?? DEFAULT_LOCALE })}
             className={className}
             onChange={(option) => {
                 const date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
