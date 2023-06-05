@@ -225,7 +225,7 @@
         "redoc": "^2.0.0",
         "swagger-ui-dist": "^4.19.0",
         "swagger-ui-react": "^4.19.0",
-        "webpack": "^5.84.1"
+        "webpack": "^5.85.0"
     },
     "engines": {
         "node": ">=16.18.0 <=20.*"
