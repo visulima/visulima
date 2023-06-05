@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.2](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.1...@visulima/nextra-theme-docs@1.1.2) (2023-06-05)
+
+
+### Bug Fixes
+
+* moved the overflow-x-hidden out of the main css, fixed wrong color on nav in dark mode ([2fbfc9f](https://github.com/visulima/visulima/commit/2fbfc9fbf95613df6fe752a2aca383f5fa4bc990))
+
 ## @visulima/nextra-theme-docs [1.1.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.0...@visulima/nextra-theme-docs@1.1.1) (2023-06-03)
 
 
