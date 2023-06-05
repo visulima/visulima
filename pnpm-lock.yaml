@@ -77,7 +77,7 @@ importers:
         version: 8.0.3
       nx:
         specifier: latest
-        version: 16.2.2
+        version: 16.3.2
       plop:
         specifier: ^3.1.2
         version: 3.1.2
@@ -180,8 +180,8 @@ importers:
         specifier: 18.16.3
         version: 18.16.3
       '@types/react':
-        specifier: 18.2.7
-        version: 18.2.7
+        specifier: 18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: 18.2.4
         version: 18.2.4
@@ -649,7 +649,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       swagger-ui-react:
         specifier: ^4.19.0
-        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -832,7 +832,7 @@ importers:
         version: 4.19.0
       swagger-ui-react:
         specifier: ^4.19.0
-        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
       webpack:
         specifier: ^5.84.1
         version: 5.84.1(esbuild@0.17.19)
@@ -851,7 +851,7 @@ importers:
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)
+        version: 8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
       '@types/accepts':
         specifier: ^1.3.5
         version: 1.3.5
@@ -892,8 +892,8 @@ importers:
         specifier: ^6.9.7
         version: 6.9.7
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -1196,7 +1196,7 @@ importers:
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)
+        version: 8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
       '@types/http-errors':
         specifier: ^2.0.1
         version: 2.0.1
@@ -1349,8 +1349,8 @@ importers:
         specifier: 18.16.16
         version: 18.16.16
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -1701,8 +1701,8 @@ importers:
         specifier: 18.16.16
         version: 18.16.16
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -3594,7 +3594,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.5
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       react: 18.2.0
 
   /@napi-rs/simple-git-android-arm-eabi@0.1.8:
@@ -4273,6 +4273,17 @@ packages:
       - debug
     dev: false
 
+  /@nrwl/tao@16.3.2:
+    resolution: {integrity: sha512-2Kg7dtv6JcQagCZPSq+okceI81NqmXGGgbKWqS7sOfdmp1otxS9uiUFNXw+Pdtnw38mdRviMtSOXScntu4sUKg==}
+    hasBin: true
+    dependencies:
+      nx: 16.3.2
+    transitivePeerDependencies:
+      - '@swc-node/register'
+      - '@swc/core'
+      - debug
+    dev: false
+
   /@nrwl/workspace@16.2.2:
     resolution: {integrity: sha512-cNrDoT8ByOutaZ4X7jUt9ArArk/jYyp87ZdXiRNComquWgCmHavMDjnnqp11Eu1GoJ54O5M/otw7gDO5eo3wlQ==}
     dependencies:
@@ -4306,6 +4317,15 @@ packages:
     dev: false
     optional: true
 
+  /@nx/nx-darwin-arm64@16.3.2:
+    resolution: {integrity: sha512-YfYVNfsJBzBcBnJUU4AcA6A4QMkgnVlETfp4KGL36Otq542mRY1ISGHdox63ocI5AKh5gay5AaGcR4wR9PU9Vg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@nx/nx-darwin-x64@16.2.2:
     resolution: {integrity: sha512-++uDfp/Oo8DDVU53DiJVkRNjNbOLzahDH6dINeA/3yTCU/IS0wXoaoclNZBReMWlDKTVvWgLF/eSbGINMqUHRg==}
     engines: {node: '>= 10'}
@@ -4315,8 +4335,35 @@ packages:
     dev: false
     optional: true
 
+  /@nx/nx-darwin-x64@16.3.2:
+    resolution: {integrity: sha512-bJtpozz0zSRVRrcQ76GrlT3TWEGTymLYWrVG51bH5KZ46t6/a4EQBI3uL3vubMmOZ0jR4ywybOcPBBhxmBJ68w==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@nx/nx-freebsd-x64@16.3.2:
+    resolution: {integrity: sha512-ZvufI0bWqT67nLbBo6ejrIGxypdoedRQTP/tudWbs/4isvxLe1uVku1BfKCTQUsJG367SqNOU1H5kzI/MRr3ow==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [freebsd]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@nx/nx-linux-arm-gnueabihf@16.2.2:
     resolution: {integrity: sha512-A4XFk63Q7fxgZaHnigIeofp/xOT2ZGDoNUyzld+UTlyJyNcClcOcqrro74aKOCG7PH0D56oE06JW3g7GKszgsA==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@nx/nx-linux-arm-gnueabihf@16.3.2:
+    resolution: {integrity: sha512-IQL4kxdiZLvifar7+SIum3glRuVsxtE0dL8RvteSDXrxDQnaTUrjILC+VGhalRmk7ngBbGKNrhWOeeL7390CzQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
@@ -4333,8 +4380,26 @@ packages:
     dev: false
     optional: true
 
+  /@nx/nx-linux-arm64-gnu@16.3.2:
+    resolution: {integrity: sha512-f6AWgPVu3mfUEoOBa0rY2/7QY0Or9eR0KtLFpcPh7RUpxPw2EXzIbjD/0RGipdpspSrgiMKbZpsUjo6mXBFsQA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@nx/nx-linux-arm64-musl@16.2.2:
     resolution: {integrity: sha512-20vyNYQ2SYSaWdxORj9HdOyGxiqE8SauaFiBjjid6/e5mSyaSKu+HHGsvhDUqzlWn3OaABKBqx0iYa9Kmf3BOQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@nx/nx-linux-arm64-musl@16.3.2:
+    resolution: {integrity: sha512-AvrWcYz7021E3b5P9/0i26p60XMZfw86Epks51L6AhlflarlOH4AcEChc7APMtb1ELAIbDWx2S6oIDRbQ7rtVA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -4351,8 +4416,26 @@ packages:
     dev: false
     optional: true
 
+  /@nx/nx-linux-x64-gnu@16.3.2:
+    resolution: {integrity: sha512-K2pWGAcbCNm6b7UZI9cc8z4Rb540QcuepBXD7akjPjWerzXriT6VCn4i9mVKsCg2mwSfknTJJVJ1PZwJSmTl/Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@nx/nx-linux-x64-musl@16.2.2:
     resolution: {integrity: sha512-Incv7DbKLfh6kakzMBuy6GYRgI+jEdZBRiFw0GoN9EsknmrPT/URn+w6uuicGGEXOLYpO3HUO3E374+b5Wz2zg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@nx/nx-linux-x64-musl@16.3.2:
+    resolution: {integrity: sha512-sY1QDuQlqyYiRPJZanrtV07tU0DOXiCrWb0pDsGiO0qHuUSmW5Vw17GWEY4z3rt0/5U8fJ+/9WQrneviOmsOKg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -4369,8 +4452,26 @@ packages:
     dev: false
     optional: true
 
+  /@nx/nx-win32-arm64-msvc@16.3.2:
+    resolution: {integrity: sha512-wBfohT2hjrLKn9WFHvG0MFVk7uYhgYNiptnTLdTouziHgFyZ08vyl7XYBq55BwHPMQ5iswVoEfjn/5ZBfCPscg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /@nx/nx-win32-x64-msvc@16.2.2:
     resolution: {integrity: sha512-liHtyVVOttcqHIV3Xrg/1AJzEgfiOCeqJsleHXHGgPr1fxPx7SIZaa3/QnDY1lNMN+t6Gvj0/r2Ba3iuptYD3Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@nx/nx-win32-x64-msvc@16.3.2:
+    resolution: {integrity: sha512-QC0sWrfQm0/WdvvM//7UAgm+otbak6bznZ0zawTeqmLBh1hLjNeweyzSVKQEtZtlzDMKpzCVuuwkJq+VKBLvmw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -5569,7 +5670,7 @@ packages:
       pretty-format: 27.5.1
     dev: true
 
-  /@testing-library/react-hooks@8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0):
+  /@testing-library/react-hooks@8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -5586,7 +5687,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.22.3
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-error-boundary: 3.1.4(react@18.2.0)
@@ -6210,7 +6311,7 @@ packages:
   /@types/hoist-non-react-statics@3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -6403,10 +6504,17 @@ packages:
   /@types/react-dom@18.2.4:
     resolution: {integrity: sha512-G2mHoTMTL4yoydITgOGwWdWMVd8sNgyEP85xVmMKAPUBwQWm9wBPQUmvbeF4V3WBY1P7mmL4BkjQ0SqUpf1snw==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
 
   /@types/react@18.2.7:
     resolution: {integrity: sha512-ojrXpSH2XFCmHm7Jy3q44nXDyN54+EYKP2lBhJ2bqfyPj6cIUW/FZW/Csdia34NQgq7KYcAlHi5184m4X88+yw==}
+    dependencies:
+      '@types/prop-types': 15.7.5
+      '@types/scheduler': 0.16.3
+      csstype: 3.1.2
+
+  /@types/react@18.2.8:
+    resolution: {integrity: sha512-lTyWUNrd8ntVkqycEEplasWy2OxNlShj3zqS0LuB1ENUGis5HodmhM7DtCoUGbxj3VW/WsGA0DUhpG6XrM7gPA==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.3
@@ -6454,7 +6562,7 @@ packages:
   /@types/swagger-ui-react@4.18.0:
     resolution: {integrity: sha512-XtvFXmj46Zibe89tFQwSQknrq1NxEtOep2rZuxth7K88tyPEP00FnoA6H7ATYhocAEA4XUWaNHNFWFRl1KX8aQ==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
     dev: true
 
   /@types/through@0.0.30:
@@ -15169,6 +15277,68 @@ packages:
       - debug
     dev: false
 
+  /nx@16.3.2:
+    resolution: {integrity: sha512-fOzCVL7qoCJAcYTJwvJ9j+PSaL791ro4AICWuLxaphZsp2jcLoav4Ev7ONPks2Wlkt8FS9bee3nqQ3w1ya36Og==}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@swc-node/register': ^1.4.2
+      '@swc/core': ^1.2.173
+    peerDependenciesMeta:
+      '@swc-node/register':
+        optional: true
+      '@swc/core':
+        optional: true
+    dependencies:
+      '@nrwl/tao': 16.3.2
+      '@parcel/watcher': 2.0.4
+      '@yarnpkg/lockfile': 1.1.0
+      '@yarnpkg/parsers': 3.0.0-rc.44
+      '@zkochan/js-yaml': 0.0.6
+      axios: 1.4.0(debug@4.3.4)
+      chalk: 4.1.2
+      cli-cursor: 3.1.0
+      cli-spinners: 2.6.1
+      cliui: 7.0.4
+      dotenv: 10.0.0
+      enquirer: 2.3.6
+      fast-glob: 3.2.7
+      figures: 3.2.0
+      flat: 5.0.2
+      fs-extra: 11.1.1
+      glob: 7.1.4
+      ignore: 5.2.4
+      js-yaml: 4.1.0
+      jsonc-parser: 3.2.0
+      lines-and-columns: 2.0.3
+      minimatch: 3.0.5
+      npm-run-path: 4.0.1
+      open: 8.4.2
+      semver: 7.3.4
+      string-width: 4.2.3
+      strong-log-transformer: 2.1.0
+      tar-stream: 2.2.0
+      tmp: 0.2.1
+      tsconfig-paths: 4.2.0
+      tslib: 2.5.2
+      v8-compile-cache: 2.3.0
+      yargs: 17.7.2
+      yargs-parser: 21.1.1
+    optionalDependencies:
+      '@nx/nx-darwin-arm64': 16.3.2
+      '@nx/nx-darwin-x64': 16.3.2
+      '@nx/nx-freebsd-x64': 16.3.2
+      '@nx/nx-linux-arm-gnueabihf': 16.3.2
+      '@nx/nx-linux-arm64-gnu': 16.3.2
+      '@nx/nx-linux-arm64-musl': 16.3.2
+      '@nx/nx-linux-x64-gnu': 16.3.2
+      '@nx/nx-linux-x64-musl': 16.3.2
+      '@nx/nx-win32-arm64-msvc': 16.3.2
+      '@nx/nx-win32-x64-msvc': 16.3.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /oas-kit-common@1.0.8:
     resolution: {integrity: sha512-pJTS2+T0oGIwgjGpw7sIRU8RQMcUoKCDWFLdBqKB2BNmGpbBMH2sdqAaOXUg8OzonZHU0L7vfJu1mJFEiYDWOQ==}
     dependencies:
@@ -16624,6 +16794,40 @@ packages:
       '@babel/runtime': 7.22.3
       '@types/hoist-non-react-statics': 3.3.1
       '@types/react': 18.2.7
+      '@types/react-dom': 18.2.4
+      '@types/use-sync-external-store': 0.0.3
+      hoist-non-react-statics: 3.3.2
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-is: 18.2.0
+      redux: 4.2.1
+      use-sync-external-store: 1.2.0(react@18.2.0)
+    dev: false
+
+  /react-redux@8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+    resolution: {integrity: sha512-Q2f6fCKxPFpkXt1qNRZdEDLlScsDWyrgSj0mliK59qU6W5gvBiKkdMEG2lJzhd1rCctf0hb6EtePPLZ2e0m1uw==}
+    peerDependencies:
+      '@types/react': ^16.8 || ^17.0 || ^18.0
+      '@types/react-dom': ^16.8 || ^17.0 || ^18.0
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
+      react-native: '>=0.59'
+      redux: ^4
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+      redux:
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.22.3
+      '@types/hoist-non-react-statics': 3.3.1
+      '@types/react': 18.2.8
       '@types/react-dom': 18.2.4
       '@types/use-sync-external-store': 0.0.3
       hoist-non-react-statics: 3.3.2
@@ -18531,56 +18735,6 @@ packages:
     dev: false
     optional: true
 
-  /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
-    peerDependencies:
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
-    dependencies:
-      '@babel/runtime-corejs3': 7.22.3
-      '@braintree/sanitize-url': 6.0.2
-      base64-js: 1.5.1
-      classnames: 2.3.2
-      css.escape: 1.5.1
-      deep-extend: 0.6.0
-      dompurify: 3.0.2
-      ieee754: 1.2.1
-      immutable: 3.8.2
-      js-file-download: 0.4.12
-      js-yaml: 4.1.0
-      lodash: 4.17.21
-      patch-package: 6.5.1
-      prop-types: 15.8.1
-      randexp: 0.5.3
-      randombytes: 2.1.0
-      react: 18.2.0
-      react-copy-to-clipboard: 5.1.0(react@18.2.0)
-      react-debounce-input: 3.3.0(react@18.2.0)
-      react-dom: 18.2.0(react@18.2.0)
-      react-immutable-proptypes: 2.2.0(immutable@3.8.2)
-      react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
-      react-inspector: 6.0.1(react@18.2.0)
-      react-redux: 8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
-      react-syntax-highlighter: 15.5.0(react@18.2.0)
-      redux: 4.2.1
-      redux-immutable: 4.0.0(immutable@3.8.2)
-      remarkable: 2.0.1
-      reselect: 4.1.8
-      serialize-error: 8.1.0
-      sha.js: 2.4.11
-      swagger-client: 3.19.8(debug@4.3.4)
-      url-parse: 1.5.10
-      xml: 1.0.1
-      xml-but-prettier: 1.0.1
-      zenscroll: 4.0.2
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/react-dom'
-      - debug
-      - encoding
-      - react-native
-    dev: false
-
   /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
     peerDependencies:
@@ -18619,6 +18773,56 @@ packages:
       serialize-error: 8.1.0
       sha.js: 2.4.11
       swagger-client: 3.19.8(encoding@0.1.13)
+      url-parse: 1.5.10
+      xml: 1.0.1
+      xml-but-prettier: 1.0.1
+      zenscroll: 4.0.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - debug
+      - encoding
+      - react-native
+    dev: false
+
+  /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
+    dependencies:
+      '@babel/runtime-corejs3': 7.22.3
+      '@braintree/sanitize-url': 6.0.2
+      base64-js: 1.5.1
+      classnames: 2.3.2
+      css.escape: 1.5.1
+      deep-extend: 0.6.0
+      dompurify: 3.0.2
+      ieee754: 1.2.1
+      immutable: 3.8.2
+      js-file-download: 0.4.12
+      js-yaml: 4.1.0
+      lodash: 4.17.21
+      patch-package: 6.5.1
+      prop-types: 15.8.1
+      randexp: 0.5.3
+      randombytes: 2.1.0
+      react: 18.2.0
+      react-copy-to-clipboard: 5.1.0(react@18.2.0)
+      react-debounce-input: 3.3.0(react@18.2.0)
+      react-dom: 18.2.0(react@18.2.0)
+      react-immutable-proptypes: 2.2.0(immutable@3.8.2)
+      react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
+      react-inspector: 6.0.1(react@18.2.0)
+      react-redux: 8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+      react-syntax-highlighter: 15.5.0(react@18.2.0)
+      redux: 4.2.1
+      redux-immutable: 4.0.0(immutable@3.8.2)
+      remarkable: 2.0.1
+      reselect: 4.1.8
+      serialize-error: 8.1.0
+      sha.js: 2.4.11
+      swagger-client: 3.19.8(debug@4.3.4)
       url-parse: 1.5.10
       xml: 1.0.1
       xml-but-prettier: 1.0.1
