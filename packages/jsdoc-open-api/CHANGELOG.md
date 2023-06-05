@@ -1,3 +1,10 @@
+## @visulima/jsdoc-open-api [1.3.8](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.7...@visulima/jsdoc-open-api@1.3.8) (2023-06-05)
+
+
+### Bug Fixes
+
+* wrong import of the new validator ([73a3e89](https://github.com/visulima/visulima/commit/73a3e8944590b8a158db7afcb5cc0baa0632775b))
+
 ## @visulima/jsdoc-open-api [1.3.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.6...@visulima/jsdoc-open-api@1.3.7) (2023-05-31)
 
 
