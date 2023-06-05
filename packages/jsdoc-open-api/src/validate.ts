@@ -1,8 +1,9 @@
 import type { ISpectralDiagnostic } from "@stoplight/spectral-core";
-import { Spectral as OASValidator } from "@stoplight/spectral-core";
+import spectralCore from "@stoplight/spectral-core";
 import type { IDocument, IParsedResult } from "@stoplight/spectral-core/dist/document";
 import { asyncapi, oas } from "@stoplight/spectral-rulesets";
 
+const { Spectral: OASValidator } = spectralCore;
 const validator = new OASValidator();
 
 validator.setRuleset({
