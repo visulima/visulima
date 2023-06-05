@@ -180,8 +180,8 @@ importers:
         specifier: 18.16.3
         version: 18.16.3
       '@types/react':
-        specifier: 18.2.7
-        version: 18.2.7
+        specifier: 18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: 18.2.4
         version: 18.2.4
@@ -649,7 +649,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       swagger-ui-react:
         specifier: ^4.19.0
-        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -832,7 +832,7 @@ importers:
         version: 4.19.0
       swagger-ui-react:
         specifier: ^4.19.0
-        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
       webpack:
         specifier: ^5.85.0
         version: 5.85.0(esbuild@0.17.19)
@@ -851,7 +851,7 @@ importers:
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)
+        version: 8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
       '@types/accepts':
         specifier: ^1.3.5
         version: 1.3.5
@@ -892,8 +892,8 @@ importers:
         specifier: ^6.9.7
         version: 6.9.7
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -1196,7 +1196,7 @@ importers:
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)
+        version: 8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
       '@types/http-errors':
         specifier: ^2.0.1
         version: 2.0.1
@@ -1349,8 +1349,8 @@ importers:
         specifier: 18.16.16
         version: 18.16.16
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -1701,8 +1701,8 @@ importers:
         specifier: 18.16.16
         version: 18.16.16
       '@types/react':
-        specifier: ^18.2.7
-        version: 18.2.7
+        specifier: ^18.2.8
+        version: 18.2.8
       '@types/react-dom':
         specifier: ^18.2.4
         version: 18.2.4
@@ -3594,7 +3594,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.5
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       react: 18.2.0
 
   /@napi-rs/simple-git-android-arm-eabi@0.1.8:
@@ -5670,7 +5670,7 @@ packages:
       pretty-format: 27.5.1
     dev: true
 
-  /@testing-library/react-hooks@8.0.1(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0):
+  /@testing-library/react-hooks@8.0.1(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -5687,7 +5687,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.22.3
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-error-boundary: 3.1.4(react@18.2.0)
@@ -6311,7 +6311,7 @@ packages:
   /@types/hoist-non-react-statics@3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -6504,10 +6504,17 @@ packages:
   /@types/react-dom@18.2.4:
     resolution: {integrity: sha512-G2mHoTMTL4yoydITgOGwWdWMVd8sNgyEP85xVmMKAPUBwQWm9wBPQUmvbeF4V3WBY1P7mmL4BkjQ0SqUpf1snw==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
 
   /@types/react@18.2.7:
     resolution: {integrity: sha512-ojrXpSH2XFCmHm7Jy3q44nXDyN54+EYKP2lBhJ2bqfyPj6cIUW/FZW/Csdia34NQgq7KYcAlHi5184m4X88+yw==}
+    dependencies:
+      '@types/prop-types': 15.7.5
+      '@types/scheduler': 0.16.3
+      csstype: 3.1.2
+
+  /@types/react@18.2.8:
+    resolution: {integrity: sha512-lTyWUNrd8ntVkqycEEplasWy2OxNlShj3zqS0LuB1ENUGis5HodmhM7DtCoUGbxj3VW/WsGA0DUhpG6XrM7gPA==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.3
@@ -6555,7 +6562,7 @@ packages:
   /@types/swagger-ui-react@4.18.0:
     resolution: {integrity: sha512-XtvFXmj46Zibe89tFQwSQknrq1NxEtOep2rZuxth7K88tyPEP00FnoA6H7ATYhocAEA4XUWaNHNFWFRl1KX8aQ==}
     dependencies:
-      '@types/react': 18.2.7
+      '@types/react': 18.2.8
     dev: true
 
   /@types/through@0.0.30:
@@ -16797,6 +16804,40 @@ packages:
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
 
+  /react-redux@8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+    resolution: {integrity: sha512-Q2f6fCKxPFpkXt1qNRZdEDLlScsDWyrgSj0mliK59qU6W5gvBiKkdMEG2lJzhd1rCctf0hb6EtePPLZ2e0m1uw==}
+    peerDependencies:
+      '@types/react': ^16.8 || ^17.0 || ^18.0
+      '@types/react-dom': ^16.8 || ^17.0 || ^18.0
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
+      react-native: '>=0.59'
+      redux: ^4
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+      redux:
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.22.3
+      '@types/hoist-non-react-statics': 3.3.1
+      '@types/react': 18.2.8
+      '@types/react-dom': 18.2.4
+      '@types/use-sync-external-store': 0.0.3
+      hoist-non-react-statics: 3.3.2
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-is: 18.2.0
+      redux: 4.2.1
+      use-sync-external-store: 1.2.0(react@18.2.0)
+    dev: false
+
   /react-refresh@0.14.0:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
@@ -18694,56 +18735,6 @@ packages:
     dev: false
     optional: true
 
-  /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
-    peerDependencies:
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
-    dependencies:
-      '@babel/runtime-corejs3': 7.22.3
-      '@braintree/sanitize-url': 6.0.2
-      base64-js: 1.5.1
-      classnames: 2.3.2
-      css.escape: 1.5.1
-      deep-extend: 0.6.0
-      dompurify: 3.0.2
-      ieee754: 1.2.1
-      immutable: 3.8.2
-      js-file-download: 0.4.12
-      js-yaml: 4.1.0
-      lodash: 4.17.21
-      patch-package: 6.5.1
-      prop-types: 15.8.1
-      randexp: 0.5.3
-      randombytes: 2.1.0
-      react: 18.2.0
-      react-copy-to-clipboard: 5.1.0(react@18.2.0)
-      react-debounce-input: 3.3.0(react@18.2.0)
-      react-dom: 18.2.0(react@18.2.0)
-      react-immutable-proptypes: 2.2.0(immutable@3.8.2)
-      react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
-      react-inspector: 6.0.1(react@18.2.0)
-      react-redux: 8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.7)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
-      react-syntax-highlighter: 15.5.0(react@18.2.0)
-      redux: 4.2.1
-      redux-immutable: 4.0.0(immutable@3.8.2)
-      remarkable: 2.0.1
-      reselect: 4.1.8
-      serialize-error: 8.1.0
-      sha.js: 2.4.11
-      swagger-client: 3.19.8(debug@4.3.4)
-      url-parse: 1.5.10
-      xml: 1.0.1
-      xml-but-prettier: 1.0.1
-      zenscroll: 4.0.2
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/react-dom'
-      - debug
-      - encoding
-      - react-native
-    dev: false
-
   /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.7)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
     peerDependencies:
@@ -18782,6 +18773,56 @@ packages:
       serialize-error: 8.1.0
       sha.js: 2.4.11
       swagger-client: 3.19.8(encoding@0.1.13)
+      url-parse: 1.5.10
+      xml: 1.0.1
+      xml-but-prettier: 1.0.1
+      zenscroll: 4.0.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - debug
+      - encoding
+      - react-native
+    dev: false
+
+  /swagger-ui-react@4.19.0(@types/react-dom@18.2.4)(@types/react@18.2.8)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-DuGGmvYVqzfGUxvnC2WX9wPjHvBGewtw40mfzPxQYijQsx88UY9hCxRgomT+IojsG8AzSkUVmoXW486vn9V2uQ==}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
+    dependencies:
+      '@babel/runtime-corejs3': 7.22.3
+      '@braintree/sanitize-url': 6.0.2
+      base64-js: 1.5.1
+      classnames: 2.3.2
+      css.escape: 1.5.1
+      deep-extend: 0.6.0
+      dompurify: 3.0.2
+      ieee754: 1.2.1
+      immutable: 3.8.2
+      js-file-download: 0.4.12
+      js-yaml: 4.1.0
+      lodash: 4.17.21
+      patch-package: 6.5.1
+      prop-types: 15.8.1
+      randexp: 0.5.3
+      randombytes: 2.1.0
+      react: 18.2.0
+      react-copy-to-clipboard: 5.1.0(react@18.2.0)
+      react-debounce-input: 3.3.0(react@18.2.0)
+      react-dom: 18.2.0(react@18.2.0)
+      react-immutable-proptypes: 2.2.0(immutable@3.8.2)
+      react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
+      react-inspector: 6.0.1(react@18.2.0)
+      react-redux: 8.0.5(@types/react-dom@18.2.4)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+      react-syntax-highlighter: 15.5.0(react@18.2.0)
+      redux: 4.2.1
+      redux-immutable: 4.0.0(immutable@3.8.2)
+      remarkable: 2.0.1
+      reselect: 4.1.8
+      serialize-error: 8.1.0
+      sha.js: 2.4.11
+      swagger-client: 3.19.8(debug@4.3.4)
       url-parse: 1.5.10
       xml: 1.0.1
       xml-but-prettier: 1.0.1

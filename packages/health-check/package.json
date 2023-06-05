@@ -76,7 +76,7 @@
         "@anolilab/semantic-release-preset": "^2.2.1",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/node": "18.16.16",
-        "@types/react": "^18.2.7",
+        "@types/react": "^18.2.8",
         "@types/react-dom": "^18.2.4",
         "@typescript-eslint/eslint-plugin": "^5.59.7",
         "@typescript-eslint/parser": "^5.59.7",
