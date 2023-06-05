@@ -48,6 +48,7 @@ export const createConfig = (config?: Options & Object) =>
                     "nextra/hooks",
                     "@prisma/client",
                     "zod",
+                    "@stoplight/spectral-core",
                     ...peerDependenciesKeys,
                     ...Object.keys(packageJsonContent?.optionalDependencies || {}),
                     ...(config?.external || []),

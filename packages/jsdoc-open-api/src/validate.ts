@@ -1,10 +1,9 @@
 import type { ISpectralDiagnostic } from "@stoplight/spectral-core";
-import spectralCore from "@stoplight/spectral-core";
+import { Spectral } from "@stoplight/spectral-core";
 import type { IDocument, IParsedResult } from "@stoplight/spectral-core/dist/document";
 import { asyncapi, oas } from "@stoplight/spectral-rulesets";
 
-const { Spectral: OASValidator } = spectralCore;
-const validator = new OASValidator();
+const validator = new Spectral();
 
 validator.setRuleset({
     // @ts-expect-error: TS2322
