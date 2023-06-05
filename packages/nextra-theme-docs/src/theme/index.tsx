@@ -32,7 +32,7 @@ import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
     toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
-    main: "w-full overflow-x-hidden break-words",
+    main: "w-full break-words",
 };
 
 const Body: FC<{
@@ -52,7 +52,7 @@ const Body: FC<{
     const mounted = useMounted();
 
     if (themeContext.layout === "raw") {
-        return <div className={classes.main}>{children}</div>;
+        return <div className={cn("nextra-content", classes.main)}>{children}</div>;
     }
 
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
@@ -107,7 +107,7 @@ const Body: FC<{
             className={cn(
                 classes.main,
                 // eslint-disable-next-line max-len
-                "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800",
+                "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800 overflow-x-hidden",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
             )}
         >
