@@ -147,11 +147,6 @@
     "publishConfig": {
         "access": "public"
     },
-    "pnpm": {
-        "overrides": {
-            "jsonc-parser": "^3.2.0"
-        }
-    },
     "sources": [
         "src/index.ts",
         "src/cli/index.ts",
