@@ -16,7 +16,7 @@ overrides:
 
 patchedDependencies:
   '@semantic-release/npm@10.0.3':
-    hash: 6jl7znar6ayweisrbdxx53sbri
+    hash: hrnb73ctxcfxnhhtd22zemjwxa
     path: patches/@semantic-release__npm@10.0.3.patch
 
 importers:
@@ -2408,7 +2408,7 @@ packages:
       '@semantic-release/exec': 6.0.3(semantic-release@21.0.2)
       '@semantic-release/git': 10.0.1(semantic-release@21.0.2)
       '@semantic-release/github': 8.1.0(semantic-release@21.0.2)
-      '@semantic-release/npm': 10.0.3(patch_hash=6jl7znar6ayweisrbdxx53sbri)(semantic-release@21.0.2)
+      '@semantic-release/npm': 10.0.3(patch_hash=hrnb73ctxcfxnhhtd22zemjwxa)(semantic-release@21.0.2)
       '@semantic-release/release-notes-generator': 11.0.2(semantic-release@21.0.2)
       commitizen: 4.3.0
       conventional-changelog-conventionalcommits: 5.0.0
@@ -5023,7 +5023,7 @@ packages:
       - encoding
       - supports-color
 
-  /@semantic-release/npm@10.0.3(patch_hash=6jl7znar6ayweisrbdxx53sbri)(semantic-release@21.0.2):
+  /@semantic-release/npm@10.0.3(patch_hash=hrnb73ctxcfxnhhtd22zemjwxa)(semantic-release@21.0.2):
     resolution: {integrity: sha512-Chbv3kX4o+y+r1X6hsqBVB8NFbSVfiNlYOqMG6o9Wc8r5Y4cjxfbaMCuJ++XAtw3YXYX/NVD05cPzBi4Orjusg==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -18633,7 +18633,7 @@ packages:
       '@semantic-release/commit-analyzer': 9.0.2(semantic-release@21.0.2)
       '@semantic-release/error': 3.0.0
       '@semantic-release/github': 8.1.0(semantic-release@21.0.2)
-      '@semantic-release/npm': 10.0.3(patch_hash=6jl7znar6ayweisrbdxx53sbri)(semantic-release@21.0.2)
+      '@semantic-release/npm': 10.0.3(patch_hash=hrnb73ctxcfxnhhtd22zemjwxa)(semantic-release@21.0.2)
       '@semantic-release/release-notes-generator': 11.0.2(semantic-release@21.0.2)
       aggregate-error: 4.0.1
       cosmiconfig: 8.1.3
