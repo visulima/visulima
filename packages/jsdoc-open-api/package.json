@@ -83,8 +83,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@stoplight/spectral-core": "^1.18.0",
-        "@stoplight/spectral-rulesets": "^1.16.0",
+        "@apidevtools/swagger-parser": "^10.1.0",
         "@visulima/readdir": "1.3.5",
         "comment-parser": "^1.3.1",
         "lodash.mergewith": "^4.6.2",
@@ -147,6 +146,11 @@
     },
     "publishConfig": {
         "access": "public"
+    },
+    "pnpm": {
+        "overrides": {
+            "jsonc-parser": "^3.2.0"
+        }
     },
     "sources": [
         "src/index.ts",
