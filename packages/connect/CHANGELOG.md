@@ -1,3 +1,10 @@
+## @visulima/connect [1.3.6-alpha.1](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.5...@visulima/connect@1.3.6-alpha.1) (2023-06-06)
+
+
+### Bug Fixes
+
+* Add npm package provenance, see https://docs.npmjs.com/generating-provenance-statements for more info ([fddcb97](https://github.com/visulima/visulima/commit/fddcb977d3b5ef962966ca37bfad6bb31a08b9a9))
+
 ## @visulima/connect [1.3.5](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.4...@visulima/connect@1.3.5) (2023-05-30)
 
 
