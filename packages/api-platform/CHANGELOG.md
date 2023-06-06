@@ -1,3 +1,19 @@
+## @visulima/api-platform [1.2.12](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.11...@visulima/api-platform@1.2.12) (2023-06-06)
+
+
+### Bug Fixes
+
+* Add npm package provenance, see https://docs.npmjs.com/generating-provenance-statements for more info ([9e7da04](https://github.com/visulima/visulima/commit/9e7da0491584e16a806fc7575c00080f192ec15e))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.6
+* **@visulima/jsdoc-open-api:** upgraded to 1.3.10
+* **@visulima/crud:** upgraded to 1.0.12
+* **@visulima/readdir:** upgraded to 1.3.6
+
 ## @visulima/api-platform [1.2.11](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.10...@visulima/api-platform@1.2.11) (2023-06-06)
 
 
