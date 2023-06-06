@@ -1,7 +1,7 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import type { ComponentProps, FC, ReactElement } from "react";
+import type { ComponentProps, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 
 import Anchor from "./components/anchor";
@@ -20,7 +20,7 @@ import type { DocumentationThemeConfig } from "./theme/theme-schema";
 
 // Anchor links
 // eslint-disable-next-line max-len
-const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id, ...properties }: ComponentProps<"h2">): ReactElement => {
+const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id = "", ...properties }: ComponentProps<"h2">): ReactElement => {
     const setActiveAnchor = useSetActiveAnchor();
     const slugs = useSlugs();
     const observer = useIntersectionObserver();
@@ -67,7 +67,7 @@ const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number
 };
 
 // eslint-disable-next-line react/jsx-props-no-spreading
-const A: FC<Omit<ComponentProps<"a">, "ref"> & { href?: string }> = ({ href = "", ...properties }) => (
+const A = ({ href = "", ...properties }: Omit<ComponentProps<"a">, "ref"> & { href?: string }) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />
 );

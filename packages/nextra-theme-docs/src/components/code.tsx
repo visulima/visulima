@@ -1,8 +1,8 @@
-import type { ComponentProps, FC } from "react";
+import type { ComponentProps, ReactElement } from "react";
 
 import { cn } from "../utils";
 
-const Code: FC<ComponentProps<"code">> = ({ children, className = "", ...properties }) => {
+const Code = ({ children, className = "", ...properties }: ComponentProps<"code">): ReactElement => {
     const hasLineNumbers = "data-line-numbers" in properties;
 
     return (
