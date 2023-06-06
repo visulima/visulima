@@ -1,3 +1,10 @@
+## @visulima/pagination [2.0.4](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.3...@visulima/pagination@2.0.4) (2023-06-06)
+
+
+### Bug Fixes
+
+* Add npm package provenance, see https://docs.npmjs.com/generating-provenance-statements for more info ([9e7da04](https://github.com/visulima/visulima/commit/9e7da0491584e16a806fc7575c00080f192ec15e))
+
 ## @visulima/pagination [2.0.3](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.2...@visulima/pagination@2.0.3) (2023-05-25)
 
 
