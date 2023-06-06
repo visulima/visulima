@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.3...@visulima/nextra-theme-docs@1.1.4) (2023-06-06)
+
+
+### Bug Fixes
+
+* update deps, to support latest nextra version ([234db68](https://github.com/visulima/visulima/commit/234db68d44e49d1e9db8264cf05760d22b3f6263))
+
 ## @visulima/nextra-theme-docs [1.1.3](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.2...@visulima/nextra-theme-docs@1.1.3) (2023-06-06)
 
 
