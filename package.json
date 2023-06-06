@@ -1,6 +1,6 @@
 {
     "name": "visulima",
-    "version": "0.0.0",
+    "version": "1.3.6",
     "private": true,
     "workspaces": [
         "packages/*"
@@ -132,6 +132,9 @@
             "semantic-release": "^21.0.2",
             "@mdx-js/react": "^2.3.0",
             "estree-util-build-jsx": "^2.2.2"
+        },
+        "patchedDependencies": {
+            "@semantic-release/npm@10.0.3": "patches/@semantic-release__npm@10.0.3.patch"
         }
     }
 }

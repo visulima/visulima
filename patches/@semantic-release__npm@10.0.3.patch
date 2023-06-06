@@ -1,0 +1,89 @@
+diff --git a/lib/get-registry.js b/lib/get-registry.js
+index 4cb42dea3f0072a18ceb297a5bf90408743ea47c..c4f9e1ebfd5dbfc5903345fc0c25e1bd659123b9 100644
+--- a/lib/get-registry.js
++++ b/lib/get-registry.js
+@@ -9,7 +9,7 @@ export default function ({ publishConfig: { registry } = {}, name }, { cwd, env
+     getRegistryUrl(
+       name.split("/")[0],
+       rc(
+-        "npm",
++        "pnpm",
+         { registry: "https://registry.npmjs.org/" },
+         { config: env.NPM_CONFIG_USERCONFIG || path.resolve(cwd, ".npmrc") }
+       )
+diff --git a/lib/get-release-info.js b/lib/get-release-info.js
+index 84546ac3fe2ac13c7e58e3a7f3df455f721bccd4..68227240c3fbf53f4864ec0b59ff84bf5d932241 100644
+--- a/lib/get-release-info.js
++++ b/lib/get-release-info.js
+@@ -7,7 +7,7 @@ export default function (
+   registry
+ ) {
+   return {
+-    name: `npm package (@${distTag} dist-tag)`,
++    name: `pnpm package (@${distTag} dist-tag)`,
+     url:
+       normalizeUrl(registry) === normalizeUrl(DEFAULT_NPM_REGISTRY)
+         ? `https://www.npmjs.com/package/${name}/v/${version}`
+diff --git a/lib/prepare.js b/lib/prepare.js
+index 3e76bec44cf595a1b4141728336bed904d4d518d..093137aee512e392867df905668c519c4470ad0a 100644
+--- a/lib/prepare.js
++++ b/lib/prepare.js
+@@ -12,7 +12,7 @@ export default async function (
+   logger.log("Write version %s to package.json in %s", version, basePath);
+
+   const versionResult = execa(
+-    "npm",
++    "pnpm",
+     ["version", version, "--userconfig", npmrc, "--no-git-tag-version", "--allow-same-version"],
+     {
+       cwd: basePath,
+@@ -27,7 +27,7 @@ export default async function (
+
+   if (tarballDir) {
+     logger.log("Creating npm package version %s", version);
+-    const packResult = execa("npm", ["pack", basePath, "--userconfig", npmrc], { cwd, env, preferLocal: true });
++    const packResult = execa("pnpm", ["pack"], { cwd: basePath, env, preferLocal: true });
+     packResult.stdout.pipe(stdout, { end: false });
+     packResult.stderr.pipe(stderr, { end: false });
+
+diff --git a/lib/publish.js b/lib/publish.js
+index ac3e6feea8e388d88e77d58538a265f7ab4eac05..93bed89f46e1743b95f223812efc9343432f2da4 100644
+--- a/lib/publish.js
++++ b/lib/publish.js
+@@ -21,8 +21,8 @@ export default async function (npmrc, { npmPublish, pkgRoot }, pkg, context) {
+
+     logger.log(`Publishing version ${version} to npm registry on dist-tag ${distTag}`);
+     const result = execa(
+-      "npm",
+-      ["publish", basePath, "--userconfig", npmrc, "--tag", distTag, "--registry", registry],
++      "pnpm",
++      ["publish", basePath, "--tag", distTag, "--registry", registry],
+       { cwd, env, preferLocal: true }
+     );
+     result.stdout.pipe(stdout, { end: false });
+diff --git a/lib/set-npmrc-auth.js b/lib/set-npmrc-auth.js
+index 6e92d0801b42e6b57fa508b87b374d1706639fc9..aa9a4ad68410a2e90c3a5885fb409019db148c4a 100644
+--- a/lib/set-npmrc-auth.js
++++ b/lib/set-npmrc-auth.js
+@@ -9,7 +9,7 @@ import getError from "./get-error.js";
+ export default async function (npmrc, registry, { cwd, env: { NPM_TOKEN, NPM_CONFIG_USERCONFIG }, logger }) {
+   logger.log("Verify authentication for registry %s", registry);
+   const { configs, ...rcConfig } = rc(
+-    "npm",
++    "pnpm",
+     { registry: "https://registry.npmjs.org/" },
+     { config: NPM_CONFIG_USERCONFIG || path.resolve(cwd, ".npmrc") }
+   );
+diff --git a/lib/verify-auth.js b/lib/verify-auth.js
+index 99e138e98190cf2545937c9d18e426b3ac4aa53d..6bb4f37214b6dc9c29ccafb166a2a0cd2405b493 100644
+--- a/lib/verify-auth.js
++++ b/lib/verify-auth.js
+@@ -18,7 +18,7 @@ export default async function (npmrc, pkg, context) {
+
+   if (normalizeUrl(registry) === normalizeUrl(DEFAULT_NPM_REGISTRY)) {
+     try {
+-      const whoamiResult = execa("npm", ["whoami", "--userconfig", npmrc, "--registry", registry], {
++      const whoamiResult = execa("pnpm", ["whoami", "--userconfig", npmrc, "--registry", registry], {
+         cwd,
+         env,
+         preferLocal: true,
