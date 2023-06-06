@@ -1,3 +1,4 @@
+import type { Components as MdxComponents, MergeComponents } from "@mdx-js/react/lib";
 import type { NextSeoProps } from "next-seo";
 import type { Item } from "nextra/normalize-pages";
 import type { FC, ReactNode } from "react";
@@ -53,7 +54,7 @@ export const themeSchema = z
                 categoryId: z.string(),
             })
             .optional(),
-        components: z.record(z.custom<FC>(...fc)).optional(),
+        components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
         darkMode: z.boolean(),
         direction: z.enum(["ltr", "rtl"]),
         docsRepositoryBase: z.string().startsWith("https://"),

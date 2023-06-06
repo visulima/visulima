@@ -1,17 +1,19 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
-import type { ComponentProps, FC } from "react";
+import type { ComponentProps, ReactElement } from "react";
 
 import { useDetails } from "../contexts";
 
-const Summary: FC<
-ComponentProps<"summary"> & {
+const Summary = ({
+    variant = "default",
+    className = "",
+    children,
+    iconProps: iconProperties = {},
+    ...properties
+}: ComponentProps<"summary"> & {
     variant?: "default" | "raw";
     iconProps?: ComponentProps<typeof ArrowRightIcon>;
-}
-> = ({
-    variant = "default", className = "", children, iconProps: iconProperties = {}, ...properties
-}) => {
+}): ReactElement => {
     const setOpen = useDetails();
 
     return (

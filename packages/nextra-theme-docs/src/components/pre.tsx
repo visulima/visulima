@@ -1,19 +1,21 @@
 import cn from "clsx";
 import { WordWrapIcon } from "nextra/icons";
-import type { ComponentProps, FC, LegacyRef } from "react";
+import type { ComponentProps, LegacyRef, ReactElement } from "react";
 import { useCallback, useRef } from "react";
 
 import Button from "./button";
 import CopyToClipboard from "./copy-to-clipboard";
 
-const Pre: FC<
-ComponentProps<"pre"> & {
+const Pre = ({
+    children,
+    className = "code-block",
+    filename,
+    hasCopyCode,
+    ...properties
+}: ComponentProps<"pre"> & {
     filename?: string;
     hasCopyCode?: boolean;
-}
-> = ({
-    children, className = "code-block", filename, hasCopyCode, ...properties
-}) => {
+}): ReactElement => {
     const reference = useRef<HTMLPreElement | undefined>();
 
     const toggleWordWrap = useCallback(() => {

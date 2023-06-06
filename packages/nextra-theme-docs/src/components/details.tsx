@@ -1,6 +1,6 @@
 import cn from "clsx";
 import type {
-    ComponentProps, FC, PropsWithChildren, ReactElement, ReactNode,
+    ComponentProps, PropsWithChildren, ReactElement, ReactNode,
 } from "react";
 import {
     Children, cloneElement, useEffect, useState,
@@ -46,15 +46,19 @@ const findSummary = (children: ReactNode) => {
     return [summary, restChildren];
 };
 
-const Details: FC<
-ComponentProps<"details"> & {
+const Details = ({
+    children,
+    open = false,
+    collapseClassName,
+    collapseHorizontal = false,
+    className,
+    variant = "default",
+    ...properties
+}: ComponentProps<"details"> & {
     variant?: "default" | "raw";
     collapseClassName?: string;
     collapseHorizontal?: boolean;
-}
-> = ({
-    children, open = false, collapseClassName, collapseHorizontal = false, className, variant = "default", ...properties
-}) => {
+}): ReactElement => {
     const [openState, setOpen] = useState(open);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const [summary, restChildren] = findSummary(children);
