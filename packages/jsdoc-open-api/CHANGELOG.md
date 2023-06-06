@@ -1,3 +1,11 @@
+## @visulima/jsdoc-open-api [1.3.9](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.8...@visulima/jsdoc-open-api@1.3.9) (2023-06-06)
+
+
+### Bug Fixes
+
+* fixed wrong import of the new spectral core ([881ab34](https://github.com/visulima/visulima/commit/881ab34c472f62d6c0ad6c0e78c6700275958db3))
+* **jsdoc-open-api:** reverted the switch to @stoplight/spectral-core because of the missing support of cjs in jsonc-parser ([808f598](https://github.com/visulima/visulima/commit/808f598337c48eca0150b92e47456d6137700e1c))
+
 ## @visulima/jsdoc-open-api [1.3.8](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.7...@visulima/jsdoc-open-api@1.3.8) (2023-06-05)
 
 
