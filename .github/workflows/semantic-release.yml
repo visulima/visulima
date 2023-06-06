@@ -157,7 +157,7 @@ jobs:
 
             # @see: npm install -g npm@latest is necessary to make provenance available. More info: https://docs.npmjs.com/generating-provenance-statements
             - name: "Upgrade npm to latest version"
-              run: "npm install --global npm@latest"
+              run: "npm install --global npm@9.6.x"
               env:
                   SKIP_CHECK: "true"
 
@@ -174,6 +174,9 @@ jobs:
 
             - name: "Build Production"
               run: "pnpm run build:prod:packages"
+
+            - name: "npm v8.5+ requires workspaces-update to be set to false"
+              run: "echo 'workspaces-update=false' >> .npmrc"
 
             - name: "Semantic Release"
               if: "success()"
