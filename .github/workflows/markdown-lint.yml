@@ -53,5 +53,8 @@ jobs:
               env:
                   SKIP_CHECK: "true"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "npm audit signatures"
+
             - name: "lint"
               run: "pnpm run lint:text"
