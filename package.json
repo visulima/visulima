@@ -85,13 +85,13 @@
     "dependencies": {
         "@anolilab/prettier-config": "^3.1.1",
         "@anolilab/textlint-config": "^4.2.2",
-        "@commitlint/cli": "^17.6.3",
-        "@commitlint/config-conventional": "^17.6.3",
+        "@commitlint/cli": "^17.6.5",
+        "@commitlint/config-conventional": "^17.6.5",
         "@manypkg/cli": "^0.20.0",
         "@nrwl/cli": "latest",
         "@nrwl/nx-cloud": "16.0.5",
-        "@nrwl/tao": "16.2.2",
-        "@nrwl/workspace": "16.2.2",
+        "@nrwl/tao": "16.3.2",
+        "@nrwl/workspace": "16.3.2",
         "@octokit/rest": "^19.0.11",
         "@qiwi/multi-semantic-release": "6.7.0",
         "@tsconfig/node16": "^1.0.4",
@@ -108,10 +108,10 @@
         "prettier-plugin-prisma": "^4.13.0",
         "pretty-quick": "^3.1.3",
         "rimraf": "^5.0.1",
-        "semantic-release": "^21.0.2",
+        "semantic-release": "^21.0.3",
         "sort-package-json": "^2.4.1",
         "textlint": "^13.3.2",
-        "typescript": "^5.0.4"
+        "typescript": "^5.1.3"
     },
     "devDependencies": {
         "load-tsconfig": "^0.2.5",
