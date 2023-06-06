@@ -12,6 +12,9 @@ on: # yamllint disable-line rule:truthy
             - "alpha"
             - "beta"
 
+permissions:
+    contents: "read" # for checkout
+
 # Enable this to use the github packages
 # yamllint disable-line rule:comments
 #env:
@@ -122,6 +125,11 @@ jobs:
         name: "Semantic Release"
 
         runs-on: "ubuntu-latest"
+        permissions:
+            contents: "write" # to be able to publish a GitHub release
+            issues: "write" # to be able to comment on released issues
+            pull-requests: "write" # to be able to comment on released pull requests
+            id-token: "write" # to enable use of OIDC for npm provenance
 
         needs: ["test", "eslint"]
 
@@ -147,9 +155,9 @@ jobs:
                   node-version: "16.x"
                   cache: "pnpm"
 
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
+            # @see: npm install -g npm@latest is necessary to make provenance available. More info: https://docs.npmjs.com/generating-provenance-statements
+            - name: "Upgrade npm to latest version"
+              run: "npm install --global npm@latest"
               env:
                   SKIP_CHECK: "true"
 
@@ -160,6 +168,9 @@ jobs:
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
+
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "npm audit signatures"
 
             - name: "Build Production"
               run: "pnpm run build:prod:packages"
