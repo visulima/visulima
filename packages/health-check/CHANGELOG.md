@@ -1,3 +1,10 @@
+## @visulima/health-check [1.0.5](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.4...@visulima/health-check@1.0.5) (2023-06-06)
+
+
+### Bug Fixes
+
+* Add npm package provenance, see https://docs.npmjs.com/generating-provenance-statements for more info ([9e7da04](https://github.com/visulima/visulima/commit/9e7da0491584e16a806fc7575c00080f192ec15e))
+
 ## @visulima/health-check [1.0.4](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.3...@visulima/health-check@1.0.4) (2023-05-25)
 
 
