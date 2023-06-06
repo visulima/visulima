@@ -1,5 +1,5 @@
 import "../css/styles.css";
-import "@visulima/nextra-theme-docs/style.css";
+import "@visulima/nextra-theme-docs/component-style.css";
 
 import type { AppProps } from "next/app";
 import Head from "next/head";

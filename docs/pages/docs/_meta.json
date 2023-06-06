@@ -1,4 +1,8 @@
 {
+    "index": {
+        "title": "Visulima Docs",
+        "display": "hidden"
+    },
     "prologue": {
         "title": "Prologue"
     },

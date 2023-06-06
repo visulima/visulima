@@ -1,16 +1,144 @@
-{
-// wrapped with {} to mark it as javascript so mdx will not put it under a p tag
-}
-{
-    <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center">
-            <p className="mt-5 text-4xl font-bold leading-tight text-gray-900 sm:leading-tight sm:text-5xl lg:text-6xl lg:leading-tight font-pj">
-                Visulima {" "}
-                <span className="relative inline-flex sm:inline">
-                    <span className="bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] blur-lg filter opacity-30 w-full h-full absolute inset-0" />
-                    <span className="relative"> JAMStack </span>
-                </span>
+import Link from "next/link";
+
+import WordChanger from "@components/word-changer";
+import Image from "next/image";
+
+<div className="max-w-[90rem] mx-auto min-h-[calc(100vh-var(--nextra-navbar-height))] pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] bg-white dark:bg-darker-800">
+    <div className="mt-[16vmin] relative sm:text-center md:text-left flex">
+        <div>
+            <h1 className="max-w-3xl text-5xl font-semibold md:text-6xl lg:text-7xl text-gray-900 dark:text-white">
+                Launch Ideas Rapidly with Our <WordChanger words={["Missing", "Intuitive"]} /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-pink-500">Toolkit</span>
+            </h1>
+
+            <p className="mt-6 max-w-xl text-gray-900 dark:text-gray-100 text-md leading-relaxed md:mt-8 md:text-lg lg:mt-10">
+                Build your next application with confidence using Visulima.
+
+                Stop wasting hours downloading and assembling hundreds of packages — freeing you to create without sweating the small things.
             </p>
+            <div className="flex flex-row mt-6 md:mt-8 lg:mt-10">
+                <Link href="/docs" className="hero-button relative z-10 min-w-[190px]">
+                    <div className="absolute grid grid-cols-[1fr] -z-10 inset-0">
+                        <div className="background background-1"></div>
+                        <div className="background background-2"></div>
+                        <div className="background background-3"></div>
+                    </div>
+                    <span className="z-10 flex justify-center items-center text-base transition-all duration-100 m-px px-12 py-3 rounded bg-white text-gray-900 font-semibold hover:font-bold">Get started</span>
+                </Link>
+            </div>
+        </div>
+        <Image src="/assets/landingpage/octopus.png" width={450} height={330} />
+
+    </div>
+
+    <div className="relative overflow-hidden py-16 md:pt-48">
+        <h2 className="text-4xl font-bold ">Everything you need to be <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-400">amazing.</span></h2>
+        <p className="mt-6 text-gray-900 dark:text-gray-500 leading-relaxed max-w-3xl">Out of the box, Visulima has elegant solutions for the common features needed by all modern web applications. It's time to start building amazing applications and stop wasting time searching for packages and reinventing the wheel.</p>
+
+        <ul className="lg:grid-cols-3 grid grid-cols-1 gap-8 pt-16 sm:grid-cols-2">
+            {
+                [
+                    {
+                        header: "Production-ready APIs",
+                        content: "Full featured GraphQL and REST APIs automatically generated from your database. No more manual writing of APIs.",
+                    },
+                    {
+                        header: "OpenAPI",
+                        content: "Visulima automatically generates OpenAPI documentation for your APIs. No more manual writing of documentation.",
+                    },
+                    {
+                        header: "Postman collections",
+                        content: "Auto-generated Postman collections for debugging APIs.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "Admin Panel",
+                        content: "Visulima comes with a powerful admin panel that allows you to easily manage your data.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "Authentication",
+                        content: "Authentication is a breeze with Visulima. We provide you with a complete authentication system out of the box.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "Database",
+                        content: "Visulima comes with a powerful database system that allows you to easily manage your data.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "File Storage",
+                        content: "Visulima comes with a powerful file storage system that allows you to easily manage your files.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "Email",
+                        content: "Visulima comes with a powerful email system that allows you to easily manage your emails.",
+                        inProgress: true,
+                    },
+                    {
+                        header: "Notifications",
+                        content: "Visulima comes with a powerful notification system that allows you to easily manage your notifications.",
+                        inProgress: true,
+                    },
+                ].map((item, index) => (
+                    <li className="relative group z-10" key={`feature-${index}`}>
+                        <div className="relative flex justify-center items-center bg-white dark:bg-darker-800 p-5 gradient-border after:transition-opacity after:duration-500">
+                                <div className="flex flex-col gap-y-4">
+                                    <header className="font-semibold text-gray-900 dark:text-gray-500 text-xl w-full">{item.header} {item.inProgress && (<span className="text-xs float-right">In Progress</span>)}</header>
+                                    <p className="u-text-gray-500">{item.content}</p>
+                                </div>
+                        </div>
+                    </li>
+                ))
+            }
+        </ul>
+        <p className="mt-12 text-gray-900 dark:text-gray-500 leading-relaxed max-w-3xl">We've just scratched the surface. Visulima has you covered for everything you will need to build a web application, including email verification, rate limiting, and custom console commands. Check out the <Link href="/docs" className="text-pink-400 underline hover:no-underline">documentation</Link> to keep learning.</p>
+    </div>
+
+</div>
+
+<div className="relative overflow-hidden py-16 md:mt-48 pt-36 bg-darker-800 w-[98%] mx-auto rounded-2xl p-5">
+    <div className="max-w-[90rem] mx-auto pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)]">
+        <h2 className="text-4xl font-bold text-white">Discover a new <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400">Developer Experience</span></h2>
+        <p className="mt-6 text-white leading-relaxed max-w-3xl">Developers deserve solutions as well designed as non-technical people. Our focus is to empower developers to ship great softwares with confidence.</p>
+        <div className="rounded-md overflow-hidden mt-12">
+            <iframe src="https://stackblitz.com/edit/visulima-starters-1c9ewu?ctl=1&embed=1&file=index.ts&theme=dark&view=editor" className="w-full aspect-video !p-0" />
         </div>
     </div>
-}
+</div>
+
+<div className="max-w-[90rem] mx-auto pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] bg-white dark:bg-darker-800">
+    <div className="relative overflow-hidden py-16 md:pt-48">
+        <h2 className="text-4xl font-bold ">Visulima is <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">open source</span></h2>
+        <p className="mt-6 text-gray-900 dark:text-gray-500 leading-relaxed max-w-3xl">Visulima is open source and free to use. We believe in the power of open source and the community. We are committed to building a community of developers that will help us build the best developer experience.</p>
+
+        <div className="flex items-center justify-center">
+            <Link href="https://github.com/visulima/visulima/discussions" className="relative z-10 min-w-[190px] mt-12 bg-black border border-black rounded hover:bg-white group transition duration-300"><span className="px-12 py-3 block text-white group-hover:text-black">GitHub Discussions</span></Link>
+        </div>
+    </div>
+
+    <div className="relative overflow-hidden py-16 md:py-48">
+        <div className="text-center w-full mx-auto z-20">
+            <h2 className="text-7xl font-bold">
+                <span className="block">
+                    Build outside the box
+                </span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                    with Visulima
+                </span>
+            </h2>
+            <div className="flex items-center justify-center">
+                <div className="flex flex-row mt-12">
+                    <Link href="/docs" className="hero-button relative z-10 min-w-[190px]">
+                        <div className="absolute grid grid-cols-[1fr] -z-10 inset-0">
+                            <div className="background background-1"></div>
+                            <div className="background background-2"></div>
+                            <div className="background background-3"></div>
+                        </div>
+                        <span className="z-10 flex justify-center items-center text-base transition-all duration-100 m-px px-12 py-3 rounded bg-white text-gray-900 font-semibold hover:font-bold">Get started</span>
+                    </Link>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
