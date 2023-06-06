@@ -3,12 +3,13 @@ index 7dfdaab6e2b8c517e8d706b33461a2769f0783a5..ae70cdc010755d50500d21f10cd2043a
 --- a/lib/add-channel.js
 +++ b/lib/add-channel.js
 @@ -19,7 +19,7 @@ export default async function (npmrc, { npmPublish }, pkg, context) {
- 
+
      logger.log(`Adding version ${version} to npm registry on dist-tag ${distTag}`);
      const result = execa(
 -      "npm",
+-      ["dist-tag", "add", `${pkg.name}@${version}`, distTag, "--userconfig", npmrc, "--registry", registry],
 +      "pnpm",
-       ["dist-tag", "add", `${pkg.name}@${version}`, distTag, "--userconfig", npmrc, "--registry", registry],
++      ["dist-tag", "add", `${pkg.name}@${version}`, distTag, "--config", npmrc, "--registry", registry],
        {
          cwd,
 diff --git a/lib/get-registry.js b/lib/get-registry.js
@@ -25,53 +26,57 @@ index 4cb42dea3f0072a18ceb297a5bf90408743ea47c..c4f9e1ebfd5dbfc5903345fc0c25e1bd
          { config: env.NPM_CONFIG_USERCONFIG || path.resolve(cwd, ".npmrc") }
        )
 diff --git a/lib/prepare.js b/lib/prepare.js
-index 3e76bec44cf595a1b4141728336bed904d4d518d..2a1d71aca608230122af574322676716343d66c2 100644
+index 3e76bec44cf595a1b4141728336bed904d4d518d..b3726580b2a224aa2e9f1b42ccbecfcfdbb5bdf1 100644
 --- a/lib/prepare.js
 +++ b/lib/prepare.js
-@@ -10,9 +10,10 @@ export default async function (
+@@ -10,10 +10,11 @@ export default async function (
    const basePath = pkgRoot ? path.resolve(cwd, pkgRoot) : cwd;
- 
+
    logger.log("Write version %s to package.json in %s", version, basePath);
 +  logger.log('Packing bundle to %s', basePath)
- 
+
    const versionResult = execa(
 -    "npm",
+-    ["version", version, "--userconfig", npmrc, "--no-git-tag-version", "--allow-same-version"],
 +    "pnpm",
-     ["version", version, "--userconfig", npmrc, "--no-git-tag-version", "--allow-same-version"],
++    ["version", version, "--config", npmrc, "--no-git-tag-version", "--allow-same-version"],
      {
        cwd: basePath,
+       env,
 @@ -27,7 +28,7 @@ export default async function (
- 
+
    if (tarballDir) {
      logger.log("Creating npm package version %s", version);
 -    const packResult = execa("npm", ["pack", basePath, "--userconfig", npmrc], { cwd, env, preferLocal: true });
-+    const packResult = execa("pnpm", ["pack"], { cwd: basePath, env, preferLocal: true });
++    const packResult = execa("pnpm", ["pack", "--config", npmrc], { cwd: basePath, env, preferLocal: true });
      packResult.stdout.pipe(stdout, { end: false });
      packResult.stderr.pipe(stderr, { end: false });
- 
+
 diff --git a/lib/publish.js b/lib/publish.js
-index ac3e6feea8e388d88e77d58538a265f7ab4eac05..dd5653348713eeb26e89681421b6524e27f83623 100644
+index ac3e6feea8e388d88e77d58538a265f7ab4eac05..93bed89f46e1743b95f223812efc9343432f2da4 100644
 --- a/lib/publish.js
 +++ b/lib/publish.js
-@@ -21,7 +21,7 @@ export default async function (npmrc, { npmPublish, pkgRoot }, pkg, context) {
- 
+@@ -21,8 +21,8 @@ export default async function (npmrc, { npmPublish, pkgRoot }, pkg, context) {
+
      logger.log(`Publishing version ${version} to npm registry on dist-tag ${distTag}`);
      const result = execa(
 -      "npm",
+-      ["publish", basePath, "--userconfig", npmrc, "--tag", distTag, "--registry", registry],
 +      "pnpm",
-       ["publish", basePath, "--userconfig", npmrc, "--tag", distTag, "--registry", registry],
++      ["publish", basePath, "--config", npmrc, "--tag", distTag, "--registry", registry],
        { cwd, env, preferLocal: true }
      );
+     result.stdout.pipe(stdout, { end: false });
 diff --git a/lib/verify-auth.js b/lib/verify-auth.js
-index 99e138e98190cf2545937c9d18e426b3ac4aa53d..b3dda5341b710654bfdd97ca1f18ec231b53fb42 100644
+index 99e138e98190cf2545937c9d18e426b3ac4aa53d..8446eb1973258a31a473430bd284a0e3e7ff78d5 100644
 --- a/lib/verify-auth.js
 +++ b/lib/verify-auth.js
 @@ -18,7 +18,7 @@ export default async function (npmrc, pkg, context) {
- 
+
    if (normalizeUrl(registry) === normalizeUrl(DEFAULT_NPM_REGISTRY)) {
      try {
 -      const whoamiResult = execa("npm", ["whoami", "--userconfig", npmrc, "--registry", registry], {
-+      const whoamiResult = execa("pnpm", ["whoami", "--userconfig", npmrc, "--registry", registry], {
++      const whoamiResult = execa("pnpm", ["whoami", "--config", npmrc, "--registry", registry], {
          cwd,
          env,
          preferLocal: true,
