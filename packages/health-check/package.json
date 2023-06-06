@@ -122,6 +122,7 @@
         "node": ">=16.18.0 <=20.*"
     },
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "provenance": true
     }
 }

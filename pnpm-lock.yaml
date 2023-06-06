@@ -758,7 +758,7 @@ importers:
         specifier: 1.3.5
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 1.3.8
+        specifier: 1.3.9
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
