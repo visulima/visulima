@@ -5,20 +5,20 @@ name: "Greetings"
 on: ["pull_request", "issues"] # yamllint disable-line rule:truthy
 
 permissions:
-  contents: "read"
+    contents: "read"
 
 jobs:
     greeting:
         permissions:
-          issues: "write"  # for actions/first-interaction to comment on first issue
-          pull-requests: "write"  # for actions/first-interaction to comment on first PR
+            issues: "write"  # for actions/first-interaction to comment on first issue
+            pull-requests: "write"  # for actions/first-interaction to comment on first PR
         runs-on: "ubuntu-latest"
 
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
               with:
-                egress-policy: "audit"
+                  egress-policy: "audit"
 
             - uses: "actions/first-interaction@1d8459ca65b335265f1285568221e229d45a995e" # v1.1.1
               with:
