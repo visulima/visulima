@@ -7,12 +7,20 @@ branches:
       # https://docs.github.com/en/rest/reference/repos#update-branch-protection
 
       protection:
-          enforce_admins: false
+          # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
+          enforce_admins: true
 
           required_pull_request_reviews:
+              # Dismiss approved reviews automatically when a new commit is pushed.
               dismiss_stale_reviews: true
+              # Blocks merge until code owners have reviewed.
               require_code_owner_reviews: true
+              # The number of approvals required. (1-6)
               required_approving_review_count: 1
+              # Specify which users and teams can dismiss pull request reviews. Pass an empty dismissal_restrictions object to disable. User and team dismissal_restrictions are only available for organization-owned repositories. Omit this parameter for personal repositories.
+              dismissal_restrictions:
+                  users: []
+                  teams: []
 
           required_status_checks:
               contexts:
@@ -31,19 +39,16 @@ branches:
                   - context: "Test (node-19, macos-latest)"
                   - context: "Test (node-20, macos-latest)"
 
-              strict: false
+              strict: true
 
+          # https://developer.github.com/v3/repos/branches/#parameters-10
+          # Required. Restrict who can push to this branch. Team and user restrictions are only available for organization-owned repositories. Set to null to disable.
           restrictions:
-              # https://developer.github.com/v3/repos/branches/#parameters-1
-
-              # Note: User, app, and team restrictions are only available for organization-owned repositories.
-              # Set to null to disable when using this configuration for a repository on a personal account.
-
               apps:
                   - "semantic-release-bot"
                   - "renovate"
-              teams: []
-#               users: []
+              teams: null
+              users: null
 
 # https://docs.github.com/en/rest/reference/issues#create-a-label
 # https://docs.github.com/en/rest/reference/issues#update-a-label
