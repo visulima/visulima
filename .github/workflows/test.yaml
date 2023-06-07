@@ -1,22 +1,19 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Package Tests"
+name: "Tests"
 
 on: # yamllint disable-line rule:truthy
-    pull_request:
-        paths:
-            - "**.ts"
-            - "**.tsx"
-            - "**.js"
-            - "**.cjs"
-            - "**.mjs"
+    push:
+        branches:
+            - "main"
+    pull_request: # yamllint disable-line rule:empty-values
 
-# Enable this to use the github packages
-# yamllint disable-line rule:comments
-#env:
-#    package: "@${{ github.repository }}"
-#    registry_url: "https://npm.pkg.github.com"
-#    scope: "${{ github.repository_owner }}"
+concurrency:
+    group: "ci-tests-${{ github.ref }}-1"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read" # to fetch code (actions/checkout)
 
 jobs:
     test:
@@ -26,7 +23,7 @@ jobs:
                 node_version: ["16", "18", "19", "20"]
             fail-fast: false
 
-        name: "Build & Unit Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
+        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
 
         runs-on: "${{ matrix.os }}"
 
@@ -48,12 +45,6 @@ jobs:
               with:
                   node-version: "${{ matrix.node_version }}"
                   cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
 
             - name: "Check npm version"
               run: "npm -v"
