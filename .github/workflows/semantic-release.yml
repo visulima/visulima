@@ -37,11 +37,13 @@ jobs:
         steps:
             - name: "Wait for tests to succeed"
               uses: "lewagon/wait-on-check-action@v1.3.1"
+              timeout-minutes: 10
               with:
-                  ref: "${{ github.ref }}"
-                  running-workflow-name: "Tests"
+                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 20
+                  wait-interval: 60 #seconds
+                  running-workflow-name: "Semantic Release" # wait for all other checks to complete
+                  allowed-conclusions: "success" # all other checks must pass, being skipped or cancelled is not sufficient
 
             - name: "Git checkout"
               uses: "actions/checkout@v3"
