@@ -6,13 +6,7 @@ on: # yamllint disable-line rule:truthy
     push:
         branches:
             - "main"
-    pull_request:
-        paths:
-            - "**.ts"
-            - "**.tsx"
-            - "**.js"
-            - "**.cjs"
-            - "**.mjs"
+    pull_request: # yamllint disable-line rule:empty-values
 
 # Enable this to use the github packages
 # yamllint disable-line rule:comments
