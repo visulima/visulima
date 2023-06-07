@@ -96,7 +96,7 @@ jobs:
         runs-on: "ubuntu-latest"
 
         permissions:
-            contents: write # to be able to publish
+            contents: "write" # to be able to publish
 
         needs: ["semantic-release"]
 
