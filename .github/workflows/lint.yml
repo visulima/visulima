@@ -1,13 +1,23 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Eslint"
+name: "Lint"
 
 on: # yamllint disable-line rule:truthy
+    push:
+        branches:
+            - "main"
     pull_request: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "ci-lint-${{ github.ref }}-1"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read" # to fetch code (actions/checkout)
 
 jobs:
     eslint:
-        name: "Eslint"
+        name: "Lint (eslint)"
 
         runs-on: "ubuntu-latest"
 
@@ -32,17 +42,6 @@ jobs:
                   node-version: "16.x"
                   cache: "pnpm"
 
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
 
@@ -54,3 +53,25 @@ jobs:
 
             - name: "lint"
               run: "pnpm run lint:eslint"
+
+    yaml-lint:
+        name: "Lint (yaml)"
+
+        runs-on: "ubuntu-latest"
+
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v3"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Lint YAML files"
+              uses: "ibiqlik/action-yamllint@v3"
+              with:
+                  config_file: ".yamllint.yaml"
+                  file_or_dir: "."
+                  strict: true
