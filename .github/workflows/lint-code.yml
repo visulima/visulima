@@ -3,6 +3,9 @@
 name: "lint"
 
 on: # yamllint disable-line rule:truthy
+    push:
+        branches:
+            - "main"
     pull_request: # yamllint disable-line rule:empty-values
 
 permissions:
