@@ -26,7 +26,7 @@ jobs:
                 node_version: ["16", "18", "19", "20"]
             fail-fast: false
 
-        name: "Build & Unit Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
+        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
 
         runs-on: "${{ matrix.os }}"
 
@@ -48,12 +48,6 @@ jobs:
               with:
                   node-version: "${{ matrix.node_version }}"
                   cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
 
             - name: "Check npm version"
               run: "npm -v"

@@ -23,115 +23,16 @@ permissions:
 #    scope: "${{ github.repository_owner }}"
 
 jobs:
-    eslint:
-        name: "Eslint"
-
-        runs-on: "ubuntu-latest"
-
-        steps:
-            - name: "Git checkout"
-              uses: "actions/checkout@v3"
-              with:
-                  fetch-depth: 2
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - uses: "pnpm/action-setup@v2.2.4"
-              with:
-                  version: 8
-                  run_install: false
-
-            - name: "Use Node.js 16.x"
-              uses: "actions/setup-node@v3"
-              with:
-                  node-version: "16.x"
-                  cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
-
-            - name: "Build"
-              run: "pnpm run build:packages"
-
-            - name: "lint"
-              run: "pnpm run lint:eslint"
-
-    test:
-        strategy:
-            matrix:
-                os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-                node_version: ["16", "18", "19", "20"]
-            fail-fast: false
-
-        name: "Build & Unit Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
-
-        runs-on: "${{ matrix.os }}"
-
-        steps:
-            - name: "Git checkout"
-              uses: "actions/checkout@v3"
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - uses: "pnpm/action-setup@v2.2.4"
-              with:
-                  version: 8
-                  run_install: false
-
-            - name: "Set node version to ${{ matrix.node_version }}"
-              uses: "actions/setup-node@v3"
-              with:
-                  node-version: "${{ matrix.node_version }}"
-                  cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Build"
-              run: "pnpm run build:packages"
-
-            - name: "test and coverage"
-              run: "pnpm run test:coverage"
-
     semantic-release:
         name: "Semantic Release"
 
         runs-on: "ubuntu-latest"
+
         permissions:
             contents: "write" # to be able to publish a GitHub release
             issues: "write" # to be able to comment on released issues
             pull-requests: "write" # to be able to comment on released pull requests
             id-token: "write" # to enable use of OIDC for npm provenance
-
-        needs: ["test", "eslint"]
 
         steps:
             - name: "Git checkout"
@@ -193,6 +94,9 @@ jobs:
         name: "pnpm-lock.yaml update"
 
         runs-on: "ubuntu-latest"
+
+        permissions:
+            contents: write # to be able to publish
 
         needs: ["semantic-release"]
 

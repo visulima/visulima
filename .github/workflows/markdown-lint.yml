@@ -3,12 +3,12 @@
 name: "Markdown Lint"
 
 on: # yamllint disable-line rule:truthy
-    push:
-        paths:
-            - "**.md"
     pull_request:
         paths:
             - "**.md"
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
 
 jobs:
     text-lint:
@@ -36,17 +36,6 @@ jobs:
               with:
                   node-version: "16.x"
                   cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"

@@ -1,13 +1,16 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Eslint"
+name: "lint"
 
 on: # yamllint disable-line rule:truthy
     pull_request: # yamllint disable-line rule:empty-values
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
     eslint:
-        name: "Eslint"
+        name: "Lint (eslint)"
 
         runs-on: "ubuntu-latest"
 
@@ -31,17 +34,6 @@ jobs:
               with:
                   node-version: "16.x"
                   cache: "pnpm"
-
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
