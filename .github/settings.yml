@@ -24,7 +24,6 @@ branches:
 
           required_status_checks:
               contexts:
-                  - context: "Lint (pull request title)"
                   - context: "Semantic Pull Request"
                   - context: "Test (node-16, ubuntu-latest)"
                   - context: "Test (node-18, ubuntu-latest)"
