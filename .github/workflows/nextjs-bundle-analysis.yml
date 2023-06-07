@@ -32,17 +32,6 @@ jobs:
                   node-version: "16"
                   cache: "pnpm"
 
-            # @see: https://github.com/pnpm/pnpm/issues/4348
-            - name: "Upgrade npm to 8.4 version"
-              run: "npm install --global npm@8.4"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
               env:
@@ -125,5 +114,5 @@ jobs:
               uses: "marocchino/sticky-pull-request-comment@v2"
               if: "success() && github.event.number"
               with:
-                header: "next-bundle-analysis"
-                message: "${{ steps.get-comment-body.outputs.body }}"
+                  header: "next-bundle-analysis"
+                  message: "${{ steps.get-comment-body.outputs.body }}"
