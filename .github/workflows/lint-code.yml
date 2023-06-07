@@ -6,13 +6,7 @@ on: # yamllint disable-line rule:truthy
     push:
         branches:
             - "main"
-    pull_request:
-        paths:
-            - "**.ts"
-            - "**.tsx"
-            - "**.js"
-            - "**.cjs"
-            - "**.mjs"
+    pull_request: # yamllint disable-line rule:empty-values
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)

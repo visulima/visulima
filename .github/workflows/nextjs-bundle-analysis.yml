@@ -102,7 +102,7 @@ jobs:
                   echo '' >>  $GITHUB_OUTPUT
                   echo '<details>' >>  $GITHUB_OUTPUT
                   echo '' >>  $GITHUB_OUTPUT
-                  cat analysis_comment.txt/__bundle_analysis_comment.txt >> $GITHUB_OUTPUT
+                  cat examples/nextra/.next/analyze/__bundle_analysis_comment.txt >> $GITHUB_OUTPUT
                   echo '' >>  $GITHUB_OUTPUT
                   echo '</details>' >>  $GITHUB_OUTPUT
                   echo '' >>  $GITHUB_OUTPUT
