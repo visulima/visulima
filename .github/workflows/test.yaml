@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Package Tests"
+name: "Tests"
 
 on: # yamllint disable-line rule:truthy
     push:
@@ -8,12 +8,12 @@ on: # yamllint disable-line rule:truthy
             - "main"
     pull_request: # yamllint disable-line rule:empty-values
 
-# Enable this to use the github packages
-# yamllint disable-line rule:comments
-#env:
-#    package: "@${{ github.repository }}"
-#    registry_url: "https://npm.pkg.github.com"
-#    scope: "${{ github.repository_owner }}"
+concurrency:
+    group: "ci-tests-${{ github.ref }}-1"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read" # to fetch code (actions/checkout)
 
 jobs:
     test:

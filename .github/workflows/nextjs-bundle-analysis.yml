@@ -14,6 +14,10 @@ defaults:
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
+concurrency:
+    group: "ci-next-bundle-analysis-${{ github.ref }}-1"
+    cancel-in-progress: true
+
 jobs:
     analyze:
         runs-on: "ubuntu-latest"
