@@ -1,0 +1,28 @@
+# This is used by the action https://github.com/dorny/paths-filter (which we have forked to https://github.com/getsentry/paths-filter)
+
+frontend_lintable:
+    - "**/*.[tj]{s,sx}"
+    - "**/tsconfig*.json"
+
+markdown_lintable:
+    - "**/*.md"
+    - "**/*.mdx"
+
+yaml_lintable:
+    - "**/*.yml"
+    - "**/*.yaml"
+
+packages: &packages
+    - "**/tsconfig*.json"
+    - "pnpm-lock.yaml"
+    - "packages/**"
+    - ".github/workflows/test.yml"
+    - ".github/workflows/lint.yml"
+
+nextra:
+    - "**/tsconfig*.json"
+    - "pnpm-lock.yaml"
+    - ".github/workflows/test.yml"
+    - ".github/workflows/lint.yml"
+    - "packages/nextra-theme-docs/**"
+    - "examples/nextra/**"

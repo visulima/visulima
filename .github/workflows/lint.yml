@@ -16,11 +16,34 @@ permissions:
     contents: "read" # to fetch code (actions/checkout)
 
 jobs:
+    files-changed:
+        name: "Detect what files changed"
+        runs-on: "ubuntu-20.04"
+        timeout-minutes: 3
+        # Map a step output to a job output
+        outputs:
+            frontend_lintable: "${{ steps.changes.outputs.frontend_lintable }}"
+            markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
+            yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
+        steps:
+          - name: "Git checkout"
+            uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+            env:
+                GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+          - name: "Check for backend file changes"
+            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
+            id: "changes"
+            with:
+                token: "${{ github.token }}"
+                filters: ".github/file-filters.yml"
+
     eslint:
+        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
         name: "Lint (eslint)"
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -60,10 +83,9 @@ jobs:
               run: "pnpm run lint:eslint"
 
     yaml-lint:
+        if: "needs.files-changed.outputs.yaml_lintable == 'true'"
         name: "Lint (yaml)"
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -85,3 +107,61 @@ jobs:
                   config_file: ".yamllint.yaml"
                   file_or_dir: "."
                   strict: true
+
+    markdown-lint:
+        if: "needs.files-changed.outputs.markdown_lintable == 'true'"
+        name: "Lint (markdown)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - uses: "pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd" # v2.2.4
+              with:
+                  version: 8
+                  run_install: false
+
+            - name: "Use Node.js 16.x"
+              uses: "actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c" # v3.6.0
+              with:
+                  node-version: "16.x"
+                  cache: "pnpm"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile"
+              env:
+                  SKIP_CHECK: "true"
+
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "npm audit signatures"
+
+            - name: "lint"
+              run: "pnpm run lint:text"
+
+    # This check runs once all dependant jobs have passed
+    # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
+    # This check is the only required Github check
+    test-required-check:
+        needs: ["files-changed", "eslint", "yaml-lint"] # TODO add "markdown-lint"
+        name: "Check Lint Run"
+        # This is necessary since a failed/skipped dependent job would cause this job to be skipped
+        if: "always()"
+        runs-on: "ubuntu-20.04"
+        steps:
+            # If any jobs we depend on fail, we will fail since this is a required check
+            # NOTE: A timeout is considered a failure
+            - name: "Check for failures"
+              if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
+              run: |
+                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1

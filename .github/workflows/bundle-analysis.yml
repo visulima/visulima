@@ -1,4 +1,4 @@
-name: "Next.js Bundle Analysis"
+name: "Bundle Analysis"
 
 on: # yamllint disable-line rule:truthy
     pull_request: # yamllint disable-line rule:empty-values
@@ -16,13 +16,30 @@ permissions:
     pull-requests: "write"
 
 concurrency:
-    group: "ci-next-bundle-analysis-${{ github.ref }}-1"
+    group: "ci-bundle-analysis-${{ github.ref }}-1"
     cancel-in-progress: true
 
 jobs:
-    analyze:
-        runs-on: "ubuntu-latest"
+    files-changed:
+        name: "Detect what files changed"
+        runs-on: "ubuntu-20.04"
+        timeout-minutes: 3
+        # Map a step output to a job output
+        outputs:
+            nextra: "${{ steps.changes.outputs.nextra }}"
 
+        steps:
+          - name: "Git checkout"
+            uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+            env:
+                GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+    nextra-analyze-bundle:
+        if: "needs.files-changed.outputs.nextra == 'true'"
+        name: "Analyze Bundle (nextra)"
+        runs-on: "ubuntu-latest"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -128,3 +145,23 @@ jobs:
               with:
                   header: "next-bundle-analysis"
                   message: "${{ steps.get-comment-body.outputs.body }}"
+
+    # This check runs once all dependant jobs have passed
+    # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
+    # This check is the only required Github check
+    test-required-check:
+        needs: ["files-changed", "nextra-analyze-bundle"]
+
+        name: "Check Bundle Analysis Run"
+        # This is necessary since a failed/skipped dependent job would cause this job to be skipped
+        if: "always()"
+
+        runs-on: "ubuntu-20.04"
+
+        steps:
+            # If any jobs we depend on fail, we will fail since this is a required check
+            # NOTE: A timeout is considered a failure
+            - name: "Check for failures"
+              if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
+              run: |
+                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
