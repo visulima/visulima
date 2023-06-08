@@ -1,4 +1,10 @@
 {
+  "@textlint/markdown": {
+    "extensions": [
+      ".md",
+      ".mdx"
+    ]
+  },
   "filters": {
       "comments": true
   },

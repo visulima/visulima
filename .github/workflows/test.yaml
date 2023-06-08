@@ -16,7 +16,30 @@ permissions:
     contents: "read" # to fetch code (actions/checkout)
 
 jobs:
+    files-changed:
+        name: "Detect what files changed"
+        runs-on: "ubuntu-20.04"
+        timeout-minutes: 3
+        # Map a step output to a job output
+        outputs:
+            packages: "${{ steps.changes.outputs.packages }}"
+        steps:
+          - name: "Git checkout"
+            uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+            env:
+                GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+          - name: "Check for backend file changes"
+            uses: "getsentry/paths-filter@66f7f1844185eb7fb6738ea4ea59d74bb99199e5"  # v2
+            id: "changes"
+            with:
+                token: "${{ github.token }}"
+                filters: ".github/file-filters.yml"
+
     test:
+        if: "needs.files-changed.outputs.packages == 'true'"
         strategy:
             matrix:
                 os: ["ubuntu-latest", "windows-latest", "macos-latest"]
@@ -69,3 +92,20 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:coverage"
+
+    # This check runs once all dependant jobs have passed
+    # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
+    # This check is the only required Github check
+    test-required-check:
+        needs: ["files-changed", "test"]
+        name: "Check Test Run"
+        # This is necessary since a failed/skipped dependent job would cause this job to be skipped
+        if: "always()"
+        runs-on: "ubuntu-20.04"
+        steps:
+            # If any jobs we depend on fail, we will fail since this is a required check
+            # NOTE: A timeout is considered a failure
+            - name: "Check for failures"
+              if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
+              run: |
+                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
