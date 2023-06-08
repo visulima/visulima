@@ -28,20 +28,25 @@ jobs:
         runs-on: "${{ matrix.os }}"
 
         steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
+              with:
+                  egress-policy: "audit"
+
             - name: "Git checkout"
-              uses: "actions/checkout@v3"
+              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.4"
+            - uses: "pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd" # v2.2.4
               with:
                   version: 8
                   run_install: false
 
             - name: "Set node version to ${{ matrix.node_version }}"
-              uses: "actions/setup-node@v3"
+              uses: "actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c" # v3.6.0
               with:
                   node-version: "${{ matrix.node_version }}"
                   cache: "pnpm"

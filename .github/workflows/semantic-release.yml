@@ -35,8 +35,13 @@ jobs:
             id-token: "write" # to enable use of OIDC for npm provenance
 
         steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
+              with:
+                  egress-policy: "audit"
+
             - name: "Wait for tests to succeed"
-              uses: "lewagon/wait-on-check-action@v1.3.1"
+              uses: "lewagon/wait-on-check-action@e106e5c43e8ca1edea6383a39a01c5ca495fd812" # v1.3.1
               timeout-minutes: 20
               with:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -46,7 +51,7 @@ jobs:
                   allowed-conclusions: "success" # all other checks must pass, being skipped or cancelled is not sufficient
 
             - name: "Git checkout"
-              uses: "actions/checkout@v3"
+              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
               with:
                   fetch-depth: 0
                   persist-credentials: false
@@ -55,13 +60,13 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.4"
+            - uses: "pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd" # v2.2.4
               with:
                   version: 8
                   run_install: false
 
             - name: "Use Node.js 16.x"
-              uses: "actions/setup-node@v3"
+              uses: "actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c" # v3.6.0
               with:
                   node-version: "16.x"
                   cache: "pnpm"
@@ -111,8 +116,13 @@ jobs:
         needs: ["semantic-release"]
 
         steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
+              with:
+                  egress-policy: "audit"
+
             - name: "Git checkout"
-              uses: "actions/checkout@v3"
+              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
               with:
                   fetch-depth: 2
               env:
@@ -120,12 +130,12 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@v2.2.4"
+            - uses: "pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd" # v2.2.4
               with:
                   version: 8
 
             - name: "Use Node.js 16.x"
-              uses: "actions/setup-node@v3"
+              uses: "actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c" # v3.6.0
               with:
                   node-version: "16.x"
 
@@ -133,7 +143,7 @@ jobs:
               run: "pnpm install --no-frozen-lockfile"
 
             - name: "Commit modified files"
-              uses: "stefanzweifel/git-auto-commit-action@v4.16.0"
+              uses: "stefanzweifel/git-auto-commit-action@3ea6ae190baf489ba007f7c92608f33ce20ef04a" # v4.16.0
               with:
                   commit_message: "chore: updated pnpm-lock.yaml"
                   commit_author: "prisis <d.bannert@anolilab.de>"
