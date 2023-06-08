@@ -1,3 +1,10 @@
+## @visulima/health-check [1.0.6](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.5...@visulima/health-check@1.0.6) (2023-06-08)
+
+
+### Bug Fixes
+
+* added bigger timeout to the test ([#169](https://github.com/visulima/visulima/issues/169)) ([d78466a](https://github.com/visulima/visulima/commit/d78466a910a9b026dbfa58c12a5bde75016adabe))
+
 ## @visulima/health-check [1.0.5](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.4...@visulima/health-check@1.0.5) (2023-06-06)
 
 
