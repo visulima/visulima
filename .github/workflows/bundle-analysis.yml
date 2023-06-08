@@ -36,8 +36,16 @@ jobs:
                 GIT_AUTHOR_NAME: "GitHub Actions Shell"
                 EMAIL: "github-actions[bot]@users.noreply.github.com"
 
+          - name: "Check for backend file changes"
+            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
+            id: "changes"
+            with:
+                token: "${{ github.token }}"
+                filters: ".github/file-filters.yml"
+
     nextra-analyze-bundle:
         if: "needs.files-changed.outputs.nextra == 'true'"
+        needs: "files-changed"
         name: "Analyze Bundle (nextra)"
         runs-on: "ubuntu-latest"
         steps:
