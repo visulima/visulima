@@ -1,3 +1,10 @@
+## @visulima/health-check [1.0.7](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.6...@visulima/health-check@1.0.7) (2023-06-08)
+
+
+### Bug Fixes
+
+* skipped all ping-check tests on ci ([34c2497](https://github.com/visulima/visulima/commit/34c2497dc0d607d051c8ba138ff9763edd56877d))
+
 ## @visulima/health-check [1.0.6](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.5...@visulima/health-check@1.0.6) (2023-06-08)
 
 
