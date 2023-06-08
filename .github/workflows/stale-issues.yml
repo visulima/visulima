@@ -15,9 +15,7 @@ jobs:
             issues: "write"  # for actions/stale to close stale issues
             pull-requests: "write"  # for actions/stale to close stale PRs
         timeout-minutes: 1
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -42,9 +40,7 @@ jobs:
             issues: "write"  # for actions/stale to close stale issues
             pull-requests: "write"  # for actions/stale to close stale PRs
         timeout-minutes: 1
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0

@@ -24,6 +24,7 @@ jobs:
         outputs:
             frontend_lintable: "${{ steps.changes.outputs.frontend_lintable }}"
             markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
+            yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
         steps:
           - name: "Git checkout"
             uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
@@ -33,7 +34,7 @@ jobs:
                 EMAIL: "github-actions[bot]@users.noreply.github.com"
 
           - name: "Check for backend file changes"
-            uses: "getsentry/paths-filter@66f7f1844185eb7fb6738ea4ea59d74bb99199e5"  # v2
+            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
             id: "changes"
             with:
                 token: "${{ github.token }}"
@@ -42,9 +43,7 @@ jobs:
     eslint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
         name: "Lint (eslint)"
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -84,10 +83,9 @@ jobs:
               run: "pnpm run lint:eslint"
 
     yaml-lint:
+        if: "needs.files-changed.outputs.yaml_lintable == 'true'"
         name: "Lint (yaml)"
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -110,11 +108,10 @@ jobs:
                   file_or_dir: "."
                   strict: true
 
-    text-lint:
+    markdown-lint:
+        if: "needs.files-changed.outputs.markdown_lintable == 'true'"
         name: "Lint (markdown)"
-
         runs-on: "ubuntu-latest"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
@@ -152,12 +149,11 @@ jobs:
             - name: "lint"
               run: "pnpm run lint:text"
 
-
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
     # This check is the only required Github check
     test-required-check:
-        needs: ["Lint (eslint)", "Lint (yaml)"] # TODO add "Lint (markdown)"
+        needs: ["files-changed", "eslint", "yaml-lint"] # TODO add "markdown-lint"
         name: "Check Lint Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always()"
