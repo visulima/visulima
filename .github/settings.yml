@@ -25,7 +25,9 @@ branches:
           required_status_checks:
               contexts:
                   - context: "Semantic Pull Request"
+                  - context: "Check Lint Run"
                   - context: "Check Test Run"
+                  - context: "Check Bundle Analysis Run"
 
               strict: true
 
