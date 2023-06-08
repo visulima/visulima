@@ -15,6 +15,7 @@ const process = require("node:process");
 
 // eslint-disable-next-line no-undef, unicorn/prefer-module
 const packagesPath = path.join(__dirname, "..", "pages", "docs");
+const publicPath = path.join(__dirname, "..", "public", "assets");
 
 const argv = yargs(hideBin(process.argv))
     .option("path", {
@@ -62,21 +63,25 @@ async function command() {
         includeFiles: true,
         includeDirs: true,
         followSymlinks: false,
-        extensions: [".mdx", ".json"],
+        extensions: [".mdx", ".md", ".json", ".apng", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".pdf", ".avif", ".mp4", ".webm", ".mov"],
         skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
     })) {
         if (result.isFile && result.path.includes("/docs/")) {
             // eslint-disable-next-line no-console
             console.log("Found", result.path);
 
-            const destination = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
+            let destination = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
+
+            if (result.path.includes("docs/assets/")) {
+                destination = `${publicPath}${result.path.replace(searchPath, "").replace("docs/assets", "")}`;
+            }
 
             if (copy) {
                 fs.rmSync(destination, { force: true });
                 fse.copySync(result.path, destination);
             } else if (symlink) {
                 // eslint-disable-next-line no-console
-                console.log("TODO: add symlink logic");
+                throw new Error("TODO: add symlink logic");
             }
         }
     }
