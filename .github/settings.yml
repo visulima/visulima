@@ -25,18 +25,7 @@ branches:
           required_status_checks:
               contexts:
                   - context: "Semantic Pull Request"
-                  - context: "Test (node-16, ubuntu-latest)"
-                  - context: "Test (node-18, ubuntu-latest)"
-                  - context: "Test (node-19, ubuntu-latest)"
-                  - context: "Test (node-20, ubuntu-latest)"
-                  - context: "Test (node-16, windows-latest)"
-                  - context: "Test (node-18, windows-latest)"
-                  - context: "Test (node-19, windows-latest)"
-                  - context: "Test (node-20, windows-latest)"
-                  - context: "Test (node-16, macos-latest)"
-                  - context: "Test (node-18, macos-latest)"
-                  - context: "Test (node-19, macos-latest)"
-                  - context: "Test (node-20, macos-latest)"
+                  - context: "Check Test Run"
 
               strict: true
 
