@@ -32,7 +32,7 @@ jobs:
                 EMAIL: "github-actions[bot]@users.noreply.github.com"
 
           - name: "Check for backend file changes"
-            uses: "getsentry/paths-filter@66f7f1844185eb7fb6738ea4ea59d74bb99199e5"  # v2
+            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
             id: "changes"
             with:
                 token: "${{ github.token }}"
@@ -45,11 +45,8 @@ jobs:
                 os: ["ubuntu-latest", "windows-latest", "macos-latest"]
                 node_version: ["16", "18", "19", "20"]
             fail-fast: false
-
         name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
-
         runs-on: "${{ matrix.os }}"
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0

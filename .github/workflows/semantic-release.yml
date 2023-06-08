@@ -25,9 +25,7 @@ permissions:
 jobs:
     semantic-release:
         name: "Semantic Release"
-
         runs-on: "ubuntu-latest"
-
         permissions:
             contents: "write" # to be able to publish a GitHub release
             issues: "write" # to be able to comment on released issues
@@ -107,14 +105,10 @@ jobs:
 
     pnpm-lock-update:
         name: "pnpm-lock.yaml update"
-
         runs-on: "ubuntu-latest"
-
         permissions:
             contents: "write" # to be able to publish
-
         needs: ["semantic-release"]
-
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
