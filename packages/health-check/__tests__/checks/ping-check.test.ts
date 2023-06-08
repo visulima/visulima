@@ -4,11 +4,13 @@ import { describe, expect, it } from "vitest";
 
 import pingCheck from "../../src/checks/ping-check";
 
+const consoleMessage = "Skipping DNS check in CI environment, please validate this test localy.";
+
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
         if (process.env["CI"]) {
             // eslint-disable-next-line no-console
-            console.log("Skipping DNS check in CI environment");
+            console.log(consoleMessage);
             return;
         }
 
@@ -26,6 +28,12 @@ describe("pingCheck", () => {
     }, 10_000);
 
     it("should return unhealthy when the host is reachable", async () => {
+        if (process.env["CI"]) {
+            // eslint-disable-next-line no-console
+            console.log(consoleMessage);
+            return;
+        }
+
         const result = await pingCheck("https://example.com1")();
 
         expect(result).toStrictEqual({
@@ -37,5 +45,5 @@ describe("pingCheck", () => {
             },
             meta: expect.any(Object),
         });
-    }, 10_000);
+    });
 });
