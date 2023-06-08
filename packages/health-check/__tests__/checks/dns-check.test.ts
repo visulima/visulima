@@ -36,5 +36,5 @@ describe("dnsCheck", () => {
                 addresses: expect.any(Object),
             },
         });
-    });
+    }, 10_000);
 });
