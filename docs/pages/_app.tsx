@@ -1,6 +1,8 @@
 import "../css/styles.css";
 import "@visulima/nextra-theme-docs/component-style.css";
 
+import "@code-hike/mdx/styles"
+
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import type { FC, ReactElement } from "react";
