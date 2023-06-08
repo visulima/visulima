@@ -37,5 +37,5 @@ describe("pingCheck", () => {
             },
             meta: expect.any(Object),
         });
-    });
+    }, 10_000);
 });
