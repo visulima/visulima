@@ -26,19 +26,19 @@ jobs:
             markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
             yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
         steps:
-          - name: "Git checkout"
-            uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
-            env:
-                GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                EMAIL: "github-actions[bot]@users.noreply.github.com"
+            - name: "Git checkout"
+              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-          - name: "Check for backend file changes"
-            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
-            id: "changes"
-            with:
-                token: "${{ github.token }}"
-                filters: ".github/file-filters.yml"
+            - name: "Check for file changes"
+              uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
+              id: "changes"
+              with:
+                  token: "${{ github.token }}"
+                  filters: ".github/file-filters.yml"
 
     eslint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
