@@ -15,15 +15,31 @@ on: # yamllint disable-line rule:truthy
 permissions:
     contents: "read" # for checkout
 
-# Enable this to use the github packages
-# yamllint disable-line rule:comments
-#env:
-#    package: "@${{ github.repository }}"
-#    registry_url: "https://npm.pkg.github.com"
-#    scope: "${{ github.repository_owner }}"
-
 jobs:
+    files-changed:
+        name: "Detect what files changed"
+        runs-on: "ubuntu-20.04"
+        timeout-minutes: 3
+        # Map a step output to a job output
+        outputs:
+            packages: "${{ steps.changes.outputs.packages }}"
+        steps:
+          - name: "Git checkout"
+            uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+            env:
+                GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+          - name: "Check for backend file changes"
+            uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
+            id: "changes"
+            with:
+                token: "${{ github.token }}"
+                filters: ".github/file-filters.yml"
+
     semantic-release:
+        if: "needs.files-changed.outputs.packages == 'true'"
         name: "Semantic Release"
         runs-on: "ubuntu-latest"
         permissions:
@@ -104,11 +120,11 @@ jobs:
               run: "pnpm multi-semantic-release"
 
     pnpm-lock-update:
+        needs: ["semantic-release"]
         name: "pnpm-lock.yaml update"
         runs-on: "ubuntu-latest"
         permissions:
             contents: "write" # to be able to publish
-        needs: ["semantic-release"]
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969" # v2.4.0
