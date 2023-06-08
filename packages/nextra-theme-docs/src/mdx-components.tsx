@@ -110,7 +110,7 @@ const getComponents = ({
             />
         ),
         // eslint-disable-next-line react/jsx-props-no-spreading
-        hr: (properties: ComponentProps<"hr">) => <hr className="my-8 dark:border-gray-900" {...properties} />,
+        hr: (properties: ComponentProps<"hr">) => <hr className="my-8 dark:border-gray-700" {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading
         a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />,
         // eslint-disable-next-line react/jsx-props-no-spreading
