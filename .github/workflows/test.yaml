@@ -40,6 +40,7 @@ jobs:
 
     test:
         if: "needs.files-changed.outputs.packages == 'true'"
+        needs: "files-changed"
         strategy:
             matrix:
                 os: ["ubuntu-latest", "windows-latest", "macos-latest"]

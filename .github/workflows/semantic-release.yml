@@ -40,6 +40,7 @@ jobs:
 
     semantic-release:
         if: "needs.files-changed.outputs.packages == 'true'"
+        needs: "files-changed"
         name: "Semantic Release"
         runs-on: "ubuntu-latest"
         permissions:
@@ -120,7 +121,7 @@ jobs:
               run: "pnpm multi-semantic-release"
 
     pnpm-lock-update:
-        needs: ["semantic-release"]
+        needs: "semantic-release"
         name: "pnpm-lock.yaml update"
         runs-on: "ubuntu-latest"
         permissions:

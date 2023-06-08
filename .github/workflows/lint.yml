@@ -42,6 +42,7 @@ jobs:
 
     eslint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
+        needs: "files-changed"
         name: "Lint (eslint)"
         runs-on: "ubuntu-latest"
         steps:
@@ -84,6 +85,7 @@ jobs:
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
+        needs: "files-changed"
         name: "Lint (yaml)"
         runs-on: "ubuntu-latest"
         steps:
@@ -110,6 +112,7 @@ jobs:
 
     markdown-lint:
         if: "needs.files-changed.outputs.markdown_lintable == 'true'"
+        needs: "files-changed"
         name: "Lint (markdown)"
         runs-on: "ubuntu-latest"
         steps:
