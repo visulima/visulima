@@ -52,7 +52,7 @@
         "lint:eslint:readdir": "pnpm --filter \"readdir\" run lint:eslint",
         "lint:prettier": "prettier --config=.prettierrc.cjs --write '**/*.{json,yml,yaml,less,css,scss,sass}'",
         "lint:text": "textlint ./.github/ ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --cache --dry-run",
-        "lint:text:fix": "textlint ./.github/ ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --cache --fix",
+        "lint:text:fix": "textlint ./.github/ ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --fix",
         "plop": "plop",
         "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{js,jsx,tsx,mjs,ts,less,md,json,mdx}'",
         "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json docs/package.json",
