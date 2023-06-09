@@ -12,6 +12,10 @@ yaml_lintable:
     - "**/*.yml"
     - "**/*.yaml"
 
+# Only packages changes should trigger a release
+semantic_release:
+    - "packages/**"
+
 packages: &packages
     - "**/tsconfig*.json"
     - "pnpm-lock.yaml"
@@ -22,7 +26,6 @@ packages: &packages
 nextra:
     - "**/tsconfig*.json"
     - "pnpm-lock.yaml"
-    - ".github/workflows/test.yml"
     - ".github/workflows/lint.yml"
     - "packages/nextra-theme-docs/**"
     - "examples/nextra/**"

@@ -22,7 +22,7 @@ jobs:
         timeout-minutes: 3
         # Map a step output to a job output
         outputs:
-            packages: "${{ steps.changes.outputs.packages }}"
+            semantic_release: "${{ steps.changes.outputs.semantic_release }}"
         steps:
             - name: "Git checkout"
               uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
@@ -39,7 +39,7 @@ jobs:
                   filters: ".github/file-filters.yml"
 
     semantic-release:
-        if: "needs.files-changed.outputs.packages == 'true'"
+        if: "needs.files-changed.outputs.semantic_release == 'true'"
         needs: "files-changed"
         name: "Semantic Release"
         runs-on: "ubuntu-latest"
