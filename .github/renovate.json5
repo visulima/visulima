@@ -1,6 +1,6 @@
 {
     $schema: "https://docs.renovatebot.com/renovate-schema.json",
-    extends: ["config:base", "schedule:earlyMondays", "group:allNonMajor", ":prHourlyLimitNone"],
+    extends: ["config:base", "schedule:earlyMondays", "group:allNonMajor", ":prHourlyLimitNone", "helpers:pinGitHubActionDigests"],
     labels: ["c: dependencies"],
     reviewersFromCodeOwners: true,
     rangeStrategy: "bump",
@@ -40,10 +40,6 @@
         {
             groupName: "typescript",
             matchPackageNames: ["typescript"],
-        },
-        {
-            groupName: "doc-dependencies",
-            matchPackageNames: ["@algolia/client-search", "@types/react", "react", "react-dom", "typedoc", "typedoc-plugin-missing-exports", "vitepress"],
         },
     ],
     vulnerabilityAlerts: {

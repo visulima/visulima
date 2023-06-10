@@ -118,4 +118,7 @@ dist
 storybook-static/
 
 /packages/nextra-theme-docs/style.css
+
 /.idea
+
+.textlintcache
