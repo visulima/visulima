@@ -16,31 +16,7 @@ permissions:
     contents: "read" # for checkout
 
 jobs:
-    files-changed:
-        name: "Detect what files changed"
-        runs-on: "ubuntu-20.04"
-        timeout-minutes: 3
-        # Map a step output to a job output
-        outputs:
-            semantic_release: "${{ steps.changes.outputs.semantic_release }}"
-        steps:
-            - name: "Git checkout"
-              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Check for file changes"
-              uses: "dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50"  # v2.11.1
-              id: "changes"
-              with:
-                  token: "${{ github.token }}"
-                  filters: ".github/file-filters.yml"
-
     semantic-release:
-        if: "needs.files-changed.outputs.semantic_release == 'true'"
-        needs: "files-changed"
         name: "Semantic Release"
         runs-on: "ubuntu-latest"
         permissions:
@@ -63,7 +39,7 @@ jobs:
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   wait-interval: 60 # seconds
                   running-workflow-name: "Semantic Release" # wait for all other checks to complete
-                  allowed-conclusions: "success" # all other checks must pass, being skipped or cancelled is not sufficient
+                  allowed-conclusions: "success,skipped" # all other checks must pass, being skipped or cancelled is not sufficient
 
             - name: "Git checkout"
               uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
