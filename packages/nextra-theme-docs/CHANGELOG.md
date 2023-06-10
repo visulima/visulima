@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.5](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.4...@visulima/nextra-theme-docs@1.1.5) (2023-06-10)
+
+
+### Bug Fixes
+
+* changed hr color to make it more visible, fixed code copy issue ([#170](https://github.com/visulima/visulima/issues/170)) ([48df12a](https://github.com/visulima/visulima/commit/48df12ad8820c0a456f471792eca01d23896b77c))
+
 ## @visulima/nextra-theme-docs [1.1.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.3...@visulima/nextra-theme-docs@1.1.4) (2023-06-06)
 
 
