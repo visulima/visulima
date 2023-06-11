@@ -13,8 +13,9 @@ const path = require("node:path");
 // eslint-disable-next-line unicorn/prefer-module
 const process = require("node:process");
 
-// eslint-disable-next-line no-undef, unicorn/prefer-module
+// eslint-disable-next-line no-undef,unicorn/prefer-module
 const packagesPath = path.join(__dirname, "..", "pages", "docs");
+// eslint-disable-next-line no-undef,unicorn/prefer-module
 const publicPath = path.join(__dirname, "..", "public", "assets");
 
 const argv = yargs(hideBin(process.argv))
