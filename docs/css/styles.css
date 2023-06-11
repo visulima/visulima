@@ -97,7 +97,7 @@ p {
 }
 
 .gradient-border::after {
-    @apply absolute -z-[1] bg-gray-300 opacity-50;
+    @apply absolute -z-[1] bg-gray-200 opacity-50;
     content: "";
     top: calc(-1 * var(--border-width));
     left: calc(-1 * var(--border-width));
