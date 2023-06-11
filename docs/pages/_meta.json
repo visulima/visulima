@@ -3,8 +3,9 @@
         "title": "Home",
         "type": "page",
         "theme": {
-            "layout": "full",
-            "toc": false
+            "layout": "raw",
+            "toc": false,
+            "prose": false
         }
     },
     "impress": {

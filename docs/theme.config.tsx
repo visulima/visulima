@@ -24,6 +24,9 @@ const config: DocumentationThemeConfig = {
         icon: () => <img src="https://img.shields.io/github/stars/visulima/visulima?style=social" alt="Visulima" />,
         link: visulimaGitHubUrl,
     },
+    useNextSeoProps: () => {
+        return { titleTemplate: "Visulima – %s" };
+    },
     docsRepositoryBase: "https://github.com/visulima/visulima/blob/main/docs",
     feedback: {
         labels: "feedback",

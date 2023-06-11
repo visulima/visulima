@@ -54,7 +54,7 @@
         "lint:text": "textlint ./.github/ ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --cache --dry-run",
         "lint:text:fix": "textlint ./.github/ ./packages/** ./README.md ./UPGRADE.md --parallel --experimental --fix",
         "plop": "plop",
-        "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{js,jsx,tsx,mjs,ts,less,md,json,mdx}'",
+        "prettier": "prettier --config=.prettierrc.cjs --write '**/*.{yaml,md,mdx,json}'",
         "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json docs/package.json",
         "storybook": "pnpm --filter \"storybook\" run dev",
         "test": "nx run-many --target=test --all --parallel",
