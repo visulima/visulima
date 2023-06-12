@@ -19,11 +19,11 @@ importers:
   .:
     dependencies:
       '@anolilab/prettier-config':
-        specifier: ^3.1.1
-        version: 3.1.1(prettier@2.8.8)
+        specifier: ^4.0.0
+        version: 4.0.0(prettier@2.8.8)
       '@anolilab/textlint-config':
-        specifier: ^4.2.2
-        version: 4.2.2(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2)(textlint@13.3.2)
+        specifier: ^6.0.0
+        version: 6.0.0(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2)(textlint@13.3.2)
       '@commitlint/cli':
         specifier: ^17.6.5
         version: 17.6.5
@@ -58,8 +58,8 @@ importers:
         specifier: ^20.2.3
         version: 20.2.3
       browserslist-config-anolilab:
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^4.0.0
+        version: 4.0.0
       commitizen:
         specifier: ^4.3.0
         version: 4.3.0
@@ -1480,8 +1480,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
       read-pkg-up:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^9.0.0
+        version: 9.1.0
       yaml:
         specifier: ^2.3.1
         version: 2.3.1
@@ -2318,13 +2318,30 @@ packages:
       - typescript
     dev: true
 
-  /@anolilab/prettier-config@3.1.1(prettier@2.8.8):
-    resolution: {integrity: sha512-rSls2iDxI3CvOep3IYAVPr4IvCCLsv6HJdeB6xg3tJbDiKMUYTjiMf0LxC9l1fT+Ene5BwHSJVgp9GG5e8bgog==}
+  /@anolilab/package-json-utils@1.0.1:
+    resolution: {integrity: sha512-D5pN2gfw530AD/qPlVQPv41ZsbnorTBUZP8VVb8cWRDPpFyXZ0+k3YTWctX4k8wX4TxNF0L/x3NQvrFo7Gt+Jw==}
+    engines: {node: '>=16'}
+    dependencies:
+      dot-path-value: 0.0.10
+      read-pkg-up: 7.0.1
+    dev: false
+
+  /@anolilab/package-json-utils@1.2.0:
+    resolution: {integrity: sha512-zp14j8Du2rY7JU4JJne8Pp2EBjD4GDya9xTWAq6Vmo6PXuLK/BCG8VRkAz1MxLHdzgf6Jy++fTmSP5L5huzIiQ==}
+    engines: {node: '>=16'}
+    dependencies:
+      dot-path-value: 0.0.10
+      read-pkg-up: 7.0.1
+    dev: false
+
+  /@anolilab/prettier-config@4.0.0(prettier@2.8.8):
+    resolution: {integrity: sha512-44or0PZibl63lVmDi/5sP4Yx+w41Hzrtpi6dTBRSzQlqiXHv+5vmHEe+OlVVazL3l9Gov9uFZtx1N+wU0ArQEg==}
     engines: {node: '>=16'}
     requiresBuild: true
     peerDependencies:
       prettier: 2.x
     dependencies:
+      '@anolilab/package-json-utils': 1.0.1
       prettier: 2.8.8
     dev: false
 
@@ -2357,13 +2374,14 @@ packages:
       - supports-color
     dev: true
 
-  /@anolilab/textlint-config@4.2.2(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2)(textlint@13.3.2):
-    resolution: {integrity: sha512-zNLMZLta5bIAN5LTrjRrUzMpPjHZgkuxT6+BnvyMrymUEaq5nbB3blwrrko50ZKjawLyEk9ampnZ6FW2ddyoBA==}
+  /@anolilab/textlint-config@6.0.0(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2)(textlint@13.3.2):
+    resolution: {integrity: sha512-GJE8D596blMyqj+CIqLRJt8pqptTbXOSdL0igQkXFT1PWijktwo06vyZZ1SXOwkm+3q57V0T//c+jYIWiD43hw==}
     engines: {node: '>=16'}
     requiresBuild: true
     peerDependencies:
       textlint: ^13.3.2
     dependencies:
+      '@anolilab/package-json-utils': 1.2.0
       '@textlint-rule/textlint-rule-no-invalid-control-character': 2.0.0
       '@textlint-rule/textlint-rule-no-unmatched-pair': 1.0.9
       '@textlint-rule/textlint-rule-preset-google': 0.1.2
@@ -6950,6 +6968,7 @@ packages:
 
   /alex@9.1.1:
     resolution: {integrity: sha512-2mYyFfQnzWzDd6lSACRePBj8YP6fzzvclPkfGfYrY6vPNFDoQKrCAAdF0XCKROGJGnbSWX1K5PrxixVTaV5ODw==}
+    hasBin: true
     dependencies:
       meow: 7.1.1
       rehype-parse: 7.0.1
@@ -7451,8 +7470,8 @@ packages:
     dependencies:
       fill-range: 7.0.1
 
-  /browserslist-config-anolilab@3.2.1:
-    resolution: {integrity: sha512-BBWtvWbELL6RiWXNN3pEITCIziLzpUFLceit1Hz4TkrfUyhwSu0Idk6ju0p1higxtuthy8W7XIwPJtm3ZaAP+w==}
+  /browserslist-config-anolilab@4.0.0:
+    resolution: {integrity: sha512-aCPj6jJkPot2hka0mvlXXIdwFtzfO/m1Q7k2eVJQ3BUiEAW4mRYEUW6RobXnrVmzfyRcrDCUTZ7K/V42uL85Hg==}
     engines: {node: '>=16'}
     dev: false
 
@@ -9124,6 +9143,10 @@ packages:
     dependencies:
       no-case: 3.0.4
       tslib: 2.5.2
+    dev: false
+
+  /dot-path-value@0.0.10:
+    resolution: {integrity: sha512-MrVpDoFwk1xjeM0sGRuei7N3LQOylJ9iamgfxAQwPY0hPnDHL981hM/KpoQwFHMckgjZvJA0MyH7VN//ernFFA==}
     dev: false
 
   /dot-prop@5.3.0:
@@ -11992,6 +12015,7 @@ packages:
 
   /is-ci@2.0.0:
     resolution: {integrity: sha512-YfJT7rkpQB0updsdHLGWrvhBJfcfzNNawYDNIyQXJz0IViGf75O8EBPKSdvw2rF+LGCsX4FZ8tcr3b19LcZq4w==}
+    hasBin: true
     dependencies:
       ci-info: 2.0.0
     dev: false
@@ -12767,6 +12791,7 @@ packages:
 
   /libnpmconfig@1.2.1:
     resolution: {integrity: sha512-9esX8rTQAHqarx6qeZqmGQKBNZR5OIbl/Ayr0qQDy3oXja2iFVQQI81R6GZ2a02bSNZ9p3YOGX1O6HHCb1X7kA==}
+    deprecated: This module is not used anymore. npm config is parsed by npm itself and by @npmcli/config
     dependencies:
       figgy-pudding: 3.5.2
       find-up: 3.0.0
@@ -17850,6 +17875,7 @@ packages:
 
   /sentence-splitter@2.3.2:
     resolution: {integrity: sha512-QnpHNykm4nI4T6mT+NoVayh9Ixl5DohYCSVqMgPJsO2WejOcqaYTh4HQOkmzaDzXH3NO5pif4z/hpo2NGtgNlg==}
+    hasBin: true
     dependencies:
       concat-stream: 1.6.2
       structured-source: 3.0.2
@@ -17857,6 +17883,7 @@ packages:
 
   /sentence-splitter@3.2.3:
     resolution: {integrity: sha512-eDqaz4MasTn6Mp3dagKzIbiNsJpgpueMEQqCJeN9F9XQRFLDGFJ0kX8R3uMp+mU7J58dWjr4q6eks/nUX/vnJQ==}
+    hasBin: true
     dependencies:
       '@textlint/ast-node-types': 4.4.3
       concat-stream: 2.0.0
@@ -19444,6 +19471,7 @@ packages:
 
   /trim@0.0.1:
     resolution: {integrity: sha512-YzQV+TZg4AxpKxaTHK3c3D+kRDCGVEE7LemdlQZoQXn0iennk10RsIoY6ikzAqJTc9Xjl9C1/waHom/J86ziAQ==}
+    deprecated: Use String.prototype.trim() instead
     dev: false
 
   /triple-beam@1.3.0:
@@ -19662,6 +19690,7 @@ packages:
 
   /txt-ast-traverse@1.2.1:
     resolution: {integrity: sha512-rxih9n0dRqIiVSKlm4Rkdz4QH4f8RvX6rZiDVXgm3Je8vpvJ4LOUXxoRoBVXNkIVpA1x5wBlNDXtdLzpaxzFIg==}
+    deprecated: See https://github.com/textlint/textlint/issues/455
     dev: false
 
   /type-check@0.4.0:
@@ -20775,6 +20804,7 @@ packages:
   /write-good@1.0.8(eslint-plugin-import@2.27.5)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.32.2):
     resolution: {integrity: sha512-P1Ct7+DNrOcr2JAxDZ3Q5i5sx2LSveu7iLaoUL0A+YiG0GKf0l5+9j3rwMeyh6JeTL1+HfQV1rnwEvzhNIvpFw==}
     engines: {node: '>=6', npm: '>=5'}
+    hasBin: true
     dependencies:
       adverb-where: 0.2.5
       commander: 2.20.3

@@ -83,8 +83,8 @@
         "extends browserslist-config-anolilab"
     ],
     "dependencies": {
-        "@anolilab/prettier-config": "^3.1.1",
-        "@anolilab/textlint-config": "^4.2.2",
+        "@anolilab/prettier-config": "^4.0.0",
+        "@anolilab/textlint-config": "^6.0.0",
         "@commitlint/cli": "^17.6.5",
         "@commitlint/config-conventional": "^17.6.5",
         "@nrwl/cli": "latest",
@@ -96,7 +96,7 @@
         "@tsconfig/node16": "^1.0.4",
         "@tsconfig/strictest": "^2.0.1",
         "@types/node": "^20.2.3",
-        "browserslist-config-anolilab": "^3.2.1",
+        "browserslist-config-anolilab": "^4.0.0",
         "commitizen": "^4.3.0",
         "core-js": "^3.30.2",
         "depcheck": "^1.4.3",
