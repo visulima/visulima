@@ -91,7 +91,7 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^5.0.8",
-        "@anolilab/semantic-release-preset": "^2.2.1",
+        "@anolilab/semantic-release-preset": "^3.1.0",
         "@mdx-js/react": "^2.3.0",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
