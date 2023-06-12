@@ -25,7 +25,7 @@ jobs:
             packages: "${{ steps.changes.outputs.packages }}"
         steps:
             - name: "Git checkout"
-              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+              uses: "actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9" # v3.5.3
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -55,7 +55,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab" # v3.5.2
+              uses: "actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9" # v3.5.3
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
