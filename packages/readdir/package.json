@@ -63,7 +63,7 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^5.0.8",
-        "@anolilab/semantic-release-preset": "^2.2.1",
+        "@anolilab/semantic-release-preset": "^3.1.0",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/micromatch": "^4.0.2",
         "@types/node": "18.16.17",
