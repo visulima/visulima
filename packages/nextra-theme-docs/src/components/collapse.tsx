@@ -2,11 +2,11 @@ import cn from "clsx";
 import type { FC, PropsWithChildren } from "react";
 import { useEffect, useRef } from "react";
 
-const Collapse: FC<PropsWithChildren<{ className?: string; horizontal?: boolean; isOpen: boolean }>> = ({
+const Collapse: FC<PropsWithChildren<{ className?: string; isOpen: boolean; horizontal?: boolean }>> = ({
     children,
     className,
-    horizontal = false,
     isOpen,
+    horizontal = false,
 }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const innerReference = useRef<HTMLDivElement>(null);
@@ -58,13 +58,13 @@ const Collapse: FC<PropsWithChildren<{ className?: string; horizontal?: boolean;
 
     return (
         <div
-            className="transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
             ref={containerReference}
+            className="transform-gpu overflow-hidden transition-all ease-in-out motion-reduce:transition-none"
             style={initialOpen.current || horizontal ? undefined : { height: 0 }}
         >
             <div
-                className={cn("transition-opacity duration-500 ease-in-out motion-reduce:transition-none", isOpen ? "opacity-100" : "opacity-0", className)}
                 ref={innerReference}
+                className={cn("transition-opacity duration-500 ease-in-out motion-reduce:transition-none", isOpen ? "opacity-100" : "opacity-0", className)}
             >
                 {children}
             </div>

@@ -1,15 +1,15 @@
 import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
-import type { Item } from "nextra/normalize-pages";
 import type { FC } from "react";
 
 import { useConfig } from "../contexts";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
+import type { DocsItem } from "../types";
 import Anchor from "./anchor";
 
 interface NavLinkProperties {
     currentIndex: number;
-    flatDirectories: Item[];
+    flatDirectories: DocsItem[];
     layout?: string;
 }
 

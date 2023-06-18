@@ -2,10 +2,10 @@ import { Tab as HeadlessTab } from "@headlessui/react";
 import cn from "clsx";
 import type { ComponentProps, ReactElement, ReactNode } from "react";
 
-interface TabItem {
-    disabled?: boolean;
+type TabItem = {
     label: ReactElement;
-}
+    disabled?: boolean;
+};
 
 const isTabItem = (item: unknown): item is TabItem => typeof item === "object" && "label" in (item as TabItem);
 
@@ -18,21 +18,21 @@ const renderTab = (item: ReactNode | TabItem) => {
 };
 
 export const Tabs = ({
-    children,
-    defaultIndex,
     items,
-    onChange,
-    prefix = "tabs",
     selectedIndex,
+    defaultIndex,
+    onChange,
+    children,
+    prefix = "tabs",
 }: {
-    children: ReactNode;
-    defaultIndex?: number;
     items: ReactNode[] | ReadonlyArray<ReactNode> | TabItem[];
-    onChange?: (index: number) => void;
-    prefix?: string;
     selectedIndex?: number;
+    defaultIndex?: number;
+    onChange?: (index: number) => void;
+    children: ReactNode;
+    prefix?: string;
 }): ReactElement => (
-    <HeadlessTab.Group defaultIndex={defaultIndex} onChange={onChange} selectedIndex={selectedIndex}>
+    <HeadlessTab.Group selectedIndex={selectedIndex} defaultIndex={defaultIndex} onChange={onChange}>
         <div className="nextra-scrollbar overflow-x-auto overflow-y-hidden overscroll-x-contain">
             <HeadlessTab.List className="mt-4 flex w-max min-w-full border-b border-gray-400 pb-px dark:border-neutral-800">
                 {items.map((item, index) => {
@@ -40,19 +40,17 @@ export const Tabs = ({
 
                     return (
                         <HeadlessTab
-                            className={({ selected }) =>
-                                cn(
+                            // eslint-disable-next-line react/no-array-index-key
+                            key={`${prefix}-tab-${index}`}
+                            disabled={disabled}
+                            className={({ selected }) => cn(
                                     "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
                                     "-mb-0.5 select-none border-b-2",
                                     selected
                                         ? "border-primary-500 text-primary-600"
                                         : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
                                     disabled && "pointer-events-none text-gray-400 dark:text-neutral-600",
-                                )
-                            }
-                            disabled={disabled}
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={`${prefix}-tab-${index}`}
+                                )}
                         >
                             {renderTab(item)}
                         </HeadlessTab>

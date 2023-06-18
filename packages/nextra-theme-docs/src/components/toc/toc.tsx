@@ -8,7 +8,9 @@ import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { renderComponent } from "../../utils";
 
-const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix = "" }) => {
+const Toc: FC<TOCProperties> = ({
+ headings, activeAnchor, isPage = false, prefix = "",
+}) => {
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 
@@ -19,14 +21,14 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
     if (hasHeadings) {
         return (
             <div ref={tocReference}>
-                {}
                 <p className="mb-2 font-semibold uppercase tracking-wide text-gray-500 contrast-more:text-gray-800 dark:text-gray-400 contrast-more:dark:text-gray-50">
                     {renderComponent(config.tocSidebar.title)}
                 </p>
                 <ul className="leading-normal" key={prefix}>
-                    {items.map(({ depth, id, value }) => (
+                    {items.map(({ id, value, depth }) => (
                         <li className={isPage ? "" : "scroll-my-6 scroll-py-6"} key={`${prefix}${id}`}>
                             <a
+                                href={`#${id}`}
                                 className={cn(
                                     isPage
                                         ? {
@@ -52,12 +54,11 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
                                         : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300",
                                     "contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words",
                                 )}
-                                href={`#${id}`}
                             >
                                 <span>
                                     {tocConfig.headingComponent?.({
-                                        children: value,
                                         id,
+                                        children: value,
                                     }) ?? value}
                                 </span>
                                 {isPage && (
@@ -76,11 +77,11 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
     return null;
 };
 
-export interface TOCProperties {
-    activeAnchor: ActiveAnchor;
+export type TOCProperties = {
     headings: Heading[];
+    activeAnchor: ActiveAnchor;
     isPage?: boolean;
     prefix?: string;
-}
+};
 
 export default Toc;

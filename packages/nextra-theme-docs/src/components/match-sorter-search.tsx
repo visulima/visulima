@@ -13,29 +13,27 @@ const MatchSorterSearch = ({ className, directories = [] }: { className?: string
         // Will need to scrape all the headers from each page and search through them here
         // (similar to what we already do to render the hash links in sidebar)
         // We could also try to search the entire string text from each page
-        // eslint-disable-next-line no-confusing-arrow
-        () =>
-            search
+        () => (search
                 ? matchSorter(directories, search, { keys: ["title"] }).map(({ route, title }) => {
                       return {
-                          children: <HighlightMatches match={search} value={title} />,
                           id: route + title,
                           route,
+                          children: <HighlightMatches value={title} match={search} />,
                       };
                   })
-                : [],
+                : []),
         [search, directories],
     );
 
     return (
         <Search
+            value={search}
             onChange={async (value) => {
                 setSearch(value);
             }}
             className={className}
             overlayClassName="w-full"
             results={results}
-            value={search}
         />
     );
 };

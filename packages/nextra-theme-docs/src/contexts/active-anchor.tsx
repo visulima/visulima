@@ -1,16 +1,20 @@
 import "intersection-observer";
 
-import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
-import { createContext, useContext, useRef, useState } from "react";
+import type {
+ Dispatch, ReactElement, ReactNode, SetStateAction,
+} from "react";
+import {
+ createContext, useContext, useRef, useState,
+} from "react";
 
 import { IS_BROWSER } from "../constants";
 
-interface Anchor {
+type Anchor = {
+    isActive?: boolean;
     aboveHalfViewport: boolean;
     index: number;
     insideHalfViewport: boolean;
-    isActive?: boolean;
-}
+};
 
 const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
@@ -44,13 +48,13 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                         if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
                             const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
 
-                            const aboveHalfViewport =
-                                entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
+                            // eslint-disable-next-line max-len
+                            const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 
                             returnValue[slug] = {
-                                aboveHalfViewport,
                                 index,
+                                aboveHalfViewport,
                                 insideHalfViewport,
                             };
                         }
@@ -69,9 +73,9 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                             activeSlug = slug;
                         }
                         if (
-                            smallestIndexInViewport === Number.POSITIVE_INFINITY &&
-                            returnValue_.aboveHalfViewport &&
-                            returnValue_.index > largestIndexAboveViewport
+                            smallestIndexInViewport === Number.POSITIVE_INFINITY
+                            && returnValue_.aboveHalfViewport
+                            && returnValue_.index > largestIndexAboveViewport
                         ) {
                             largestIndexAboveViewport = returnValue_.index;
                             activeSlug = slug;

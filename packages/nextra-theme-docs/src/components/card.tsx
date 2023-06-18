@@ -1,17 +1,22 @@
 import type { LinkProps } from "next/link";
 import Link from "next/link";
-import type { FC, HTMLProps, PropsWithChildren, ReactNode } from "react";
+import type {
+ FC, HTMLProps, PropsWithChildren, ReactNode,
+} from "react";
 
 import { cn } from "../utils";
 
 export const Card: FC<
-    PropsWithChildren<LinkProps & { arrow?: boolean; className?: string; href: string; icon: ReactNode; image?: boolean; title: string }>
-> = ({ arrow, children, className, href, icon, image, title, ...properties }) => {
+    PropsWithChildren<LinkProps & { title: string; icon: ReactNode; arrow?: boolean; href: string; className?: string }>
+> = ({
+ children, title, icon, arrow, href, className, ...properties
+}) => {
     const animatedArrow = arrow ? <span className={cn("transition-transform duration-75", "group-hover:translate-x-[2px]")}>→</span> : null;
 
-    if (image) {
+    if (children) {
         return (
             <Link
+                href={href}
                 className={cn(
                     "nextra-card",
                     "group flex flex-col justify-start overflow-hidden rounded-lg",
@@ -22,7 +27,6 @@ export const Card: FC<
                     "active:shadow-sm active:shadow-gray-200",
                     className,
                 )}
-                href={href}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
@@ -40,6 +44,7 @@ export const Card: FC<
 
     return (
         <Link
+            href={href}
             className={cn(
                 "nextra-card",
                 "group flex flex-col justify-start overflow-hidden rounded-lg border border-gray-200",
@@ -49,7 +54,6 @@ export const Card: FC<
                 "hover:shadow-gray-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-900 dark:hover:shadow-none",
                 "active:shadow-sm active:shadow-gray-200",
             )}
-            href={href}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >
@@ -64,9 +68,9 @@ export const Card: FC<
 
 export const Cards: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { num: number; style: HTMLProps<HTMLDivElement>["style"] & { "--rows"?: string } }>> = ({
     children,
-    className,
     num,
     style,
+    className,
     ...properties
 }) => (
     <div
