@@ -4,7 +4,9 @@ import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import {
+ Fragment, useCallback, useEffect, useRef, useState,
+} from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
@@ -13,29 +15,29 @@ import { renderComponent, renderString } from "../utils";
 import Anchor from "./anchor";
 import Input from "./input";
 
-interface SearchProperties {
+type SearchProperties = {
     className?: string;
-    error?: boolean;
-    loading?: boolean;
-    onActive?: (active: boolean) => Promise<void>;
-    onChange: (newValue: string) => Promise<void>;
     overlayClassName?: string;
-
-    results: SearchResult[];
     value: string;
-}
+    onChange: (newValue: string) => Promise<void>;
+    onActive?: (active: boolean) => Promise<void>;
+    loading?: boolean;
+
+    error?: boolean;
+    results: SearchResult[];
+};
 
 const INPUTS = new Set(["input", "select", "button", "textarea"]);
 
 const Search: FC<SearchProperties> = ({
     className,
-    error,
-    loading,
-    onActive,
-    onChange,
     overlayClassName,
-    results,
     value,
+    onChange,
+    onActive,
+    loading,
+    error,
+    results,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const [show, setShow] = useState(false);
@@ -150,6 +152,7 @@ const Search: FC<SearchProperties> = ({
 
     const icon = (
         <Transition
+            show={mounted && (!show || Boolean(value))}
             as={Fragment}
             enter="transition-opacity"
             enterFrom="opacity-0"
@@ -157,7 +160,6 @@ const Search: FC<SearchProperties> = ({
             leave="transition-opacity"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
-            show={mounted && (!show || Boolean(value))}
         >
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             <kbd
@@ -169,15 +171,15 @@ const Search: FC<SearchProperties> = ({
                     "items-center gap-1 transition-opacity",
                     value ? "z-20 flex cursor-pointer hover:opacity-70" : "pointer-events-none hidden sm:flex",
                 )}
+                title={value ? "Clear" : undefined}
                 onClick={() => {
                     onChange("");
                 }}
-                title={value ? "Clear" : undefined}
             >
                 {value && focused
                     ? "ESC"
-                    : mounted &&
-                      (navigator.userAgent.includes("Macintosh") ? (
+                    : mounted
+                      && (navigator.userAgent.includes("Macintosh") ? (
                           <>
                               <span className="text-xs">⌘</span>K
                           </>
@@ -196,9 +198,8 @@ const Search: FC<SearchProperties> = ({
             {renderList && <div className="fixed inset-0 z-10" onClick={() => setShow(false)} />}
 
             <Input
-                onBlur={() => {
-                    setFocused(false);
-                }}
+                ref={input}
+                value={value}
                 onChange={(event) => {
                     const { value: eventValue } = event.target;
 
@@ -209,21 +210,22 @@ const Search: FC<SearchProperties> = ({
                     onActive?.(true);
                     setFocused(true);
                 }}
-                onKeyDown={handleKeyDown}
-                placeholder={renderString(config.search.placeholder, { locale })}
-                ref={input}
-                suffix={icon}
+                onBlur={() => {
+                    setFocused(false);
+                }}
                 type="search"
-                value={value}
+                placeholder={renderString(config.search.placeholder, { locale })}
+                onKeyDown={handleKeyDown}
+                suffix={icon}
             />
 
             <Transition
+                show={renderList}
                 // Transition.Child is required here, otherwise popup will be still present in DOM after focus out
                 as={Transition.Child}
                 leave="transition-opacity duration-100"
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
-                show={renderList}
             >
                 <ul
                     className={cn(
@@ -237,23 +239,26 @@ const Search: FC<SearchProperties> = ({
                         "contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50",
                         overlayClassName,
                     )}
+                    ref={ulReference}
                     style={{
                         transition: "max-height .2s ease", // don't work with tailwindcss
                     }}
-                    ref={ulReference}
                 >
                     {error ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-red-500">
                             <InformationCircleIcon className="h-5 w-5" />
                             {renderString(config.search.error, { locale })}
                         </span>
-                    ) : loading ? (
+                    ) : (loading ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-gray-400">
                             <SpinnerIcon className="h-5 w-5 animate-spin" />
                             {renderString(config.search.loading, { locale })}
                         </span>
-                    ) : results.length > 0 ? (
-                        results.map(({ children, id, prefix, route }, index) => (
+                    ) // eslint-disable-next-line unicorn/no-nested-ternary
+                    : results.length > 0 ? (
+                        results.map(({
+ route, prefix, children, id,
+}, index) => (
                             <Fragment key={id}>
                                 {prefix}
                                 <li
@@ -267,12 +272,12 @@ const Search: FC<SearchProperties> = ({
                                 >
                                     <Anchor
                                         className="block scroll-m-12 px-2.5 py-2"
-                                        data-index={index}
                                         href={route}
-                                        onClick={finishSearch}
+                                        data-index={index}
                                         onFocus={handleActive}
-                                        onKeyDown={handleKeyDown}
                                         onMouseMove={handleActive}
+                                        onClick={finishSearch}
+                                        onKeyDown={handleKeyDown}
                                     >
                                         {children}
                                     </Anchor>
@@ -281,7 +286,7 @@ const Search: FC<SearchProperties> = ({
                         ))
                     ) : (
                         renderComponent(config.search.emptyResult)
-                    )}
+                    ))}
                 </ul>
             </Transition>
         </div>

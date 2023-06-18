@@ -5,7 +5,9 @@ import { useFSRoute } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
 import type { FC } from "react";
-import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+ createContext, memo, useContext, useEffect, useMemo, useRef, useState,
+} from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
@@ -24,11 +26,9 @@ const FocusedItemContext = createContext<string | null>(null);
 const OnFocuseItemContext = createContext<((item: string | null) => any) | null>(null);
 
 const classes = {
-    active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
-    border: cn(
-        "relative before:absolute before:inset-y-1",
-        'before:w-px before:bg-gray-300 before:content-[""] dark:before:bg-neutral-800',
-        "ltr:pl-3 ltr:before:left-0 rtl:pr-3 rtl:before:right-0",
+    link: cn(
+        "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word]",
+        "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
     inactive: cn(
         "text-gray-500 hover:bg-gray-200 hover:text-gray-700 rounded",
@@ -36,25 +36,27 @@ const classes = {
         "contrast-more:text-gray-900 contrast-more:dark:text-gray-50",
         "contrast-more:border-transparent contrast-more:hover:border-gray-900 contrast-more:dark:hover:border-gray-50",
     ),
-    link: cn(
-        "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word]",
-        "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
-    ),
+    active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
     list: cn("flex flex-col gap-1"),
+    border: cn(
+        "relative before:absolute before:inset-y-1",
+        'before:w-px before:bg-gray-300 before:content-[""] dark:before:bg-neutral-800',
+        "ltr:pl-3 ltr:before:left-0 rtl:pr-3 rtl:before:right-0",
+    ),
 };
 
 const FolderLevelContext = createContext(0);
 
-interface FolderProperties {
-    anchors: Heading[];
+type FolderProperties = {
     item: Item | MenuItem | PageItem;
-}
+    anchors: Heading[];
+};
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
+const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const routeOriginal = useFSRoute();
     const [route] = routeOriginal.split("#");
-    const active = [`${route}/`, route].includes(`${item.route}/`);
+    const active = [route, `${route}/`].includes(`${item.route}/`);
     const activeRouteInside = active || route?.startsWith(`${item.route}/`);
 
     const focusedRoute = useContext(FocusedItemContext);
@@ -65,12 +67,12 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
     const config = useConfig();
     const { theme } = item as Item;
 
-    const isOpen =
-        TreeState[item.route] === undefined
-            ? active ||
-              activeRouteInside ||
-              focusedRouteInside ||
-              (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
+    const isOpen = TreeState[item.route] === undefined
+            ? active
+              || activeRouteInside
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              || focusedRouteInside
+              || (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
             : TreeState[item.route] ?? focusedRouteInside;
 
     const rerender = useState({})[1];
@@ -98,7 +100,6 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
         const menu = item as MenuItem;
         const routes = Object.fromEntries((menu.children ?? []).map((mRoute) => [mRoute.name, mRoute]));
 
-        // @ts-expect-error - types are wrong
         // eslint-disable-next-line no-param-reassign
         item.children = Object.entries(menu.items).map(([key, value]) => {
             return {
@@ -119,8 +120,10 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
     return (
         <li className={cn(active, isOpen ? "open" : "")}>
             <ComponentToUse
+                href={isLink ? item.route : undefined}
+                className={cn("items-center justify-between gap-2 w-full text-left", classes.link, active ? classes.active : classes.inactive)}
                 onClick={(event) => {
-                    const clickedToggleIcon = ["path", "svg"].includes((event.target as HTMLElement).tagName.toLowerCase());
+                    const clickedToggleIcon = ["svg", "path"].includes((event.target as HTMLElement).tagName.toLowerCase());
 
                     if (clickedToggleIcon) {
                         event.preventDefault();
@@ -148,13 +151,11 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
 
                     rerender({});
                 }}
-                className={cn("items-center justify-between gap-2 w-full text-left", classes.link, active ? classes.active : classes.inactive)}
-                href={isLink ? item.route : undefined}
             >
                 {renderComponent(config.sidebar.titleComponent, {
-                    route: item.route,
                     title: item.title,
                     type: item.type,
+                    route: item.route,
                 })}
                 <ArrowRightIcon
                     className="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"
@@ -164,7 +165,7 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
             <Collapse className="ltr:pr-0 rtl:pl-0" isOpen={isOpen}>
                 {Array.isArray(item.children) ? (
                     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                    <Menu anchors={anchors} className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} />
+                    <Menu className={cn(classes.border, "ltr:ml-1 rtl:mr-1")} directories={item.children} anchors={anchors} />
                 ) : null}
             </Collapse>
         </li>
@@ -194,9 +195,9 @@ const Separator: FC<{ title: string }> = ({ title }) => {
         >
             {title ? (
                 renderComponent(config.sidebar.titleComponent, {
-                    route: "",
                     title,
                     type: "separator",
+                    route: "",
                 })
             ) : (
                 <hr className="mx-2 border-t border-gray-400 dark:border-primary-100/10" />
@@ -205,12 +206,12 @@ const Separator: FC<{ title: string }> = ({ title }) => {
     );
 };
 
-const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item }) => {
+const File: FC<{ item: Item | PageItem; anchors: Heading[] }> = ({ item, anchors }) => {
     const route = useFSRoute();
     const onFocus = useContext(OnFocuseItemContext);
 
     // It is possible that the item doesn't have any route - for example an external link.
-    const active = item.route && [`${route}/`, route].includes(`${item.route}/`);
+    const active = item.route && [route, `${route}/`].includes(`${item.route}/`);
 
     const activeAnchor = useActiveAnchor();
     const { setMenu } = useMenu();
@@ -223,23 +224,23 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
     return (
         <li className={cn(classes.list, { active })}>
             <Anchor
-                onBlur={() => {
-                    onFocus?.(null);
-                }}
+                href={(item as PageItem).href ?? item.route}
+                newWindow={(item as PageItem).newWindow}
+                className={cn(classes.link, active ? classes.active : classes.inactive)}
                 onClick={() => {
                     setMenu(false);
                 }}
                 onFocus={() => {
                     onFocus?.(item.route);
                 }}
-                className={cn(classes.link, active ? classes.active : classes.inactive)}
-                href={(item as PageItem).href ?? item.route}
-                newWindow={(item as PageItem).newWindow}
+                onBlur={() => {
+                    onFocus?.(null);
+                }}
             >
                 {renderComponent(config.sidebar.titleComponent, {
-                    route: item.route,
                     title: item.title,
                     type: item.type,
+                    route: item.route,
                 })}
             </Anchor>
             {active && anchors.length > 0 && (
@@ -247,6 +248,7 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                     {anchors.map(({ id, value }) => (
                         <li key={id}>
                             <a
+                                href={`#${id}`}
                                 className={cn(
                                     classes.link,
                                     'flex gap-2 before:opacity-25 before:content-["#"]',
@@ -255,7 +257,6 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                                 onClick={() => {
                                     setMenu(false);
                                 }}
-                                href={`#${id}`}
                             >
                                 {value}
                             </a>
@@ -268,18 +269,20 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
 };
 
 const Menu: FC<{
+    directories: Item[] | PageItem[];
     anchors: Heading[];
     className?: string;
-    directories: Item[] | PageItem[];
     onlyCurrentDocs?: boolean;
-}> = ({ anchors, className, directories, onlyCurrentDocs }) => (
+}> = ({
+ directories, anchors, className, onlyCurrentDocs,
+}) => (
     <ul className={cn(classes.list, className)}>
         {directories.map((item) => {
             if (!onlyCurrentDocs || item.isUnderCurrentDocsTree) {
                 if (item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage))) {
-                    return <Folder anchors={anchors} item={item} key={item.name} />;
+                    return <Folder key={item.name} item={item} anchors={anchors} />;
                 }
-                return <File anchors={anchors} item={item} key={item.name} />;
+                return <File key={item.name} item={item} anchors={anchors} />;
             }
 
             return null;
@@ -288,15 +291,17 @@ const Menu: FC<{
 );
 
 interface SideBarProperties {
-    asPopover?: boolean;
     documentsDirectories: PageItem[];
     flatDirectories: Item[];
     fullDirectories: Item[];
+    asPopover?: boolean;
     headings?: Heading[];
     includePlaceholder: boolean;
 }
 
-const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectories, flatDirectories, fullDirectories, headings = [], includePlaceholder }) => {
+const Sidebar: FC<SideBarProperties> = ({
+ documentsDirectories, flatDirectories, fullDirectories, asPopover = false, headings = [], includePlaceholder,
+}) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
     const router = useRouter();
@@ -322,9 +327,9 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
             const scroll = () => {
                 scrollIntoView(activeElement, {
                     block: "center",
-                    boundary: containerReference.current,
                     inline: "center",
                     scrollMode: "always",
+                    boundary: containerReference.current,
                 });
             };
 
@@ -353,7 +358,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
 
     return (
         <>
-            {}
+            { }
             {includePlaceholder && asPopover ? <div className="h-0 shrink-0 max-xl:hidden" /> : null}
             {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
             <div
@@ -381,7 +386,6 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         directories: flatDirectories,
                     })}
                 </div>
-                {}
                 <FocusedItemContext.Provider value={focused}>
                     <OnFocuseItemContext.Provider
                         // eslint-disable-next-line react/jsx-no-constructed-context-values
@@ -398,20 +402,20 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         >
                             <div className="transform-gpu ease-in-out motion-reduce:transition-none">
                                 <Menu
-                                    // the sidebar when `floatTOC` is enabled.
-                                    anchors={config.tocSidebar.float ? [] : anchors}
                                     className="max-lg:hidden"
-                                    // When the viewport size is larger than `md`, hide the anchors in
                                     // The sidebar menu, shows only the docs directories.
                                     directories={documentsDirectories}
+                                    // When the viewport size is larger than `md`, hide the anchors in
+                                    // the sidebar when `floatTOC` is enabled.
+                                    anchors={config.tocSidebar.float ? [] : anchors}
                                     onlyCurrentDocs
                                 />
                                 <Menu
-                                    // Always show the anchor links on mobile (`md`).
-                                    anchors={anchors}
                                     className="lg:hidden"
                                     // The mobile dropdown menu, shows all the directories.
                                     directories={fullDirectories}
+                                    // Always show the anchor links on mobile (`md`).
+                                    anchors={anchors}
                                 />
                             </div>
                         </div>
@@ -431,7 +435,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         )}
                         data-toggle-animation="off"
                     >
-                        {hasI18n && <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" options={config.i18n} />}
+                        {hasI18n && <LocaleSwitch options={config.i18n} className="ltr:mr-auto rtl:ml-auto" />}
                         {hasI18n && config.darkMode && <div className="grow" />}
                         {config.darkMode && <ThemeSwitch locale={router.locale ?? DEFAULT_LOCALE} />}
                     </div>

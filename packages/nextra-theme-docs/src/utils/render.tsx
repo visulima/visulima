@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 
-export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode | ((properties: T) => string), properties?: T): ReactNode {
+export const renderComponent = function<T>(ComponentOrNode: FC<T> | ReactNode | ((properties: T) => string), properties?: T): ReactNode {
     if (!ComponentOrNode) {
         return null;
     }
@@ -12,9 +12,9 @@ export function renderComponent<T>(ComponentOrNode: FC<T> | ReactNode | ((proper
     // @ts-expect-error TS2322: Type '{}' is not assignable to type 'T'
     // eslint-disable-next-line react/jsx-props-no-spreading
     return <ComponentOrNode {...properties} />;
-}
+};
 
-export function renderString<T>(
+export const renderString = function<T>(
     stringOrFunction?: string | ((properties: T) => string),
     // @ts-expect-error TS2322: Type '{}' is not assignable to type 'T'.
     properties: T = {},
@@ -22,4 +22,4 @@ export function renderString<T>(
     const result = typeof stringOrFunction === "function" ? stringOrFunction(properties) : stringOrFunction;
 
     return result ?? "";
-}
+};

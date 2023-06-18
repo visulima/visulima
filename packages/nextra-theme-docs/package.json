@@ -87,6 +87,8 @@
         "next-seo": "^6.1.0",
         "next-themes": "^0.2.1",
         "react-hot-toast": "^2.4.1",
+        "react-medium-image-zoom": "^5.1.6",
+        "react-wrap-balancer": "^1.0.0",
         "scroll-into-view-if-needed": "^3.0.10",
         "tailwind-merge": "^1.14.0"
     },
@@ -100,6 +102,7 @@
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.9",
         "@testing-library/react": "^14.0.0",
+        "@total-typescript/ts-reset": "^0.4.2",
         "@types/flexsearch": "^0.7.3",
         "@types/git-url-parse": "^9.0.1",
         "@types/micromatch": "^4.0.2",

@@ -3,23 +3,29 @@
     counter-reset: step;
 }
 
-.steps-container h3 {
+.steps-container h3,
+.steps-container.no-title p {
     counter-increment: step;
 }
 
-.steps-container h3:before {
-    @apply border-white border-solid border-4 inline-block font-normal h-8 text-base leading-6 mt-1 -ml-10 absolute text-center w-8;
+.steps-container h3:before,
+.steps-container.no-title p:before {
+    @apply border-white border-solid border-4 inline-block font-normal h-8 text-base leading-6 -ml-10 absolute text-center w-8;
     content: counter(step);
     text-indent: -1px;
     color: rgba(153, 153, 153, 1);
     border-radius: 100%;
     background-color: rgba(243, 243, 243, 1);
 }
+.steps-container.no-title p:before {
+    @apply -mt-[0.1rem];
+}
 
 .dark .steps-container {
     border-color: #2e2e2e;
 }
-.dark .steps-container h3:before {
+.dark .steps-container h3:before,
+.dark .steps-container.no-title p:before{
     color: #999;
     border: 4px solid rgba(17, 17, 17, var(--tw-bg-opacity));
     background: #2e2e2e;

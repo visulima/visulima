@@ -1,6 +1,10 @@
 import cn from "clsx";
-import type { ComponentProps, PropsWithChildren, ReactElement, ReactNode } from "react";
-import { Children, cloneElement, useEffect, useState } from "react";
+import type {
+ ComponentProps, PropsWithChildren, ReactElement, ReactNode,
+} from "react";
+import {
+ Children, cloneElement, useEffect, useState,
+} from "react";
 
 import { DetailsProvider } from "../contexts";
 import Collapse from "./collapse";
@@ -43,16 +47,16 @@ const findSummary = (children: ReactNode) => {
 
 const Details = ({
     children,
-    className,
+    open = false,
     collapseClassName,
     collapseHorizontal = false,
-    open = false,
+    className,
     variant = "default",
     ...properties
 }: ComponentProps<"details"> & {
+    variant?: "default" | "raw";
     collapseClassName?: string;
     collapseHorizontal?: boolean;
-    variant?: "default" | "raw";
 }): ReactElement => {
     const [openState, setOpen] = useState(open);
 
@@ -88,7 +92,7 @@ const Details = ({
             {...(openState && { "data-expanded": true })}
         >
             <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-            <Collapse className={collapseClassName} horizontal={collapseHorizontal} isOpen={openState}>
+            <Collapse className={collapseClassName} isOpen={openState} horizontal={collapseHorizontal}>
                 {restChildren}
             </Collapse>
         </details>

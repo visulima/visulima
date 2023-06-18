@@ -10,13 +10,13 @@ vi.mock("next/router", () => {
     };
 });
 
-function mockAndRenderHook({ asPath, locale, route }: { asPath: string; locale?: string; route?: string }) {
+const mockAndRenderHook = ({ asPath, locale, route }: { asPath: string; locale?: string; route?: string }) => {
     (useRouter as Mock).mockReturnValue({ asPath, locale, route });
 
     const { result } = renderHook(useFSRoute);
 
     return result.current;
-}
+};
 
 describe("getFSRoute", () => {
     it("replace locale", () => {

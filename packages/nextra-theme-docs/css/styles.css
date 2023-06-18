@@ -12,6 +12,7 @@
 @import "./scrollbar.css";
 @import "./typesetting-article.css";
 @import "./step-container.css";
+@import "./zoom.css";
 
 html {
     @apply antialiased text-base;

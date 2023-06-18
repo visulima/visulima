@@ -42,9 +42,10 @@ type SkipNavLinkProperties = Omit<ComponentProps<"a">, "children" | "href" | "re
 type SkipNavContentProperties = Omit<ComponentProps<"div">, "children" | "ref">;
 
 export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
-    ({ className: providedClassName, id, label = DEFAULT_LABEL, ...properties }, forwardedReference): ReactElement => {
-        const className =
-            providedClassName === undefined // Give the option to the user to pass a falsy other than undefined to remove the default styles
+    ({
+ className: providedClassName, id, label = DEFAULT_LABEL, ...properties
+}, forwardedReference): ReactElement => {
+        const className = providedClassName === undefined // Give the option to the user to pass a falsy other than undefined to remove the default styles
                 ? cn(
                       "sr-only",
 
@@ -59,9 +60,9 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
             <a
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
-                className={className}
-                href={`#${id ?? DEFAULT_ID}`}
                 ref={forwardedReference}
+                href={`#${id ?? DEFAULT_ID}`}
+                className={className}
             >
                 {label}
             </a>
@@ -71,5 +72,5 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
 
 export const SkipNavContent = forwardRef<HTMLDivElement, SkipNavContentProperties>(
     // eslint-disable-next-line react/jsx-props-no-spreading
-    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} id={id ?? DEFAULT_ID} ref={forwardedReference} />,
+    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} ref={forwardedReference} id={id ?? DEFAULT_ID} />,
 );

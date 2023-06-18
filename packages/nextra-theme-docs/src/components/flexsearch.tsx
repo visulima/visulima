@@ -1,4 +1,3 @@
-// @ts-nocheck
 import cn from "clsx";
 import BaseFlexSearch from "flexsearch";
 import { useRouter } from "next/router";
@@ -12,43 +11,44 @@ import Search from "./search";
 
 type SectionIndex = BaseFlexSearch.Document<
     {
+        id: string;
+        url: string;
+        title: string;
+        pageId: string;
         content: string;
         display?: string;
-        id: string;
-        pageId: string;
-        title: string;
-        url: string;
     },
     ["title", "content", "url", "display"]
 >;
 
 type PageIndex = BaseFlexSearch.Document<
     {
-        content: string;
         id: number;
         title: string;
+        content: string;
     },
     ["title"]
 >;
 
-interface Result {
+type Result = {
     _page_rk: number;
     _section_rk: number;
-    children: ReactNode;
-    prefix: ReactNode;
     route: string;
-}
+    prefix: ReactNode;
+    children: ReactNode;
+};
 
-type NextraData = Record<
-    string,
-    {
-        data: Record<string, string>;
+type NextraData = {
+    [route: string]: {
         title: string;
-    }
->;
+        data: Record<string, string>;
+    };
+};
 
 // This can be global for better caching.
-const indexes: Record<string, [PageIndex, SectionIndex]> = {};
+const indexes: {
+    [locale: string]: [PageIndex, SectionIndex];
+} = {};
 
 // Caches promises that load the index
 const loadIndexesPromises = new Map<string, Promise<void>>();
@@ -61,33 +61,33 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
 
     const pageIndex: PageIndex = new BaseFlexSearch.Document({
         cache: 100,
-        context: {
-            bidirectional: true,
-            depth: 2,
-            resolution: 9,
-        },
+        tokenize: "full",
         document: {
             id: "id",
             index: "content",
             store: ["title"],
         },
-        tokenize: "full",
+        context: {
+            resolution: 9,
+            depth: 2,
+            bidirectional: true,
+        },
     });
 
     const sectionIndex: SectionIndex = new BaseFlexSearch.Document({
         cache: 100,
-        context: {
-            bidirectional: true,
-            depth: 2,
-            resolution: 9,
-        },
+        tokenize: "full",
         document: {
             id: "id",
             index: "content",
-            store: ["title", "content", "url", "display"],
             tag: "pageId",
+            store: ["title", "content", "url", "display"],
         },
-        tokenize: "full",
+        context: {
+            resolution: 9,
+            depth: 2,
+            bidirectional: true,
+        },
     });
 
     let pageId = 0;
@@ -106,21 +106,21 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
             const paragraphs = content.split("\n").filter(Boolean);
 
             sectionIndex.add({
-                content: title,
                 id: url,
-                pageId: `page_${pageId}`,
-                title,
                 url,
+                title,
+                pageId: `page_${pageId}`,
+                content: title,
                 ...(paragraphs[0] && { display: paragraphs[0] }),
             });
 
             paragraphs.forEach((paragraph, index) => {
                 sectionIndex.add({
-                    content: paragraph,
                     id: `${url}_${index}`,
-                    pageId: `page_${pageId}`,
-                    title,
                     url,
+                    title,
+                    pageId: `page_${pageId}`,
+                    content: paragraph,
                 });
             });
 
@@ -129,33 +129,32 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         });
 
         pageIndex.add({
-            content: pageContent,
             id: pageId,
             title: data[route].title,
+            content: pageContent,
         });
     });
 
     indexes[locale] = [pageIndex, sectionIndex];
 };
 
-const loadIndexes = async (basePath: string, locale: string): Promise<unknown> => {
+const loadIndexes = (basePath: string, locale: string): Promise<unknown> => {
     const key = `${basePath}@${locale}`;
 
     if (loadIndexesPromises.has(key)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        await loadIndexesPromises.get(key)!;
-        return;
+        return loadIndexesPromises.get(key)!;
     }
 
     const promise = loadIndexesImpl(basePath, locale);
 
     loadIndexesPromises.set(key, promise);
 
-    await promise;
+    return promise;
 };
 
 const FlexSearch = ({ className }: { className?: string }): ReactElement => {
-    const { basePath, locale = DEFAULT_LOCALE } = useRouter();
+    const { locale = DEFAULT_LOCALE, basePath } = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [results, setResults] = useState<SearchResult[]>([]);
@@ -169,8 +168,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         const [pageIndex, sectionIndex] = indexes[locale];
 
         // Show the resultList for the top 5 pages
-        const pageResults =
-            pageIndex.search<true>(searchString, 5, {
+        const pageResults = pageIndex.search<true>(searchString, 5, {
                 enrich: true,
                 suggest: true,
             })[0]?.result || [];
@@ -182,8 +180,7 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
             pageTitleMatches[index] = 0;
 
             // Show the top 5 resultList for each page
-            const sectionResults =
-                sectionIndex.search<true>(searchString, 5, {
+            const sectionResults = sectionIndex.search<true>(searchString, 5, {
                     enrich: true,
                     suggest: true,
                     tag: `page_${result.id}`,
@@ -194,14 +191,14 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
             const occurred: Record<string, boolean> = {};
 
             sectionResults.forEach(({ doc }, sectionResultsIndex) => {
-                const { content: documentContent, display } = doc;
+                const { display, content: documentContent } = doc;
                 const isMatchingTitle = display !== undefined;
 
                 if (isMatchingTitle) {
                     pageTitleMatches[index] += 1;
                 }
 
-                const { title, url } = doc;
+                const { url, title } = doc;
                 const content = display || documentContent;
 
                 if (occurred[`${url}@${content}`]) {
@@ -213,6 +210,19 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
                 resultList.push({
                     _page_rk: index,
                     _section_rk: sectionResultsIndex,
+                    route: url,
+                    prefix: isFirstItemOfPage && (
+                        <div
+                            className={cn(
+                                "mx-2.5 mb-2 mt-6 select-none px-2.5 pb-1.5",
+                                "text-xs font-semibold uppercase text-gray-500 first:mt-0 dark:text-gray-300",
+                                "border-b border-black/10 dark:border-white/20",
+                                "contrast-more:border-gray-600 contrast-more:text-gray-900 contrast-more:dark:border-gray-50 contrast-more:dark:text-gray-50",
+                            )}
+                        >
+                            {result.doc.title}
+                        </div>
+                    ),
                     children: (
                         <>
                             <div className="text-base font-semibold leading-5">
@@ -226,19 +236,6 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
                             )}
                         </>
                     ),
-                    prefix: isFirstItemOfPage && (
-                        <div
-                            className={cn(
-                                "mx-2.5 mb-2 mt-6 select-none px-2.5 pb-1.5",
-                                "text-xs font-semibold uppercase text-gray-500 first:mt-0 dark:text-gray-300",
-                                "border-b border-black/10 dark:border-white/20",
-                                "contrast-more:border-gray-600 contrast-more:text-gray-900 contrast-more:dark:border-gray-50 contrast-more:dark:text-gray-50",
-                            )}
-                        >
-                            {result.doc.title}
-                        </div>
-                    ),
-                    route: url,
                 });
                 isFirstItemOfPage = false;
             });
@@ -260,10 +257,10 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
                 })
                 .map((result) => {
                     return {
-                        children: result.children,
                         id: `${result._page_rk}_${result._section_rk}`,
-                        prefix: result.prefix,
                         route: result.route,
+                        prefix: result.prefix,
+                        children: result.children,
                     };
                 }),
         );
@@ -310,14 +307,14 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
 
     return (
         <Search
-            className={className}
-            error={error}
             loading={loading}
-            onActive={preload}
+            error={error}
+            value={search}
             onChange={handleChange}
+            onActive={preload}
+            className={className}
             overlayClassName="w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
             results={results}
-            value={search}
         />
     );
 };

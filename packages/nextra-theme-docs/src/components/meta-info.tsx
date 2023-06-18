@@ -10,25 +10,27 @@ const linkClassName = cn(
     "contrast-more:text-gray-800 contrast-more:dark:text-gray-50",
 );
 
-const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: string }> = ({ config, filePath, locale, route }) => (
+const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: string }> = ({
+ config, filePath, locale, route,
+}) => (
     <>
         {config.feedback.content ? (
             <Anchor
+                className={linkClassName}
                 href={
                     config.feedback.link
                         ? config.feedback.link({
+                              title: config.title,
+                              route,
                               docsRepositoryBase: config.docsRepositoryBase,
                               labels: config.feedback.labels,
-                              route,
-                              title: config.title,
                           })
                         : getGitIssueUrl({
-                              labels: config.feedback.labels,
                               repository: config.docsRepositoryBase,
                               title: `Feedback for “${config.title}”`,
+                              labels: config.feedback.labels,
                           })
                 }
-                className={linkClassName}
                 newWindow
             >
                 {renderComponent(config.feedback.content, { locale })}
@@ -36,18 +38,18 @@ const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: st
         ) : null}
 
         {renderComponent(config.editLink.component, {
-            children: renderComponent(config.editLink.content, { locale }),
-            className: linkClassName,
             filePath,
+            className: linkClassName,
+            children: renderComponent(config.editLink.content, { locale }),
         })}
 
         {config.backToTop.active && (
             <button
+                type="button"
                 onClick={() => {
-                    window.scrollTo({ behavior: "smooth", left: 0, top: 0 });
+                    window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
                 }}
                 className={linkClassName}
-                type="button"
             >
                 {renderComponent(config.backToTop.content, { locale })}
             </button>
