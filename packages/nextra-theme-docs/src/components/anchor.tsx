@@ -3,8 +3,6 @@ import next from "next/package.json";
 import type { ComponentProps, ReactElement } from "react";
 import { forwardRef } from "react";
 
-import { useConfig } from "../contexts";
-
 type AnchorProperties = Omit<ComponentProps<"a">, "ref"> & {
     newWindow?: boolean;
 };
@@ -19,8 +17,6 @@ const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
         // ref is used in <NavbarMenu />
         forwardedReference,
     ): ReactElement => {
-        const config = useConfig();
-
         if (newWindow) {
             return (
                 // eslint-disable-next-line react/jsx-props-no-spreading

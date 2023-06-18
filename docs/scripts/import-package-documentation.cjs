@@ -1,14 +1,24 @@
+// eslint-disable-next-line unicorn/prefer-module
 const { walk } = require("@visulima/readdir");
+// eslint-disable-next-line unicorn/prefer-module
 const yargs = require("yargs/yargs");
+// eslint-disable-next-line unicorn/prefer-module
 const { hideBin } = require("yargs/helpers");
+// eslint-disable-next-line unicorn/prefer-module
 const fs = require("node:fs");
+// eslint-disable-next-line unicorn/prefer-module
 const fse = require("fs-extra");
+// eslint-disable-next-line unicorn/prefer-module
 const path = require("node:path");
+// eslint-disable-next-line unicorn/prefer-module
 const process = require("node:process");
 
-const packagesPath = path.join(__dirname, "..", "pages", "docs");
+const symlinkDir = require("symlink-dir");
 
-const publicPath = path.join(__dirname, "..", "public", "assets");
+// eslint-disable-next-line no-undef,unicorn/prefer-module
+const docsPath = path.join(__dirname, "..", "pages", "docs");
+// eslint-disable-next-line no-undef,unicorn/prefer-module
+const assetsPath = path.join(__dirname, "..", "public", "assets");
 
 const argv = yargs(hideBin(process.argv))
     .option("path", {
@@ -26,7 +36,7 @@ const argv = yargs(hideBin(process.argv))
     .alias("help", "h")
     .parse();
 
-const { copy, path: pathOption, symlink } = argv;
+const { symlink, copy, path: pathOption } = argv;
 
 if ((!symlink && !copy) || (symlink && copy)) {
     // eslint-disable-next-line no-console
@@ -42,7 +52,7 @@ if (typeof pathOption !== "string") {
     process.exit(1);
 }
 
-const command = async function () {
+async function command() {
     const searchPath = path.join(process.cwd(), pathOption);
 
     // eslint-disable-next-line no-console
@@ -50,35 +60,81 @@ const command = async function () {
     // eslint-disable-next-line no-console
     console.log("");
 
+    const paths = [];
+
     // eslint-disable-next-line no-restricted-syntax
     for await (const result of walk(searchPath, {
-        extensions: [".mdx", ".md", ".json", ".apng", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".pdf", ".avif", ".mp4", ".webm", ".mov"],
-        followSymlinks: false,
-        includeDirs: true,
-        includeFiles: true,
         maxDepth: 20,
+        includeFiles: true,
+        includeDirs: true,
+        followSymlinks: false,
+        extensions: [".mdx", ".md", ".json", ".apng", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".pdf", ".avif", ".mp4", ".webm", ".mov"],
         skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
     })) {
-        if (result.isFile && result.path.includes("/docs/")) {
+        if (result.isFile && result.path.includes("/__docs__/")) {
             // eslint-disable-next-line no-console
             console.log("Found", result.path);
 
-            let destination = `${packagesPath}${result.path.replace(searchPath, "").replace("docs/", "")}`;
+            const relativePath = result.path.replace(searchPath, "").replace("__docs__/", "");
 
-            if (result.path.includes("docs/assets/")) {
-                destination = `${publicPath}${result.path.replace(searchPath, "").replace("docs/assets", "")}`;
-            }
+            paths.push({
+                src: result.path,
+                dest: `${docsPath}${relativePath}`,
+                packageName: relativePath.split("/")[1]
+            });
+        } else if (result.isFile && result.path.includes("/__assets__/")) {
+            // eslint-disable-next-line no-console
+            console.log("Found", result.path);
 
-            if (copy) {
-                fs.rmSync(destination, { force: true });
-                fse.copySync(result.path, destination);
-            } else if (symlink) {
-                throw new Error("TODO: add symlink logic");
-            }
+            const relativePath = result.path.replace(searchPath, "").replace("__assets__/", "");
+
+            paths.push({
+                src: result.path,
+                dest: `${assetsPath}${relativePath}`,
+                packageName: relativePath.split("/")[1]
+            });
         }
     }
-};
 
+    // delete old docs
+    paths.forEach(({ packageName }) => {
+        if (fs.existsSync(`${assetsPath}/${packageName}`)) {
+            fse.removeSync(`${assetsPath}/${packageName}`,);
+        }
+
+        if (fs.existsSync(`${docsPath}/${packageName}`)) {
+            fse.removeSync(`${docsPath}/${packageName}`,);
+        }
+    });
+
+    if (copy) {
+        paths.forEach(({ src, dest }) => {
+            fse.copySync(src, dest);
+        });
+    } else if (symlink) {
+        const symlinkPaths = {};
+
+        paths.forEach(({ src, dest }) => {
+            const splitPath = dest.replace(path.join(__dirname, "..") + "/", "").split("/");
+            const srcSplitFolderName = splitPath[0] === "public" ? "__assets__" : "__docs__";
+
+            const key = `${splitPath[0]}/${splitPath[1]}/${splitPath[2]}`;
+
+            if (!symlinkPaths[key]) {
+                symlinkPaths[key] = {
+                    src: `${src.split(srcSplitFolderName)[0]}${srcSplitFolderName}`,
+                    dest: path.join(__dirname, "..", key),
+                };
+            }
+        });
+
+        for await (const result of Object.values(symlinkPaths)) {
+            await symlinkDir(result.src, result.dest);
+        }
+    }
+}
+
+// eslint-disable-next-line unicorn/prefer-top-level-await
 command().catch((error) => {
     // eslint-disable-next-line no-console
     console.error(error);
