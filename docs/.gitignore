@@ -41,3 +41,6 @@ pages/docs/*
 !pages/docs/_meta.en-US.json
 !pages/docs/_meta.json
 !pages/docs/index.mdx
+
+public/assets/*
+!public/assets/landingpage
