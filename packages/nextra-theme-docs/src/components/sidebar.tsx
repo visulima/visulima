@@ -5,9 +5,7 @@ import { useFSRoute } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
 import type { FC } from "react";
-import {
- createContext, memo, useContext, useEffect, useMemo, useRef, useState,
-} from "react";
+import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants";
@@ -27,7 +25,7 @@ const OnFocuseItemContext = createContext<((item: string | null) => any) | null>
 
 const classes = {
     link: cn(
-        "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word]",
+        "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word] group",
         "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
     inactive: cn(
@@ -67,12 +65,13 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const config = useConfig();
     const { theme } = item as Item;
 
-    const isOpen = TreeState[item.route] === undefined
-            ? active
-              || activeRouteInside
+    const isOpen =
+        TreeState[item.route] === undefined
+            ? active ||
+              activeRouteInside ||
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              || focusedRouteInside
-              || (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
+              focusedRouteInside ||
+              (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
             : TreeState[item.route] ?? focusedRouteInside;
 
     const rerender = useState({})[1];
@@ -152,11 +151,19 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
                     rerender({});
                 }}
             >
+                {config.sidebar.icon &&
+                    renderComponent(config.sidebar.icon, {
+                        title: item.title,
+                        type: item.type,
+                        route: item.route,
+                        className: "w-4 h-4",
+                    })}
                 {renderComponent(config.sidebar.titleComponent, {
                     title: item.title,
                     type: item.type,
                     route: item.route,
                 })}
+                <div className="grow"></div>
                 <ArrowRightIcon
                     className="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"
                     pathClassName={cn("origin-center transition-transform", isOpen ? "ltr:rotate-90 rtl:rotate-[-270deg]" : "rtl:-rotate-180")}
@@ -237,6 +244,13 @@ const File: FC<{ item: Item | PageItem; anchors: Heading[] }> = ({ item, anchors
                     onFocus?.(null);
                 }}
             >
+                {config.sidebar.icon &&
+                    renderComponent(config.sidebar.icon, {
+                        title: item.title,
+                        type: item.type,
+                        route: item.route,
+                        className: "w-4 h-4",
+                    })}
                 {renderComponent(config.sidebar.titleComponent, {
                     title: item.title,
                     type: item.type,
@@ -273,15 +287,14 @@ const Menu: FC<{
     anchors: Heading[];
     className?: string;
     onlyCurrentDocs?: boolean;
-}> = ({
- directories, anchors, className, onlyCurrentDocs,
-}) => (
+}> = ({ directories, anchors, className, onlyCurrentDocs }) => (
     <ul className={cn(classes.list, className)}>
         {directories.map((item) => {
             if (!onlyCurrentDocs || item.isUnderCurrentDocsTree) {
                 if (item.type === "menu" || (item.children && (item.children.length > 0 || !item.withIndexPage))) {
                     return <Folder key={item.name} item={item} anchors={anchors} />;
                 }
+
                 return <File key={item.name} item={item} anchors={anchors} />;
             }
 
@@ -299,9 +312,7 @@ interface SideBarProperties {
     includePlaceholder: boolean;
 }
 
-const Sidebar: FC<SideBarProperties> = ({
- documentsDirectories, flatDirectories, fullDirectories, asPopover = false, headings = [], includePlaceholder,
-}) => {
+const Sidebar: FC<SideBarProperties> = ({ documentsDirectories, flatDirectories, fullDirectories, asPopover = false, headings = [], includePlaceholder }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
     const router = useRouter();
@@ -358,7 +369,6 @@ const Sidebar: FC<SideBarProperties> = ({
 
     return (
         <>
-            { }
             {includePlaceholder && asPopover ? <div className="h-0 shrink-0 max-xl:hidden" /> : null}
             {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
             <div

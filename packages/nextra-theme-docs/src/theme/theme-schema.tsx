@@ -226,6 +226,7 @@ export const themeSchema = z
                 autoCollapse: z.boolean().optional(),
                 defaultMenuCollapseLevel: z.number().min(1).int(),
                 titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
+                icon: z.custom<FC<{ title: string; type: string; route: string, className: string }> | ReactNode>(...reactNode).optional(),
             })
             .strict(),
         tocContent: z

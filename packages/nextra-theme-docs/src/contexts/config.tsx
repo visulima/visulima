@@ -2,10 +2,9 @@ import { ThemeProvider } from "next-themes";
 import type { FrontMatter, PageMapItem, PageOpts } from "nextra";
 import { metaSchema } from "nextra/normalize-pages";
 import type { ReactElement, ReactNode } from "react";
-import {
- createContext, useContext, useMemo, useState,
-} from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import type { ZodError } from "zod";
+import { z } from "zod";
 
 import { DEEP_OBJECT_KEYS, DEFAULT_THEME } from "../constants";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
@@ -23,7 +22,20 @@ const ConfigContext = createContext<Config>({
 let theme: DocumentationThemeConfig;
 let isValidated = false;
 
-const normalizeZodMessage = (error: unknown): string => (error as ZodError).issues
+const extendedMetaSchema = metaSchema.or(
+    z.object({
+        description: z.string().optional(),
+        icon: z.string().optional(),
+        theme: z
+            .object({
+                prose: z.boolean().optional(),
+            })
+            .optional(),
+    }),
+);
+
+const normalizeZodMessage = (error: unknown): string =>
+    (error as ZodError).issues
         .flatMap((issue) => {
             const themePath = issue.path.length > 0 && `Path: "${issue.path.join(".")}"`;
             const unionErrors = "unionErrors" in issue ? issue.unionErrors.map((data) => normalizeZodMessage(data)) : [];
@@ -35,28 +47,11 @@ const validateMeta = (pageMap: PageMapItem[]) => {
     pageMap.forEach((pageMapItem) => {
         if (pageMapItem.kind === "Meta") {
             Object.entries(pageMapItem.data).forEach(([key, value]) => {
-                let prose = true;
-
-                // This workaround is needed because of the missing "prose" property in the theme schema
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                if (typeof value === "object" && typeof value["theme"] === "object" && typeof value["theme"].prose === "boolean") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-                    prose = value["theme"].prose;
-
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign
-                    delete value["theme"].prose;
-                }
-
                 try {
-                    metaSchema.parse(value);
+                    extendedMetaSchema.parse(value);
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.error(`[nextra-theme-docs] Error validating _meta.json file for "${key}" property.\n\n${normalizeZodMessage(error)}`);
-                }
-
-                if (typeof value === "object" && typeof value["theme"] === "object") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign
-                    value["theme"].prose = prose;
                 }
             });
         } else if (pageMapItem.kind === "Folder") {
@@ -65,7 +60,7 @@ const validateMeta = (pageMap: PageMapItem[]) => {
     });
 };
 
-export const useConfig = function<FrontMatterType = FrontMatter>(): Config<FrontMatterType> {
+export const useConfig = function <FrontMatterType = FrontMatter>(): Config<FrontMatterType> {
     // @ts-expect-error TODO: fix Type 'Config<{ [key: string]: any; }>' is not assignable to type 'Config<FrontMatterType>'.
     return useContext<Config<FrontMatterType>>(ConfigContext);
 };
@@ -78,12 +73,11 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
     theme ||= {
         ...DEFAULT_THEME,
         ...Object.fromEntries(
-
             Object.entries(themeConfig).map(([key, value]) => [
                 key,
                 value && typeof value === "object" && DEEP_OBJECT_KEYS.includes(key)
-                    // @ts-expect-error -- key has always object value
-                    ? { ...DEFAULT_THEME[key], ...value }
+                    ? // @ts-expect-error -- key has always object value
+                      { ...DEFAULT_THEME[key], ...value }
                     : value,
             ]),
         ),
