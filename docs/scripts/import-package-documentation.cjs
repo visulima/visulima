@@ -1,23 +1,15 @@
-// eslint-disable-next-line unicorn/prefer-module
-const { walk } = require("@visulima/readdir");
-// eslint-disable-next-line unicorn/prefer-module
-const yargs = require("yargs/yargs");
-// eslint-disable-next-line unicorn/prefer-module
-const { hideBin } = require("yargs/helpers");
-// eslint-disable-next-line unicorn/prefer-module
-const fs = require("node:fs");
-// eslint-disable-next-line unicorn/prefer-module
-const fse = require("fs-extra");
-// eslint-disable-next-line unicorn/prefer-module
-const path = require("node:path");
-// eslint-disable-next-line unicorn/prefer-module
-const process = require("node:process");
+import { walk } from "@visulima/readdir";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
+import fs from "node:fs";
+import fse from "fs-extra";
+import path from "node:path";
+import process from "node:process";
+import symlinkDir from "symlink-dir";
 
-const symlinkDir = require("symlink-dir");
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-// eslint-disable-next-line no-undef,unicorn/prefer-module
 const docsPath = path.join(__dirname, "..", "pages", "docs");
-// eslint-disable-next-line no-undef,unicorn/prefer-module
 const assetsPath = path.join(__dirname, "..", "public", "assets");
 
 const argv = yargs(hideBin(process.argv))
@@ -80,7 +72,7 @@ async function command() {
             paths.push({
                 src: result.path,
                 dest: `${docsPath}${relativePath}`,
-                packageName: relativePath.split("/")[1]
+                packageName: relativePath.split("/")[1],
             });
         } else if (result.isFile && result.path.includes("/__assets__/")) {
             // eslint-disable-next-line no-console
@@ -91,7 +83,7 @@ async function command() {
             paths.push({
                 src: result.path,
                 dest: `${assetsPath}${relativePath}`,
-                packageName: relativePath.split("/")[1]
+                packageName: relativePath.split("/")[1],
             });
         }
     }
@@ -99,11 +91,11 @@ async function command() {
     // delete old docs
     paths.forEach(({ packageName }) => {
         if (fs.existsSync(`${assetsPath}/${packageName}`)) {
-            fse.removeSync(`${assetsPath}/${packageName}`,);
+            fse.removeSync(`${assetsPath}/${packageName}`);
         }
 
         if (fs.existsSync(`${docsPath}/${packageName}`)) {
-            fse.removeSync(`${docsPath}/${packageName}`,);
+            fse.removeSync(`${docsPath}/${packageName}`);
         }
     });
 
