@@ -36,8 +36,11 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
-            "import": "./dist/index.mjs"
+            "import": "./dist/index.mjs",
+            "style": "./style.css"
         },
+        "./component-style": "./component-style.css",
+        "./style": "./style.css",
         "./component-style.css": "./component-style.css",
         "./style.css": "./style.css",
         "./package.json": "./package.json"
