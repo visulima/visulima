@@ -22,6 +22,10 @@
         "not op_mini all"
     ],
     "dependencies": {
+        "framer-motion": "^10.12.16",
+        "@t3-oss/env-nextjs": "^0.4.1",
+        "fathom-client": "^3.5.0",
+        "lucide-react": "^0.245.0",
         "@code-hike/mdx": "^0.9.0",
         "@next/env": "^13.4.12",
         "@next/font": "^13.4.12",
