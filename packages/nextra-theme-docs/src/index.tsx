@@ -23,6 +23,7 @@ export { default as FileTree } from "./components/file-tree";
 export { default as StepContainer } from "./components/step-container";
 export { default as Steps } from "./components/step-container";
 export { SkipNavLink } from "./components/skip-nav";
+export { default as Tooltip } from "./components/tooltip";
 export { default as Card } from "./components/card";
 export { default as CardGroup } from "./components/card-group";
 export { default as Zoom } from "./components/zoom";

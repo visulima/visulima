@@ -26,5 +26,13 @@
     "callout": {
         "title": "Callout",
         "description": "Highlight important information with a callout"
+    },
+    "tooltip": {
+        "title": "Tooltip",
+        "description": "Show a tooltip when hovering over an element"
+    },
+    "toast": {
+        "title": "Toast",
+        "description": "Show a toast message to the user"
     }
 }

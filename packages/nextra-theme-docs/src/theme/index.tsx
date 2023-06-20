@@ -192,7 +192,12 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
 
     return (
         <WrapBalancerProvider>
-            <Toaster />
+            <Toaster
+                position={config.toaster?.position}
+                toastOptions={config.toaster?.toastOptions}
+                reverseOrder={config.toaster?.reverseOrder}
+                gutter={config.toaster?.gutter}
+            />
             {/* This makes sure that selectors like `[dir=ltr] .nextra-container` */}
             {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
@@ -277,9 +282,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                             <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
                                                 {activePath[Object.keys(activePath).length - 1]?.title}
                                             </h1>
-                                            <p className="mt-2 text-lg">
-                                                {activePath[Object.keys(activePath).length - 1]?.description}
-                                            </p>
+                                            <p className="mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
                                         </>
                                     )}
                                     {tocPageContentElement}
@@ -305,8 +308,8 @@ const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => {
     return (
         <ConfigProvider value={context}>
             <SlugCounterContext.Provider value={counter.current}>
-                    {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                    <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
+                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
             </SlugCounterContext.Provider>
         </ConfigProvider>
     );
