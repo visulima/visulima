@@ -249,7 +249,7 @@ const File: FC<{ item: Item | PageItem; anchors: Heading[] }> = ({ item, anchors
                         title: item.title,
                         type: item.type,
                         route: item.route,
-                        className: "w-4 h-4",
+                        className: "w-4 h-4 mr-2 mt-0.5",
                     })}
                 {renderComponent(config.sidebar.titleComponent, {
                     title: item.title,

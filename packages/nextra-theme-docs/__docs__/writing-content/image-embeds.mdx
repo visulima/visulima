@@ -1,0 +1,112 @@
+import { Callout, Card } from "@visulima/nextra-theme-docs";
+
+<a href="https://unsplash.com/photos/TamMbr4okv4?utm_source=unsplash&utm_medium=referral&utm_content=creditShareLink">
+    <img
+        className="rounded-md"
+        src="https://images.unsplash.com/photo-1455849318743-b2233052fcff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80"
+    />
+</a>
+
+## Image
+
+### Using Markdown
+
+The [markdown syntax](https://www.markdownguide.org/basic-syntax/#images) lets you add images using the following code
+
+```md
+![title](/path/image.jpg)
+```
+
+### Using Embeds
+
+To get more customizability with images, you can also use [embeds](/writing-content/embed) to add images
+
+```html
+<img height="200" src="/path/image.jpg" />
+```
+
+### Related
+
+For more information, we recommend the following sections:
+
+<Card
+    icon={
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        </svg>
+    }
+    title="Frame Component Reference"
+    href="/content/components/frame"
+>
+    Read the reference for the Frame component
+</Card>
+
+## Videos and other HTML elements
+
+<iframe
+    width="560"
+    height="500"
+    src="https://www.youtube.com/embed/lJIrF4YjHfQ"
+    title="YouTube video player"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowFullScreen
+/>
+
+<video controls className="w-full aspect-video" src="link-to-your-video.com"></video>
+
+<Callout type={"tip"}>
+
+Nextra supports [HTML tags in Markdown](https://www.markdownguide.org/basic-syntax/#html). This is helpful if you prefer HTML tags to Markdown syntax, and lets you create documentation with infinite flexibility.
+
+</Callout>
+
+### Videos
+
+For YouTube videos use:
+
+```html
+<iframe
+    width="560"
+    height="315"
+    src="https://www.youtube.com/embed/lJIrF4YjHfQ"
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+/>
+```
+
+For other videos, use:
+
+```html
+<video controls className="w-full aspect-video" src="link-to-your-video.com"></video>
+```
+
+### iFrames
+
+Loads another HTML page within the document.
+
+```html
+<iframe src="https://www.youtube.com/embed/lJIrF4YjHfQ"></iframe>
+```
+
+To have videos autoplay, add `autoplay = {true}`.
+
+<Callout type={"tip"}>
+    You can also upload your videos to storage services like Cloudinary to reference them in your Nextra documentation!
+</Callout>
+
+### Line Breaks
+
+Add a linebreak
+
+```html
+<br />
+```
+
+<Callout type={"tip"}>
+
+Although not required, we recommend adding the `alt` and `title` attributes to images for better SEO and accessability. Learn more at [image SEO](https://yoast.com/image-seo-alt-tag-and-title-tag-optimization/).
+
+</Callout>

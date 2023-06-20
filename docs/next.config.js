@@ -5,7 +5,7 @@ import theme from "shiki/themes/nord.json" assert { type: "json" };
 const withNextra = nextra({
     defaultShowCopyCode: true,
     mdxOptions: {
-        remarkPlugins: [[remarkCodeHike, { lineNumbers: true, showCopyButton: true, theme }]],
+        remarkPlugins: [[remarkCodeHike, { theme, lineNumbers: true, showCopyButton: true, skipLanguages: ["mermaid"] }]],
     },
     search: {
         codeblocks: true,

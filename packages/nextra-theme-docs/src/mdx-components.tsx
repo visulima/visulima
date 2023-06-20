@@ -1,9 +1,7 @@
 import "intersection-observer";
 
 import cn from "clsx";
-import type { ComponentProps, ReactElement } from "react";
-import { useEffect, useRef } from "react";
-import { Balancer } from "react-wrap-balancer";
+import type { ComponentProps } from "react";
 
 import Anchor from "./components/anchor";
 import Code from "./components/code";
@@ -15,62 +13,26 @@ import Td from "./components/td";
 import Th from "./components/th";
 import Tr from "./components/tr";
 import Ul from "./components/ul";
-import { useSetActiveAnchor } from "./contexts";
-import { useIntersectionObserver, useSlugs } from "./contexts/active-anchor";
 import type { DocumentationThemeConfig } from "./theme/theme-schema";
+import createHeaderLink from "./utils/create-header-link";
 
-// Anchor links
+const A = ({ href = "", className, ...properties }: Omit<ComponentProps<"a">, "ref"> & { href?: string }) => {
+    const isExternal = href.startsWith("http://") || href.startsWith("https://");
 
-const createHeaderLink = (Tag: `h${2 | 3 | 4 | 5 | 6}`, context: { index: number }) => ({ children, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
-        const setActiveAnchor = useSetActiveAnchor();
-        const slugs = useSlugs();
-        const observer = useIntersectionObserver();
-        const obReference = useRef<HTMLAnchorElement>(null);
+    const externalClassNames = 'after:content-[""] after:w-3 after:h-3 after:bg-center after:bg-no-repeat after:bg-contain after:inline-block after:ml-1';
 
-        useEffect(() => {
-            const heading = obReference.current;
-            if (!heading) {
-                return;
-            }
-
-            slugs.set(heading, [id, (context.index += 1)]);
-            observer?.observe(heading);
-
-            // eslint-disable-next-line consistent-return
-            return () => {
-                observer?.disconnect();
-                slugs.delete(heading);
-
-                setActiveAnchor((f) => {
-                    const returnValue = { ...f };
-
-                    if (id && id in returnValue) {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete returnValue[id];
-                    }
-
-                    return returnValue;
-                });
-            };
-        }, [id, slugs, observer, setActiveAnchor]);
-
-        return (
-            <Tag
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                {...properties}
-            >
-                <Balancer>{children}</Balancer>
-                <span className="absolute -mt-20" id={id} ref={obReference} />
-                {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-                <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
-            </Tag>
-        );
-    };
-
-const A = ({ href = "", ...properties }: Omit<ComponentProps<"a">, "ref"> & { href?: string }) => (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <Anchor href={href} newWindow={href.startsWith("https://")} {...properties} />
-);
+    return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        <Anchor
+            href={href}
+            newWindow={isExternal}
+            className={cn(className, {
+                [externalClassNames]: isExternal,
+            })}
+            {...properties}
+        />
+    );
+};
 
 const getComponents = ({
     isRawLayout,
@@ -83,16 +45,14 @@ const getComponents = ({
         return { a: A };
     }
 
-    const context = { index: 0 };
-
     return {
         // eslint-disable-next-line jsx-a11y/heading-has-content,react/jsx-props-no-spreading
         h1: (properties: ComponentProps<"h1">) => <h1 className="mt-2 text-4xl font-bold tracking-tight" {...properties} />,
-        h2: createHeaderLink("h2", context),
-        h3: createHeaderLink("h3", context),
-        h4: createHeaderLink("h4", context),
-        h5: createHeaderLink("h5", context),
-        h6: createHeaderLink("h6", context),
+        h2: createHeaderLink("h2"),
+        h3: createHeaderLink("h3"),
+        h4: createHeaderLink("h4"),
+        h5: createHeaderLink("h5"),
+        h6: createHeaderLink("h6"),
         // eslint-disable-next-line react/jsx-props-no-spreading
         ul: (properties: ComponentProps<"ul">) => <Ul {...properties} />,
         // eslint-disable-next-line react/jsx-props-no-spreading

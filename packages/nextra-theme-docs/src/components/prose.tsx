@@ -5,6 +5,7 @@ import { cn } from "../utils";
 const Prose: FC<PropsWithChildren<{ as?: any; className?: string }>> = ({ as: Component = "div", children, className }) => (
     <Component
         className={cn(
+            "mt-8",
             "prose prose-slate max-w-none dark:prose-invert dark:text-gray-400",
             // headings
 

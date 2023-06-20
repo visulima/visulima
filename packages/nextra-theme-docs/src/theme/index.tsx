@@ -8,9 +8,7 @@ import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
-import type {
- FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject,
-} from "react";
+import type { FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { Provider as WrapBalancerProvider } from "react-wrap-balancer";
@@ -30,6 +28,7 @@ import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import getComponents from "../mdx-components";
 import { renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
+import { SlugCounterContext } from "../contexts/active-anchor";
 
 const classes = {
     toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
@@ -46,9 +45,7 @@ const Body: FC<{
     filePath: string;
     locale: string;
     route: string;
-}> = ({
- themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route,
-}) => {
+}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route }) => {
     const config = useConfig();
     const mounted = useMounted();
 
@@ -58,7 +55,8 @@ const Body: FC<{
 
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
-    const gitTimestampElement = mounted && date ? (
+    const gitTimestampElement =
+        mounted && date ? (
             <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
                 {renderComponent(config.gitTimestamp, { timestamp: date, locale })}
             </div>
@@ -144,7 +142,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
         flatDocsDirectories: flatDocumentsDirectories,
         directories,
     } = useMemo(
-        () => normalizePages({
+        () =>
+            normalizePages({
                 list: pageMap,
                 locale,
                 defaultLocale,
@@ -153,7 +152,6 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
         [pageMap, locale, defaultLocale, fsPath],
     );
     const reference: any = useRef<HTMLDivElement>(null);
-
     const isOnScreen = useOnScreen(reference as MutableRefObject<Element>);
 
     const themeContext = { prose: true, ...activeThemeContext, ...frontMatter };
@@ -171,8 +169,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             })}
         </nav>
     );
-    const tocPageContentElement = isDocumentPage
-        && renderComponent(config.tocContent.component, {
+    const tocPageContentElement =
+        isDocumentPage &&
+        renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference as RefObject<HTMLDivElement>,
         });
@@ -213,8 +212,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar
-                    && renderComponent(config.navbar.component, {
+                {themeContext.navbar &&
+                    renderComponent(config.navbar.component, {
                         flatDirectories,
                         items: topLevelNavbarItems,
                         activeType,
@@ -236,9 +235,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     // eslint-disable-next-line tailwindcss/no-custom-classname
                                     className={`absolute w-full ${
                                         config.hero.height
-                                            ? (typeof config.hero.height === "string"
+                                            ? typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`)
+                                                : `h-[${config.hero.height}px]`
                                             : ""
                                     }`}
                                 >
@@ -249,9 +248,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 className={cn(
                                     "flex w-full",
                                     config.hero?.height
-                                        ? (typeof config.hero.height === "string"
+                                        ? typeof config.hero.height === "string"
                                             ? `mt-[${config.hero.height}]`
-                                            : `mt-[${config.hero.height}px]`)
+                                            : `mt-[${config.hero.height}px]`
                                         : null,
                                 )}
                             >
@@ -278,7 +277,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                             <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
                                                 {activePath[Object.keys(activePath).length - 1]?.title}
                                             </h1>
-                                            <p className="dark:prose-dark prose prose-gray mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
+                                            <p className="mt-2 text-lg">
+                                                {activePath[Object.keys(activePath).length - 1]?.description}
+                                            </p>
                                         </>
                                     )}
                                     {tocPageContentElement}
@@ -298,11 +299,17 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => (
-    <ConfigProvider value={context}>
-        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-        <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
-    </ConfigProvider>
-);
+const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => {
+    const counter = useRef(0);
+
+    return (
+        <ConfigProvider value={context}>
+            <SlugCounterContext.Provider value={counter.current}>
+                    {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                    <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
+            </SlugCounterContext.Provider>
+        </ConfigProvider>
+    );
+};
 
 export default Theme;

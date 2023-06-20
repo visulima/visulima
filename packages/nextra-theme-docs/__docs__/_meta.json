@@ -1,7 +1,13 @@
 {
-    "index": {
+    "introduction": {
         "title": "Introduction",
-        "description": "A simple and easy to use library to work with the Google Maps API in Node.js"
+        "description": "Build beautiful documentation that converts users"
     },
-    "start": "Get Started"
+    "quickstart": {
+        "title": "Quick Start",
+        "description": "Start building awesome documentation in under 5 minutes"
+    },
+    "writing-content": "Writing Content",
+    "configuration": "Configuration",
+    "advanced": "Advanced"
 }
