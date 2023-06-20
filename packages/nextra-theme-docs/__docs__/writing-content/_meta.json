@@ -1,0 +1,14 @@
+{
+    "markdown-syntax": {
+        "title": "Markdown Syntax",
+        "description": "Text, title, and styling in standard markdown"
+    },
+    "image-embeds": {
+        "title": "Images and Embeds",
+        "description": "Add image, video, and other HTML elements"
+    },
+    "components": {
+        "title": "Components",
+        "description": "Enhance your docs with our pre-built components"
+    }
+}

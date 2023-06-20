@@ -1,0 +1,30 @@
+{
+    "accordion": {
+        "title": "Accordion",
+        "description": "A dropdown component for toggling content"
+    },
+    "accordion-group": {
+        "title": "Accordion Group",
+        "description": "Group multiple accordions into a single display"
+    },
+    "card": {
+        "title": "Card",
+        "description": "Highlight main points or links with customizable icons"
+    },
+    "card-group": {
+        "title": "Cards",
+        "description": "Show cards side by side in a grid format"
+    },
+    "tabs": {
+        "title": "Tabs",
+        "description": "Toggle content using the Tabs component"
+    },
+    "steps": {
+        "title": "Steps",
+        "description": "Show a series of steps in a process"
+    },
+    "callout": {
+        "title": "Callout",
+        "description": "Highlight important information with a callout"
+    }
+}

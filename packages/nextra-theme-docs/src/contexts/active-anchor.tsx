@@ -23,6 +23,10 @@ const IntersectionObserverContext = createContext<IntersectionObserver | null>(n
 const slugs = new WeakMap<HTMLAnchorElement, [string, number]>();
 const SlugsContext = createContext<WeakMap<HTMLAnchorElement, [string, number]>>(slugs);
 
+export const SlugCounterContext = createContext<number>(0);
+
+export const useSlugCounter = (): number => useContext(SlugCounterContext);
+
 export type ActiveAnchor = Record<string, Anchor>;
 
 // Separate the state as 2 contexts here to avoid

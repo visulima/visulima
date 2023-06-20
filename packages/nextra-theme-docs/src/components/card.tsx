@@ -1,87 +1,65 @@
 import type { LinkProps } from "next/link";
 import Link from "next/link";
-import type {
- FC, HTMLProps, PropsWithChildren, ReactNode,
-} from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 
 import { cn } from "../utils";
 
-export const Card: FC<
-    PropsWithChildren<LinkProps & { title: string; icon: ReactNode; arrow?: boolean; href: string; className?: string }>
-> = ({
- children, title, icon, arrow, href, className, ...properties
-}) => {
-    const animatedArrow = arrow ? <span className={cn("transition-transform duration-75", "group-hover:translate-x-[2px]")}>→</span> : null;
+type CardBaseProps = { title: string; icon: ReactNode; href: never; classes?: { main?: string; iconWrapper?: string; title?: string; content?: string } };
 
-    if (children) {
-        return (
+type CardLinkProps = Omit<CardBaseProps, "href"> & LinkProps & { href: string };
+
+type Props = CardBaseProps | CardLinkProps;
+
+const Card: FC<PropsWithChildren<Props>> = ({ children, title, icon, href, classes = {}, ...properties }) => {
+    const wrapperClassName = cn(
+        "nextra-card",
+        "bg-transparent",
+        "group block not-prose font-normal group relative my-2 ring-2 ring-transparent rounded-md",
+        "border border-gray-100 transition-all duration-200",
+        "shadow-md dark:shadow-none shadow-gray-300/10 overflow-hidden w-full",
+        "dark:shadow-none dark:border-neutral-800 ",
+        { "cursor-pointer hover:border-gray-600 dark:hover:shadow-none dark:hover:border-[#f5f5fa]": typeof href === "string" && href.length > 0 },
+        classes?.main,
+    );
+
+    let content = (
+        <div
+            className={cn({
+                "px-6 py-5": typeof children !== "undefined",
+                "flex gap-2 p-4 text-gray-700 dark:text-neutral-200": typeof children === "undefined",
+            })}
+        >
+            <span
+                className={cn(
+                    "nextra-card-icon text-gray-700 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-[#f5f5fa]",
+                    classes?.iconWrapper,
+                )}
+            >
+                {icon}
+            </span>
+            <h2 className={cn("nextra-card-title font-semibold text-base text-gray-800 dark:text-white", {
+                "mt-4": typeof children !== "undefined",
+            }, classes?.title)}>{title}</h2>
+            {children && <span className={cn("mt-1 font-normal text-gray-600 dark:text-gray-400", classes?.content)}>{children}</span>}
+        </div>
+    );
+
+    if (href) {
+        content = (
             <Link
                 href={href}
-                className={cn(
-                    "nextra-card",
-                    "group flex flex-col justify-start overflow-hidden rounded-lg",
-                    "border border-gray-200 hover:border-gray-300 bg-gray-100 text-current no-underline",
-                    "transition-all duration-200 dark:border-neutral-700",
-                    "dark:bg-neutral-800 dark:text-gray-50 dark:shadow-none dark:hover:border-neutral-500 dark:hover:bg-neutral-700 dark:hover:shadow-none",
-                    "shadow shadow-gray-100 hover:shadow-lg hover:shadow-gray-100",
-                    "active:shadow-sm active:shadow-gray-200",
-                    className,
-                )}
+                className={wrapperClassName}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
-                {children}
-                <span className={cn("nextra-card-title", "gap-2 p-4 text-gray-700 dark:text-gray-300", "hover:text-gray-900 dark:hover:text-gray-100")}>
-                    {icon}
-                    <span className="flex gap-1">
-                        {title}
-                        {animatedArrow}
-                    </span>
-                </span>
+                {content}
             </Link>
         );
+    } else {
+        content = <div className={wrapperClassName}>{content}</div>;
     }
 
-    return (
-        <Link
-            href={href}
-            className={cn(
-                "nextra-card",
-                "group flex flex-col justify-start overflow-hidden rounded-lg border border-gray-200",
-                "bg-transparent text-current no-underline shadow-sm shadow-gray-100",
-                "transition-all duration-200 dark:border-neutral-800 dark:shadow-none",
-                "hover:border-gray-300 hover:bg-slate-50 hover:shadow-lg",
-                "hover:shadow-gray-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-900 dark:hover:shadow-none",
-                "active:shadow-sm active:shadow-gray-200",
-            )}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...properties}
-        >
-            <span className={cn("nextra-card-title", "gap-2 p-4 text-gray-700 dark:text-neutral-200", "hover:text-gray-900 dark:hover:text-neutral-50")}>
-                {icon}
-                {title}
-                {animatedArrow}
-            </span>
-        </Link>
-    );
+    return content;
 };
 
-export const Cards: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { num: number; style: HTMLProps<HTMLDivElement>["style"] & { "--rows"?: string } }>> = ({
-    children,
-    num,
-    style,
-    className,
-    ...properties
-}) => (
-    <div
-        className={cn("nextra-cards", "mt-4 gap-4", className)}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...properties}
-        style={{
-            "--rows": String(num || 3),
-            ...style,
-        }}
-    >
-        {children}
-    </div>
-);
+export default Card;

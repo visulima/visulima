@@ -1,6 +1,6 @@
 import type { Display } from "next/dist/compiled/@next/font";
 import type { PageOpts as BasePageOptions } from "nextra";
-import type { Folder, MdxFile } from "nextra";
+import type { MdxFile } from "nextra";
 import type { PageTheme } from "nextra/normalize-pages";
 import type { ReactNode } from "react";
 

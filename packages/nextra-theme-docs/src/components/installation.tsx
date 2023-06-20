@@ -11,9 +11,9 @@ const Installation: FC<{ commands: string[]; packageName: string; title?: string
 }) => (
     <>
         <h2>{title}</h2>
-        <Tabs items={commands} prefix="installation">
+        <Tabs prefix="installation">
             {commands.map((command) => (
-                <Tab key={`installation-${command}`}>
+                <Tab key={`installation-${command}`} title={command}>
                     <div data-rehype-pretty-code-fragment="">
                         <Pre data-language="bash" data-theme="default">
                             <Code data-language="bash" data-theme="default">

@@ -1,3 +1,5 @@
+export { default as Accordion } from "./components/accordion";
+export { default as AccordionGroup } from "./components/accordion-group";
 export { default as Bleed } from "./components/bleed";
 export { default as Installation } from "./components/installation";
 export { default as Callout } from "./components/callout";
@@ -21,7 +23,8 @@ export { default as FileTree } from "./components/file-tree";
 export { default as StepContainer } from "./components/step-container";
 export { default as Steps } from "./components/step-container";
 export { SkipNavLink } from "./components/skip-nav";
-export { Card, Cards } from "./components/card";
+export { default as Card } from "./components/card";
+export { default as CardGroup } from "./components/card-group";
 export { default as Zoom } from "./components/zoom";
 
 export { default as toast } from "react-hot-toast";
