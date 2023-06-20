@@ -71,7 +71,7 @@ const config: DocumentationThemeConfig = {
                 case "/docs/nextra-theme-docs/writing-content/components/card": {
                     return <Club className={className} />;
                 }
-                case "/docs/nextra-theme-docs/writing-content/components/cards": {
+                case "/docs/nextra-theme-docs/writing-content/components/card-group": {
                     return <LayoutDashboard className={className} />;
                 }
                 case "/docs/nextra-theme-docs/writing-content/components/tabs": {
@@ -86,7 +86,7 @@ const config: DocumentationThemeConfig = {
                 case "/docs/nextra-theme-docs/writing-content/components/image-frame": {
                     return <Frame className={className} />;
                 }
-                case "/docs/nextra-theme-docs/writing-content/components/tooltips": {
+                case "/docs/nextra-theme-docs/writing-content/components/tooltip": {
                     return <MessageSquare className={className} />;
                 }
                 case "/docs/nextra-theme-docs/writing-content/components/toast": {

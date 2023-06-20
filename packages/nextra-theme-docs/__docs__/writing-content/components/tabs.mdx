@@ -4,7 +4,9 @@ You can add any number of tabs.
 
 <Tabs>
     <Tab title="pnpm">**pnpm**: Fast, disk space efficient package manager.</Tab>
-    <Tab title="npm" disabled>**npm** is a package manager for the JavaScript programming language.</Tab>
+    <Tab title="npm" disabled>
+        **npm** is a package manager for the JavaScript programming language.
+    </Tab>
     <Tab title="yarn">**Yarn** is a software packaging system.</Tab>
 </Tabs>
 
@@ -13,7 +15,9 @@ import { Tab, Tabs } from "@visulima/nextra-theme-docs";
 
 <Tabs>
     <Tab title="pnpm">**pnpm**: Fast, disk space efficient package manager.</Tab>
-    <Tab title="npm" disabled>**npm** is a package manager for the JavaScript programming language.</Tab>
+    <Tab title="npm" disabled>
+        **npm** is a package manager for the JavaScript programming language.
+    </Tab>
     <Tab title="yarn">**Yarn** is a software packaging system.</Tab>
 </Tabs>
 ```
@@ -25,9 +29,7 @@ You can use the `defaultIndex` prop to set the default tab index:
 ```mdx
 import { Tab, Tabs } from "@visulima/nextra-theme-docs";
 
-<Tabs defaultIndex="1">
-    ...
-</Tabs>
+<Tabs defaultIndex="1">...</Tabs>
 ```
 
 And you will have `npm` as the default tab:
@@ -37,7 +39,6 @@ And you will have `npm` as the default tab:
     <Tab title="npm">**npm** is a package manager for the JavaScript programming language.</Tab>
     <Tab title="yarn">**Yarn** is a software packaging system.</Tab>
 </Tabs>
-
 
 ## API
 
@@ -93,4 +94,3 @@ Whether the tab is disabled.
 
 -   Type: `boolean`
 -   Default: `false`
-

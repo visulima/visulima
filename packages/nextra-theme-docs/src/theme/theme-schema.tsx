@@ -3,12 +3,13 @@ import type { NextSeoProps } from "next-seo";
 import type { Item } from "nextra/normalize-pages";
 import type { FC, ReactNode } from "react";
 import { isValidElement } from "react";
-import { z } from "zod";
+import {z, ZodType} from "zod";
 
 import type { NavBarProperties } from "../components/navbar";
 import type { TOCProperties as TOCPageContentProperties } from "../components/toc/toc-page-content";
 import type { TOCProperties as TOCSidebarProperties } from "../components/toc/toc-sidebar";
 import type { ActiveType } from "../types";
+import type {DefaultToastOptions} from "react-hot-toast";
 
 const isString = (value: unknown): boolean => typeof value === "string";
 
@@ -52,6 +53,15 @@ export const themeSchema = z
                 repository: z.string(),
                 repositoryId: z.string(),
                 categoryId: z.string(),
+            })
+            .optional(),
+        toaster: z
+            .object({
+                position: z.enum(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]).optional(),
+                reverseOrder: z.boolean().optional(),
+                // TODO: Find a good way to type this
+                toastOptions: z.object({}).catchall<ZodType<DefaultToastOptions>>(z.any()).optional(),
+                gutter: z.number().optional(),
             })
             .optional(),
         components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
@@ -226,7 +236,7 @@ export const themeSchema = z
                 autoCollapse: z.boolean().optional(),
                 defaultMenuCollapseLevel: z.number().min(1).int(),
                 titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
-                icon: z.custom<FC<{ title: string; type: string; route: string, className: string }> | ReactNode>(...reactNode).optional(),
+                icon: z.custom<FC<{ title: string; type: string; route: string; className: string }> | ReactNode>(...reactNode).optional(),
             })
             .strict(),
         tocContent: z
