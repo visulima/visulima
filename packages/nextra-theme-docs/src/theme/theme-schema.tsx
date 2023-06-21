@@ -4,7 +4,7 @@ import type { Item } from "nextra/normalize-pages";
 import type { FC, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { DefaultToastOptions } from "react-hot-toast";
-import type { ZodType} from "zod";
+import type { ZodType } from "zod";
 import { z } from "zod";
 
 import type { NavBarProperties } from "../components/navbar";

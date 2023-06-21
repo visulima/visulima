@@ -11,9 +11,7 @@ const nextVersion = Number(next.version.split(".")[0]);
 
 const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
     (
-        {
- href = "", children, newWindow, ...properties
-},
+        { href = "", children, newWindow, ...properties },
         // ref is used in <NavbarMenu />
         forwardedReference,
     ): ReactElement => {

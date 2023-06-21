@@ -23,15 +23,17 @@ let theme: DocumentationThemeConfig;
 let isValidated = false;
 
 const extendedMetaSchema = metaSchema.or(
-    z.object({
-        description: z.string().optional(),
-        icon: z.string().optional(),
-        theme: z
-            .object({
-                prose: z.boolean().optional(),
-            })
-            .optional(),
-    }),
+    z
+        .object({
+            description: z.string().optional(),
+            icon: z.string().optional(),
+            theme: z
+                .object({
+                    prose: z.boolean().optional(),
+                })
+                .optional(),
+        })
+        .optional(),
 );
 
 const normalizeZodMessage = (error: unknown): string =>
@@ -60,7 +62,7 @@ const validateMeta = (pageMap: PageMapItem[]) => {
     });
 };
 
-export const useConfig = function <FrontMatterType = FrontMatter>(): Config<FrontMatterType> {
+export const useConfig = function<FrontMatterType = FrontMatter>(): Config<FrontMatterType> {
     // @ts-expect-error TODO: fix Type 'Config<{ [key: string]: any; }>' is not assignable to type 'Config<FrontMatterType>'.
     return useContext<Config<FrontMatterType>>(ConfigContext);
 };

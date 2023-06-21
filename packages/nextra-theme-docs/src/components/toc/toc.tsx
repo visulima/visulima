@@ -8,9 +8,7 @@ import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { renderComponent } from "../../utils";
 
-const Toc: FC<TOCProperties> = ({
- headings, activeAnchor, isPage = false, prefix = "",
-}) => {
+const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false, prefix = "" }) => {
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 

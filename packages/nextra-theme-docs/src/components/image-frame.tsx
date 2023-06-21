@@ -18,10 +18,17 @@ const ImageFrame: FC<ComponentProps<typeof Image> & { src: string; alt: string; 
 
     return (
         <div
-            className={cn("my-6 flex flex-col justify-center overflow-hidden rounded-md border dark:border-zinc-800 not-prose p-2", full ? "bg-white" : "bg-zinc-100")}
+            className={cn(
+                "my-6 flex flex-col justify-center overflow-hidden rounded-md border dark:border-zinc-800 not-prose p-2",
+                full ? "bg-white" : "bg-zinc-100",
+            )}
         >
             {image}
-            {caption && <div className="relative mt-3 flex justify-center overflow-auto rounded-xl px-8 pb-2 pt-0 text-sm text-gray-700 dark:text-gray-400"><p>{caption}</p></div>}
+            {caption && (
+                <div className="relative mt-3 flex justify-center overflow-auto rounded-xl px-8 pb-2 pt-0 text-sm text-gray-700 dark:text-gray-400">
+                    <p>{caption}</p>
+                </div>
+            )}
         </div>
     );
 };

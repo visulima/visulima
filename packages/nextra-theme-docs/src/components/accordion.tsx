@@ -36,7 +36,7 @@ const Accordion: FC<{
         <div
             role="listitem"
             className={cn("nextra-accordion mb-3", {
-                open: open,
+                open,
             })}
         >
             <button

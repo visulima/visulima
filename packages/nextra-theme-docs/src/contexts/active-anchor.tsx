@@ -1,11 +1,7 @@
 import "intersection-observer";
 
-import type {
- Dispatch, ReactElement, ReactNode, SetStateAction,
-} from "react";
-import {
- createContext, useContext, useRef, useState,
-} from "react";
+import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 
 import { IS_BROWSER } from "../constants";
 
@@ -52,8 +48,8 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                         if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
                             const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
 
-                             
-                            const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
+                            const aboveHalfViewport =
+                                entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 
                             returnValue[slug] = {
@@ -77,9 +73,9 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                             activeSlug = slug;
                         }
                         if (
-                            smallestIndexInViewport === Number.POSITIVE_INFINITY
-                            && returnValue_.aboveHalfViewport
-                            && returnValue_.index > largestIndexAboveViewport
+                            smallestIndexInViewport === Number.POSITIVE_INFINITY &&
+                            returnValue_.aboveHalfViewport &&
+                            returnValue_.index > largestIndexAboveViewport
                         ) {
                             largestIndexAboveViewport = returnValue_.index;
                             activeSlug = slug;

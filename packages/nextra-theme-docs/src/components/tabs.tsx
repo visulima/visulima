@@ -1,7 +1,7 @@
 import { Tab as HeadlessTab } from "@headlessui/react";
 import cn from "clsx";
 import type { ComponentProps, FC, ReactElement, ReactNode } from "react";
-import {Children, isValidElement, useId} from "react";
+import { Children, isValidElement, useId } from "react";
 
 type TabItem = {
     label: ReactElement | string;
@@ -45,24 +45,24 @@ export const Tabs = ({
             <div className="nextra-scrollbar not-prose overflow-x-auto overflow-y-hidden overscroll-x-contain">
                 <HeadlessTab.List className="mt-4 flex w-max min-w-full border-b border-gray-400 pb-px pl-1 dark:border-neutral-800">
                     {tabs.map((item, index) => (
-                            <HeadlessTab
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`${prefix}-${id}-tab-${index}`}
-                                disabled={item.disabled}
-                                className={({ selected }) =>
-                                    cn(
-                                        "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
-                                        "-mb-0.5 select-none border-b-2",
-                                        selected
-                                            ? "border-primary-500 text-primary-600"
-                                            : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
-                                        { "pointer-events-none text-gray-400 dark:text-neutral-600": item.disabled },
-                                    )
-                                }
-                            >
-                                {item.label}
-                            </HeadlessTab>
-                        ))}
+                        <HeadlessTab
+                            // eslint-disable-next-line react/no-array-index-key
+                            key={`${prefix}-${id}-tab-${index}`}
+                            disabled={item.disabled}
+                            className={({ selected }) =>
+                                cn(
+                                    "mr-2 rounded-t p-2 font-medium leading-5 transition-colors",
+                                    "-mb-0.5 select-none border-b-2",
+                                    selected
+                                        ? "border-primary-500 text-primary-600"
+                                        : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
+                                    { "pointer-events-none text-gray-400 dark:text-neutral-600": item.disabled },
+                                )
+                            }
+                        >
+                            {item.label}
+                        </HeadlessTab>
+                    ))}
                 </HeadlessTab.List>
             </div>
             <HeadlessTab.Panels>{children}</HeadlessTab.Panels>

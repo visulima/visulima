@@ -8,9 +8,7 @@ import { cn, renderComponent } from "../../utils";
 import MetaInfo from "../meta-info";
 import Toc from "./toc";
 
-const TocSidebar: FC<TOCProperties> = ({
- headings, filePath, isOnScreen = false, locale, route,
-}) => {
+const TocSidebar: FC<TOCProperties> = ({ headings, filePath, isOnScreen = false, locale, route }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement | null>(null);

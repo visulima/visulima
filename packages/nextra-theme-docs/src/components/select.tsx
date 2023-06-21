@@ -30,9 +30,7 @@ const Portal: FC<PropsWithChildren> = ({ children }) => {
     return createPortal(children, document.body);
 };
 
-const Select: FC<MenuProperties> = ({
- options, selected, onChange, title, className,
-}) => {
+const Select: FC<MenuProperties> = ({ options, selected, onChange, title, className }) => {
     const [trigger, container] = usePopper({
         strategy: "fixed",
         placement: "top-start",
@@ -68,7 +66,6 @@ const Select: FC<MenuProperties> = ({
                     {selected.name}
                     <Portal>
                         <Transition
-                            // @ts-expect-error
                             ref={container}
                             show={open}
                             as={Listbox.Options}
@@ -81,11 +78,13 @@ const Select: FC<MenuProperties> = ({
                                 <Listbox.Option
                                     key={option.key}
                                     value={option}
-                                    className={({ active }) => clsx(
+                                    className={({ active }) =>
+                                        clsx(
                                             active ? "bg-primary-50 text-primary-600 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
                                             "relative cursor-pointer whitespace-nowrap py-1.5",
                                             "ltr:pl-3 ltr:pr-9 rtl:pl-9 rtl:pr-3",
-                                        )}
+                                        )
+                                    }
                                 >
                                     {option.name}
                                     {option.key === selected.key && (
