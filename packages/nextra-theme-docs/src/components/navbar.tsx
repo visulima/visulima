@@ -3,9 +3,7 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import { useFSRoute } from "nextra/hooks";
 import { ArrowRightIcon, MenuIcon } from "nextra/icons";
-import type {
- Item, MenuItem, PageItem, PageTheme,
-} from "nextra/normalize-pages";
+import type { Item, MenuItem, PageItem, PageTheme } from "nextra/normalize-pages";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
@@ -58,9 +56,7 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
     );
 };
 
-const Navbar: FC<NavBarProperties> = ({
- flatDirectories, items, activeType, themeContext,
-}) => {
+const Navbar: FC<NavBarProperties> = ({ flatDirectories, items, activeType, themeContext }) => {
     const config = useConfig();
     const { locale = DEFAULT_LOCALE } = useRouter();
     const activeRoute = useFSRoute();

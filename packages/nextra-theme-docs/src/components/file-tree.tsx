@@ -1,10 +1,6 @@
 import cn from "clsx";
-import type {
- FC, PropsWithChildren, ReactElement, ReactNode,
-} from "react";
-import {
- createContext, memo, useCallback, useContext, useState,
-} from "react";
+import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
+import { createContext, memo, useCallback, useContext, useState } from "react";
 
 const context = createContext(0);
 
@@ -45,9 +41,7 @@ const Ident = (): ReactElement => {
     );
 };
 
-const Folder: FC<FolderProperties> = memo<FolderProperties>(({
- label, name, open, children, defaultOpen = false, onToggle,
-}: FolderProperties) => {
+const Folder: FC<FolderProperties> = memo<FolderProperties>(({ label, name, open, children, defaultOpen = false, onToggle }: FolderProperties) => {
     const indent = useIndent();
     const [isOpen, setIsOpen] = useState(defaultOpen);
 

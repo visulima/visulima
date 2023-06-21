@@ -9,9 +9,12 @@ const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
     const activeAnchor = useActiveAnchor();
 
     return (
-        <div ref={wrapperRef} className={cn("pt-8 text-sm [hyphens:auto]", {
-            "hidden": headings.length === 0,
-        })}>
+        <div
+            ref={wrapperRef}
+            className={cn("pt-8 text-sm [hyphens:auto]", {
+                hidden: headings.length === 0,
+            })}
+        >
             <Toc headings={headings} activeAnchor={activeAnchor} isPage prefix="content" />
         </div>
     );

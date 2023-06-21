@@ -69,7 +69,6 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
         TreeState[item.route] === undefined
             ? active ||
               activeRouteInside ||
-               
               focusedRouteInside ||
               (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
             : TreeState[item.route] ?? focusedRouteInside;

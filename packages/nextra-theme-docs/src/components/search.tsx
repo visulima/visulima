@@ -4,9 +4,7 @@ import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
-import {
- Fragment, useCallback, useEffect, useRef, useState,
-} from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 import { DEFAULT_LOCALE } from "../constants";
 import { useConfig, useMenu } from "../contexts";
@@ -178,8 +176,8 @@ const Search: FC<SearchProperties> = ({
             >
                 {value && focused
                     ? "ESC"
-                    : mounted
-                      && (navigator.userAgent.includes("Macintosh") ? (
+                    : mounted &&
+                      (navigator.userAgent.includes("Macintosh") ? (
                           <>
                               <span className="text-xs">⌘</span>K
                           </>
@@ -249,16 +247,13 @@ const Search: FC<SearchProperties> = ({
                             <InformationCircleIcon className="h-5 w-5" />
                             {renderString(config.search.error, { locale })}
                         </span>
-                    ) : (loading ? (
+                    ) : loading ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-gray-400">
                             <SpinnerIcon className="h-5 w-5 animate-spin" />
                             {renderString(config.search.loading, { locale })}
                         </span>
-                    )  
-                    : results.length > 0 ? (
-                        results.map(({
- route, prefix, children, id,
-}, index) => (
+                    ) : results.length > 0 ? (
+                        results.map(({ route, prefix, children, id }, index) => (
                             <Fragment key={id}>
                                 {prefix}
                                 <li
@@ -286,7 +281,7 @@ const Search: FC<SearchProperties> = ({
                         ))
                     ) : (
                         renderComponent(config.search.emptyResult)
-                    ))}
+                    )}
                 </ul>
             </Transition>
         </div>

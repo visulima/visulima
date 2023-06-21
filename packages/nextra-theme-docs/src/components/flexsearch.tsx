@@ -168,7 +168,8 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
         const [pageIndex, sectionIndex] = indexes[locale];
 
         // Show the resultList for the top 5 pages
-        const pageResults = pageIndex.search<true>(searchString, 5, {
+        const pageResults =
+            pageIndex.search<true>(searchString, 5, {
                 enrich: true,
                 suggest: true,
             })[0]?.result || [];
@@ -180,7 +181,8 @@ const FlexSearch = ({ className }: { className?: string }): ReactElement => {
             pageTitleMatches[index] = 0;
 
             // Show the top 5 resultList for each page
-            const sectionResults = sectionIndex.search<true>(searchString, 5, {
+            const sectionResults =
+                sectionIndex.search<true>(searchString, 5, {
                     enrich: true,
                     suggest: true,
                     tag: `page_${result.id}`,

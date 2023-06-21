@@ -1,10 +1,6 @@
 import cn from "clsx";
-import type {
- ComponentProps, PropsWithChildren, ReactElement, ReactNode,
-} from "react";
-import {
- Children, cloneElement, useEffect, useState,
-} from "react";
+import type { ComponentProps, PropsWithChildren, ReactElement, ReactNode } from "react";
+import { Children, cloneElement, useEffect, useState } from "react";
 
 import { DetailsProvider } from "../contexts";
 import Collapse from "./collapse";

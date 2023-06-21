@@ -42,10 +42,9 @@ type SkipNavLinkProperties = Omit<ComponentProps<"a">, "children" | "href" | "re
 type SkipNavContentProperties = Omit<ComponentProps<"div">, "children" | "ref">;
 
 export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
-    ({
- className: providedClassName, id, label = DEFAULT_LABEL, ...properties
-}, forwardedReference): ReactElement => {
-        const className = providedClassName === undefined // Give the option to the user to pass a falsy other than undefined to remove the default styles
+    ({ className: providedClassName, id, label = DEFAULT_LABEL, ...properties }, forwardedReference): ReactElement => {
+        const className =
+            providedClassName === undefined // Give the option to the user to pass a falsy other than undefined to remove the default styles
                 ? cn(
                       "sr-only",
 

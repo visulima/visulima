@@ -29,17 +29,27 @@ const Card: FC<PropsWithChildren<Properties>> = ({ children, title, icon, href, 
                 "flex gap-2 p-4 text-gray-700 dark:text-neutral-200": children === undefined,
             })}
         >
-            {icon && (<span
+            {icon && (
+                <span
+                    className={cn(
+                        "nextra-card-icon text-gray-700 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-[#f5f5fa]",
+                        classes?.iconWrapper,
+                    )}
+                >
+                    {icon}
+                </span>
+            )}
+            <h2
                 className={cn(
-                    "nextra-card-icon text-gray-700 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-[#f5f5fa]",
-                    classes?.iconWrapper,
+                    "nextra-card-title font-semibold text-base text-gray-800 dark:text-white",
+                    {
+                        "mt-4": children !== undefined,
+                    },
+                    classes?.title,
                 )}
             >
-                {icon}
-            </span>)}
-            <h2 className={cn("nextra-card-title font-semibold text-base text-gray-800 dark:text-white", {
-                "mt-4": children !== undefined,
-            }, classes?.title)}>{title}</h2>
+                {title}
+            </h2>
             {children && <span className={cn("mt-1 font-normal text-gray-600 dark:text-gray-400", classes?.content)}>{children}</span>}
         </div>
     );
