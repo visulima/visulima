@@ -6,7 +6,7 @@ import { useMemo, useRef } from "react";
 
 import { useConfig } from "../../contexts";
 import type { ActiveAnchor } from "../../contexts/active-anchor";
-import { renderComponent } from "../../utils";
+import { renderComponent } from "../../utils/render";
 
 const Toc: FC<TOCProperties> = ({ headings, activeAnchor, isPage = false, prefix = "" }) => {
     const config = useConfig();

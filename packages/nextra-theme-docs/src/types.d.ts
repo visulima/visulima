@@ -1,11 +1,24 @@
-import type { Display } from "next/dist/compiled/@next/font";
 import type { PageOpts as BasePageOptions } from "nextra";
-import type { MdxFile } from "nextra";
+import type { Folder,MdxFile } from "nextra";
 import type { PageTheme } from "nextra/normalize-pages";
 import type { ReactNode } from "react";
 
 import type { DocumentationThemeConfig } from ".";
 
+declare module "nextra/normalize-pages" {
+    export interface Item extends MdxFile {
+        title: string;
+        type: string;
+        children?: Item[];
+        display?: "children" | "hidden" | "normal";
+        withIndexPage?: boolean;
+        theme?: PageTheme;
+        isUnderCurrentDocsTree?: boolean;
+        description?: string;
+    }
+}
+
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export type PageOpts = BasePageOptions & {
     description?: string;
 };
@@ -24,19 +37,7 @@ export type SearchResult = {
 
 export type ActiveType = string | "doc" | "error" | "hidden" | "page";
 
-declare module "nextra/normalize-pages" {
-    export interface Item extends MdxFile {
-        title: string;
-        type: string;
-        children?: Item[];
-        display?: Display;
-        withIndexPage?: boolean;
-        theme?: PageTheme;
-        isUnderCurrentDocsTree?: boolean;
-        description?: string;
-    }
-}
-
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export type DocsItem = {
     title: string;
     type: string;
@@ -44,4 +45,4 @@ export type DocsItem = {
     firstChildRoute?: string;
     withIndexPage?: boolean;
     isUnderCurrentDocsTree?: boolean;
-} & (FolderWithoutChildren | MdxFile);
+} & (MdxFile | Omit<Folder, 'children'>);

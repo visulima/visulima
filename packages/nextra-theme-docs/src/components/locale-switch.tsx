@@ -2,10 +2,10 @@ import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import type { FC } from "react";
 
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig } from "../contexts";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
-import { renderString } from "../utils";
+import { renderString } from "../utils/render";
 import Select from "./select";
 
 interface LocaleSwitchProperties {

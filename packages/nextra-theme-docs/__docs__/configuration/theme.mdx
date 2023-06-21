@@ -1,6 +1,5 @@
-import Screenshot from "@components/screenshot";
-
-# Theme Configuration
+import { ImageFrame } from "@visulima/nextra-theme-docs";
+import OptionTable from "@components/table";
 
 The theme is configured with the
 [theme.config.jsx](/docs/docs-theme/start#create-docs-theme-config) file. It
@@ -16,8 +15,6 @@ export default {
 ```
 
 Detailed information for each option is listed below.
-
-import OptionTable from "@components/table";
 
 ## Global
 
@@ -57,7 +54,7 @@ For example, we can have all pages rendering the same suffix for `<title>`:
 
 import titleSuffixImage from "@public/assets/nextra-theme-docs/title-suffix.png";
 
-<Screenshot src={titleSuffixImage} alt="Title suffix" />
+<ImageFrame src={titleSuffixImage} alt="Title suffix" />
 
 ```js
 export default {
@@ -211,7 +208,7 @@ function component.
 
 import logoImage from "@public/assets/nextra-theme-docs/logo.png";
 
-<Screenshot src={logoImage} alt="Customized Logo" />
+<ImageFrame src={logoImage} alt="Customized Logo" />
 
 <div className="mt-8 text-center text-sm">
     [Live example on StackBlitz ↗](https://stackblitz.com/edit/nextra-2-docs-yrlccm?file=theme.config.jsx)
@@ -251,7 +248,7 @@ link, for example make it link to your GitLab repository:
 
 import projectLinkImage from "@public/assets/nextra-theme-docs/project-link.png";
 
-<Screenshot src={projectLinkImage} alt="Project link" full />
+<ImageFrame src={projectLinkImage} alt="Project link" full />
 
 ```jsx
 export default {
@@ -355,7 +352,7 @@ the current text, for example:
 
 import bannerImage from "@public/assets/nextra-theme-docs/banner.png";
 
-<Screenshot src={bannerImage} alt="Banner" />
+<ImageFrame src={bannerImage} alt="Banner" />
 
 ```jsx
 export default {
@@ -415,7 +412,7 @@ item, you can customize how the sidebar content is rendered by using the
 import { Tab, Tabs } from "@visulima/nextra-theme-docs";
 import sidebarTitleComponentImage from "@public/assets/nextra-theme-docs/sidebar-customized.png";
 
-<Screenshot src={sidebarTitleComponentImage} alt="Customized Sidebar" />
+<ImageFrame src={sidebarTitleComponentImage} alt="Customized Sidebar" />
 
 <div className="mt-8 text-center text-sm">
     [Live example on StackBlitz ↗](https://stackblitz.com/edit/nextra-2-docs-8xbfk3?file=pages%2F_meta.json,theme.config.jsx)
@@ -557,7 +554,7 @@ navigating between pages.
 
 import navigationImage from "@public/assets/nextra-theme-docs/navigation.png";
 
-<Screenshot src={navigationImage} alt="Navigation" full />
+<ImageFrame src={navigationImage} alt="Navigation" full />
 
 ```jsx
 export default {

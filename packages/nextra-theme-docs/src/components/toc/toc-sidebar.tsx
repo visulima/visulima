@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
-import { cn, renderComponent } from "../../utils";
+import cn from "../../utils/cn";
+import { renderComponent } from "../../utils/render";
 import MetaInfo from "../meta-info";
 import Toc from "./toc";
 

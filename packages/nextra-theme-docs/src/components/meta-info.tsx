@@ -2,7 +2,8 @@ import cn from "clsx";
 import type { FC } from "react";
 
 import type { Config } from "../contexts/config";
-import { getGitIssueUrl, renderComponent } from "../utils";
+import getGitIssueUrl from "../utils/get-git-issue-url";
+import { renderComponent } from "../utils/render";
 import Anchor from "./anchor";
 
 const linkClassName = cn(

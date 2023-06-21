@@ -5,7 +5,7 @@ import type { FC, ReactElement } from "react";
 import { useMemo } from "react";
 
 import { useConfig } from "../contexts";
-import { renderString } from "../utils";
+import { renderString } from "../utils/render";
 import Select from "./select";
 
 const ThemeSwitch: FC<{

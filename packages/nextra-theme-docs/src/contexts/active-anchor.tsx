@@ -1,9 +1,9 @@
 import "intersection-observer";
 
-import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
+import type {Dispatch, MutableRefObject, ReactElement, ReactNode, SetStateAction} from "react";
 import { createContext, useContext, useRef, useState } from "react";
 
-import { IS_BROWSER } from "../constants";
+import { IS_BROWSER } from "../constants/base";
 
 type Anchor = {
     isActive?: boolean;
@@ -19,9 +19,9 @@ const IntersectionObserverContext = createContext<IntersectionObserver | null>(n
 const slugs = new WeakMap<HTMLAnchorElement, [string, number]>();
 const SlugsContext = createContext<WeakMap<HTMLAnchorElement, [string, number]>>(slugs);
 
-export const SlugCounterContext = createContext<number>(0);
+export const SlugCounterContext = createContext<MutableRefObject<number>>({ current: 0 });
 
-export const useSlugCounter = (): number => useContext(SlugCounterContext);
+export const useSlugCounter = (): MutableRefObject<number> => useContext(SlugCounterContext);
 
 export type ActiveAnchor = Record<string, Anchor>;
 

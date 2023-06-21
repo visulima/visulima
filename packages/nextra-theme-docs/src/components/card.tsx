@@ -2,7 +2,7 @@ import type { LinkProps } from "next/link";
 import Link from "next/link";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 type CardBaseProperties = { title: string; icon?: ReactNode; href: never; classes?: { main?: string; iconWrapper?: string; title?: string; content?: string } };
 

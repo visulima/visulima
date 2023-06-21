@@ -6,7 +6,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 import type { ZodError } from "zod";
 import { z } from "zod";
 
-import { DEEP_OBJECT_KEYS, DEFAULT_THEME } from "../constants";
+import { DEEP_OBJECT_KEYS, DEFAULT_THEME } from "../constants/default-theme-config";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import { themeSchema } from "../theme/theme-schema";
 import type { Context } from "../types";
@@ -23,10 +23,12 @@ let theme: DocumentationThemeConfig;
 let isValidated = false;
 
 const extendedMetaSchema = metaSchema.or(
+    // eslint-disable-next-line zod/require-strict
     z
         .object({
             description: z.string().optional(),
             icon: z.string().optional(),
+            // eslint-disable-next-line zod/require-strict
             theme: z
                 .object({
                     prose: z.boolean().optional(),

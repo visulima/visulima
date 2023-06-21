@@ -5,7 +5,8 @@ import { CheckIcon } from "nextra/icons";
 import type { FC, PropsWithChildren, ReactElement } from "react";
 import { createPortal } from "react-dom";
 
-import { cn, usePopper } from "../utils";
+import cn from "../utils/cn";
+import usePopper from "../utils/use-popper";
 
 interface MenuOption {
     key: string;

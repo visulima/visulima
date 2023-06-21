@@ -1,6 +1,6 @@
 import type { FC, HTMLProps, PropsWithChildren } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const CardGroup: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { cols?: number; style: HTMLProps<HTMLDivElement>["style"] & { "--rows"?: string } }>> = ({
     children,

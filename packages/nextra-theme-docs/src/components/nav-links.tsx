@@ -4,12 +4,12 @@ import type { FC } from "react";
 
 import { useConfig } from "../contexts";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
-import type { DocsItem } from "../types";
+import type { DocsItem as DocumentationItem } from "../types";
 import Anchor from "./anchor";
 
 interface NavLinkProperties {
     currentIndex: number;
-    flatDirectories: DocsItem[];
+    flatDirectories: DocumentationItem[];
     layout?: string;
 }
 

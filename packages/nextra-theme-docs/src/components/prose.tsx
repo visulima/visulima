@@ -1,6 +1,6 @@
 import type { FC, PropsWithChildren } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Prose: FC<PropsWithChildren<{ as?: any; className?: string }>> = ({ as: Component = "div", children, className }) => (
     <Component

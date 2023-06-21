@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactElement } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Code = ({ children, className = "", ...properties }: ComponentProps<"code">): ReactElement => {
     const hasLineNumbers = "data-line-numbers" in properties;

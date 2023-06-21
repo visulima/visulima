@@ -23,11 +23,11 @@ import NavLinks from "../components/nav-links";
 import Prose from "../components/prose";
 import Sidebar from "../components/sidebar";
 import { SkipNavContent } from "../components/skip-nav";
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
 import { SlugCounterContext } from "../contexts/active-anchor";
 import getComponents from "../mdx-components";
-import { renderComponent } from "../utils";
+import { renderComponent } from "../utils/render";
 import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
@@ -307,7 +307,7 @@ const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => {
 
     return (
         <ConfigProvider value={context}>
-            <SlugCounterContext.Provider value={counter.current}>
+            <SlugCounterContext.Provider value={counter}>
                 {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                 <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
             </SlugCounterContext.Provider>

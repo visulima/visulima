@@ -6,9 +6,9 @@ import { ArrowRightIcon, MenuIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem, PageTheme } from "nextra/normalize-pages";
 import type { FC, PropsWithChildren, ReactNode } from "react";
 
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig, useMenu } from "../contexts";
-import { renderComponent } from "../utils";
+import { renderComponent } from "../utils/render";
 import Anchor from "./anchor";
 
 const classes = {
