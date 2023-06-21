@@ -27,6 +27,10 @@
         "title": "Callout",
         "description": "Highlight important information with a callout"
     },
+    "image-frame": {
+        "title": "Image Frame",
+        "description": "Use the Frame component to wrap images or other components in a container"
+    },
     "tooltip": {
         "title": "Tooltip",
         "description": "Show a tooltip when hovering over an element"
