@@ -1,4 +1,10 @@
 {
-    "page": "",
-    "theme": ""
+    "page": {
+        "title": "Page Configuration",
+        "description": "Learn how to configure the Visulima Nextra Doc Page."
+    },
+    "theme": {
+        "title": "Theme Configuration",
+        "description": "Learn how to configure the Visulima Nextra Doc Theme."
+    }
 }

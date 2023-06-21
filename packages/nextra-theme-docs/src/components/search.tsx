@@ -6,10 +6,10 @@ import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
 import type { FC, KeyboardEvent } from "react";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig, useMenu } from "../contexts";
 import type { SearchResult } from "../types";
-import { renderComponent, renderString } from "../utils";
+import { renderComponent, renderString } from "../utils/render";
 import Anchor from "./anchor";
 import Input from "./input";
 

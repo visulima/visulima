@@ -12,7 +12,7 @@ const createHeaderLink =
         const slugs = useSlugs();
         const observer = useIntersectionObserver();
         const obReference = useRef<HTMLAnchorElement>(null);
-        let counter = useSlugCounter();
+        const referenceObject = useSlugCounter();
 
         useEffect(() => {
             const heading = obReference.current;
@@ -21,7 +21,7 @@ const createHeaderLink =
                 return;
             }
 
-            slugs.set(heading, [id, (counter += 1)]);
+            slugs.set(heading, [id, (referenceObject.current += 1)]);
             observer?.observe(heading);
 
             // eslint-disable-next-line consistent-return
@@ -40,7 +40,7 @@ const createHeaderLink =
                     return returnValue;
                 });
             };
-        }, [id, slugs, observer, setActiveAnchor]);
+        }, [id, slugs, observer, setActiveAnchor, referenceObject]);
 
         return (
             <Tag

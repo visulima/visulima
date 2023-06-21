@@ -2,7 +2,7 @@ import type { FC, ReactNode } from "react";
 import { useId, useState } from "react";
 import { Balancer } from "react-wrap-balancer";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Accordion: FC<{
     title: string;

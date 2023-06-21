@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Bleed = ({ children, className, full }: { children: ReactNode; className?: string; full: boolean }): ReactElement => (
     <div

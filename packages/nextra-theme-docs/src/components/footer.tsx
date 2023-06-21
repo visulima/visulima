@@ -3,7 +3,7 @@ import type { PageTheme } from "nextra/normalize-pages";
 import type { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
-import { renderComponent } from "../utils";
+import { renderComponent } from "../utils/render";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 

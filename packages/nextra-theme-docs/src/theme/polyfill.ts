@@ -1,4 +1,4 @@
-import { IS_BROWSER } from "../constants";
+import { IS_BROWSER } from "../constants/base";
 
 if (IS_BROWSER) {
     let resizeTimer: NodeJS.Timeout;

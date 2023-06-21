@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactElement } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Tr = (properties: ComponentProps<"tr">): ReactElement => (
     <tr

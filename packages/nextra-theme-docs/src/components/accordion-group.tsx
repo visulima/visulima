@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const AccordionGroup: FC<{ children: ReactNode; styleType?: "flushed" | "rounded" }> = ({ children, styleType = "rounded" }) => (
     <div

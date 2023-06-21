@@ -8,9 +8,9 @@ import type { FC } from "react";
 import { createContext, memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
-import { renderComponent } from "../utils";
+import { renderComponent } from "../utils/render";
 import useCurrentWidth from "../utils/use-current-width";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
@@ -68,6 +68,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
     const isOpen =
         TreeState[item.route] === undefined
             ? active ||
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               activeRouteInside ||
               focusedRouteInside ||
               (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)

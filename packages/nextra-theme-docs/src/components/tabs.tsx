@@ -10,6 +10,14 @@ type TabItem = {
 
 type TabProperties = ComponentProps<"div"> & { title: ReactElement | string; disabled?: boolean };
 
+export const Tab: FC<TabProperties> = ({ title, children, ...properties }) => (
+    // @ts-expect-error TS2322: Type 'string' is not assignable to type 'Ref<HTMLElement> | undefined'
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <HeadlessTab.Panel {...properties} className="pt-3">
+        {children}
+    </HeadlessTab.Panel>
+);
+
 export const Tabs = ({
     selectedIndex,
     defaultIndex,
@@ -69,11 +77,3 @@ export const Tabs = ({
         </HeadlessTab.Group>
     );
 };
-
-export const Tab: FC<TabProperties> = ({ title, children, ...properties }) => (
-    // @ts-expect-error TS2322: Type 'string' is not assignable to type 'Ref<HTMLElement> | undefined'
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <HeadlessTab.Panel {...properties} className="pt-3">
-        {children}
-    </HeadlessTab.Panel>
-);

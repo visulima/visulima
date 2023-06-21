@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactElement } from "react";
 
-import { cn } from "../utils";
+import cn from "../utils/cn";
 
 const Td = ({ className, ...properties }: ComponentProps<"td">): ReactElement => (
     // eslint-disable-next-line react/jsx-props-no-spreading

@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import type { ReactElement, ReactNode } from "react";
 import { useCallback, useState } from "react";
 
-import { DEFAULT_LOCALE } from "../constants";
+import { DEFAULT_LOCALE } from "../constants/base";
 import type { SearchResult } from "../types";
 import HighlightMatches from "./highlight-matches";
 import Search from "./search";

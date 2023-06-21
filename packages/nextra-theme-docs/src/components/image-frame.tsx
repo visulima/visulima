@@ -10,6 +10,7 @@ const ImageFrame: FC<ComponentProps<typeof Image> & { src: string; alt: string; 
     zoom = true,
     ...properties
 }) => {
+    // eslint-disable-next-line react/jsx-props-no-spreading
     let image = <Image className={cn("w-auto select-none bg-white rounded-md", full ? "" : "ring-1 ring-gray-200")} {...properties} />;
 
     if (zoom) {

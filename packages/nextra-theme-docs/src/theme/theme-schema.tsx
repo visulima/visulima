@@ -56,11 +56,14 @@ export const themeSchema = z
                 categoryId: z.string(),
             })
             .optional(),
+        // eslint-disable-next-line zod/require-strict
         toaster: z
             .object({
                 position: z.enum(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]).optional(),
+
                 reverseOrder: z.boolean().optional(),
                 // TODO: Find a good way to type this
+                // eslint-disable-next-line zod/require-strict
                 toastOptions: z.object({}).catchall<ZodType<DefaultToastOptions>>(z.any()).optional(),
                 gutter: z.number().optional(),
             })

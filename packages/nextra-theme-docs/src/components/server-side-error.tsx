@@ -3,7 +3,8 @@ import { useMounted } from "nextra/hooks";
 import type { ReactElement } from "react";
 
 import { useConfig } from "../contexts";
-import { getGitIssueUrl, renderComponent } from "../utils";
+import getGitIssueUrl from "../utils/get-git-issue-url";
+import { renderComponent } from "../utils/render";
 import Anchor from "./anchor";
 
 const ServerSideErrorPage = (): ReactElement | null => {

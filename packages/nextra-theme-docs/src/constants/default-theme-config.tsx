@@ -1,17 +1,13 @@
 import { GitHubIcon } from "nextra/icons";
 import { isValidElement } from "react";
 
-import Anchor from "./components/anchor";
-import FlexSearch from "./components/flexsearch";
-import Navbar from "./components/navbar";
-import TocPageContent from "./components/toc/toc-page-content";
-import TocSidebar from "./components/toc/toc-sidebar";
-import type { DocumentationThemeConfig } from "./theme/theme-schema";
-import { getGitEditUrl } from "./utils";
-
-export const DEFAULT_LOCALE = "en-US";
-
-export const IS_BROWSER = typeof window !== "undefined";
+import Anchor from "../components/anchor";
+import FlexSearch from "../components/flexsearch";
+import Navbar from "../components/navbar";
+import TocPageContent from "../components/toc/toc-page-content";
+import TocSidebar from "../components/toc/toc-sidebar";
+import type { DocumentationThemeConfig } from "../theme/theme-schema";
+import getGitEditUrl from "../utils/get-git-edit-url";
 
 export const DEFAULT_THEME: DocumentationThemeConfig = {
     banner: {
@@ -302,5 +298,3 @@ export const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
         return null;
     })
     .filter(Boolean);
-
-export const ERROR_ROUTES = new Set(["/404", "/500"]);
