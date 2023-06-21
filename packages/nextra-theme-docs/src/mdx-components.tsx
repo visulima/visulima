@@ -22,13 +22,13 @@ const A = ({ href = "", className, ...properties }: Omit<ComponentProps<"a">, "r
     const externalClassNames = 'after:content-[""] after:w-3 after:h-3 after:bg-center after:bg-no-repeat after:bg-contain after:inline-block after:ml-1';
 
     return (
-        // eslint-disable-next-line react/jsx-props-no-spreading
         <Anchor
             href={href}
             newWindow={isExternal}
             className={cn(className, {
                 [externalClassNames]: isExternal,
             })}
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         />
     );

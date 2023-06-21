@@ -3,13 +3,14 @@ import type { NextSeoProps } from "next-seo";
 import type { Item } from "nextra/normalize-pages";
 import type { FC, ReactNode } from "react";
 import { isValidElement } from "react";
-import {z, ZodType} from "zod";
+import type { DefaultToastOptions } from "react-hot-toast";
+import type { ZodType} from "zod";
+import { z } from "zod";
 
 import type { NavBarProperties } from "../components/navbar";
 import type { TOCProperties as TOCPageContentProperties } from "../components/toc/toc-page-content";
 import type { TOCProperties as TOCSidebarProperties } from "../components/toc/toc-sidebar";
 import type { ActiveType } from "../types";
-import type {DefaultToastOptions} from "react-hot-toast";
 
 const isString = (value: unknown): boolean => typeof value === "string";
 

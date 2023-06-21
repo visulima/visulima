@@ -1,9 +1,9 @@
+import cn from "clsx";
 import type { Heading } from "nextra";
 import type { FC, Ref } from "react";
 
 import { useActiveAnchor } from "../../contexts";
 import Toc from "./toc";
-import cn from "clsx";
 
 const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
     const activeAnchor = useActiveAnchor();

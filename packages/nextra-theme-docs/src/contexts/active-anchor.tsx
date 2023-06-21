@@ -52,7 +52,7 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                         if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
                             const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
 
-                            // eslint-disable-next-line max-len
+                             
                             const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 

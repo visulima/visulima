@@ -3,14 +3,19 @@
     counter-reset: step;
 }
 
+.steps-container h3 {
+    @apply mb-3
+}
+
 .steps-container h3,
 .steps-container.no-title p {
+    @apply text-lg leading-6 mt-6;
     counter-increment: step;
 }
 
 .steps-container h3:before,
 .steps-container.no-title p:before {
-    @apply border-white rounded-full bg-gray-100 border-solid border-4 inline-block font-normal h-8 text-base leading-6 -ml-10 absolute text-center w-8 -mt-0.5;
+    @apply border-white rounded-full bg-gray-100 border-solid border-4 inline-block font-normal h-8 text-base leading-6 -ml-10 absolute text-center w-8 -mt-1;
     content: counter(step);
     text-indent: -1px;
 }

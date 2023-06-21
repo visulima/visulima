@@ -33,7 +33,7 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
                 </Anchor>
             );
         },
-        content: ({ locale }) => {
+        content: ({ locale }: { locale: string }) => {
             if (locale === "zh-CN") {
                 return <>在 GitHub 上编辑此页</>;
             }

@@ -4,13 +4,13 @@ import type { FC, PropsWithChildren, ReactNode } from "react";
 
 import { cn } from "../utils";
 
-type CardBaseProps = { title: string; icon: ReactNode; href: never; classes?: { main?: string; iconWrapper?: string; title?: string; content?: string } };
+type CardBaseProperties = { title: string; icon?: ReactNode; href: never; classes?: { main?: string; iconWrapper?: string; title?: string; content?: string } };
 
-type CardLinkProps = Omit<CardBaseProps, "href"> & LinkProps & { href: string };
+type CardLinkProperties = LinkProps & Omit<CardBaseProperties, "href"> & { href: string };
 
-type Props = CardBaseProps | CardLinkProps;
+type Properties = CardBaseProperties | CardLinkProperties;
 
-const Card: FC<PropsWithChildren<Props>> = ({ children, title, icon, href, classes = {}, ...properties }) => {
+const Card: FC<PropsWithChildren<Properties>> = ({ children, title, icon, href, classes = {}, ...properties }) => {
     const wrapperClassName = cn(
         "nextra-card",
         "bg-transparent",
@@ -25,20 +25,20 @@ const Card: FC<PropsWithChildren<Props>> = ({ children, title, icon, href, class
     let content = (
         <div
             className={cn({
-                "px-6 py-5": typeof children !== "undefined",
-                "flex gap-2 p-4 text-gray-700 dark:text-neutral-200": typeof children === "undefined",
+                "px-6 py-5": children !== undefined,
+                "flex gap-2 p-4 text-gray-700 dark:text-neutral-200": children === undefined,
             })}
         >
-            <span
+            {icon && (<span
                 className={cn(
                     "nextra-card-icon text-gray-700 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-[#f5f5fa]",
                     classes?.iconWrapper,
                 )}
             >
                 {icon}
-            </span>
+            </span>)}
             <h2 className={cn("nextra-card-title font-semibold text-base text-gray-800 dark:text-white", {
-                "mt-4": typeof children !== "undefined",
+                "mt-4": children !== undefined,
             }, classes?.title)}>{title}</h2>
             {children && <span className={cn("mt-1 font-normal text-gray-600 dark:text-gray-400", classes?.content)}>{children}</span>}
         </div>

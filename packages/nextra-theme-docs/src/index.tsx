@@ -25,9 +25,12 @@ export { default as Steps } from "./components/step-container";
 export { SkipNavLink } from "./components/skip-nav";
 export { default as Tooltip } from "./components/tooltip";
 export { default as Card } from "./components/card";
+// @deprecated Use CardGroup instead
+export { default as Cards } from "./components/card-group";
 export { default as CardGroup } from "./components/card-group";
 export { default as Zoom } from "./components/zoom";
 export { default as ImageFrame } from "./components/image-frame";
+export { default as Search } from "./components/search";
 
 export { default as toast } from "react-hot-toast";
 

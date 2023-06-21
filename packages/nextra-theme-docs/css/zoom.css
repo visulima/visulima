@@ -53,7 +53,7 @@
 }
 
 [data-rmiz-modal-content] {
-    @apply relative w-full h-full;
+    @apply relative w-full h-full bg-white dark:bg-darker-800;
 }
 
 [data-rmiz-modal-img] {
