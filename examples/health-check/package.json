@@ -23,10 +23,10 @@
     "devDependencies": {
         "@types/cookie": "^0.5.1",
         "@types/node": "20.2.3",
-        "@types/react": "18.2.9",
-        "@types/react-dom": "18.2.4",
-        "eslint": "8.42.0",
-        "eslint-config-next": "13.4.4",
+        "@types/react": "18.2.13",
+        "@types/react-dom": "18.2.6",
+        "eslint": "8.43.0",
+        "eslint-config-next": "13.4.6",
         "rimraf": "^5.0.1",
         "typescript": "5.1.3"
     }
