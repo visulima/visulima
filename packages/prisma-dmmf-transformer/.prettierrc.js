@@ -1,5 +1,5 @@
 module.exports = {
-    printWidth: 160,
+    printWidth: 164,
     tabWidth: 4,
     useTabs: false,
     semi: true,
@@ -10,7 +10,7 @@ module.exports = {
     bracketSpacing: true,
     arrowParens: "always",
     rangeStart: 0,
-    rangeEnd: Infinity,
+    rangeEnd: null,
     requirePragma: false,
     insertPragma: false,
     proseWrap: "preserve",
