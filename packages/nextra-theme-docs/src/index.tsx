@@ -27,6 +27,7 @@ export { default as Tooltip } from "./components/tooltip";
 export { default as Card } from "./components/card";
 export { default as CardGroup } from "./components/card-group";
 export { default as Zoom } from "./components/zoom";
+export { default as ImageFrame } from "./components/image-frame";
 
 export { default as toast } from "react-hot-toast";
 
