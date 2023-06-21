@@ -25,10 +25,10 @@ import Sidebar from "../components/sidebar";
 import { SkipNavContent } from "../components/skip-nav";
 import { DEFAULT_LOCALE } from "../constants";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "../contexts";
+import { SlugCounterContext } from "../contexts/active-anchor";
 import getComponents from "../mdx-components";
 import { renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
-import { SlugCounterContext } from "../contexts/active-anchor";
 
 const classes = {
     toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",

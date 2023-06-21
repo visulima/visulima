@@ -1,7 +1,6 @@
+import type { ComponentProps, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { Balancer } from "react-wrap-balancer";
-
-import type { ComponentProps, ReactElement } from "react";
 
 import { useSetActiveAnchor } from "../contexts";
 import { useIntersectionObserver, useSlugCounter, useSlugs } from "../contexts/active-anchor";

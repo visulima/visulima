@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from "react";
 import { useId, useState } from "react";
 import { Balancer } from "react-wrap-balancer";
+
 import { cn } from "../utils";
 
 const Accordion: FC<{
@@ -12,27 +13,32 @@ const Accordion: FC<{
         content?: string;
     };
     defaultOpen?: boolean;
-    styleType?: "rounded" | "flushed";
+    styleType?: "flushed" | "rounded";
 }> = ({ children, title, arrowIcon, classes, defaultOpen = false, styleType = "rounded" }) => {
     const id = useId();
     const [open, setOpen] = useState(defaultOpen);
 
-    if (!arrowIcon) {
-        arrowIcon = ({ className }) => (
-            <svg data-accordion-icon className={className} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    fillRule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                ></path>
-            </svg>
-        );
+    let icon: ({ className }: { className?: string }) => ReactNode = ({ className }) => (
+        <svg data-accordion-icon className={className} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
+            />
+        </svg>
+    );
+
+    if (arrowIcon) {
+        icon = arrowIcon;
     }
 
     return (
-        <div role="listitem" className={cn("nextra-accordion mb-3", {
-            "open": open,
-        })}>
+        <div
+            role="listitem"
+            className={cn("nextra-accordion mb-3", {
+                open: open,
+            })}
+        >
             <button
                 id={`accordion-collapse-heading-${id}`}
                 type="button"
@@ -54,9 +60,9 @@ const Accordion: FC<{
                 onClick={() => setOpen(!open)}
                 tabIndex={0}
             >
-                <Balancer className="leading-tight text-left">{title}</Balancer>
-                <div className="grow"></div>
-                {arrowIcon({
+                <Balancer className="text-left leading-tight">{title}</Balancer>
+                <div className="grow" />
+                {icon({
                     className: cn("w-6 h-6 shrink-0", {
                         "transform rotate-180": open,
                     }),

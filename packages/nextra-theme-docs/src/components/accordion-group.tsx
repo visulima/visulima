@@ -1,8 +1,8 @@
 import type { FC, ReactNode } from "react";
+
 import { cn } from "../utils";
 
-const AccordionGroup: FC<{ children: ReactNode; styleType?: "rounded" | "flushed" }> = ({ children, styleType = "rounded" }) => {
-    return (
+const AccordionGroup: FC<{ children: ReactNode; styleType?: "flushed" | "rounded" }> = ({ children, styleType = "rounded" }) => (
         <div
             className={cn(
                 "[&>div>button]:border-0 [&>div>div]:border-0 [&>div>div]:border-t [&>div>button]:rounded-none [&>div>button]:rounded-none [&>div]:mb-0",
@@ -17,6 +17,5 @@ const AccordionGroup: FC<{ children: ReactNode; styleType?: "rounded" | "flushed
             {children}
         </div>
     );
-};
 
 export default AccordionGroup;

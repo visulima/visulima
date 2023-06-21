@@ -8,7 +8,7 @@ type TabItem = {
     disabled?: boolean;
 };
 
-type TabProps = ComponentProps<"div"> & { title: ReactElement | string; disabled?: boolean };
+type TabProperties = ComponentProps<"div"> & { title: ReactElement | string; disabled?: boolean };
 
 export const Tabs = ({
     selectedIndex,
@@ -24,15 +24,15 @@ export const Tabs = ({
     prefix?: string;
 }): ReactElement => {
     const id = useId();
-    let tabs: TabItem[] = [];
+    const tabs: TabItem[] = [];
 
     Children.forEach(Children.toArray(children), (child) => {
         if (isValidElement(child)) {
-            if ((child as ReactElement<TabProps>).type === Tab) {
-                const { title, disabled } = (child as ReactElement<TabProps>).props;
+            if ((child as ReactElement<TabProperties>).type === Tab) {
+                const { title, disabled } = (child as ReactElement<TabProperties>).props;
                 tabs.push({
                     label: title,
-                    disabled: disabled,
+                    disabled,
                 });
             } else {
                 throw new Error("Children of `Tabs` must be of type `Tab`");
@@ -42,10 +42,9 @@ export const Tabs = ({
 
     return (
         <HeadlessTab.Group selectedIndex={selectedIndex} defaultIndex={defaultIndex} onChange={onChange}>
-            <div className="nextra-scrollbar not-prose overflow-x-auto overflow-y-hidden overscroll-x-contain pl-2">
-                <HeadlessTab.List className="mt-4 flex w-max min-w-full border-b border-gray-400 pb-px dark:border-neutral-800">
-                    {tabs.map((item, index) => {
-                        return (
+            <div className="nextra-scrollbar not-prose overflow-x-auto overflow-y-hidden overscroll-x-contain">
+                <HeadlessTab.List className="mt-4 flex w-max min-w-full border-b border-gray-400 pb-px pl-1 dark:border-neutral-800">
+                    {tabs.map((item, index) => (
                             <HeadlessTab
                                 // eslint-disable-next-line react/no-array-index-key
                                 key={`${prefix}-${id}-tab-${index}`}
@@ -63,8 +62,7 @@ export const Tabs = ({
                             >
                                 {item.label}
                             </HeadlessTab>
-                        );
-                    })}
+                        ))}
                 </HeadlessTab.List>
             </div>
             <HeadlessTab.Panels>{children}</HeadlessTab.Panels>
@@ -72,10 +70,10 @@ export const Tabs = ({
     );
 };
 
-export const Tab: FC<TabProps> = ({ title, children, ...properties }) => (
+export const Tab: FC<TabProperties> = ({ title, children, ...properties }) => (
     // @ts-expect-error TS2322: Type 'string' is not assignable to type 'Ref<HTMLElement> | undefined'
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <HeadlessTab.Panel {...properties} className="pt-6 pl-2 pr-2.5">
+    <HeadlessTab.Panel {...properties} className="pt-3">
         {children}
     </HeadlessTab.Panel>
 );

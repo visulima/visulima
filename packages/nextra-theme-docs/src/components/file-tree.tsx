@@ -79,7 +79,7 @@ const Folder: FC<FolderProperties> = memo<FolderProperties>(({
                 <span className="ml-1">{label ?? name}</span>
             </button>
             {isFolderOpen && (
-                <ul>
+                <ul className="my-0.5">
                     <context.Provider value={indent + 1}>{children}</context.Provider>
                 </ul>
             )}
@@ -89,7 +89,7 @@ const Folder: FC<FolderProperties> = memo<FolderProperties>(({
 Folder.displayName = "Folder";
 
 const File: FC<FileProperties> = memo<FileProperties>(({ label, name, active }: FileProperties) => (
-    <li className={cn("flex list-none", active && "text-primary-600 contrast-more:underline")}>
+    <li className={cn("flex list-none m-0", active && "text-primary-600 contrast-more:underline")}>
         <button type="button" className="inline-flex cursor-default items-center py-1">
             <Ident />
             <svg width="1em" height="1em" viewBox="0 0 24 24">

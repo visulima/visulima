@@ -3,7 +3,7 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-import { ChevronDownSquare, Club, Rows, LayoutDashboard, PanelTop, Info, Frame, MessageSquare, MessageSquareDashed, Footprints } from "lucide-react";
+import { ChevronDownSquare, Club, Rows, LayoutDashboard, PanelTop, Info, Frame, MessageSquare, MessageSquareDashed, Footprints, ListTree } from "lucide-react";
 
 // const Logo = ({ height }) => (
 //
@@ -80,6 +80,9 @@ const config: DocumentationThemeConfig = {
                 case "/docs/nextra-theme-docs/writing-content/components/steps": {
                     return <Footprints className={className} />;
                 }
+                case "/docs/nextra-theme-docs/writing-content/components/file-tree": {
+                    return <ListTree className={className} />;
+                }
                 case "/docs/nextra-theme-docs/writing-content/components/callout": {
                     return <Info className={className} />;
                 }
@@ -96,7 +99,7 @@ const config: DocumentationThemeConfig = {
                     return null;
                 }
             }
-        }
+        },
     },
     editLink: {
         content: ({ locale }) => {
@@ -117,7 +120,8 @@ const config: DocumentationThemeConfig = {
         ),
         component: () => {
             // eslint-disable-next-line max-len
-            const linkClasses = "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
+            const linkClasses =
+                "my-1 scroll-my-6 scroll-py-6 inline-block w-full text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50";
 
             const menu = [
                 {

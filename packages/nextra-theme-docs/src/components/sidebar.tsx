@@ -69,7 +69,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
         TreeState[item.route] === undefined
             ? active ||
               activeRouteInside ||
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+               
               focusedRouteInside ||
               (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)
             : TreeState[item.route] ?? focusedRouteInside;
@@ -163,7 +163,7 @@ const FolderImpl: FC<FolderProperties> = ({ item, anchors }) => {
                     type: item.type,
                     route: item.route,
                 })}
-                <div className="grow"></div>
+                <div className="grow" />
                 <ArrowRightIcon
                     className="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"
                     pathClassName={cn("origin-center transition-transform", isOpen ? "ltr:rotate-90 rtl:rotate-[-270deg]" : "rtl:-rotate-180")}

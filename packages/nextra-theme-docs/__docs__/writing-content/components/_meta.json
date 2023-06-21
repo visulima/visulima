@@ -15,6 +15,10 @@
         "title": "Cards",
         "description": "Show cards side by side in a grid format"
     },
+    "file-tree": {
+        "title": "File Tree",
+        "description": "Show a file tree with expandable folders"
+    },
     "tabs": {
         "title": "Tabs",
         "description": "Toggle content using the Tabs component"

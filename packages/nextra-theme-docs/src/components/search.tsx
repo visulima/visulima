@@ -254,7 +254,7 @@ const Search: FC<SearchProperties> = ({
                             <SpinnerIcon className="h-5 w-5 animate-spin" />
                             {renderString(config.search.loading, { locale })}
                         </span>
-                    ) // eslint-disable-next-line unicorn/no-nested-ternary
+                    )  
                     : results.length > 0 ? (
                         results.map(({
  route, prefix, children, id,
