@@ -13,12 +13,12 @@ import React from "react";
 const MyApp: FC<AppProps & { Component: AppProps["Component"] & { getLayout?: (component: ReactElement) => ReactElement } }> = ({ Component, pageProps }) => {
     const getLayout = Component.getLayout ?? ((page) => page);
 
-    // eslint-disable-next-line react/jsx-props-no-spreading
     return (
         <>
             <Head>
-                <link rel="preload" href="/Inter.var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+                <link as="font" crossOrigin="anonymous" href="/Inter.var.woff2" rel="preload" type="font/woff2" />
             </Head>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             {getLayout(<Component {...pageProps} />)}
         </>
     );

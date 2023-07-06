@@ -1,7 +1,7 @@
 /** @type {import('next-sitemap').IConfig} */
 const config = {
-    siteUrl: "https://docs.visulima.com",
     generateRobotsTxt: true,
+    siteUrl: "https://docs.visulima.com",
 };
 
 export default config;
