@@ -1,18 +1,18 @@
-import nextra from "nextra";
 import { remarkCodeHike } from "@code-hike/mdx";
+import nextra from "nextra";
 import theme from "shiki/themes/nord.json" assert { type: "json" };
 
 const withNextra = nextra({
-    theme: "@visulima/nextra-theme-docs",
-    themeConfig: "./theme.config.tsx",
+    defaultShowCopyCode: true,
     mdxOptions: {
-        remarkPlugins: [[remarkCodeHike, { theme, lineNumbers: true, showCopyButton: true }]],
+        remarkPlugins: [[remarkCodeHike, { lineNumbers: true, showCopyButton: true, theme }]],
     },
-    staticImage: true,
     search: {
         codeblocks: true,
     },
-    defaultShowCopyCode: true,
+    staticImage: true,
+    theme: "@visulima/nextra-theme-docs",
+    themeConfig: "./theme.config.tsx",
 });
 
 /** @type {import('next').NextConfig} */

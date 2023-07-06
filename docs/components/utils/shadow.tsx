@@ -13,6 +13,7 @@ const Shadow: FC<PropsWithChildren<{ mode: "open" }>> = ({ children, mode = "ope
     }, [mode]);
 
     return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
         <div {...rest} ref={reference as LegacyRef<HTMLDivElement> | undefined}>
             {shadowRoot && createPortal(children, shadowRoot)}
         </div>
