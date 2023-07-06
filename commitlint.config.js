@@ -1,4 +1,7 @@
 module.exports = {
-    extends: ["@commitlint/config-conventional"],
+    extends: ["@anolilab/commitlint-config"],
+    rules: {
+        // overwrite rules here
+        // or extend rules
+    },
 };
-

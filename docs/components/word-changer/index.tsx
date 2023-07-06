@@ -1,7 +1,4 @@
-import {
- useEffect, useRef,
-useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 const WordChanger = ({ words }: { words: string[] }): string => {
     const [currentWord, setCurrentWord] = useState(words[0]);

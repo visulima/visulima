@@ -1,7 +1,5 @@
 import { SkipNavLink } from "@visulima/nextra-theme-docs";
-import Document, {
- Head, Html, Main, NextScript,
-} from "next/document";
+import Document, { Head, Html, Main, NextScript } from "next/document";
 import type { ReactElement } from "react";
 import React from "react";
 

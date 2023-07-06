@@ -72,6 +72,11 @@ export const createConfig = (config?: Options & Object) =>
                 if (process.env.NODE_ENV !== "production" && peerDependenciesKeys.includes("react")) {
                     options.tsconfig = options.tsconfig?.replace("tsconfig.json", "tsconfig.dev.json");
                 }
+
+                options.logOverride = {
+                    "tsconfig.json": "silent",
+                    "this-is-undefined-in-esm": "silent",
+                };
             },
             ...config,
         };

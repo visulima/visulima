@@ -14,7 +14,7 @@ const OptionTable: FC<{ options: [string, string, any] }> = ({ options }) => (
             </thead>
             <tbody className="align-baseline text-gray-900 dark:text-gray-100">
                 {options.map(([option, type, description]) => (
-                    <tr key={option as string} className="border-b border-gray-100 dark:border-neutral-700/50">
+                    <tr className="border-b border-gray-100 dark:border-neutral-700/50" key={option as string}>
                         <td className="whitespace-pre py-2 font-mono text-xs font-semibold leading-6 text-violet-600 dark:text-violet-500">{option}</td>
                         <td className="whitespace-pre py-2 pl-6 font-mono text-xs font-semibold leading-6 text-slate-500 dark:text-slate-400">{type}</td>
                         <td className="py-2 pl-6">{description}</td>

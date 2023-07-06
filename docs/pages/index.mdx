@@ -3,10 +3,9 @@ title: The Missing Fullstack Toolkit for Building Amazing Applications
 description: Out of the box, Visulima has elegant solutions for the common features needed by all modern web applications.
 ---
 
-import Link from "next/link";
-
 import WordChanger from "@components/word-changer";
 import Image from "next/image";
+import Link from "next/link";
 
 <div className="max-w-[90rem] mx-auto pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] bg-white dark:bg-darker-800">
     <div className="mt-[16vmin] relative sm:text-center md:text-left flex">
@@ -43,7 +42,7 @@ import Image from "next/image";
 
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8 p-6 sm:h-40 sm:content-evenly">
             <div className="flex justify-center">
-                <a target="_blank" href="https://nextjs.org" className="">
+                <a target="_blank" href="https://nextjs.org" aria-label="Next.js">
                     <svg role="img" width="118" height="24" viewBox="0 0 118 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <title>Next.js</title>
                         <g clipPath="url(#clip0_1616_77001)">
@@ -66,7 +65,7 @@ import Image from "next/image";
             </div>
 
             <div className="flex justify-center">
-                <a target="_blank" href="https://remix.run" className="">
+                <a target="_blank" href="https://remix.run" aria-label="Remix">
                     <svg role="img" width="97" height="24" viewBox="0 0 97 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <title>Remix</title>
                         <path fillRule="evenodd" clipRule="evenodd" d="M19.6997 18.3157C19.9117 21.0598 19.9117 22.3461 19.9117 23.7502H13.6112C13.6112 23.4443 13.6167 23.1646 13.6221 22.8808C13.6391 21.9989 13.6569 21.0793 13.5151 19.222C13.3278 16.503 12.1658 15.8988 10.0293 15.8988H8.13642H0.119934V10.9517H10.3292C13.0279 10.9517 14.3772 10.1244 14.3772 7.93404C14.3772 6.00811 13.0279 4.84089 10.3292 4.84089H0.119934V0H11.4536C17.5632 0 20.5993 2.90786 20.5993 7.55288C20.5993 11.0272 18.4628 13.293 15.5767 13.6707C18.013 14.1616 19.4373 15.5589 19.6997 18.3157Z" fill="currentColor"/>
@@ -80,7 +79,7 @@ import Image from "next/image";
             </div>
 
             <div className="flex justify-center">
-                <a target="_blank" href="https://expressjs.com">
+                <a target="_blank" href="https://expressjs.com" aria-label="expressjs">
                     <svg role="img" width="50" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><title>Express</title><path d="M24 18.588a1.529 1.529 0 01-1.895-.72l-3.45-4.771-.5-.667-4.003 5.444a1.466 1.466 0 01-1.802.708l5.158-6.92-4.798-6.251a1.595 1.595 0 011.9.666l3.576 4.83 3.596-4.81a1.435 1.435 0 011.788-.668L21.708 7.9l-2.522 3.283a.666.666 0 000 .994l4.804 6.412zM.002 11.576l.42-2.075c1.154-4.103 5.858-5.81 9.094-3.27 1.895 1.489 2.368 3.597 2.275 5.973H1.116C.943 16.447 4.005 19.009 7.92 17.7a4.078 4.078 0 002.582-2.876c.207-.666.548-.78 1.174-.588a5.417 5.417 0 01-2.589 3.957 6.272 6.272 0 01-7.306-.933 6.575 6.575 0 01-1.64-3.858c0-.235-.08-.455-.134-.666A88.33 88.33 0 010 11.577zm1.127-.286h9.654c-.06-3.076-2.001-5.258-4.59-5.278-2.882-.04-4.944 2.094-5.071 5.264z" fill="currentcolor" /></svg>
                 </a>
             </div>
@@ -157,6 +156,7 @@ import Image from "next/image";
             <p className="mt-12 text-gray-900 dark:text-gray-500 leading-relaxed max-w-3xl">We've just scratched the surface. Visulima has you covered for everything you will need to build a web application, including email verification, rate limiting, and custom console commands. Check out the <Link href="/docs" className="text-pink-400 underline hover:no-underline">documentation</Link> to keep learning.</p>
         </div>
     </div>
+
 </div>
 
 <div className="relative overflow-hidden py-16 md:mt-24 pt-36 bg-darker-800 w-[98%] mx-auto rounded-2xl p-5">
@@ -208,4 +208,5 @@ import Image from "next/image";
             </div>
         </div>
     </div>
+
 </div>
