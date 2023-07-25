@@ -19,7 +19,7 @@ html {
     -webkit-tap-highlight-color: transparent;
 }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
     /* this will target only Mac Safari and Chrome browsers */
     html {
         font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "ss06" 1;
@@ -174,32 +174,32 @@ li.nested-list ul {
 }
 
 .nextra-sidebar-container {
-  [data-toggle-animation='show'] button {
-    opacity: 0;
-    animation: nextra-fadein 1s ease 0.2s forwards;
-  }
-  [data-toggle-animation='hide'] button {
-    opacity: 0;
-    animation: nextra-fadein2 1s ease 0.2s forwards;
-  }
+    [data-toggle-animation="show"] button {
+        opacity: 0;
+        animation: nextra-fadein 1s ease 0.2s forwards;
+    }
+    [data-toggle-animation="hide"] button {
+        opacity: 0;
+        animation: nextra-fadein2 1s ease 0.2s forwards;
+    }
 }
 
 @keyframes nextra-fadein {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 @keyframes nextra-fadein2 {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .nextra-content iframe {
@@ -207,5 +207,5 @@ li.nested-list ul {
 }
 
 .prose .nextra-callout p {
-  @apply m-0;
+    @apply m-0;
 }

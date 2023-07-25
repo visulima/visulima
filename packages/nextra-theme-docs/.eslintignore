@@ -1,9 +1,10 @@
 dist
 node_modules
-coverage
 inject-react-import.js
-__fixtures__/**
-
+coverage
 vitest.config.ts
-postcss.config.js
-tailwind.config.js
+recipes
+__fixtures__
+.prettierrc.js
+_meta.*.json
+tsup.config.ts

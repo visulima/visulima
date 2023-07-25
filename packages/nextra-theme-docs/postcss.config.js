@@ -1,11 +1,11 @@
 module.exports = {
     plugins: {
-        "postcss-import": {},
-        "tailwindcss/nesting": {},
-        tailwindcss: {},
+        autoprefixer: {},
         "postcss-focus-visible": {
             replaceWith: "[data-focus-visible-added]",
         },
-        autoprefixer: {},
+        "postcss-import": {},
+        tailwindcss: {},
+        "tailwindcss/nesting": {},
     },
 };

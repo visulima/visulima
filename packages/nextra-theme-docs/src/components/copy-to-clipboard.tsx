@@ -12,13 +12,13 @@ const toastId = "copy-to-clipboard";
 const toastPosition = "bottom-right";
 
 const CopyToClipboard = ({
-    getValue,
-    className,
     as,
+    className,
+    getValue,
     ...properties
 }: ComponentProps<"button"> & {
-    getValue: () => string;
     as?: string;
+    getValue: () => string;
 }): ReactElement => {
     const [isCopied, setCopied] = useState(false);
 
@@ -55,10 +55,10 @@ const CopyToClipboard = ({
 
     return (
         <Component
-            onClick={handleClick}
-            title="Copy code"
-            tabIndex={0}
             className={["text-slate-500 hover:text-slate-400", className].join(" ")}
+            onClick={handleClick}
+            tabIndex={0}
+            title="Copy code"
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >

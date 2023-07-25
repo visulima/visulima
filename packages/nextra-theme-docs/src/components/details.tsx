@@ -1,10 +1,6 @@
 import cn from "clsx";
-import type {
-    ComponentProps, PropsWithChildren, ReactElement, ReactNode,
-} from "react";
-import {
-    Children, cloneElement, useEffect, useState,
-} from "react";
+import type { ComponentProps, PropsWithChildren, ReactElement, ReactNode } from "react";
+import { Children, cloneElement, useEffect, useState } from "react";
 
 import { DetailsProvider } from "../contexts";
 import Collapse from "./collapse";
@@ -16,7 +12,6 @@ const findSummary = (children: ReactNode) => {
     const restChildren: ReactNode[] = [];
 
     Children.forEach(children, (child, index) => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         if (child && (child as ReactElement).type === Summary) {
             summary ||= child;
             return;
@@ -48,19 +43,19 @@ const findSummary = (children: ReactNode) => {
 
 const Details = ({
     children,
-    open = false,
+    className,
     collapseClassName,
     collapseHorizontal = false,
-    className,
+    open = false,
     variant = "default",
     ...properties
 }: ComponentProps<"details"> & {
-    variant?: "default" | "raw";
     collapseClassName?: string;
     collapseHorizontal?: boolean;
+    variant?: "default" | "raw";
 }): ReactElement => {
     const [openState, setOpen] = useState(open);
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
     const [summary, restChildren] = findSummary(children);
 
     // To animate the close animation we have to delay the DOM node state here.
@@ -93,7 +88,7 @@ const Details = ({
             {...(openState && { "data-expanded": true })}
         >
             <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-            <Collapse className={collapseClassName} isOpen={openState} horizontal={collapseHorizontal}>
+            <Collapse className={collapseClassName} horizontal={collapseHorizontal} isOpen={openState}>
                 {restChildren}
             </Collapse>
         </details>

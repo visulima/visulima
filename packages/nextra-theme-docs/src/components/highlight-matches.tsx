@@ -1,15 +1,15 @@
 import { Fragment, memo } from "react";
 
-type MatchArguments = {
-    value?: string;
+interface MatchArguments {
     match: string;
-};
+    value?: string;
+}
 
-const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments) => {
+const HighlightMatches = memo<MatchArguments>(({ match, value }: MatchArguments) => {
     const splitText = value ? [...value] : [];
     const escapedSearch = match.trim().replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
-    const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "ig");
+    const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "gi");
 
     let regexpResult;
     let id = 0;
@@ -18,7 +18,6 @@ const HighlightMatches = memo<MatchArguments>(({ value, match }: MatchArguments)
     const result = [];
 
     if (typeof value === "string") {
-        // eslint-disable-next-line no-cond-assign
         while ((regexpResult = regexp.exec(value)) !== null) {
             id += 1;
 

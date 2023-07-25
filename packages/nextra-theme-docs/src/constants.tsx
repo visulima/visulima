@@ -14,7 +14,24 @@ export const DEFAULT_LOCALE = "en-US";
 export const IS_BROWSER = typeof window !== "undefined";
 
 export const DEFAULT_THEME: DocumentationThemeConfig = {
-    newNextLinkBehavior: false,
+    backToTop: {
+        active: true,
+        content: ({ locale }: { locale: string }) => {
+            if (locale === "zh-CN") {
+                return "返回顶部";
+            }
+
+            if (locale === "ru") {
+                return "Вернуться к началу";
+            }
+
+            if (locale === "fr") {
+                return "Retour en haut";
+            }
+
+            return "Back to top";
+        },
+    },
     banner: {
         dismissible: true,
         key: "nextra-banner",
@@ -23,7 +40,7 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     direction: "ltr",
     docsRepositoryBase: "https://github.com/shuding/nextra",
     editLink: {
-        component({ className, filePath, children }) {
+        component({ children, className, filePath }) {
             const editUrl = getGitEditUrl(filePath);
             if (!editUrl) {
                 return null;
@@ -34,7 +51,7 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
                 </Anchor>
             );
         },
-        content: ({ locale }) => {
+        content: ({ locale }: { locale: string }) => {
             if (locale === "zh-CN") {
                 return <>在 GitHub 上编辑此页</>;
             }
@@ -54,14 +71,11 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         content: "Question? Give us feedback →",
         labels: "feedback",
     },
-    navbar: {
-        component: Navbar,
-    },
     footer: {
         component: () => null,
         copyright: `MIT ${new Date().getFullYear()} © Nextra.`,
     },
-    gitTimestamp({ timestamp, locale }) {
+    gitTimestamp({ locale, timestamp }) {
         return (
             <>
                 Last updated on{" "}
@@ -75,17 +89,34 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     },
     head: (
         <>
-            <meta name="msapplication-TileColor" content="#fff" />
-            <meta httpEquiv="Content-Language" content="en" />
-            <meta name="description" content="Nextra: the next docs builder" />
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:site" content="@shuding_" />
-            <meta property="og:title" content="Nextra: the next docs builder" />
-            <meta property="og:description" content="Nextra: the next docs builder" />
-            <meta name="apple-mobile-web-app-title" content="Nextra" />
+            <meta content="#fff" name="msapplication-TileColor" />
+            <meta content="en" httpEquiv="Content-Language" />
+            <meta content="Nextra: the next docs builder" name="description" />
+            <meta content="summary_large_image" name="twitter:card" />
+            <meta content="@shuding_" name="twitter:site" />
+            <meta content="Nextra: the next docs builder" property="og:title" />
+            <meta content="Nextra: the next docs builder" property="og:description" />
+            <meta content="Nextra" name="apple-mobile-web-app-title" />
         </>
     ),
     i18n: [],
+    localSwitch: {
+        title: ({ locale }) => {
+            if (locale === "zh-CN") {
+                return "切换语言";
+            }
+
+            if (locale === "ru") {
+                return "Переключить язык";
+            }
+
+            if (locale === "fr") {
+                return "Changer de langue";
+            }
+
+            return "Switch language";
+        },
+    },
     logo: (
         <>
             <span className="font-extrabold">Nextra</span>
@@ -93,10 +124,14 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         </>
     ),
     logoLink: true,
+    navbar: {
+        component: Navbar,
+    },
     navigation: {
         next: true,
         prev: true,
     },
+    newNextLinkBehavior: false,
     nextThemes: {
         defaultTheme: "system",
         storageKey: "theme",
@@ -170,24 +205,6 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         },
         position: "navbar",
     },
-    backToTop: {
-        active: true,
-        content: ({ locale }: { locale: string }) => {
-            if (locale === "zh-CN") {
-                return "返回顶部";
-            }
-
-            if (locale === "ru") {
-                return "Вернуться к началу";
-            }
-
-            if (locale === "fr") {
-                return "Retour en haut";
-            }
-
-            return "Back to top";
-        },
-    },
     serverSideError: {
         content: "Submit an issue about error in url →",
         labels: "bug",
@@ -198,51 +215,21 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         // eslint-disable-next-line react/jsx-no-useless-fragment
         titleComponent: ({ title }) => <>{title}</>,
     },
-    tocSidebar: {
-        component: TocSidebar,
-        float: true,
-        title: "On This Page",
-    },
-    tocContent: {
-        component: TocPageContent,
-        float: true,
-        title: "On This Page",
-    },
-    useNextSeoProps: () => {
-        return { titleTemplate: "%s – Nextra" };
-    },
-    localSwitch: {
-        title: ({ locale }) => {
-            if (locale === "zh-CN") {
-                return "切换语言";
-            }
-
-            if (locale === "ru") {
-                return "Переключить язык";
-            }
-
-            if (locale === "fr") {
-                return "Changer de langue";
-            }
-
-            return "Switch language";
-        },
-    },
     themeSwitch: {
-        title: ({ locale }) => {
+        dark: ({ locale }) => {
             if (locale === "zh-CN") {
-                return "切换主题";
+                return "深色";
             }
 
             if (locale === "ru") {
-                return "Переключить тему";
+                return "Темная";
             }
 
             if (locale === "fr") {
-                return "Changer de thème";
+                return "Sombre";
             }
 
-            return "Switch theme";
+            return "Dark";
         },
         light: ({ locale }) => {
             if (locale === "zh-CN") {
@@ -259,21 +246,6 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
 
             return "Light";
         },
-        dark: ({ locale }) => {
-            if (locale === "zh-CN") {
-                return "深色";
-            }
-
-            if (locale === "ru") {
-                return "Темная";
-            }
-
-            if (locale === "fr") {
-                return "Sombre";
-            }
-
-            return "Dark";
-        },
         system: ({ locale }) => {
             if (locale === "zh-CN") {
                 return "跟随系统";
@@ -289,6 +261,34 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
 
             return "System";
         },
+        title: ({ locale }) => {
+            if (locale === "zh-CN") {
+                return "切换主题";
+            }
+
+            if (locale === "ru") {
+                return "Переключить тему";
+            }
+
+            if (locale === "fr") {
+                return "Changer de thème";
+            }
+
+            return "Switch theme";
+        },
+    },
+    tocContent: {
+        component: TocPageContent,
+        float: true,
+        title: "On This Page",
+    },
+    tocSidebar: {
+        component: TocSidebar,
+        float: true,
+        title: "On This Page",
+    },
+    useNextSeoProps: () => {
+        return { titleTemplate: "%s – Nextra" };
     },
 };
 

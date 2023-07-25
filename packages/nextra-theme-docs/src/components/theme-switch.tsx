@@ -9,12 +9,12 @@ import { renderString } from "../utils";
 import Select from "./select";
 
 const ThemeSwitch: FC<{
-    lite?: boolean;
     className?: string;
+    lite?: boolean;
     locale: string;
-}> = ({ lite, className, locale }): ReactElement => {
+}> = ({ className, lite, locale }): ReactElement => {
     const config = useConfig();
-    const { setTheme, resolvedTheme, theme = "" } = useTheme();
+    const { resolvedTheme, setTheme, theme = "" } = useTheme();
     const mounted = useMounted();
 
     const IconToUse = mounted && resolvedTheme === "dark" ? MoonIcon : SunIcon;
@@ -29,12 +29,9 @@ const ThemeSwitch: FC<{
 
     return (
         <Select
-            title={renderString(config.themeSwitch.title, { locale })}
-            options={OPTIONS}
             onChange={(option) => {
                 setTheme(option.key);
             }}
-            className={className}
             selected={{
                 key: theme,
                 name: (
@@ -44,6 +41,9 @@ const ThemeSwitch: FC<{
                     </div>
                 ),
             }}
+            className={className}
+            options={OPTIONS}
+            title={renderString(config.themeSwitch.title, { locale })}
         />
     );
 };

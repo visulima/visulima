@@ -8,9 +8,7 @@ import { cn, renderComponent } from "../../utils";
 import MetaInfo from "../meta-info";
 import Toc from "./toc";
 
-const TocSidebar: FC<TOCProperties> = ({
-    headings, filePath, isOnScreen = false, locale, route,
-}) => {
+const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false, locale, route }) => {
     const config = useConfig();
     const activeAnchor = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement | null>(null);
@@ -34,16 +32,15 @@ const TocSidebar: FC<TOCProperties> = ({
             scrollIntoView(anchor, {
                 behavior: "smooth",
                 block: "center",
+                boundary: tocReference.current,
                 inline: "center",
                 scrollMode: "always",
-                boundary: tocReference.current,
             });
         }
     }, [activeSlug]);
 
     return (
         <div
-            ref={tocReference}
             className={cn(
                 "nextra-scrollbar sticky top-16 overflow-y-auto pt-8 text-sm [hyphens:auto]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
@@ -54,8 +51,9 @@ const TocSidebar: FC<TOCProperties> = ({
                 },
                 "transition-all duration-200",
             )}
+            ref={tocReference}
         >
-            <Toc headings={headings} activeAnchor={activeAnchor} prefix="sidebar" />
+            <Toc activeAnchor={activeAnchor} headings={headings} prefix="sidebar" />
 
             {hasMetaInfo && (
                 <div
@@ -74,12 +72,12 @@ const TocSidebar: FC<TOCProperties> = ({
     );
 };
 
-export type TOCProperties = {
-    headings: Heading[];
+export interface TOCProperties {
     filePath: string;
+    headings: Heading[];
     isOnScreen?: boolean;
     locale: string;
     route: string;
-};
+}
 
 export default TocSidebar;
