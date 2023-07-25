@@ -1,35 +1,22 @@
+const globals = require("@anolilab/eslint-config/globals");
+
 /** @ts-check */
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
-    root: true,
-    extends: ["@anolilab/eslint-config"],
-    ignorePatterns: ["!**/*"],
     env: {
         // Your environments (which contains several predefined global variables)
         // Most environments are loaded automatically if our rules are added
     },
-    parserOptions: {
-        project: "./tsconfig.eslint.json",
-        ecmaVersion: 2021,
-        sourceType: "commonjs",
-    },
+    extends: ["@anolilab/eslint-config", "@anolilab/eslint-config/typescript-type-checking"],
     globals: {
+        ...globals.es2021,
         // Your global variables (setting to false means it's not allowed to be reassigned)
         // myGlobal: false
     },
-    rules: {
-        // Customize your rules
-    },
+    ignorePatterns: ["!**/*"],
     overrides: [
         {
-            files: [
-                "*.ts",
-                "*.tsx",
-                "*.mts",
-                "*.cts",
-                "*.js",
-                "*.jsx",
-            ],
+            files: ["*.ts", "*.tsx", "*.mts", "*.cts", "*.js", "*.jsx"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {},
@@ -38,11 +25,41 @@ module.exports = {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
-            rules: {},
+            rules: {
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "security/detect-object-injection": "off",
+            },
+        },
+        {
+            files: ["**/__tests__/**/*.?(c|m)[jt]s?(x)", "**/?(*.){test,spec}.?(c|m)[jt]s?(x)"],
+            rules: {
+                "@typescript-eslint/no-unsafe-return": "off",
+            },
         },
         {
             files: ["*.js", "*.jsx"],
             rules: {},
         },
+        {
+            files: ["*.mdx"],
+            rules: {
+                "jsx-a11y/anchor-has-content": "off",
+                // @see https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/917
+                "jsx-a11y/heading-has-content": "off",
+            },
+        },
     ],
+    parserOptions: {
+        ecmaVersion: 2021,
+        project: "./tsconfig.eslint.json",
+        sourceType: "module",
+    },
+    root: true,
+    rules: {
+        // Customize your rules
+    },
 };

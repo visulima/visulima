@@ -11,8 +11,8 @@ import type {
     HttpMethod,
     Nextable,
     RouteMatch,
-    RoutesExtendedRequestHandler,
     RouteShortcutMethod,
+    RoutesExtendedRequestHandler,
     ValueOrPromise,
 } from "./types";
 
@@ -23,33 +23,47 @@ const onNoMatch = async (request: IncomingMessage, response: ServerResponse) => 
 
 const onError = async (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 500;
-    // eslint-disable-next-line no-console
+
     console.error(error);
 
     response.end("Internal Server Error");
 };
 
-export function getPathname(url: string): string {
+export const getPathname = (url: string): string => {
     const queryIndex = url.indexOf("?");
 
     return queryIndex === -1 ? url : url.slice(0, Math.max(0, queryIndex));
-}
+};
 
 export type RequestHandler<Request extends IncomingMessage, Response extends ServerResponse> = (request: Request, response: Response) => ValueOrPromise<void>;
 
 export class NodeRouter<
     Request extends IncomingMessage = IncomingMessage,
     Response extends ServerResponse = ServerResponse,
-    Schema extends AnyZodObject = ZodObject<any>,
+    Schema extends AnyZodObject = ZodObject<never>,
 > {
-    private router = new Router<RequestHandler<Request, Response>>();
-
-    private readonly onNoMatch: RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>;
-
     private readonly onError: (
         error: unknown,
         ...arguments_: Parameters<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>
     ) => ReturnType<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>;
+
+    private readonly onNoMatch: RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>;
+
+    private router = new Router<RequestHandler<Request, Response>>();
+
+    public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
+
+    public delete: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "DELETE");
+
+    public get: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "GET");
+
+    public head: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "HEAD");
+
+    public patch: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PATCH");
+
+    public post: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "POST");
+
+    public put: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PUT");
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? onNoMatch;
@@ -66,13 +80,14 @@ export class NodeRouter<
             // eslint-disable-next-line no-param-reassign
             fns = [zodOrRouteOrFunction];
         } else if (typeof zodOrRouteOrFunction === "object") {
-            // eslint-disable-next-line unicorn/prefer-ternary
             if (typeof routeOrFunction === "function") {
                 // eslint-disable-next-line no-param-reassign
                 fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
             } else {
-                // eslint-disable-next-line no-param-reassign,max-len
-                fns = fns.map((function_) => withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_));
+                // eslint-disable-next-line no-param-reassign
+                fns = fns.map((function_) =>
+                    withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_),
+                );
             }
         } else if (typeof zodOrRouteOrFunction === "function") {
             // eslint-disable-next-line no-param-reassign
@@ -80,34 +95,6 @@ export class NodeRouter<
         }
 
         this.router.add(method, routeOrFunction, ...fns);
-
-        return this;
-    }
-
-    public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
-
-    public get: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "GET");
-
-    public head: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "HEAD");
-
-    public post: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "POST");
-
-    public put: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PUT");
-
-    public patch: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PATCH");
-
-    public delete: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "DELETE");
-
-    public use(
-        base: Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema> | RouteMatch,
-        ...fns: (Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>)[]
-    ): this {
-        if (typeof base === "function" || base instanceof NodeRouter) {
-            fns.unshift(base);
-            // eslint-disable-next-line no-param-reassign
-            base = "/";
-        }
-        this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
 
         return this;
     }
@@ -121,25 +108,11 @@ export class NodeRouter<
     }
 
     public clone(): NodeRouter<Request, Response, Schema> {
-        const r = new NodeRouter<Request, Response, Schema>({ onNoMatch: this.onNoMatch, onError: this.onError });
+        const r = new NodeRouter<Request, Response, Schema>({ onError: this.onError, onNoMatch: this.onNoMatch });
 
         r.router = this.router.clone();
 
         return r;
-    }
-
-    public async run(request: Request, response: Response): Promise<unknown> {
-        // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
-        const result = this.router.find(request.method as HttpMethod, getPathname(request.url as string));
-
-        if (result.fns.length === 0) {
-            return;
-        }
-
-        this.prepareRequest(request, result);
-
-        // eslint-disable-next-line consistent-return
-        return Router.exec(result.fns, request, response);
     }
 
     public handler(): (request: Request, response: Response) => Promise<void> {
@@ -158,6 +131,34 @@ export class NodeRouter<
             }
         };
     }
+
+    public async run(request: Request, response: Response): Promise<unknown> {
+        // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
+        const result = this.router.find(request.method as HttpMethod, getPathname(request.url as string));
+
+        if (result.fns.length === 0) {
+            return;
+        }
+
+        this.prepareRequest(request, result);
+
+        // eslint-disable-next-line consistent-return
+        return await Router.exec(result.fns, request, response);
+    }
+
+    public use(
+        base: Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema> | RouteMatch,
+        ...fns: (Nextable<RequestHandler<Request, Response>> | NodeRouter<Request, Response, Schema>)[]
+    ): this {
+        if (typeof base === "function" || base instanceof NodeRouter) {
+            fns.unshift(base);
+            // eslint-disable-next-line no-param-reassign
+            base = "/";
+        }
+        this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
+
+        return this;
+    }
 }
 
 export const createRouter = <
@@ -165,5 +166,5 @@ export const createRouter = <
     Response extends ServerResponse,
     Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
 >(
-        options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
-    ): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);
+    options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
+): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);

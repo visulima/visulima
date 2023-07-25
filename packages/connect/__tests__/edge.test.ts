@@ -1,11 +1,9 @@
 import "isomorphic-fetch";
 
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Router } from "../src";
-import { createEdgeRouter, EdgeRouter, getPathname } from "../src/edge";
+import { EdgeRouter, createEdgeRouter, getPathname } from "../src/edge";
 
 type AnyHandler = (...arguments_: any[]) => any;
 
@@ -53,7 +51,7 @@ describe("edge", () => {
     });
 
     it("use()", async () => {
-        it("it defaults to / if base is not provided", async () => {
+        it("defaults to / if base is not provided", async () => {
             const context = new EdgeRouter();
 
             // @ts-expect-error: private field
@@ -64,7 +62,7 @@ describe("edge", () => {
             expect(useSpy).toStrictEqual([["/", noop]]);
         });
 
-        it("it call this.router.use() with fn", async () => {
+        it("call this.router.use() with fn", async () => {
             const context = new EdgeRouter();
 
             // @ts-expect-error: private field
@@ -75,7 +73,7 @@ describe("edge", () => {
             expect(useSpy).toStrictEqual([["/test", noop, noop]]);
         });
 
-        it("it call this.router.use() with fn.router", async () => {
+        it("call this.router.use() with fn.router", async () => {
             const context = new EdgeRouter();
             const context2 = new EdgeRouter();
 
@@ -111,23 +109,21 @@ describe("edge", () => {
         expect.assertions(7);
 
         const context = createEdgeRouter();
-        const request = { url: testUrl, method: "POST" } as Request;
+        const request = { method: "POST", url: testUrl } as Request;
         const event = {};
 
         context.use("/", (reqq, evtt, next) => {
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(reqq, "passes along req").toStrictEqual(request);
-            // eslint-disable-next-line sonarjs/no-duplicate-string
+
             expect(evtt, "passes along evt").toStrictEqual(event);
 
             return next();
         });
 
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         context.use("/not/match", badFunction);
         context.get("/", badFunction);
         context.get("/foo/bar", badFunction);
-        // eslint-disable-next-line sonarjs/no-identical-functions
+
         context.post("/foo/bar", async (reqq, evtt, next) => {
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(evtt, "passes along evt").toStrictEqual(event);
@@ -140,43 +136,51 @@ describe("edge", () => {
 
             return "ok";
         });
-        expect(await context.run(request, event)).toStrictEqual("ok");
+        await expect(context.run(request, event)).resolves.toBe("ok");
     });
 
     it("run() - propagates error", async () => {
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        const request = { url: "http://localhost/", method: "GET" } as Request;
+        const request = { method: "GET", url: "http://localhost/" } as Request;
         const event = {};
         const error = new Error("💥");
 
-        await expect(() => createEdgeRouter()
-            .use((_, __, next) => {
-                next();
-            })
-            .use(() => {
-                throw error;
-            })
-            .run(request, event)).rejects.toThrowError(error);
+        await expect(
+            async () =>
+                await createEdgeRouter()
+                    .use((_, __, next) => {
+                        next();
+                    })
+                    .use(() => {
+                        throw error;
+                    })
+                    .run(request, event),
+        ).rejects.toThrow(error);
 
-        await expect(() => createEdgeRouter()
-            .use((_, __, next) => next())
-            .use(async () => {
-                throw error;
-            })
-            .run(request, event)).rejects.toThrowError(error);
+        await expect(
+            async () =>
+                await createEdgeRouter()
+                    .use((_, __, next) => next())
+                    .use(async () => {
+                        throw error;
+                    })
+                    .run(request, event),
+        ).rejects.toThrow(error);
 
-        await expect(() => createEdgeRouter()
-            .use((_, __, next) => next())
-            .use(async (_, __, next) => {
-                await next();
-            })
-        // eslint-disable-next-line compat/compat
-            .use(() => Promise.reject(error))
-            .run(request, event)).rejects.toThrowError(error);
+        await expect(
+            async () =>
+                await createEdgeRouter()
+                    .use((_, __, next) => next())
+                    .use(async (_, __, next) => {
+                        await next();
+                    })
+                    // eslint-disable-next-line compat/compat
+                    .use(async () => await Promise.reject(error))
+                    .run(request, event),
+        ).rejects.toThrow(error);
     });
 
     it("run() - returns if no fns", async () => {
-        const request = { url: testUrl, method: "GET" } as Request;
+        const request = { method: "GET", url: testUrl } as Request;
         const event = {};
         const context = createEdgeRouter();
 
@@ -184,7 +188,7 @@ describe("edge", () => {
         context.post("/foo/bar", badFunction);
         context.use("/bar", badFunction);
 
-        expect(context.run(request, event)).resolves.toBeUndefined();
+        await expect(context.run(request, event)).resolves.toBeUndefined();
     });
 
     it("handler() - basic", async () => {
@@ -202,13 +206,13 @@ describe("edge", () => {
         const res = await createEdgeRouter()
             .use((_request, _event, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(1);
+                expect(++index).toBe(1);
 
                 return next();
             })
             .use((_request, _event, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(2);
+                expect(++index).toBe(2);
 
                 return next();
             })
@@ -216,7 +220,7 @@ describe("edge", () => {
             .get("/not/match", badFunction)
             .get(() => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(3);
+                expect(++index).toBe(3);
 
                 return response;
             })
@@ -236,24 +240,24 @@ describe("edge", () => {
         const res = await createEdgeRouter()
             .use(async (_request, _event, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(1);
+                expect(++index).toBe(1);
 
                 // eslint-disable-next-line @typescript-eslint/return-await
                 return await next();
             })
-            // eslint-disable-next-line sonarjs/no-identical-functions
+
             .use((_request, _event, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(2);
+                expect(++index).toBe(2);
 
                 return next();
             })
             .post(badFunction)
             .get("/not/match", badFunction)
-            // eslint-disable-next-line sonarjs/no-identical-functions
+
             .get(async () => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(3);
+                expect(++index).toBe(3);
 
                 return response;
             })
@@ -271,9 +275,9 @@ describe("edge", () => {
 
         let index = 0;
         const testResponse = async (response: Response) => {
-            expect(response.status, "set 500 status code").toStrictEqual(500);
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            expect(await response.text()).toStrictEqual("Internal Server Error");
+            expect(response.status, "set 500 status code").toBe(500);
+
+            await expect(response.text()).resolves.toBe("Internal Server Error");
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
             index += 1;
         };
@@ -304,14 +308,15 @@ describe("edge", () => {
             .use(baseFunction)
             .get(() => {
                 // non error throw
+
                 // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw "";
             })
             .handler()(request, {})
             // eslint-disable-next-line promise/always-return
             .then(async (response: Response) => {
-                expect(response.status, `called console.error ${index}`).toStrictEqual(500);
-                expect(await response.text()).toStrictEqual("Internal Server Error");
+                expect(response.status, `called console.error ${index}`).toBe(500);
+                await expect(response.text()).resolves.toBe("Internal Server Error");
                 expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             });
     });
@@ -324,8 +329,8 @@ describe("edge", () => {
         let index = 0;
 
         const testResponse = async (response: Response) => {
-            expect(response.status, "set 500 status code").toStrictEqual(500);
-            expect(await response.text(), "Internal Server Error");
+            expect(response.status, "set 500 status code").toBe(500);
+            await expect(response.text()).resolves.toBe("Internal Server Error");
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
             index += 1;
@@ -357,7 +362,7 @@ describe("edge", () => {
 
         await createEdgeRouter({
             onError(error) {
-                expect((error as Error).message).toStrictEqual("💥");
+                expect((error as Error).message).toBe("💥");
             },
         })
             .get(() => {
@@ -368,30 +373,30 @@ describe("edge", () => {
 
     it("handler() - calls onNoMatch if no fns matched", async () => {
         expect.assertions(2);
-        const request = { url: testUrl, method: "GET" } as Request;
+        const request = { method: "GET", url: testUrl } as Request;
         const response: Response = await createEdgeRouter().get("/foo").post("/foo/bar").handler()(request, {});
 
-        expect(response.status).toStrictEqual(404);
-        expect(await response.text()).toStrictEqual("Route GET http://localhost/foo/bar not found");
+        expect(response.status).toBe(404);
+        await expect(response.text()).resolves.toBe("Route GET http://localhost/foo/bar not found");
     });
 
     it("handler() - calls onNoMatch if only middle fns found", async () => {
         expect.assertions(2);
 
-        const request = { url: testUrl, method: "GET" } as Request;
+        const request = { method: "GET", url: testUrl } as Request;
         const response: Response = await createEdgeRouter().use("", badFunction).use("/foo", badFunction).handler()(request, {});
 
-        expect(response.status).toStrictEqual(404);
-        expect(await response.text()).toStrictEqual("Route GET http://localhost/foo/bar not found");
+        expect(response.status).toBe(404);
+        await expect(response.text()).resolves.toBe("Route GET http://localhost/foo/bar not found");
     });
 
     it("handler() - calls onNoMatch if no fns matched (HEAD)", async () => {
         expect.assertions(2);
-        const request = { url: testUrl, method: "HEAD" } as Request;
+        const request = { method: "HEAD", url: testUrl } as Request;
         const response: Response = await createEdgeRouter().get("/foo").post("/foo/bar").handler()(request, {});
 
-        expect(response.status).toStrictEqual(404);
-        expect(await response.text()).toStrictEqual("");
+        expect(response.status).toBe(404);
+        await expect(response.text()).resolves.toBe("");
     });
 
     it("handler() - calls custom onNoMatch if not found", async () => {
@@ -401,22 +406,22 @@ describe("edge", () => {
             onNoMatch() {
                 expect(true, "onNoMatch called").toBeTruthy();
             },
-        }).handler()({ url: testUrl, method: "GET" } as Request, {} as any);
+        }).handler()({ method: "GET", url: testUrl } as Request, {} as any);
     });
 
     it("handler() - calls onError if custom onNoMatch throws", async () => {
         expect.assertions(2);
 
         await createEdgeRouter({
+            onError(error) {
+                expect((error as Error).message).toBe("💥");
+            },
             onNoMatch() {
                 expect(true, "onNoMatch called").toBeTruthy();
 
                 throw new Error("💥");
             },
-            onError(error) {
-                expect((error as Error).message, "💥");
-            },
-        }).handler()({ url: testUrl, method: "GET" } as Request, {} as never);
+        }).handler()({ method: "GET", url: testUrl } as Request, {} as never);
     });
 
     it("prepareRequest() - attach params", async () => {
@@ -424,7 +429,7 @@ describe("edge", () => {
 
         const context2 = createEdgeRouter().get("/hello/:name");
         // @ts-expect-error: internal
-        // eslint-disable-next-line sonarjs/no-duplicate-string
+
         context2.prepareRequest(request, context2.router.find("GET", "/hello/world"));
         expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 
@@ -437,7 +442,7 @@ describe("edge", () => {
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
-        expect(requestWithParameters.params, "params are merged").toStrictEqual({ name: "world", age: "20" });
+        expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
 
         const requestWithParameters2 = {
             params: { name: "sunshine" },
@@ -452,15 +457,15 @@ describe("edge", () => {
     });
 
     it("getPathname() - returns pathname correctly", async () => {
-        expect(getPathname({ url: "http://google.com/foo/bar" } as Request)).toStrictEqual("/foo/bar");
-        expect(getPathname({ url: "http://google.com/foo/bar?q=quz" } as Request)).toStrictEqual("/foo/bar");
+        expect(getPathname({ url: "http://google.com/foo/bar" } as Request)).toBe("/foo/bar");
+        expect(getPathname({ url: "http://google.com/foo/bar?q=quz" } as Request)).toBe("/foo/bar");
         expect(
             getPathname({
-                url: "http://google.com/do/not/use/me",
                 // eslint-disable-next-line compat/compat
                 nextUrl: new URL("http://google.com/foo/bar?q=quz"),
+                url: "http://google.com/do/not/use/me",
             } as unknown as Request),
             "get pathname using req.nextUrl",
-        ).toStrictEqual("/foo/bar");
+        ).toBe("/foo/bar");
     });
 });

@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { describe, expect, it } from "vitest";
 
 import type { ExpressRequestHandler } from "../src";
-import { expressWrapper, NodeRouter } from "../src";
+import { NodeRouter, expressWrapper } from "../src";
 
 describe("expressWrapper", () => {
     it("expressWrapper", async () => {
@@ -15,27 +15,27 @@ describe("expressWrapper", () => {
             const context = new NodeRouter();
 
             const midd: ExpressRequestHandler<IncomingMessage, ServerResponse> = (reqq, ress, next) => {
-                expect(reqq, "called with req").toEqual(request);
-                expect(ress, "called with res").toEqual(response);
+                expect(reqq, "called with req").toStrictEqual(request);
+                expect(ress, "called with res").toStrictEqual(response);
                 next();
             };
 
             context.use(expressWrapper(midd)).use(() => "ok");
 
-            expect(await context.run(request, response), "returned the last value").toStrictEqual("ok");
+            await expect(context.run(request, response), "returned the last value").resolves.toBe("ok");
         });
 
         it("next()", async () => {
             expect.assertions(2);
 
             const context = new NodeRouter();
-            // eslint-disable-next-line unicorn/consistent-function-scoping
+
             const midd: ExpressRequestHandler<IncomingMessage, ServerResponse> = (_reqq, _ress, next) => {
                 next();
             };
 
             context.use(expressWrapper(midd)).use(async () => "ok");
-            expect(await context.run(request, response), "returned the last value").toStrictEqual("ok");
+            await expect(context.run(request, response), "returned the last value").resolves.toBe("ok");
 
             const context2 = new NodeRouter();
             const error = new Error("💥");
@@ -44,7 +44,7 @@ describe("expressWrapper", () => {
                 throw error;
             });
 
-            expect(() => context2.run(request, response), "throws async error").rejects.toThrowError(error);
+            await expect(async () => await context2.run(request, response), "throws async error").rejects.toThrow(error);
         });
 
         it("next(err)", async () => {
@@ -57,7 +57,7 @@ describe("expressWrapper", () => {
 
             context.use(expressWrapper(midd)).use(async () => "ok");
 
-            expect(() => context.run(request, response), "throws error called with next(err)").rejects.toThrowError(error);
+            await expect(async () => await context.run(request, response), "throws error called with next(err)").rejects.toThrow(error);
         });
     });
 });
