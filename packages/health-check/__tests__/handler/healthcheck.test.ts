@@ -1,15 +1,17 @@
 import "cross-fetch/polyfill";
 
 import { createRequest, createResponse } from "node-mocks-http";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { HealthCheck, healthCheckHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
 
 const HealthCheckService = new HealthCheck();
 
-HealthCheckService.addChecker("node-env", nodeEnvironmentCheck());
-
 describe("health check route", () => {
+    beforeAll(() => {
+        HealthCheckService.addChecker("node-env", nodeEnvironmentCheck());
+    });
+
     it("endpoint returns health checks reports", async () => {
         expect.assertions(3);
 
@@ -25,7 +27,7 @@ describe("health check route", () => {
         expect(responseMock.getHeader("content-type")).toBe("application/json");
 
         // eslint-disable-next-line no-underscore-dangle
-        const jsonResponse = responseMock._getJSONData();
+        const jsonResponse = responseMock._getJSONData() as Record<string, unknown>;
 
         expect(jsonResponse).toStrictEqual({
             appName: "unknown",
@@ -36,6 +38,7 @@ describe("health check route", () => {
                     displayName: "Node Environment Check",
                     health: {
                         healthy: true,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         timestamp: expect.any(String),
                     },
                     meta: {
@@ -44,7 +47,7 @@ describe("health check route", () => {
                 },
             },
             status: "ok",
-            timestamp: jsonResponse.timestamp,
+            timestamp: jsonResponse["timestamp"],
         });
     });
 
@@ -66,7 +69,7 @@ describe("health check route", () => {
         expect(responseMock.getHeader("content-type")).toBe("application/json");
 
         // eslint-disable-next-line no-underscore-dangle
-        const jsonResponse = responseMock._getJSONData();
+        const jsonResponse = responseMock._getJSONData() as Record<string, unknown>;
 
         expect(jsonResponse).toStrictEqual({
             appName: "my-app",
@@ -77,6 +80,7 @@ describe("health check route", () => {
                     displayName: "Node Environment Check",
                     health: {
                         healthy: true,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         timestamp: expect.any(String),
                     },
                     meta: {
@@ -85,7 +89,7 @@ describe("health check route", () => {
                 },
             },
             status: "ok",
-            timestamp: jsonResponse.timestamp,
+            timestamp: jsonResponse["timestamp"],
         });
 
         process.env["APP_NAME"] = undefined;
