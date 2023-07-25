@@ -1,17 +1,15 @@
 // eslint-disable-next-line import/no-namespace
 import * as fs from "node:fs";
 import { join } from "node:path";
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import initCommand from "../../../src/cli/command/init-command";
 
 vi.mock("node:fs", () => {
     return {
         existsSync: vi.fn(),
-        writeFileSync: vi.fn(),
         realpathSync: vi.fn(),
+        writeFileSync: vi.fn(),
     };
 });
 
@@ -23,7 +21,7 @@ describe("init command", () => {
         vi.spyOn(console, "log");
 
         // Expect the function to throw an error
-        expect(() => initCommand("config.js")).toThrowError("Config file already exists");
+        expect(() => initCommand("config.js")).toThrow("Config file already exists");
     });
 
     it("should create a new config file with the correct module.exports content", () => {
@@ -81,7 +79,6 @@ describe("init command", () => {
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
 
-        // eslint-disable-next-line unicorn/prefer-module
         const fixturePath = join(__dirname, "../../../", "__fixtures__");
 
         vi.spyOn(fs, "realpathSync").mockReturnValue(fixturePath);
@@ -91,6 +88,7 @@ describe("init command", () => {
 
         initCommand("config.js");
 
+        // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         expect(consoleInfoMock).toHaveBeenCalledWith(`Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
         expect(consoleInfoMock).toHaveBeenCalledWith("Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments

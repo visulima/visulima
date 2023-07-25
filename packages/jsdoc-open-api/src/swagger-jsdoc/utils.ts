@@ -1,4 +1,5 @@
 import type { Spec } from "comment-parser";
+// eslint-disable-next-line no-restricted-imports
 import mergeWith from "lodash.mergewith";
 
 /**
@@ -7,6 +8,7 @@ import mergeWith from "lodash.mergewith";
  * @param {object} first the first object to get merged
  * @param {object} second the second object to get merged
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 export const mergeDeep = (first?: object, second?: object): object => mergeWith({}, first, second, (a, b) => (b === null ? a : undefined));
 
 /**
@@ -14,9 +16,11 @@ export const mergeDeep = (first?: object, second?: object): object => mergeWith(
  * @param {object} object - the object to check
  * @returns boolean
  */
-export const hasEmptyProperty = (object: Record<string, any>): boolean => Object.keys(object)
-    .map((key) => object[key])
-    .every((keyObject) => typeof keyObject === "object" && Object.keys(keyObject).every((key) => !(key in keyObject)));
+export const hasEmptyProperty = (object: Record<string, any>): boolean =>
+    Object.keys(object)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        .map((key) => object[key])
+        .every((keyObject) => typeof keyObject === "object" && Object.keys(keyObject).every((key) => !(key in keyObject)));
 
 /**
  * @param {object} tag

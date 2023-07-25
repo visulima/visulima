@@ -5,7 +5,7 @@ import { isTagPresentInTags, mergeDeep } from "./utils";
  * @param {object} annotation
  * @param {string} property
  */
-// eslint-disable-next-line sonarjs/no-duplicate-string
+
 const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: Record<string, any>, property: string): void => {
     // Root property on purpose.
     // eslint-disable-next-line no-secrets/no-secrets

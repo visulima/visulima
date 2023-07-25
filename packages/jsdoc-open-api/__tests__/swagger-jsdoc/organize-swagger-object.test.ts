@@ -3,25 +3,25 @@ import { describe, expect, it } from "vitest";
 import organizeSwaggerObject from "../../src/swagger-jsdoc/organize-swagger-object";
 
 const swaggerObject = {
+    basePath: "/",
+    consumes: [],
+    definitions: {},
+    externalDocs: {},
+    host: "localhost:3000",
     info: {
+        description: "A sample API",
         title: "Hello World",
         version: "1.0.0",
-        description: "A sample API",
     },
-    host: "localhost:3000",
-    basePath: "/",
-    swagger: "2.0",
-    schemes: [],
-    consumes: [],
-    produces: [],
-    paths: {},
-    definitions: {},
-    responses: {},
     parameters: {},
-    securityDefinitions: {},
+    paths: {},
+    produces: [],
+    responses: {},
+    schemes: [],
     security: {},
+    securityDefinitions: {},
+    swagger: "2.0",
     tags: [],
-    externalDocs: {},
 };
 
 describe("organize", () => {
@@ -29,28 +29,28 @@ describe("organize", () => {
         const annotation = {
             definitions: {
                 testDefinition: {
-                    required: ["username", "password"],
                     properties: {
-                        username: {
-                            type: "string",
-                        },
                         password: {
                             type: "string",
                         },
+                        username: {
+                            type: "string",
+                        },
                     },
+                    required: ["username", "password"],
                 },
             },
         };
 
         organizeSwaggerObject(swaggerObject, annotation, "definitions");
 
-        expect(swaggerObject.definitions).toEqual({
+        expect(swaggerObject.definitions).toStrictEqual({
             testDefinition: {
-                required: ["username", "password"],
                 properties: {
-                    username: { type: "string" },
                     password: { type: "string" },
+                    username: { type: "string" },
                 },
+                required: ["username", "password"],
             },
         });
     });
@@ -59,26 +59,26 @@ describe("organize", () => {
         const annotation = {
             parameters: {
                 testParameter: {
-                    name: "limit",
-                    in: "query",
                     description: "max records to return",
+                    format: "int32",
+                    in: "query",
+                    name: "limit",
                     required: true,
                     type: "integer",
-                    format: "int32",
                 },
             },
         };
 
         organizeSwaggerObject(swaggerObject, annotation, "parameters");
 
-        expect(swaggerObject.parameters).toEqual({
+        expect(swaggerObject.parameters).toStrictEqual({
             testParameter: {
-                name: "limit",
-                in: "query",
                 description: "max records to return",
+                format: "int32",
+                in: "query",
+                name: "limit",
                 required: true,
                 type: "integer",
-                format: "int32",
             },
         });
     });
@@ -87,18 +87,18 @@ describe("organize", () => {
         const annotation = {
             securityDefinitions: {
                 basicAuth: {
-                    type: "basic",
                     description: "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
+                    type: "basic",
                 },
             },
         };
 
         organizeSwaggerObject(swaggerObject, annotation, "securityDefinitions");
 
-        expect(swaggerObject.securityDefinitions).toEqual({
+        expect(swaggerObject.securityDefinitions).toStrictEqual({
             basicAuth: {
-                type: "basic",
                 description: "HTTP Basic Authentication. Works over `HTTP` and `HTTPS`",
+                type: "basic",
             },
         });
     });
@@ -114,7 +114,7 @@ describe("organize", () => {
 
         organizeSwaggerObject(swaggerObject, annotation, "responses");
 
-        expect(swaggerObject.responses).toEqual({
+        expect(swaggerObject.responses).toStrictEqual({
             IllegalInput: { description: "Illegal input for operation." },
         });
     });
@@ -130,7 +130,7 @@ describe("organize", () => {
 
         organizeSwaggerObject(swaggerObject, annotation, "security");
 
-        expect(swaggerObject.security).toEqual([
+        expect(swaggerObject.security).toStrictEqual([
             {
                 bearerAuth: [],
             },

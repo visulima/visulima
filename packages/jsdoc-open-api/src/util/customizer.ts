@@ -1,8 +1,8 @@
-const customizer = (objectValue: unknown, sourceValue: Array<unknown>): unknown[] | undefined => {
+const customizer = (objectValue: unknown, sourceValue: unknown[]): unknown[] | undefined => {
     if (Array.isArray(objectValue)) {
-        return [...objectValue, ...sourceValue];
+        return [...objectValue, ...sourceValue] as unknown[];
     }
-    // eslint-disable-next-line unicorn/no-useless-undefined
+
     return undefined;
 };
 

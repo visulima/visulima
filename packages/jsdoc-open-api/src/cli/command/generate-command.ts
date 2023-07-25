@@ -25,17 +25,16 @@ const generateCommand = async (
 ): Promise<void> => {
     let openapiConfig: {
         exclude: string[];
-        followSymlinks?: boolean;
-        swaggerDefinition: BaseDefinition;
         extensions?: string[];
-        include?: string | readonly string[];
+        followSymlinks?: boolean;
+        include?: ReadonlyArray<string> | string;
+        swaggerDefinition: BaseDefinition;
     } = {
         exclude: [],
         swaggerDefinition: {} as BaseDefinition,
     };
 
     try {
-        // eslint-disable-next-line unicorn/prefer-module,import/no-dynamic-require
         let config = await import(pathToFileURL(normalize(options.config ?? configName)).href);
 
         if (config?.default) {
@@ -50,8 +49,8 @@ const generateCommand = async (
     const multibar = new cliProgress.MultiBar(
         {
             clearOnComplete: false,
-            hideCursor: true,
             format: "{value}/{total} | {bar} | {filename}",
+            hideCursor: true,
         },
         cliProgress.Presets.shades_grey,
     );
@@ -60,11 +59,10 @@ const generateCommand = async (
     // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations
     for await (const dir of paths) {
         // Check if the path is a directory
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         lstatSync(dir).isDirectory();
 
         const files = await collect(dir, {
-            // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
-            skip: [...openapiConfig.exclude, "node_modules/**"],
             extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
             followSymlinks: openapiConfig.followSymlinks ?? false,
             match: openapiConfig.include,
@@ -78,15 +76,14 @@ const generateCommand = async (
                     matchBase: true,
                 },
             },
+            skip: [...openapiConfig.exclude, "node_modules/**"],
         });
 
         if (options.verbose ?? options.veryVerbose) {
-            // eslint-disable-next-line no-console
             console.log(`\nFound ${files.length} files in ${dir}`);
         }
 
         if (options.veryVerbose) {
-            // eslint-disable-next-line no-console
             console.log(files);
         }
 
@@ -94,7 +91,6 @@ const generateCommand = async (
 
         files.forEach((file) => {
             if (options.verbose) {
-                // eslint-disable-next-line no-console
                 console.log(`Parsing file ${file}`);
             }
 
@@ -111,31 +107,28 @@ const generateCommand = async (
     }
 
     if (options.verbose) {
-        // eslint-disable-next-line no-console
         console.log("Validating swagger spec");
     }
 
     if (options.veryVerbose) {
-        // eslint-disable-next-line no-console
         console.log(JSON.stringify(spec, null, 2));
     }
 
-    await validate(JSON.parse(JSON.stringify(spec)));
+    await validate(JSON.parse(JSON.stringify(spec)) as Record<string, unknown>);
 
     const output = options.output ?? "swagger.json";
 
     multibar.stop();
 
     if (options.verbose) {
-        // eslint-disable-next-line no-console
         console.log(`Written swagger spec to "${output}" file`);
     }
 
-    // eslint-disable-next-line consistent-return
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     mkdirSync(dirname(output), { recursive: true });
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     writeFileSync(output, JSON.stringify(spec, null, 2));
 
-    // eslint-disable-next-line no-console
     console.log(`\nSwagger specification is ready, check the "${output}" file.`);
 };
 

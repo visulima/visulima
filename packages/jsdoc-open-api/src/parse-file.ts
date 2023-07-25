@@ -13,9 +13,10 @@ class ParseError extends Error {
 
 const parseFile = (
     file: string,
-    commentsToOpenApi: (fileContent: string, verbose?: boolean) => { spec: OpenApiObject; loc: number }[],
+    commentsToOpenApi: (fileContent: string, verbose?: boolean) => { loc: number; spec: OpenApiObject }[],
     verbose?: boolean,
-): { spec: OpenApiObject; loc: number }[] => {
+): { loc: number; spec: OpenApiObject }[] => {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(file, { encoding: "utf8" });
     const extension = path.extname(file);
 
@@ -34,7 +35,7 @@ const parseFile = (
         if (Object.keys(spec).some((key) => ALLOWED_KEYS.has(key))) {
             const loc = yamlLoc(fileContent);
 
-            return [{ spec, loc }];
+            return [{ loc, spec }];
         }
 
         return [];
