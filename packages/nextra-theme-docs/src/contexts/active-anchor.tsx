@@ -1,20 +1,16 @@
 import "intersection-observer";
 
-import type {
-    Dispatch, ReactElement, ReactNode, SetStateAction,
-} from "react";
-import {
-    createContext, useContext, useRef, useState,
-} from "react";
+import type { Dispatch, ReactElement, ReactNode, SetStateAction } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 
 import { IS_BROWSER } from "../constants";
 
-type Anchor = {
-    isActive?: boolean;
+interface Anchor {
     aboveHalfViewport: boolean;
     index: number;
     insideHalfViewport: boolean;
-};
+    isActive?: boolean;
+}
 
 const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
@@ -33,7 +29,6 @@ export const useSetActiveAnchor = (): Dispatch<SetStateAction<ActiveAnchor>> => 
 export const useIntersectionObserver = (): IntersectionObserver | null => useContext(IntersectionObserverContext);
 export const useSlugs = (): WeakMap<HTMLAnchorElement, [string, number]> => useContext(SlugsContext);
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({});
     const observerReference = useRef<IntersectionObserver | null>(null);
@@ -48,13 +43,14 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                     entries.forEach((entry) => {
                         if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
                             const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
-                            // eslint-disable-next-line max-len
-                            const aboveHalfViewport = entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
+
+                            const aboveHalfViewport =
+                                entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 
                             returnValue[slug] = {
-                                index,
                                 aboveHalfViewport,
+                                index,
                                 insideHalfViewport,
                             };
                         }
@@ -73,9 +69,9 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                             activeSlug = slug;
                         }
                         if (
-                            smallestIndexInViewport === Number.POSITIVE_INFINITY
-                            && returnValue_.aboveHalfViewport
-                            && returnValue_.index > largestIndexAboveViewport
+                            smallestIndexInViewport === Number.POSITIVE_INFINITY &&
+                            returnValue_.aboveHalfViewport &&
+                            returnValue_.index > largestIndexAboveViewport
                         ) {
                             largestIndexAboveViewport = returnValue_.index;
                             activeSlug = slug;

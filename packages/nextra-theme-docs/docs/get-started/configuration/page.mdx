@@ -7,15 +7,12 @@ customize it further.
 Those configurations affect the overall layout of the theme, especially the
 navigation bar and the sidebar.
 
-import Screenshot from '@components/screenshot'
-import Video from '@components/video'
-import { Callout, FileTree } from '@visulima/nextra-theme-docs'
-import menuImage from '../../../../../public/assets/docs/menu.png'
+import Screenshot from "@components/screenshot";
+import Video from "@components/video";
+import { Callout, FileTree } from "@visulima/nextra-theme-docs";
+import menuImage from "../../../../../public/assets/docs/menu.png";
 
-<Callout>
-  Read more about Nextra's `_meta.json` files
-  [here](/docs/guide/organize-files).
-</Callout>
+<Callout>Read more about Nextra's `_meta.json` files [here](/docs/guide/organize-files).</Callout>
 
 ## Pages
 
@@ -24,28 +21,27 @@ The title and order of a page shown in the sidebar should be configured in the
 file structure:
 
 <FileTree>
-  <FileTree.Folder name="pages" defaultOpen>
-    <FileTree.File name="_meta.json" />
-    <FileTree.File name="about.mdx" />
-    <FileTree.File name="contact.mdx" />
-    <FileTree.File name="index.mdx" />
-  </FileTree.Folder>
+    <FileTree.Folder name="pages" defaultOpen>
+        <FileTree.File name="_meta.json" />
+        <FileTree.File name="about.mdx" />
+        <FileTree.File name="contact.mdx" />
+        <FileTree.File name="index.mdx" />
+    </FileTree.Folder>
 </FileTree>
 
 You can define how the pages are shown in the sidebar via the `_meta.json` file:
 
 ```json filename="_meta.json"
 {
-  "index": "My Homepage",
-  "contact": "Contact Us",
-  "about": "About Us"
+    "index": "My Homepage",
+    "contact": "Contact Us",
+    "about": "About Us"
 }
 ```
 
 <Callout>
-  If any routes are not listed in the `_meta.json` file, they will be appended
-  to the end of the sidebar and sorted alphabetically, and the title will be
-  formatted with [Title](https://title.sh).
+    If any routes are not listed in the `_meta.json` file, they will be appended to the end of the sidebar and sorted alphabetically, and the title will be
+    formatted with [Title](https://title.sh).
 </Callout>
 
 ## Folders
@@ -53,17 +49,17 @@ You can define how the pages are shown in the sidebar via the `_meta.json` file:
 Folders can be configured in the same way as pages. For example:
 
 <FileTree>
-  <FileTree.Folder name="pages" defaultOpen>
-    <FileTree.Folder name="fruits" defaultOpen>
-      <FileTree.File name="_meta.json" />
-      <FileTree.File name="apple.mdx" />
-      <FileTree.File name="banana.mdx" />
+    <FileTree.Folder name="pages" defaultOpen>
+        <FileTree.Folder name="fruits" defaultOpen>
+            <FileTree.File name="_meta.json" />
+            <FileTree.File name="apple.mdx" />
+            <FileTree.File name="banana.mdx" />
+        </FileTree.Folder>
+        <FileTree.File name="_meta.json" />
+        <FileTree.File name="about.mdx" />
+        <FileTree.File name="contact.mdx" />
+        <FileTree.File name="index.mdx" />
     </FileTree.Folder>
-    <FileTree.File name="_meta.json" />
-    <FileTree.File name="about.mdx" />
-    <FileTree.File name="contact.mdx" />
-    <FileTree.File name="index.mdx" />
-  </FileTree.Folder>
 </FileTree>
 
 The top-level `_meta.json` file contains the meta information for the top-level
@@ -71,10 +67,10 @@ pages and folders:
 
 ```json filename="pages/_meta.json"
 {
-  "index": "My Homepage",
-  "contact": "Contact Us",
-  "fruits": "Delicious Fruits",
-  "about": "About Us"
+    "index": "My Homepage",
+    "contact": "Contact Us",
+    "fruits": "Delicious Fruits",
+    "about": "About Us"
 }
 ```
 
@@ -83,8 +79,8 @@ same folder:
 
 ```json filename="pages/fruits/_meta.json"
 {
-  "apple": "Apple",
-  "banana": "Banana"
+    "apple": "Apple",
+    "banana": "Banana"
 }
 ```
 
@@ -99,18 +95,18 @@ the same name and in the same directory as the folder. Let's say we want to add
 pages:
 
 <FileTree>
-  <FileTree.Folder name="pages" defaultOpen>
-    <FileTree.Folder name="fruits" defaultOpen>
-      <FileTree.File name="_meta.json" />
-      <FileTree.File name="apple.mdx" />
-      <FileTree.File name="banana.mdx" />
+    <FileTree.Folder name="pages" defaultOpen>
+        <FileTree.Folder name="fruits" defaultOpen>
+            <FileTree.File name="_meta.json" />
+            <FileTree.File name="apple.mdx" />
+            <FileTree.File name="banana.mdx" />
+        </FileTree.Folder>
+        <FileTree.File name="_meta.json" />
+        <FileTree.File name="about.mdx" />
+        <FileTree.File name="contact.mdx" />
+        <FileTree.File name="fruits.mdx" active />
+        <FileTree.File name="index.mdx" />
     </FileTree.Folder>
-    <FileTree.File name="_meta.json" />
-    <FileTree.File name="about.mdx" />
-    <FileTree.File name="contact.mdx" />
-    <FileTree.File name="fruits.mdx" active />
-    <FileTree.File name="index.mdx" />
-  </FileTree.Folder>
 </FileTree>
 
 Then Nextra knows that the `fruits` key in `_meta.json` defines a folder with an
@@ -124,14 +120,14 @@ You can add external links to the sidebar by adding an item with `href` in
 
 ```json filename="pages/_meta.json" {6-9}
 {
-  "index": "My Homepage",
-  "contact": "Contact Us",
-  "fruits": "Delicious Fruits",
-  "about": "About Us",
-  "github_link": {
-    "title": "Nextra",
-    "href": "https://github.com/shuding/nextra"
-  }
+    "index": "My Homepage",
+    "contact": "Contact Us",
+    "fruits": "Delicious Fruits",
+    "about": "About Us",
+    "github_link": {
+        "title": "Nextra",
+        "href": "https://github.com/shuding/nextra"
+    }
 }
 ```
 
@@ -139,21 +135,19 @@ To always open the link in a new tab, enable the `"newWindow": true` option:
 
 ```json filename="pages/_meta.json" {9}
 {
-  "index": "My Homepage",
-  "contact": "Contact Us",
-  "fruits": "Delicious Fruits",
-  "about": "About Us",
-  "github_link": {
-    "title": "Nextra",
-    "href": "https://github.com/shuding/nextra",
-    "newWindow": true
-  }
+    "index": "My Homepage",
+    "contact": "Contact Us",
+    "fruits": "Delicious Fruits",
+    "about": "About Us",
+    "github_link": {
+        "title": "Nextra",
+        "href": "https://github.com/shuding/nextra",
+        "newWindow": true
+    }
 }
 ```
 
-<Callout>
-  You can use this option to link to relative internal links too.
-</Callout>
+<Callout>You can use this option to link to relative internal links too.</Callout>
 
 ## Hidden Routes
 
@@ -163,11 +157,11 @@ configuration:
 
 ```json filename="pages/_meta.json" {4}
 {
-  "index": "My Homepage",
-  "contact": {
-    "display": "hidden"
-  },
-  "about": "About Us"
+    "index": "My Homepage",
+    "contact": {
+        "display": "hidden"
+    },
+    "about": "About Us"
 }
 ```
 
@@ -187,20 +181,20 @@ For example, you can have 2 docs folders `frameworks` and `fruits` in your
 project:
 
 <FileTree>
-  <FileTree.Folder name="pages" defaultOpen>
-    <FileTree.Folder name="frameworks" defaultOpen>
-      <FileTree.File name="react.mdx" />
-      <FileTree.File name="svelte.mdx" />
-      <FileTree.File name="vue.mdx" />
+    <FileTree.Folder name="pages" defaultOpen>
+        <FileTree.Folder name="frameworks" defaultOpen>
+            <FileTree.File name="react.mdx" />
+            <FileTree.File name="svelte.mdx" />
+            <FileTree.File name="vue.mdx" />
+        </FileTree.Folder>
+        <FileTree.Folder name="fruits" defaultOpen>
+            <FileTree.File name="apple.mdx" />
+            <FileTree.File name="banana.mdx" />
+        </FileTree.Folder>
+        <FileTree.File name="_meta.json" />
+        <FileTree.File name="about.mdx" />
+        <FileTree.File name="index.mdx" />
     </FileTree.Folder>
-    <FileTree.Folder name="fruits" defaultOpen>
-      <FileTree.File name="apple.mdx" />
-      <FileTree.File name="banana.mdx" />
-    </FileTree.Folder>
-    <FileTree.File name="_meta.json" />
-    <FileTree.File name="about.mdx" />
-    <FileTree.File name="index.mdx" />
-  </FileTree.Folder>
 </FileTree>
 
 In your top-level `_meta.json` file, you can set everything as a page, instead
@@ -208,22 +202,22 @@ of a normal sidebar item:
 
 ```json filename="pages/_meta.json"
 {
-  "index": {
-    "title": "Home",
-    "type": "page"
-  },
-  "frameworks": {
-    "title": "Frameworks",
-    "type": "page"
-  },
-  "fruits": {
-    "title": "Fruits",
-    "type": "page"
-  },
-  "about": {
-    "title": "About",
-    "type": "page"
-  }
+    "index": {
+        "title": "Home",
+        "type": "page"
+    },
+    "frameworks": {
+        "title": "Frameworks",
+        "type": "page"
+    },
+    "fruits": {
+        "title": "Fruits",
+        "type": "page"
+    },
+    "about": {
+        "title": "About",
+        "type": "page"
+    }
 }
 ```
 
@@ -232,9 +226,8 @@ And it will look like this:
 <Video src="/assets/docs/sub-docs.mp4" />
 
 <div className="mt-4 text-center text-sm">
-  [Live example on StackBlitz
-  ↗](https://stackblitz.com/edit/nextra-2-docs-eszspq?file=pages%2F_meta.json)
-  <span className="sr-only"> (opens in a new tab)</span>
+    [Live example on StackBlitz ↗](https://stackblitz.com/edit/nextra-2-docs-eszspq?file=pages%2F_meta.json)
+    <span className="sr-only"> (opens in a new tab)</span>
 </div>
 
 You can also hide links like `Home` from the navbar with the
@@ -248,27 +241,26 @@ option:
 <Screenshot src={menuImage} alt="Navbar menu" />
 
 <div className="mt-8 text-center text-sm">
-  [Live example on StackBlitz
-  ↗](https://stackblitz.com/edit/nextra-2-docs-2qopvp?file=pages%2F_meta.json)
-  <span className="sr-only"> (opens in a new tab)</span>
+    [Live example on StackBlitz ↗](https://stackblitz.com/edit/nextra-2-docs-2qopvp?file=pages%2F_meta.json)
+    <span className="sr-only"> (opens in a new tab)</span>
 </div>
 
 ```json filename="pages/_meta.json"
 {
-  "company": {
-    "title": "Company",
-    "type": "menu",
-    "items": {
-      "about": {
-        "title": "About",
-        "href": "/about"
-      },
-      "contact": {
-        "title": "Contact Us",
-        "href": "mailto:hi@example.com"
-      }
+    "company": {
+        "title": "Company",
+        "type": "menu",
+        "items": {
+            "about": {
+                "title": "About",
+                "href": "/about"
+            },
+            "contact": {
+                "title": "Contact Us",
+                "href": "mailto:hi@example.com"
+            }
+        }
     }
-  }
 }
 ```
 
@@ -279,20 +271,20 @@ links in the navbar too:
 
 ```json filename="pages/_meta.json"
 {
-  "index": {
-    "title": "Home",
-    "type": "page"
-  },
-  "about": {
-    "title": "About",
-    "type": "page"
-  },
-  "contact": {
-    "title": "Contact Us",
-    "type": "page",
-    "href": "https://example.com/contact",
-    "newWindow": true
-  }
+    "index": {
+        "title": "Home",
+        "type": "page"
+    },
+    "about": {
+        "title": "About",
+        "type": "page"
+    },
+    "contact": {
+        "title": "Contact Us",
+        "type": "page",
+        "href": "https://example.com/contact",
+        "newWindow": true
+    }
 }
 ```
 
@@ -304,13 +296,13 @@ key to define the fallback configuration for all items in this folder:
 
 ```json filename="pages/_meta.json" {2-4}
 {
-  "*": {
-    "type": "page"
-  },
-  "index": "Home",
-  "frameworks": "Frameworks",
-  "fruits": "Fruits",
-  "about": "About"
+    "*": {
+        "type": "page"
+    },
+    "index": "Home",
+    "frameworks": "Frameworks",
+    "fruits": "Fruits",
+    "about": "About"
 }
 ```
 
@@ -323,19 +315,17 @@ separator line between items in the sidebar:
 
 ```json filename="_meta.json"
 {
-  "index": "My Homepage",
-  "---": {
-    "type": "separator"
-  },
-  "contact": "Contact Us"
+    "index": "My Homepage",
+    "---": {
+        "type": "separator"
+    },
+    "contact": "Contact Us"
 }
 ```
 
 <Callout>
-  Together with the
-  [`sidebar.titleComponent`](/docs/docs-theme/theme-configuration#sidebar) theme
-  option, you can customize the look of titles and separator lines in the
-  sidebar.
+    Together with the [`sidebar.titleComponent`](/docs/docs-theme/theme-configuration#sidebar) theme option, you can customize the look of titles and separator
+    lines in the sidebar.
 </Callout>
 
 ## Advanced
@@ -347,16 +337,16 @@ example, you can disable or enable specific components for specific pages:
 
 ```json filename="pages/_meta.json"
 {
-  "index": {
-    "title": "Home",
-    "theme": {
-      "breadcrumb": false,
-      "footer": true,
-      "sidebar": false,
-      "toc": true,
-      "pagination": false
+    "index": {
+        "title": "Home",
+        "theme": {
+            "breadcrumb": false,
+            "footer": true,
+            "sidebar": false,
+            "toc": true,
+            "pagination": false
+        }
     }
-  }
 }
 ```
 
@@ -375,12 +365,12 @@ let Nextra to not inject any styles to the content:
 
 ```json filename="pages/_meta.json" {5}
 {
-  "index": {
-    "title": "Home",
-    "theme": {
-      "layout": "raw"
+    "index": {
+        "title": "Home",
+        "theme": {
+            "layout": "raw"
+        }
     }
-  }
 }
 ```
 
@@ -391,12 +381,12 @@ keep all the other styles. You can use the `"full"` layout to do that:
 
 ```json filename="pages/_meta.json" {5}
 {
-  "index": {
-    "title": "Home",
-    "theme": {
-      "layout": "full"
+    "index": {
+        "title": "Home",
+        "theme": {
+            "layout": "full"
+        }
     }
-  }
 }
 ```
 
@@ -411,17 +401,16 @@ the `"article"` typesetting to make it look like an elegant article page:
 
 ```json filename="pages/_meta.json" {5}
 {
-  "about": {
-    "title": "About Us",
-    "theme": {
-      "typesetting": "article"
+    "about": {
+        "title": "About Us",
+        "theme": {
+            "typesetting": "article"
+        }
     }
-  }
 }
 ```
 
 <div className="mt-4 text-center text-sm">
-  [Live example on StackBlitz
-  ↗](https://stackblitz.com/edit/nextra-2-docs-hg77h3?file=pages%2F_meta.json,pages%2Findex.mdx)
-  <span className="sr-only"> (opens in a new tab)</span>
+    [Live example on StackBlitz ↗](https://stackblitz.com/edit/nextra-2-docs-hg77h3?file=pages%2F_meta.json,pages%2Findex.mdx)
+    <span className="sr-only"> (opens in a new tab)</span>
 </div>

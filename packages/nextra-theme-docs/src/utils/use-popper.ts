@@ -7,7 +7,7 @@ import { useCallback, useMemo, useRef } from "react";
  * https://github.com/tailwindlabs/headlessui/issues/59
  * Example implementation to use Popper: https://popper.js.org
  */
-function usePopper(options?: Partial<Options>): [RefCallback<Element | null>, RefCallback<HTMLElement | null>] {
+const usePopper = (options?: Partial<Options>): [RefCallback<Element | null>, RefCallback<HTMLElement | null>] => {
     const reference = useRef<Element | null>(null);
     const popper = useRef<HTMLElement | null>(null);
 
@@ -38,6 +38,6 @@ function usePopper(options?: Partial<Options>): [RefCallback<Element | null>, Re
         ],
         [reference, popper, instantiatePopper],
     );
-}
+};
 
 export default usePopper;

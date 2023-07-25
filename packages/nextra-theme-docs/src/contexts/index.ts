@@ -1,4 +1,4 @@
-export { useActiveAnchor, useSetActiveAnchor, ActiveAnchorProvider } from "./active-anchor";
-export { useConfig, ConfigProvider } from "./config";
-export { useDetails, DetailsProvider } from "./details";
+export { ActiveAnchorProvider, useActiveAnchor, useSetActiveAnchor } from "./active-anchor";
+export { ConfigProvider, useConfig } from "./config";
+export { DetailsProvider, useDetails } from "./details";
 export { useMenu } from "./menu";

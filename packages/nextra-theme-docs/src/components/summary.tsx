@@ -5,14 +5,14 @@ import type { ComponentProps, ReactElement } from "react";
 import { useDetails } from "../contexts";
 
 const Summary = ({
-    variant = "default",
-    className = "",
     children,
+    className = "",
     iconProps: iconProperties = {},
+    variant = "default",
     ...properties
 }: ComponentProps<"summary"> & {
-    variant?: "default" | "raw";
     iconProps?: ComponentProps<typeof ArrowRightIcon>;
+    variant?: "default" | "raw";
 }): ReactElement => {
     const setOpen = useDetails();
 
@@ -34,13 +34,13 @@ const Summary = ({
             <ArrowRightIcon
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...iconProperties}
-                className={cn("h-[1.2em] w-[1.2em] p-0.5 shrink-0", iconProperties.className)}
                 pathClassName={cn(
                     "origin-center transition-transform stroke-[3px] rtl:-rotate-180",
                     "ltr:[[open]>summary>svg>&]:rotate-90",
                     "rtl:[[open]>summary>svg>&]:rotate-[-270deg]",
                     iconProperties.pathClassName,
                 )}
+                className={cn("h-[1.2em] w-[1.2em] p-0.5 shrink-0", iconProperties.className)}
             />
             {children}
         </summary>
