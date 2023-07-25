@@ -2,7 +2,7 @@ import { collect } from "@visulima/readdir";
 import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
 import { exit } from "node:process";
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import type { Compiler } from "webpack";
 
 import type { BaseDefinition } from "../exported.d";
@@ -39,30 +39,29 @@ const exclude = [
 
 const errorHandler = (error: any) => {
     if (error) {
-        // eslint-disable-next-line no-console
         console.error(error);
         exit(1);
     }
 };
 
 class SwaggerCompilerPlugin {
-    private readonly swaggerDefinition: BaseDefinition;
-
-    private readonly sources: string[];
-
-    private readonly verbose: boolean;
+    private readonly assetsPath: string;
 
     private readonly ignore: ReadonlyArray<string> | string;
 
-    private readonly assetsPath: string;
+    private readonly sources: string[];
+
+    private readonly swaggerDefinition: BaseDefinition;
+
+    private readonly verbose: boolean;
 
     public constructor(
         assetsPath: string,
         sources: string[],
         swaggerDefinition: BaseDefinition,
         options: {
-            verbose?: boolean;
             ignore?: ReadonlyArray<string> | string;
+            verbose?: boolean;
         },
     ) {
         this.assetsPath = assetsPath;
@@ -75,7 +74,6 @@ class SwaggerCompilerPlugin {
     public apply(compiler: Compiler): void {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
-            // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
 
             const spec = new SpecBuilder(this.swaggerDefinition);
@@ -83,8 +81,6 @@ class SwaggerCompilerPlugin {
             // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations
             for await (const dir of this.sources) {
                 const files = await collect(dir, {
-                    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
-                    skip: [...this.ignore, ...exclude],
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
                     includeDirs: false,
                     minimatchOptions: {
@@ -97,18 +93,17 @@ class SwaggerCompilerPlugin {
                             matchBase: true,
                         },
                     },
+                    skip: [...this.ignore, ...exclude],
                 });
 
                 if (this.verbose) {
-                    // eslint-disable-next-line no-console
                     console.log(`Found ${files.length} files in ${dir}`);
-                    // eslint-disable-next-line no-console
+
                     console.log(files);
                 }
 
                 files.forEach((file) => {
                     if (this.verbose) {
-                        // eslint-disable-next-line no-console
                         console.log(`Parsing file ${file}`);
                     }
 
@@ -121,7 +116,6 @@ class SwaggerCompilerPlugin {
 
                         spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
                     } catch (error) {
-                        // eslint-disable-next-line no-console
                         console.error(error);
                         exit(1);
                     }
@@ -130,36 +124,33 @@ class SwaggerCompilerPlugin {
 
             try {
                 if (this.verbose) {
-                    // eslint-disable-next-line no-console
                     console.log("Validating swagger spec");
-                    // eslint-disable-next-line no-console
+
                     console.log(JSON.stringify(spec, null, 2));
                 }
 
                 await validate(JSON.parse(JSON.stringify(spec)));
             } catch (error: any) {
-                // eslint-disable-next-line no-console
                 console.error(error.toJSON());
                 exit(1);
             }
 
             const { assetsPath } = this;
 
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             mkdir(dirname(assetsPath), { recursive: true }, (error) => {
                 if (error) {
                     errorHandler(error);
                 }
 
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
             });
 
-            // eslint-disable-next-line unicorn/consistent-destructuring
             if (this.verbose) {
-                // eslint-disable-next-line no-console,unicorn/consistent-destructuring
                 console.log(`Written swagger spec to "${this.assetsPath}" file`);
             }
 
-            // eslint-disable-next-line no-console
             console.log("switching back to normal build");
 
             callback();
