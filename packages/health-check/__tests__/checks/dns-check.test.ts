@@ -4,7 +4,6 @@ import dnsCheck from "../../src/checks/dns-check";
 
 describe("dnsCheck", () => {
     it("should return healthy when the host is resolved", async () => {
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         const result = await dnsCheck("example.com")();
 
         expect(result).toStrictEqual({
@@ -12,11 +11,13 @@ describe("dnsCheck", () => {
             health: {
                 healthy: true,
                 message: "DNS check for example.com were resolved.",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
-                host: "example.com",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addresses: expect.any(Array),
+                host: "example.com",
             },
         });
     });
@@ -29,11 +30,13 @@ describe("dnsCheck", () => {
             health: {
                 healthy: false,
                 message: "DNS check for example.com returned address 93.184.216.34 instead of 93.122.1212.45.",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
-                host: "example.com",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addresses: expect.any(Object),
+                host: "example.com",
             },
         });
     }, 10_000);

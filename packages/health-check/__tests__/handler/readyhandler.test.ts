@@ -1,15 +1,17 @@
 import "cross-fetch/polyfill";
 
 import { createRequest, createResponse } from "node-mocks-http";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { HealthCheck, healthReadyHandler, nodeEnvCheck as nodeEnvironmentCheck } from "../../src";
 
 const HealthCheckService = new HealthCheck();
 
-HealthCheckService.addChecker("node-env", nodeEnvironmentCheck());
-
 describe("health ready route", () => {
+    beforeAll(() => {
+        HealthCheckService.addChecker("node-env", nodeEnvironmentCheck());
+    });
+
     it("endpoint returns health checks reports", async () => {
         expect.assertions(2);
 

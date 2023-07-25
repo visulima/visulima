@@ -6,17 +6,15 @@ import httpCheck from "../../src/checks/http-check";
 
 describe("httpCheck", () => {
     it("should return healthy when the host is reachable", async () => {
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         const result = await httpCheck("https://example.com")();
 
         expect(result).toStrictEqual({
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             displayName: "HTTP check for https://example.com",
             health: {
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 healthy: true,
-                // eslint-disable-next-line sonarjs/no-duplicate-string
+
                 message: "HTTP check for https://example.com was successful.",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -29,10 +27,10 @@ describe("httpCheck", () => {
 
     it("should return healthy when the host is reachable with post method", async () => {
         const result = await httpCheck("https://example.com", {
+            expected: { status: 200 },
             fetchOptions: {
                 method: "POST",
             },
-            expected: { status: 200 },
         })();
 
         expect(result).toStrictEqual({
@@ -40,6 +38,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -52,11 +51,11 @@ describe("httpCheck", () => {
 
     it("should return healthy when the host is reachable with post method and body", async () => {
         const result = await httpCheck("https://example.com", {
-            fetchOptions: {
-                method: "POST",
-                body: "hello world",
-            },
             expected: { status: 200 },
+            fetchOptions: {
+                body: "hello world",
+                method: "POST",
+            },
         })();
 
         expect(result).toStrictEqual({
@@ -64,6 +63,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -84,6 +84,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: false,
                 message: "HTTP check for https://example.com returned status 200 instead of 404",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -102,7 +103,9 @@ describe("httpCheck", () => {
             displayName: "HTTP check for https://example.com",
             health: {
                 healthy: false,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 message: expect.any(String),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {

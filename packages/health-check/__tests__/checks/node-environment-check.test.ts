@@ -7,10 +7,10 @@ describe("node-environment-check", () => {
         const result = await nodeEnvironmentCheck()();
 
         expect(result).toStrictEqual({
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             displayName: "Node Environment Check",
             health: {
                 healthy: true,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -30,6 +30,7 @@ describe("node-environment-check", () => {
             displayName: "Node Environment Check",
             health: {
                 healthy: true,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
             meta: {
@@ -48,6 +49,7 @@ describe("node-environment-check", () => {
             health: {
                 healthy: false,
                 message: 'NODE_ENV environment variable is set to "test" instead of "production".',
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
         });
@@ -66,6 +68,7 @@ describe("node-environment-check", () => {
             health: {
                 healthy: false,
                 message: "Missing NODE_ENV environment variable. It can make some parts of the application misbehave",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(String),
             },
         });
