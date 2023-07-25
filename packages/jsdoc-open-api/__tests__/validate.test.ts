@@ -22,7 +22,7 @@ describe("validate", () => {
             ],
         };
 
-        await expect(async () => await validate(spec)).rejects.not.toThrow();
+        await expect(validate(spec)).resolves.toBeUndefined();
     });
 
     it("should throw an error if unrecognized format is detected", async () => {
@@ -35,6 +35,8 @@ describe("validate", () => {
             paths: {},
         };
 
-        await expect(validate(spec)).rejects.toThrow("test");
+        await expect(validate(spec)).rejects.toThrow(
+            "Swagger schema validation failed.\n  #/ must NOT have additional properties\n  #/info must have required property 'version'",
+        );
     });
 });
