@@ -2,17 +2,15 @@ import createHttpError from "http-errors";
 
 import type { UniqueResourceHandlerParameters } from "../types.d";
 
-const updateHandler: Handler = async ({
-    adapter, query, resourceName, resourceId, request,
-}) => {
+const updateHandler: Handler = async ({ adapter, query, request, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     if (typeof resource === "object") {
         const updatedResource = await adapter.update(resourceName, resourceId, request.body, query);
 
         return {
-            status: 201,
             data: updatedResource,
+            status: 201,
         };
     }
 

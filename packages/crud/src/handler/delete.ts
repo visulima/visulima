@@ -2,9 +2,7 @@ import createHttpError from "http-errors";
 
 import type { UniqueResourceHandlerParameters } from "../types.d";
 
-const deleteHandler: Handler = async ({
-    adapter, query, resourceName, resourceId,
-}) => {
+const deleteHandler: Handler = async ({ adapter, query, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     if (typeof resource === "object") {

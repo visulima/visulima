@@ -1,35 +1,37 @@
 // eslint-disable-next-line max-classes-per-file
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { PrismaAdapter } from "../../src";
 import validateAdapterMethods from "../../src/utils/validate-adapter-methods";
 
-// eslint-disable-next-line no-constructor-return
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class InvalidAdapter {}
 
 describe("validateAdapterMethods", () => {
     it("should not throw a error for a valid adapter", () => {
-        expect(() => validateAdapterMethods(
-            new PrismaAdapter({
-                prismaClient: vi.mock("@prisma/client", () => {
-                    return {
-                        PrismaClient: class {
-                            public constructor() {
-                                // eslint-disable-next-line no-constructor-return
-                                return {
-                                    // eslint-disable-next-line compat/compat
-                                    $connect: () => Promise.resolve(),
-                                    // eslint-disable-next-line compat/compat
-                                    $disconnect: () => Promise.resolve(),
-                                };
-                            }
-                        },
-                    };
+        expect(() =>
+            validateAdapterMethods(
+                new PrismaAdapter({
+                    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+                    prismaClient: vi.mock("@prisma/client", () => {
+                        return {
+                            // eslint-disable-next-line @typescript-eslint/no-extraneous-class
+                            PrismaClient: class {
+                                public constructor() {
+                                    // eslint-disable-next-line no-constructor-return
+                                    return {
+                                        // eslint-disable-next-line compat/compat
+                                        $connect: async () => await Promise.resolve(),
+                                        // eslint-disable-next-line compat/compat
+                                        $disconnect: async () => await Promise.resolve(),
+                                    };
+                                }
+                            },
+                        };
+                    }),
                 }),
-            }),
-        )).not.toThrowError();
+            ),
+        ).not.toThrow();
     });
 
     // @TODO: Add test for every method

@@ -2,7 +2,9 @@ import { match } from "path-to-regexp";
 
 import { RouteType } from "../types.d";
 
-type PathMatch = { id: string };
+interface PathMatch {
+    id: string;
+}
 
 const getRouteType: (method: string, url: string, resourceName: string) => GetRouteType = (method, url, resourceName) => {
     // Exclude the query params from the path
@@ -28,8 +30,8 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
             // If we got a /something after the resource name, we are reading 1 entity
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
-                    routeType: RouteType.READ_ONE,
                     resourceId: pathMatch.params.id,
+                    routeType: RouteType.READ_ONE,
                 };
             }
 
@@ -56,8 +58,8 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
 
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
-                    routeType: RouteType.UPDATE,
                     resourceId: pathMatch.params.id,
+                    routeType: RouteType.UPDATE,
                 };
             }
 
@@ -70,8 +72,8 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
 
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
-                    routeType: RouteType.DELETE,
                     resourceId: pathMatch.params.id,
+                    routeType: RouteType.DELETE,
                 };
             }
 
@@ -87,9 +89,9 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
     }
 };
 
-export type GetRouteType = {
-    routeType: RouteType | null;
+export interface GetRouteType {
     resourceId?: string;
-};
+    routeType: RouteType | null;
+}
 
 export default getRouteType;
