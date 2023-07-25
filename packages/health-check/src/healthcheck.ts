@@ -1,24 +1,16 @@
-import type {
-    Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry,
-} from "./types.d";
+import type { Checker, HealthReport, HealthReportEntry, HealthCheck as HealthcheckInterface } from "./types.d";
 
 class Healthcheck implements HealthcheckInterface {
     /**
      * A copy of registered checkers
      */
-    private healthCheckers: { [service: string]: Checker } = {};
-
-    /**
-     * Returns an array of registered services names
-     */
-    public get servicesList(): string[] {
-        return Object.keys(this.healthCheckers);
-    }
+    private healthCheckers: Record<string, Checker> = {};
 
     /**
      * Invokes a given checker to collect the report metrics.
      */
     private async invokeChecker(service: string, reportSheet: HealthReport): Promise<boolean> {
+        // eslint-disable-next-line security/detect-object-injection
         const checker = this.healthCheckers[service] as Checker;
 
         let report: HealthReportEntry;
@@ -27,7 +19,7 @@ class Healthcheck implements HealthcheckInterface {
             report = await checker();
 
             report.displayName = report.displayName || service;
-        } catch (error: any) {
+        } catch (error) {
             report = {
                 displayName: service,
                 health: { healthy: false, message: (error as Error).message, timestamp: new Date().toISOString() },
@@ -35,13 +27,14 @@ class Healthcheck implements HealthcheckInterface {
             };
         }
 
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
         reportSheet[service] = report;
 
         return report.health.healthy;
     }
 
     public addChecker(service: string, checker: Checker): void {
+        // eslint-disable-next-line security/detect-object-injection
         this.healthCheckers[service] = checker;
     }
 
@@ -53,11 +46,12 @@ class Healthcheck implements HealthcheckInterface {
         const report: HealthReport = {};
 
         // eslint-disable-next-line compat/compat
-        await Promise.all(Object.keys(this.healthCheckers).map((service) => this.invokeChecker(service, report)));
+        await Promise.all(Object.keys(this.healthCheckers).map(async (service) => await this.invokeChecker(service, report)));
 
         /**
          * Finding unhealthy service to know if system is healthy or not
          */
+        // eslint-disable-next-line security/detect-object-injection
         const unhealthyService = Object.keys(report).find((service) => !(report[service] as HealthReportEntry).health.healthy);
 
         return { healthy: !unhealthyService, report };
@@ -67,6 +61,13 @@ class Healthcheck implements HealthcheckInterface {
         const { healthy } = await this.getReport();
 
         return healthy;
+    }
+
+    /**
+     * Returns an array of registered services names
+     */
+    public get servicesList(): string[] {
+        return Object.keys(this.healthCheckers);
     }
 }
 

@@ -16,7 +16,6 @@ const getDatabaseChecker = async () => {
 
 const getEventChecker = async () => {
     return {
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         displayName: "event-loop",
         health: {
             healthy: true,
@@ -25,11 +24,10 @@ const getEventChecker = async () => {
     };
 };
 
-describe("HealthCheck", () => {
+describe("healthCheck", () => {
     it("get health checks report", async () => {
         const healthCheck = new HealthCheck();
 
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         healthCheck.addChecker("event-loop", async () => {
             return {
                 displayName: "event loop",
@@ -75,7 +73,6 @@ describe("HealthCheck", () => {
                     health: {
                         healthy: false,
                         message: "boom",
-                        // @ts-expect-error
                         timestamp: report.report["event-loop"].health.timestamp,
                     },
                     meta: {
@@ -100,23 +97,22 @@ describe("HealthCheck", () => {
         expect(report).toStrictEqual({
             healthy: false,
             report: {
-                "event-loop": {
-                    displayName: "event-loop",
-                    health: {
-                        healthy: false,
-                        message: "boom",
-                        // @ts-expect-error
-                        timestamp: report.report["event-loop"].health.timestamp,
-                    },
-                    meta: {
-                        fatal: true,
-                    },
-                },
                 database: {
                     displayName: "database",
                     health: {
                         healthy: true,
                         timestamp: dateString,
+                    },
+                },
+                "event-loop": {
+                    displayName: "event-loop",
+                    health: {
+                        healthy: false,
+                        message: "boom",
+                        timestamp: report.report["event-loop"].health.timestamp,
+                    },
+                    meta: {
+                        fatal: true,
                     },
                 },
             },
@@ -147,7 +143,7 @@ describe("HealthCheck", () => {
             };
         });
 
-        expect(await healthCheck.isLive()).toBe(false);
+        await expect(healthCheck.isLive()).resolves.toBeFalsy();
 
         const healthCheck2 = new HealthCheck();
 
@@ -155,6 +151,6 @@ describe("HealthCheck", () => {
 
         healthCheck2.addChecker("event-loop", getEventChecker);
 
-        expect(await healthCheck2.isLive()).toBe(true);
+        await expect(healthCheck2.isLive()).resolves.toBeTruthy();
     });
 });
