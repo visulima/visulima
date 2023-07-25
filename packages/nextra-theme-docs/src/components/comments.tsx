@@ -6,7 +6,7 @@ import type { FC } from "react";
 import type { Config } from "../contexts/config";
 
 const Comments: FC<{ config: Config }> = ({ config }) => {
-    const { theme, systemTheme } = useTheme();
+    const { systemTheme, theme } = useTheme();
 
     if (config.comments === undefined) {
         return null;
@@ -15,20 +15,20 @@ const Comments: FC<{ config: Config }> = ({ config }) => {
     return (
         <div className="mt-16">
             <Giscus
-                id="giscus-comments"
-                repo={config.comments.repository as Repo}
-                repoId={config.comments.repositoryId}
                 category="Docs"
                 categoryId={config.comments.categoryId}
-                mapping="title"
-                strict="1"
-                reactionsEnabled="1"
                 emitMetadata="0"
+                id="giscus-comments"
                 inputPosition="top"
-                // eslint-disable-next-line unicorn/no-negated-condition
-                theme={theme !== "system" ? theme : systemTheme}
                 lang="en"
                 loading="lazy"
+                mapping="title"
+                reactionsEnabled="1"
+                repo={config.comments.repository as Repo}
+                repoId={config.comments.repositoryId}
+                strict="1"
+                // eslint-disable-next-line unicorn/no-negated-condition
+                theme={theme !== "system" ? theme : systemTheme}
             />
         </div>
     );

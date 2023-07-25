@@ -24,11 +24,13 @@ function isReactNode(value: unknown): boolean {
 }
 
 const i18nSchema = z.array(
-    z.object({
-        direction: z.enum(["ltr", "rtl"]).optional(),
-        locale: z.string(),
-        name: z.string(),
-    }),
+    z
+        .object({
+            direction: z.enum(["ltr", "rtl"]).optional(),
+            locale: z.string(),
+            name: z.string(),
+        })
+        .strict(),
 );
 
 const reactNode = [isReactNode, { message: "Must be React.ReactNode or React.FC" }] as const;
@@ -36,11 +38,24 @@ const fc = [isFunction, { message: "Must be React.FC" }] as const;
 
 export const themeSchema = z
     .object({
-        banner: z.object({
-            dismissible: z.boolean(),
-            key: z.string(),
-            content: z.custom<FC | ReactNode>(...reactNode).optional(),
-        }),
+        backToTop: z
+            .object({
+                active: z.boolean(),
+                content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+            })
+            .strict(),
+        banner: z
+            .object({
+                content: z.custom<FC | ReactNode>(...reactNode).optional(),
+                dismissible: z.boolean(),
+                key: z.string(),
+            })
+            .strict(),
         chat: z
             .object({
                 icon: z.custom<FC | ReactNode>(...reactNode),
@@ -49,64 +64,63 @@ export const themeSchema = z
             .optional(),
         comments: z
             .object({
+                categoryId: z.string(),
                 repository: z.string(),
                 repositoryId: z.string(),
-                categoryId: z.string(),
             })
             .optional(),
         components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
         darkMode: z.boolean(),
         direction: z.enum(["ltr", "rtl"]),
         docsRepositoryBase: z.string().startsWith("https://"),
-        editLink: z.object({
-            component: z
-                .custom<
-            FC<{
-                children: ReactNode;
-                className?: string;
-                filePath?: string;
-            }>
-            >(...fc)
-                .optional(),
-            content: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string())
-                    .or(z.custom<FC<{ locale: string }> | ReactNode>(...reactNode)),
-            ),
-        }),
+        editLink: z
+            .object({
+                component: z
+                    .custom<
+                        FC<{
+                            children: ReactNode;
+                            className?: string;
+                            filePath?: string;
+                        }>
+                    >(...fc)
+                    .optional(),
+                content: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string())
+                        .or(z.custom<FC<{ locale: string }> | ReactNode>(...reactNode)),
+                ),
+            })
+            .strict(),
         faviconGlyph: z.string().optional(),
-        feedback: z.object({
-            content: z.custom<FC | ReactNode>(...reactNode).optional(),
-            labels: z.string(),
-            link: z
-                .function()
-                .args(
-                    z.object({
-                        title: z.string(),
-                        route: z.string(),
-                        docsRepositoryBase: z.string(),
-                        labels: z.string(),
-                    }),
-                )
-                .returns(z.string())
-                .optional(),
-        }),
-        backToTop: z.object({
-            active: z.boolean(),
-            content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).or(
-                z
+        feedback: z
+            .object({
+                content: z.custom<FC | ReactNode>(...reactNode).optional(),
+                labels: z.string(),
+                link: z
                     .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-        }),
-        footer: z.object({
-            component: z.custom<FC<{ menu: boolean }> | ReactNode>(...reactNode),
-            copyright: z.custom<FC<{ activeType: ActiveType }> | ReactNode>(...reactNode).optional(),
-        }),
-        gitTimestamp: z.custom<FC<{ timestamp: Date; locale: string }> | ReactNode>(...reactNode),
+                    .args(
+                        z
+                            .object({
+                                docsRepositoryBase: z.string(),
+                                labels: z.string(),
+                                route: z.string(),
+                                title: z.string(),
+                            })
+                            .strict(),
+                    )
+                    .returns(z.string())
+                    .optional(),
+            })
+            .strict(),
+        footer: z
+            .object({
+                component: z.custom<FC<{ menu: boolean }> | ReactNode>(...reactNode),
+                copyright: z.custom<FC<{ activeType: ActiveType }> | ReactNode>(...reactNode).optional(),
+            })
+            .strict(),
+        gitTimestamp: z.custom<FC<{ locale: string; timestamp: Date }> | ReactNode>(...reactNode),
         head: z.custom<FC | ReactNode>(...reactNode),
         hero: z
             .object({
@@ -115,138 +129,166 @@ export const themeSchema = z
             })
             .optional(),
         i18n: i18nSchema,
+        localSwitch: z
+            .object({
+                title: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+            })
+            .strict(),
         logo: z.custom<FC | ReactNode>(...reactNode),
         logoLink: z.boolean().or(z.string()),
         main: z.custom<FC<{ children: ReactNode }>>(...fc).optional(),
-        navbar: z.object({
-            linkBack: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).optional(),
-            component: z.custom<FC<NavBarProperties> | ReactNode>(...reactNode),
-            extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
-        }),
+        navbar: z
+            .object({
+                component: z.custom<FC<NavBarProperties> | ReactNode>(...reactNode),
+                extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
+                linkBack: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).optional(),
+            })
+            .strict(),
         navigation: z.boolean().or(
-            z.object({
-                next: z.boolean(),
-                prev: z.boolean(),
-            }),
+            z
+                .object({
+                    next: z.boolean(),
+                    prev: z.boolean(),
+                })
+                .strict(),
         ),
         newNextLinkBehavior: z.boolean(),
-        nextThemes: z.object({
-            defaultTheme: z.string(),
-            forcedTheme: z.string().optional(),
-            storageKey: z.string(),
-            attribute: z.string().optional(),
-        }),
-        notFound: z.object({
-            content: z.custom<FC | ReactNode>(...reactNode),
-            labels: z.string(),
-            pages: z
-                .function()
-                .args(z.object({ locale: z.string() }))
-                .returns(
-                    z.array(
-                        z.object({
-                            url: z.string(),
-                            title: z.string(),
-                            subtitle: z.string().or(z.undefined()),
-                            icon: z.custom<FC | ReactNode>(...reactNode).or(z.undefined()),
-                        }),
-                    ),
-                )
-                .optional(),
-        }),
+        nextThemes: z
+            .object({
+                attribute: z.string().optional(),
+                defaultTheme: z.string(),
+                forcedTheme: z.string().optional(),
+                storageKey: z.string(),
+            })
+            .strict(),
+        notFound: z
+            .object({
+                content: z.custom<FC | ReactNode>(...reactNode),
+                labels: z.string(),
+                pages: z
+                    .function()
+                    .args(z.object({ locale: z.string() }).strict())
+                    .returns(
+                        z.array(
+                            z
+                                .object({
+                                    icon: z.custom<FC | ReactNode>(...reactNode).or(z.undefined()),
+                                    subtitle: z.string().or(z.undefined()),
+                                    title: z.string(),
+                                    url: z.string(),
+                                })
+                                .strict(),
+                        ),
+                    )
+                    .optional(),
+            })
+            .strict(),
         primaryHue: z.number().or(
-            z.object({
-                dark: z.number(),
-                light: z.number(),
-            }),
+            z
+                .object({
+                    dark: z.number(),
+                    light: z.number(),
+                })
+                .strict(),
         ),
-        project: z.object({
-            icon: z.custom<FC | ReactNode>(...reactNode),
-            link: z.string().startsWith("https://").optional(),
-        }),
-        search: z.object({
-            codeblocks: z.boolean(),
-            component: z.custom<FC<{ className?: string; directories: Item[] }> | ReactNode>(...reactNode),
-            emptyResult: z.custom<FC | ReactNode>(...reactNode),
-            error: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            loading: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            // Can't be React component
-            placeholder: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            position: z.enum(["sidebar", "navbar"]),
-        }),
-        serverSideError: z.object({
-            content: z.custom<FC | ReactNode>(...reactNode),
-            labels: z.string(),
-        }),
-        sidebar: z.object({
-            autoCollapse: z.boolean().optional(),
-            defaultMenuCollapseLevel: z.number().min(1).int(),
-            titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
-        }),
-        tocContent: z.object({
-            component: z.custom<FC<TOCPageContentProperties>>(...fc),
-            float: z.boolean(),
-            title: z.custom<FC | ReactNode>(...reactNode),
-            headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
-        }),
-        tocSidebar: z.object({
-            title: z.string(),
-            component: z.custom<FC<TOCSidebarProperties>>(...fc),
-            extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
-            float: z.boolean(),
-            headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
-        }),
+        project: z
+            .object({
+                icon: z.custom<FC | ReactNode>(...reactNode),
+                link: z.string().startsWith("https://").optional(),
+            })
+            .strict(),
+        search: z
+            .object({
+                codeblocks: z.boolean(),
+                component: z.custom<FC<{ className?: string; directories: Item[] }> | ReactNode>(...reactNode),
+                emptyResult: z.custom<FC | ReactNode>(...reactNode),
+                error: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                loading: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                // Can't be React component
+                placeholder: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                position: z.enum(["sidebar", "navbar"]),
+            })
+            .strict(),
+        serverSideError: z
+            .object({
+                content: z.custom<FC | ReactNode>(...reactNode),
+                labels: z.string(),
+            })
+            .strict(),
+        sidebar: z
+            .object({
+                autoCollapse: z.boolean().optional(),
+                defaultMenuCollapseLevel: z.number().min(1).int(),
+                titleComponent: z.custom<FC<{ route: string; title: string; type: string }> | ReactNode>(...reactNode),
+            })
+            .strict(),
+        themeSwitch: z
+            .object({
+                dark: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                light: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                system: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+                title: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+            })
+            .strict(),
+        tocContent: z
+            .object({
+                component: z.custom<FC<TOCPageContentProperties>>(...fc),
+                float: z.boolean(),
+                headingComponent: z.custom<FC<{ children: string; id: string }>>(...fc).optional(),
+                title: z.custom<FC | ReactNode>(...reactNode),
+            })
+            .strict(),
+        tocSidebar: z
+            .object({
+                component: z.custom<FC<TOCSidebarProperties>>(...fc),
+                extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
+                float: z.boolean(),
+                headingComponent: z.custom<FC<{ children: string; id: string }>>(...fc).optional(),
+                title: z.string(),
+            })
+            .strict(),
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
         useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
-        localSwitch: z.object({
-            title: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-        }),
-        themeSwitch: z.object({
-            title: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            light: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            dark: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-            system: z.string().or(
-                z
-                    .function()
-                    .args(z.object({ locale: z.string() }))
-                    .returns(z.string()),
-            ),
-        }),
     })
     .strict();
 

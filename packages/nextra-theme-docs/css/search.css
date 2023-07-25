@@ -24,9 +24,9 @@ input[type="search"] {
 }
 
 .nextra-search .nextra-excerpt {
-  @apply overflow-hidden text-ellipsis;
-  display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+    @apply overflow-hidden text-ellipsis;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }

@@ -4,7 +4,7 @@
 }
 
 .steps-container h3 {
-  counter-increment: step;
+    counter-increment: step;
 }
 
 .steps-container h3:before {

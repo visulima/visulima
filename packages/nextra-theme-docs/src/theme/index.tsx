@@ -8,9 +8,7 @@ import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
-import type {
-    FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject,
-} from "react";
+import type { FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject } from "react";
 import { useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -31,23 +29,21 @@ import { renderComponent } from "../utils";
 import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
-    toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
     main: "w-full break-words",
+    toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
 };
 
 const Body: FC<{
-    themeContext: PageTheme;
-    breadcrumb: ReactNode;
-    timestamp?: number;
-    navigation: ReactNode;
-    children: ReactNode;
     activeType: string;
+    breadcrumb: ReactNode;
+    children: ReactNode;
     filePath: string;
     locale: string;
+    navigation: ReactNode;
     route: string;
-}> = ({
-    themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route,
-}) => {
+    themeContext: PageTheme;
+    timestamp?: number;
+}> = ({ activeType, breadcrumb, children, filePath, locale, navigation, route, themeContext, timestamp }) => {
     const config = useConfig();
     const mounted = useMounted();
 
@@ -57,25 +53,26 @@ const Body: FC<{
 
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
 
-    const gitTimestampElement = mounted && date ? (
+    const gitTimestampElement =
+        mounted && date ? (
             <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
-                {renderComponent(config.gitTimestamp, { timestamp: date, locale })}
+                {renderComponent(config.gitTimestamp, { locale, timestamp: date })}
             </div>
-    ) : (
+        ) : (
             <div className="mt-16" />
-    );
+        );
 
     const content = (
         <>
             {children}
-            {activeType === "doc" && (<hr className="my-8 lg:hidden" />)}
-            {/* eslint-disable-next-line max-len */}
+            {activeType === "doc" && <hr className="my-8 lg:hidden" />}
+            {}
             {activeType === "doc" && (
                 <div className="flex flex-col justify-items-end gap-2 text-right lg:hidden">
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
-            {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && gitTimestampElement}
+            {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && gitTimestampElement}
             {activeType === "doc" && config.comments && (
                 <div className="mb-8">
                     <hr />
@@ -93,7 +90,7 @@ const Body: FC<{
             <article
                 className={cn(
                     classes.main,
-                    // eslint-disable-next-line max-len
+
                     "nextra-content min-h-[calc(100vh-var(--nextra-navbar-height))] pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] bg-white dark:bg-darker-800",
                 )}
             >
@@ -106,7 +103,7 @@ const Body: FC<{
         <article
             className={cn(
                 classes.main,
-                // eslint-disable-next-line max-len
+
                 "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800 overflow-x-hidden",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
             )}
@@ -120,60 +117,61 @@ const Body: FC<{
 };
 
 const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
+    children,
     filePath,
-    pageMap,
     frontMatter,
     headings,
+    pageMap,
     timestamp,
-    children,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
-    const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
+    const { defaultLocale, locale = DEFAULT_LOCALE, route } = useRouter();
     const fsPath = useFSRoute();
     const mounted = useMounted();
 
     const {
-        // eslint-disable-next-line max-len
-        activeType = "doc",
         activeIndex,
-        activeThemeContext,
         activePath,
-        topLevelNavbarItems,
+        activeThemeContext,
+        activeType = "doc",
+        directories,
         docsDirectories: documentsDirectories,
         flatDirectories,
         flatDocsDirectories: flatDocumentsDirectories,
-        directories,
+        topLevelNavbarItems,
     } = useMemo(
-        () => normalizePages({
-            list: pageMap,
-            locale,
-            defaultLocale,
-            route: fsPath,
-        }),
+        () =>
+            normalizePages({
+                defaultLocale,
+                list: pageMap,
+                locale,
+                route: fsPath,
+            }),
         [pageMap, locale, defaultLocale, fsPath],
     );
     const reference: any = useRef<HTMLDivElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     const isOnScreen = useOnScreen(reference as MutableRefObject<Element>);
 
     const themeContext = { prose: true, ...activeThemeContext, ...frontMatter };
-    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
-    const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["raw", "full"].includes(themeContext.layout);
+    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["hidden", "page"].includes(activeType);
+    const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
 
     const tocSidebarElement = isDocumentPage && (
-        <nav className={cn(classes.toc, "px-4")} aria-label="table of contents">
+        <nav aria-label="table of contents" className={cn(classes.toc, "px-4")}>
             {renderComponent(config.tocSidebar.component, {
-                headings: config.tocSidebar.float ? headings : [],
                 filePath,
+                headings: config.tocSidebar.float ? headings : [],
                 isOnScreen: mounted && !isOnScreen,
                 locale,
                 route,
             })}
         </nav>
     );
-    const tocPageContentElement = isDocumentPage
-        && renderComponent(config.tocContent.component, {
+    const tocPageContentElement =
+        isDocumentPage &&
+        renderComponent(config.tocContent.component, {
             headings: config.tocContent.float ? headings : [],
             wrapperRef: reference as RefObject<HTMLDivElement>,
         });
@@ -184,8 +182,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const mdxContent = (
         <MDXProvider
             components={getComponents({
-                isRawLayout: themeContext.layout === "raw",
                 components: config.components,
+                isRawLayout: themeContext.layout === "raw",
             })}
         >
             {children}
@@ -198,13 +196,13 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             {/* This makes sure that selectors like `[dir=ltr] .nextra-container` */}
             {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
-                dir={direction}
-                // eslint-disable-next-line max-len,tailwindcss/no-custom-classname
+                // eslint-disable-next-line tailwindcss/no-custom-classname
                 className={
-                    ["page", "hidden"].includes(activeType) || themeContext.layout === "raw"
+                    ["hidden", "page"].includes(activeType) || themeContext.layout === "raw"
                         ? ""
                         : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"
                 }
+                dir={direction}
             >
                 <script
                     // eslint-disable-next-line react/no-danger
@@ -214,21 +212,21 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 />
                 <Head />
                 <Banner />
-                {themeContext.navbar
-                    && renderComponent(config.navbar.component, {
+                {themeContext.navbar &&
+                    renderComponent(config.navbar.component, {
+                        activeType,
                         flatDirectories,
                         items: topLevelNavbarItems,
-                        activeType,
                         themeContext,
                     })}
                 <div className={cn("mx-auto flex", themeContext.layout !== "raw" && "max-w-[90rem]")}>
                     <ActiveAnchorProvider>
                         <Sidebar
+                            asPopover={hideSidebar}
                             documentsDirectories={documentsDirectories}
                             flatDirectories={flatDirectories}
                             fullDirectories={directories}
                             headings={headings}
-                            asPopover={hideSidebar}
                             includePlaceholder={themeContext.layout === "default"}
                         />
                         <div className="relative w-full">
@@ -237,9 +235,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     // eslint-disable-next-line tailwindcss/no-custom-classname
                                     className={`absolute w-full ${
                                         config.hero.height
-                                            ? (typeof config.hero.height === "string"
+                                            ? typeof config.hero.height === "string"
                                                 ? `h-[${config.hero.height}]`
-                                                : `h-[${config.hero.height}px]`)
+                                                : `h-[${config.hero.height}px]`
                                             : ""
                                     }`}
                                 >
@@ -250,39 +248,38 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 className={cn(
                                     "flex w-full",
                                     config.hero?.height
-                                        ? (typeof config.hero.height === "string"
+                                        ? typeof config.hero.height === "string"
                                             ? `mt-[${config.hero.height}]`
-                                            : `mt-[${config.hero.height}px]`)
+                                            : `mt-[${config.hero.height}px]`
                                         : null,
                                 )}
                             >
                                 {tocSidebarElement}
                                 <SkipNavContent />
                                 <Body
-                                    themeContext={themeContext}
-                                    // eslint-disable-next-line max-len
-                                    breadcrumb={
-                                        !["page", "hidden"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
-                                    }
-                                    timestamp={timestamp}
                                     navigation={
-                                        !["page", "hidden"].includes(activeType) && themeContext.pagination ? (
-                                            <NavLinks flatDirectories={flatDocumentsDirectories} currentIndex={activeIndex} layout={themeContext.layout} />
+                                        !["hidden", "page"].includes(activeType) && themeContext.pagination ? (
+                                            <NavLinks currentIndex={activeIndex} flatDirectories={flatDocumentsDirectories} layout={themeContext.layout} />
                                         ) : null
                                     }
                                     activeType={activeType}
-                                    route={route}
-                                    locale={locale}
+                                    breadcrumb={
+                                        !["hidden", "page"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
+                                    }
                                     filePath={filePath}
+                                    locale={locale}
+                                    route={route}
+                                    themeContext={themeContext}
+                                    timestamp={timestamp}
                                 >
-                                    {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && (
-                                        <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
+                                    {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
+                                        <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
                                             {activePath[Object.keys(activePath).length - 1]?.title}
                                         </h1>
                                     )}
                                     {tocPageContentElement}
-                                    {/* eslint-disable-next-line max-len */}
-                                    {themeContext.prose && ["page", "doc"].includes(activeType) ? (
+                                    {}
+                                    {themeContext.prose && ["doc", "page"].includes(activeType) ? (
                                         <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose>
                                     ) : (
                                         mdxContent
@@ -292,7 +289,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                         </div>
                     </ActiveAnchorProvider>
                 </div>
-                <Footer activeType={activeType} themeContext={themeContext} locale={locale} />
+                <Footer activeType={activeType} locale={locale} themeContext={themeContext} />
             </div>
         </>
     );

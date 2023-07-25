@@ -2,9 +2,7 @@ import { ThemeProvider } from "next-themes";
 import type { FrontMatter, PageMapItem, PageOpts } from "nextra";
 import { metaSchema } from "nextra/normalize-pages";
 import type { ReactElement, ReactNode } from "react";
-import {
-    createContext, useContext, useMemo, useState,
-} from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import type { ZodError } from "zod";
 
 import { DEEP_OBJECT_KEYS, DEFAULT_THEME } from "../constants";
@@ -14,8 +12,8 @@ import type { Context } from "../types";
 import { MenuProvider } from "./menu";
 
 const ConfigContext = createContext<Config>({
-    title: "",
     frontMatter: {},
+    title: "",
     ...DEFAULT_THEME,
 });
 
@@ -41,17 +39,16 @@ function validateMeta(pageMap: PageMapItem[]) {
                 // This workaround is needed because of the missing "prose" property in the theme schema
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (typeof value === "object" && typeof value["theme"] === "object" && typeof value["theme"].prose === "boolean") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign,@typescript-eslint/no-unsafe-assignment
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
                     prose = value["theme"].prose;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,no-param-reassign
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign
                     delete value["theme"].prose;
                 }
 
                 try {
                     metaSchema.parse(value);
                 } catch (error) {
-                    // eslint-disable-next-line no-console
                     console.error(`[nextra-theme-docs] Error validating _meta.json file for "${key}" property.\n\n${normalizeZodMessage(error)}`);
                 }
 
@@ -71,12 +68,11 @@ export function useConfig<FrontMatterType = FrontMatter>(): Config<FrontMatterTy
     return useContext<Config<FrontMatterType>>(ConfigContext);
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: { children: ReactNode; value: Context }): ReactElement => {
+export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: { children: ReactNode; value: Context }): ReactElement => {
     const [menu, setMenu] = useState(false);
 
     // Merge only on first load
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     theme ||= {
         ...DEFAULT_THEME,
         ...Object.fromEntries(
@@ -84,8 +80,8 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
             Object.entries(themeConfig).map(([key, value]) => [
                 key,
                 value && typeof value === "object" && DEEP_OBJECT_KEYS.includes(key)
-                    // @ts-expect-error -- key has always object value
-                    ? { ...DEFAULT_THEME[key], ...value }
+                    ? // @ts-expect-error -- key has always object value
+                      { ...DEFAULT_THEME[key], ...value }
                     : value,
             ]),
         ),
@@ -95,7 +91,6 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
         try {
             themeSchema.parse(theme);
         } catch (error) {
-            // eslint-disable-next-line no-console
             console.error(`[nextra-theme-docs] Error validating theme config file.\n\n${normalizeZodMessage(error)}`);
         }
         validateMeta(pageOpts.pageMap);
@@ -109,21 +104,21 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
             ...(typeof pageOpts.newNextLinkBehavior === "boolean" && {
                 newNextLinkBehavior: pageOpts.newNextLinkBehavior,
             }),
-            title: pageOpts.title,
             frontMatter: pageOpts.frontMatter,
+            title: pageOpts.title,
         };
     }, [pageOpts]);
 
-    const { nextThemes, darkMode } = extendedConfig;
+    const { darkMode, nextThemes } = extendedConfig;
     const forcedTheme = darkMode ? nextThemes.forcedTheme : "light";
 
     return (
         <ThemeProvider
             attribute={nextThemes.attribute ?? "class"}
-            disableTransitionOnChange
             defaultTheme={nextThemes.defaultTheme}
-            storageKey={nextThemes.storageKey}
+            disableTransitionOnChange
             forcedTheme={forcedTheme}
+            storageKey={nextThemes.storageKey}
         >
             <ConfigContext.Provider value={extendedConfig}>
                 <MenuProvider value={{ menu, setMenu }}>{children}</MenuProvider>
@@ -133,4 +128,4 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
 };
 
 export type Config<FrontMatterType = FrontMatter> = DocumentationThemeConfig &
-Pick<PageOpts<FrontMatterType>, "flexsearch" | "frontMatter" | "newNextLinkBehavior" | "title">;
+    Pick<PageOpts<FrontMatterType>, "flexsearch" | "frontMatter" | "newNextLinkBehavior" | "title">;

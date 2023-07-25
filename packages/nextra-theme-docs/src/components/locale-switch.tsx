@@ -9,20 +9,18 @@ import { renderString } from "../utils";
 import Select from "./select";
 
 interface LocaleSwitchProperties {
-    options: NonNullable<DocumentationThemeConfig["i18n"]>;
-    lite?: boolean;
     className?: string;
+    lite?: boolean;
+    options: NonNullable<DocumentationThemeConfig["i18n"]>;
 }
 
-const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite = false, className }) => {
+const LocaleSwitch: FC<LocaleSwitchProperties> = ({ className, lite = false, options }) => {
     const config = useConfig();
-    const { locale, asPath } = useRouter();
+    const { asPath, locale } = useRouter();
     const selected = options.find((l) => locale === l.locale);
 
     return (
         <Select
-            title={renderString(config.localSwitch.title, { locale: locale ?? DEFAULT_LOCALE })}
-            className={className}
             onChange={(option) => {
                 const date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
@@ -31,6 +29,12 @@ const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite = false, class
                 // eslint-disable-next-line no-restricted-globals
                 location.href = asPath;
             }}
+            options={options.map((l) => {
+                return {
+                    key: l.locale,
+                    name: l.name,
+                };
+            })}
             selected={{
                 key: selected?.locale ?? "",
                 name: (
@@ -40,12 +44,8 @@ const LocaleSwitch: FC<LocaleSwitchProperties> = ({ options, lite = false, class
                     </div>
                 ),
             }}
-            options={options.map((l) => {
-                return {
-                    key: l.locale,
-                    name: l.name,
-                };
-            })}
+            className={className}
+            title={renderString(config.localSwitch.title, { locale: locale ?? DEFAULT_LOCALE })}
         />
     );
 };

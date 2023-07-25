@@ -18,13 +18,13 @@ const classes: Record<CalloutType, string> = {
     warning: cn("border-yellow-100 bg-yellow-50 text-yellow-900 dark:border-yellow-200/30 dark:bg-yellow-700/30 dark:text-yellow-200"),
 };
 
-type CalloutProperties = {
-    type?: CalloutType;
-    emoji?: ReactElement | string;
+interface CalloutProperties {
     children: ReactNode;
-};
+    emoji?: ReactElement | string;
+    type?: CalloutType;
+}
 
-const Callout = ({ children, type = "default", emoji = TypeToEmoji[type] }: CalloutProperties): ReactElement => (
+const Callout = ({ children, emoji = TypeToEmoji.default, type = "default" }: CalloutProperties): ReactElement => (
     <div
         className={cn(
             "nextra-callout overflow-x-auto mt-6 flex rounded-lg border py-2 ltr:pr-4 rtl:pl-4",
@@ -33,10 +33,10 @@ const Callout = ({ children, type = "default", emoji = TypeToEmoji[type] }: Call
         )}
     >
         <div
-            className="select-none text-xl ltr:pl-3 ltr:pr-2 rtl:pl-2 rtl:pr-3"
             style={{
                 fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
             }}
+            className="select-none text-xl ltr:pl-3 ltr:pr-2 rtl:pl-2 rtl:pr-3"
         >
             {emoji}
         </div>

@@ -1,5 +1,5 @@
 // only in this file we determine either we include <a /> as child of <NextLink /> based of `newNextLinkBehavior` value
-// eslint-disable-next-line no-restricted-imports
+
 import NextLink from "next/link";
 import next from "next/package.json";
 import type { ComponentProps, ReactElement } from "react";
@@ -15,9 +15,7 @@ const nextVersion = Number(next.version.split(".")[0]);
 
 const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
     (
-        {
-            href = "", children, newWindow, ...properties
-        },
+        { children, href = "", newWindow, ...properties },
         // ref is used in <NavbarMenu />
         forwardedReference,
     ): ReactElement => {
@@ -26,7 +24,7 @@ const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
         if (newWindow) {
             return (
                 // eslint-disable-next-line react/jsx-props-no-spreading
-                <a ref={forwardedReference} href={href} target="_blank" rel="noreferrer" {...properties}>
+                <a href={href} ref={forwardedReference} rel="noreferrer" target="_blank" {...properties}>
                     {children}
                     <span className="sr-only"> (opens in a new tab)</span>
                 </a>
@@ -45,7 +43,7 @@ const Anchor = forwardRef<HTMLAnchorElement, AnchorProperties>(
         if (nextVersion > 12 || config.newNextLinkBehavior) {
             return (
                 // eslint-disable-next-line react/jsx-props-no-spreading
-                <NextLink ref={forwardedReference} href={href} {...properties}>
+                <NextLink href={href} ref={forwardedReference} {...properties}>
                     {children}
                 </NextLink>
             );

@@ -20,7 +20,6 @@ const Breadcrumb = ({ activePath }: { activePath: Item[] }): ReactElement => (
                         className={cn(
                             "whitespace-nowrap transition-colors",
                             isActive
-                                // eslint-disable-next-line max-len
                                 ? "font-medium text-gray-700 contrast-more:font-bold contrast-more:text-current dark:text-gray-400 contrast-more:dark:text-current"
                                 : ["min-w-[24px] overflow-hidden text-ellipsis px-1 -mx-1", isLink && "hover:text-gray-900 dark:hover:text-gray-200"],
                         )}

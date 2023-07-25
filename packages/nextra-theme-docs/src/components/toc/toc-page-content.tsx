@@ -8,15 +8,15 @@ const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
     const activeAnchor = useActiveAnchor();
 
     return (
-        <div ref={wrapperRef} className="py-8 text-sm [hyphens:auto]">
-            <Toc headings={headings} activeAnchor={activeAnchor} isPage prefix="content" />
+        <div className="py-8 text-sm [hyphens:auto]" ref={wrapperRef}>
+            <Toc activeAnchor={activeAnchor} headings={headings} isPage prefix="content" />
         </div>
     );
 };
 
-export type TOCProperties = {
+export interface TOCProperties {
     headings: Heading[];
     wrapperRef: Ref<HTMLDivElement>;
-};
+}
 
 export default TocPageContent;

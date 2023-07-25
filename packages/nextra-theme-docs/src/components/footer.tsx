@@ -7,7 +7,7 @@ import { renderComponent } from "../utils";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 
-const Footer = ({ activeType, themeContext, locale }: { activeType: string; themeContext: PageTheme; locale: string }): ReactElement => {
+const Footer = ({ activeType, locale, themeContext }: { activeType: string; locale: string; themeContext: PageTheme }): ReactElement => {
     const config = useConfig();
     const isLayoutRaw = themeContext.layout === "raw";
 
@@ -17,8 +17,8 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
         <footer
             className={cn(
                 "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
-                // eslint-disable-next-line max-len
-                ["page", "hidden"].includes(activeType) || isLayoutRaw
+
+                ["hidden", "page"].includes(activeType) || isLayoutRaw
                     ? "px-2 md:px-6 lg:px-8"
                     : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
             )}
@@ -27,28 +27,24 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
                 <div
                     className={cn(
                         "flex lg:flex-col py-6 lg:py-12 lg:w-64 lg:shrink-0",
-                        // eslint-disable-next-line max-len
-                        ["page", "hidden"].includes(activeType) || isLayoutRaw
+
+                        ["hidden", "page"].includes(activeType) || isLayoutRaw
                             ? ""
                             : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}
                 >
                     {(hasI18n || config.darkMode) && (
                         <div
-                            className={cn(
-                                "ml-auto mr-auto flex gap-2 lg:px-6 lg:-ml-2",
-                                activeType === "doc" && !isLayoutRaw ? "lg:hidden" : "lg:mb-12",
-                                {
-                                    "items-center": hasI18n && config.darkMode,
-                                },
-                            )}
+                            className={cn("ml-auto mr-auto flex gap-2 lg:px-6 lg:-ml-2", activeType === "doc" && !isLayoutRaw ? "lg:hidden" : "lg:mb-12", {
+                                "items-center": hasI18n && config.darkMode,
+                            })}
                         >
                             {hasI18n && <LocaleSwitch options={config.i18n} />}
                             {hasI18n && config.darkMode && <div className="grow" />}
                             {config.darkMode && <ThemeSwitch locale={locale} />}
                         </div>
                     )}
-                    {/*  eslint-disable-next-line max-len */}
+                    {}
                     <div className="hidden px-6 lg:block">{config.footer.copyright && renderComponent(config.footer.copyright, { activeType })}</div>
                 </div>
                 <div className="footer-border dark:footer-border mb-6 lg:hidden" />

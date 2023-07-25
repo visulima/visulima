@@ -1,22 +1,17 @@
 import type { LinkProps } from "next/link";
 import Link from "next/link";
-import type {
-    FC, HTMLProps, PropsWithChildren, ReactNode,
-} from "react";
+import type { FC, HTMLProps, PropsWithChildren, ReactNode } from "react";
 
 import { cn } from "../utils";
 
 export const Card: FC<
-PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean; arrow?: boolean; href: string; className?: string }>
-> = ({
-    children, title, icon, image, arrow, href, className, ...properties
-}) => {
+    PropsWithChildren<LinkProps & { arrow?: boolean; className?: string; href: string; icon: ReactNode; image?: boolean; title: string }>
+> = ({ arrow, children, className, href, icon, image, title, ...properties }) => {
     const animatedArrow = arrow ? <span className={cn("transition-transform duration-75", "group-hover:translate-x-[2px]")}>→</span> : null;
 
     if (image) {
         return (
             <Link
-                href={href}
                 className={cn(
                     "nextra-card",
                     "group flex flex-col justify-start overflow-hidden rounded-lg",
@@ -27,6 +22,7 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
                     "active:shadow-sm active:shadow-gray-200",
                     className,
                 )}
+                href={href}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
@@ -44,7 +40,6 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
 
     return (
         <Link
-            href={href}
             className={cn(
                 "nextra-card",
                 "group flex flex-col justify-start overflow-hidden rounded-lg border border-gray-200",
@@ -54,6 +49,7 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
                 "hover:shadow-gray-100 dark:hover:border-neutral-700 dark:hover:bg-neutral-900 dark:hover:shadow-none",
                 "active:shadow-sm active:shadow-gray-200",
             )}
+            href={href}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >
@@ -68,9 +64,9 @@ PropsWithChildren<LinkProps & { title: string; icon: ReactNode; image?: boolean;
 
 export const Cards: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { num: number; style: HTMLProps<HTMLDivElement>["style"] & { "--rows"?: string } }>> = ({
     children,
+    className,
     num,
     style,
-    className,
     ...properties
 }) => (
     <div

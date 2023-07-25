@@ -10,14 +10,15 @@ const useOnScreen = <T extends Element>(reference: MutableRefObject<T>): boolean
         // eslint-disable-next-line compat/compat
         const observer = new IntersectionObserver(
             ([entry]) => {
-                setIntersecting(entry.isIntersecting);
+                if (entry) {
+                    setIntersecting(entry.isIntersecting);
+                }
             },
             {
                 rootMargin: "-150px 0px 0px 0px",
             },
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (current) {
             observer.observe(current);
         }
