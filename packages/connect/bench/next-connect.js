@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 
-// eslint-disable-next-line import/no-unresolved
 import { createRouter } from "../src";
 
 function one(request, response, next) {
