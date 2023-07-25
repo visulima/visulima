@@ -1,10 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Router } from "../src";
-import { createRouter, getPathname, NodeRouter } from "../src/node";
+import { NodeRouter, createRouter, getPathname } from "../src/node";
 
 type AnyHandler = (...arguments_: any[]) => any;
 
@@ -52,7 +50,7 @@ describe("createRouter", () => {
     });
 
     it("use()", async () => {
-        it("it defaults to / if base is not provided", async () => {
+        it("defaults to / if base is not provided", async () => {
             const context = new NodeRouter();
 
             // @ts-expect-error: private field
@@ -63,7 +61,7 @@ describe("createRouter", () => {
             expect(useSpy).toStrictEqual([["/", noop]]);
         });
 
-        it("it call this.router.use() with fn", async () => {
+        it("call this.router.use() with fn", async () => {
             const context = new NodeRouter();
 
             // @ts-expect-error: private field
@@ -74,7 +72,7 @@ describe("createRouter", () => {
             expect(useSpy).toStrictEqual([["/test", noop, noop]]);
         });
 
-        it("it call this.router.use() with fn.router", async () => {
+        it("call this.router.use() with fn.router", async () => {
             const context = new NodeRouter();
             const context2 = new NodeRouter();
 
@@ -110,21 +108,20 @@ describe("createRouter", () => {
         expect.assertions(7);
 
         const context = createRouter();
-        const request = { url: "/foo/bar", method: "POST" } as IncomingMessage;
+        const request = { method: "POST", url: "/foo/bar" } as IncomingMessage;
         const response = {} as ServerResponse;
 
         context.use("/", (reqq, ress, next) => {
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(ress, "passes along req").toStrictEqual(response);
 
             return next();
         });
-        // eslint-disable-next-line sonarjs/no-duplicate-string
+
         context.use("/not/match", badFunction);
         context.get("/", badFunction);
         context.get("/foo/bar", badFunction);
-        // eslint-disable-next-line sonarjs/no-identical-functions
+
         context.post("/foo/bar", async (reqq, ress, next) => {
             expect(reqq, "passes along req").toStrictEqual(request);
             expect(ress, "passes along req").toStrictEqual(response);
@@ -137,42 +134,51 @@ describe("createRouter", () => {
 
             return "ok";
         });
-        expect(await context.run(request, response)).toStrictEqual("ok");
+        await expect(context.run(request, response)).resolves.toBe("ok");
     });
 
     it("run() - propagates error", async () => {
-        const request = { url: "/", method: "GET" } as IncomingMessage;
+        const request = { method: "GET", url: "/" } as IncomingMessage;
         const serverResponse = {} as ServerResponse;
         const error = new Error("💥");
 
-        await expect(() => createRouter()
-            .use((_, __, next) => {
-                next();
-            })
-            .use(() => {
-                throw error;
-            })
-            .run(request, serverResponse)).rejects.toThrow(error);
+        await expect(
+            async () =>
+                await createRouter()
+                    .use((_, __, next) => {
+                        next();
+                    })
+                    .use(() => {
+                        throw error;
+                    })
+                    .run(request, serverResponse),
+        ).rejects.toThrow(error);
 
-        await expect(() => createRouter()
-            .use((_, __, next) => next())
-            .use(async () => {
-                throw error;
-            })
-            .run(request, serverResponse)).rejects.toThrow(error);
+        await expect(
+            async () =>
+                await createRouter()
+                    .use((_, __, next) => next())
+                    .use(async () => {
+                        throw error;
+                    })
+                    .run(request, serverResponse),
+        ).rejects.toThrow(error);
 
-        await expect(() => createRouter()
-            .use((_, __, next) => next())
-            .use(async (_, __, next) => {
-                await next();
-            })
-        // eslint-disable-next-line compat/compat
-            .use(() => Promise.reject(error))
-            .run(request, serverResponse)).rejects.toThrow(error);
+        await expect(
+            async () =>
+                await createRouter()
+                    .use((_, __, next) => next())
+                    .use(async (_, __, next) => {
+                        await next();
+                    })
+                    // eslint-disable-next-line compat/compat
+                    .use(async () => await Promise.reject(error))
+                    .run(request, serverResponse),
+        ).rejects.toThrow(error);
     });
 
     it("run() - returns if no fns", async () => {
-        const request = { url: "/foo/bar", method: "GET" } as IncomingMessage;
+        const request = { method: "GET", url: "/foo/bar" } as IncomingMessage;
         const response = {} as ServerResponse;
         const context = createRouter();
 
@@ -180,7 +186,7 @@ describe("createRouter", () => {
         context.post("/foo/bar", badFunction);
         context.use("/bar", badFunction);
 
-        expect(context.run(request, response)).resolves.toBeUndefined();
+        await expect(context.run(request, response)).resolves.toBeUndefined();
     });
 
     it("handler() - basic", async () => {
@@ -198,13 +204,13 @@ describe("createRouter", () => {
         await createRouter()
             .use((_request, _response, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(1);
+                expect(++index).toBe(1);
 
                 next();
             })
             .use((_request, _response, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(2);
+                expect(++index).toBe(2);
 
                 next();
             })
@@ -212,7 +218,7 @@ describe("createRouter", () => {
             .get("/not/match", badFunction)
             .get(() => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(3);
+                expect(++index).toBe(3);
             })
             .handler()(request, response);
     });
@@ -228,13 +234,13 @@ describe("createRouter", () => {
         await createRouter()
             .use(async (_request, _response, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(1);
+                expect(++index).toBe(1);
 
                 await next();
             })
             .use((_request, _response, next) => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(2);
+                expect(++index).toBe(2);
 
                 return next();
             })
@@ -242,7 +248,7 @@ describe("createRouter", () => {
             .get("/not/match", badFunction)
             .get(async () => {
                 // eslint-disable-next-line no-plusplus
-                expect(++index).toStrictEqual(3);
+                expect(++index).toBe(3);
             })
             .handler()(request, response);
     });
@@ -264,9 +270,9 @@ describe("createRouter", () => {
         const request = { method: "GET", url: "/" } as IncomingMessage;
         const response = {
             end(chunk) {
-                expect(this.statusCode, "set 500 status code").toStrictEqual(500);
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                expect(chunk).toStrictEqual("Internal Server Error");
+                expect(this.statusCode, "set 500 status code").toBe(500);
+
+                expect(chunk).toBe("Internal Server Error");
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
@@ -292,8 +298,8 @@ describe("createRouter", () => {
 
         const response2 = {
             end(chunk) {
-                expect(response.statusCode).toStrictEqual(500);
-                expect(chunk).toStrictEqual("Internal Server Error");
+                expect(response.statusCode).toBe(500);
+                expect(chunk).toBe("Internal Server Error");
                 expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             },
         } as ServerResponse;
@@ -301,6 +307,7 @@ describe("createRouter", () => {
             .use(baseFunction)
             .get(() => {
                 // non error throw
+
                 // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw "";
             })
@@ -317,17 +324,15 @@ describe("createRouter", () => {
         let index = 0;
 
         const response = {
-            // eslint-disable-next-line sonarjs/no-identical-functions
             end(chunk) {
-                expect(this.statusCode, "set 500 status code").toStrictEqual(500);
-                expect(chunk).toStrictEqual("Internal Server Error");
+                expect(this.statusCode, "set 500 status code").toBe(500);
+                expect(chunk).toBe("Internal Server Error");
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
             },
         } as ServerResponse;
 
-        // eslint-disable-next-line sonarjs/no-identical-functions
         const baseFunction = async (_request: IncomingMessage, response_: ServerResponse, next: any) => {
             // eslint-disable-next-line no-param-reassign
             response_.statusCode = 200;
@@ -354,7 +359,7 @@ describe("createRouter", () => {
         expect.assertions(1);
         await createRouter({
             onError(error) {
-                expect((error as Error).message).toStrictEqual("💥");
+                expect((error as Error).message).toBe("💥");
             },
         })
             .get(() => {
@@ -366,11 +371,11 @@ describe("createRouter", () => {
     it("handler() - calls onNoMatch if no fns matched", async () => {
         expect.assertions(2);
 
-        const request = { url: "/foo/bar", method: "GET" } as IncomingMessage;
+        const request = { method: "GET", url: "/foo/bar" } as IncomingMessage;
         const response = {
             end(chunk) {
-                expect(this.statusCode).toStrictEqual(404);
-                expect(chunk).toStrictEqual("Route GET /foo/bar not found");
+                expect(this.statusCode).toBe(404);
+                expect(chunk).toBe("Route GET /foo/bar not found");
             },
         } as ServerResponse;
 
@@ -380,11 +385,11 @@ describe("createRouter", () => {
     it("handler() - calls onNoMatch if only middle fns found", async () => {
         expect.assertions(2);
 
-        const request = { url: "/foo/bar", method: "GET" } as IncomingMessage;
+        const request = { method: "GET", url: "/foo/bar" } as IncomingMessage;
         const response = {
             end(chunk) {
-                expect(this.statusCode).toStrictEqual(404);
-                expect(chunk).toStrictEqual("Route GET /foo/bar not found");
+                expect(this.statusCode).toBe(404);
+                expect(chunk).toBe("Route GET /foo/bar not found");
             },
         } as ServerResponse;
 
@@ -394,10 +399,10 @@ describe("createRouter", () => {
     it("handler() - calls onNoMatch if no fns matched (HEAD)", async () => {
         expect.assertions(2);
 
-        const request = { url: "/foo/bar", method: "HEAD" } as IncomingMessage;
+        const request = { method: "HEAD", url: "/foo/bar" } as IncomingMessage;
         const response = {
             end(chunk) {
-                expect(this.statusCode).toStrictEqual(404);
+                expect(this.statusCode).toBe(404);
                 expect(chunk).toBeUndefined();
             },
         } as ServerResponse;
@@ -411,21 +416,21 @@ describe("createRouter", () => {
             onNoMatch() {
                 expect(true, "onNoMatch called").toBeTruthy();
             },
-        }).handler()({ url: "/foo/bar", method: "GET" } as IncomingMessage, {} as ServerResponse);
+        }).handler()({ method: "GET", url: "/foo/bar" } as IncomingMessage, {} as ServerResponse);
     });
 
     it("handler() - calls onError if custom onNoMatch throws", async () => {
         expect.assertions(2);
 
         await createRouter({
+            onError(error) {
+                expect((error as Error).message).toBe("💥");
+            },
             onNoMatch() {
                 expect(true, "onNoMatch called").toBeTruthy();
                 throw new Error("💥");
             },
-            onError(error) {
-                expect((error as Error).message, "💥");
-            },
-        }).handler()({ url: "/foo/bar", method: "GET" } as IncomingMessage, {} as never);
+        }).handler()({ method: "GET", url: "/foo/bar" } as IncomingMessage, {} as never);
     });
 
     it("prepareRequest() - attach params", async () => {
@@ -436,11 +441,10 @@ describe("createRouter", () => {
         context2.prepareRequest(
             request,
             // @ts-expect-error: internal
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             context2.router.find("GET", "/hello/world"),
         );
         // @ts-expect-error: extra prop
-        expect(request.params, { name: "world" }, "params are attached");
+        expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 
         const requestWithParameters = {
             params: { age: "20" },
@@ -451,7 +455,7 @@ describe("createRouter", () => {
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
-        expect(requestWithParameters.params, "params are merged").toStrictEqual({ name: "world", age: "20" });
+        expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
 
         const requestWithParameters2 = {
             params: { name: "sunshine" },
@@ -466,7 +470,7 @@ describe("createRouter", () => {
     });
 
     it("getPathname() - returns pathname correctly", async () => {
-        expect(getPathname("/foo/bar")).toStrictEqual("/foo/bar");
-        expect(getPathname("/foo/bar?q=quz")).toStrictEqual("/foo/bar");
+        expect(getPathname("/foo/bar")).toBe("/foo/bar");
+        expect(getPathname("/foo/bar?q=quz")).toBe("/foo/bar");
     });
 });

@@ -2,19 +2,21 @@ import type { AnyZodObject } from "zod";
 
 export type HttpMethod = "DELETE" | "GET" | "HEAD" | "PATCH" | "POST" | "PUT";
 
-export type FunctionLike = (...arguments_: any[]) => unknown;
+export type FunctionLike = (...arguments_: any[]) => any;
 
 export type RouteMatch = RegExp | string;
+
+export type ValueOrPromise<T> = Promise<T> | T;
 
 export type NextHandler = () => ValueOrPromise<any>;
 
 export type Nextable<H extends FunctionLike> = (...arguments_: [...Parameters<H>, NextHandler]) => ValueOrPromise<any>;
 
-export type FindResult<H extends FunctionLike> = {
+export interface FindResult<H extends FunctionLike> {
     fns: Nextable<H>[];
-    params: Record<string, string>;
     middleOnly: boolean;
-};
+    params: Record<string, string>;
+}
 
 export type RoutesExtendedRequestHandler<Request extends object, Context, RResponse, Routes> = (
     request: Request,
@@ -24,11 +26,9 @@ export type RoutesExtendedRequestHandler<Request extends object, Context, RRespo
 ) => ValueOrPromise<RResponse | void>;
 
 export interface HandlerOptions<Handler extends FunctionLike> {
-    onNoMatch?: Handler;
     onError?: (error: unknown, ...arguments_: Parameters<Handler>) => ReturnType<Handler>;
+    onNoMatch?: Handler;
 }
-
-export type ValueOrPromise<T> = Promise<T> | T;
 
 export type RouteShortcutMethod<This, Schema extends AnyZodObject, H extends FunctionLike> = (
     route: Nextable<H> | RouteMatch,
