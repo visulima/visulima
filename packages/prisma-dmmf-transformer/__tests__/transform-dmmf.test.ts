@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 
 import { transformDMMF } from "../src";
 
-/* eslint-disable no-tabs */
 const datamodelPostGresQL = /* Prisma */ `
 	datasource db {
 		provider = "postgresql"
@@ -63,23 +62,20 @@ const datamodelMongoDB = /* Prisma */ `
         url    String
     }
 `;
-/* eslint-enable no-tabs */
-
 const schema = "http://json-schema.org/draft-07/schema#";
 
-describe("JSON Schema Generator", () => {
+describe("jSON Schema Generator", () => {
     describe("db postgresql", () => {
         it("returns JSON Schema for given models", async () => {
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
-            expect(transformDMMF(dmmf)).toEqual({
+            expect(transformDMMF(dmmf)).toStrictEqual({
                 $schema: schema,
                 definitions: {
                     Post: {
                         properties: {
                             id: { type: "integer" },
                             user: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                             },
                         },
@@ -90,20 +86,14 @@ describe("JSON Schema Generator", () => {
                             biography: {
                                 type: ["number", "string", "boolean", "object", "array", "null"],
                             },
+                            bytes: {
+                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                type: "string",
+                            },
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
-                                type: "string",
-                            },
-                            number: {
-                                type: "integer",
-                                default: "34534535435353",
-                            },
-                            bytes: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
-                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
                                 type: "string",
                             },
                             favouriteDecimal: {
@@ -120,8 +110,11 @@ describe("JSON Schema Generator", () => {
                                 default: "Bela B",
                                 type: ["string", "null"],
                             },
+                            number: {
+                                default: "34534535435353",
+                                type: "integer",
+                            },
                             posts: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 items: { $ref: "#/definitions/Post" },
                                 type: "array",
                             },
@@ -155,7 +148,7 @@ describe("JSON Schema Generator", () => {
         it("keeps relation scalar fields if requested", async () => {
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
-            expect(transformDMMF(dmmf, { keepRelationScalarFields: "true" })).toEqual({
+            expect(transformDMMF(dmmf, { keepRelationScalarFields: "true" })).toStrictEqual({
                 $schema: schema,
                 definitions: {
                     Post: {
@@ -175,18 +168,14 @@ describe("JSON Schema Generator", () => {
                             biography: {
                                 type: ["number", "string", "boolean", "object", "array", "null"],
                             },
+                            bytes: {
+                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                type: "string",
+                            },
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
-                                type: "string",
-                            },
-                            number: {
-                                type: "integer",
-                                default: "34534535435353",
-                            },
-                            bytes: {
-                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
                                 type: "string",
                             },
                             favouriteDecimal: {
@@ -202,6 +191,10 @@ describe("JSON Schema Generator", () => {
                             name: {
                                 default: "Bela B",
                                 type: ["string", "null"],
+                            },
+                            number: {
+                                default: "34534535435353",
+                                type: "integer",
                             },
                             posts: {
                                 items: { $ref: "#/definitions/Post" },
@@ -241,7 +234,7 @@ describe("JSON Schema Generator", () => {
         it("adds required field if requested", async () => {
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
-            expect(transformDMMF(dmmf, { includeRequiredFields: "true" })).toEqual({
+            expect(transformDMMF(dmmf, { includeRequiredFields: "true" })).toStrictEqual({
                 $schema: schema,
                 definitions: {
                     Post: {
@@ -251,27 +244,22 @@ describe("JSON Schema Generator", () => {
                                 anyOf: [{ $ref: "#/definitions/User" }, { type: "null" }],
                             },
                         },
-                        type: "object",
                         required: [],
+                        type: "object",
                     },
                     User: {
                         properties: {
                             biography: {
                                 type: ["number", "string", "boolean", "object", "array", "null"],
                             },
+                            bytes: {
+                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                type: "string",
+                            },
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
-                                type: "string",
-                            },
-                            number: {
-                                type: "integer",
-                                default: "34534535435353",
-                            },
-                            bytes: {
-                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
                                 type: "string",
                             },
                             favouriteDecimal: {
@@ -287,6 +275,10 @@ describe("JSON Schema Generator", () => {
                             name: {
                                 default: "Bela B",
                                 type: ["string", "null"],
+                            },
+                            number: {
+                                default: "34534535435353",
+                                type: "integer",
                             },
                             posts: {
                                 items: { $ref: "#/definitions/Post" },
@@ -308,8 +300,8 @@ describe("JSON Schema Generator", () => {
                                 type: ["number", "null"],
                             },
                         },
-                        type: "object",
                         required: ["email", "bytes", "keywords", "biography"],
+                        type: "object",
                     },
                 },
                 properties: {
@@ -323,7 +315,7 @@ describe("JSON Schema Generator", () => {
         it("adds original type if requested", async () => {
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
-            expect(transformDMMF(dmmf, { persistOriginalType: "true" })).toEqual({
+            expect(transformDMMF(dmmf, { persistOriginalType: "true" })).toStrictEqual({
                 $schema: schema,
                 definitions: {
                     Post: {
@@ -342,9 +334,14 @@ describe("JSON Schema Generator", () => {
                                 originalType: "Json",
                                 type: ["number", "string", "boolean", "object", "array", "null"],
                             },
+                            bytes: {
+                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                originalType: "Bytes",
+                                type: "string",
+                            },
                             createdAt: {
-                                originalType: "DateTime",
                                 format: "date-time",
+                                originalType: "DateTime",
                                 type: "string",
                             },
                             dwmc: {
@@ -353,18 +350,8 @@ describe("JSON Schema Generator", () => {
                                 type: ["string", "null"],
                             },
                             email: {
-                                originalType: "String",
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
-                                type: "string",
-                            },
-                            number: {
-                                type: "integer",
-                                originalType: "BigInt",
-                                default: "34534535435353",
-                            },
-                            bytes: {
-                                originalType: "Bytes",
-                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                originalType: "String",
                                 type: "string",
                             },
                             favouriteDecimal: {
@@ -372,11 +359,11 @@ describe("JSON Schema Generator", () => {
                                 originalType: "Decimal",
                                 type: "number",
                             },
-                            id: { type: "integer", originalType: "Int" },
+                            id: { originalType: "Int", type: "integer" },
                             is18: {
                                 default: false,
-                                type: ["boolean", "null"],
                                 originalType: "Boolean",
+                                type: ["boolean", "null"],
                             },
                             keywords: {
                                 items: { type: "string" },
@@ -387,6 +374,11 @@ describe("JSON Schema Generator", () => {
                                 default: "Bela B",
                                 originalType: "String",
                                 type: ["string", "null"],
+                            },
+                            number: {
+                                default: "34534535435353",
+                                originalType: "BigInt",
+                                type: "integer",
                             },
                             posts: {
                                 items: { $ref: "#/definitions/Post" },
@@ -399,8 +391,8 @@ describe("JSON Schema Generator", () => {
                             },
                             role: {
                                 default: "USER",
-                                originalType: "Role",
                                 enum: ["USER", "ADMIN"],
+                                originalType: "Role",
                                 type: "string",
                             },
                             successor: {
@@ -432,7 +424,7 @@ describe("JSON Schema Generator", () => {
                     keepRelationScalarFields: "true",
                     schemaId: "schemaId",
                 }),
-            ).toEqual({
+            ).toStrictEqual({
                 $id: "schemaId",
                 $schema: schema,
                 definitions: {
@@ -440,7 +432,6 @@ describe("JSON Schema Generator", () => {
                         properties: {
                             id: { type: "integer" },
                             user: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 anyOf: [{ $ref: "schemaId#/definitions/User" }, { type: "null" }],
                             },
                             userId: {
@@ -454,18 +445,14 @@ describe("JSON Schema Generator", () => {
                             biography: {
                                 type: ["number", "string", "boolean", "object", "array", "null"],
                             },
+                            bytes: {
+                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
+                                type: "string",
+                            },
                             createdAt: { format: "date-time", type: "string" },
                             dwmc: { default: "", type: ["string", "null"] },
                             email: {
                                 description: "Triple Slash Comment: Will show up in JSON schema [EMAIL]",
-                                type: "string",
-                            },
-                            number: {
-                                type: "integer",
-                                default: "34534535435353",
-                            },
-                            bytes: {
-                                description: "Triple Slash Inline Comment: Will show up in JSON schema [BYTES]",
                                 type: "string",
                             },
                             favouriteDecimal: {
@@ -481,6 +468,10 @@ describe("JSON Schema Generator", () => {
                             name: {
                                 default: "Bela B",
                                 type: ["string", "null"],
+                            },
+                            number: {
+                                default: "34534535435353",
+                                type: "integer",
                             },
                             posts: {
                                 items: { $ref: "schemaId#/definitions/Post" },
@@ -537,18 +528,18 @@ describe("JSON Schema Generator", () => {
                     },
                 },
                 user: {
-                    id: 10,
-                    createdAt: "1997-07-16T19:20:30.45+01:00",
-                    email: "jan@scharnow.city",
                     biography: {
                         bornIn: "Scharnow",
                     },
-                    number: 34_534_535_435_353,
                     bytes: "SGVsbG8gd29ybGQ=",
+                    createdAt: "1997-07-16T19:20:30.45+01:00",
+                    email: "jan@scharnow.city",
                     favouriteDecimal: 22.32,
+                    id: 10,
                     is18: true,
                     keywords: ["prisma2", "json-schema", "generator"],
                     name: null,
+                    number: 34_534_535_435_353,
                     posts: [
                         {
                             id: 4,
@@ -558,18 +549,16 @@ describe("JSON Schema Generator", () => {
                         },
                     ],
                     predecessor: {
-                        id: 10,
                         email: "horst@wassermann.de",
+                        id: 10,
                     },
-                    successor: null,
                     role: "USER",
+                    successor: null,
                     weight: 10.12,
                 },
             });
 
-            if (!valid) {
-                throw new Error(ajv.errorsText(validate.errors));
-            }
+            expect(valid, ajv.errorsText(validate.errors)).toBeTruthy();
         });
     });
 
@@ -577,31 +566,31 @@ describe("JSON Schema Generator", () => {
         it("returns JSON schema for given models", async () => {
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelMongoDB });
 
-            expect(transformDMMF(dmmf)).toEqual({
+            expect(transformDMMF(dmmf)).toStrictEqual({
                 $schema: schema,
                 definitions: {
+                    Photo: {
+                        properties: {
+                            height: {
+                                default: 200,
+                                type: "integer",
+                            },
+                            url: {
+                                type: "string",
+                            },
+                            width: {
+                                default: 100,
+                                type: "integer",
+                            },
+                        },
+                        type: "object",
+                    },
                     User: {
                         properties: {
                             id: { type: "string" },
                             photos: {
                                 items: { $ref: "#/definitions/Photo" },
                                 type: "array",
-                            },
-                        },
-                        type: "object",
-                    },
-                    Photo: {
-                        properties: {
-                            height: {
-                                type: "integer",
-                                default: 200,
-                            },
-                            width: {
-                                type: "integer",
-                                default: 100,
-                            },
-                            url: {
-                                type: "string",
                             },
                         },
                         type: "object",
