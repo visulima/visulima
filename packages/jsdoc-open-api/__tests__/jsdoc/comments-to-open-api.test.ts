@@ -4,7 +4,7 @@ import commentsToOpenApi from "../../src/jsdoc/comments-to-open-api";
 
 describe("code blocks", () => {
     it("keeps spacing", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /\n\
  * @description List API versions\n\
@@ -41,7 +41,7 @@ describe("code blocks", () => {
 
 describe("commentsToOpenApi", () => {
     it("big stuff", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * POST /pet\n\
  *\n\
@@ -94,73 +94,67 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/pet": {
                     post: {
+                        callbacks: {
+                            onSomethin: {
+                                $ref: "#/components/callbacks/ExampleCallback",
+                            },
+                            onSomethin2: {
+                                $ref: "#/components/callbacks/ExampleCallback",
+                            },
+                        },
                         externalDocs: {
                             description: "Find more info here",
                             url: "https://example.com",
                         },
-                        servers: [
-                            {
-                                description: "Development server",
-                                url: "https://development.gigantic-server.com/v1",
-                            },
-                            {
-                                description: "production server",
-                                url: "https://gigantic-server.com/v1",
-                            },
-                        ],
                         parameters: [
                             {
                                 $ref: "#/components/parameters/ExampleParameter",
                             },
                             {
-                                name: "password",
-                                in: "query",
                                 description: "username to fetch",
+                                in: "query",
+                                name: "password",
                                 required: false,
                                 schema: {
                                     $ref: "#/components/schemas/ExampleSchema",
                                 },
                             },
                             {
+                                description: "the limit to fetch",
+                                in: "query",
                                 name: "limit",
-                                in: "query",
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
-                                description: "the limit to fetch",
                                 required: false,
                                 schema: {
-                                    type: "integer",
                                     default: 20,
+                                    type: "integer",
                                 },
                             },
                             {
+                                description: "the limit to fetch",
+                                in: "query",
                                 name: "pi",
-                                in: "query",
-                                description: "the limit to fetch",
                                 required: false,
                                 schema: {
-                                    type: "number",
                                     default: 3.14,
+                                    type: "number",
                                 },
                             },
                             {
-                                name: "name",
-                                in: "query",
                                 description: "the limit to fetch",
+                                in: "query",
+                                name: "name",
                                 required: false,
                                 schema: {
-                                    type: "string",
                                     default: "nick",
+                                    type: "string",
                                 },
                             },
                         ],
                         requestBody: {
-                            description: "an optional description",
-                            required: true,
                             content: {
                                 "application/json": {
                                     examples: {
                                         ExampleExample: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/examples/ExampleExample",
                                         },
                                     },
@@ -169,15 +163,13 @@ describe("commentsToOpenApi", () => {
                                     },
                                 },
                             },
+                            description: "an optional description",
+                            required: true,
                         },
                         responses: {
                             200: {
-                                description: "sup",
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            type: "string",
-                                        },
                                         examples: {
                                             example1: {
                                                 $ref: "#/components/examples/ExampleExample",
@@ -186,8 +178,12 @@ describe("commentsToOpenApi", () => {
                                                 $ref: "#/components/examples/ExampleExample",
                                             },
                                         },
+                                        schema: {
+                                            type: "string",
+                                        },
                                     },
                                 },
+                                description: "sup",
                                 headers: {
                                     "some-header": {
                                         $ref: "#/components/headers/ExampleHeader",
@@ -212,20 +208,22 @@ describe("commentsToOpenApi", () => {
                                 $ref: "#/components/responses/ExampleResponse",
                             },
                         },
-                        callbacks: {
-                            onSomethin: {
-                                $ref: "#/components/callbacks/ExampleCallback",
-                            },
-                            onSomethin2: {
-                                $ref: "#/components/callbacks/ExampleCallback",
-                            },
-                        },
                         security: [
                             {
                                 ExampleSecurity: [],
                             },
                             {
                                 ExampleSecurity3: [],
+                            },
+                        ],
+                        servers: [
+                            {
+                                description: "Development server",
+                                url: "https://development.gigantic-server.com/v1",
+                            },
+                            {
+                                description: "production server",
+                                url: "https://gigantic-server.com/v1",
                             },
                         ],
                     },
@@ -262,7 +260,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("random properities I don't normally use", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
@@ -276,7 +274,6 @@ describe("commentsToOpenApi", () => {
                 "/": {
                     get: {
                         operationId: "listVersionsv2",
-                        summary: "List API versions",
                         responses: {
                             200: {
                                 description: "200 response",
@@ -285,6 +282,7 @@ describe("commentsToOpenApi", () => {
                                 description: "300 response",
                             },
                         },
+                        summary: "List API versions",
                     },
                 },
             },
@@ -296,7 +294,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("simple example", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = '/**\n\
  * GET /hello\n\
  * @description Get a "hello world" message.\n\
@@ -307,11 +305,9 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/hello": {
                     get: {
-                        // eslint-disable-next-line sonarjs/no-duplicate-string
                         description: 'Get a "hello world" message.',
                         responses: {
                             200: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                 description: "hello world.",
                             },
                         },
@@ -325,7 +321,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("2 examples", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = '/**\n\
  * POST /hello\n\
  * @description Get a "hello world" message.\n\
@@ -349,7 +345,6 @@ describe("commentsToOpenApi", () => {
                         description: 'Get a "hello world" message.',
                         responses: {
                             200: {
-                                description: "hello world.",
                                 content: {
                                     "text/plain": {
                                         schema: {
@@ -357,6 +352,7 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "hello world.",
                             },
                         },
                     },
@@ -371,7 +367,6 @@ describe("commentsToOpenApi", () => {
                         description: 'Get a "hello world" message.',
                         responses: {
                             200: {
-                                description: "hello world.",
                                 content: {
                                     "text/plain": {
                                         schema: {
@@ -379,6 +374,7 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "hello world.",
                             },
                         },
                     },
@@ -392,7 +388,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("complex example", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /api/v1/cars/{country}/{city}\n\
  * @description Get a list of cars at a location.\n\
@@ -416,72 +412,72 @@ describe("commentsToOpenApi", () => {
                         description: "Get a list of cars at a location.",
                         parameters: [
                             {
+                                description: "Country of the rental company.",
                                 in: "path",
                                 name: "country",
-                                description: "Country of the rental company.",
                                 required: true,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "City of the rental company.",
                                 in: "path",
                                 name: "city",
-                                description: "City of the rental company.",
                                 required: true,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "Rental Company name.",
                                 in: "query",
                                 name: "company",
-                                description: "Rental Company name.",
                                 required: false,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "Car Name.",
                                 in: "query",
                                 name: "car",
-                                description: "Car Name.",
                                 required: false,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "Car Type.",
                                 in: "query",
                                 name: "type",
-                                description: "Car Type.",
                                 required: false,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "Car Style.",
                                 in: "query",
                                 name: "style",
-                                description: "Car Style.",
                                 required: false,
                                 schema: {
                                     type: "string",
                                 },
                             },
                             {
+                                description: "Min Cost.",
                                 in: "query",
                                 name: "mincost",
-                                description: "Min Cost.",
                                 required: false,
                                 schema: {
                                     type: "number",
                                 },
                             },
                             {
+                                description: "Max Cost.",
                                 in: "query",
                                 name: "maxcost",
-                                description: "Max Cost.",
                                 required: false,
                                 schema: {
                                     type: "number",
@@ -490,17 +486,17 @@ describe("commentsToOpenApi", () => {
                         ],
                         responses: {
                             200: {
-                                description: "A list of cars.",
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            type: "array",
                                             items: {
                                                 type: "string",
                                             },
+                                            type: "array",
                                         },
                                     },
                                 },
+                                description: "A list of cars.",
                             },
                             400: {
                                 description: "Example Error.",
@@ -516,7 +512,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("simple post", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = '/**\n\
  * POST /hello\n\
  * @description Post a "hello world" message.\n\
@@ -529,10 +525,8 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/hello": {
                     post: {
-                        // eslint-disable-next-line sonarjs/no-duplicate-string
                         description: 'Post a "hello world" message.',
                         requestBody: {
-                            description: "Whether or not to say hello world.",
                             content: {
                                 "application/json": {
                                     schema: {
@@ -540,6 +534,7 @@ describe("commentsToOpenApi", () => {
                                     },
                                 },
                             },
+                            description: "Whether or not to say hello world.",
                         },
                         responses: {
                             200: {
@@ -556,7 +551,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("form post", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = '/**\n\
  * POST /hello\n\
  * @description Post a "hello world" message.\n\
@@ -571,15 +566,14 @@ describe("commentsToOpenApi", () => {
                     post: {
                         description: 'Post a "hello world" message.',
                         requestBody: {
-                            description: "A more complicated object.",
                             content: {
                                 "application/x-www-form-urlencoded": {
                                     schema: {
-                                        // eslint-disable-next-line sonarjs/no-duplicate-string
                                         $ref: "#/components/schemas/ExampleObject",
                                     },
                                 },
                             },
+                            description: "A more complicated object.",
                         },
                         responses: {
                             200: {
@@ -597,7 +591,7 @@ describe("commentsToOpenApi", () => {
 
     it("many bodies post", () => {
         // Note: We can't use "*/*" in doc comments.
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = '/**\n\
  * POST /hello\n\
  * @description Post a "hello world" message.\n\
@@ -623,12 +617,10 @@ describe("commentsToOpenApi", () => {
                     post: {
                         description: 'Post a "hello world" message.',
                         requestBody: {
-                            description: "A more complicated object.",
-                            required: true,
                             content: {
-                                "application/x-www-form-urlencoded": {
+                                "*/*": {
                                     schema: {
-                                        $ref: "#/components/schemas/ExampleObject",
+                                        type: "string",
                                     },
                                 },
                                 "application/json": {
@@ -636,37 +628,39 @@ describe("commentsToOpenApi", () => {
                                         $ref: "#/components/schemas/ExampleObject",
                                     },
                                 },
-                                "image/png": {
+                                "application/x-www-form-urlencoded": {
                                     schema: {
-                                        type: "string",
-                                        format: "binary",
+                                        $ref: "#/components/schemas/ExampleObject",
                                     },
                                 },
-                                "*/*": {
+                                "image/png": {
                                     schema: {
+                                        format: "binary",
                                         type: "string",
                                     },
                                 },
                             },
+                            description: "A more complicated object.",
+                            required: true,
                         },
                         responses: {
                             200: {
-                                description: "hello world.",
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            type: "array",
-                                            items: {
-                                                $ref: "#/components/schemas/Car",
-                                            },
-                                        },
                                         examples: {
                                             example1: {
                                                 $ref: "#/components/examples/Example",
                                             },
                                         },
+                                        schema: {
+                                            items: {
+                                                $ref: "#/components/schemas/Car",
+                                            },
+                                            type: "array",
+                                        },
                                     },
                                 },
+                                description: "hello world.",
                                 headers: {
                                     "x-next": {
                                         description: "A link to the next page of responses",
@@ -677,19 +671,19 @@ describe("commentsToOpenApi", () => {
                                 },
                             },
                             400: {
-                                description: "error.",
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            type: "string",
-                                        },
                                         examples: {
                                             example1: {
                                                 $ref: "#/components/examples/Example",
                                             },
                                         },
+                                        schema: {
+                                            type: "string",
+                                        },
                                     },
                                 },
+                                description: "error.",
                                 headers: {
                                     "fake-header": {
                                         description: "A fake header",
@@ -710,7 +704,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("api-with-examples", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
@@ -728,10 +722,8 @@ describe("commentsToOpenApi", () => {
                 "/": {
                     get: {
                         operationId: "listVersionsv2",
-                        summary: "List API versions",
                         responses: {
                             200: {
-                                description: "200 response",
                                 content: {
                                     "application/json": {
                                         examples: {
@@ -741,9 +733,9 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "200 response",
                             },
                             300: {
-                                description: "300 response",
                                 content: {
                                     "application/json": {
                                         examples: {
@@ -753,8 +745,10 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "300 response",
                             },
                         },
+                        summary: "List API versions",
                     },
                 },
             },
@@ -765,7 +759,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("callback", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
   * POST /streams\n\
   * @description subscribes a client to receive out-of-band data\n\
@@ -780,13 +774,18 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/streams": {
                     post: {
+                        callbacks: {
+                            onData: {
+                                $ref: "#/components/callbacks/Callback",
+                            },
+                        },
                         description: "subscribes a client to receive out-of-band data",
                         parameters: [
                             {
-                                name: "callbackUrl",
-                                in: "query",
-                                required: true,
                                 description: "the location where data will be sent.  Must be network accessible\nby the source server",
+                                in: "query",
+                                name: "callbackUrl",
+                                required: true,
                                 schema: {
                                     $ref: "#/components/schemas/uri",
                                 },
@@ -794,7 +793,6 @@ describe("commentsToOpenApi", () => {
                         ],
                         responses: {
                             201: {
-                                description: "subscription successfully created",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -802,11 +800,7 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
-                            },
-                        },
-                        callbacks: {
-                            onData: {
-                                $ref: "#/components/callbacks/Callback",
+                                description: "subscription successfully created",
                             },
                         },
                     },
@@ -819,7 +813,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("links", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /users/{username}\n\
  * @operationId getUserByName\n\
@@ -836,8 +830,8 @@ describe("commentsToOpenApi", () => {
                         operationId: "getUserByName",
                         parameters: [
                             {
-                                name: "username",
                                 in: "path",
+                                name: "username",
                                 required: true,
                                 schema: {
                                     type: "string",
@@ -846,7 +840,6 @@ describe("commentsToOpenApi", () => {
                         ],
                         responses: {
                             200: {
-                                description: "The User",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -854,6 +847,7 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "The User",
                                 links: {
                                     userRepositories: {
                                         $ref: "#/components/links/UserRepositories",
@@ -871,7 +865,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("petstore", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /pets\n\
  * @summary List all pets\n\
@@ -910,23 +904,28 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/pets": {
                     get: {
-                        summary: "List all pets",
                         operationId: "listPets",
-                        tags: ["pets"],
                         parameters: [
                             {
-                                name: "limit",
-                                in: "query",
                                 description: "How many items to return at one time (max 100)",
+                                in: "query",
+                                name: "limit",
                                 required: false,
                                 schema: {
-                                    type: "integer",
                                     format: "int32",
+                                    type: "integer",
                                 },
                             },
                         ],
                         responses: {
                             200: {
+                                content: {
+                                    "application/json": {
+                                        schema: {
+                                            $ref: "#/components/schemas/Pets",
+                                        },
+                                    },
+                                },
                                 description: "A paged array of pets",
                                 headers: {
                                     "x-next": {
@@ -936,27 +935,20 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
-                                content: {
-                                    "application/json": {
-                                        schema: {
-                                            $ref: "#/components/schemas/Pets",
-                                        },
-                                    },
-                                },
                             },
                             default: {
-                                // eslint-disable-next-line sonarjs/no-duplicate-string
-                                description: "unexpected error",
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Error",
                                         },
                                     },
                                 },
+                                description: "unexpected error",
                             },
                         },
+                        summary: "List all pets",
+                        tags: ["pets"],
                     },
                 },
             },
@@ -966,15 +958,12 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/pets": {
                     post: {
-                        summary: "Create a pet",
                         operationId: "createPets",
-                        tags: ["pets"],
                         responses: {
                             201: {
                                 description: "Null response",
                             },
                             default: {
-                                description: "unexpected error",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -982,8 +971,11 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "unexpected error",
                             },
                         },
+                        summary: "Create a pet",
+                        tags: ["pets"],
                     },
                 },
             },
@@ -993,15 +985,13 @@ describe("commentsToOpenApi", () => {
             paths: {
                 "/pets/{petId}": {
                     get: {
-                        summary: "Info for a specific pet",
                         operationId: "showPetById",
-                        tags: ["pets", "another tag with space"],
                         parameters: [
                             {
-                                name: "petId",
-                                in: "path",
-                                required: true,
                                 description: "The id of the pet to retrieve",
+                                in: "path",
+                                name: "petId",
+                                required: true,
                                 schema: {
                                     type: "string",
                                 },
@@ -1009,7 +999,6 @@ describe("commentsToOpenApi", () => {
                         ],
                         responses: {
                             200: {
-                                description: "Expected response to a valid request",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -1017,9 +1006,9 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "Expected response to a valid request",
                             },
                             default: {
-                                description: "unexpected error",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -1027,8 +1016,11 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "unexpected error",
                             },
                         },
+                        summary: "Info for a specific pet",
+                        tags: ["pets", "another tag with space"],
                     },
                 },
             },
@@ -1039,7 +1031,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("multiple response content types", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * GET /\n\
  * @response 200 - OK\n\
@@ -1053,7 +1045,6 @@ describe("commentsToOpenApi", () => {
                     get: {
                         responses: {
                             200: {
-                                description: "OK",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -1066,6 +1057,7 @@ describe("commentsToOpenApi", () => {
                                         },
                                     },
                                 },
+                                description: "OK",
                             },
                         },
                     },
@@ -1078,7 +1070,7 @@ describe("commentsToOpenApi", () => {
     });
 
     it("does nothing for normal comment", () => {
-        // eslint-disable-next-line no-multi-str,@typescript-eslint/quotes
+        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
         const comment = "/**\n\
  * normal comment\n\
  */".replaceAll("\r\n", "\n");

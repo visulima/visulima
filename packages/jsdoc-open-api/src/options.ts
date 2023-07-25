@@ -1,7 +1,5 @@
 const DEFAULT_OPTIONS = {
     cwd: undefined,
-    extension: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
-    include: ["**"],
     exclude: [
         "coverage/**",
         "packages/*/test{,s}/**",
@@ -22,6 +20,8 @@ const DEFAULT_OPTIONS = {
         // always ignore '**/node_modules/**'
     ],
     excludeNodeModules: true,
+    extension: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
+    include: ["**"],
     verbose: true,
 };
 

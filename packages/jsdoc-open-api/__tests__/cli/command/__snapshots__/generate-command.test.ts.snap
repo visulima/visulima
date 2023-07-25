@@ -112,15 +112,15 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"findPetsByStatus\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"status\\",
-            \\"in\\": \\"query\\",
             \\"description\\": \\"Status values that need to be considered for filter\\",
+            \\"in\\": \\"query\\",
+            \\"name\\": \\"status\\",
             \\"required\\": true,
             \\"schema\\": {
-              \\"type\\": \\"array\\",
               \\"items\\": {
                 \\"$ref\\": \\"#/components/schemas/StatusEnum\\"
-              }
+              },
+              \\"type\\": \\"array\\"
             }
           }
         ],
@@ -130,18 +130,18 @@ exports[`generate command > collects the correct files from the given directorie
             \\"content\\": {
               \\"application/json\\": {
                 \\"schema\\": {
-                  \\"type\\": \\"array\\",
                   \\"items\\": {
                     \\"$ref\\": \\"#/components/schemas/Pet\\"
-                  }
+                  },
+                  \\"type\\": \\"array\\"
                 }
               },
               \\"application/xml\\": {
                 \\"schema\\": {
-                  \\"type\\": \\"array\\",
                   \\"items\\": {
                     \\"$ref\\": \\"#/components/schemas/Pet\\"
-                  }
+                  },
+                  \\"type\\": \\"array\\"
                 }
               }
             }
@@ -175,18 +175,18 @@ exports[`generate command > collects the correct files from the given directorie
             \\"content\\": {
               \\"application/json\\": {
                 \\"schema\\": {
-                  \\"type\\": \\"array\\",
                   \\"items\\": {
                     \\"$ref\\": \\"#/components/schemas/Pet\\"
-                  }
+                  },
+                  \\"type\\": \\"array\\"
                 }
               },
               \\"application/xml\\": {
                 \\"schema\\": {
-                  \\"type\\": \\"array\\",
                   \\"items\\": {
                     \\"$ref\\": \\"#/components/schemas/Pet\\"
-                  }
+                  },
+                  \\"type\\": \\"array\\"
                 }
               }
             }
@@ -215,13 +215,13 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"getPetById\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"petId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"ID of pet to return\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"petId\\",
             \\"required\\": true,
             \\"schema\\": {
-              \\"type\\": \\"integer\\",
-              \\"format\\": \\"int64\\"
+              \\"format\\": \\"int64\\",
+              \\"type\\": \\"integer\\"
             }
           }
         ],
@@ -262,13 +262,13 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"updatePetWithForm\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"petId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"ID of pet that needs to be updated\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"petId\\",
             \\"required\\": true,
             \\"schema\\": {
-              \\"type\\": \\"integer\\",
-              \\"format\\": \\"int64\\"
+              \\"format\\": \\"int64\\",
+              \\"type\\": \\"integer\\"
             }
           }
         ],
@@ -303,21 +303,21 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"deletePet\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"apikey\\",
             \\"in\\": \\"header\\",
+            \\"name\\": \\"apikey\\",
             \\"required\\": false,
             \\"schema\\": {
               \\"type\\": \\"string\\"
             }
           },
           {
-            \\"name\\": \\"petId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"Pet id to delete\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"petId\\",
             \\"required\\": true,
             \\"schema\\": {
-              \\"type\\": \\"integer\\",
-              \\"format\\": \\"int64\\"
+              \\"format\\": \\"int64\\",
+              \\"type\\": \\"integer\\"
             }
           }
         ],
@@ -348,13 +348,13 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"uploadFile\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"petId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"ID of pet to update\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"petId\\",
             \\"required\\": true,
             \\"schema\\": {
-              \\"type\\": \\"integer\\",
-              \\"format\\": \\"int64\\"
+              \\"format\\": \\"int64\\",
+              \\"type\\": \\"integer\\"
             }
           }
         ],
@@ -426,9 +426,9 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"getOrderById\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"orderId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"ID of pet that needs to be fetched\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"orderId\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"$ref\\": \\"#/components/schemas/OrderID\\"
@@ -468,9 +468,9 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"deleteOrder\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"orderId\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"ID of the order that needs to be deleted\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"orderId\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"$ref\\": \\"#/components/schemas/OrderID\\"
@@ -565,10 +565,10 @@ exports[`generate command > collects the correct files from the given directorie
           \\"content\\": {
             \\"application/json\\": {
               \\"schema\\": {
-                \\"type\\": \\"array\\",
                 \\"items\\": {
                   \\"$ref\\": \\"#/components/schemas/User\\"
-                }
+                },
+                \\"type\\": \\"array\\"
               }
             }
           },
@@ -593,10 +593,10 @@ exports[`generate command > collects the correct files from the given directorie
           \\"content\\": {
             \\"application/json\\": {
               \\"schema\\": {
-                \\"type\\": \\"array\\",
                 \\"items\\": {
                   \\"$ref\\": \\"#/components/schemas/User\\"
-                }
+                },
+                \\"type\\": \\"array\\"
               }
             }
           },
@@ -618,9 +618,9 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"getUserByName\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"username\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"The name that needs to be fetched. Use user1 for testing.\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"username\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"type\\": \\"string\\"
@@ -660,9 +660,9 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"updateUser\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"username\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"name that need to be updated\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"username\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"type\\": \\"string\\"
@@ -698,9 +698,9 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"deleteUser\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"username\\",
-            \\"in\\": \\"path\\",
             \\"description\\": \\"The name that needs to be deleted\\",
+            \\"in\\": \\"path\\",
+            \\"name\\": \\"username\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"type\\": \\"string\\"
@@ -726,18 +726,18 @@ exports[`generate command > collects the correct files from the given directorie
         \\"operationId\\": \\"loginUser\\",
         \\"parameters\\": [
           {
-            \\"name\\": \\"username\\",
-            \\"in\\": \\"query\\",
             \\"description\\": \\"The user name for login\\",
+            \\"in\\": \\"query\\",
+            \\"name\\": \\"username\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"type\\": \\"string\\"
             }
           },
           {
-            \\"name\\": \\"password\\",
-            \\"in\\": \\"query\\",
             \\"description\\": \\"The password for login in clear text\\",
+            \\"in\\": \\"query\\",
+            \\"name\\": \\"password\\",
             \\"required\\": true,
             \\"schema\\": {
               \\"type\\": \\"string\\"
@@ -751,15 +751,15 @@ exports[`generate command > collects the correct files from the given directorie
               \\"X-Expires-After\\": {
                 \\"description\\": \\"date in UTC when token expires\\",
                 \\"schema\\": {
-                  \\"type\\": \\"string\\",
-                  \\"format\\": \\"date-time\\"
+                  \\"format\\": \\"date-time\\",
+                  \\"type\\": \\"string\\"
                 }
               },
               \\"X-Rate-Limit\\": {
                 \\"description\\": \\"calls per hour allowed by the user\\",
                 \\"schema\\": {
-                  \\"type\\": \\"integer\\",
-                  \\"format\\": \\"int32\\"
+                  \\"format\\": \\"int32\\",
+                  \\"type\\": \\"integer\\"
                 }
               }
             },

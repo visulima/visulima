@@ -4,4 +4,7 @@
 *.lock
 dist
 CHANGELOG.md
+coverage
+node_modules
+.eslintcache
 __tests__

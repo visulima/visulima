@@ -12,21 +12,21 @@ import type {
 import objectMerge from "./util/object-merge";
 
 class SpecBuilder implements OpenApiObject {
-    public openapi: string;
+    public components?: ComponentsObject;
+
+    public externalDocs?: ExternalDocumentationObject;
 
     public info: InfoObject;
 
-    public servers?: ServerObject[];
+    public openapi: string;
 
     public paths: PathsObject;
 
-    public components?: ComponentsObject;
-
     public security?: SecurityRequirementObject[];
 
-    public tags?: TagObject[];
+    public servers?: ServerObject[];
 
-    public externalDocs?: ExternalDocumentationObject;
+    public tags?: TagObject[];
 
     public constructor(baseDefinition: BaseDefinition) {
         this.openapi = baseDefinition.openapi;
@@ -41,12 +41,12 @@ class SpecBuilder implements OpenApiObject {
 
     public addData(parsedFile: OpenApiObject[]): void {
         parsedFile.forEach((file) => {
-            const { paths, components, ...rest } = file;
+            const { components, paths, ...rest } = file;
 
             // only merge paths and components
             objectMerge(this, {
-                paths: paths ?? {},
                 components: components ?? {},
+                paths: paths ?? {},
             } as OpenApiObject);
 
             // overwrite everything else:

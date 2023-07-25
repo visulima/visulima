@@ -10,7 +10,7 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(2);
+        expect(count).toBe(2);
     });
 
     it("strips newlines", () => {
@@ -23,7 +23,7 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(4);
+        expect(count).toBe(4);
     });
 
     it("strips comments", () => {
@@ -38,7 +38,7 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(4);
+        expect(count).toBe(4);
     });
 
     it("strips indented comments", () => {
@@ -49,7 +49,7 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(2);
+        expect(count).toBe(2);
     });
 
     it("doesn't strip inline comments", () => {
@@ -59,7 +59,7 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(2);
+        expect(count).toBe(2);
     });
 
     it("doesn't strip components string", () => {
@@ -69,6 +69,6 @@ describe("yamlLoc", () => {
     `;
         const count = yamlLoc(yaml);
 
-        expect(count).toStrictEqual(2);
+        expect(count).toBe(2);
     });
 });

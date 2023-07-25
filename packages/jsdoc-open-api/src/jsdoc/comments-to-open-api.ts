@@ -1,12 +1,13 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
+// eslint-disable-next-line no-restricted-imports
 import mergeWith from "lodash.mergewith";
 
 import type { OpenApiObject, PathsObject } from "../exported.d";
 import customizer from "../util/customizer";
 
 // The security object has a bizare setup...
-function fixSecurityObject(thing: any) {
+const fixSecurityObject = (thing: any) => {
     if (thing.security) {
         // eslint-disable-next-line no-param-reassign
         thing.security = Object.keys(thing.security).map((s) => {
@@ -15,25 +16,26 @@ function fixSecurityObject(thing: any) {
             };
         });
     }
-}
+};
 
 const primitiveTypes = new Set(["integer", "number", "string", "boolean", "object", "array"]);
 
-const formatMap: { [key: string]: string } = {
-    int32: "integer",
-    int64: "integer",
-    float: "number",
-    double: "number",
+const formatMap: Record<string, string> = {
+    binary: "string",
+    byte: "string",
     date: "string",
     "date-time": "string",
+    double: "number",
+    float: "number",
+    int32: "integer",
+    int64: "integer",
     password: "string",
-    byte: "string",
-    binary: "string",
 };
 
-function parseDescription(tag: Spec): { name: string; description: string | undefined; required: boolean; schema: object | undefined; rawType: string } {
+const parseDescription = (tag: Spec): { description: string | undefined; name: string; rawType: string; required: boolean; schema: object | undefined } => {
     const rawType = tag.type;
     const isArray = rawType.endsWith("[]");
+    // eslint-disable-next-line regexp/strict
     const parsedType = rawType.replace(/\[]$/, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
@@ -65,12 +67,12 @@ function parseDescription(tag: Spec): { name: string; description: string | unde
     let rootType;
 
     if (isPrimitive) {
-        rootType = { type: parsedType, default: defaultValue };
+        rootType = { default: defaultValue, type: parsedType };
     } else if (isFormat) {
         rootType = {
-            type: formatMap[parsedType],
-            format: parsedType,
             default: defaultValue,
+            format: parsedType,
+            type: formatMap[parsedType],
         };
     } else {
         rootType = { $ref: `#/components/schemas/${parsedType}` };
@@ -78,14 +80,14 @@ function parseDescription(tag: Spec): { name: string; description: string | unde
 
     let schema: object | undefined = isArray
         ? {
-            type: "array",
-            items: {
-                ...rootType,
-            },
-        }
+              items: {
+                  ...rootType,
+              },
+              type: "array",
+          }
         : {
-            ...rootType,
-        };
+              ...rootType,
+          };
 
     if (parsedType === "") {
         schema = undefined;
@@ -99,18 +101,18 @@ function parseDescription(tag: Spec): { name: string; description: string | unde
     }
 
     return {
-        name: tag.name,
         description,
+        name: tag.name,
+        rawType,
         required: !tag.optional,
         schema,
-        rawType,
     };
-}
+};
 
 // @ts-expect-error
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function tagsToObjects(tags: Spec[], verbose?: boolean) {
-    return tags.map((tag) => {
+const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
+    tags.map((tag) => {
         const parsedResponse = parseDescription(tag);
 
         // Some ops only have a `description`, merge `name` and `description`
@@ -139,8 +141,8 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
             case "externalDocs": {
                 return {
                     externalDocs: {
-                        url: parsedResponse.name,
                         description: parsedResponse.description,
+                        url: parsedResponse.name,
                     },
                 };
             }
@@ -149,8 +151,8 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
                 return {
                     servers: [
                         {
-                            url: parsedResponse.name,
                             description: parsedResponse.description,
+                            url: parsedResponse.name,
                         },
                     ],
                 };
@@ -167,9 +169,9 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
                 return {
                     parameters: [
                         {
-                            name: parsedResponse.name,
-                            in: tag.tag.replace(/Param$/, ""),
                             description: parsedResponse.description,
+                            in: tag.tag.replace(/Param$/, ""),
+                            name: parsedResponse.name,
                             required: parsedResponse.required,
                             schema: parsedResponse.schema,
                         },
@@ -363,9 +365,9 @@ function tagsToObjects(tags: Spec[], verbose?: boolean) {
             }
         }
     });
-}
 
-const commentsToOpenApi = (fileContents: string, verbose?: boolean): { spec: OpenApiObject; loc: number }[] => {
+const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
+    // eslint-disable-next-line regexp/no-unused-capturing-group
     const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
@@ -396,8 +398,8 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { spec: Ope
             const spec = JSON.parse(JSON.stringify({ paths: pathsObject }));
 
             return {
-                spec,
                 loc,
+                spec,
             };
         });
 };

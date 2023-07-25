@@ -1,10 +1,11 @@
-function yamlLoc(string: string): number {
+const yamlLoc = (string: string): number => {
     // Break string into lines.
     const split = string.split(/\r\n|\r|\n/);
 
     const filtered = split.filter((line) => {
         // Remove comments.
-        if (/^\s*(#\s*.*)?$/.test(line)) {
+        // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
+        if (/^\s*(#\s*(?:\S.*)?)?$/.test(line)) {
             return false;
         }
         // Remove empty lines.
@@ -12,6 +13,6 @@ function yamlLoc(string: string): number {
     });
 
     return filtered.length;
-}
+};
 
 export default yamlLoc;
