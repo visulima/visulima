@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { paginate, Paginator } from "../src";
+import { Paginator, paginate } from "../src";
 
-describe("Paginator", () => {
+describe("paginator", () => {
     it("should return the correct values for all public variables", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
@@ -11,98 +11,98 @@ describe("Paginator", () => {
         expect(paginator.currentPage).toBe(1);
         expect(paginator.lastPage).toBe(10);
         expect(paginator.firstPage).toBe(1);
-        expect(paginator.isEmpty).toBe(false);
-        expect(paginator.hasPages).toBe(true);
-        expect(paginator.hasTotal).toBe(true);
+        expect(paginator.isEmpty).toBeFalsy();
+        expect(paginator.hasPages).toBeTruthy();
+        expect(paginator.hasTotal).toBeTruthy();
     });
 
     it("should return the correct values for all method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.all()).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        expect(paginator.all()).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("should return the correct values inside the meta object", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.getMeta()).toEqual({
-            total: 100,
-            perPage: 10,
-            page: 1,
-            lastPage: 10,
+        expect(paginator.getMeta()).toStrictEqual({
             firstPage: 1,
             firstPageUrl: "/?page=1",
+            lastPage: 10,
             lastPageUrl: "/?page=10",
             nextPageUrl: "/?page=2",
+            page: 1,
+            perPage: 10,
             previousPageUrl: null,
+            total: 100,
         });
     });
 
     it("should return the correct values inside the meta object when using the baseUrl method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.baseUrl("/api/v1").getMeta()).toEqual({
-            total: 100,
-            perPage: 10,
-            page: 1,
-            lastPage: 10,
+        expect(paginator.baseUrl("/api/v1").getMeta()).toStrictEqual({
             firstPage: 1,
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             firstPageUrl: "/api/v1?page=1",
+            lastPage: 10,
             lastPageUrl: "/api/v1?page=10",
             nextPageUrl: "/api/v1?page=2",
+
+            page: 1,
+            perPage: 10,
             previousPageUrl: null,
+            total: 100,
         });
     });
 
     it("should return the correct values inside the meta object when using the queryString method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.queryString({ foo: "bar" }).getMeta()).toEqual({
-            total: 100,
-            perPage: 10,
-            page: 1,
-            lastPage: 10,
+        expect(paginator.queryString({ foo: "bar" }).getMeta()).toStrictEqual({
             firstPage: 1,
             firstPageUrl: "/?foo=bar&page=1",
+            lastPage: 10,
             lastPageUrl: "/?foo=bar&page=10",
             nextPageUrl: "/?foo=bar&page=2",
+            page: 1,
+            perPage: 10,
             previousPageUrl: null,
+            total: 100,
         });
     });
 
     it("should return the correct values inside the meta object when using the baseUrl and queryString method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.baseUrl("/api/v1").queryString({ foo: "bar" }).getMeta()).toEqual({
-            total: 100,
-            perPage: 10,
-            page: 1,
-            lastPage: 10,
+        expect(paginator.baseUrl("/api/v1").queryString({ foo: "bar" }).getMeta()).toStrictEqual({
             firstPage: 1,
             firstPageUrl: "/api/v1?foo=bar&page=1",
+            lastPage: 10,
             lastPageUrl: "/api/v1?foo=bar&page=10",
             nextPageUrl: "/api/v1?foo=bar&page=2",
+            page: 1,
+            perPage: 10,
             previousPageUrl: null,
+            total: 100,
         });
     });
 
     it("should return the correct values for the toJSON method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.toJSON()).toEqual({
+        expect(paginator.toJSON()).toStrictEqual({
+            data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             meta: {
-                total: 100,
-                perPage: 10,
-                page: 1,
-                lastPage: 10,
                 firstPage: 1,
                 firstPageUrl: "/?page=1",
+                lastPage: 10,
                 lastPageUrl: "/?page=10",
                 nextPageUrl: "/?page=2",
+                page: 1,
+                perPage: 10,
                 previousPageUrl: null,
+                total: 100,
             },
-            data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         });
     });
 
@@ -117,7 +117,7 @@ describe("Paginator", () => {
     it("should return a link for the given page when using the getUrlsForRange method", () => {
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.getUrlsForRange(0, 5)).toEqual([
+        expect(paginator.getUrlsForRange(0, 5)).toStrictEqual([
             { isActive: false, page: 0, url: "/?page=1" },
             { isActive: true, page: 1, url: "/?page=1" },
             { isActive: false, page: 2, url: "/?page=2" },
@@ -138,7 +138,7 @@ describe("Paginator", () => {
     it("should return a previous link", () => {
         const paginator = new Paginator(100, 10, 0, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.getPreviousPageUrl()).toBe(null);
+        expect(paginator.getPreviousPageUrl()).toBeNull();
 
         paginator.currentPage = 2;
 
@@ -148,13 +148,13 @@ describe("Paginator", () => {
     it("should return a next link", () => {
         const paginator = new Paginator(11, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
-        expect(paginator.hasMorePages).toBe(true);
+        expect(paginator.hasMorePages).toBeTruthy();
         expect(paginator.getNextPageUrl()).toBe("/?page=2");
 
         paginator.currentPage = 2;
 
-        expect(paginator.getNextPageUrl()).toBe(null);
-        expect(paginator.hasMorePages).toBe(false);
+        expect(paginator.getNextPageUrl()).toBeNull();
+        expect(paginator.hasMorePages).toBeFalsy();
     });
 
     it("should return a paginator instance if paginate method is used", () => {
@@ -170,8 +170,8 @@ describe("Paginator", () => {
         expect(paginator.currentPage).toBe(1);
         expect(paginator.lastPage).toBe(10);
         expect(paginator.firstPage).toBe(1);
-        expect(paginator.isEmpty).toBe(false);
-        expect(paginator.hasPages).toBe(true);
-        expect(paginator.hasTotal).toBe(true);
+        expect(paginator.isEmpty).toBeFalsy();
+        expect(paginator.hasPages).toBeTruthy();
+        expect(paginator.hasTotal).toBeTruthy();
     });
 });

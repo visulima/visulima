@@ -1,35 +1,39 @@
-export type PaginationResult<Result> = { meta: PaginationMeta; data: Result[] };
-export type PaginationMeta = {
-    total: number;
-    perPage: number;
-    page: number;
-    lastPage: number;
+export interface PaginationMeta {
     firstPage: number;
     firstPageUrl: string | null;
+    lastPage: number;
     lastPageUrl: string | null;
     nextPageUrl: string | null;
+    page: number;
+    perPage: number;
     previousPageUrl: string | null;
-};
+    total: number;
+}
+
+export interface PaginationResult<Result> {
+    data: Result[];
+    meta: PaginationMeta;
+}
 
 export interface Paginator<Result> extends Array<Result> {
     all: () => Result[];
 
-    readonly firstPage: number;
-    readonly perPage: number;
-    readonly currentPage: number;
-    readonly lastPage: number;
-    readonly hasPages: boolean;
-    readonly hasMorePages: boolean;
-    readonly isEmpty: boolean;
-    readonly total: number;
-    readonly hasTotal: boolean;
-
     baseUrl: (url: string) => this;
-    queryString: (values: { [key: string]: any }) => this;
-    getUrl: (page: number) => string;
+    readonly currentPage: number;
+    readonly firstPage: number;
     getMeta: () => PaginationMeta;
     getNextPageUrl: () => string | null;
     getPreviousPageUrl: () => string | null;
-    getUrlsForRange: (start: number, end: number) => { url: string; page: number; isActive: boolean }[];
+    getUrl: (page: number) => string;
+    getUrlsForRange: (start: number, end: number) => { isActive: boolean; page: number; url: string }[];
+    readonly hasMorePages: boolean;
+
+    readonly hasPages: boolean;
+    readonly hasTotal: boolean;
+    readonly isEmpty: boolean;
+    readonly lastPage: number;
+    readonly perPage: number;
+    queryString: (values: Record<string, unknown>) => this;
     toJSON: () => PaginationResult<Result>;
+    readonly total: number;
 }
