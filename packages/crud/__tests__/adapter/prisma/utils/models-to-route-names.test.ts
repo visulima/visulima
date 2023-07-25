@@ -14,7 +14,7 @@ describe("modelsToRouteNames", () => {
                 },
                 ["User"],
             ),
-        ).toEqual({
+        ).toStrictEqual({
             User: "users",
         });
     });

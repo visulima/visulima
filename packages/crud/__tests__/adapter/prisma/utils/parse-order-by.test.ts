@@ -4,16 +4,16 @@ import type { OrderByField } from "../../../../src";
 import type { PrismaOrderBy } from "../../../../src/adapter/prisma/types";
 import parsePrismaOrderBy from "../../../../src/adapter/prisma/utils/parse-order-by";
 
-describe("Parse prisma orderBy", () => {
+describe("parse prisma orderBy", () => {
     it("should map correctly operators", () => {
         const baseQuery: OrderByField = {
-            username: "$asc",
             id: "$desc",
+            username: "$asc",
         };
 
-        expect(parsePrismaOrderBy(baseQuery)).toEqual<PrismaOrderBy>({
-            username: "asc",
+        expect(parsePrismaOrderBy(baseQuery)).toStrictEqual<PrismaOrderBy>({
             id: "desc",
+            username: "asc",
         });
     });
 });

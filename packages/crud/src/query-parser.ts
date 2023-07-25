@@ -1,9 +1,8 @@
+// eslint-disable-next-line no-restricted-imports
 import set from "lodash.set";
 import { parse } from "node:url";
 
-import type {
-    OrderByField, ParsedQueryParameters, RecursiveField, WhereField,
-} from "./types.d";
+import type { OrderByField, ParsedQueryParameters, RecursiveField, WhereField } from "./types.d";
 
 const parseRecursive = (select: string): RecursiveField => {
     const selectFields: RecursiveField = {};

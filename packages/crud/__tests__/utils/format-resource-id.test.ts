@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import formatResourceId from "../../src/utils/format-resource-id";
 
-describe("Format resource", () => {
+describe("format resource", () => {
     it("should format a resource id from string to number", () => {
         expect(formatResourceId("1")).toBe(1);
     });

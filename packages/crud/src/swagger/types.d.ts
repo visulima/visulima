@@ -2,40 +2,41 @@ import type { OpenAPIV3 } from "openapi-types";
 
 import type { RouteType } from "../types.d";
 
-export type SwaggerType = {
-    name: string;
-    isArray?: boolean;
+export interface SwaggerType {
     description?: string;
+    isArray?: boolean;
+    name: string;
     required?: boolean;
-};
+}
 
-export type SwaggerOperation = {
-    summary?: string;
-    responses?: Record<number, any>;
+export interface SwaggerOperation {
     body?: SwaggerType;
     response: SwaggerType;
-};
+    responses?: Record<number, any>;
+    summary?: string;
+}
 
-export type SwaggerParameter = {
-    name: string;
+export interface SwaggerParameter {
     description?: string;
+    name: string;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     schema: any & {
         type: string;
     };
-};
+}
 
-export type ModelsConfig = {
-    tag: OpenAPIV3.TagObject;
-    type?: SwaggerType;
+export interface ModelsConfig {
+    additionalQueryParams?: SwaggerParameter[];
     routeTypes?: {
+        [RouteType.CREATE]?: SwaggerOperation;
+        [RouteType.DELETE]?: SwaggerOperation;
         [RouteType.READ_ALL]?: SwaggerOperation;
         [RouteType.READ_ONE]?: SwaggerOperation;
-        [RouteType.CREATE]?: SwaggerOperation;
         [RouteType.UPDATE]?: SwaggerOperation;
-        [RouteType.DELETE]?: SwaggerOperation;
     };
-    additionalQueryParams?: SwaggerParameter[];
-};
+    tag: OpenAPIV3.TagObject;
+    type?: SwaggerType;
+}
 
 export type SwaggerModelsConfig<M extends string> = {
     [key in M]?: ModelsConfig;
