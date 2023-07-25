@@ -1,10 +1,10 @@
 import type { Options as MicromatchOptions } from "micromatch";
 import micromatch from "micromatch";
-import type { Dirent } from "node:fs";
+import type { Dirent, Stats } from "node:fs";
 import { promises } from "node:fs";
 import { basename, join, normalize } from "node:path";
 
-function include(
+const include = (
     path: string,
     extensions?: string[],
     match?: ReadonlyArray<string> | string,
@@ -13,7 +13,7 @@ function include(
         match?: MicromatchOptions;
         skip?: MicromatchOptions;
     } = {},
-): boolean {
+): boolean => {
     if (extensions && !extensions.some((extension): boolean => path.endsWith(extension))) {
         return false;
     }
@@ -23,38 +23,42 @@ function include(
     }
 
     return !(skip && micromatch.isMatch(path, skip, minimatchOptions.skip));
-}
+};
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-async function _createWalkEntry(path: string): Promise<WalkEntry> {
+// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle,no-use-before-define
+const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
     // eslint-disable-next-line no-param-reassign
     path = normalize(path);
 
     const name = basename(path);
-    const info = await promises.stat(path);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const info: Stats = await promises.stat(path);
 
     return {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        isDirectory: info.isDirectory,
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        isFile: info.isFile,
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        isSymbolicLink: info.isSymbolicLink,
         name,
         path,
-        isFile: info.isFile,
-        isDirectory: info.isDirectory,
-        isSymbolicLink: info.isSymbolicLink,
     };
-}
+};
 
-export type Options = {
-    maxDepth?: number;
-    includeFiles?: boolean;
-    includeDirs?: boolean;
-    followSymlinks?: boolean;
+export interface Options {
     extensions?: string[];
+    followSymlinks?: boolean;
+    includeDirs?: boolean;
+    includeFiles?: boolean;
     match?: ReadonlyArray<string> | string;
-    skip?: ReadonlyArray<string> | string;
+    maxDepth?: number;
     minimatchOptions?: {
         match?: MicromatchOptions;
         skip?: MicromatchOptions;
     };
-};
+    skip?: ReadonlyArray<string> | string;
+}
 
 export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSymbolicLink" | "name"> {
     path: string;
@@ -76,14 +80,14 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
 export default async function* walk(
     directory: string,
     {
-        maxDepth = Number.POSITIVE_INFINITY,
-        includeFiles = true,
-        includeDirs: includeDirectories = true,
-        followSymlinks = false,
         extensions,
+        followSymlinks = false,
+        includeDirs: includeDirectories = true,
+        includeFiles = true,
         match,
-        skip,
+        maxDepth = Number.POSITIVE_INFINITY,
         minimatchOptions,
+        skip,
     }: Options = {},
 ): AsyncIterableIterator<WalkEntry> {
     if (maxDepth < 0) {
@@ -98,7 +102,7 @@ export default async function* walk(
         return;
     }
 
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename
     for await (const entry of await promises.readdir(directory, {
         withFileTypes: true,
     })) {
@@ -109,6 +113,7 @@ export default async function* walk(
         let p = join(directory, entry.name);
         if (entry.isSymbolicLink()) {
             if (followSymlinks) {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 p = await promises.realpath(p);
             } else {
                 // eslint-disable-next-line no-continue
@@ -119,21 +124,24 @@ export default async function* walk(
         if (entry.isFile()) {
             if (includeFiles && include(p, extensions, match, skip, minimatchOptions)) {
                 yield {
-                    path: p,
-                    name: entry.name,
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     isDirectory: entry.isDirectory,
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     isFile: entry.isFile,
+                    // eslint-disable-next-line @typescript-eslint/unbound-method
                     isSymbolicLink: entry.isSymbolicLink,
+                    name: entry.name,
+                    path: p,
                 };
             }
         } else {
             yield* walk(p, {
-                maxDepth: maxDepth - 1,
-                includeFiles,
-                includeDirs: includeDirectories,
-                followSymlinks,
                 extensions,
+                followSymlinks,
+                includeDirs: includeDirectories,
+                includeFiles,
                 match,
+                maxDepth: maxDepth - 1,
                 skip,
             });
         }
