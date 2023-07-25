@@ -12,35 +12,30 @@ export type PrismaFieldFilterOperator = {
     [key in PrismaWhereOperator]?: SearchCondition;
 };
 
-export type PrismaFieldFilter = {
-    [key: string]: Condition | PrismaFieldFilterOperator | PrismaRelationFilter | SearchCondition | undefined;
-};
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type PrismaFieldFilter = Record<string, Condition | PrismaFieldFilterOperator | PrismaRelationFilter | SearchCondition | undefined>;
 
 export type PrismaWhereField = PrismaFieldFilter & {
     AND?: PrismaFieldFilter;
-    OR?: PrismaFieldFilter;
     NOT?: PrismaFieldFilter;
+    OR?: PrismaFieldFilter;
 };
 
-export type PrismaRelationFilter = {
+export interface PrismaRelationFilter {
     some?: PrismaFieldFilter | SearchCondition;
-};
+}
 
-export type PrismaOrderBy = {
-    [key: string]: PrismaOrderByOperator;
-};
+export type PrismaOrderBy = Record<string, PrismaOrderByOperator>;
 
-export type PrismaCursor = {
-    [key: string]: boolean | number | string;
-};
+export type PrismaCursor = Record<string, boolean | number | string>;
 
 export interface PrismaParsedQueryParameters {
-    select?: PrismaRecursive<"select">;
-    include?: PrismaRecursive<"include">;
-    where?: PrismaWhereField;
-    orderBy?: PrismaOrderBy;
-    take?: number;
-    skip?: number;
     cursor?: PrismaCursor;
     distinct?: string;
+    include?: PrismaRecursive<"include">;
+    orderBy?: PrismaOrderBy;
+    select?: PrismaRecursive<"select">;
+    skip?: number;
+    take?: number;
+    where?: PrismaWhereField;
 }

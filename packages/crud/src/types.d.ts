@@ -4,30 +4,29 @@ import type { Handler as ListHandler } from "./handler/list";
 import type { Handler as GetHandler } from "./handler/read";
 import type { Handler as UpdateHandler } from "./handler/update";
 
+// eslint-disable-next-line no-shadow
 export enum RouteType {
     CREATE = "CREATE",
+    DELETE = "DELETE",
     READ_ALL = "READ_ALL",
     READ_ONE = "READ_ONE",
     UPDATE = "UPDATE",
-    DELETE = "DELETE",
 }
 
-export type ModelOption = {
-    name?: string;
-    only?: RouteType[];
+export interface ModelOption {
     exclude?: RouteType[];
     formatResourceId?: (resourceId: string) => number | string;
-};
+    name?: string;
+    only?: RouteType[];
+}
 
 export type ModelsOptions<M extends string = string> = {
     [key in M]?: ModelOption;
 };
 
-export type HandlerOptions<M extends string = string> = {
-    formatResourceId?: (resourceId: string) => number | string;
-    models?: ModelsOptions<M>;
+export interface HandlerOptions<M extends string = string> {
     exposeStrategy?: "all" | "none";
-    pagination?: PaginationConfig;
+    formatResourceId?: (resourceId: string) => number | string;
     handlers?: {
         create?: CreateHandler;
         delete?: DeleteHandler;
@@ -35,11 +34,13 @@ export type HandlerOptions<M extends string = string> = {
         list?: ListHandler;
         update?: UpdateHandler;
     };
-};
+    models?: ModelsOptions<M>;
+    pagination?: PaginationConfig;
+}
 
-export type PaginationConfig = {
+export interface PaginationConfig {
     perPage: number;
-};
+}
 
 export interface HandlerParameters<T, Q> {
     adapter: Adapter<T, Q>;
@@ -50,82 +51,80 @@ export interface HandlerParameters<T, Q> {
 export interface UniqueResourceHandlerParameters<T, Q> {
     adapter: Adapter<T, Q>;
     query: Q;
-    resourceName: string;
     resourceId: number | string;
+    resourceName: string;
 }
 
 export interface Adapter<T, Q, M extends string = string> {
-    models?: M[];
-    init?: () => Promise<void>;
-    parseQuery: (resourceName: M, query: ParsedQueryParameters) => Q;
-    getAll: (resourceName: M, query: Q) => Promise<T[]>;
-    getOne: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
-    create: (resourceName: M, data: any, query: Q) => Promise<T>;
-    update: (resourceName: M, resourceId: number | string, data: any, query: Q) => Promise<T>;
-    delete: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
-    getPaginationData: (resourceName: M, query: Q) => Promise<PaginationData>;
-    getModels: () => M[];
     connect?: () => Promise<void>;
+    create: (resourceName: M, data: any, query: Q) => Promise<T>;
+    delete: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
     disconnect?: () => Promise<void>;
+    getAll: (resourceName: M, query: Q) => Promise<T[]>;
+    getModels: () => M[];
+    getOne: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
+    getPaginationData: (resourceName: M, query: Q) => Promise<PaginationData>;
     handleError?: (error: Error) => void;
+    init?: () => Promise<void>;
     mapModelsToRouteNames?: () => Promise<{ [key in M]?: string }>;
+    models?: M[];
+    parseQuery: (resourceName: M, query: ParsedQueryParameters) => Q;
+    update: (resourceName: M, resourceId: number | string, data: any, query: Q) => Promise<T>;
 }
 
-export type PaginationData = {
-    total: number;
-    pageCount: number;
+export interface PaginationData {
     page: number;
-};
+    pageCount: number;
+    total: number;
+}
 
-export type RecursiveField = {
-    [key: string]: TRecursiveField | boolean;
-};
+export type RecursiveField = Record<string, Record<string, boolean> | boolean>;
 
 export type WhereOperator = "$cont" | "$ends" | "$eq" | "$gt" | "$gte" | "$in" | "$isnull" | "$lt" | "$lte" | "$neq" | "$notin" | "$starts";
 
 export type SearchCondition = Date | boolean | number | string | null;
 
 export type WhereCondition = {
-    [key in TWhereOperator]?: TSearchCondition;
+    [key in WhereOperator]?: SearchCondition;
 };
 
-export type Condition = {
-    [key: string]: TCondition | TSearchCondition | TWhereCondition;
-};
+// TODO: find the correct way to type this
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type Condition = Record<string, Condition | SearchCondition | WhereCondition>;
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type WhereField = Condition & {
-    $and?: TCondition | TCondition[];
-    $or?: TCondition | TCondition[];
-    $not?: TCondition | TCondition[];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    $and?: Condition | Condition[];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    $not?: Condition | Condition[];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    $or?: Condition | Condition[];
 };
 
 export type OrderByOperator = "$asc" | "$desc";
 
-export type OrderByField = {
-    [key: string]: TOrderByOperator;
-};
+export type OrderByField = Record<string, TOrderByOperator>;
 
 export interface ParsedQueryParameters {
-    select?: RecursiveField;
-    include?: RecursiveField;
-    where?: WhereField;
-    orderBy?: OrderByField;
-    limit?: number;
-    skip?: number;
     distinct?: string;
+    include?: RecursiveField;
+    limit?: number;
+    orderBy?: OrderByField;
+    originalQuery?: Record<string, any>;
     page?: number;
-    originalQuery?: {
-        [key: string]: any;
-    };
+    select?: RecursiveField;
+    skip?: number;
+    where?: WhereField;
 }
 
 export type ExecuteHandler<Request, Response> = (request: Request, response: Response) => Promise<void>;
 
-export type FakePrismaClient = {
-    _dmmf?: any;
-    _getDmmf?: () => any;
+export interface FakePrismaClient {
     $connect: () => void;
     $disconnect: () => Promise<void>;
-
     [key: string]: any;
-};
+    _dmmf?: any;
+
+    _getDmmf?: () => any;
+}
