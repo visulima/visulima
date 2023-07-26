@@ -1,3 +1,11 @@
+## @visulima/prisma-dmmf-transformer [1.0.8](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.7...@visulima/prisma-dmmf-transformer@1.0.8) (2023-07-26)
+
+
+### Bug Fixes
+
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+* Update src codes, packages configs and formatter configs ([359856f](https://github.com/visulima/visulima/commit/359856f499fcf839c713c71d66f21e73cbfb4fef))
+
 ## @visulima/prisma-dmmf-transformer [1.0.7](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@1.0.6...@visulima/prisma-dmmf-transformer@1.0.7) (2023-06-06)
 
 
