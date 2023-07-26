@@ -37,9 +37,10 @@ export const parseQuery = (request: IncomingApiRequest): unknown => {
     return urlParse(request.url ?? "", true).query;
 };
 
-export const toHeaderCase = (string_: string): string => string_
-    .toLowerCase()
-    .replaceAll(/[^\s\w]/g, " ") // Remove all non-word characters
-    .trimEnd() // Remove trailing spaces
-    .replaceAll(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
-    .replaceAll(/\b\w/g, (c) => c.toUpperCase());
+export const toHeaderCase = (string_: string): string =>
+    string_
+        .toLowerCase()
+        .replaceAll(/[^\s\w]/g, " ") // Remove all non-word characters
+        .trimEnd() // Remove trailing spaces
+        .replaceAll(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
+        .replaceAll(/\b\w/g, (c) => c.toUpperCase());

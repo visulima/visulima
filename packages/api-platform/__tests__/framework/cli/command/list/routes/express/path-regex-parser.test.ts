@@ -8,27 +8,33 @@ describe("path-regex-parser", () => {
     it("handles static regex route", () => {
         expect(pathRegexParser(staticPath, [])).toBe("sub-route2");
     });
+
     it("handles one dynamic path parameters", () => {
         expect(pathRegexParser(oneDynamicPath().regex, oneDynamicPath().keys)).toBe("sub-route/:test1");
     });
+
     it("handles two dynamic path parameters", () => {
         expect(pathRegexParser(twoDynamicPaths().regex, twoDynamicPaths().keys)).toBe("sub-sub-route/:test2/:test3");
     });
+
     it("handles normal string", () => {
         expect(pathRegexParser("testing/test", [])).toBe("testing/test");
     });
+
     it("handles fast slash", () => {
-        const fastSlash: any = /test/;
+        const fastSlash = /test/ as ExpressRegex;
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
         expect(pathRegexParser(fastSlash, [])).toBe("");
     });
+
     it("handles fast star", () => {
-        const fastStar: any = /test/;
+        const fastStar = /test/ as ExpressRegex;
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
         expect(pathRegexParser(fastStar, [])).toBe("*");
     });
+
     it("handles custom regex path", () => {
         expect(pathRegexParser(/test/ as ExpressRegex, [])).toBe("/test/");
     });

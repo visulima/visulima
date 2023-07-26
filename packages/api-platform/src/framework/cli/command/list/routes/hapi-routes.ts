@@ -1,10 +1,9 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Server } from "@hapi/hapi";
 
 import type { Route } from "./types";
 
 const hapiRoutes = (app: Server): Route[] => {
-    // @ts-expect-error
+    // @ts-expect-error TS2339: Property '_core' does not exist on type 'Server'. Internal API.
     // eslint-disable-next-line no-underscore-dangle
     const core = app._core as any;
     const coreRoutes = core.router.routes;
@@ -13,10 +12,10 @@ const hapiRoutes = (app: Server): Route[] => {
     [...coreRoutes.keys()].forEach((method: string) => {
         coreRoutes.get(method).routes.forEach((route: any) => {
             routes.push({
-                path: route.path,
-                method: route.route.method.toUpperCase(),
-                tags: [],
                 file: "unknown",
+                method: route.route.method.toUpperCase(),
+                path: route.path,
+                tags: [],
             });
         });
     });

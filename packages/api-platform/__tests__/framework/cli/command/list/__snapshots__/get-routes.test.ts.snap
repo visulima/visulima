@@ -47,7 +47,95 @@ exports[`getRoutes > express > Express Routes 1`] = `
 ]
 `;
 
+exports[`getRoutes > express > express Routes 1`] = `
+[
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "PUT",
+    "path": "/users/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/following",
+    "tags": [],
+  },
+]
+`;
+
 exports[`getRoutes > fastify > Fastify Routes 1`] = `
+[
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/following",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/:id",
+    "tags": [],
+  },
+]
+`;
+
+exports[`getRoutes > fastify > fastify Routes 1`] = `
 [
   {
     "file": "unknown",
@@ -135,7 +223,101 @@ exports[`getRoutes > hapi > Hapi Routes 1`] = `
 ]
 `;
 
+exports[`getRoutes > hapi > hapi Routes 1`] = `
+[
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/activity/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "GET",
+    "path": "/users/following",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "PUT",
+    "path": "/users/:id",
+    "tags": [],
+  },
+]
+`;
+
 exports[`getRoutes > koa > Koa Routes 1`] = `
+[
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/activity",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/activity/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/users",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/users/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "PUT",
+    "path": "/users/:id",
+    "tags": [],
+  },
+  {
+    "file": "unknown",
+    "method": "HEAD|GET",
+    "path": "/users/following",
+    "tags": [],
+  },
+]
+`;
+
+exports[`getRoutes > koa > koa Routes 1`] = `
 [
   {
     "file": "unknown",

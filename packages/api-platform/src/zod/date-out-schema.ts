@@ -1,7 +1,5 @@
 import type { ParseInput, ParseReturnType, ZodTypeDef } from "zod";
-import {
-    addIssueToContext, INVALID, ZodIssueCode, ZodParsedType, ZodType,
-} from "zod";
+import { INVALID, ZodIssueCode, ZodParsedType, ZodType, addIssueToContext } from "zod";
 
 const zodDateOutKind = "ZodDateOut";
 
@@ -11,10 +9,15 @@ export interface ZodDateOutDef extends ZodTypeDef {
 }
 
 export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
+    public static create = (): ZodDateOut =>
+        new ZodDateOut({
+            typeName: zodDateOutKind,
+        });
+
     // eslint-disable-next-line no-underscore-dangle
     public _parse(input: ParseInput): ParseReturnType<string> {
         // eslint-disable-next-line no-underscore-dangle
-        const { status, ctx } = this._processInputParams(input);
+        const { ctx, status } = this._processInputParams(input);
 
         if (ctx.parsedType !== ZodParsedType.date) {
             addIssueToContext(ctx, {
@@ -34,8 +37,4 @@ export class ZodDateOut extends ZodType<string, ZodDateOutDef, Date> {
 
         return { status: status.value, value: (ctx.data as Date).toISOString() };
     }
-
-    public static create = (): ZodDateOut => new ZodDateOut({
-        typeName: zodDateOutKind,
-    });
 }

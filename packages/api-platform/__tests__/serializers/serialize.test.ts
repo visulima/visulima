@@ -1,20 +1,21 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import serialize from "../../src/serializers/serialize";
 
 describe("serialize", () => {
     it("should correctly sets the Content-Type header in the response when a serializer is found for the given type in the accept header", () => {
         const request = {} as IncomingMessage;
-        // eslint-disable-next-line sonarjs/no-duplicate-string
+
         request.headers = { accept: "application/json" };
 
-        const response = {} as ServerResponse;
+        const response = {
+            getHeader: () => {},
+            setHeader: () => {},
+        } as ServerResponse;
 
-        response.setHeader = vi.fn();
-        response.getHeader = vi.fn();
+        vi.spyOn(response, "setHeader").mockImplementation();
+        vi.spyOn(response, "getHeader").mockImplementation();
 
         const data = { test: "data" };
         const options = { defaultContentType: "application/json" };
@@ -28,6 +29,7 @@ describe("serialize", () => {
 
         serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");
     });
 
@@ -40,29 +42,36 @@ describe("serialize", () => {
             expected: '<?xml version="1.0" encoding="UTF-8"?>\n<Undefined>\n  <test>data</test>\n</Undefined>',
         },
     ])("should correctly serializes the data using the correct serializer when a serializer is found for the given type in the accept header", (test) => {
-        const { accept, expected, data } = test;
+        const { accept, data, expected } = test;
 
         const request = {} as IncomingMessage;
 
         request.headers = { accept };
 
-        const response = {} as ServerResponse;
+        const response = {
+            getHeader: () => {},
+            setHeader: () => {},
+        } as ServerResponse;
 
-        response.setHeader = vi.fn();
-        response.getHeader = vi.fn();
+        vi.spyOn(response, "setHeader").mockImplementation();
+        vi.spyOn(response, "getHeader").mockImplementation();
 
         const result = serialize([], request, response, data, { defaultContentType: "application/json" });
 
-        expect(result).toEqual(expected);
+        expect(result).toStrictEqual(expected);
     });
 
     it("should returns the original data unmodified when the Content-Type header is already set in the response", () => {
         const request = {} as IncomingMessage;
         request.headers = { accept: "application/json" };
 
-        const response = {} as ServerResponse;
-        response.getHeader = vi.fn().mockReturnValue("application/json");
-        response.setHeader = vi.fn();
+        const response = {
+            getHeader: () => {},
+            setHeader: () => {},
+        } as ServerResponse;
+
+        vi.spyOn(response, "getHeader").mockImplementation().mockReturnValue("application/json");
+        vi.spyOn(response, "setHeader").mockImplementation();
 
         const data = { test: "data" };
         const options = { defaultContentType: "application/json" };
@@ -76,19 +85,22 @@ describe("serialize", () => {
 
         const result = serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(response.setHeader).not.toHaveBeenCalled();
-        expect(result).toEqual(data);
+        expect(result).toStrictEqual(data);
     });
 
-    // eslint-disable-next-line max-len
     it("should sets the Content-Type header in the response to options.defaultContentType and serializes the data using the correct serializer when no matching serializer is found for the given types in the accept header", () => {
         const request = {} as IncomingMessage;
         request.headers = { accept: "application/text" };
 
-        const response = {} as ServerResponse;
+        const response = {
+            getHeader: () => {},
+            setHeader: () => {},
+        } as ServerResponse;
 
-        response.setHeader = vi.fn();
-        response.getHeader = vi.fn();
+        vi.spyOn(response, "setHeader").mockImplementation();
+        vi.spyOn(response, "getHeader").mockImplementation();
 
         const data = { test: "data" };
         const options = { defaultContentType: "application/json" };
@@ -102,7 +114,8 @@ describe("serialize", () => {
 
         const result = serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");
-        expect(result).toEqual(JSON.stringify(data));
+        expect(result).toStrictEqual(JSON.stringify(data));
     });
 });

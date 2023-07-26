@@ -12,12 +12,10 @@ const defaultTitle = "An error occurred";
  * @see https://tools.ietf.org/html/rfc7807
  */
 const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, response) => {
-    const { stack, message } = error;
+    const { message, stack } = error;
 
     if (error instanceof HttpError) {
-        const {
-            statusCode, expose, title, type,
-        } = error;
+        const { expose, statusCode, title, type } = error;
 
         response.statusCode = statusCode;
 
@@ -25,7 +23,9 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
 
         sendJson(response, {
             type: type || defaultType,
+            // eslint-disable-next-line perfectionist/sort-objects
             title: title || getReasonPhrase(statusCode) || defaultTitle,
+            // eslint-disable-next-line perfectionist/sort-objects
             details: message,
             ...(expose ? { trace: stack } : {}),
         });
@@ -34,7 +34,9 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
 
         sendJson(response, {
             type: defaultType,
+            // eslint-disable-next-line perfectionist/sort-objects
             title: getReasonPhrase(response.statusCode) || defaultTitle,
+            // eslint-disable-next-line perfectionist/sort-objects
             details: message,
             ...((error as Error & { expose: boolean }).expose ? { trace: stack } : {}),
         });

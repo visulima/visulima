@@ -7,14 +7,12 @@ import type { SwaggerUIProps } from "swagger-ui-react";
 
 import type getStaticProps from "../get-static-properties-swagger";
 // eslint-disable-next-line import/no-extraneous-dependencies
-const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
+const SwaggerUi = dynamic(async () => await import("swagger-ui-react"), { ssr: false });
 
-// eslint-disable-next-line max-len
-const SwaggerApiDocument: (
-    name: string,
-    swagger?: Exclude<SwaggerUIProps, "spec">,
-    // eslint-disable-next-line max-len,unicorn/no-useless-undefined
-) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (name, swagger = {}) => ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
+const SwaggerApiDocument: (name: string, swagger?: Exclude<SwaggerUIProps, "spec">) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> =
+    (name, swagger = {}) =>
+    ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => {
+        return (
             <>
                 <Head>
                     <title>{name}</title>
@@ -26,9 +24,11 @@ body {
 `}
                     </style>
                 </Head>
+
                 {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                <SwaggerUI {...swagger} spec={swaggerData} />
+                <SwaggerUi {...swagger} spec={swaggerData} />
             </>
-);
+        );
+    };
 
 export default SwaggerApiDocument;

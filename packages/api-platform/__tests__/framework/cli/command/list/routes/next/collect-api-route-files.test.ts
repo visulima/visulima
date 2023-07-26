@@ -2,7 +2,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import collectApiRouteFiles from "../../../../../../../src/framework/cli/command/list/routes/next/collect-api-route-files";
-// eslint-disable-next-line unicorn/prefer-module
+
 const fixturesPath = path.resolve(__dirname, "../../../../../../../", "__fixtures__/collect");
 
 describe("collect-api-route-files", () => {

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import colors from "chalk";
+import chalk from "chalk";
 import { execSync } from "node:child_process";
 import { existsSync, rmSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -9,24 +9,22 @@ import { getRoutes } from "./get-routes";
 import routesGroupBy from "./routes/routes-group-by";
 import routesRender from "./routes/routes-render";
 import type { Route } from "./routes/types.d";
-import {
-    ALLOWED_EXTENSIONS, getApp, getAppWorkingDirectoryPath, getFrameworkName,
-} from "./utils";
+import { ALLOWED_EXTENSIONS, getApp, getAppWorkingDirectoryPath, getFrameworkName } from "./utils";
 
-type RenderOptions = {
-    includePaths: string[];
+interface RenderOptions {
     excludePaths: string[];
-    methods: string[];
     group: string;
-};
+    includePaths: string[];
+    methods: string[];
+}
 
 const listCommand = async (
     framework: "express" | "fastify" | "hapi" | "koa" | "next" | undefined,
     path: string,
     options: Partial<
-    RenderOptions & {
-        verbose: boolean;
-    }
+        RenderOptions & {
+            verbose: boolean;
+        }
     > = {},
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
@@ -91,12 +89,10 @@ const listCommand = async (
                 try {
                     execSync(`${tscPath} --outDir framework-list >&2`, { cwd: appWorkingDirectoryPath });
                 } catch (error: any) {
-                    // eslint-disable-next-line no-console
                     console.log("TSC compilation failed. Please resolve issues in your project.\n");
-                    // eslint-disable-next-line no-console
+
                     console.log(error);
 
-                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     rmSync(join(appWorkingDirectoryPath, "framework-list"), { recursive: true });
                 }
             }
@@ -108,7 +104,7 @@ const listCommand = async (
             const { default: defaultExport } = await import(appJsFilePath);
 
             routes = await getRoutes(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 ["AsyncFunction", "Function"].includes(defaultExport.constructor.name as string) ? await defaultExport() : getApp(defaultExport, framework),
                 framework,
                 options.verbose ?? false,
@@ -133,7 +129,6 @@ const listCommand = async (
     }
 
     if (typeof options.group === "string" && options.group !== "") {
-        // eslint-disable-next-line no-console
         console.log();
 
         const groupedMap = routesGroupBy(routes, (route) => {
@@ -148,34 +143,29 @@ const listCommand = async (
 
         groupedMap.forEach((groupedRoutes, key) => {
             if (counter > 0) {
-                // eslint-disable-next-line no-console
                 console.log();
             }
 
             const dotsCount = (process.stdout.columns - 16 - key.length) / 2;
             const dots = dotsCount > 0 ? Array.from({ length: dotsCount }).fill(" ").join("") : "";
-            // eslint-disable-next-line no-console
-            console.log(dots + colors.bold.underline(key));
+
+            console.log(dots + chalk.bold.underline(key));
 
             routesRender(groupedRoutes, options).forEach((renderedRoute) => {
-                // eslint-disable-next-line no-console
                 console.log(renderedRoute);
             });
 
             counter += 1;
         });
     } else {
-        // eslint-disable-next-line no-console
         console.log();
 
         routesRender(routes, options).forEach((renderedRoute) => {
-            // eslint-disable-next-line no-console
             console.log(renderedRoute);
         });
     }
 
-    // eslint-disable-next-line no-console
-    console.log(`\n  Listed ${colors.greenBright(String(routes.length))} HTTP ${routes.length === 1 ? "route" : "routes"}.\n`);
+    console.log(`\n  Listed ${chalk.greenBright(String(routes.length))} HTTP ${routes.length === 1 ? "route" : "routes"}.\n`);
 };
 
 export default listCommand;

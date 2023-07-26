@@ -6,129 +6,127 @@ import httpHeaderNormalizer from "../../../src/connect/middleware/http-header-no
 const normalizeHeaderKey = (key: string) => key.toUpperCase();
 
 describe("httpHeaderNormalizer", () => {
-    it("It should normalize (lowercase) all the headers and create a copy in rawHeaders", () => {
+    it("should normalize (lowercase) all the headers and create a copy in rawHeaders", async () => {
         const headers = {
-            "x-aPi-key": "123456",
-            tcn: "abc",
-            te: "cde",
             DNS: "d",
             FOO: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-aPi-key": "123456",
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             dns: "d",
             foo: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         };
 
-        httpHeaderNormalizer()(req, res, () => {});
+        await httpHeaderNormalizer()(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             dns: "d",
             foo: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         });
     });
 
-    it("It should normalize (canonical) all the headers and create a copy in rawHeaders", () => {
+    it("should normalize (canonical) all the headers and create a copy in rawHeaders", async () => {
         const headers = {
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             DNS: "d",
             FOO: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
-            "X-Api-Key": "123456",
-            TCN: "abc",
-            TE: "cde",
             Dns: "d",
             Foo: "bar",
+            TCN: "abc",
+            TE: "cde",
+            "X-Api-Key": "123456",
         };
 
-        httpHeaderNormalizer({ canonical: true })(req, res, () => {});
+        await httpHeaderNormalizer({ canonical: true })(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             dns: "d",
             foo: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         });
     });
 
-    it("It can use custom normalization function", () => {
+    it("can use custom normalization function", async () => {
         const headers = {
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             DNS: "d",
             FOO: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
-            "X-API-KEY": "123456",
-            TCN: "abc",
-            TE: "cde",
             DNS: "d",
             FOO: "bar",
+            TCN: "abc",
+            TE: "cde",
+            "X-API-KEY": "123456",
         };
 
-        httpHeaderNormalizer({
+        await httpHeaderNormalizer({
             normalizeHeaderKey,
         })(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({
-            "x-api-key": "123456",
-            tcn: "abc",
-            te: "cde",
             dns: "d",
             foo: "bar",
+            tcn: "abc",
+            te: "cde",
+            "x-api-key": "123456",
         });
     });
-});
 
-describe("httpHeaderNormalizer", () => {
     // multiValueHeaders
 
-    it("It should normalize (lowercase) all the headers and create a copy in rawMultiValueHeaders", () => {
+    it("should normalize (lowercase) all the headers and create a copy in rawMultiValueHeaders", async () => {
         const headers = {
             cOOkie: ["123456", "654321"],
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
             cookie: ["123456", "654321"],
         };
 
-        httpHeaderNormalizer()(req, res, () => {});
+        await httpHeaderNormalizer()(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({
@@ -136,21 +134,21 @@ describe("httpHeaderNormalizer", () => {
         });
     });
 
-    it("It should normalize (canonical) all the headers and create a copy in rawMultiValueHeaders", () => {
+    it("should normalize (canonical) all the headers and create a copy in rawMultiValueHeaders", async () => {
         const headers = {
             cOOkie: ["123456", "654321"],
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
             Cookie: ["123456", "654321"],
         };
 
-        httpHeaderNormalizer({ canonical: true })(req, res, () => {});
+        await httpHeaderNormalizer({ canonical: true })(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({
@@ -158,21 +156,21 @@ describe("httpHeaderNormalizer", () => {
         });
     });
 
-    it("It can use custom normalization function on multiValueHeaders", () => {
+    it("can use custom normalization function on multiValueHeaders", async () => {
         const headers = {
             cOOkie: ["123456", "654321"],
         };
 
         const { req, res } = createMocks({
-            method: "GET",
             headers,
+            method: "GET",
         });
 
         const expectedHeaders = {
             COOKIE: ["123456", "654321"],
         };
 
-        httpHeaderNormalizer({ normalizeHeaderKey })(req, res, () => {});
+        await httpHeaderNormalizer({ normalizeHeaderKey })(req, res, () => {});
 
         expect(req.headers).toStrictEqual(expectedHeaders);
         expect(req.rawHeaders).toStrictEqual({

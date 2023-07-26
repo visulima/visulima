@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { FastifyInstance } from "fastify";
 
 import type { Route } from "./types";
@@ -9,7 +8,13 @@ const getSegment = (line: string) => line.replaceAll(/ \(.*\)/g, "").trim();
 // "<spaces> activity (GET)" -> "GET"
 const getMethod = (line: string) => (line.trim().split(" ")[1] as string).slice(1, -1);
 
-type Segment = { index: number; segment: string; methods: string[] | null; depth: number; isRoute: boolean };
+interface Segment {
+    depth: number;
+    index: number;
+    isRoute: boolean;
+    methods: string[] | null;
+    segment: string;
+}
 
 const fastifyRoutes = (app: FastifyInstance): Route[] => {
     const printedRoutes = app
@@ -19,6 +24,7 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
 
     const lines = printedRoutes.split("\n");
 
+    // eslint-disable-next-line unicorn/no-array-reduce
     const segments = lines.reduce((allSegments: Segment[], line, index) => {
         const segment = getSegment(line);
         const previousSegment = getSegment(lines[index - 1] ?? "");
@@ -47,11 +53,11 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
         const methods = isRoute ? [getMethod(line)] : null;
 
         allSegments.push({
-            segment,
-            index,
             depth,
+            index,
             isRoute,
             methods,
+            segment,
         });
 
         return allSegments;
@@ -75,10 +81,10 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
 
             item.methods.forEach((method: string) => {
                 routes.push({
-                    path: route,
-                    method: method.toUpperCase(),
-                    tags: [],
                     file: "unknown",
+                    method: method.toUpperCase(),
+                    path: route,
+                    tags: [],
                 });
             });
         });

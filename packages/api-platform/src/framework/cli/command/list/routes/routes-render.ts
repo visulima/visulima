@@ -1,28 +1,28 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import colors from "chalk";
+import chalk from "chalk";
 
 import type { Route } from "./types";
 
 const renderRoute = (method: string, routePath: string): string => {
     const colorMap = {
-        GET: colors.blue,
-        POST: colors.yellow,
-        PATCH: colors.yellow,
-        PUT: colors.yellow,
-        DELETE: colors.redBright,
-        OPTIONS: colors.hex("#6C7280"),
-        ANY: colors.redBright,
-        HEAD: colors.hex("#6C7280"),
+        ANY: chalk.redBright,
+        DELETE: chalk.redBright,
+        GET: chalk.blue,
+        HEAD: chalk.hex("#6C7280"),
+        OPTIONS: chalk.hex("#6C7280"),
+        PATCH: chalk.yellow,
+        POST: chalk.yellow,
+        PUT: chalk.yellow,
     };
 
     let methodText: string;
 
     if (method === "GET|HEAD") {
-        methodText = `${colors.blue("GET")}${colors.grey("|HEAD")}`;
+        methodText = `${chalk.blue("GET")}${chalk.grey("|HEAD")}`;
     } else {
         const coloredMethod = colorMap[method as keyof typeof colorMap](method);
 
-        methodText = method === "GET" ? `${coloredMethod}${colors.grey("|HEAD")}` : coloredMethod;
+        methodText = method === "GET" ? `${coloredMethod}${chalk.grey("|HEAD")}` : coloredMethod;
     }
 
     const spacesCount = method === "GET" ? 6 : 14 - method.length;
@@ -34,29 +34,30 @@ const renderRoute = (method: string, routePath: string): string => {
     const routeText = routePath
         .split("/")
         .map((segment) => {
-            const isDynamicSegment = ["[", ":"].includes(segment[0] ?? "");
+            const isDynamicSegment = [":", "["].includes(segment[0] ?? "");
 
-            return isDynamicSegment ? colors.yellowBright(segment) : segment;
+            return isDynamicSegment ? chalk.yellowBright(segment) : segment;
         })
         .join("/");
 
-    return `  ${methodText}${spaces}${routeText}${colors.grey(dots)}`;
+    return `  ${methodText}${spaces}${routeText}${chalk.grey(dots)}`;
 };
 
-const routesRender = (routesMap: Route[], options: { methods?: string[] } = {}): (string | undefined)[] => routesMap
-    .map((route) => {
-        if (Array.isArray(options.methods) && options.methods.includes(route.method)) {
-            return;
-        }
+const routesRender = (routesMap: Route[], options: { methods?: string[] } = {}): (string | undefined)[] =>
+    routesMap
+        .map((route) => {
+            if (Array.isArray(options.methods) && options.methods.includes(route.method)) {
+                return;
+            }
 
-        if (route.method === "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS") {
-            // eslint-disable-next-line no-param-reassign
-            route.method = "ANY";
-        }
+            if (route.method === "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS") {
+                // eslint-disable-next-line no-param-reassign
+                route.method = "ANY";
+            }
 
-        // eslint-disable-next-line consistent-return
-        return renderRoute(route.method, route.path.replace("/pages", ""));
-    })
-    .filter(Boolean);
+            // eslint-disable-next-line consistent-return
+            return renderRoute(route.method, route.path.replace("/pages", ""));
+        })
+        .filter(Boolean);
 
 export default routesRender;

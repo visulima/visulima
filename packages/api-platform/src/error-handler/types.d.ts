@@ -7,8 +7,8 @@ export type ErrorHandler = <Request extends IncomingMessage, Response extends Se
 ) => Promise<any> | any;
 
 export type ErrorHandlers = {
-    regex: RegExp;
     handler: ErrorHandler;
+    regex: RegExp;
 }[];
 
 export type ApiFormat = "jsonapi" | "problem";

@@ -4,7 +4,9 @@ import swaggerHandler from "../../../../swagger/api/swagger-handler";
 /**
  * @deprecated Use `import { swaggerHandler } from "@visulima/api-platform"` instead.
  */
-// eslint-disable-next-line max-len
-const swaggerApiRoute: <M extends string, PrismaClient>(options: Partial<SwaggerHandlerOptions<M, PrismaClient>>) => void = (options = {}) => swaggerHandler(options);
 
+const swaggerApiRoute: <M extends string, PrismaClient>(options: Partial<SwaggerHandlerOptions<M, PrismaClient>>) => void = (options = {}) =>
+    swaggerHandler(options);
+
+// eslint-disable-next-line etc/no-deprecated
 export default swaggerApiRoute;

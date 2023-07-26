@@ -13,7 +13,7 @@ const isDirectory = (path: string): boolean => {
     }
 };
 
-const collectApiRouteFiles = async (path: string = "", verbose: boolean = false): Promise<string[]> => {
+const collectApiRouteFiles = async (path = "", verbose = false): Promise<string[]> => {
     let apiFolderPath = join(path, "pages/api");
 
     // src/pages will be ignored if pages is present in the root directory
@@ -25,7 +25,7 @@ const collectApiRouteFiles = async (path: string = "", verbose: boolean = false)
         }
     }
 
-    return collect(apiFolderPath, {
+    return await collect(apiFolderPath, {
         extensions: ALLOWED_EXTENSIONS,
         includeDirs: false,
         minimatchOptions: {

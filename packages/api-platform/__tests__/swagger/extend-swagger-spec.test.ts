@@ -6,17 +6,16 @@ import extendSwaggerSpec from "../../src/swagger/extend-swagger-spec";
 describe("swagger/extend-swagger-spec", () => {
     it("should extend swagger spec", () => {
         const spec = {
-            openapi: "3.0.0",
             info: {
                 title: "Test",
                 version: "1.0.0",
             },
+            openapi: "3.0.0",
             paths: {
                 "/test": {
                     get: {
                         responses: {
                             200: {
-                                description: "OK",
                                 content: {
                                     "application/json": {
                                         schema: {
@@ -24,6 +23,7 @@ describe("swagger/extend-swagger-spec", () => {
                                         },
                                     },
                                 },
+                                description: "OK",
                             },
                         },
                     },
@@ -37,11 +37,6 @@ describe("swagger/extend-swagger-spec", () => {
         });
 
         expect(extendedSpec).toStrictEqual({
-            openapi: "3.0.0",
-            info: {
-                title: "Test",
-                version: "1.0.0",
-            },
             components: {
                 schemas: {
                     Test: {
@@ -49,6 +44,11 @@ describe("swagger/extend-swagger-spec", () => {
                     },
                 },
             },
+            info: {
+                title: "Test",
+                version: "1.0.0",
+            },
+            openapi: "3.0.0",
             paths: {
                 "/test": {
                     get: {
@@ -57,7 +57,6 @@ describe("swagger/extend-swagger-spec", () => {
                                 content: {
                                     "application/json": {
                                         schema: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
                                             $ref: "#/components/schemas/Test",
                                         },
                                     },
@@ -78,11 +77,6 @@ describe("swagger/extend-swagger-spec", () => {
 
     it("should extend swagger spec with examples", () => {
         const spec = {
-            openapi: "3.0.0",
-            info: {
-                title: "Test",
-                version: "1.0.0",
-            },
             components: {
                 examples: {
                     Test2: {
@@ -92,17 +86,18 @@ describe("swagger/extend-swagger-spec", () => {
                     },
                 },
             },
+            info: {
+                title: "Test",
+                version: "1.0.0",
+            },
+            openapi: "3.0.0",
             paths: {
                 "/test": {
                     get: {
                         responses: {
                             200: {
-                                description: "OK",
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            type: "object",
-                                        },
                                         examples: {
                                             Test: {
                                                 value: {
@@ -110,8 +105,12 @@ describe("swagger/extend-swagger-spec", () => {
                                                 },
                                             },
                                         },
+                                        schema: {
+                                            type: "object",
+                                        },
                                     },
                                 },
+                                description: "OK",
                             },
                         },
                     },
@@ -120,20 +119,19 @@ describe("swagger/extend-swagger-spec", () => {
                     get: {
                         responses: {
                             200: {
-                                description: "OK",
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            type: "object",
-                                        },
                                         examples: {
                                             Test2: {
-                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 $ref: "#/components/examples/Test2",
                                             },
                                         },
+                                        schema: {
+                                            type: "object",
+                                        },
                                     },
                                 },
+                                description: "OK",
                             },
                         },
                     },
@@ -144,12 +142,11 @@ describe("swagger/extend-swagger-spec", () => {
                             200: {
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
-                                            $ref: "#/components/schemas/Test3",
-                                        },
                                         example: {
                                             test: "test",
+                                        },
+                                        schema: {
+                                            $ref: "#/components/schemas/Test3",
                                         },
                                     },
                                 },
@@ -163,25 +160,12 @@ describe("swagger/extend-swagger-spec", () => {
 
         const extendedSpec = extendSwaggerSpec(spec, {
             "application/json": true,
-            "text/xml": true,
             "application/x-yaml": true,
+            "text/xml": true,
         });
 
         expect(extendedSpec).toStrictEqual({
-            openapi: "3.0.0",
-            info: {
-                title: "Test",
-                version: "1.0.0",
-            },
             components: {
-                schemas: {
-                    Test: {
-                        type: "object",
-                    },
-                    Test2: {
-                        type: "object",
-                    },
-                },
                 examples: {
                     Test: {
                         value: {
@@ -194,7 +178,20 @@ describe("swagger/extend-swagger-spec", () => {
                         },
                     },
                 },
+                schemas: {
+                    Test: {
+                        type: "object",
+                    },
+                    Test2: {
+                        type: "object",
+                    },
+                },
             },
+            info: {
+                title: "Test",
+                version: "1.0.0",
+            },
+            openapi: "3.0.0",
             paths: {
                 "/test": {
                     get: {
@@ -202,31 +199,29 @@ describe("swagger/extend-swagger-spec", () => {
                             200: {
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            $ref: "#/components/schemas/Test",
-                                        },
                                         examples: {
                                             Test: {
                                                 $ref: "#/components/examples/Test",
                                             },
                                         },
-                                    },
-                                    "text/xml": {
                                         schema: {
                                             $ref: "#/components/schemas/Test",
-                                        },
-                                        examples: {
-                                            Test: {
-                                                // eslint-disable-next-line sonarjs/no-duplicate-string
-                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
-                                            },
                                         },
                                     },
                                     "application/x-yaml": {
                                         examples: {
                                             Test: {
-                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 value: "test: test\n",
+                                            },
+                                        },
+                                        schema: {
+                                            $ref: "#/components/schemas/Test",
+                                        },
+                                    },
+                                    "text/xml": {
+                                        examples: {
+                                            Test: {
+                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                             },
                                         },
                                         schema: {
@@ -245,30 +240,29 @@ describe("swagger/extend-swagger-spec", () => {
                             200: {
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
-                                            $ref: "#/components/schemas/Test2",
-                                        },
                                         examples: {
                                             Test2: {
                                                 $ref: "#/components/examples/Test2",
                                             },
                                         },
-                                    },
-                                    "text/xml": {
                                         schema: {
                                             $ref: "#/components/schemas/Test2",
-                                        },
-                                        examples: {
-                                            Test2: {
-                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
-                                            },
                                         },
                                     },
                                     "application/x-yaml": {
                                         examples: {
                                             Test2: {
                                                 value: "test: test\n",
+                                            },
+                                        },
+                                        schema: {
+                                            $ref: "#/components/schemas/Test2",
+                                        },
+                                    },
+                                    "text/xml": {
+                                        examples: {
+                                            Test2: {
+                                                value: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                             },
                                         },
                                         schema: {
@@ -287,22 +281,21 @@ describe("swagger/extend-swagger-spec", () => {
                             200: {
                                 content: {
                                     "application/json": {
-                                        schema: {
-                                            // eslint-disable-next-line sonarjs/no-duplicate-string
-                                            $ref: "#/components/schemas/Test3",
-                                        },
                                         example: {
                                             test: "test",
                                         },
-                                    },
-                                    "text/xml": {
                                         schema: {
                                             $ref: "#/components/schemas/Test3",
                                         },
-                                        example: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                     },
                                     "application/x-yaml": {
                                         example: "test: test\n",
+                                        schema: {
+                                            $ref: "#/components/schemas/Test3",
+                                        },
+                                    },
+                                    "text/xml": {
+                                        example: '<?xml version="1.0" encoding="UTF-8"?>\n<test>test</test>',
                                         schema: {
                                             $ref: "#/components/schemas/Test3",
                                         },

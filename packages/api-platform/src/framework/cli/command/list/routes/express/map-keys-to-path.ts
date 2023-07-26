@@ -10,7 +10,7 @@ import type { ExpressRegex, Key } from "./types.d";
  */
 const mapKeysToPath = (layerRegexPath: ExpressRegex, keys: Key[]): string => {
     if (keys.length === 0) {
-        throw new Error("must include atleast one key to map");
+        throw new Error("must include at least one key to map");
     }
 
     let convertedSubPath = layerRegexPath.toString();
@@ -24,8 +24,8 @@ const mapKeysToPath = (layerRegexPath: ExpressRegex, keys: Key[]): string => {
     return convertedSubPath
         .replace("/?(?=\\/|$)/i", "")
         .replace("/^", "")
-        .replaceAll(/\\/gi, "")
-        .replaceAll(/\/{2,}/gi, "/");
+        .replaceAll("\\", "")
+        .replaceAll(/\/{2,}/g, "/");
 };
 
 export default mapKeysToPath;

@@ -17,11 +17,11 @@ const exceptions = {
     "last-event-id": "Last-Event-ID",
     "mime-version": "MIME-Version",
     "optional-www-authenticate": "Optional-WWW-Authenticate",
-    "sec-websocket-accept": "Sec-WebSocket-Accept",
-    "sec-websocket-extensions": "Sec-WebSocket-Extensions",
     "sec-webSocket-key": "Sec-WebSocket-Key",
     "sec-webSocket-protocol": "Sec-WebSocket-Protocol",
     "sec-webSocket-version": "Sec-WebSocket-Version",
+    "sec-websocket-accept": "Sec-WebSocket-Accept",
+    "sec-websocket-extensions": "Sec-WebSocket-Extensions",
     slug: "SLUG",
     tcn: "TCN",
     te: "TE",
@@ -43,13 +43,11 @@ const normalizeHeaderKey = (key: string, canonical: boolean) => {
         return exceptions[lowerCaseKey as keyof typeof exceptions];
     }
 
-    return (
-        lowerCaseKey
-            .split("-")
-            // eslint-disable-next-line no-unsafe-optional-chaining
-            .map((text) => text[0]?.toUpperCase() + text.slice(1))
-            .join("-")
-    );
+    return lowerCaseKey
+        .split("-")
+
+        .map((text) => text[0]?.toUpperCase() + text.slice(1))
+        .join("-");
 };
 
 const defaults = {
@@ -84,7 +82,7 @@ const httpHeaderNormalizerMiddleware = (options_?: {
 
         request.headers = headers;
         // @TODO at type `request.rawHeaders` to global scope
-        // @ts-expect-error
+        // @ts-expect-error - `rawHeaders` is not a property of `Request`
         request.rawHeaders = rawHeaders;
 
         return next();

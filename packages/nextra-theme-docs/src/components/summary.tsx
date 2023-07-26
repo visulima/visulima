@@ -11,7 +11,9 @@ const Summary = ({
     variant = "default",
     ...properties
 }: ComponentProps<"summary"> & {
-    iconProps?: ComponentProps<typeof ArrowRightIcon>;
+    iconProps?: ComponentProps<"svg"> & {
+        pathClassName?: string;
+    };
     variant?: "default" | "raw";
 }): ReactElement => {
     const setOpen = useDetails();

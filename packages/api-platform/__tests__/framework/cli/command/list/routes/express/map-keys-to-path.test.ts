@@ -14,16 +14,16 @@ describe("mapKeysToPath", () => {
     });
 
     it("handles empty keys", () => {
-        expect(() => mapKeysToPath(staticPath, [])).toThrow();
+        expect(() => mapKeysToPath(staticPath, [])).toThrow("must include at least one key to map");
     });
 
     it("handles optional parameters", () => {
         const optional = twoDynamicPaths();
 
-        // eslint-disable-next-line unicorn/better-regex,optimize-regex/optimize-regex,no-useless-escape
+        // eslint-disable-next-line unicorn/better-regex,no-useless-escape,security/detect-unsafe-regex,regexp/no-useless-escape,regexp/no-useless-non-capturing-group,regexp/no-useless-lazy
         optional.regex = /^\/sub-sub-route(?:\/([^\/]+?))?\/(?:([^\/]+?))\/?(?=\/|$)/i as ExpressRegex;
 
-        (optional.keys[0] as { [key: string]: any })["optional"] = true;
+        (optional.keys[0] as Record<string, any>)["optional"] = true;
 
         expect(mapKeysToPath(optional.regex, optional.keys)).toBe("/sub-sub-route/:test2?/:test3");
     });

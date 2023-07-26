@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import type { ServerResponse } from "node:http";
 
 export const setErrorHeaders = (response: ServerResponse, error: unknown): void => {
-    const headers: { [key: string]: ReadonlyArray<string> | number | string } = (error as HttpError).headers ?? {};
+    const headers: Record<string, ReadonlyArray<string> | number | string> = (error as HttpError).headers ?? {};
 
     Object.keys(headers).forEach((header: string) => {
         response.setHeader(header, headers[header] as ReadonlyArray<string> | number | string);
@@ -24,13 +24,13 @@ export const sendJson = (response: ServerResponse, jsonBody: unknown): void => {
 
 export const addStatusCodeToResponse = (response: ServerResponse, error: unknown): void => {
     // respect err.statusCode
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if ((error as HttpError).statusCode !== undefined) {
         response.statusCode = (error as HttpError).statusCode;
     }
 
     // respect err.status
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if ((error as HttpError).status !== undefined) {
         response.statusCode = (error as HttpError).status;
     }
