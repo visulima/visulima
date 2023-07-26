@@ -1,3 +1,11 @@
+## @visulima/readdir [1.3.7](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.6...@visulima/readdir@1.3.7) (2023-07-26)
+
+
+### Bug Fixes
+
+* Refactor readdir package for updated linting and formatting rules ([72acc9c](https://github.com/visulima/visulima/commit/72acc9c146f4f8a7c6d1b4b7816afafdce31857a))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+
 ## @visulima/readdir [1.3.6](https://github.com/visulima/visulima/compare/@visulima/readdir@1.3.5...@visulima/readdir@1.3.6) (2023-06-06)
 
 
