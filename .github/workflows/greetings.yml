@@ -10,8 +10,8 @@ permissions:
 jobs:
     greeting:
         permissions:
-            issues: "write"  # for actions/first-interaction to comment on first issue
-            pull-requests: "write"  # for actions/first-interaction to comment on first PR
+            issues: "write" # for actions/first-interaction to comment on first issue
+            pull-requests: "write" # for actions/first-interaction to comment on first PR
         runs-on: "ubuntu-latest"
 
         steps:
