@@ -257,15 +257,15 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 {tocSidebarElement}
                                 <SkipNavContent />
                                 <Body
+                                    breadcrumb={
+                                        !["hidden", "page"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
+                                    }
                                     navigation={
                                         !["hidden", "page"].includes(activeType) && themeContext.pagination ? (
                                             <NavLinks currentIndex={activeIndex} flatDirectories={flatDocumentsDirectories} layout={themeContext.layout} />
                                         ) : null
                                     }
                                     activeType={activeType}
-                                    breadcrumb={
-                                        !["hidden", "page"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
-                                    }
                                     filePath={filePath}
                                     locale={locale}
                                     route={route}
