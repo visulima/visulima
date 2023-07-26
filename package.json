@@ -166,13 +166,13 @@
     "pnpm": {
         "overrides": {
             "load-tsconfig": "^0.2.5",
-            "vite": "4.3.4",
-            "tsup": "^6.7.0",
-            "tsconfig-paths": "^4.0.0",
-            "cosmiconfig-typescript-loader": "^4.3.0",
+            "vite": "4.4.7",
+            "tsup": "^7.1.0",
+            "tsconfig-paths": "^4.2.0",
+            "cosmiconfig-typescript-loader": "^5.0.0",
             "semantic-release": "^21.0.2",
             "@mdx-js/react": "^2.3.0",
-            "estree-util-build-jsx": "^2.2.2",
+            "estree-util-build-jsx": "^3.0.0",
             "typescript": "^5.1.6"
         }
     }
