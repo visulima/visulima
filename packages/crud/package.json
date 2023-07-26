@@ -77,7 +77,7 @@
         "path-to-regexp": "^6.2.1"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^10.0.5",
+        "@anolilab/eslint-config": "^10.0.6",
         "@anolilab/prettier-config": "^5.0.1",
         "@anolilab/semantic-release-preset": "^6.0.2",
         "@prisma/client": "4.16.2",

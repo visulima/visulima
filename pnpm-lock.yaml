@@ -23,8 +23,8 @@ importers:
                 specifier: ^3.0.2
                 version: 3.0.2(@commitlint/cli@17.6.7)
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/lint-staged-config":
                 specifier: ^2.0.2
                 version: 2.0.2(@types/node@20.2.3)(husky@8.0.3)
@@ -189,8 +189,8 @@ importers:
                 version: 3.21.4
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -853,8 +853,8 @@ importers:
                 version: 5.88.2
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1035,8 +1035,8 @@ importers:
                 version: 2.0.1
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1129,8 +1129,8 @@ importers:
                 version: 6.2.1
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1244,8 +1244,8 @@ importers:
                 version: 13.4.6(react-dom@18.2.0)(react@18.2.0)
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1333,8 +1333,8 @@ importers:
                 version: 5.88.2
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1458,8 +1458,8 @@ importers:
                 version: 1.14.0
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1612,8 +1612,8 @@ importers:
                 version: 6.11.2
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1682,8 +1682,8 @@ importers:
                 version: 5.0.0
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1758,8 +1758,8 @@ importers:
                 version: 4.0.5
         devDependencies:
             "@anolilab/eslint-config":
-                specifier: ^10.0.5
-                version: 10.0.5(eslint@8.45.0)(typescript@5.1.6)
+                specifier: ^10.0.6
+                version: 10.0.6(eslint@8.45.0)(typescript@5.1.6)
             "@anolilab/prettier-config":
                 specifier: ^5.0.1
                 version: 5.0.1(prettier@3.0.0)
@@ -1847,8 +1847,8 @@ packages:
             - "@swc/wasm"
         dev: false
 
-    /@anolilab/eslint-config@10.0.5(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6):
-        resolution: { integrity: sha512-y6ClpsOvloj9fBnNMEK8aCmmjQGfDSrPJc26OueOr813c2iqZKI34EnoY+qAt5U6+QWUSh1Ny+eoqJpV5nPYww== }
+    /@anolilab/eslint-config@10.0.6(@testing-library/dom@9.3.1)(eslint@8.45.0)(postcss@8.4.27)(tailwindcss@3.3.3)(typescript@5.1.6):
+        resolution: { integrity: sha512-Cv6sdxYNqmo4o+9G3AFoknuDpETzLbpMutpfvQOkczbZP97ZXZRthANxz/2GpfCrGK+PBPuoP8zUctfJjlwjoQ== }
         engines: { node: ">=18" }
         requiresBuild: true
         peerDependencies:
@@ -1936,8 +1936,8 @@ packages:
             - typescript
         dev: true
 
-    /@anolilab/eslint-config@10.0.5(eslint@8.45.0)(typescript@5.1.6):
-        resolution: { integrity: sha512-y6ClpsOvloj9fBnNMEK8aCmmjQGfDSrPJc26OueOr813c2iqZKI34EnoY+qAt5U6+QWUSh1Ny+eoqJpV5nPYww== }
+    /@anolilab/eslint-config@10.0.6(eslint@8.45.0)(typescript@5.1.6):
+        resolution: { integrity: sha512-Cv6sdxYNqmo4o+9G3AFoknuDpETzLbpMutpfvQOkczbZP97ZXZRthANxz/2GpfCrGK+PBPuoP8zUctfJjlwjoQ== }
         engines: { node: ">=18" }
         requiresBuild: true
         peerDependencies:
