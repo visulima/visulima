@@ -9,9 +9,9 @@
     "dependencies": {
         "@visulima/api-platform": "workspace:*",
         "cors": "2.8.5",
-        "dotenv": "^16.1.4",
+        "dotenv": "^16.3.1",
         "express": "^4.18.2",
-        "winston": "^3.9.0"
+        "winston": "^3.10.0"
     },
     "devDependencies": {
         "@types/cors": "^2.8.13",
