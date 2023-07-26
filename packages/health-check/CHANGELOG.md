@@ -1,3 +1,11 @@
+## @visulima/health-check [1.0.8](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.7...@visulima/health-check@1.0.8) (2023-07-26)
+
+
+### Bug Fixes
+
+* Refactor code for improved readability and error handling ([2b280d8](https://github.com/visulima/visulima/commit/2b280d836593800f13066ee31828a7f20400eb58))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+
 ## @visulima/health-check [1.0.7](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.6...@visulima/health-check@1.0.7) (2023-06-08)
 
 
