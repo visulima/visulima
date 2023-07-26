@@ -1,3 +1,13 @@
+## @visulima/nextra-theme-docs [1.1.6](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.5...@visulima/nextra-theme-docs@1.1.6) (2023-07-26)
+
+
+### Bug Fixes
+
+* "Update packages and refactor naming ([1f0a4fc](https://github.com/visulima/visulima/commit/1f0a4fc806d0d95bae11d138128344a444ec2665))
+* Add secretlintrc file. Update list routes tests and snapshots for different frameworks. ([44105b9](https://github.com/visulima/visulima/commit/44105b90170705a50e9a4d043e1fd9772c742943))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+* Update types with interface definitions and tweak code format ([5f47682](https://github.com/visulima/visulima/commit/5f47682683acd328dd3b5701dc73af3589a3235f))
+
 ## @visulima/nextra-theme-docs [1.1.5](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.4...@visulima/nextra-theme-docs@1.1.5) (2023-06-10)
 
 
