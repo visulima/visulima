@@ -1,10 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Server } from "@hapi/hapi";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Express } from "express";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { FastifyInstance } from "fastify";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type Koa from "koa";
 
 import expressRoutes from "./routes/express-routes";
@@ -16,11 +12,11 @@ import collectApiRouteFiles from "./routes/next/collect-api-route-files";
 import type { Route } from "./routes/types.d";
 
 export type FrameworkName = "express" | "fastify" | "hapi" | "koa" | "next" | "unknown";
-export async function getRoutes(
+export const getRoutes = async (
     appOrPath: Express | FastifyInstance | Koa | Server | string,
     frameworkName: FrameworkName,
     verbose: boolean,
-): Promise<Route[] | null> {
+): Promise<Route[] | null> => {
     if (frameworkName === "express") {
         return expressRoutes(appOrPath as Express);
     }
@@ -48,4 +44,4 @@ export async function getRoutes(
     }
 
     return null;
-}
+};

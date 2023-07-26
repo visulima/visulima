@@ -3,7 +3,8 @@
     "display": "React + Node 16",
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "baseUrl": "."
+        "baseUrl": ".",
+        "verbatimModuleSyntax": true
     },
-    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts"]
+    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts", "**/*.ts"]
 }

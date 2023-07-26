@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Express } from "express";
 
 import expressPathParser from "./express/express-path-parser";
@@ -10,10 +9,10 @@ const expressRoutes = (app: Express): Route[] => {
 
     expressPathParser(app).forEach((route: RouteMetaData) => {
         routes.push({
-            path: route.path,
-            method: route.method.toUpperCase(),
-            tags: [],
             file: "unknown",
+            method: route.method.toUpperCase(),
+            path: route.path,
+            tags: [],
         });
     });
 

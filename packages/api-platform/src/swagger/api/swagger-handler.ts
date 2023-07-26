@@ -1,8 +1,8 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
 import type { ModelsToOpenApiParameters, SwaggerModelsConfig } from "@visulima/crud";
-// eslint-disable-next-line unicorn/prevent-abbreviations,import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { modelsToOpenApi } from "@visulima/crud";
 import debug from "debug";
+// eslint-disable-next-line no-restricted-imports
 import merge from "lodash.merge";
 import { existsSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -12,19 +12,19 @@ import type { OpenAPIV3 } from "openapi-types";
 import yamlTransformer from "../../serializers/transformer/yaml";
 import extendSwaggerSpec from "../extend-swagger-spec";
 
-// eslint-disable-next-line testing-library/no-debugging-utils
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
 const swaggerHandler = <M extends string, PrismaClient>(
+    // eslint-disable-next-line no-use-before-define
     options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {},
 ): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const {
         allowedMediaTypes = {
             "application/json": true,
         },
-        swaggerFilePath,
         crud,
         specs,
+        swaggerFilePath,
     } = options;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response) => {
@@ -44,9 +44,9 @@ const swaggerHandler = <M extends string, PrismaClient>(
                 const modelsOpenApi = await modelsToOpenApi(crud);
 
                 crudSwagger = {
-                    components: { schemas: modelsOpenApi.schemas, examples: modelsOpenApi.examples },
-                    tags: modelsOpenApi.tags,
+                    components: { examples: modelsOpenApi.examples, schemas: modelsOpenApi.schemas },
                     paths: modelsOpenApi.paths,
+                    tags: modelsOpenApi.tags,
                 };
 
                 crudSwagger = extendSwaggerSpec(crudSwagger, allowedMediaTypes);
@@ -55,7 +55,6 @@ const swaggerHandler = <M extends string, PrismaClient>(
 
                 spec = merge(spec, crudSwagger);
             } catch (error) {
-                // eslint-disable-next-line no-console
                 console.log(error);
 
                 throw new Error("Please install @visulima/crud to use the crud swagger generator.");
@@ -85,15 +84,15 @@ const swaggerHandler = <M extends string, PrismaClient>(
     };
 };
 
-export type SwaggerHandlerOptions<M extends string, PrismaClient> = {
-    allowedMediaTypes: { [key: string]: boolean };
-    swaggerFilePath: string;
+export interface SwaggerHandlerOptions<M extends string, PrismaClient> {
+    allowedMediaTypes: Record<string, boolean>;
     crud: Exclude<ModelsToOpenApiParameters<M, PrismaClient>, "swagger"> & {
         swagger?: {
             models?: SwaggerModelsConfig<M>;
         };
     };
     specs?: Partial<OpenAPIV3.Document>[];
-};
+    swaggerFilePath: string;
+}
 
 export default swaggerHandler;

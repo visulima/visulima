@@ -5,6 +5,7 @@
     "baseUrl": "./",
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "verbatimModuleSyntax": false
     }
 }

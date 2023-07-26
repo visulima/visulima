@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 
 import apiRouteFileParser from "../../../../../../../src/framework/cli/command/list/routes/next/api-route-file-parser";
 
-// eslint-disable-next-line unicorn/prefer-module
 const cwdPath = path.resolve(__dirname, "../../../../../../../", "__fixtures__");
 const apiRoutesPath = path.resolve(cwdPath, "pages/api");
 
@@ -22,56 +21,63 @@ describe("api-route-file-parser", () => {
         expect(parsedApiRouteFiles).toStrictEqual([
             [
                 {
-                    method: "GET|HEAD",
-                    // eslint-disable-next-line sonarjs/no-duplicate-string
-                    path: "/pages/api/[customerId]",
-                    tags: [],
-                    // eslint-disable-next-line sonarjs/no-duplicate-string
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
                     file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
+
+                    method: "GET|HEAD",
+                    path: "/pages/api/[customerId]",
+
+                    tags: [],
                 },
                 {
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                     method: "DELETE",
                     path: "/pages/api/[customerId]",
                     tags: [],
-                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                 },
                 {
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                     method: "POST",
                     path: "/pages/api/[customerId]",
                     tags: [],
-                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
                 {
-                    path: "/api/cors",
-                    method: "GET",
-                    tags: ["root"],
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
                     file: "__fixtures__/pages/api/corsheader.ts".replaceAll("/", isWin ? "\\" : "/"),
+                    method: "GET",
+                    path: "/api/cors",
+                    tags: ["root"],
                 },
             ],
             [
                 {
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+                    file: "__fixtures__/pages/api/defaultroute.ts".replaceAll("/", isWin ? "\\" : "/"),
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/defaultroute",
                     tags: [],
-                    file: "__fixtures__/pages/api/defaultroute.ts".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
             [
                 {
-                    path: "/api/hello",
-                    method: "GET",
-                    tags: ["root"],
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
                     file: "__fixtures__/pages/api/hello.ts".replaceAll("/", isWin ? "\\" : "/"),
+                    method: "GET",
+                    path: "/api/hello",
+                    tags: ["root"],
                 },
             ],
             [
                 {
+                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+                    file: "__fixtures__/pages/api/jsdefaultroute.js".replaceAll("/", isWin ? "\\" : "/"),
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/jsdefaultroute",
                     tags: [],
-                    file: "__fixtures__/pages/api/jsdefaultroute.js".replaceAll("/", isWin ? "\\" : "/"),
                 },
             ],
         ]);

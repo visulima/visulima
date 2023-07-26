@@ -21,7 +21,9 @@ const Collapse: FC<PropsWithChildren<{ className?: string; horizontal?: boolean;
         if (animation) {
             clearTimeout(animation);
         }
-        if (initialRender.current || !container || !inner) return;
+        if (initialRender.current || !container || !inner) {
+            return;
+        }
 
         container.classList.toggle("duration-500", !isOpen);
         container.classList.toggle("duration-300", isOpen);

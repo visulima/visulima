@@ -5,10 +5,11 @@ import process from "node:process";
 
 import type { Route } from "../types.d";
 
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const extensionRegex = /\.(js|ts|mjs|cjs)$/;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: boolean = false): Route[] => {
+const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = false): Route[] => {
     let specs: OpenApiObject[] = [];
 
     const parsedJsDocumentFile = parseFile(apiRouteFile, jsDocumentCommentsToOpenApi, verbose);
@@ -35,20 +36,20 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
                 }
 
                 routes.push({
+                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                     method: method as string,
                     path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
-                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 });
             }
         });
 
         if (routes.length === 0) {
             routes.push({
+                file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                 path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
-                file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
             });
         }
 
@@ -56,17 +57,17 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose: bool
     }
 
     specs.forEach((spec) => {
-        const paths = Object.entries(spec.paths);
+        const paths = Object.entries(spec?.paths ?? {});
 
         paths.forEach(([path, pathSpec]) => {
             const methods = Object.entries(pathSpec);
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    path: path.replaceAll("\\", "/"),
-                    method: method.toUpperCase(),
-                    tags: methodSpec.tags,
                     file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                    method: method.toUpperCase(),
+                    path: path.replaceAll("\\", "/"),
+                    tags: methodSpec.tags,
                 });
             });
         });

@@ -17,13 +17,14 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
 
         sendJson(response, serializer.serialize(error));
     } else if (error instanceof HttpError) {
-        const { statusCode, title, message } = error;
+        const { message, statusCode, title } = error;
 
         sendJson(response, {
             errors: [
                 {
                     code: statusCode,
                     title: title || getReasonPhrase(statusCode) || defaultTitle,
+                    // eslint-disable-next-line perfectionist/sort-objects
                     detail: message,
                 },
             ],
@@ -36,6 +37,7 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
                 {
                     code: "500",
                     title: getReasonPhrase(response.statusCode) || defaultTitle,
+                    // eslint-disable-next-line perfectionist/sort-objects
                     detail: message,
                 },
             ],
