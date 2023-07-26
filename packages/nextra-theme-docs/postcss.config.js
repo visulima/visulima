@@ -1,3 +1,4 @@
+/** @type {import('postcss-load-config').Config} */
 module.exports = {
     plugins: {
         autoprefixer: {},
@@ -5,7 +6,7 @@ module.exports = {
             replaceWith: "[data-focus-visible-added]",
         },
         "postcss-import": {},
-        tailwindcss: {},
         "tailwindcss/nesting": {},
+        tailwindcss: {},
     },
 };

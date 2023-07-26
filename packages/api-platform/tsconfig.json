@@ -6,6 +6,9 @@
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "jsx": "react-jsx",
-        "verbatimModuleSyntax": false
+        "verbatimModuleSyntax": false,
+        "paths": {
+            "zod": ["node_modules/zod"]
+        }
     }
 }
