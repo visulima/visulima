@@ -47,8 +47,7 @@
         "verify-node-version.cjs",
         "plopfile.js",
         "plop/**",
-        "packages/*/dist",
-        "packages/*/__fixtures__",
+        "packages/**",
         "examples/**",
         "docs/**"
     ]
