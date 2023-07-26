@@ -1,3 +1,18 @@
+## @visulima/jsdoc-open-api [1.3.11](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.10...@visulima/jsdoc-open-api@1.3.11) (2023-07-26)
+
+
+### Bug Fixes
+
+* Improve code consistency and update dependencies ([01e2f4e](https://github.com/visulima/visulima/commit/01e2f4e1f5fbcf239d4658c8f08ad1469e118529))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+* Update validate test in jsdoc-open-api ([69eb37e](https://github.com/visulima/visulima/commit/69eb37e466825d85d8a01f8031778536780a9db9))
+
+
+
+### Dependencies
+
+* **@visulima/readdir:** upgraded to 1.3.7
+
 ## @visulima/jsdoc-open-api [1.3.10](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@1.3.9...@visulima/jsdoc-open-api@1.3.10) (2023-06-06)
 
 
