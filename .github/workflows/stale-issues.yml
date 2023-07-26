@@ -12,8 +12,8 @@ permissions:
 jobs:
     default:
         permissions:
-            issues: "write"  # for actions/stale to close stale issues
-            pull-requests: "write"  # for actions/stale to close stale PRs
+            issues: "write" # for actions/stale to close stale issues
+            pull-requests: "write" # for actions/stale to close stale PRs
         timeout-minutes: 1
         runs-on: "ubuntu-latest"
         steps:
@@ -37,8 +37,8 @@ jobs:
 
     invalid:
         permissions:
-            issues: "write"  # for actions/stale to close stale issues
-            pull-requests: "write"  # for actions/stale to close stale PRs
+            issues: "write" # for actions/stale to close stale issues
+            pull-requests: "write" # for actions/stale to close stale PRs
         timeout-minutes: 1
         runs-on: "ubuntu-latest"
         steps:
@@ -60,8 +60,8 @@ jobs:
 
     duplicate:
         permissions:
-            issues: "write"  # for actions/stale to close stale issues
-            pull-requests: "write"  # for actions/stale to close stale PRs
+            issues: "write" # for actions/stale to close stale issues
+            pull-requests: "write" # for actions/stale to close stale PRs
         timeout-minutes: 1
         runs-on: "ubuntu-latest"
         steps:
@@ -83,8 +83,8 @@ jobs:
 
     wontfix:
         permissions:
-            issues: "write"  # for actions/stale to close stale issues
-            pull-requests: "write"  # for actions/stale to close stale PRs
+            issues: "write" # for actions/stale to close stale issues
+            pull-requests: "write" # for actions/stale to close stale PRs
         timeout-minutes: 1
 
         runs-on: "ubuntu-latest"

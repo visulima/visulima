@@ -2,12 +2,11 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node16/tsconfig"],
     "display": "React + Node 16",
-    "baseUrl": "./",
     "compilerOptions": {
+        "baseUrl": "./",
+
         "target": "es2021",
-
         "lib": ["DOM", "DOM.Iterable", "ES2021"],
-
         "jsx": "react-jsx",
 
         "noEmit": true,
@@ -41,16 +40,16 @@
         "moduleResolution": "node"
     },
     "exclude": [
-        "dist",
+        "dist/**",
         "node_modules",
-        "build",
-        "scripts",
+        "build/**",
+        "scripts/**",
         "verify-node-version.cjs",
         "plopfile.js",
-        "plop",
+        "plop/**",
         "packages/*/dist",
         "packages/*/__fixtures__",
-        "examples",
-        "docs"
+        "examples/**",
+        "docs/**"
     ]
 }

@@ -1,1 +1,1 @@
-module.exports = (plop) => {};
+module.exports = () => {};
