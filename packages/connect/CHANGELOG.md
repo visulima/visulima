@@ -1,3 +1,11 @@
+## @visulima/connect [1.3.7](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.6...@visulima/connect@1.3.7) (2023-07-26)
+
+
+### Bug Fixes
+
+* Add secretlintignore and modify router.test.ts for better readability ([81cba4e](https://github.com/visulima/visulima/commit/81cba4ea8236461cd2d3a2ef421699e86bab0763))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+
 ## @visulima/connect [1.3.6](https://github.com/visulima/visulima/compare/@visulima/connect@1.3.5...@visulima/connect@1.3.6) (2023-06-06)
 
 
