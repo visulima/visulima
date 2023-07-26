@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 const { walk } = require("@visulima/readdir");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
@@ -43,7 +42,7 @@ if (typeof pathOption !== "string") {
     process.exit(1);
 }
 
-const command = async function() {
+const command = async function () {
     const searchPath = path.join(process.cwd(), pathOption);
 
     // eslint-disable-next-line no-console
@@ -78,8 +77,7 @@ const command = async function() {
             }
         }
     }
-}
-
+};
 
 command().catch((error) => {
     // eslint-disable-next-line no-console
