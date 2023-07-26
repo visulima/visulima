@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import styles from "./style.module.css";
 
-const OptionTable: FC<{ options: [string, string, any] }> = ({ options }) => (
+const OptionTable: FC<{ options: [string, string, string] }> = ({ options }) => (
     <div className={`-mx-6 mb-4 mt-6 overflow-x-auto overscroll-x-contain px-6 pb-4 ${styles.container}`}>
         <table className="w-full border-collapse text-sm">
             <thead>

@@ -7,7 +7,12 @@ module.exports = {
         // Your environments (which contains several predefined global variables)
         // Most environments are loaded automatically if our rules are added
     },
-    extends: ["@anolilab/eslint-config", "@anolilab/eslint-config/typescript-type-checking", "plugin:@next/next/recommended", "plugin:@next/next/core-web-vitals"],
+    extends: [
+        "@anolilab/eslint-config",
+        "@anolilab/eslint-config/typescript-type-checking",
+        "plugin:@next/next/recommended",
+        "plugin:@next/next/core-web-vitals",
+    ],
     globals: {
         ...globals.es2021,
         // Your global variables (setting to false means it's not allowed to be reassigned)
@@ -37,6 +42,7 @@ module.exports = {
                 "jsx-a11y/anchor-has-content": "off",
                 // @see https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/917
                 "jsx-a11y/heading-has-content": "off",
+                "no-multi-spaces": "off",
             },
         },
     ],
