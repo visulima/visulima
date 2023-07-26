@@ -9,6 +9,7 @@ env.d.ts
 css
 coverage
 .next
+.secretlintrc.js
 
 __test__/__fixture__
 __test__/__snapshots__
