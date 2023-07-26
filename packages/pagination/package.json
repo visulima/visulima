@@ -66,7 +66,7 @@
         "qs": "^6.11.2"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^10.0.5",
+        "@anolilab/eslint-config": "^10.0.6",
         "@anolilab/prettier-config": "^5.0.1",
         "@anolilab/semantic-release-preset": "^6.0.2",
         "@rushstack/eslint-plugin-security": "^0.6.0",
