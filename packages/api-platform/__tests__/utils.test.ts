@@ -119,7 +119,13 @@ describe("utils", () => {
             body: null,
         };
 
-        await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow("Unexpected token i in JSON at position 0");
+        let errorMessage = "Unexpected token i in JSON at position 0";
+
+        if (process.version.includes("19") || process.version.includes("20")) {
+            errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
+        }
+
+        await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow(errorMessage);
     });
 
     describe("parseQuery", () => {
