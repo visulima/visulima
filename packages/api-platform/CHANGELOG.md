@@ -1,3 +1,20 @@
+## @visulima/api-platform [1.2.13](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.12...@visulima/api-platform@1.2.13) (2023-07-26)
+
+
+### Bug Fixes
+
+* Add secretlintrc file. Update list routes tests and snapshots for different frameworks. ([44105b9](https://github.com/visulima/visulima/commit/44105b90170705a50e9a4d043e1fd9772c742943))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 1.3.7
+* **@visulima/jsdoc-open-api:** upgraded to 1.3.11
+* **@visulima/crud:** upgraded to 1.0.13
+* **@visulima/readdir:** upgraded to 1.3.7
+
 ## @visulima/api-platform [1.2.12](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.11...@visulima/api-platform@1.2.12) (2023-06-06)
 
 
