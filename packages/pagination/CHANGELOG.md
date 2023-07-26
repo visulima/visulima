@@ -1,3 +1,11 @@
+## @visulima/pagination [2.0.5](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.4...@visulima/pagination@2.0.5) (2023-07-26)
+
+
+### Bug Fixes
+
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+* Update paginator and eslint configuration file ([d7528a3](https://github.com/visulima/visulima/commit/d7528a3dcd73aa241de2f92d8871e1995da84a08))
+
 ## @visulima/pagination [2.0.4](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.3...@visulima/pagination@2.0.4) (2023-06-06)
 
 
