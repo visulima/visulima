@@ -121,7 +121,7 @@ describe("utils", () => {
 
         let errorMessage = "Unexpected token i in JSON at position 0";
 
-        if (process.version.includes("v16") || process.version.includes("v19") || process.version.includes("v20")) {
+        if (process.version.includes("v19") || process.version.includes("v20")) {
             errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
         }
 
