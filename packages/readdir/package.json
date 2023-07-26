@@ -1,6 +1,6 @@
 {
     "name": "@visulima/readdir",
-    "version": "1.3.6",
+    "version": "1.3.7",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "anolilab",
