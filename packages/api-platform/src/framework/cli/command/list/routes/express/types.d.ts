@@ -1,49 +1,47 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { IRoute, PathParams } from "@types/express-serve-static-core";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Router } from "express";
 
-export interface Route extends IRoute {
-    stack: Layer[];
-    metadata?: any;
-    name: string;
-}
-
-export interface Layer {
-    handle?: Route | Router;
-    stack: Layer[];
-    route?: Route;
-    name: string;
-    params?: PathParams;
-    path?: string;
-    keys: Key[];
-    regexp: ExpressRegex;
-    method: string;
-}
-
 export interface ExpressRegex extends RegExp {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     fast_slash: boolean;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     fast_star: boolean;
 }
 
-export interface RouteMetaData {
-    path: string;
-    pathParams: Parameter[];
-    method: string;
-    metadata?: any;
-}
-
 export interface Parameter {
+    [key: string]: any;
     in: string;
     name: string;
     required: boolean;
-    [key: string]: any;
 }
 
+export interface RouteMetaData {
+    metadata?: any;
+    method: string;
+    path: string;
+    pathParams: Parameter[];
+}
 export interface Key {
     name: string;
-    optional: boolean;
     offset: number;
+    optional: boolean;
+}
+
+export interface Layer {
+    // eslint-disable-next-line no-use-before-define
+    handle?: Route | Router;
+    keys: Key[];
+    method: string;
+    name: string;
+    params?: PathParams;
+    path?: string;
+    regexp: ExpressRegex;
+    // eslint-disable-next-line no-use-before-define
+    route?: Route;
+    stack: Layer[];
+}
+
+export interface Route extends IRoute {
+    metadata?: any;
+    name: string;
+    stack: Layer[];
 }

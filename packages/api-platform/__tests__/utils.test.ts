@@ -2,32 +2,29 @@ import type { IncomingMessage } from "node:http";
 import { createRequest, createResponse } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import {
-    jsonResponse, parseBody, parseQuery, toHeaderCase,
-} from "../src/utils";
+import { jsonResponse, parseBody, parseQuery, toHeaderCase } from "../src/utils";
 
 describe("utils", () => {
     describe("toHeaderCase", () => {
         it("should convert a string to header case", () => {
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            expect(toHeaderCase("Hello World")).toEqual("Hello-World");
-            expect(toHeaderCase("hello world")).toEqual("Hello-World");
-            expect(toHeaderCase("Hello, World!")).toEqual("Hello-World");
-            expect(toHeaderCase("Hello_World")).toEqual("Hello-World");
+            expect(toHeaderCase("Hello World")).toBe("Hello-World");
+            expect(toHeaderCase("hello world")).toBe("Hello-World");
+            expect(toHeaderCase("Hello, World!")).toBe("Hello-World");
+            expect(toHeaderCase("Hello_World")).toBe("Hello-World");
         });
 
         it("should handle empty strings", () => {
-            expect(toHeaderCase("")).toEqual("");
+            expect(toHeaderCase("")).toBe("");
         });
 
         it("should handle single-word strings", () => {
-            expect(toHeaderCase("hello")).toEqual("Hello");
-            expect(toHeaderCase("HELLO")).toEqual("Hello");
+            expect(toHeaderCase("hello")).toBe("Hello");
+            expect(toHeaderCase("HELLO")).toBe("Hello");
         });
 
         it("should handle strings with multiple spaces", () => {
-            expect(toHeaderCase("Hello   World")).toEqual("Hello-World");
-            expect(toHeaderCase("Hello  \t  World")).toEqual("Hello-World");
+            expect(toHeaderCase("Hello   World")).toBe("Hello-World");
+            expect(toHeaderCase("Hello  \t  World")).toBe("Hello-World");
         });
     });
 
@@ -39,7 +36,7 @@ describe("utils", () => {
 
             jsonResponse(response, status, data);
 
-            expect(response.statusCode).toEqual(status);
+            expect(response.statusCode).toStrictEqual(status);
         });
 
         it("sets Content-Type header of response to application/json", async () => {
@@ -49,7 +46,7 @@ describe("utils", () => {
 
             jsonResponse(response, status, data);
 
-            expect(response.getHeaders()).toEqual({ "content-type": "application/json" });
+            expect(response.getHeaders()).toStrictEqual({ "content-type": "application/json" });
         });
 
         it("calls end method of response with stringified data when data is provided", async () => {
@@ -60,7 +57,7 @@ describe("utils", () => {
             jsonResponse(response, status, data);
 
             // eslint-disable-next-line no-underscore-dangle
-            expect(response._getData()).toEqual(JSON.stringify(data));
+            expect(response._getData()).toStrictEqual(JSON.stringify(data));
         });
 
         it("calls end method of response with empty string when data is not provided", async () => {
@@ -70,7 +67,7 @@ describe("utils", () => {
             jsonResponse(response, status);
 
             // eslint-disable-next-line no-underscore-dangle
-            expect(response._getData()).toEqual("");
+            expect(response._getData()).toBe("");
         });
     });
 
@@ -80,46 +77,49 @@ describe("utils", () => {
             const expected = { message: "Hello" };
             const actual = await parseBody(request);
 
-            expect(actual).toEqual(expected);
+            expect(actual).toStrictEqual(expected);
         });
     });
 
     it("returns object parsed from request body when request.body is not provided", async () => {
         const request = {
-            body: null,
+            // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from(JSON.stringify({ message: "Hello" }));
             },
+            body: null,
         };
 
         const expected = { message: "Hello" };
         const actual = await parseBody(request as unknown as IncomingMessage);
 
-        expect(actual).toEqual(expected);
+        expect(actual).toStrictEqual(expected);
     });
 
     it("returns null when request body is an empty string", async () => {
         const request = {
-            body: null,
+            // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from("");
             },
+            body: null,
         };
         const expected = null;
         const actual = await parseBody(request as unknown as IncomingMessage);
 
-        expect(actual).toEqual(expected);
+        expect(actual).toStrictEqual(expected);
     });
 
     it("throws error when request body is invalid JSON", async () => {
         const request = {
-            body: null,
+            // prettier-ignore
             * [Symbol.asyncIterator]() {
                 yield Buffer.from("invalid JSON");
             },
+            body: null,
         };
 
-        await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow();
+        await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow("Unexpected token i in JSON at position 0");
     });
 
     describe("parseQuery", () => {
@@ -128,22 +128,24 @@ describe("utils", () => {
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
 
-            expect(actual).toEqual(expected);
+            expect(actual).toStrictEqual(expected);
         });
 
         it("returns query string object parsed from request.url when request.query is not provided", async () => {
-            const request = { url: "http://example.com?message=Hello", query: null };
+            const request = { query: null, url: "http://example.com?message=Hello" };
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
 
+            // eslint-disable-next-line vitest/prefer-strict-equal
             expect(actual).toEqual(expected);
         });
 
         it("returns empty object when request.url is not provided and request.query is not provided", async () => {
-            const request = { url: null, query: null };
+            const request = { query: null, url: null };
             const expected = {};
             const actual = parseQuery(request as unknown as IncomingMessage);
 
+            // eslint-disable-next-line vitest/prefer-strict-equal
             expect(actual).toEqual(expected);
         });
     });

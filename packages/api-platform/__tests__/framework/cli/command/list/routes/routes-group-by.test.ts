@@ -13,52 +13,52 @@ describe("routes-group-by", () => {
     it("routesGroupBy groups routes by provided key", () => {
         const routes: Route[] = [
             {
-                method: "GET|HEAD",
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                path: "/pages/api/[customerId]",
-                tags: ["test"],
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 file: "__fixtures__/pages/api/[customerId].js",
+
+                method: "GET|HEAD",
+                path: "/pages/api/[customerId]",
+
+                tags: ["test"],
             },
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "DELETE",
                 path: "/pages/api/[customerId]",
                 tags: ["test"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "POST",
                 path: "/pages/api/[customerId]",
                 tags: ["test2"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ];
 
         const result = routesGroupBy(routes, (item) => item.tags[0] || "unsorted");
 
-        expect(result.get("test")).toEqual([
+        expect(result.get("test")).toStrictEqual([
             {
-                method: "GET|HEAD",
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                path: "/pages/api/[customerId]",
-                tags: ["test"],
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 file: "__fixtures__/pages/api/[customerId].js",
+
+                method: "GET|HEAD",
+                path: "/pages/api/[customerId]",
+
+                tags: ["test"],
             },
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "DELETE",
                 path: "/pages/api/[customerId]",
                 tags: ["test"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ]);
 
-        expect(result.get("test2")).toEqual([
+        expect(result.get("test2")).toStrictEqual([
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "POST",
                 path: "/pages/api/[customerId]",
                 tags: ["test2"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ]);
     });
@@ -66,21 +66,21 @@ describe("routes-group-by", () => {
     it("routesGroupBy handles list of routes with single element", () => {
         const routes = [
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "POST",
                 path: "/pages/api/[customerId]",
                 tags: ["test2"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ];
 
         const result = routesGroupBy(routes, (item) => item.tags[0] || "unsorted");
 
-        expect(result.get("test2")).toEqual([
+        expect(result.get("test2")).toStrictEqual([
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "POST",
                 path: "/pages/api/[customerId]",
                 tags: ["test2"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ]);
     });
@@ -88,14 +88,13 @@ describe("routes-group-by", () => {
     it("routesGroupBy throws error when keyGetter is not a function", () => {
         const routes = [
             {
+                file: "__fixtures__/pages/api/[customerId].js",
                 method: "POST",
                 path: "/pages/api/[customerId]",
                 tags: ["test2"],
-                file: "__fixtures__/pages/api/[customerId].js",
             },
         ];
 
-        // @ts-expect-error
-        expect(() => routesGroupBy(routes, "invalid key getter")).toThrowError();
+        expect(() => routesGroupBy(routes, "invalid key getter")).toThrow("keyGetter is not a function");
     });
 });

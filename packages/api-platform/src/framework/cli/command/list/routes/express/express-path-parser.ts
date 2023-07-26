@@ -1,10 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { Express, Router } from "express";
 
 import pathRegexParser from "./path-regex-parser";
-import type {
-    Key, Layer, Parameter, Route, RouteMetaData,
-} from "./types.d";
+import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types.d";
 
 /**
  * Parses a route object. Route objects are the leafs of an express router tree
@@ -17,26 +14,26 @@ import type {
 const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string): RouteMetaData => {
     const lastRequestHandler = layer.route.stack.at(-1) as Layer;
     const pathParameters: Parameter[] = keys.map((key) => {
-        return { name: key.name, in: "path", required: !key.optional };
+        return { in: "path", name: key.name, required: !key.optional };
     });
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const filtered = layer.route.stack.filter((element) => (element?.handle as Route)?.metadata);
+
+    const filtered = layer.route.stack.filter((element) => (element.handle as Route).metadata);
 
     if (filtered.length > 1) {
         throw new Error("Only one metadata middleware is allowed per route");
     }
 
-    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/gi, "/");
+    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/g, "/");
 
     if (filtered.length === 0) {
-        return { path, pathParams: pathParameters, method: lastRequestHandler.method };
+        return { method: lastRequestHandler.method, path, pathParams: pathParameters };
     }
 
     return {
+        metadata: ((filtered[0] as Layer).handle as Route).metadata,
+        method: lastRequestHandler.method,
         path,
         pathParams: pathParameters,
-        method: lastRequestHandler.method,
-        metadata: ((filtered[0] as Layer).handle as Route).metadata,
     };
 };
 

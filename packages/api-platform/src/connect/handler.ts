@@ -1,6 +1,4 @@
-import type {
-    FunctionLike, Nextable, Route, ValueOrPromise,
-} from "@visulima/connect";
+import type { FunctionLike, Nextable, Route, ValueOrPromise } from "@visulima/connect";
 import createHttpError from "http-errors";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
@@ -8,29 +6,30 @@ import JsonapiErrorHandler from "../error-handler/jsonapi-error-handler";
 import ProblemErrorHandler from "../error-handler/problem-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "../error-handler/types";
 
-// eslint-disable-next-line unicorn/consistent-function-scoping,max-len
-export const onError = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean) => async (error: unknown, request: Request, response: Response): Promise<void> => {
-    const apiFormat: string = request.headers.accept as string;
+export const onError =
+    <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean) =>
+    async (error: unknown, request: Request, response: Response): Promise<void> => {
+        const apiFormat: string = request.headers.accept as string;
 
-    let errorHandler: ErrorHandler = ProblemErrorHandler;
+        let errorHandler: ErrorHandler = ProblemErrorHandler;
 
-    if (apiFormat === "application/vnd.api+json") {
-        errorHandler = JsonapiErrorHandler;
-    }
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { regex, handler } of errorHandlers) {
-        if (regex.test(apiFormat)) {
-            errorHandler = handler;
-            break;
+        if (apiFormat === "application/vnd.api+json") {
+            errorHandler = JsonapiErrorHandler;
         }
-    }
 
-    // eslint-disable-next-line no-param-reassign
-    (error as Error & { expose: boolean }).expose = showTrace;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const { handler, regex } of errorHandlers) {
+            if (regex.test(apiFormat)) {
+                errorHandler = handler;
+                break;
+            }
+        }
 
-    errorHandler(error, request, response);
-};
+        // eslint-disable-next-line no-param-reassign
+        (error as Error & { expose: boolean }).expose = showTrace;
+
+        errorHandler(error, request, response);
+    };
 
 export const onNoMatch: <Request extends IncomingMessage, Response extends ServerResponse>(
     request: Request,

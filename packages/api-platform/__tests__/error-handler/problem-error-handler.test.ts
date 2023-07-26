@@ -17,7 +17,7 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toStrictEqual('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Internal Server Error","details":"test"}');
+        expect(res._getData()).toBe('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Internal Server Error","details":"test"}');
     });
 
     it("should render http-errors", () => {
@@ -34,6 +34,6 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(403);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toStrictEqual('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Forbidden","details":"Forbidden"}');
+        expect(res._getData()).toBe('{"type":"https://tools.ietf.org/html/rfc2616#section-10","title":"Forbidden","details":"Forbidden"}');
     });
 });
