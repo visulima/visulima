@@ -1,3 +1,19 @@
+## @visulima/crud [1.0.13](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.12...@visulima/crud@1.0.13) (2023-07-26)
+
+
+### Bug Fixes
+
+* Update @anolilab/eslint-config version in devDependencies ([72eee78](https://github.com/visulima/visulima/commit/72eee78215bd25429befb37d44179bda0356e954))
+* Update eslint-config version to 10.0.6 across multiple packages ([391238a](https://github.com/visulima/visulima/commit/391238ab4d00335e4ad47d7b705960d0af9a5412))
+* updated all deps and fixed some found issues from eslint ([aca1c2b](https://github.com/visulima/visulima/commit/aca1c2b0e8dd86f3d66b4bbbb7755179035180f3))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 2.0.5
+* **@visulima/prisma-dmmf-transformer:** upgraded to 1.0.8
+
 ## @visulima/crud [1.0.12](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.11...@visulima/crud@1.0.12) (2023-06-06)
 
 
