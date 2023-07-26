@@ -35,20 +35,18 @@
     ],
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "require": "./dist/index.js",
+            "types": "./dist/index.d.mts",
             "import": "./dist/index.mjs"
         },
         "./component-style.css": "./component-style.css",
         "./style.css": "./style.css",
         "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
     "module": "dist/index.mjs",
     "source": "src/index.tsx",
-    "types": "dist/index.d.ts",
+    "types": "dist/index.d.mts",
     "files": [
-        "dist/**",
+        "dist",
         "component-style.css",
         "style.css",
         "README.md",
