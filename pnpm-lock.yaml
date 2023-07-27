@@ -225,8 +225,8 @@ importers:
                 specifier: 18.16.18
                 version: 18.16.18
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: 18.2.7
                 version: 18.2.7
@@ -359,7 +359,7 @@ importers:
                 version: 6.0.5(react-dom@18.2.0)(react@18.2.0)
             swagger-ui-react:
                 specifier: ^5.2.0
-                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
+                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
             zod:
                 specifier: ^3.21.4
                 version: 3.21.4
@@ -368,8 +368,8 @@ importers:
                 specifier: 18.16.14
                 version: 18.16.14
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -423,7 +423,7 @@ importers:
                 version: 6.0.5(react-dom@18.2.0)(react@18.2.0)
             swagger-ui-react:
                 specifier: ^5.2.0
-                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
+                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
             zod:
                 specifier: ^3.21.4
                 version: 3.21.4
@@ -432,8 +432,8 @@ importers:
                 specifier: 18.16.14
                 version: 18.16.14
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -475,8 +475,8 @@ importers:
                 specifier: 20.2.3
                 version: 20.2.3
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: 18.2.7
                 version: 18.2.7
@@ -539,7 +539,7 @@ importers:
                 version: 6.0.5(react-dom@18.2.0)(react@18.2.0)
             swagger-ui-react:
                 specifier: ^5.2.0
-                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
+                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
             zod:
                 specifier: ^3.21.4
                 version: 3.21.4
@@ -548,8 +548,8 @@ importers:
                 specifier: 18.16.14
                 version: 18.16.14
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -612,7 +612,7 @@ importers:
                 version: 6.0.5(react-dom@18.2.0)(react@18.2.0)
             swagger-ui-react:
                 specifier: ^5.2.0
-                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
+                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
             zod:
                 specifier: ^3.21.4
                 version: 3.21.4
@@ -621,8 +621,8 @@ importers:
                 specifier: 18.16.14
                 version: 18.16.14
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -664,7 +664,7 @@ importers:
                 version: 18.2.0(react@18.2.0)
             swagger-ui-react:
                 specifier: ^5.2.0
-                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
+                version: 5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)
             zod:
                 specifier: ^3.21.4
                 version: 3.21.4
@@ -676,8 +676,8 @@ importers:
                 specifier: 20.2.3
                 version: 20.2.3
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: 18.2.7
                 version: 18.2.7
@@ -743,8 +743,8 @@ importers:
                 specifier: 20.2.3
                 version: 20.2.3
             "@types/react":
-                specifier: 18.2.16
-                version: 18.2.16
+                specifier: 18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: 18.2.7
                 version: 18.2.7
@@ -767,10 +767,10 @@ importers:
     packages/api-platform:
         dependencies:
             "@visulima/connect":
-                specifier: 1.3.6
+                specifier: 1.3.7
                 version: link:../connect
             "@visulima/jsdoc-open-api":
-                specifier: 1.3.10
+                specifier: 1.3.11
                 version: link:../jsdoc-open-api
             accepts:
                 specifier: ^1.3.8
@@ -810,10 +810,10 @@ importers:
                 specifier: ^12.0.0
                 version: 12.0.0
             "@visulima/crud":
-                specifier: 1.0.12
+                specifier: 1.0.13
                 version: link:../crud
             "@visulima/readdir":
-                specifier: 1.3.6
+                specifier: 1.3.7
                 version: link:../readdir
             chalk:
                 specifier: 5.2.0
@@ -847,7 +847,7 @@ importers:
                 version: 4.19.1
             swagger-ui-react:
                 specifier: ^4.19.1
-                version: 4.19.1(@types/react-dom@18.2.7)(@types/react@18.2.16)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+                version: 4.19.1(@types/react-dom@18.2.7)(@types/react@18.2.17)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
             webpack:
                 specifier: ^5.88.2
                 version: 5.88.2
@@ -872,7 +872,7 @@ importers:
                 version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
             "@testing-library/react-hooks":
                 specifier: ^8.0.1
-                version: 8.0.1(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)
+                version: 8.0.1(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)
             "@total-typescript/ts-reset":
                 specifier: ^0.4.2
                 version: 0.4.2
@@ -916,8 +916,8 @@ importers:
                 specifier: ^6.9.7
                 version: 6.9.7
             "@types/react":
-                specifier: ^18.2.16
-                version: 18.2.16
+                specifier: ^18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -1113,10 +1113,10 @@ importers:
     packages/crud:
         dependencies:
             "@visulima/pagination":
-                specifier: 2.0.4
+                specifier: 2.0.5
                 version: link:../pagination
             "@visulima/prisma-dmmf-transformer":
-                specifier: 1.0.7
+                specifier: 1.0.8
                 version: link:../prisma-dmmf-transformer
             http-errors:
                 specifier: ^2.0.0
@@ -1148,7 +1148,7 @@ importers:
                 version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
             "@testing-library/react-hooks":
                 specifier: ^8.0.1
-                version: 8.0.1(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)
+                version: 8.0.1(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)
             "@types/http-errors":
                 specifier: ^2.0.1
                 version: 2.0.1
@@ -1307,7 +1307,7 @@ importers:
                 specifier: ^10.1.0
                 version: 10.1.0(openapi-types@12.1.3)
             "@visulima/readdir":
-                specifier: 1.3.6
+                specifier: 1.3.7
                 version: link:../readdir
             comment-parser:
                 specifier: ^1.3.1
@@ -1497,8 +1497,8 @@ importers:
                 specifier: 18.16.18
                 version: 18.16.18
             "@types/react":
-                specifier: ^18.2.16
-                version: 18.2.16
+                specifier: ^18.2.17
+                version: 18.2.17
             "@types/react-dom":
                 specifier: ^18.2.7
                 version: 18.2.7
@@ -4934,7 +4934,7 @@ packages:
             react: ">=16"
         dependencies:
             "@types/mdx": 2.0.5
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
             react: 18.2.0
 
     /@microsoft/tsdoc-config@0.16.2:
@@ -7354,7 +7354,7 @@ packages:
             lz-string: 1.5.0
             pretty-format: 27.5.1
 
-    /@testing-library/react-hooks@8.0.1(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0):
+    /@testing-library/react-hooks@8.0.1(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0):
         resolution: { integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g== }
         engines: { node: ">=12" }
         peerDependencies:
@@ -7371,7 +7371,7 @@ packages:
                 optional: true
         dependencies:
             "@babel/runtime": 7.22.3
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
             react: 18.2.0
             react-dom: 18.2.0(react@18.2.0)
             react-error-boundary: 3.1.4(react@18.2.0)
@@ -8071,7 +8071,7 @@ packages:
     /@types/hoist-non-react-statics@3.3.1:
         resolution: { integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA== }
         dependencies:
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
             hoist-non-react-statics: 3.3.2
         dev: false
 
@@ -8279,10 +8279,10 @@ packages:
     /@types/react-dom@18.2.7:
         resolution: { integrity: sha512-GRaAEriuT4zp9N4p1i8BDBYmEyfo+xQ3yHjJU4eiK5NDa1RmUZG+unZABUTK4/Ox/M+GaHwb6Ow8rUITrtjszA== }
         dependencies:
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
 
-    /@types/react@18.2.16:
-        resolution: { integrity: sha512-LLFWr12ZhBJ4YVw7neWLe6Pk7Ey5R9OCydfuMsz1L8bZxzaawJj2p06Q8/EFEHDeTBQNFLF62X+CG7B2zIyu0Q== }
+    /@types/react@18.2.17:
+        resolution: { integrity: sha512-u+e7OlgPPh+aryjOm5UJMX32OvB2E3QASOAqVMY6Ahs90djagxwv2ya0IctglNbNTexC12qCSMZG47KPfy1hAA== }
         dependencies:
             "@types/prop-types": 15.7.5
             "@types/scheduler": 0.16.3
@@ -8332,7 +8332,7 @@ packages:
     /@types/swagger-ui-react@4.18.0:
         resolution: { integrity: sha512-XtvFXmj46Zibe89tFQwSQknrq1NxEtOep2rZuxth7K88tyPEP00FnoA6H7ATYhocAEA4XUWaNHNFWFRl1KX8aQ== }
         dependencies:
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
         dev: true
 
     /@types/through@0.0.30:
@@ -20088,7 +20088,7 @@ packages:
     /react-is@18.2.0:
         resolution: { integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w== }
 
-    /react-redux@8.0.5(@types/react-dom@18.2.7)(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+    /react-redux@8.0.5(@types/react-dom@18.2.7)(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
         resolution: { integrity: sha512-Q2f6fCKxPFpkXt1qNRZdEDLlScsDWyrgSj0mliK59qU6W5gvBiKkdMEG2lJzhd1rCctf0hb6EtePPLZ2e0m1uw== }
         peerDependencies:
             "@types/react": ^16.8 || ^17.0 || ^18.0
@@ -20111,7 +20111,7 @@ packages:
         dependencies:
             "@babel/runtime": 7.22.3
             "@types/hoist-non-react-statics": 3.3.1
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
             "@types/react-dom": 18.2.7
             "@types/use-sync-external-store": 0.0.3
             hoist-non-react-statics: 3.3.2
@@ -20123,7 +20123,7 @@ packages:
         dev: false
         optional: true
 
-    /react-redux@8.1.1(@types/react-dom@18.2.7)(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+    /react-redux@8.1.1(@types/react-dom@18.2.7)(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
         resolution: { integrity: sha512-5W0QaKtEhj+3bC0Nj0NkqkhIv8gLADH/2kYFMTHxCVqQILiWzLv6MaLuV5wJU3BQEdHKzTfcvPN0WMS6SC1oyA== }
         peerDependencies:
             "@types/react": ^16.8 || ^17.0 || ^18.0
@@ -20146,7 +20146,7 @@ packages:
         dependencies:
             "@babel/runtime": 7.22.3
             "@types/hoist-non-react-statics": 3.3.1
-            "@types/react": 18.2.16
+            "@types/react": 18.2.17
             "@types/react-dom": 18.2.7
             "@types/use-sync-external-store": 0.0.3
             hoist-non-react-statics: 3.3.2
@@ -22227,7 +22227,7 @@ packages:
         dev: false
         optional: true
 
-    /swagger-ui-react@4.19.1(@types/react-dom@18.2.7)(@types/react@18.2.16)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
+    /swagger-ui-react@4.19.1(@types/react-dom@18.2.7)(@types/react@18.2.17)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
         resolution: { integrity: sha512-km83cp5ZlmCfROOq6QD1E7bM9f0RsvNrM2C1756UqZ6rRM0J3ex3ySyWa5+mcJRltn0eUB5NahqW8c6I4qwC6A== }
         requiresBuild: true
         peerDependencies:
@@ -22257,7 +22257,7 @@ packages:
             react-immutable-proptypes: 2.2.0(immutable@3.8.2)
             react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
             react-inspector: 6.0.1(react@18.2.0)
-            react-redux: 8.0.5(@types/react-dom@18.2.7)(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+            react-redux: 8.0.5(@types/react-dom@18.2.7)(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
             react-syntax-highlighter: 15.5.0(react@18.2.0)
             redux: 4.2.1
             redux-immutable: 4.0.0(immutable@3.8.2)
@@ -22279,7 +22279,7 @@ packages:
         dev: false
         optional: true
 
-    /swagger-ui-react@5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.16)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0):
+    /swagger-ui-react@5.2.0(@types/react-dom@18.2.7)(@types/react@18.2.17)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0):
         resolution: { integrity: sha512-hoVegGXt9gVo9BwhjItKa8Zfflyzkw2iH8b/E8ODU6P2Id6TUo5CR12xQwGp1qRXWLNYfthqAUcgDIZ/5Yb6qA== }
         peerDependencies:
             react: ">=17.0.0"
@@ -22308,7 +22308,7 @@ packages:
             react-immutable-proptypes: 2.2.0(immutable@3.8.2)
             react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
             react-inspector: 6.0.1(react@18.2.0)
-            react-redux: 8.1.1(@types/react-dom@18.2.7)(@types/react@18.2.16)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+            react-redux: 8.1.1(@types/react-dom@18.2.7)(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
             react-syntax-highlighter: 15.5.0(react@18.2.0)
             redux: 4.2.1
             redux-immutable: 4.0.0(immutable@3.8.2)

@@ -152,7 +152,7 @@
         "@types/lodash.set": "^4.3.7",
         "@types/node": "18.16.18",
         "@types/qs": "^6.9.7",
-        "@types/react": "^18.2.16",
+        "@types/react": "^18.2.17",
         "@types/react-dom": "^18.2.7",
         "@types/swagger-ui-react": "^4.18.0",
         "@types/webpack": "^5.28.1",
