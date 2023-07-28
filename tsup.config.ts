@@ -3,7 +3,7 @@ import { readPackageSync } from "read-pkg";
 import type { Options } from "tsup";
 import { defineConfig as baseDefineConfig } from "tsup";
 
-import tsconfig from "./tsconfig.json";
+import tsconfig from "./tsconfig.base.json";
 
 function getPackageSources(packageContent: NormalizedPackageJson) {
     if (typeof packageContent["source"] === "string") {

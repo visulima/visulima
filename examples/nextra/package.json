@@ -14,10 +14,10 @@
     "dependencies": {
         "@visulima/nextra-theme-docs": "workspace:*",
         "clsx": "^2.0.0",
-        "eslint": "8.45.0",
+        "eslint": "8.46.0",
         "eslint-config-next": "13.4.12",
         "focus-visible": "^5.2.0",
-        "framer-motion": "^10.13.1",
+        "framer-motion": "^10.15.0",
         "intersection-observer": "^0.12.2",
         "isomorphic-git": "1.24.5",
         "markdown-to-jsx": "^7.2.1",

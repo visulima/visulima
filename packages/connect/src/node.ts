@@ -24,6 +24,7 @@ const onNoMatch = async (request: IncomingMessage, response: ServerResponse) => 
 const onError = async (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 500;
 
+    // eslint-disable-next-line no-console
     console.error(error);
 
     response.end("Internal Server Error");

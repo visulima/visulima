@@ -7,21 +7,14 @@ const collect = async (directory: string, options: Partial<Options & { extension
         ...options,
     } as Options;
 
-    // eslint-disable-next-line compat/compat,@typescript-eslint/no-misused-promises
-    return await new Promise<string[]>(async (resolve, reject) => {
-        const entries: string[] = [];
+    const entries: string[] = [];
 
-        try {
-            // eslint-disable-next-line no-restricted-syntax
-            for await (const entry of walk(directory, config)) {
-                entries.push(entry.path);
-            }
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const entry of walk(directory, config)) {
+        entries.push(entry.path);
+    }
 
-            resolve(entries);
-        } catch (error) {
-            reject(error);
-        }
-    });
+    return entries;
 };
 
 export default collect;

@@ -89,8 +89,9 @@ const listCommand = async (
                 try {
                     execSync(`${tscPath} --outDir framework-list >&2`, { cwd: appWorkingDirectoryPath });
                 } catch (error: any) {
+                    // eslint-disable-next-line no-console
                     console.log("TSC compilation failed. Please resolve issues in your project.\n");
-
+                    // eslint-disable-next-line no-console
                     console.log(error);
 
                     rmSync(join(appWorkingDirectoryPath, "framework-list"), { recursive: true });
@@ -129,6 +130,7 @@ const listCommand = async (
     }
 
     if (typeof options.group === "string" && options.group !== "") {
+        // eslint-disable-next-line no-console
         console.log();
 
         const groupedMap = routesGroupBy(routes, (route) => {
@@ -143,28 +145,34 @@ const listCommand = async (
 
         groupedMap.forEach((groupedRoutes, key) => {
             if (counter > 0) {
+                // eslint-disable-next-line no-console
                 console.log();
             }
 
             const dotsCount = (process.stdout.columns - 16 - key.length) / 2;
             const dots = dotsCount > 0 ? Array.from({ length: dotsCount }).fill(" ").join("") : "";
 
+            // eslint-disable-next-line no-console
             console.log(dots + chalk.bold.underline(key));
 
             routesRender(groupedRoutes, options).forEach((renderedRoute) => {
+                // eslint-disable-next-line no-console
                 console.log(renderedRoute);
             });
 
             counter += 1;
         });
     } else {
+        // eslint-disable-next-line no-console
         console.log();
 
         routesRender(routes, options).forEach((renderedRoute) => {
+            // eslint-disable-next-line no-console
             console.log(renderedRoute);
         });
     }
 
+    // eslint-disable-next-line no-console
     console.log(`\n  Listed ${chalk.greenBright(String(routes.length))} HTTP ${routes.length === 1 ? "route" : "routes"}.\n`);
 };
 

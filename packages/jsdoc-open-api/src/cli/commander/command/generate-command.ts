@@ -18,7 +18,9 @@ const generateCommand = (program: Command, commandName = "generate", configName 
             try {
                 await baseGenerateCommand(configName, paths, options);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error(error);
+
                 exit(1);
             }
         });

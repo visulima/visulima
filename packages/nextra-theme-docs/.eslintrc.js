@@ -73,6 +73,20 @@ module.exports = {
                 "jsx-a11y/heading-has-content": "off",
             },
         },
+        {
+            files: ["src/components/highlight-matches.tsx"],
+            rules: {
+                "no-cond-assign": "off",
+            },
+        },
+        {
+            files: ["src/components/flexsearch.tsx"],
+            rules: {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+            },
+        },
     ],
     parserOptions: {
         ecmaVersion: 2021,
