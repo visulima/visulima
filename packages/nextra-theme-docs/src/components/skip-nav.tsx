@@ -36,6 +36,7 @@ const DEFAULT_ID = "nextra-skip-nav";
 const DEFAULT_LABEL = "Skip to content";
 
 type SkipNavLinkProperties = Omit<ComponentProps<"a">, "children" | "href" | "ref"> & {
+    // eslint-disable-next-line react/require-default-props
     label?: string;
 };
 
@@ -44,24 +45,23 @@ type SkipNavContentProperties = Omit<ComponentProps<"div">, "children" | "ref">;
 export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
     ({ className: providedClassName, id, label = DEFAULT_LABEL, ...properties }, forwardedReference): ReactElement => {
         const className =
-            providedClassName === undefined // Give the option to the user to pass a falsy other than undefined to remove the default styles
-                ? cn(
-                      "sr-only",
+            providedClassName ??
+            cn(
+                "sr-only",
 
-                      "focus:not-sr-only focus:fixed focus:z-50 focus:m-3 focus:ml-4 focus:h-[calc(var(--nextra-navbar-height)-1.5rem)] focus:rounded-lg focus:border focus:px-3 focus:py-2 focus:align-middle focus:text-sm focus:font-bold",
-                      "focus:text-gray-900 focus:dark:text-gray-100",
-                      "focus:bg-white focus:dark:bg-neutral-900",
-                      "focus:border-neutral-400 focus:dark:border-neutral-800",
-                  )
-                : providedClassName;
+                "focus:not-sr-only focus:fixed focus:z-50 focus:m-3 focus:ml-4 focus:h-[calc(var(--nextra-navbar-height)-1.5rem)] focus:rounded-lg focus:border focus:px-3 focus:py-2 focus:align-middle focus:text-sm focus:font-bold",
+                "focus:text-gray-900 focus:dark:text-gray-100",
+                "focus:bg-white focus:dark:bg-neutral-900",
+                "focus:border-neutral-400 focus:dark:border-neutral-800",
+            );
 
         return (
             <a
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
-                ref={forwardedReference}
-                href={`#${id ?? DEFAULT_ID}`}
                 className={className}
+                href={`#${id ?? DEFAULT_ID}`}
+                ref={forwardedReference}
             >
                 {label}
             </a>
@@ -71,5 +71,5 @@ export const SkipNavLink = forwardRef<HTMLAnchorElement, SkipNavLinkProperties>(
 
 export const SkipNavContent = forwardRef<HTMLDivElement, SkipNavContentProperties>(
     // eslint-disable-next-line react/jsx-props-no-spreading
-    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} ref={forwardedReference} id={id ?? DEFAULT_ID} />,
+    ({ id, ...properties }, forwardedReference): ReactElement => <div {...properties} id={id ?? DEFAULT_ID} ref={forwardedReference} />,
 );

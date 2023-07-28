@@ -16,8 +16,7 @@ const isString = (value: unknown): boolean => typeof value === "string";
 
 const isFunction = (value: unknown): boolean => typeof value === "function";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-const isReactNode = (value: unknown): boolean => isString(value) || isValidElement(value as any) || isFunction(value);
+const isReactNode = (value: unknown): boolean => isString(value) || isValidElement(value as unknown) || isFunction(value);
 
 const i18nSchema = z.array(
     z
@@ -34,11 +33,22 @@ const fc = [isFunction, { message: "Must be React.FC" }] as const;
 
 export const themeSchema = z
     .object({
+        backToTop: z
+            .object({
+                active: z.boolean(),
+                content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+            })
+            .strict(),
         banner: z
             .object({
+                content: z.custom<FC | ReactNode>(...reactNode).optional(),
                 dismissible: z.boolean(),
                 key: z.string(),
-                content: z.custom<FC | ReactNode>(...reactNode).optional(),
             })
             .strict(),
         // eslint-disable-next-line zod/require-strict
@@ -51,21 +61,9 @@ export const themeSchema = z
         // eslint-disable-next-line zod/require-strict
         comments: z
             .object({
+                categoryId: z.string(),
                 repository: z.string(),
                 repositoryId: z.string(),
-                categoryId: z.string(),
-            })
-            .optional(),
-        // eslint-disable-next-line zod/require-strict
-        toaster: z
-            .object({
-                position: z.enum(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]).optional(),
-
-                reverseOrder: z.boolean().optional(),
-                // TODO: Find a good way to type this
-                // eslint-disable-next-line zod/require-strict
-                toastOptions: z.object({}).catchall<ZodType<DefaultToastOptions>>(z.any()).optional(),
-                gutter: z.number().optional(),
             })
             .optional(),
         components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
@@ -102,26 +100,15 @@ export const themeSchema = z
                     .args(
                         z
                             .object({
-                                title: z.string(),
-                                route: z.string(),
                                 docsRepositoryBase: z.string(),
                                 labels: z.string(),
+                                route: z.string(),
+                                title: z.string(),
                             })
                             .strict(),
                     )
                     .returns(z.string())
                     .optional(),
-            })
-            .strict(),
-        backToTop: z
-            .object({
-                active: z.boolean(),
-                content: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
             })
             .strict(),
         footer: z
@@ -130,7 +117,7 @@ export const themeSchema = z
                 copyright: z.custom<FC<{ activeType: ActiveType }> | ReactNode>(...reactNode).optional(),
             })
             .strict(),
-        gitTimestamp: z.custom<FC<{ timestamp: Date; locale: string }> | ReactNode>(...reactNode),
+        gitTimestamp: z.custom<FC<{ locale: string; timestamp: Date }> | ReactNode>(...reactNode),
         head: z.custom<FC | ReactNode>(...reactNode),
         // eslint-disable-next-line zod/require-strict
         hero: z
@@ -140,14 +127,24 @@ export const themeSchema = z
             })
             .optional(),
         i18n: i18nSchema,
+        localSwitch: z
+            .object({
+                title: z.string().or(
+                    z
+                        .function()
+                        .args(z.object({ locale: z.string() }).strict())
+                        .returns(z.string()),
+                ),
+            })
+            .strict(),
         logo: z.custom<FC | ReactNode>(...reactNode),
         logoLink: z.boolean().or(z.string()),
         main: z.custom<FC<{ children: ReactNode }>>(...fc).optional(),
         navbar: z
             .object({
-                linkBack: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).optional(),
                 component: z.custom<FC<NavBarProperties> | ReactNode>(...reactNode),
                 extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
+                linkBack: z.custom<FC<{ locale: string }> | ReactNode>(...reactNode).optional(),
             })
             .strict(),
         navigation: z.boolean().or(
@@ -160,10 +157,10 @@ export const themeSchema = z
         ),
         nextThemes: z
             .object({
+                attribute: z.string().optional(),
                 defaultTheme: z.string(),
                 forcedTheme: z.string().optional(),
                 storageKey: z.string(),
-                attribute: z.string().optional(),
             })
             .strict(),
         notFound: z
@@ -177,10 +174,10 @@ export const themeSchema = z
                         z.array(
                             z
                                 .object({
-                                    url: z.string(),
-                                    title: z.string(),
-                                    subtitle: z.string().or(z.undefined()),
                                     icon: z.custom<FC | ReactNode>(...reactNode).or(z.undefined()),
+                                    subtitle: z.string().or(z.undefined()),
+                                    title: z.string(),
+                                    url: z.string(),
                                 })
                                 .strict(),
                         ),
@@ -239,42 +236,13 @@ export const themeSchema = z
             .object({
                 autoCollapse: z.boolean().optional(),
                 defaultMenuCollapseLevel: z.number().min(1).int(),
-                titleComponent: z.custom<FC<{ title: string; type: string; route: string }> | ReactNode>(...reactNode),
-                icon: z.custom<FC<{ title: string; type: string; route: string; className: string }> | ReactNode>(...reactNode).optional(),
-            })
-            .strict(),
-        tocContent: z
-            .object({
-                component: z.custom<FC<TOCPageContentProperties>>(...fc),
-                float: z.boolean(),
-                title: z.custom<FC | ReactNode>(...reactNode),
-                headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
-            })
-            .strict(),
-        tocSidebar: z
-            .object({
-                title: z.string(),
-                component: z.custom<FC<TOCSidebarProperties>>(...fc),
-                extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
-                float: z.boolean(),
-                headingComponent: z.custom<FC<{ id: string; children: string }>>(...fc).optional(),
-            })
-            .strict(),
-        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
-        localSwitch: z
-            .object({
-                title: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
+                icon: z.custom<FC<{ className: string; route: string; title: string; type: string }> | ReactNode>(...reactNode).optional(),
+                titleComponent: z.custom<FC<{ route: string; title: string; type: string }> | ReactNode>(...reactNode),
             })
             .strict(),
         themeSwitch: z
             .object({
-                title: z.string().or(
+                dark: z.string().or(
                     z
                         .function()
                         .args(z.object({ locale: z.string() }).strict())
@@ -286,13 +254,13 @@ export const themeSchema = z
                         .args(z.object({ locale: z.string() }).strict())
                         .returns(z.string()),
                 ),
-                dark: z.string().or(
+                system: z.string().or(
                     z
                         .function()
                         .args(z.object({ locale: z.string() }).strict())
                         .returns(z.string()),
                 ),
-                system: z.string().or(
+                title: z.string().or(
                     z
                         .function()
                         .args(z.object({ locale: z.string() }).strict())
@@ -300,6 +268,37 @@ export const themeSchema = z
                 ),
             })
             .strict(),
+        // eslint-disable-next-line zod/require-strict
+        toaster: z
+            .object({
+                gutter: z.number().optional(),
+
+                position: z.enum(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"]).optional(),
+                // TODO: Find a good way to type this
+                reverseOrder: z.boolean().optional(),
+                // eslint-disable-next-line zod/require-strict
+                toastOptions: z.object({}).catchall<ZodType<DefaultToastOptions>>(z.any()).optional(),
+            })
+            .optional(),
+        tocContent: z
+            .object({
+                component: z.custom<FC<TOCPageContentProperties>>(...fc),
+                float: z.boolean(),
+                headingComponent: z.custom<FC<{ children: string; id: string }>>(...fc).optional(),
+                title: z.custom<FC | ReactNode>(...reactNode),
+            })
+            .strict(),
+        tocSidebar: z
+            .object({
+                component: z.custom<FC<TOCSidebarProperties>>(...fc),
+                extraContent: z.custom<FC | ReactNode>(...reactNode).optional(),
+                float: z.boolean(),
+                headingComponent: z.custom<FC<{ children: string; id: string }>>(...fc).optional(),
+                title: z.string(),
+            })
+            .strict(),
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        useNextSeoProps: z.custom<() => NextSeoProps | void>(isFunction),
     })
     .strict();
 

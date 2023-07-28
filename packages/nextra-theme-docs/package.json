@@ -36,6 +36,7 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
+            "require": "./dist/index.js",
             "import": "./dist/index.mjs",
             "style": "./style.css"
         },
@@ -45,6 +46,7 @@
         "./style.css": "./style.css",
         "./package.json": "./package.json"
     },
+    "main": "dist/index.js",
     "module": "dist/index.mjs",
     "source": "src/index.tsx",
     "types": "dist/index.d.mts",
@@ -128,7 +130,7 @@
         "eslint-plugin-zod": "^1.4.0",
         "jsdom": "^22.1.0",
         "lightningcss-cli": "^1.21.5",
-        "next": "^13.4.6",
+        "next": "^13.4.12",
         "nextra": "2.10.0",
         "postcss": "^8.4.27",
         "postcss-cli": "^10.1.0",
@@ -142,13 +144,13 @@
         "semantic-release": "^21.0.7",
         "tailwindcss": "^3.3.3",
         "tailwindcss-hyphens": "^0.1.0",
-        "tsup": "^7.1.0",
+        "tsup": "7.1.0",
         "typescript": "^5.1.6",
         "vitest": "^0.33.0",
         "zod": "^3.21.4"
     },
     "peerDependencies": {
-        "next": ">=9.5.3",
+        "next": ">=13.1.5",
         "nextra": ">=2.2.13",
         "react": ">=16.13.1",
         "react-dom": ">=16.13.1",

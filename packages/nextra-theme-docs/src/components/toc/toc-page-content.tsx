@@ -10,19 +10,19 @@ const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
 
     return (
         <div
-            ref={wrapperRef}
             className={cn("pt-8 text-sm [hyphens:auto]", {
                 hidden: headings.length === 0,
             })}
+            ref={wrapperRef}
         >
-            <Toc headings={headings} activeAnchor={activeAnchor} isPage prefix="content" />
+            <Toc activeAnchor={activeAnchor} headings={headings} isPage prefix="content" />
         </div>
     );
 };
 
-export type TOCProperties = {
+export interface TOCProperties {
     headings: Heading[];
     wrapperRef: Ref<HTMLDivElement>;
-};
+}
 
 export default TocPageContent;

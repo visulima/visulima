@@ -33,7 +33,7 @@ const createHeaderLink =
                     const returnValue = { ...f };
 
                     if (id && id in returnValue) {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
                         delete returnValue[id];
                     }
 
@@ -50,7 +50,7 @@ const createHeaderLink =
                 <Balancer>{children}</Balancer>
                 <span className="absolute -mt-20" id={id} ref={obReference} />
                 {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-                <a href={`#${id}`} className="subheading-anchor" aria-label="Permalink for this section" />
+                <a aria-label="Permalink for this section" className="subheading-anchor" href={`#${id}`} />
             </Tag>
         );
     };

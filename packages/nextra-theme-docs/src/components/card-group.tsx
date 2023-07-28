@@ -3,10 +3,10 @@ import type { FC, HTMLProps, PropsWithChildren } from "react";
 import cn from "../utils/cn";
 
 const CardGroup: FC<PropsWithChildren<HTMLProps<HTMLDivElement> & { cols?: number; style: HTMLProps<HTMLDivElement>["style"] & { "--rows"?: string } }>> = ({
-    children,
+    children = undefined,
+    className,
     cols = 3,
     style,
-    className,
     ...properties
 }) => (
     <div

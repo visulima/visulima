@@ -53,6 +53,7 @@ module.exports = {
     },
     root: true,
     rules: {
-        // Customize your rules
+        // next cant handle this
+        "unicorn/prefer-node-protocol": "off",
     },
 };

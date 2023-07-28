@@ -1,7 +1,7 @@
 import type { MutableRefObject } from "react";
 import { useEffect, useState } from "react";
 
-const useOnScreen = <T extends Element>(reference: MutableRefObject<T>): boolean => {
+const useOnScreen = <T extends Element | undefined>(reference: MutableRefObject<T>): boolean => {
     const [isIntersecting, setIntersecting] = useState(false);
 
     useEffect(() => {

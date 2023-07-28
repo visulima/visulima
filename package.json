@@ -168,14 +168,15 @@
         "overrides": {
             "load-tsconfig": "^0.2.5",
             "vite": "4.4.7",
-            "tsup": "^7.1.0",
+            "tsup": "7.1.0",
             "tsconfig-paths": "^4.2.0",
             "cosmiconfig-typescript-loader": "^5.0.0",
             "semantic-release": "^21.0.2",
             "@mdx-js/react": "^2.3.0",
             "estree-util-build-jsx": "^3.0.0",
             "typescript": "^5.1.6",
-            "semver": "^7.5.4"
+            "semver": "^7.5.4",
+            "esbuild": "^0.18.17"
         }
     }
 }

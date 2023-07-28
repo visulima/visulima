@@ -2,7 +2,9 @@ import type { FC, PropsWithChildren } from "react";
 
 import cn from "../utils/cn";
 
-const Prose: FC<PropsWithChildren<{ as?: any; className?: string }>> = ({ as: Component = "div", children, className }) => (
+// TODO: find the correct type for `as`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Prose: FC<PropsWithChildren<{ as?: any; className?: string }>> = ({ as: Component = "div", children = undefined, className = undefined }) => (
     <Component
         className={cn(
             "mt-8",

@@ -1,6 +1,6 @@
 import type { FC, PropsWithChildren } from "react";
 
-const Error: FC<PropsWithChildren<{ title?: string }>> = ({ children, title = "Error" }) => (
+const Error: FC<PropsWithChildren<{ title?: string }>> = ({ children = undefined, title = "Error" }) => (
     <div className="flex w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
         <div className="flex w-12 items-center justify-center bg-red-500">
             <svg className="h-6 w-6 fill-current text-white" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">

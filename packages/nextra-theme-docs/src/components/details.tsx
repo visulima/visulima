@@ -43,16 +43,16 @@ const findSummary = (children: ReactNode) => {
 
 const Details = ({
     children,
-    open = false,
-    collapseClassName,
-    collapseHorizontal = false,
     className,
+    collapseClassName = undefined,
+    collapseHorizontal = false,
+    open = false,
     variant = "default",
     ...properties
 }: ComponentProps<"details"> & {
-    variant?: "default" | "raw";
     collapseClassName?: string;
     collapseHorizontal?: boolean;
+    variant?: "default" | "raw";
 }): ReactElement => {
     const [openState, setOpen] = useState(open);
 
@@ -88,7 +88,7 @@ const Details = ({
             {...(openState && { "data-expanded": true })}
         >
             <DetailsProvider value={setOpen}>{summary}</DetailsProvider>
-            <Collapse className={collapseClassName} isOpen={openState} horizontal={collapseHorizontal}>
+            <Collapse className={collapseClassName} horizontal={collapseHorizontal} isOpen={openState}>
                 {restChildren}
             </Collapse>
         </details>

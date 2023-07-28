@@ -20,7 +20,7 @@ const classes = {
     ),
 };
 
-const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout }) => {
+const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout = undefined }) => {
     const config = useConfig();
     const nav = config.navigation;
     const navigation: Exclude<DocumentationThemeConfig["navigation"], boolean> = typeof nav === "boolean" ? { next: nav, prev: nav } : nav;

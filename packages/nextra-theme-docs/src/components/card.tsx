@@ -4,13 +4,18 @@ import type { FC, PropsWithChildren, ReactNode } from "react";
 
 import cn from "../utils/cn";
 
-type CardBaseProperties = { title: string; icon?: ReactNode; href: never; classes?: { main?: string; iconWrapper?: string; title?: string; content?: string } };
+interface CardBaseProperties {
+    classes?: { content?: string; iconWrapper?: string; main?: string; title?: string };
+    href: never;
+    icon?: ReactNode;
+    title: string;
+}
 
 type CardLinkProperties = LinkProps & Omit<CardBaseProperties, "href"> & { href: string };
 
 type Properties = CardBaseProperties | CardLinkProperties;
 
-const Card: FC<PropsWithChildren<Properties>> = ({ children, title, icon, href, classes = {}, ...properties }) => {
+const Card: FC<PropsWithChildren<Properties>> = ({ children = undefined, classes = undefined, href, icon, title, ...properties }) => {
     const wrapperClassName = cn(
         "nextra-card",
         "bg-transparent",
@@ -25,8 +30,8 @@ const Card: FC<PropsWithChildren<Properties>> = ({ children, title, icon, href, 
     let content = (
         <div
             className={cn({
-                "px-6 py-5": children !== undefined,
                 "flex gap-2 p-4 text-gray-700 dark:text-neutral-200": children === undefined,
+                "px-6 py-5": children !== undefined,
             })}
         >
             {icon && (
@@ -57,8 +62,8 @@ const Card: FC<PropsWithChildren<Properties>> = ({ children, title, icon, href, 
     if (href) {
         content = (
             <Link
-                href={href}
                 className={wrapperClassName}
+                href={href}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >

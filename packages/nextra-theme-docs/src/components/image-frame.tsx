@@ -1,20 +1,34 @@
 import cn from "clsx";
-import Image from "next/image";
-import type { ComponentProps, FC } from "react";
+import type { FC } from "react";
 
+import Image from "next/image";
+import type { ImageProps } from "next/image";
 import Zoom from "./zoom";
 
-const ImageFrame: FC<ComponentProps<typeof Image> & { src: string; alt: string; full?: boolean; zoom?: boolean; caption?: string }> = ({
-    full,
-    caption,
+const ImageFrame: FC<ImageProps & { alt: string; caption?: string; full?: boolean; src: string; zoom?: boolean }> = ({
+    caption = undefined,
+    full = undefined,
     zoom = true,
     ...properties
 }) => {
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    let image = <Image className={cn("w-auto select-none bg-white rounded-md", full ? "" : "ring-1 ring-gray-200")} {...properties} />;
+    // TODO: Remove once https://github.com/vercel/next.js/issues/52216 is resolved.
+    // `next/image` seems to be affected by a default + named export bundling bug.
+    let ResolvedImage = Image;
+
+    if ("default" in ResolvedImage) {
+        ResolvedImage = (ResolvedImage as unknown as { default: typeof Image }).default;
+    }
+
+    let image = (
+        <ResolvedImage
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...properties}
+            className={cn("w-auto select-none bg-white rounded-md", full ? "" : "ring-1 ring-gray-200", properties.className ?? "")}
+        />
+    );
 
     if (zoom) {
-        image = <Zoom> {image} </Zoom>;
+        image = <Zoom>{image}</Zoom>;
     }
 
     return (

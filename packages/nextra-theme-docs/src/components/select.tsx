@@ -8,20 +8,15 @@ import { createPortal } from "react-dom";
 import cn from "../utils/cn";
 import usePopper from "../utils/use-popper";
 
-interface MenuOption {
-    key: string;
-    name: ReactElement | string;
-}
-
 interface MenuProperties {
-    selected: MenuOption;
+    className?: string;
     onChange: (option: MenuOption) => void;
     options: MenuOption[];
+    selected: MenuOption;
     title?: string;
-    className?: string;
 }
 
-const Portal: FC<PropsWithChildren> = ({ children }) => {
+const Portal: FC<PropsWithChildren> = ({ children = undefined }) => {
     const mounted = useMounted();
 
     if (!mounted) {
@@ -31,31 +26,30 @@ const Portal: FC<PropsWithChildren> = ({ children }) => {
     return createPortal(children, document.body);
 };
 
-const Select: FC<MenuProperties> = ({ options, selected, onChange, title, className }) => {
+const Select: FC<MenuProperties> = ({ className = undefined, onChange, options, selected, title = undefined }) => {
+    // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
     const [trigger, container] = usePopper({
-        strategy: "fixed",
-        placement: "top-start",
         modifiers: [
             { name: "offset", options: { offset: [0, 10] } },
             {
-                name: "sameWidth",
                 enabled: true,
                 fn({ state }) {
                     // eslint-disable-next-line no-param-reassign
-                    state.styles.popper.minWidth = `${state.rects.reference.width}px`;
+                    (state.styles as { popper: { minWidth: string } }).popper.minWidth = `${state.rects.reference.width}px`;
                 },
+                name: "sameWidth",
                 phase: "beforeWrite",
                 requires: ["computeStyles"],
             },
         ],
+        placement: "top-start",
+        strategy: "fixed",
     });
 
     return (
-        <Listbox value={selected} onChange={onChange}>
+        <Listbox onChange={onChange} value={selected}>
             {({ open }) => (
                 <Listbox.Button
-                    ref={trigger}
-                    title={title}
                     className={cn(
                         "h-7 rounded-lg px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400",
                         open
@@ -63,22 +57,22 @@ const Select: FC<MenuProperties> = ({ options, selected, onChange, title, classN
                             : "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-primary-100/5 dark:hover:text-gray-50",
                         className,
                     )}
+                    ref={trigger}
+                    title={title}
                 >
                     {selected.name}
                     <Portal>
                         <Transition
-                            ref={container}
-                            show={open}
                             as={Listbox.Options}
                             className="z-20 max-h-64 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:ring-white/20"
                             leave="transition-opacity"
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
+                            ref={container}
+                            show={open}
                         >
                             {options.map((option) => (
                                 <Listbox.Option
-                                    key={option.key}
-                                    value={option}
                                     className={({ active }) =>
                                         clsx(
                                             active ? "bg-primary-50 text-primary-600 dark:bg-primary-500/10" : "text-gray-800 dark:text-gray-100",
@@ -86,6 +80,8 @@ const Select: FC<MenuProperties> = ({ options, selected, onChange, title, classN
                                             "ltr:pl-3 ltr:pr-9 rtl:pl-9 rtl:pr-3",
                                         )
                                     }
+                                    key={option.key}
+                                    value={option}
                                 >
                                     {option.name}
                                     {option.key === selected.key && (
@@ -102,5 +98,10 @@ const Select: FC<MenuProperties> = ({ options, selected, onChange, title, classN
         </Listbox>
     );
 };
+
+export interface MenuOption {
+    key: string;
+    name: ReactElement | string;
+}
 
 export default Select;

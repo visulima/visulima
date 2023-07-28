@@ -40,16 +40,19 @@
         "moduleResolution": "node"
     },
     "exclude": [
-        "dist/**",
-        "node_modules",
-        "build/**",
-        "scripts/**",
+        "dist/**/*",
+        "node_modules/**/*",
+        "build/**/*",
+        "scripts/**/*",
         "verify-node-version.cjs",
         "plopfile.js",
-        "plop/**",
-        "packages/*/dist",
-        "packages/*/__fixtures__",
+        "plop/**/*",
+        "packages/**/dist/**/*",
+        "packages/**/__fixtures__/**/*",
+        "packages/**/__tests__/**/*",
+        "packages/**/bench/**/*",
         "examples/**",
-        "docs/**"
+        "docs/**",
+        "**/coverage/**/*"
     ]
 }

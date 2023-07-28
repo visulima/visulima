@@ -42,10 +42,14 @@ export const createConfig = (config?: Options & Object) =>
                     "next/head",
                     "next/link",
                     "next/router",
+                    "next/image",
+                    "next/package.json",
                     "nextra",
                     "nextra/icons",
                     "nextra/components",
                     "nextra/hooks",
+                    "nextra/mdx",
+                    "nextra/normalize-pages",
                     "@prisma/client",
                     "zod",
                     "@stoplight/spectral-core",
@@ -56,7 +60,7 @@ export const createConfig = (config?: Options & Object) =>
             ],
             format: ["esm", "cjs"],
             silent: !options.watch,
-            minify: process.env.NODE_ENV === "production",
+            minify: process.env["NODE_ENV"] === "production",
             incremental: !options.watch,
             dts: true,
             sourcemap: true,
@@ -64,12 +68,12 @@ export const createConfig = (config?: Options & Object) =>
             splitting: true,
             target: tsconfig.compilerOptions.target as "es2021",
             env: {
-                NODE_ENV: process.env.NODE_ENV,
+                NODE_ENV: process.env["NODE_ENV"],
                 ...config?.env,
             },
             declaration: true,
             esbuildOptions(options) {
-                if (process.env.NODE_ENV !== "production" && peerDependenciesKeys.includes("react")) {
+                if (process.env["NODE_ENV"] !== "production" && peerDependenciesKeys.includes("react")) {
                     options.tsconfig = options.tsconfig?.replace("tsconfig.json", "tsconfig.dev.json");
                 }
 

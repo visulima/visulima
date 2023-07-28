@@ -13,29 +13,29 @@ import { renderComponent, renderString } from "../utils/render";
 import Anchor from "./anchor";
 import Input from "./input";
 
-type SearchProperties = {
+interface SearchProperties {
     className?: string;
-    overlayClassName?: string;
-    value: string;
-    onChange: (newValue: string) => Promise<void>;
-    onActive?: (active: boolean) => Promise<void>;
-    loading?: boolean;
-
     error?: boolean;
+    loading?: boolean;
+    onActive?: (active: boolean) => Promise<void>;
+    onChange: (newValue: string) => Promise<void>;
+    overlayClassName?: string;
+
     results: SearchResult[];
-};
+    value: string;
+}
 
 const INPUTS = new Set(["input", "select", "button", "textarea"]);
 
 const Search: FC<SearchProperties> = ({
-    className,
-    overlayClassName,
-    value,
+    className = undefined,
+    error = undefined,
+    loading = undefined,
+    onActive = undefined,
     onChange,
-    onActive,
-    loading,
-    error,
+    overlayClassName = undefined,
     results,
+    value,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const [show, setShow] = useState(false);
@@ -82,15 +82,15 @@ const Search: FC<SearchProperties> = ({
         setActive(Number(index));
     }, []);
 
-    const finishSearch = () => {
+    const finishSearch = async () => {
         input.current?.blur();
-        onChange("");
+        await onChange("");
         setShow(false);
         setMenu(false);
     };
 
     const handleKeyDown = useCallback(
-        (kEvent: KeyboardEvent<any>) => {
+        async (kEvent: KeyboardEvent<unknown>) => {
             // eslint-disable-next-line default-case
             switch (kEvent.key) {
                 case "ArrowDown": {
@@ -122,12 +122,13 @@ const Search: FC<SearchProperties> = ({
                     break;
                 }
                 case "Enter": {
+                    // eslint-disable-next-line security/detect-object-injection
                     const result = results[active];
 
                     if (result) {
-                        router.push(result.route);
+                        await router.push(result.route);
 
-                        finishSearch();
+                        await finishSearch();
                     }
 
                     break;
@@ -149,8 +150,8 @@ const Search: FC<SearchProperties> = ({
     const renderList = show && Boolean(value);
 
     const icon = (
+        /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
         <Transition
-            show={mounted && (!show || Boolean(value))}
             as={Fragment}
             enter="transition-opacity"
             enterFrom="opacity-0"
@@ -158,6 +159,7 @@ const Search: FC<SearchProperties> = ({
             leave="transition-opacity"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            show={mounted && (!show || Boolean(value))}
         >
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             <kbd
@@ -169,10 +171,10 @@ const Search: FC<SearchProperties> = ({
                     "items-center gap-1 transition-opacity",
                     value ? "z-20 flex cursor-pointer hover:opacity-70" : "pointer-events-none hidden sm:flex",
                 )}
-                title={value ? "Clear" : undefined}
-                onClick={() => {
-                    onChange("");
+                onClick={async () => {
+                    await onChange("");
                 }}
+                title={value ? "Clear" : undefined}
             >
                 {value && focused
                     ? "ESC"
@@ -196,34 +198,37 @@ const Search: FC<SearchProperties> = ({
             {renderList && <div className="fixed inset-0 z-10" onClick={() => setShow(false)} />}
 
             <Input
-                ref={input}
-                value={value}
-                onChange={(event) => {
-                    const { value: eventValue } = event.target;
-
-                    onChange(eventValue);
-                    setShow(Boolean(eventValue));
-                }}
-                onFocus={() => {
-                    onActive?.(true);
-                    setFocused(true);
-                }}
+                /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                 onBlur={() => {
                     setFocused(false);
                 }}
-                type="search"
-                placeholder={renderString(config.search.placeholder, { locale })}
+                /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
+                onChange={async (event) => {
+                    const { value: eventValue } = event.target;
+
+                    await onChange(eventValue);
+                    setShow(Boolean(eventValue));
+                }}
+                /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
+                onFocus={async () => {
+                    await onActive?.(true);
+                    setFocused(true);
+                }}
                 onKeyDown={handleKeyDown}
+                placeholder={renderString(config.search.placeholder, { locale })}
+                ref={input}
                 suffix={icon}
+                type="search"
+                value={value}
             />
 
             <Transition
-                show={renderList}
                 // Transition.Child is required here, otherwise popup will be still present in DOM after focus out
                 as={Transition.Child}
                 leave="transition-opacity duration-100"
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
+                show={renderList}
             >
                 <ul
                     className={cn(
@@ -237,10 +242,10 @@ const Search: FC<SearchProperties> = ({
                         "contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50",
                         overlayClassName,
                     )}
-                    ref={ulReference}
                     style={{
                         transition: "max-height .2s ease", // don't work with tailwindcss
                     }}
+                    ref={ulReference}
                 >
                     {error ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-red-500">
@@ -253,7 +258,7 @@ const Search: FC<SearchProperties> = ({
                             {renderString(config.search.loading, { locale })}
                         </span>
                     ) : results.length > 0 ? (
-                        results.map(({ route, prefix, children, id }, index) => (
+                        results.map(({ children, id, prefix, route }, index) => (
                             <Fragment key={id}>
                                 {prefix}
                                 <li
@@ -267,12 +272,12 @@ const Search: FC<SearchProperties> = ({
                                 >
                                     <Anchor
                                         className="block scroll-m-12 px-2.5 py-2"
-                                        href={route}
                                         data-index={index}
-                                        onFocus={handleActive}
-                                        onMouseMove={handleActive}
+                                        href={route}
                                         onClick={finishSearch}
+                                        onFocus={handleActive}
                                         onKeyDown={handleKeyDown}
+                                        onMouseMove={handleActive}
                                     >
                                         {children}
                                     </Anchor>

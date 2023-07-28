@@ -1,16 +1,16 @@
 import "intersection-observer";
 
-import type {Dispatch, MutableRefObject, ReactElement, ReactNode, SetStateAction} from "react";
+import type { Dispatch, MutableRefObject, ReactElement, ReactNode, SetStateAction } from "react";
 import { createContext, useContext, useRef, useState } from "react";
 
 import { IS_BROWSER } from "../constants/base";
 
-type Anchor = {
-    isActive?: boolean;
+interface Anchor {
     aboveHalfViewport: boolean;
     index: number;
     insideHalfViewport: boolean;
-};
+    isActive?: boolean;
+}
 
 const ActiveAnchorContext = createContext<ActiveAnchor>({});
 const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
@@ -52,9 +52,10 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                                 entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
                             const insideHalfViewport = entry.intersectionRatio > 0;
 
+                            // eslint-disable-next-line security/detect-object-injection
                             returnValue[slug] = {
-                                index,
                                 aboveHalfViewport,
+                                index,
                                 insideHalfViewport,
                             };
                         }
@@ -82,7 +83,9 @@ export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): Rea
                         }
                     });
 
+                    // eslint-disable-next-line security/detect-object-injection
                     if (returnValue[activeSlug]) {
+                        // eslint-disable-next-line security/detect-object-injection
                         (returnValue[activeSlug] as Anchor).isActive = true;
                     }
 

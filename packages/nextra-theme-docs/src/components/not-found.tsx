@@ -37,12 +37,12 @@ const NotFoundPage = (): ReactElement | null => {
                         <div className="mt-4 flex flex-col items-stretch">
                             {list.map((page) => (
                                 <div
-                                    key={page.title + (page.subtitle ?? "")}
                                     className="flex flex-row border-t px-4 py-8 transition-all delay-100 duration-200 hover:cursor-pointer"
+                                    key={page.title + (page.subtitle ?? "")}
                                 >
                                     {page.icon && <div className="rounded-lg bg-primary-100 p-2 lg:p-3 lg:py-4 xl:p-4">{page.icon as JSX.Element}</div>}
                                     {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-                                    <a href={page.url} title={page.title} className="hover:no-underline! group flex grow flex-col pl-5">
+                                    <a className="hover:no-underline! group flex grow flex-col pl-5" href={page.url} title={page.title}>
                                         <div className="text-sm font-bold lg:text-lg xl:text-xl xl:font-semibold">{page.title}</div>
                                         {page.subtitle && (
                                             <div className="text-sm font-semibold text-gray-400 group-hover:text-gray-500 lg:text-base xl:text-lg xl:font-medium">
@@ -58,17 +58,17 @@ const NotFoundPage = (): ReactElement | null => {
                     </div>
                 )}
                 <div className="mt-8 flex flex-row">
-                    <Anchor href="/" newWindow className="basis-2/4 text-primary-600 underline decoration-from-font [text-underline-position:under]">
+                    <Anchor className="basis-2/4 text-primary-600 underline decoration-from-font [text-underline-position:under]" href="/">
                         Back to Homepage
                     </Anchor>
                     <Anchor
                         href={getGitIssueUrl({
+                            labels,
                             repository: config.docsRepositoryBase,
                             title: `Found broken \`${mounted ? asPath : ""}\` link. Please fix!`,
-                            labels,
                         })}
-                        newWindow
                         className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
+                        newWindow
                     >
                         {renderComponent(content)}
                     </Anchor>

@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import cn from "../utils/cn";
 
-const Bleed = ({ children, className, full }: { children: ReactNode; className?: string; full: boolean }): ReactElement => (
+const Bleed = ({ children, className = undefined, full }: { children: ReactNode; className?: string; full: boolean }): ReactElement => (
     <div
         className={cn(
             "nextra-bleed relative -mx-6 mt-6 lg:-mx-8 2xl:-mx-24",
