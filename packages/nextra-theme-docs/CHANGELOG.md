@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [1.1.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.6...@visulima/nextra-theme-docs@1.1.7) (2023-07-28)
+
+
+### Bug Fixes
+
+* Update eslint rules and dependencies ([01a4bef](https://github.com/visulima/visulima/commit/01a4beff467091ac2d2fc6f342d274d282391842))
+
 ## @visulima/nextra-theme-docs [1.1.6](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.5...@visulima/nextra-theme-docs@1.1.6) (2023-07-26)
 
 
