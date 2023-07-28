@@ -10,6 +10,7 @@ describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
         // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         if (process.env["CI"]) {
+            // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
         }
@@ -32,6 +33,7 @@ describe("pingCheck", () => {
     it("should return unhealthy when the host is reachable", async () => {
         // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         if (process.env["CI"]) {
+            // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
         }

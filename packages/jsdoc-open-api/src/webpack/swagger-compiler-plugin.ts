@@ -39,7 +39,9 @@ const exclude = [
 
 const errorHandler = (error: any) => {
     if (error) {
+        // eslint-disable-next-line no-console
         console.error(error);
+
         exit(1);
     }
 };
@@ -74,6 +76,7 @@ class SwaggerCompilerPlugin {
     public apply(compiler: Compiler): void {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
+            // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
 
             const spec = new SpecBuilder(this.swaggerDefinition);
@@ -97,13 +100,15 @@ class SwaggerCompilerPlugin {
                 });
 
                 if (this.verbose) {
+                    // eslint-disable-next-line no-console
                     console.log(`Found ${files.length} files in ${dir}`);
-
+                    // eslint-disable-next-line no-console
                     console.log(files);
                 }
 
                 files.forEach((file) => {
                     if (this.verbose) {
+                        // eslint-disable-next-line no-console
                         console.log(`Parsing file ${file}`);
                     }
 
@@ -116,7 +121,9 @@ class SwaggerCompilerPlugin {
 
                         spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
                     } catch (error) {
+                        // eslint-disable-next-line no-console
                         console.error(error);
+
                         exit(1);
                     }
                 });
@@ -124,14 +131,17 @@ class SwaggerCompilerPlugin {
 
             try {
                 if (this.verbose) {
+                    // eslint-disable-next-line no-console
                     console.log("Validating swagger spec");
-
+                    // eslint-disable-next-line no-console
                     console.log(JSON.stringify(spec, null, 2));
                 }
 
                 await validate(JSON.parse(JSON.stringify(spec)));
             } catch (error: any) {
+                // eslint-disable-next-line no-console
                 console.error(error.toJSON());
+
                 exit(1);
             }
 
@@ -148,9 +158,11 @@ class SwaggerCompilerPlugin {
             });
 
             if (this.verbose) {
+                // eslint-disable-next-line no-console
                 console.log(`Written swagger spec to "${this.assetsPath}" file`);
             }
 
+            // eslint-disable-next-line no-console
             console.log("switching back to normal build");
 
             callback();

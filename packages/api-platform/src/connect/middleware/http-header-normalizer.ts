@@ -43,11 +43,13 @@ const normalizeHeaderKey = (key: string, canonical: boolean) => {
         return exceptions[lowerCaseKey as keyof typeof exceptions];
     }
 
-    return lowerCaseKey
-        .split("-")
-
-        .map((text) => text[0]?.toUpperCase() + text.slice(1))
-        .join("-");
+    return (
+        lowerCaseKey
+            .split("-")
+            // eslint-disable-next-line no-unsafe-optional-chaining
+            .map((text: string) => text[0]?.toUpperCase() + text.slice(1))
+            .join("-")
+    );
 };
 
 const defaults = {

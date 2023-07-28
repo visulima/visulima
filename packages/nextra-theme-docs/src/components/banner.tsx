@@ -44,7 +44,10 @@ const Banner = (): ReactElement | null => {
                         onClick={() => {
                             try {
                                 localStorage.setItem(banner.key, "0");
-                            } catch {}
+                            } catch {
+                                /* empty */
+                            }
+
                             document.body.classList.add("nextra-banner-hidden");
                         }}
                         className="w-8 opacity-80 hover:opacity-100 ltr:mr-2 rtl:ml-2"

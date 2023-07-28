@@ -154,9 +154,11 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
 
     // eslint-disable-next-line class-methods-use-this
     public handleError(error: Error): HttpError {
+        // eslint-disable-next-line no-console
         console.error(error);
 
         if (error instanceof Error && error.stack) {
+            // eslint-disable-next-line no-console
             console.error(error.stack);
         }
 

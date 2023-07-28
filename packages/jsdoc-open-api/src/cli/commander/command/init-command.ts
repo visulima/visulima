@@ -16,7 +16,9 @@ const initCommand = (
             try {
                 baseInitCommand(configName);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error(error);
+
                 exit(1);
             }
         });

@@ -19,7 +19,9 @@ const onNoMatch = async (request: Request) =>
     new Response(request.method === "HEAD" ? null : `Route ${request.method} ${request.url} not found`, { status: 404 });
 
 const onError = async (error: unknown) => {
+    // eslint-disable-next-line no-console
     console.error(error);
+
     return new Response("Internal Server Error", { status: 500 });
 };
 

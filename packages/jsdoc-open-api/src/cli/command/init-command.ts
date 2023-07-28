@@ -18,14 +18,17 @@ const initCommand = (configName: string, packageJsonPath = process.cwd()): void 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { packageJson: package_, path: packagePath } = foundPackageJson;
 
+        // eslint-disable-next-line no-console
         console.info(`Found package.json at "${packagePath}"`);
 
         if (package_["type"] === "module") {
+            // eslint-disable-next-line no-console
             console.info("Found package.json with type: module, using ES6 as export for the config file");
 
             exportTemplate = "export default";
         }
     } else {
+        // eslint-disable-next-line no-console
         console.info("No package.json found");
     }
 
@@ -69,6 +72,7 @@ const initCommand = (configName: string, packageJsonPath = process.cwd()): void 
 `,
     );
 
+    // eslint-disable-next-line no-console
     console.log(`Created "${configName}"`);
 };
 

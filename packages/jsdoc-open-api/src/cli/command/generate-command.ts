@@ -80,10 +80,12 @@ const generateCommand = async (
         });
 
         if (options.verbose ?? options.veryVerbose) {
+            // eslint-disable-next-line no-console
             console.log(`\nFound ${files.length} files in ${dir}`);
         }
 
         if (options.veryVerbose) {
+            // eslint-disable-next-line no-console
             console.log(files);
         }
 
@@ -91,6 +93,7 @@ const generateCommand = async (
 
         files.forEach((file) => {
             if (options.verbose) {
+                // eslint-disable-next-line no-console
                 console.log(`Parsing file ${file}`);
             }
 
@@ -107,10 +110,12 @@ const generateCommand = async (
     }
 
     if (options.verbose) {
+        // eslint-disable-next-line no-console
         console.log("Validating swagger spec");
     }
 
     if (options.veryVerbose) {
+        // eslint-disable-next-line no-console
         console.log(JSON.stringify(spec, null, 2));
     }
 
@@ -121,6 +126,7 @@ const generateCommand = async (
     multibar.stop();
 
     if (options.verbose) {
+        // eslint-disable-next-line no-console
         console.log(`Written swagger spec to "${output}" file`);
     }
 
@@ -129,6 +135,7 @@ const generateCommand = async (
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     writeFileSync(output, JSON.stringify(spec, null, 2));
 
+    // eslint-disable-next-line no-console
     console.log(`\nSwagger specification is ready, check the "${output}" file.`);
 };
 

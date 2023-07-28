@@ -2,7 +2,7 @@ import type { FC, LegacyRef, PropsWithChildren } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-const Shadow: FC<PropsWithChildren<{ mode: "open" }>> = ({ children, mode = "open", ...rest }) => {
+const Shadow: FC<PropsWithChildren<{ mode: "open" }>> = ({ children = null, mode = "open", ...rest }) => {
     const reference = useRef<HTMLDivElement>();
     const [shadowRoot, setShadowRoot] = useState<DocumentFragment | Element | null>(null);
 

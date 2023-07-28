@@ -56,6 +56,7 @@ describe("getRoutes", () => {
 
             app.use(router.routes());
 
+            // eslint-disable-next-line no-console
             app.use(() => console.log("Non-router middleware"));
         });
 

@@ -49,6 +49,7 @@ function validateMeta(pageMap: PageMapItem[]) {
                 try {
                     metaSchema.parse(value);
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.error(`[nextra-theme-docs] Error validating _meta.json file for "${key}" property.\n\n${normalizeZodMessage(error)}`);
                 }
 
@@ -91,6 +92,7 @@ export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: {
         try {
             themeSchema.parse(theme);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error(`[nextra-theme-docs] Error validating theme config file.\n\n${normalizeZodMessage(error)}`);
         }
         validateMeta(pageOpts.pageMap);

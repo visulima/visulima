@@ -55,6 +55,7 @@ const swaggerHandler = <M extends string, PrismaClient>(
 
                 spec = merge(spec, crudSwagger);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.log(error);
 
                 throw new Error("Please install @visulima/crud to use the crud swagger generator.");

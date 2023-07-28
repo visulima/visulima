@@ -26,7 +26,9 @@ const listCommand = (
                     verbose: options.verbose as boolean | undefined,
                 });
             } catch (error: any) {
+                // eslint-disable-next-line no-console
                 console.log();
+                // eslint-disable-next-line no-console
                 console.error(error);
                 exit(1);
             }
