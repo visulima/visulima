@@ -1,3 +1,10 @@
+## @visulima/pagination [2.0.6](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.5...@visulima/pagination@2.0.6) (2023-07-28)
+
+
+### Bug Fixes
+
+* Update eslint rules and dependencies ([01a4bef](https://github.com/visulima/visulima/commit/01a4beff467091ac2d2fc6f342d274d282391842))
+
 ## @visulima/pagination [2.0.5](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.4...@visulima/pagination@2.0.5) (2023-07-26)
 
 
