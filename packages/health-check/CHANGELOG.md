@@ -1,3 +1,10 @@
+## @visulima/health-check [1.0.9](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.8...@visulima/health-check@1.0.9) (2023-07-28)
+
+
+### Bug Fixes
+
+* Update eslint rules and dependencies ([01a4bef](https://github.com/visulima/visulima/commit/01a4beff467091ac2d2fc6f342d274d282391842))
+
 ## @visulima/health-check [1.0.8](https://github.com/visulima/visulima/compare/@visulima/health-check@1.0.7...@visulima/health-check@1.0.8) (2023-07-26)
 
 
