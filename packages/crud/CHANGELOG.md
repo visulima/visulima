@@ -1,3 +1,17 @@
+## @visulima/crud [1.0.14](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.13...@visulima/crud@1.0.14) (2023-07-28)
+
+
+### Bug Fixes
+
+* Update eslint rules and dependencies ([01a4bef](https://github.com/visulima/visulima/commit/01a4beff467091ac2d2fc6f342d274d282391842))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 2.0.6
+* **@visulima/prisma-dmmf-transformer:** upgraded to 1.0.9
+
 ## @visulima/crud [1.0.13](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.12...@visulima/crud@1.0.13) (2023-07-26)
 
 
