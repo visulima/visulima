@@ -1,22 +1,22 @@
-import * as Fathom from "fathom-client";
+import { load, trackPageview } from "fathom-client";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import env from "../env/env-client";
+import environment from "../env/env-client";
 
-const useFathom = () => {
+const useFathom = (): void => {
     const router = useRouter();
 
     useEffect(() => {
-        if (process.env.NODE_ENV === "production" && env["NEXT_PUBLIC_FATHOM_ID"]) {
-            Fathom.load(env["NEXT_PUBLIC_FATHOM_ID"], {
-                url: "https://cdn-eu.usefathom.com/script.js",
+        if (process.env.NODE_ENV === "production" && environment.NEXT_PUBLIC_FATHOM_ID) {
+            load(environment.NEXT_PUBLIC_FATHOM_ID, {
                 includedDomains: ["visulima.com"],
+                url: "https://cdn-eu.usefathom.com/script.js",
             });
         }
 
         const onRouteChangeComplete = () => {
-            Fathom.trackPageview();
-        }
+            trackPageview();
+        };
 
         router.events.on("routeChangeComplete", onRouteChangeComplete);
 

@@ -3,24 +3,24 @@ import { remarkCodeHike } from "@code-hike/mdx";
 import theme from "shiki/themes/nord.json" assert { type: "json" };
 
 const withNextra = nextra({
-    theme: "@visulima/nextra-theme-docs",
-    themeConfig: "./theme.config.tsx",
     mdxOptions: {
-        remarkPlugins: [[remarkCodeHike, { theme, lineNumbers: false, showCopyButton: true, skipLanguages: ["mermaid"] }]],
+        remarkPlugins: [[remarkCodeHike, { lineNumbers: false, showCopyButton: true, skipLanguages: ["mermaid"], theme }]],
     },
-    staticImage: true,
     search: {
         codeblocks: true,
     },
+    staticImage: true,
+    theme: "@visulima/nextra-theme-docs",
+    themeConfig: "./theme.config.tsx",
 });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
-    swcMinify: true,
     images: {
         domains: ["images.unsplash.com"],
     },
+    reactStrictMode: true,
+    swcMinify: true,
 };
 
 export default withNextra(nextConfig);

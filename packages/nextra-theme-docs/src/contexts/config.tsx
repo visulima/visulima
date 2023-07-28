@@ -13,9 +13,9 @@ import type { Context } from "../types";
 import { MenuProvider } from "./menu";
 
 const ConfigContext = createContext<Config>({
-    title: "",
     description: "",
     frontMatter: {},
+    title: "",
     ...DEFAULT_THEME,
 });
 
@@ -64,16 +64,15 @@ const validateMeta = (pageMap: PageMapItem[]) => {
     });
 };
 
-export const useConfig = function<FrontMatterType = FrontMatter>(): Config<FrontMatterType> {
+export const useConfig = <FrontMatterType = FrontMatter,>(): Config<FrontMatterType> =>
     // @ts-expect-error TODO: fix Type 'Config<{ [key: string]: any; }>' is not assignable to type 'Config<FrontMatterType>'.
-    return useContext<Config<FrontMatterType>>(ConfigContext);
-};
+    useContext<Config<FrontMatterType>>(ConfigContext);
 
-export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: { children: ReactNode; value: Context }): ReactElement => {
+export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: { children: ReactNode; value: Context }): ReactElement => {
     const [menu, setMenu] = useState(false);
 
     // Merge only on first load
-
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     theme ||= {
         ...DEFAULT_THEME,
         ...Object.fromEntries(
@@ -81,7 +80,8 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
                 key,
                 value && typeof value === "object" && DEEP_OBJECT_KEYS.includes(key)
                     ? // @ts-expect-error -- key has always object value
-                      { ...DEFAULT_THEME[key], ...value }
+                      // eslint-disable-next-line security/detect-object-injection
+                      { ...DEFAULT_THEME[key], ...(value as object) }
                     : value,
             ]),
         ),
@@ -94,33 +94,39 @@ export const ConfigProvider = ({ children, value: { themeConfig, pageOpts } }: {
             // eslint-disable-next-line no-console
             console.error(`[nextra-theme-docs] Error validating theme config file.\n\n${normalizeZodMessage(error)}`);
         }
+
         validateMeta(pageOpts.pageMap);
+
         isValidated = true;
     }
 
     const extendedConfig: Config = useMemo(() => {
         return {
             ...theme,
-            flexsearch: pageOpts.flexsearch,
-            title: pageOpts.title,
             description: pageOpts.description,
+            flexsearch: pageOpts.flexsearch,
             frontMatter: pageOpts.frontMatter,
+            title: pageOpts.title,
         };
     }, [pageOpts]);
 
-    const { nextThemes, darkMode } = extendedConfig;
+    const { darkMode, nextThemes } = extendedConfig;
     const forcedTheme = darkMode ? nextThemes.forcedTheme : "light";
+
+    const menuValue = useMemo(() => {
+        return { menu, setMenu };
+    }, [menu, setMenu]);
 
     return (
         <ThemeProvider
             attribute={nextThemes.attribute ?? "class"}
-            disableTransitionOnChange
             defaultTheme={nextThemes.defaultTheme}
-            storageKey={nextThemes.storageKey}
+            disableTransitionOnChange
             forcedTheme={forcedTheme}
+            storageKey={nextThemes.storageKey}
         >
             <ConfigContext.Provider value={extendedConfig}>
-                <MenuProvider value={{ menu, setMenu }}>{children}</MenuProvider>
+                <MenuProvider value={menuValue}>{children}</MenuProvider>
             </ConfigContext.Provider>
         </ThemeProvider>
     );

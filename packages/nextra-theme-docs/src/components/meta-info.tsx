@@ -15,21 +15,21 @@ const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: st
     <>
         {config.feedback.content ? (
             <Anchor
-                className={linkClassName}
                 href={
                     config.feedback.link
                         ? config.feedback.link({
-                              title: config.title,
-                              route,
                               docsRepositoryBase: config.docsRepositoryBase,
                               labels: config.feedback.labels,
+                              route,
+                              title: config.title,
                           })
                         : getGitIssueUrl({
+                              labels: config.feedback.labels,
                               repository: config.docsRepositoryBase,
                               title: `Feedback for “${config.title}”`,
-                              labels: config.feedback.labels,
                           })
                 }
+                className={linkClassName}
                 newWindow
             >
                 {renderComponent(config.feedback.content, { locale })}
@@ -37,18 +37,18 @@ const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: st
         ) : null}
 
         {renderComponent(config.editLink.component, {
-            filePath,
-            className: linkClassName,
             children: renderComponent(config.editLink.content, { locale }),
+            className: linkClassName,
+            filePath,
         })}
 
         {config.backToTop.active && (
             <button
-                type="button"
                 onClick={() => {
-                    window.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+                    window.scrollTo({ behavior: "smooth", left: 0, top: 0 });
                 }}
                 className={linkClassName}
+                type="button"
             >
                 {renderComponent(config.backToTop.content, { locale })}
             </button>

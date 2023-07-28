@@ -1,54 +1,9 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node16/tsconfig"],
     "display": "React + Node 16",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "baseUrl": "./",
-
-        "target": "es2021",
-        "lib": ["DOM", "DOM.Iterable", "ES2021"],
-        "jsx": "react-jsx",
-
-        "noEmit": true,
-        "declaration": true,
-        "allowJs": true,
-
-        "alwaysStrict": true,
-        "strictNullChecks": true,
-        "strictBindCallApply": true,
-        "strictFunctionTypes": true,
-        "stripInternal": true,
-
-        "strictPropertyInitialization": true,
-
-        "noImplicitThis": true,
-        "useUnknownInCatchVariables": true,
-
-        "isolatedModules": true,
-        "verbatimModuleSyntax": true,
-        "resolveJsonModule": true,
-        "inlineSources": false,
-
-        "removeComments": true,
-        "incremental": true,
-        "tsBuildInfoFile": ".tsbuildinfo",
-
-        "noPropertyAccessFromIndexSignature": true,
-
-        "exactOptionalPropertyTypes": false,
-
-        "moduleResolution": "node"
+        "baseUrl": "."
     },
-    "exclude": [
-        "dist/**",
-        "node_modules",
-        "build/**",
-        "scripts/**",
-        "verify-node-version.cjs",
-        "plopfile.js",
-        "plop/**",
-        "packages/**",
-        "examples/**",
-        "docs/**"
-    ]
+    "include": ["tsup.config.ts"]
 }

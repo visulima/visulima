@@ -31,21 +31,21 @@ import { renderComponent } from "../utils/render";
 import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
-    toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
     main: "w-full break-words",
+    toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
 };
 
 const Body: FC<{
-    themeContext: PageTheme;
-    breadcrumb: ReactNode;
-    timestamp?: number;
-    navigation: ReactNode;
-    children: ReactNode;
     activeType: string;
+    breadcrumb: ReactNode;
+    children: ReactNode;
     filePath: string;
     locale: string;
+    navigation: ReactNode;
     route: string;
-}> = ({ themeContext, breadcrumb, timestamp, navigation, children, activeType, filePath, locale, route }) => {
+    themeContext: PageTheme;
+    timestamp?: number;
+}> = ({ activeType, breadcrumb, children, filePath, locale, navigation, route, themeContext, timestamp = undefined }) => {
     const config = useConfig();
     const mounted = useMounted();
 
@@ -58,7 +58,7 @@ const Body: FC<{
     const gitTimestampElement =
         mounted && date ? (
             <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
-                {renderComponent(config.gitTimestamp, { timestamp: date, locale })}
+                {renderComponent(config.gitTimestamp, { locale, timestamp: date })}
             </div>
         ) : (
             <div className="mt-16" />
@@ -73,7 +73,7 @@ const Body: FC<{
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
-            {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && gitTimestampElement}
+            {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && gitTimestampElement}
             {activeType === "doc" && config.comments && (
                 <div className="mb-8">
                     <hr />
@@ -118,51 +118,53 @@ const Body: FC<{
 };
 
 const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
+    children = undefined,
     filePath,
-    pageMap,
     frontMatter,
     headings,
+    pageMap,
     timestamp,
-    children,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const config = useConfig();
-    const { locale = DEFAULT_LOCALE, defaultLocale, route } = useRouter();
+    const { defaultLocale, locale = DEFAULT_LOCALE, route } = useRouter();
     const fsPath = useFSRoute();
     const mounted = useMounted();
 
     const {
-        activeType = "doc",
         activeIndex,
-        activeThemeContext,
         activePath,
-        topLevelNavbarItems,
+        activeThemeContext,
+        activeType = "doc",
+        directories,
         docsDirectories: documentsDirectories,
         flatDirectories,
         flatDocsDirectories: flatDocumentsDirectories,
-        directories,
+        topLevelNavbarItems,
     } = useMemo(
         () =>
             normalizePages({
+                defaultLocale,
                 list: pageMap,
                 locale,
-                defaultLocale,
                 route: fsPath,
             }),
         [pageMap, locale, defaultLocale, fsPath],
     );
-    const reference: any = useRef<HTMLDivElement>(null);
+    const reference = useRef<HTMLDivElement>(null);
     const isOnScreen = useOnScreen(reference as MutableRefObject<Element>);
 
-    const themeContext = { prose: true, ...activeThemeContext, ...frontMatter };
-    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["page", "hidden"].includes(activeType);
-    const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["raw", "full"].includes(themeContext.layout);
+    const themeContext = useMemo(() => {
+        return { prose: true, ...activeThemeContext, ...frontMatter };
+    }, [activeThemeContext, frontMatter]);
+    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["hidden", "page"].includes(activeType);
+    const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
 
     const tocSidebarElement = isDocumentPage && (
-        <nav className={cn(classes.toc, "px-4")} aria-label="table of contents">
+        <nav aria-label="table of contents" className={cn(classes.toc, "px-4")}>
             {renderComponent(config.tocSidebar.component, {
-                headings: config.tocSidebar.float ? headings : [],
                 filePath,
+                headings: config.tocSidebar.float ? headings : [],
                 isOnScreen: mounted && !isOnScreen,
                 locale,
                 route,
@@ -182,8 +184,8 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     const mdxContent = (
         <MDXProvider
             components={getComponents({
-                isRawLayout: themeContext.layout === "raw",
                 components: config.components,
+                isRawLayout: themeContext.layout === "raw",
             })}
         >
             {children}
@@ -193,21 +195,21 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     return (
         <WrapBalancerProvider>
             <Toaster
-                position={config.toaster?.position}
-                toastOptions={config.toaster?.toastOptions}
-                reverseOrder={config.toaster?.reverseOrder}
                 gutter={config.toaster?.gutter}
+                position={config.toaster?.position}
+                reverseOrder={config.toaster?.reverseOrder}
+                toastOptions={config.toaster?.toastOptions}
             />
             {/* This makes sure that selectors like `[dir=ltr] .nextra-container` */}
             {/* work // before hydration as Tailwind expects the `dir` attribute to exist on the `html` element. */}
             <div
-                dir={direction}
                 // eslint-disable-next-line tailwindcss/no-custom-classname
                 className={
-                    ["page", "hidden"].includes(activeType) || themeContext.layout === "raw"
+                    ["hidden", "page"].includes(activeType) || themeContext.layout === "raw"
                         ? ""
                         : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"
                 }
+                dir={direction}
             >
                 <script
                     // eslint-disable-next-line react/no-danger
@@ -219,19 +221,19 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 <Banner />
                 {themeContext.navbar &&
                     renderComponent(config.navbar.component, {
+                        activeType,
                         flatDirectories,
                         items: topLevelNavbarItems,
-                        activeType,
                         themeContext,
                     })}
                 <div className={cn("mx-auto flex", themeContext.layout !== "raw" && "max-w-[90rem]")}>
                     <ActiveAnchorProvider>
                         <Sidebar
+                            asPopover={hideSidebar}
                             documentsDirectories={documentsDirectories}
                             flatDirectories={flatDirectories}
                             fullDirectories={directories}
                             headings={headings}
-                            asPopover={hideSidebar}
                             includePlaceholder={themeContext.layout === "default"}
                         />
                         <div className="relative w-full">
@@ -262,31 +264,31 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 {tocSidebarElement}
                                 <SkipNavContent />
                                 <Body
-                                    themeContext={themeContext}
                                     breadcrumb={
-                                        !["page", "hidden"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
+                                        !["hidden", "page"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
                                     }
-                                    timestamp={timestamp}
                                     navigation={
-                                        !["page", "hidden"].includes(activeType) && themeContext.pagination ? (
-                                            <NavLinks flatDirectories={flatDocumentsDirectories} currentIndex={activeIndex} layout={themeContext.layout} />
+                                        !["hidden", "page"].includes(activeType) && themeContext.pagination ? (
+                                            <NavLinks currentIndex={activeIndex} flatDirectories={flatDocumentsDirectories} layout={themeContext.layout} />
                                         ) : null
                                     }
                                     activeType={activeType}
-                                    route={route}
-                                    locale={locale}
                                     filePath={filePath}
+                                    locale={locale}
+                                    route={route}
+                                    themeContext={themeContext}
+                                    timestamp={timestamp}
                                 >
-                                    {activeType === "doc" && !["raw", "full"].includes(themeContext.layout) && (
+                                    {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
                                         <>
-                                            <h1 className="mt-4 text-3xl font-bold leading-loose tracking-tight hyphens-auto lg:text-4xl xl:text-5xl">
+                                            <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
                                                 {activePath[Object.keys(activePath).length - 1]?.title}
                                             </h1>
                                             <p className="mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
                                         </>
                                     )}
                                     {tocPageContentElement}
-                                    {themeContext.prose && ["page", "doc"].includes(activeType) ? (
+                                    {themeContext.prose && ["doc", "page"].includes(activeType) ? (
                                         <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose>
                                     ) : (
                                         mdxContent
@@ -296,13 +298,13 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                         </div>
                     </ActiveAnchorProvider>
                 </div>
-                <Footer activeType={activeType} themeContext={themeContext} locale={locale} />
+                <Footer activeType={activeType} locale={locale} themeContext={themeContext} />
             </div>
         </WrapBalancerProvider>
     );
 };
 
-const Theme: FC<NextraThemeLayoutProps> = ({ children, ...context }) => {
+const Theme: FC<NextraThemeLayoutProps> = ({ children = undefined, ...context }) => {
     const counter = useRef(0);
 
     return (

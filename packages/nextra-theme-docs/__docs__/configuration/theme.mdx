@@ -185,8 +185,8 @@ Try it out for this website:
         step="1"
         onChange={(e) => {
             const hue = e.target.value;
-            document.documentElement.style.setProperty("--nextra-primary-hue", hue + "deg");
-            document.getElementById("test-theme-hue").innerText = hue;
+            document.documentElement.style.setProperty("--nextra-primary-hue", `${hue}deg`);
+            document.querySelector("#test-theme-hue").innerText = hue;
         }}
     />
     <code id="test-theme-hue" className="text-sm text-gray-500"></code>

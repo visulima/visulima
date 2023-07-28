@@ -7,7 +7,7 @@ import { renderComponent } from "../utils/render";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 
-const Footer = ({ activeType, themeContext, locale }: { activeType: string; themeContext: PageTheme; locale: string }): ReactElement => {
+const Footer = ({ activeType, locale, themeContext }: { activeType: string; locale: string; themeContext: PageTheme }): ReactElement => {
     const config = useConfig();
     const isLayoutRaw = themeContext.layout === "raw";
 
@@ -18,7 +18,7 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
             className={cn(
                 "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
 
-                ["page", "hidden"].includes(activeType) || isLayoutRaw
+                ["hidden", "page"].includes(activeType) || isLayoutRaw
                     ? "px-2 md:px-6 lg:px-8"
                     : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
             )}
@@ -28,7 +28,7 @@ const Footer = ({ activeType, themeContext, locale }: { activeType: string; them
                     className={cn(
                         "flex lg:flex-col py-6 lg:py-12 lg:w-64 lg:shrink-0",
 
-                        ["page", "hidden"].includes(activeType) || isLayoutRaw
+                        ["hidden", "page"].includes(activeType) || isLayoutRaw
                             ? ""
                             : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
                     )}

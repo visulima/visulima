@@ -12,7 +12,7 @@ const toastId = "copy-to-clipboard";
 const toastPosition = "bottom-right";
 
 const CopyToClipboard = ({
-    as,
+    as = undefined,
     className,
     getValue,
     ...properties

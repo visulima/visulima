@@ -22,29 +22,29 @@ const Head = (): ReactElement => {
     return (
         <>
             <NextSeo
-                title={config.title}
-                description={frontMatter.description}
                 canonical={frontMatter.canonical}
+                description={frontMatter.description}
                 openGraph={frontMatter.openGraph}
+                title={config.title}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...config.useNextSeoProps()}
             />
             <NextHead>
                 {config.faviconGlyph ? (
                     <link
-                        rel="icon"
                         href={`data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='.9em' font-size='90' text-anchor='middle'>${config.faviconGlyph}</text><style>text{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";fill:black}@media(prefers-color-scheme:dark){text{fill:white}}</style></svg>`}
+                        rel="icon"
                     />
                 ) : null}
                 {mounted ? (
-                    <meta name="theme-color" content={resolvedTheme === "dark" ? "#111" : "#fff"} />
+                    <meta content={resolvedTheme === "dark" ? "#111" : "#fff"} name="theme-color" />
                 ) : (
                     <>
-                        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-                        <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+                        <meta content="#ffffff" media="(prefers-color-scheme: light)" name="theme-color" />
+                        <meta content="#111111" media="(prefers-color-scheme: dark)" name="theme-color" />
                     </>
                 )}
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+                <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
                 <style>{`
         :root {
           --nextra-primary-hue: ${lightHue}deg;

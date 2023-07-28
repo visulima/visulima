@@ -2,13 +2,14 @@ import { Fragment, memo } from "react";
 
 interface MatchArguments {
     match: string;
+    // eslint-disable-next-line react/require-default-props
     value?: string;
 }
 
 const HighlightMatches = memo<MatchArguments>(({ match, value }: MatchArguments) => {
     const splitText = value ? [...value] : [];
     const escapedSearch = match.trim().replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
-    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "gi");
 
     let regexpResult;

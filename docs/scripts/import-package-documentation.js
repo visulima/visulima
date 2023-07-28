@@ -1,15 +1,19 @@
 import { walk } from "@visulima/readdir";
+// eslint-disable-next-line n/file-extension-in-import
 import yargs from "yargs/yargs";
+// eslint-disable-next-line n/file-extension-in-import
 import { hideBin } from "yargs/helpers";
 import fs from "node:fs";
 import fse from "fs-extra";
 import path from "node:path";
 import process from "node:process";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import symlinkDir from "symlink-dir";
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-const docsPath = path.join(__dirname, "..", "pages", "docs");
+const documentationPath = path.join(__dirname, "..", "pages", "docs");
 const assetsPath = path.join(__dirname, "..", "public", "assets");
 
 const argv = yargs(hideBin(process.argv))
@@ -28,7 +32,7 @@ const argv = yargs(hideBin(process.argv))
     .alias("help", "h")
     .parse();
 
-const { symlink, copy, path: pathOption } = argv;
+const { copy, path: pathOption, symlink } = argv;
 
 if ((!symlink && !copy) || (symlink && copy)) {
     // eslint-disable-next-line no-console
@@ -44,7 +48,8 @@ if (typeof pathOption !== "string") {
     process.exit(1);
 }
 
-async function command() {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const command = async () => {
     const searchPath = path.join(process.cwd(), pathOption);
 
     // eslint-disable-next-line no-console
@@ -56,11 +61,11 @@ async function command() {
 
     // eslint-disable-next-line no-restricted-syntax
     for await (const result of walk(searchPath, {
-        maxDepth: 20,
-        includeFiles: true,
-        includeDirs: true,
-        followSymlinks: false,
         extensions: [".mdx", ".md", ".json", ".apng", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".pdf", ".avif", ".mp4", ".webm", ".mov"],
+        followSymlinks: false,
+        includeDirs: true,
+        includeFiles: true,
+        maxDepth: 20,
         skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
     })) {
         if (result.isFile && result.path.includes("/__docs__/")) {
@@ -70,9 +75,9 @@ async function command() {
             const relativePath = result.path.replace(searchPath, "").replace("__docs__/", "");
 
             paths.push({
-                src: result.path,
-                dest: `${docsPath}${relativePath}`,
+                dest: `${documentationPath}${relativePath}`,
                 packageName: relativePath.split("/")[1],
+                src: result.path,
             });
         } else if (result.isFile && result.path.includes("/__assets__/")) {
             // eslint-disable-next-line no-console
@@ -81,50 +86,55 @@ async function command() {
             const relativePath = result.path.replace(searchPath, "").replace("__assets__/", "");
 
             paths.push({
-                src: result.path,
                 dest: `${assetsPath}${relativePath}`,
                 packageName: relativePath.split("/")[1],
+                src: result.path,
             });
         }
     }
 
     // delete old docs
     paths.forEach(({ packageName }) => {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (fs.existsSync(`${assetsPath}/${packageName}`)) {
             fse.removeSync(`${assetsPath}/${packageName}`);
         }
 
-        if (fs.existsSync(`${docsPath}/${packageName}`)) {
-            fse.removeSync(`${docsPath}/${packageName}`);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        if (fs.existsSync(`${documentationPath}/${packageName}`)) {
+            fse.removeSync(`${documentationPath}/${packageName}`);
         }
     });
 
     if (copy) {
-        paths.forEach(({ src, dest }) => {
+        paths.forEach(({ dest, src }) => {
             fse.copySync(src, dest);
         });
     } else if (symlink) {
         const symlinkPaths = {};
 
-        paths.forEach(({ src, dest }) => {
-            const splitPath = dest.replace(path.join(__dirname, "..") + "/", "").split("/");
-            const srcSplitFolderName = splitPath[0] === "public" ? "__assets__" : "__docs__";
+        paths.forEach(({ dest, src }) => {
+            const splitPath = dest.replace(`${path.join(__dirname, "..")}/`, "").split("/");
+            const sourceSplitFolderName = splitPath[0] === "public" ? "__assets__" : "__docs__";
 
             const key = `${splitPath[0]}/${splitPath[1]}/${splitPath[2]}`;
 
+            // eslint-disable-next-line security/detect-object-injection
             if (!symlinkPaths[key]) {
+                // eslint-disable-next-line security/detect-object-injection
                 symlinkPaths[key] = {
-                    src: `${src.split(srcSplitFolderName)[0]}${srcSplitFolderName}`,
                     dest: path.join(__dirname, "..", key),
+                    src: `${src.split(sourceSplitFolderName)[0]}${sourceSplitFolderName}`,
                 };
             }
         });
 
+        // eslint-disable-next-line no-restricted-syntax
         for await (const result of Object.values(symlinkPaths)) {
             await symlinkDir(result.src, result.dest);
         }
     }
-}
+};
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 command().catch((error) => {
