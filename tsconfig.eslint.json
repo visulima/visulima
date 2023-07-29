@@ -5,5 +5,21 @@
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": ["tsup.config.ts"]
+    "include": ["tsup.config.ts"],
+    "exclude": [
+        "dist/**/*",
+        "node_modules/**/*",
+        "build/**/*",
+        "scripts/**/*",
+        "verify-node-version.cjs",
+        "plopfile.js",
+        "plop/**",
+        "packages/**/__fixtures__/**/*",
+        "packages/**/__tests__/**/*",
+        "packages/**/bench/**/*",
+        "packages/**/coverage/**/*",
+        "packages/**/dist/**/*",
+        "examples/**/*",
+        "docs/**/*"
+    ]
 }

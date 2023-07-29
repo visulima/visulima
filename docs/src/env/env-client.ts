@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
+import { env as process_environment } from "process";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
-import { env as process_environment } from "process";
 
 const isProduction = process_environment.NODE_ENV === "production";
 

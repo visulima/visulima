@@ -39,20 +39,5 @@
 
         "moduleResolution": "node"
     },
-    "exclude": [
-        "dist/**/*",
-        "node_modules/**/*",
-        "build/**/*",
-        "scripts/**/*",
-        "verify-node-version.cjs",
-        "plopfile.js",
-        "plop/**/*",
-        "packages/**/dist/**/*",
-        "packages/**/__fixtures__/**/*",
-        "packages/**/__tests__/**/*",
-        "packages/**/bench/**/*",
-        "examples/**",
-        "docs/**",
-        "**/coverage/**/*"
-    ]
+    "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**"]
 }

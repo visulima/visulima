@@ -2,6 +2,7 @@ import cn from "clsx";
 import { ArrowRightIcon } from "nextra/icons";
 import type { ComponentProps, ReactElement } from "react";
 
+import { useState } from "react";
 import { useDetails } from "../contexts";
 
 const Summary = ({
@@ -17,6 +18,7 @@ const Summary = ({
     variant?: "default" | "raw";
 }): ReactElement => {
     const setOpen = useDetails();
+    const [open, setOpenState] = useState(false);
 
     return (
         <summary
@@ -26,11 +28,16 @@ const Summary = ({
                 "rtl:before:rotate-180 [[data-expanded]>&]:before:rotate-90",
                 className,
             )}
+            aria-expanded={open ? "true" : "false"}
+            role="button"
+            tabIndex={0}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
             onClick={(event) => {
                 event.preventDefault();
+
                 setOpen((value) => !value);
+                setOpenState((value) => !value);
             }}
         >
             <ArrowRightIcon
