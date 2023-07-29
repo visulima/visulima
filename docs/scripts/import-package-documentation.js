@@ -1,12 +1,12 @@
-import { walk } from "@visulima/readdir";
-// eslint-disable-next-line n/file-extension-in-import
-import yargs from "yargs/yargs";
-// eslint-disable-next-line n/file-extension-in-import
-import { hideBin } from "yargs/helpers";
 import fs from "node:fs";
-import fse from "fs-extra";
 import path from "node:path";
 import process from "node:process";
+import { walk } from "@visulima/readdir";
+
+import yargs from "yargs/yargs";
+
+import { hideBin } from "yargs/helpers";
+import fse from "fs-extra";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import symlinkDir from "symlink-dir";
 

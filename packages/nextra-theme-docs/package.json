@@ -92,7 +92,7 @@
         "next-seo": "^6.1.0",
         "next-themes": "^0.2.1",
         "react-hot-toast": "^2.4.1",
-        "react-medium-image-zoom": "^5.1.6",
+        "react-medium-image-zoom": "^5.1.7",
         "react-wrap-balancer": "^1.0.0",
         "scroll-into-view-if-needed": "^3.0.10",
         "tailwind-merge": "^1.14.0"
