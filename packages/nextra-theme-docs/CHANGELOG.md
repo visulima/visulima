@@ -1,3 +1,40 @@
+## @visulima/nextra-theme-docs [2.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.7...@visulima/nextra-theme-docs@2.0.0) (2023-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* changed min next.js version to >=13.1.5
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* Add descriptive UI enhancements and test cases ([9709302](https://github.com/visulima/visulima/commit/97093024967f8df445f13c5eb3532002ec0cb19d))
+* addd more docs, fixed some styling ([baa7640](https://github.com/visulima/visulima/commit/baa7640a6a1997b4440eacc52e763183885248ad))
+* added icon component to the sidebar, fixed meta schema ([83767bc](https://github.com/visulima/visulima/commit/83767bc7e7ebcf1edc903d87b559264a66fee617))
+* added image-frame ([6456c51](https://github.com/visulima/visulima/commit/6456c518472e3a16c5020b7719f86826e27e802c))
+* added more docs for the theme, fixed or extended callout, card and card-group, added accordion, accordion-group, fixed icons padding in sidebar, changed tabs to be easier to use ([0106b86](https://github.com/visulima/visulima/commit/0106b86dac8e6cfa5ef45eb8cd0673e2fa163cdc))
+* added toast example and extended theme config with toaster ([ff70ed2](https://github.com/visulima/visulima/commit/ff70ed2dcebf1965f37b109848bff2db79d9700f))
+* deleted old files, fixed all eslint errors ([71536f3](https://github.com/visulima/visulima/commit/71536f320513e8743cb7d920c17bb06749b28dad))
+* removed newNextLinkBehavior option, added react-wrap-balancer on all header, exporting now zoom, and toast as component und hook, added new meta description config ([dc4dd86](https://github.com/visulima/visulima/commit/dc4dd86db818876476eeb9fab284aab21ecc7c81))
+
+
+### Bug Fixes
+
+* Add an interactive state to the summary. Update lockfile and component folding. ([4eec888](https://github.com/visulima/visulima/commit/4eec888c91df587a1669b70b9e2d7024cff6ce6d))
+* Remove redundant scripts and tests, refactor some files for cleanup ([256487a](https://github.com/visulima/visulima/commit/256487a72fe135236a9bbb5120e64d99baa756df))
+
+
+### Styles
+
+* cs fix ([164c8e7](https://github.com/visulima/visulima/commit/164c8e7403da44e41ecd7079564f52a5c0bb061b))
+* cs fixes ([ea115d0](https://github.com/visulima/visulima/commit/ea115d02df955445e2ccde413762ae8a961cdd20))
+
+
+### Miscellaneous Chores
+
+* added symlink, updating docs ([c66583a](https://github.com/visulima/visulima/commit/c66583a75468edc0c9ecbe6743951c817fc73a0d))
+* updated deps, and changed semantic-release config to extend anolilab config ([9dbe9e2](https://github.com/visulima/visulima/commit/9dbe9e211743959903493b984c8d956ad7a94206))
+
 ## @visulima/nextra-theme-docs [1.1.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.6...@visulima/nextra-theme-docs@1.1.7) (2023-07-28)
 
 
