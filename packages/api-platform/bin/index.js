@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { Command } = require("commander");
 
 const { exit } = require("node:process");
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { Command } = require("commander");
 
 const { generateCommand, initCommand } = require("@visulima/jsdoc-open-api/cli/commander");
 

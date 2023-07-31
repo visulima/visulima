@@ -1,6 +1,6 @@
+import type { ServerResponse } from "node:http";
 import type { HttpError } from "http-errors";
 import { StatusCodes } from "http-status-codes";
-import type { ServerResponse } from "node:http";
 
 export const setErrorHeaders = (response: ServerResponse, error: unknown): void => {
     const headers: Record<string, ReadonlyArray<string> | number | string> = (error as HttpError).headers ?? {};

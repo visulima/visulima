@@ -1,7 +1,7 @@
-import type { OpenApiObject } from "@visulima/jsdoc-open-api";
-import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
 import { readFileSync } from "node:fs";
 import process from "node:process";
+import type { OpenApiObject } from "@visulima/jsdoc-open-api";
+import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
 
 import type { Route } from "../types.d";
 

@@ -1,5 +1,5 @@
-import accepts from "accepts";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import accepts from "accepts";
 
 import { toHeaderCase } from "../utils";
 import hasJsonStructure from "./has-json-structure";
