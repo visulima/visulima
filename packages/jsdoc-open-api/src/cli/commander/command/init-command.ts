@@ -1,5 +1,5 @@
-import type { Command } from "commander";
 import { exit } from "node:process";
+import type { Command } from "commander";
 
 import baseInitCommand from "../../command/init-command";
 

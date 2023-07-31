@@ -1,8 +1,8 @@
-import type { Options as MicromatchOptions } from "micromatch";
-import micromatch from "micromatch";
 import type { Dirent, Stats } from "node:fs";
 import { promises } from "node:fs";
 import { basename, join, normalize } from "node:path";
+import micromatch from "micromatch";
+import type { Options as MicromatchOptions } from "micromatch";
 
 const include = (
     path: string,

@@ -1,5 +1,5 @@
-import { StatusCodes } from "http-status-codes";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { StatusCodes } from "http-status-codes";
 
 import type { HealthCheck, HealthReport } from "../types";
 

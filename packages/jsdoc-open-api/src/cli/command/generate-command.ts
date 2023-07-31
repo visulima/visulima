@@ -1,9 +1,9 @@
-import { collect } from "@visulima/readdir";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import cliProgress from "cli-progress";
 import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import cliProgress from "cli-progress";
+import { collect } from "@visulima/readdir";
 
 import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
