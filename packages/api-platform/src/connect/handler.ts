@@ -1,6 +1,6 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import type { FunctionLike, Nextable, Route, ValueOrPromise } from "@visulima/connect";
 import createHttpError from "http-errors";
-import type { IncomingMessage, ServerResponse } from "node:http";
 
 import JsonapiErrorHandler from "../error-handler/jsonapi-error-handler";
 import ProblemErrorHandler from "../error-handler/problem-error-handler";
