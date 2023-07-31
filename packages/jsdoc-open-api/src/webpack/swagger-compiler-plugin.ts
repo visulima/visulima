@@ -1,7 +1,7 @@
-import { collect } from "@visulima/readdir";
 import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
 import { exit } from "node:process";
+import { collect } from "@visulima/readdir";
 
 import type { Compiler } from "webpack";
 

@@ -1,6 +1,6 @@
+import assert from "node:assert";
 import type { DMMF } from "@prisma/generator-helper";
 import type { JSONSchema7, JSONSchema7TypeName } from "json-schema";
-import assert from "node:assert";
 
 import type { ModelMetaData, PrismaPrimitive, PropertyMap, PropertyMetaData, TransformOptions } from "./types.d";
 
