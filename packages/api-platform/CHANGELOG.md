@@ -1,3 +1,10 @@
+## @visulima/api-platform [1.2.15](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.14...@visulima/api-platform@1.2.15) (2023-07-31)
+
+
+### Bug Fixes
+
+* Rearrange import statements for better organization ([e25d011](https://github.com/visulima/visulima/commit/e25d011bb508c36291bc3089dc9fcf59911aee19))
+
 ## @visulima/api-platform [1.2.14](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.13...@visulima/api-platform@1.2.14) (2023-07-28)
 
 
