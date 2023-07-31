@@ -1,12 +1,26 @@
+import { LiveEditor } from "@visulima/nextra-theme-docs";
+
 # Code highlighting
 
 ## Test `filename`, line highlighting and empty lines
 
 ```js filename="test.js" {1}
-console.log('hello world')
+console.log("hello world");
 
-console.log('goodbye world')
+console.log("goodbye world");
 ```
+
+## Test `live`, live editing
+
+<LiveEditor language="js" code={`console.log('hello world');
+
+console.log('goodbye world');`} />
+
+## Test `filename` and `live`, live editing with filename display
+
+<LiveEditor language="js" filename={"test.js"} code={`console.log('hello world');
+
+console.log('goodbye world');`} />
 
 ## Test `showLineNumbers` and word highlighting
 

@@ -3,7 +3,20 @@ import { Anchor } from "@visulima/nextra-theme-docs";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
-import { ChevronDownSquare, Club, Footprints, Frame, Info, LayoutDashboard, ListTree, MessageSquare, MessageSquareDashed, PanelTop, Rows } from "lucide-react";
+import {
+    ChevronDownSquare,
+    Club,
+    Footprints,
+    Frame,
+    Info,
+    LayoutDashboard,
+    ListTree,
+    MessageSquare,
+    MessageSquareDashed,
+    PanelTop,
+    Rows,
+    Edit,
+} from "lucide-react";
 
 // const Logo = ({ height }) => (
 //
@@ -224,6 +237,9 @@ const config: DocumentationThemeConfig = {
                 }
                 case "/docs/nextra-theme-docs/writing-content/components/toast": {
                     return <MessageSquareDashed className={className} />;
+                }
+                case "/docs/nextra-theme-docs/writing-content/components/live-editor": {
+                    return <Edit className={className} />;
                 }
                 default: {
                     return null;
