@@ -42,5 +42,9 @@
     "toast": {
         "title": "Toast",
         "description": "Show a toast message to the user"
+    },
+    "live-editor": {
+        "title": "React Live Editor",
+        "description": "Build interactive documentation using React Live Editor."
     }
 }

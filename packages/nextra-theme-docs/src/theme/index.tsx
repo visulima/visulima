@@ -106,6 +106,7 @@ const Body: FC<{
                 activeType === "doc" && "bg-white dark:bg-darker-800",
                 "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 lg:justify-center pr-[calc(env(safe-area-inset-right)-1.5rem)] overflow-x-hidden",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
+                "pb-6 lg:pb-0",
             )}
         >
             <main className={cn("w-full min-w-0 pt-4 px-2 md:px-6 lg:px-8", activeType === "doc" ? "lg:max-w-4xl" : "")}>

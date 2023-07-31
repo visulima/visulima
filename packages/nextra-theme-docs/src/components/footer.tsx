@@ -26,7 +26,7 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
             <div className={cn("mx-auto flex flex-col lg:max-w-[90rem] lg:flex-row", activeType === "doc" && "bg-white dark:bg-darker-800")}>
                 <div
                     className={cn(
-                        "flex lg:flex-col py-6 lg:pt-12 lg:pb-0 lg:w-64 lg:shrink-0",
+                        "flex lg:flex-col py-6 lg:w-64 lg:shrink-0",
                         ["hidden", "page"].includes(activeType) || isLayoutRaw
                             ? ""
                             : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
