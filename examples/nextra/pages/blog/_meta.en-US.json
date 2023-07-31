@@ -1,8 +1,4 @@
 {
-    "swr-v1": {
-        "title": "Announcing SWR 1.0",
-        "theme": {
-            "breadcrumb": true
-        }
-    }
+    "swr-v2": "Announcing SWR 2.0",
+    "swr-v1": "Announcing SWR 1.0"
 }

@@ -1,46 +1,24 @@
 {
-    "--- hey": {
-        "title": "Getting Started",
-        "type": "separator"
-    },
-    "getting-started": {},
-    "options": {},
-    "global-configuration": {},
-    "data-fetching": {},
-    "error-handling": {
-        "display": "hidden"
-    },
+    "getting-started": "Getting Started",
+    "api": "API",
+    "global-configuration": "Global Configuration",
+    "data-fetching": "Data Fetching",
     "revalidation": "Auto Revalidation",
+    "arguments": "Arguments",
+    "mutation": "Mutation & Revalidation",
+    "error-handling": "Error Handling",
     "conditional-fetching": "Conditional Data Fetching",
-    "arguments": {},
-    "mutation": {},
-    "pagination": {},
-    "--- my_new_separator": {
-        "title": "Advanced",
-        "type": "separator"
-    },
-    "prefetching": {},
+    "pagination": "Pagination",
+    "subscription": "Subscription",
+    "prefetching": "Prefetching",
     "with-nextjs": "Next.js SSG and SSR",
-    "typescript": "TypeScript :)",
-    "suspense": {},
-    "middleware": {},
-    "advanced": {},
+    "typescript": "TypeScript",
+    "suspense": "Suspense",
+    "middleware": "Middleware",
+    "advanced": "Advanced",
     "change-log": {
-        "theme": {
-            "sidebar": false
-        }
-    },
-    "github_link": {
-        "title": "GitHub 🐙 →",
-        "href": "https://github.com/shuding/nextra",
+        "title": "Change Log",
+        "href": "https://github.com/vercel/swr/releases",
         "newWindow": true
-    },
-    "wrap-toc-items": "Wrap Table of Content Items",
-    "custom-header-ids": "Custom Header IDs",
-    "404-500": "404/500 Custom Error Pages",
-    "raw-layout": {
-        "theme": {
-            "layout": "raw"
-        }
     }
 }

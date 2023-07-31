@@ -1,12 +1,14 @@
 {
-    "basic": "Basic Usage",
-    "auth": "Authentication",
-    "infinite-loading": {},
-    "error-handling": {},
-    "ssr": "Next.js SSR",
-    "full": {
+    "basic": {
+        "title": "Basic Usage",
         "theme": {
-            "layout": "raw"
+            "prose": true
         }
-    }
+    },
+    "auth": "Authentication",
+    "optimistic-ui": "Optimistic UI",
+    "infinite-loading": "Infinite Loading",
+    "error-handling": "Error Handling",
+    "ssr": "Next.js SSR",
+    "subscription": "Subscription"
 }
