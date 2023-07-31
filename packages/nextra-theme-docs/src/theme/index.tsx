@@ -32,7 +32,7 @@ import useOnScreen from "../utils/use-on-screen";
 
 const classes = {
     main: "w-full break-words",
-    toc: "nextra-tocSidebar order-last hidden w-64 shrink-0 xl:block",
+    toc: "nextra-tocSidebar order-last w-64 shrink-0 xl:block",
 };
 
 const Body: FC<{
@@ -69,7 +69,7 @@ const Body: FC<{
             {children}
             {activeType === "doc" && <hr className="my-8 lg:hidden" />}
             {activeType === "doc" && (
-                <div className="flex flex-col justify-items-end gap-2 text-right lg:hidden">
+                <div className="flex flex-col justify-items-end gap-2 text-right lg:!hidden">
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
@@ -91,8 +91,7 @@ const Body: FC<{
             <article
                 className={cn(
                     classes.main,
-
-                    "nextra-content min-h-[calc(100vh-var(--nextra-navbar-height))] pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] bg-white dark:bg-darker-800",
+                    "nextra-content min-h-[calc(100vh-var(--nextra-navbar-height))] pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] dark:bg-darker-800",
                 )}
             >
                 {body}
@@ -104,12 +103,12 @@ const Body: FC<{
         <article
             className={cn(
                 classes.main,
-
-                "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)] bg-white dark:bg-darker-800 overflow-x-hidden",
+                activeType === "doc" && "bg-white dark:bg-darker-800",
+                "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 lg:justify-center pr-[calc(env(safe-area-inset-right)-1.5rem)] overflow-x-hidden",
                 themeContext.typesetting === "article" && "nextra-body-typesetting-article",
             )}
         >
-            <main className={cn("w-full min-w-0 pt-4 px-2 md:px-6 lg:px-8", activeType === "doc" ? "max-w-4xl" : "")}>
+            <main className={cn("w-full min-w-0 pt-4 px-2 md:px-6 lg:px-8", activeType === "doc" ? "lg:max-w-4xl" : "")}>
                 {breadcrumb}
                 {body}
             </main>
@@ -158,10 +157,10 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
         return { prose: true, ...activeThemeContext, ...frontMatter };
     }, [activeThemeContext, frontMatter]);
     const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["hidden", "page"].includes(activeType);
-    const isDocumentPage = (activeType === "doc" || themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
+    const isDocumentPage = (activeType === "doc" || !themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
 
     const tocSidebarElement = isDocumentPage && (
-        <nav aria-label="table of contents" className={cn(classes.toc, "px-4")}>
+        <nav aria-label="table of contents" className={cn("nextra-tocSidebar order-last w-64 shrink-0 xl:block px-4 hidden lg:!block")}>
             {renderComponent(config.tocSidebar.component, {
                 filePath,
                 headings: config.tocSidebar.float ? headings : [],
@@ -284,7 +283,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                             <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
                                                 {activePath[Object.keys(activePath).length - 1]?.title}
                                             </h1>
-                                            <p className="mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
+                                            {activePath[Object.keys(activePath).length - 1]?.description && (
+                                                <p className="mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
+                                            )}
                                         </>
                                     )}
                                     {tocPageContentElement}

@@ -62,6 +62,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
                         hasHeadings && "mt-8 border-t pt-8",
                         "sticky bottom-0 flex flex-col items-start gap-2 pb-8 dark:border-neutral-800",
                         "contrast-more:border-t contrast-more:border-neutral-400 contrast-more:shadow-none contrast-more:dark:border-neutral-400",
+                        "bg-white dark:bg-darker-800",
                     )}
                 >
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />

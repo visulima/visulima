@@ -102,7 +102,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                     })}
                 </div>
             )}
-            <div className="nextra-nav-container header-border dark:header-border sticky top-0 z-20 w-full bg-white dark:bg-dark/50">
+            <div className="nextra-nav-container header-border dark:header-border sticky top-0 z-20 w-full bg-white dark:bg-darker-800">
                 <div
                     className={cn(
                         "pointer-events-none absolute z-[-1] h-full w-full",
@@ -121,10 +121,9 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                     <div
                         className={cn(
                             "grow lg:grow-0 w-2/4 lg:w-64 h-[var(--nextra-navbar-height)] flex items-center",
-
                             ["hidden", "page"].includes(activeType) || isLayoutRaw
                                 ? ""
-                                : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-6 xl:pl-8",
+                                : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-4",
                         )}
                     >
                         {config.logoLink ? (
@@ -138,7 +137,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] lg:flex">
+                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] lg:!flex">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;
@@ -182,7 +181,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                                 <Anchor
                                     className={cn(
                                         classes.link,
-                                        "relative -ml-2 hidden whitespace-nowrap p-2 lg:inline-block",
+                                        "relative -ml-2 hidden whitespace-nowrap p-2 lg:!inline-block",
                                         isInactive ? classes.inactive : classes.active,
                                     )}
                                     aria-current={!page.newWindow && isActive}
@@ -199,7 +198,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                     {config.search.position === "navbar" && (
                         <div className="mr-2 flex h-[var(--nextra-navbar-height)] items-center">
                             {renderComponent(config.search.component, {
-                                className: "hidden lg:inline-block mx-min-w-[200px]",
+                                className: "hidden lg:!inline-block mx-min-w-[200px]",
                                 directories: flatDirectories,
                             })}
                         </div>

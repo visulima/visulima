@@ -134,7 +134,6 @@ const config: DocumentationThemeConfig = {
             </span>
         ),
     },
-    // },
     i18n: [{ locale: "en-US", name: "English" }],
     logo: () => {
         // eslint-disable-next-line react-hooks/rules-of-hooks

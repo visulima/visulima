@@ -15,3 +15,6 @@ __test__/__fixture__
 __test__/__snapshots__
 
 _meta.*.json
+
+# Add all package docs to the .gitignore
+pages/docs/nextra-theme-docs

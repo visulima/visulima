@@ -113,6 +113,7 @@ export const themeSchema = z
             .strict(),
         footer: z
             .object({
+                className: z.string().optional(),
                 component: z.custom<FC<{ menu: boolean }> | ReactNode>(...reactNode),
                 copyright: z.custom<FC<{ activeType: ActiveType }> | ReactNode>(...reactNode).optional(),
             })
