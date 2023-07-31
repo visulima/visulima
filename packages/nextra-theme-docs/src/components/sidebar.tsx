@@ -1,4 +1,3 @@
-import cn from "clsx";
 import { useRouter } from "next/router";
 import type { Heading } from "nextra";
 import { useFSRoute } from "nextra/hooks";
@@ -16,6 +15,7 @@ import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
+import cn from "../utils/cn";
 
 const TreeState: Record<string, boolean> = Object.create(null) as Record<string, boolean>;
 
@@ -395,7 +395,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                     "lg:top-16 lg:shrink-0 motion-reduce:transform-none",
                     "transform-gpu transition-all ease-in-out",
                     "lg:w-64",
-                    asPopover ? "lg:hidden" : "lg:sticky lg:self-start",
+                    asPopover ? "lg:!hidden" : "lg:sticky lg:self-start lg:w-64",
                     hasMenu && "with-menu",
                     menu ? "max-lg:[transform:translate3d(0,0,0)]" : "max-lg:[transform:translate3d(0,-100%,0)]",
                 )}

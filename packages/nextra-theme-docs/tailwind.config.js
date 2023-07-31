@@ -12,7 +12,7 @@ const makePrimaryColor =
 module.exports = {
     content: ["./src/**/*.tsx", "./components/**/*.js", "./pages/**/*.{md,mdx}", "./theme.config.tsx"],
     corePlugins: {
-        preflight: process.env.PREFLIGHT === "yes",
+        preflight: process.env.PREFLIGHT === "true",
     },
     darkMode: ["class", 'html[class~="dark"]'],
     plugins: [require("@tailwindcss/typography"), require("tailwindcss-hyphens")],

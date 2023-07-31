@@ -34,7 +34,7 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
     return (
         <div
             className={cn(
-                "flex items-center items-stretch border-t pt-8 dark:border-neutral-800",
+                "flex items-stretch border-t py-8 dark:border-neutral-800",
                 "contrast-more:border-neutral-400 dark:contrast-more:border-neutral-400",
                 layout === "full" && "mb-8",
             )}
