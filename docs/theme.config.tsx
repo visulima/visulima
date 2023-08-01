@@ -6,6 +6,7 @@ import { DiscordIcon } from "nextra/icons";
 import {
     ChevronDownSquare,
     Club,
+    Edit,
     Footprints,
     Frame,
     Info,
@@ -15,7 +16,6 @@ import {
     MessageSquareDashed,
     PanelTop,
     Rows,
-    Edit,
 } from "lucide-react";
 
 // const Logo = ({ height }) => (
