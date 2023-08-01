@@ -1,3 +1,15 @@
+## @visulima/nextra-theme-docs [2.1.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.0.0...@visulima/nextra-theme-docs@2.1.0) (2023-08-01)
+
+
+### Features
+
+* Add 'React Live Editor' component to documentation ([85d263c](https://github.com/visulima/visulima/commit/85d263c3824dd7669e286502cbcf7bd7e2a1e6ef))
+
+
+### Styles
+
+* Add eslint-disable comment in LiveEditor component ([a3b9bcd](https://github.com/visulima/visulima/commit/a3b9bcde3e36b2876cfe63f51103c6207d1134f3))
+
 ## @visulima/nextra-theme-docs [2.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@1.1.7...@visulima/nextra-theme-docs@2.0.0) (2023-07-31)
 
 
