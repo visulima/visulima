@@ -107,6 +107,7 @@ const LiveEditor = ({
                         {hasCopyCode && <CopyToClipboard getValue={() => copyCode} tabIndex={-1} />}
                     </div>
                 )}
+                {/* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */}
                 <ReactLiveEditor className="p-0" code={compiledCode} language={language} onChange={(newCode) => setCopyCode(newCode)} />
             </div>
         </LiveProvider>
