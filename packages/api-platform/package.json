@@ -236,8 +236,8 @@
         "semantic-release": "^22.0.5",
         "sort-package-json": "^2.6.0",
         "styled-components": "^6.0.8",
-        "swagger-ui-dist": "^4.19.1",
-        "swagger-ui-react": "^4.19.1",
+        "swagger-ui-dist": "^5.2.0",
+        "swagger-ui-react": "^5.2.0",
         "tsup": "^7.2.0",
         "type-fest": "^4.4.0",
         "typescript": "^5.2.2",
@@ -264,8 +264,8 @@
         "next": "^13.4.19",
         "rate-limiter-flexible": "^3.0.0",
         "redoc": "^2.1.2",
-        "swagger-ui-dist": "^4.19.1",
-        "swagger-ui-react": "^4.19.1",
+        "swagger-ui-dist": "^5.2.0",
+        "swagger-ui-react": "^5.2.0",
         "webpack": "^5.88.2"
     },
     "engines": {
