@@ -1,3 +1,20 @@
+## @visulima/nextra-theme-docs [2.2.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.1.0...@visulima/nextra-theme-docs@2.2.0) (2023-08-02)
+
+
+### Features
+
+* Add sandbox component and improve tabs component ([aeb6378](https://github.com/visulima/visulima/commit/aeb63781550b789105f2caabfb10a977e0981de0))
+
+
+### Styles
+
+* refine type checking and adjust eslint rules ([8202d40](https://github.com/visulima/visulima/commit/8202d40127ea19e59c067673f6362417be9f0190))
+
+
+### Miscellaneous Chores
+
+* **deps:** update devdependencies ([#187](https://github.com/visulima/visulima/issues/187)) ([6c5d803](https://github.com/visulima/visulima/commit/6c5d8032a78bdb4c511da94049931967728d8822))
+
 ## @visulima/nextra-theme-docs [2.1.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.0.0...@visulima/nextra-theme-docs@2.1.0) (2023-08-01)
 
 
