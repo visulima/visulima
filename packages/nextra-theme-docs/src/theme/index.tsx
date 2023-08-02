@@ -281,10 +281,12 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 >
                                     {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
                                         <>
-                                            <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
-                                                {activePath[Object.keys(activePath).length - 1]?.title}
-                                            </h1>
-                                            {activePath[Object.keys(activePath).length - 1]?.description && (
+                                            {config.content?.showTitle !== false && (
+                                                <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
+                                                    {activePath[Object.keys(activePath).length - 1]?.title}
+                                                </h1>
+                                            )}
+                                            {config.content?.showDescription !== false && activePath[Object.keys(activePath).length - 1]?.description && (
                                                 <p className="mt-2 text-lg">{activePath[Object.keys(activePath).length - 1]?.description}</p>
                                             )}
                                         </>

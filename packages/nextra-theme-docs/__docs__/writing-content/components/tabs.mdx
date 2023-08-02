@@ -48,8 +48,15 @@ The `Tabs` component takes the following props:
 
 The index of the tab that should be selected by default.
 
--   Type: `string | number`
+-   Type: `number`
 -   Default: `0`
+
+### `selectedIndex`
+
+The index of the tab that should be selected.
+
+-   Type: `number`
+-   Default: `undefined`
 
 ### `children`
 
@@ -94,3 +101,26 @@ Whether the tab is disabled.
 
 -   Type: `boolean`
 -   Default: `false`
+
+### `storageKey`
+
+The key used to store the tab state in local storage.
+
+-   Type: `string`
+-   Default: `undefined`
+
+### `disableScrollBar`
+
+Whether the tab should disable the scroll bar.
+
+-   Type: `boolean`
+-   Default: `false`
+
+### `classes`
+
+The classes used to style the tab and tabs (root).
+
+-   Type: `object`
+    -   tab: `string`
+    -   tabs: `string`
+-   Default: `undefined`

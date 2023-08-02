@@ -32,6 +32,10 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         dismissible: true,
         key: "nextra-banner",
     },
+    content: {
+        showDescription: true,
+        showTitle: true,
+    },
     darkMode: true,
     direction: "ltr",
     docsRepositoryBase: "https://github.com/shuding/nextra",
