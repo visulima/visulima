@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { useTheme } from "next-themes";
+import { useMounted } from "nextra/hooks";
 import { useConfig } from "../contexts";
 import { Tab, Tabs } from "./tabs";
 
@@ -7,6 +8,7 @@ const defaultProviders: Record<string, string> = {
     CodeSandbox: `https://codesandbox.io/embed/github/{repo}/tree/{branch}/{dir}?hidenavigation=1&theme={colorMode}`,
     StackBlitz: `https://stackblitz.com/github/{repo}/tree/{branch}/{dir}?embed=1&file={file}&theme={colorMode}`,
 };
+
 const Sandbox: FC<{
     branch?: string;
     dir?: string;
@@ -18,6 +20,7 @@ const Sandbox: FC<{
 }> = ({ branch = "main", dir = "", file, minHeight = "700px", repo: repository = "", src: source = undefined }) => {
     const { sandbox } = useConfig();
     const { resolvedTheme } = useTheme();
+    const mounted = useMounted();
 
     const providers: Record<string, string> = { ...defaultProviders, ...sandbox?.providers };
 
@@ -42,6 +45,7 @@ const Sandbox: FC<{
             classes={{
                 tabs: "relative text-white bg-gray-200 rounded-t-lg dark:bg-gray-700",
             }}
+            defaultIndex={mounted && navigator.userAgent.includes("Safari") ? Object.keys(providers).indexOf("CodeSandbox") : 1}
             disableScrollBar
             prefix="sandbox"
             storageKey="sandbox"
