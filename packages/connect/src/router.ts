@@ -22,7 +22,7 @@ export type Route<H> = {
 
 export class Router<H extends FunctionLike> {
     public constructor(
-        public base: string = "/",
+        public base = "/",
         public routes: Route<Nextable<H>>[] = [],
     ) {}
 
