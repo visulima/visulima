@@ -207,9 +207,10 @@ export const themeSchema = z
                 link: z.string().startsWith("https://").optional(),
             })
             .strict(),
+        // eslint-disable-next-line zod/require-strict
         sandbox: z
             .object({
-                providers: z.object({}).catchall(z.string()),
+                providers: z.object({}).catchall(z.string()).strict(),
             })
             .optional(),
         search: z

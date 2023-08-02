@@ -47,12 +47,13 @@ const Sandbox: FC<{
             storageKey="sandbox"
         >
             {Object.keys(providers).map((key: string) => (
+                // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
                 <Tab className="not-prose relative" key={key} style={{ minHeight }} title={key}>
                     <span className="absolute inset-x-0 top-20 m-auto block w-40 text-center">Loading Sandbox...</span>
                     <iframe
                         className="not-prose absolute left-0 top-0 z-10 h-full w-full overflow-hidden"
                         sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
-                        /* eslint-disable-next-line security/detect-object-injection */
+                        // eslint-disable-next-line security/detect-object-injection
                         src={providers[key]}
                         style={{ minHeight, width: "100%" }}
                         title="Sandbox editor"
