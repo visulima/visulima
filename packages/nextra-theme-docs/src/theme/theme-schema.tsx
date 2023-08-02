@@ -67,6 +67,13 @@ export const themeSchema = z
             })
             .optional(),
         components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
+        // eslint-disable-next-line zod/require-strict
+        content: z
+            .object({
+                showDescription: z.boolean().optional(),
+                showTitle: z.boolean().optional(),
+            })
+            .optional(),
         darkMode: z.boolean(),
         direction: z.enum(["ltr", "rtl"]),
         docsRepositoryBase: z.string().startsWith("https://"),
@@ -200,6 +207,11 @@ export const themeSchema = z
                 link: z.string().startsWith("https://").optional(),
             })
             .strict(),
+        sandbox: z
+            .object({
+                providers: z.object({}).catchall(z.string()),
+            })
+            .optional(),
         search: z
             .object({
                 codeblocks: z.boolean(),

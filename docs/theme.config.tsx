@@ -4,6 +4,7 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";
 import {
+    Box,
     ChevronDownSquare,
     Club,
     Edit,
@@ -240,6 +241,9 @@ const config: DocumentationThemeConfig = {
                 }
                 case "/docs/nextra-theme-docs/writing-content/components/live-editor": {
                     return <Edit className={className} />;
+                }
+                case "/docs/nextra-theme-docs/writing-content/components/sandbox": {
+                    return <Box className={className} />;
                 }
                 default: {
                     return null;
