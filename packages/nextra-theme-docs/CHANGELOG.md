@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [2.2.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.2.0...@visulima/nextra-theme-docs@2.2.1) (2023-08-02)
+
+
+### Bug Fixes
+
+* update sandbox component for Safari compatibility ([4ad6df8](https://github.com/visulima/visulima/commit/4ad6df8d9cb101c3e9e4fa77f5994d97b4d5a44e))
+
 ## @visulima/nextra-theme-docs [2.2.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.1.0...@visulima/nextra-theme-docs@2.2.0) (2023-08-02)
 
 
