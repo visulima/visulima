@@ -102,7 +102,7 @@
         "tailwind-merge": "^1.14.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^11.3.0",
+        "@anolilab/eslint-config": "^11.3.2",
         "@anolilab/prettier-config": "^5.0.3",
         "@anolilab/semantic-release-preset": "^6.0.4",
         "@arthurgeron/eslint-plugin-react-usememo": "^1.1.4",

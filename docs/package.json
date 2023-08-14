@@ -30,7 +30,7 @@
         "@visulima/readdir": "workspace:*",
         "clsx": "^2.0.0",
         "fathom-client": "^3.5.0",
-        "framer-motion": "^10.15.1",
+        "framer-motion": "^10.15.2",
         "fs-extra": "^11.1.1",
         "lucide-react": "^0.268.0",
         "next": "13.4.12",
@@ -42,7 +42,7 @@
         "zod": "^3.21.4"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^11.3.0",
+        "@anolilab/eslint-config": "^11.3.2",
         "@anolilab/prettier-config": "^5.0.3",
         "@arthurgeron/eslint-plugin-react-usememo": "^1.1.4",
         "@axe-core/react": "^4.7.3",
