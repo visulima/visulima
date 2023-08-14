@@ -18,13 +18,20 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
 
     if (hasHeadings) {
         return (
-            <div ref={tocReference}>
+            <div className={isPage ? "" : "inline-block"} ref={tocReference}>
                 <p className="mb-2 font-semibold uppercase tracking-wide text-gray-500 contrast-more:text-gray-800 dark:text-gray-400 contrast-more:dark:text-gray-50">
                     {renderComponent(config.tocSidebar.title)}
                 </p>
                 <ul className="leading-normal" key={prefix}>
                     {items.map(({ depth, id, value }) => (
-                        <li className={isPage ? "" : "scroll-my-6 scroll-py-6"} key={`${prefix}${id}`}>
+                        <li
+                            className={
+                                isPage
+                                    ? ""
+                                    : "group flex items-start whitespace-pre-wrap text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                            }
+                            key={`${prefix}${id}`}
+                        >
                             <a
                                 className={cn(
                                     isPage

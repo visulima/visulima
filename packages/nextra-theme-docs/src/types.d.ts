@@ -2,7 +2,7 @@ import type { PageOpts as BasePageOptions, Folder, MdxFile } from "nextra";
 import type { PageTheme } from "nextra/normalize-pages";
 import type { ReactNode } from "react";
 
-import type { DocumentationThemeConfig } from ".";
+import type { DocumentationThemeConfig } from "./theme/theme-schema";
 
 declare module "nextra/normalize-pages" {
     export interface Item extends MdxFile {

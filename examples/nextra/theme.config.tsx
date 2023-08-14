@@ -1,8 +1,8 @@
 /* eslint sort-keys: error */
 import { useRouter } from "next/router";
 import type { ComponentProps, ReactElement } from "react";
-import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
-import { useConfig } from "@visulima/nextra-theme-docs";
+import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs/config";
+import { useConfig } from "@visulima/nextra-theme-docs/config";
 
 const SWRLogo = (props: ComponentProps<"svg">): ReactElement => (
     <svg viewBox="0 0 291 69" fill="none" {...props}>

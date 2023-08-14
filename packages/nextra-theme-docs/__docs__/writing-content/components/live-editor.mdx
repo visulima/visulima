@@ -1,4 +1,4 @@
-import { LiveEditor } from "@visulima/nextra-theme-docs";
+import { LiveEditor } from "@visulima/nextra-theme-docs/components";
 
 ## Write live code
 
@@ -50,7 +50,7 @@ title: Doc Page
 ---
 
 import { x } from '@test/example'
-import { LiveEditor } from "@visulima/nextra-theme-docs";
+import { LiveEditor } from "@visulima/nextra-theme-docs/components";
 
 <!-- Define `@test/example` module as `{ x }` -->
 <LiveEditor language="jsx" noInline modules={{ '@test/example': { x } }} code={`import { x } from '@test/example'

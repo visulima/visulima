@@ -1,4 +1,4 @@
-import { ImageFrame } from "@visulima/nextra-theme-docs";
+import { ImageFrame } from "@visulima/nextra-theme-docs/components";
 import OptionTable from "@components/table";
 
 The theme is configured with the
@@ -125,7 +125,7 @@ head tags based on the current page’s front matter. For example:
 
 ```jsx
 import { useRouter } from "next/router";
-import { useConfig } from "@visulima/nextra-theme-docs";
+import { useConfig } from "@visulima/nextra-theme-docs/config";
 
 export default {
     head: () => {
@@ -408,7 +408,7 @@ Together with the [Separators](/docs/docs-theme/page-configuration#separators)
 item, you can customize how the sidebar content is rendered by using the
 `sidebar.titleComponent` option:
 
-import { Tab, Tabs } from "@visulima/nextra-theme-docs";
+import { Tab, Tabs } from "@visulima/nextra-theme-docs/components";
 import sidebarTitleComponentImage from "@public/assets/nextra-theme-docs/sidebar-customized.png";
 
 <ImageFrame src={sidebarTitleComponentImage} alt="Customized Sidebar" />

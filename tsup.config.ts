@@ -66,6 +66,7 @@ export const createConfig = (config?: Options & Object) =>
             sourcemap: true,
             clean: true,
             splitting: true,
+            shims: true,
             target: tsconfig.compilerOptions.target as "es2021",
             env: {
                 NODE_ENV: process.env["NODE_ENV"],
@@ -81,6 +82,14 @@ export const createConfig = (config?: Options & Object) =>
                 options.logOverride = {
                     "tsconfig.json": "silent",
                     "this-is-undefined-in-esm": "silent",
+                };
+
+                options.footer = {
+                    // This will ensure we can continue writing this plugin
+                    // as a modern ECMA module, while still publishing this as a CommonJS
+                    // library with a default export, as that's how ESLint expects plugins to look.
+                    // @see https://github.com/evanw/esbuild/issues/1182#issuecomment-1011414271
+                    js: "module.exports = module.exports.default;",
                 };
             },
             ...config,

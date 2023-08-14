@@ -1,0 +1,17 @@
+{
+    "name": "@visulima/nextra-theme-docs-config",
+    "version": "0.0.0",
+    "description": "A Visulima Nextra theme for documentation sites.",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../dist/config.d.ts",
+            "require": "./../dist/config.js",
+            "import": "./../dist/config.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../dist/config.js",
+    "module": "../dist/config.mjs",
+    "types": "../dist/config.d.ts"
+}

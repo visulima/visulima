@@ -40,6 +40,16 @@
             "import": "./dist/index.mjs",
             "style": "./style.css"
         },
+        "./components": {
+            "types": "./dist/components.d.mts",
+            "require": "./dist/components.js",
+            "import": "./dist/components.mjs"
+        },
+        "./config": {
+            "types": "./dist/config.d.mts",
+            "require": "./dist/config.js",
+            "import": "./dist/config.mjs"
+        },
         "./component-style": "./component-style.css",
         "./style": "./style.css",
         "./component-style.css": "./component-style.css",
@@ -48,7 +58,11 @@
     },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
-    "source": "src/index.tsx",
+    "sources": [
+        "src/index.tsx",
+        "src/components.tsx",
+        "src/config.tsx"
+    ],
     "types": "dist/index.d.mts",
     "files": [
         "dist",
@@ -89,6 +103,7 @@
         "focus-visible": "^5.2.0",
         "git-url-parse": "^13.1.0",
         "he": "^1.2.0",
+        "lodash.set": "^4.3.2",
         "intersection-observer": "^0.12.2",
         "match-sorter": "^6.3.1",
         "next-seo": "^6.1.0",
@@ -102,6 +117,7 @@
         "tailwind-merge": "^1.14.0"
     },
     "devDependencies": {
+        "@types/lodash.set": "^4.3.7",
         "@anolilab/eslint-config": "^11.3.3",
         "@anolilab/prettier-config": "^5.0.3",
         "@anolilab/semantic-release-preset": "^6.0.4",
