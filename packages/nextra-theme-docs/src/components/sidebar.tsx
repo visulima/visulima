@@ -455,7 +455,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         )}
                         data-toggle-animation="off"
                     >
-                        {hasI18n && <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" options={config.i18n} />}
+                        {hasI18n && <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" />}
                         {hasI18n && config.darkMode && <div className="grow" />}
                         {config.darkMode && <ThemeSwitch locale={router.locale ?? DEFAULT_LOCALE} />}
                     </div>

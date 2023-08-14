@@ -5,7 +5,6 @@ import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig } from "../contexts";
-import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import { renderString } from "../utils/render";
 import type { MenuOption } from "./select";
 import Select from "./select";
@@ -13,13 +12,13 @@ import Select from "./select";
 interface LocaleSwitchProperties {
     className?: string;
     lite?: boolean;
-    options: NonNullable<DocumentationThemeConfig["i18n"]>;
 }
 
-const LocaleSwitch: FC<LocaleSwitchProperties> = ({ className = undefined, lite = false, options }) => {
+const LocaleSwitch: FC<LocaleSwitchProperties> = ({ className = undefined, lite = false }) => {
     const config = useConfig();
     const { asPath, locale } = useRouter();
-    const selected = options.find((l) => locale === l.locale);
+
+    const selected = config.i18n.find((l) => locale === l.locale);
 
     const onChange = useCallback(
         (option: MenuOption) => {
@@ -45,9 +44,13 @@ const LocaleSwitch: FC<LocaleSwitchProperties> = ({ className = undefined, lite 
         };
     }, [selected, lite]);
 
+    if (config.i18n.length <= 1) {
+        return null;
+    }
+
     return (
         <Select
-            options={options.map((l) => {
+            options={config.i18n.map((l) => {
                 return {
                     key: l.locale,
                     name: l.name,
