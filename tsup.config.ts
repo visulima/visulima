@@ -71,6 +71,7 @@ export const createConfig = (config?: Options & Object) =>
                 NODE_ENV: process.env["NODE_ENV"],
                 ...config?.env,
             },
+            cjsInterop: true,
             declaration: true,
             esbuildOptions(options) {
                 if (process.env["NODE_ENV"] !== "production" && peerDependenciesKeys.includes("react")) {
