@@ -9,6 +9,7 @@
 name: "Dependency Review"
 
 on: # yamllint disable-line rule:truthy
+    # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
 
 permissions:

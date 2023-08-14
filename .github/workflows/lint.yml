@@ -6,6 +6,7 @@ on: # yamllint disable-line rule:truthy
     push:
         branches:
             - "main"
+    # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -75,7 +76,7 @@ jobs:
               run: "pnpm install --frozen-lockfile"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "npm audit signatures"
+              run: "pnpm audit signatures"
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -147,7 +148,7 @@ jobs:
                   SKIP_CHECK: "true"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "npm audit signatures"
+              run: "pnpm audit signatures"
 
             - name: "lint"
               run: "pnpm run lint:text"

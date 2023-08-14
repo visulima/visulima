@@ -1,4 +1,6 @@
-import { Fragment, memo } from "react";
+import escapeStringRegexp from "escape-string-regexp";
+import type { ReactElement, ReactNode } from "react";
+import { memo } from "react";
 
 interface MatchArguments {
     match: string;
@@ -6,36 +8,38 @@ interface MatchArguments {
     value?: string;
 }
 
-const HighlightMatches = memo<MatchArguments>(({ match, value }: MatchArguments) => {
-    const splitText = value ? [...value] : [];
-    const escapedSearch = match.trim().replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
+const HighlightMatches = memo<MatchArguments>(({ match, value }: MatchArguments): ReactElement | null => {
+    if (!value) {
+        return null;
+    }
+    const splitText = [...value];
+    const escapedSearch: string = escapeStringRegexp(match.trim()) as string;
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-    const regexp = new RegExp(`(${escapedSearch.replaceAll(" ", "|")})`, "gi");
-
-    let regexpResult;
-    let id = 0;
+    const regexp = new RegExp(escapedSearch.replaceAll(" ", "|"), "gi");
+    let result;
     let index = 0;
+    const content: (ReactNode | string)[] = [];
 
-    const result = [];
-
-    if (typeof value === "string") {
-        while ((regexpResult = regexp.exec(value)) !== null) {
-            id += 1;
-
-            result.push(
-                <Fragment key={id}>
-                    {splitText.splice(0, regexpResult.index - index).join("")}
-                    <span className="text-primary-600">{splitText.splice(0, regexp.lastIndex - regexpResult.index).join("")}</span>
-                </Fragment>,
-            );
-
-            index = regexp.lastIndex;
-        }
+    while (
+        (result = regexp.exec(value)) &&
+        // case `>  ` replaced previously to `>||` + some character provoke memory leak because
+        // `RegExp#exec` will always return a match
+        regexp.lastIndex !== 0
+    ) {
+        const before = splitText.splice(0, result.index - index).join("");
+        const after = splitText.splice(0, regexp.lastIndex - result.index).join("");
+        content.push(
+            before,
+            <span className="text-primary-600" key={result.index}>
+                {after}
+            </span>,
+        );
+        index = regexp.lastIndex;
     }
 
     return (
         <>
-            {result}
+            {content}
             {splitText.join("")}
         </>
     );

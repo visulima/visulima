@@ -3,7 +3,11 @@
     "display": "React + Node 16",
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "baseUrl": "."
+        "baseUrl": ".",
+        "paths": {
+            // fixes incorrect types for flexsearch https://github.com/nextapps-de/flexsearch/issues/392#issuecomment-1552286514
+            "flexsearch": ["./node_modules/@types/flexsearch"]
+        }
     },
     "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts"]
 }

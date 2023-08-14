@@ -6,5 +6,9 @@
     "theme": {
         "title": "Theme Configuration",
         "description": "Learn how to configure the Visulima Nextra Doc Theme."
+    },
+    "tailwind-css": {
+        "title": "Tailwind CSS Configuration",
+        "description": "Learn how to configure the Tailwind CSS."
     }
 }

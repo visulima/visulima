@@ -7,6 +7,7 @@ name: "Scorecard supply-chain security"
 on: # yamllint disable-line rule:truthy
     # For Branch-Protection check. Only the default branch is supported. See
     # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
+    # eslint-disable-next-line yml/no-empty-mapping-value
     branch_protection_rule: # yamllint disable-line rule:empty-values
     # To guarantee Maintained check is occasionally updated. See
     # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained

@@ -3,7 +3,7 @@ import cn from "clsx";
 import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { InformationCircleIcon, SpinnerIcon } from "nextra/icons";
-import type { FC, KeyboardEvent } from "react";
+import type { CompositionEvent, FC, KeyboardEvent } from "react";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 import { DEFAULT_LOCALE } from "../constants/base";
@@ -46,6 +46,8 @@ const Search: FC<SearchProperties> = ({
     const input = useRef<HTMLInputElement>(null);
     const ulReference = useRef<HTMLUListElement>(null);
     const [focused, setFocused] = useState(false);
+    //  Trigger the search after the Input is complete for languages like Chinese
+    const [composition, setComposition] = useState(true);
 
     useEffect(() => {
         setActive(0);
@@ -125,7 +127,7 @@ const Search: FC<SearchProperties> = ({
                     // eslint-disable-next-line security/detect-object-injection
                     const result = results[active];
 
-                    if (result) {
+                    if (result && composition) {
                         await router.push(result.route);
 
                         await finishSearch();
@@ -143,7 +145,7 @@ const Search: FC<SearchProperties> = ({
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [active, results, router, handleActive],
+        [active, results, router, handleActive, composition],
     );
 
     const mounted = useMounted();
@@ -191,6 +193,9 @@ const Search: FC<SearchProperties> = ({
     );
 
     const locale = router.locale ?? DEFAULT_LOCALE;
+    const handleComposition = useCallback((event: CompositionEvent<HTMLInputElement>) => {
+        setComposition(event.type === "compositionend");
+    }, []);
 
     return (
         <div className={cn("nextra-search relative lg:w-64", className)}>
@@ -214,6 +219,8 @@ const Search: FC<SearchProperties> = ({
                     await onActive?.(true);
                     setFocused(true);
                 }}
+                onCompositionEnd={handleComposition}
+                onCompositionStart={handleComposition}
                 onKeyDown={handleKeyDown}
                 placeholder={renderString(config.search.placeholder, { locale })}
                 ref={input}

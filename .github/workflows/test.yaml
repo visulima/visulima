@@ -83,7 +83,7 @@ jobs:
                   SKIP_CHECK: "true"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "npm audit signatures"
+              run: "pnpm audit signatures"
 
             - name: "Build"
               run: "pnpm run build:packages"
