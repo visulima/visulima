@@ -89,7 +89,7 @@
         "eslint-plugin-vitest": "^0.2.8",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "next": "^13.4.12",
-        "node-mocks-http": "^1.12.2",
+        "node-mocks-http": "^1.13.0",
         "prettier": "^3.0.1",
         "rimraf": "^5.0.1",
         "semantic-release": "^21.0.7",

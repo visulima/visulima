@@ -15,7 +15,7 @@
         "@visulima/nextra-theme-docs": "workspace:*",
         "clsx": "^2.0.0",
         "eslint": "8.47.0",
-        "eslint-config-next": "13.4.13",
+        "eslint-config-next": "13.4.15",
         "focus-visible": "^5.2.0",
         "framer-motion": "^10.15.2",
         "intersection-observer": "^0.12.2",
