@@ -1,6 +1,7 @@
 export { default as Accordion } from "./components/accordion";
 export { default as AccordionGroup } from "./components/accordion-group";
 export { default as Anchor } from "./components/anchor";
+export { ApiPlayground, RequestMethodBubble, RequestPathHeader } from "./components/api";
 export { default as Bleed } from "./components/bleed";
 export { default as Callout } from "./components/callout";
 export { default as Card } from "./components/card";
