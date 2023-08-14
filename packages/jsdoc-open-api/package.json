@@ -98,7 +98,6 @@
         "@anolilab/prettier-config": "^5.0.3",
         "@anolilab/semantic-release-preset": "^6.0.4",
         "@rushstack/eslint-plugin-security": "^0.6.0",
-        "@stoplight/types": "^13.18.0",
         "@types/cli-progress": "^3.11.0",
         "@types/http-errors": "^2.0.1",
         "@types/lodash.mergewith": "^4.6.7",

@@ -101,7 +101,7 @@
         "tsup": "^7.2.0",
         "typescript": "^5.1.6",
         "vitest": "^0.34.1",
-        "zod": "^3.21.4"
+        "zod": "^3.22.0"
     },
     "peerDependencies": {
         "zod": "^3.19.1"

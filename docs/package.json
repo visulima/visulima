@@ -23,7 +23,7 @@
     ],
     "dependencies": {
         "@code-hike/mdx": "^0.9.0",
-        "@next/env": "^13.4.13",
+        "@next/env": "^13.4.15",
         "@t3-oss/env-nextjs": "^0.6.0",
         "@vercel/og": "^0.5.11",
         "@visulima/nextra-theme-docs": "workspace:*",
@@ -39,7 +39,7 @@
         "react-dom": "^18.2.0",
         "shiki": "^0.14.3",
         "yargs": "^17.7.2",
-        "zod": "^3.21.4"
+        "zod": "^3.22.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^11.3.2",
@@ -48,7 +48,7 @@
         "@axe-core/react": "^4.7.3",
         "@babel/eslint-parser": "^7.22.10",
         "@babel/plugin-syntax-import-assertions": "^7.22.5",
-        "@next/eslint-plugin-next": "^13.4.13",
+        "@next/eslint-plugin-next": "^13.4.15",
         "@svgr/webpack": "^8.0.1",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.9",
