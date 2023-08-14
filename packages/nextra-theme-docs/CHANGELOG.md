@@ -1,3 +1,26 @@
+## @visulima/nextra-theme-docs [2.3.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.2.1...@visulima/nextra-theme-docs@2.3.0) (2023-08-14)
+
+
+### Features
+
+* update locale switcher code and component exports ([ba80080](https://github.com/visulima/visulima/commit/ba80080b172ad1fcbcacfd5c48b3fbdd7bb0df6b))
+
+
+### Bug Fixes
+
+* updated documentation for better clarity and fixed broken links ([d8ac8d1](https://github.com/visulima/visulima/commit/d8ac8d1b59031e7f61bda5e8392865b3c9557318))
+
+
+### Documentation
+
+* update broken link ([d977f83](https://github.com/visulima/visulima/commit/d977f8343d06c1e22ebc23f5b8a75feac53e8023))
+* update broken link ([1ed23ab](https://github.com/visulima/visulima/commit/1ed23ab8c5260f68b826177575aafc713af4dfb3))
+
+
+### Miscellaneous Chores
+
+* update dependencies to latest versions ([cd7a3c1](https://github.com/visulima/visulima/commit/cd7a3c11eb4274bd2928aaa2f30cb986f7f50f50))
+
 ## @visulima/nextra-theme-docs [2.2.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.2.0...@visulima/nextra-theme-docs@2.2.1) (2023-08-02)
 
 
