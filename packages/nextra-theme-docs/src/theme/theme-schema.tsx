@@ -12,11 +12,9 @@ import type { TOCProperties as TOCPageContentProperties } from "../components/to
 import type { TOCProperties as TOCSidebarProperties } from "../components/toc/toc-sidebar";
 import type { ActiveType } from "../types";
 
-const isString = (value: unknown): boolean => typeof value === "string";
-
 const isFunction = (value: unknown): boolean => typeof value === "function";
 
-const isReactNode = (value: unknown): boolean => isString(value) || isValidElement(value as unknown) || isFunction(value);
+const isReactNode = (value: unknown): boolean => typeof value === "string" || isValidElement(value as unknown) || isFunction(value);
 
 const i18nSchema = z.array(
     z

@@ -5,6 +5,7 @@ import BaseFlexSearch from "flexsearch";
 import { useRouter } from "next/router";
 import type { ReactElement, ReactNode } from "react";
 import { useCallback, useState } from "react";
+import type { SearchData } from "nextra";
 
 import { DEFAULT_LOCALE } from "../constants/base";
 import type { SearchResult } from "../types";
@@ -40,14 +41,6 @@ interface Result {
     route: string;
 }
 
-type NextraData = Record<
-    string,
-    {
-        data: Record<string, string>;
-        title: string;
-    }
->;
-
 // This can be global for better caching.
 const indexes: Record<string, [PageIndex, SectionIndex]> = {};
 
@@ -58,7 +51,7 @@ const loadIndexesPromises = new Map<string, Promise<void>>();
 const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> => {
     // eslint-disable-next-line compat/compat
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
-    const data = (await response.json()) as NextraData;
+    const data = (await response.json()) as SearchData;
 
     const pageIndex: PageIndex = new BaseFlexSearch.Document({
         cache: 100,
@@ -110,10 +103,10 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
             const paragraphs = content.split("\n").filter(Boolean);
 
             sectionIndex.add({
-                content: title,
+                content: title ?? "",
                 id: url,
                 pageId: `page_${pageId}`,
-                title,
+                title: title ?? "",
                 url,
                 ...(paragraphs[0] && { display: paragraphs[0] }),
             });
@@ -123,7 +116,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
                     content: paragraph,
                     id: `${url}_${index}`,
                     pageId: `page_${pageId}`,
-                    title,
+                    title: title ?? "",
                     url,
                 });
             });
@@ -136,7 +129,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
             content: pageContent,
             id: pageId,
             // eslint-disable-next-line security/detect-object-injection
-            title: data[route]?.title,
+            title: data[route]?.title ?? "",
         });
     });
 
