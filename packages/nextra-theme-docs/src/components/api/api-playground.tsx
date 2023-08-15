@@ -6,6 +6,7 @@ import { useState } from "react";
 import { getMethodBgColor, getMethodBgHoverColor, getMethodBorderColor, getMethodTextColor } from "../../utils/api-playground-colors";
 import ApiInput from "./inputs/api-input";
 import type { ApiInputValue, ParameterGroup, RequestMethods } from "./types";
+import Button from "../button";
 
 const ApiPlayground = ({
     header = undefined,
@@ -43,7 +44,7 @@ const ApiPlayground = ({
      *  This component does not automatically syntax highlight code. */
     response?: ReactNode;
 }) => {
-    const [currentActiveParameterGroup, setCurrentActiveParameterGroup] = useState<ParameterGroup | undefined>(paramGroups?.[0]);
+    const [currentActiveParameterGroup, setCurrentActiveParameterGroup] = useState<ParameterGroup | undefined>(paramGroups[0]);
 
     const setParameterInObject = (parameterGroupName: string, parentInputs: string[], parameterName: string, value: ApiInputValue) => {
         const newParameterGroup = {
@@ -56,7 +57,7 @@ const ApiPlayground = ({
     };
 
     return (
-        <div className="dark:bg-codeblock mt-4 truncate rounded-md border border-slate-200 bg-slate-50 dark:border-slate-600">
+        <div className="mt-4 truncate rounded-md border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-gray-800/40">
             <div className="px-3.5 pb-4 pt-3.5">
                 {header}
                 <div className="text-sm">
@@ -73,6 +74,7 @@ const ApiPlayground = ({
                                         )}
                                         key={parameterGroup.name}
                                         onClick={() => setCurrentActiveParameterGroup(parameterGroup)}
+                                        type="button"
                                     >
                                         {parameterGroup.name}
                                     </button>
@@ -86,13 +88,14 @@ const ApiPlayground = ({
                                 onChangeParam={(parentInputs: string[], parameterName: string, parameterValue: ApiInputValue) =>
                                     setParameterInObject(currentActiveParameterGroup.name, parentInputs, parameterName, parameterValue)
                                 }
+                                /* eslint-disable-next-line react/no-array-index-key */
                                 key={`${parameter.name}${index}`}
                                 param={parameter}
                                 value={paramValues[currentActiveParameterGroup.name]?.[parameter.name] ?? ""}
                             />
                         ))}
                     </div>
-                    <button
+                    <Button
                         className={clsx(
                             "flex items-center space-x-2 rounded px-3 py-1.5 font-medium text-white",
                             getMethodBgColor(method),
@@ -106,7 +109,7 @@ const ApiPlayground = ({
                             <path d="M361 215C375.3 223.8 384 239.3 384 256C384 272.7 375.3 288.2 361 296.1L73.03 472.1C58.21 482 39.66 482.4 24.52 473.9C9.377 465.4 0 449.4 0 432V80C0 62.64 9.377 46.63 24.52 38.13C39.66 29.64 58.21 29.99 73.03 39.04L361 215z" />
                         </svg>
                         <div>{isSendingRequest ? "Sending..." : "Send Request"}</div>
-                    </button>
+                    </Button>
                 </div>
             </div>
             {isSendingRequest ? null : response}
