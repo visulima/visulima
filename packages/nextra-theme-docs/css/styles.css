@@ -230,7 +230,7 @@ article a[href^="https://"]::after
 }
 
 @layer utilities {
-    .prose :where(iframe):not(:where([class~="not-prose"] *)) {
+    .prose:not(.layout-full) :where(iframe):not(:where([class~="not-prose"] *)) {
         @apply aspect-video w-full h-auto mt-8 !bg-white dark:!bg-dark;
     }
 }

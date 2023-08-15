@@ -64,6 +64,8 @@ const Body: FC<{
             <div className="mt-16" />
         );
 
+    const isDocumentPage = activeType === "doc" && !["full", "raw"].includes(themeContext.layout);
+
     const content = (
         <>
             {children}
@@ -73,44 +75,33 @@ const Body: FC<{
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
             )}
-            {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && gitTimestampElement}
-            {activeType === "doc" && config.comments && (
+            {isDocumentPage && gitTimestampElement}
+            {isDocumentPage && config.comments && (
                 <div className="mb-8">
                     <hr />
                     <Comments config={config} />
                 </div>
             )}
-            {navigation}
+            {isDocumentPage && navigation}
         </>
     );
 
     const body = config.main?.({ children: content }) ?? content;
 
-    if (themeContext.layout === "full") {
-        return (
-            <article
-                className={cn(
-                    classes.main,
-                    "nextra-content min-h-[calc(100vh-var(--nextra-navbar-height))] pl-[max(env(safe-area-inset-left),2rem)] pr-[max(env(safe-area-inset-right),2rem)] dark:bg-darker-800",
-                )}
-            >
-                {body}
-            </article>
-        );
-    }
-
     return (
         <article
-            className={cn(
-                classes.main,
-                activeType === "doc" && "bg-white dark:bg-darker-800",
-                "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 lg:justify-center pr-[calc(env(safe-area-inset-right)-1.5rem)] overflow-x-hidden",
-                themeContext.typesetting === "article" && "nextra-body-typesetting-article",
-                "pb-6 lg:pb-0",
-            )}
+            className={cn(classes.main, "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 lg:justify-center overflow-x-hidden", {
+                "bg-white dark:bg-darker-800": activeType === "doc",
+                "nextra-body-typesetting-article": themeContext.typesetting === "article",
+                "pr-[calc(env(safe-area-inset-right)-1.5rem)] pb-6 lg:pb-0": themeContext.layout !== "full",
+            })}
         >
-            <main className={cn("w-full min-w-0 pt-4 px-2 md:px-6 lg:px-8", activeType === "doc" ? "lg:max-w-4xl" : "")}>
-                {breadcrumb}
+            <main
+                className={cn("w-full min-w-0", {
+                    "lg:max-w-4xl pt-4 px-2 md:px-6 lg:px-8": isDocumentPage,
+                })}
+            >
+                {isDocumentPage && breadcrumb}
                 {body}
             </main>
         </article>
@@ -151,14 +142,35 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             }),
         [pageMap, locale, defaultLocale, fsPath],
     );
+
+    let pageType = activeType;
+    let isErrorPage = false;
+
+    if (["/404", "/500"].includes(route)) {
+        isErrorPage = true;
+        pageType = "page";
+    }
+
     const reference = useRef<HTMLDivElement>(null);
     const isOnScreen = useOnScreen(reference as MutableRefObject<Element>);
 
     const themeContext = useMemo(() => {
-        return { prose: true, ...activeThemeContext, ...frontMatter };
-    }, [activeThemeContext, frontMatter]);
-    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["hidden", "page"].includes(activeType);
-    const isDocumentPage = (activeType === "doc" || !themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
+        return {
+            prose: true,
+            ...activeThemeContext,
+            ...frontMatter,
+            ...(isErrorPage
+                ? {
+                      layout: "full" as PageTheme["layout"],
+                      timestamp: false,
+                      toc: false,
+                  }
+                : {}),
+        };
+    }, [activeThemeContext, frontMatter, isErrorPage]);
+
+    const hideSidebar = !themeContext.sidebar || themeContext.layout === "raw" || ["hidden", "page"].includes(pageType);
+    const isDocumentPage = (pageType === "doc" || !themeContext.toc) && !["full", "raw"].includes(themeContext.layout);
 
     const tocSidebarElement = isDocumentPage && (
         <nav aria-label="table of contents" className={cn("nextra-tocSidebar order-last w-64 shrink-0 px-4 hidden lg:!block")}>
@@ -205,7 +217,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
             <div
                 // eslint-disable-next-line tailwindcss/no-custom-classname
                 className={
-                    ["hidden", "page"].includes(activeType) || themeContext.layout === "raw"
+                    ["hidden", "page"].includes(pageType) || themeContext.layout === "raw"
                         ? ""
                         : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"
                 }
@@ -221,7 +233,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                 <Banner />
                 {themeContext.navbar &&
                     renderComponent(config.navbar.component, {
-                        activeType,
+                        activeType: pageType,
                         flatDirectories,
                         items: topLevelNavbarItems,
                         themeContext,
@@ -237,7 +249,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                             includePlaceholder={themeContext.layout === "default"}
                         />
                         <div className="relative w-full">
-                            {activeType === "doc" && config.hero?.component && (
+                            {pageType === "doc" && config.hero?.component && (
                                 <div
                                     // eslint-disable-next-line tailwindcss/no-custom-classname
                                     className={`absolute w-full ${
@@ -265,21 +277,21 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                 <SkipNavContent />
                                 <Body
                                     breadcrumb={
-                                        !["hidden", "page"].includes(activeType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
+                                        !["hidden", "page"].includes(pageType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
                                     }
                                     navigation={
-                                        !["hidden", "page"].includes(activeType) && themeContext.pagination ? (
+                                        !["hidden", "page"].includes(pageType) && themeContext.pagination ? (
                                             <NavLinks currentIndex={activeIndex} flatDirectories={flatDocumentsDirectories} layout={themeContext.layout} />
                                         ) : null
                                     }
-                                    activeType={activeType}
+                                    activeType={pageType}
                                     filePath={filePath}
                                     locale={locale}
                                     route={route}
                                     themeContext={themeContext}
                                     timestamp={timestamp}
                                 >
-                                    {activeType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
+                                    {pageType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
                                         <>
                                             {config.content?.showTitle !== false && (
                                                 <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
@@ -292,8 +304,14 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         </>
                                     )}
                                     {tocPageContentElement}
-                                    {themeContext.prose && ["doc", "page"].includes(activeType) ? (
-                                        <Prose className={themeContext.layout === "full" ? "h-full" : ""}>{mdxContent}</Prose>
+                                    {themeContext.prose && ["doc", "page"].includes(pageType) ? (
+                                        <Prose
+                                            className={cn(`layout-${themeContext.layout}`, {
+                                                "h-full": themeContext.layout === "full",
+                                            })}
+                                        >
+                                            {mdxContent}
+                                        </Prose>
                                     ) : (
                                         mdxContent
                                     )}
@@ -302,7 +320,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                         </div>
                     </ActiveAnchorProvider>
                 </div>
-                <Footer activeType={activeType} locale={locale} themeContext={themeContext} />
+                <Footer activeType={pageType} locale={locale} themeContext={themeContext} />
             </div>
         </WrapBalancerProvider>
     );

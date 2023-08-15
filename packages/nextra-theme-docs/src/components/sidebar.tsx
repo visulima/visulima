@@ -21,7 +21,7 @@ const TreeState: Record<string, boolean> = Object.create(null) as Record<string,
 
 const FocusedItemContext = createContext<string | null>(null);
 
-const OnFocuseItemContext = createContext<((item: string | null) => unknown) | null>(null);
+const OnFocusItemContext = createContext<null | ((item: string | null) => any)>(null);
 
 const classes = {
     active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
@@ -40,7 +40,7 @@ const classes = {
         "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word] group",
         "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
-    list: cn("flex flex-col gap-1"),
+    list: "flex flex-col gap-1",
 };
 
 const FolderLevelContext = createContext(0);
@@ -221,7 +221,7 @@ const Separator: FC<{ title: string }> = ({ title }) => {
 
 const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item }) => {
     const route = useFSRoute();
-    const onFocus = useContext(OnFocuseItemContext);
+    const onFocus = useContext(OnFocusItemContext);
 
     // It is possible that the item doesn't have any route - for example an external link.
     const active = item.route && [`${route}/`, route].includes(`${item.route}/`);
@@ -407,7 +407,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                     })}
                 </div>
                 <FocusedItemContext.Provider value={focused}>
-                    <OnFocuseItemContext.Provider
+                    <OnFocusItemContext.Provider
                         // eslint-disable-next-line react/jsx-no-constructed-context-values
                         value={(item) => {
                             setFocused(item);
@@ -424,7 +424,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                                 <Menu
                                     // the sidebar when `floatTOC` is enabled.
                                     anchors={config.tocSidebar.float ? [] : anchors}
-                                    className="max-lg:hidden"
+                                    className="max-lg:!hidden"
                                     // When the viewport size is larger than `md`, hide the anchors in
                                     // The sidebar menu, shows only the docs directories.
                                     directories={documentsDirectories}
@@ -433,13 +433,13 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                                 <Menu
                                     // Always show the anchor links on mobile (`md`).
                                     anchors={anchors}
-                                    className="lg:hidden"
+                                    className="lg:!hidden"
                                     // The mobile dropdown menu, shows all the directories.
                                     directories={fullDirectories}
                                 />
                             </div>
                         </div>
-                    </OnFocuseItemContext.Provider>
+                    </OnFocusItemContext.Provider>
                 </FocusedItemContext.Provider>
 
                 {hasMenu && (
@@ -455,7 +455,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         )}
                         data-toggle-animation="off"
                     >
-                        {hasI18n && <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" />}
+                        <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" />
                         {hasI18n && config.darkMode && <div className="grow" />}
                         {config.darkMode && <ThemeSwitch locale={router.locale ?? DEFAULT_LOCALE} />}
                     </div>

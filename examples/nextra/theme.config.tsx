@@ -143,6 +143,8 @@ const config: DocumentationThemeConfig = {
         link: "https://github.com/vercel/swr",
     },
     sidebar: {
+        autoCollapse: true,
+        defaultMenuCollapseLevel: 1,
         titleComponent: ({ title, type }) =>
             type === "separator" ? (
                 <div className="flex items-center gap-2">
@@ -156,6 +158,14 @@ const config: DocumentationThemeConfig = {
     tocSidebar: {
         extraContent: <img alt="placeholder cat" src="https://placekitten.com/g/300/200" />,
         float: true,
+        headingComponent: function Heading({ id, children }) {
+            return (
+                <>
+                    {children}
+                    {id === "installation" && " 💿"}
+                </>
+            );
+        },
     },
     useNextSeoProps() {
         const { locale } = useRouter();

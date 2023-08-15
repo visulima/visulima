@@ -40,7 +40,8 @@
         "type": "page",
         "title": "Examples",
         "theme": {
-            "layout": "full"
+            "layout": "full",
+            "prose": false
         }
     },
     "blog": {

@@ -120,8 +120,8 @@ const ApiInput: FC<{
         case "number": {
             InputField = (
                 <input
-                    className="dark:bg-dark-input w-full rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200"
-                    onChange={(e) => onInputChange(Number.parseFloat(e.target.value))}
+                    className="w-full rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:bg-white/5 dark:text-slate-200"
+                    onChange={(event) => onInputChange(Number.parseFloat(event.target.value))}
                     placeholder={param.placeholder}
                     type="number"
                     value={value as never}
@@ -133,12 +133,16 @@ const ApiInput: FC<{
         case "file":
         case "files": {
             InputField = (
-                <button className="dark:bg-dark-input relative flex h-7 w-full items-center rounded border border-dashed border-slate-200 bg-white px-2 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800">
+                <button
+                    className="relative flex h-7 w-full items-center rounded border border-dashed border-slate-200 bg-white px-2 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-slate-800"
+                    type="button"
+                >
                     <input
                         onChange={async (event) => {
                             if (event.target.files == null) {
                                 return;
                             }
+
                             onInputChange(await b64(event.target.files[0]));
                         }}
                         className="z-5 absolute inset-0 cursor-pointer opacity-0"
@@ -187,8 +191,8 @@ const ApiInput: FC<{
             } else {
                 InputField = (
                     <input
-                        className="dark:bg-dark-input w-full rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700 dark:border-slate-600 dark:text-slate-200"
-                        onChange={(e) => onInputChange(e.target.value)}
+                        className="w-full rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700 dark:border-slate-600 dark:bg-white/5 dark:text-slate-200"
+                        onChange={(event) => onInputChange(event.target.value)}
                         placeholder={param.placeholder}
                         type="text"
                         value={value as any}
@@ -203,7 +207,7 @@ const ApiInput: FC<{
             className={clsx(
                 "text-[0.84rem]",
                 ((isObject && isExpandedProperties) || array.length > 0) &&
-                    "dark:bg-codeblock -mx-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 dark:border-slate-700",
+                    "dark:bg-white/5 -mx-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 dark:border-slate-700",
             )}
         >
             <div className="group flex items-center space-x-2">
