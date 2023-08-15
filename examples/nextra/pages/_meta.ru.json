@@ -16,7 +16,11 @@
         "title": "Блог",
         "type": "page",
         "theme": {
-            "sidebar": false
+            "timestamp": true,
+            "sidebar": false,
+            "toc": true,
+            "breadcrumb": false,
+            "typesetting": "article"
         }
     }
 }

@@ -63,8 +63,8 @@ const FOOTER_LINK_TEXT = {
 
 const config: DocumentationThemeConfig = {
     banner: {
-        key: "swr-2",
         content: "SWR 2.0 is out! Read more →",
+        key: "swr-2",
     },
     darkMode: true,
     docsRepositoryBase: "https://github.com/shuding/nextra/blob/core/examples/swr-site",

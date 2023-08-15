@@ -1,8 +1,4 @@
 {
-    "api": {
-        "title": "Api",
-        "description": "Display a list of api endpoints"
-    },
     "accordion": {
         "title": "Accordion",
         "description": "A dropdown component for toggling content"

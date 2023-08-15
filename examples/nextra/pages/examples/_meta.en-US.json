@@ -10,5 +10,10 @@
     "infinite-loading": "Infinite Loading",
     "error-handling": "Error Handling",
     "ssr": "Next.js SSR",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "full": {
+        "theme": {
+            "layout": "raw"
+        }
+    }
 }

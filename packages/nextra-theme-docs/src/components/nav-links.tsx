@@ -43,9 +43,9 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
                 <Anchor
                     className={cn(
                         classes.link,
-                        next ? "max-w-[50%]" : "max-w-full",
+                        next ? "max-w-[50%] mr-4" : "max-w-full",
                         "ltr:pr-4 rtl:pl-4",
-                        "flex-grow mr-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
+                        "flex-grow border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}
                     href={previous.route}
                     title={previous.title}

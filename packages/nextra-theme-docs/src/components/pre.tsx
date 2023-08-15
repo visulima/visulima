@@ -35,7 +35,7 @@ const Pre = ({
             className={cn(
                 "nextra-code-block",
                 "mt-5 mb-8 first:mt-0 last:mb-0 py-2",
-                "bg-gray-800 dark:bg-gray-800/60",
+                "bg-gray-800 dark:bg-gray-800/40",
                 "shadow-lg dark:shadow-none",
                 "dark:ring-1 dark:ring-gray-300/10",
                 "rounded-lg overflow-hidden relative",
