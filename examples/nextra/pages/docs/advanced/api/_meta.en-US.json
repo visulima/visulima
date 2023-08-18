@@ -1,1 +1,10 @@
-{}
+{
+    "get-todo": {
+        "title": "Get Todo",
+        "description": "Get a todo by id",
+        "type": "api",
+        "theme": {
+            "layout": "api"
+        }
+    }
+}

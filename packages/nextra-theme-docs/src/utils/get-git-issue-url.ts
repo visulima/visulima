@@ -4,11 +4,11 @@ const getGitIssueUrl = ({ labels, repository = "", title }: { labels?: string; r
     const repo = gitUrlParse(repository);
 
     if (repo.resource.includes("gitlab")) {
-        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/-/issues/new?issue[title]=${encodeURIComponent(title)}`;
+        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/-/issues/new?issue[title]=${encodeURIComponent(title)}&labels=${labels ?? ""}`;
     }
 
     if (repo.resource.includes("github")) {
-        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/issues/new?title=${encodeURIComponent(title)}&labels=${labels ?? ""}`;
+        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/issues/new?title=${encodeURIComponent(title)}`;
     }
 
     return "#";

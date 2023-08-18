@@ -2,9 +2,15 @@ import { clsx } from "clsx";
 import type { FC } from "react";
 import { useState } from "react";
 
+import { useRouter } from "next/router";
 import type { ApiInputValue, Parameter } from "../types";
 import AddArrayItemButton from "./add-array-item-button";
 import InputDropdown from "./input-dropdown";
+import TrashIcon from "../../../../icons/trash";
+import DocumentArrowUpIcon from "../../../../icons/document-arrow-up";
+import { useConfig } from "../../../../config";
+import { renderString } from "../../../../utils/render";
+import { DEFAULT_LOCALE } from "../../../../constants/base";
 
 const getArrayType = (type: string | undefined) => {
     if (!type || type === "array") {
@@ -27,12 +33,6 @@ const b64 = async (file: File) =>
         };
     });
 
-/**
- *  ApiInput provides a UI to receive inputs from the user for API calls.
- *  The user is responsible for updating value when onChangeParam is called.
- *  ApiInput doesn't store the value internally so components don't work
- *  when the user doesn't track the state.
- */
 const ApiInput: FC<{
     onChangeParam: (parentInputs: string[], parameterName: string, value: ApiInputValue) => void;
     onDeleteArrayItem?: () => void;
@@ -40,6 +40,8 @@ const ApiInput: FC<{
     parentInputs?: string[];
     value: ApiInputValue;
 }> = ({ onChangeParam, onDeleteArrayItem = undefined, param, parentInputs = [], value }) => {
+    const config = useConfig();
+    const { locale } = useRouter();
     const isObject = param.type === "object" && param.properties != null;
     const isArray = param.type === "array";
 
@@ -106,6 +108,8 @@ const ApiInput: FC<{
         case "boolean": {
             InputField = (
                 <InputDropdown
+                    config={config}
+                    locale={locale ?? DEFAULT_LOCALE}
                     /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                     onInputChange={(newValue: string) => onInputChange(newValue === "true")}
                     /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
@@ -134,7 +138,7 @@ const ApiInput: FC<{
         case "files": {
             InputField = (
                 <button
-                    className="relative flex h-7 w-full items-center rounded border border-dashed border-slate-200 bg-white px-2 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-slate-800"
+                    className="relative flex h-7 w-full items-center rounded border border-dashed border-slate-200 bg-white px-2 text-slate-700 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-slate-800"
                     type="button"
                 >
                     <input
@@ -145,19 +149,16 @@ const ApiInput: FC<{
 
                             onInputChange(await b64(event.target.files[0]));
                         }}
-                        className="z-5 absolute inset-0 cursor-pointer opacity-0"
+                        className="absolute inset-0 z-10 cursor-pointer opacity-0"
                         type="file"
                     />
-                    <svg
-                        className="bg-border-slate-700 pointer-events-none absolute right-2 top-[7px] h-3 fill-slate-500 dark:fill-slate-400"
-                        viewBox="0 0 512 512"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path d="M105.4 182.6c12.5 12.49 32.76 12.5 45.25 .001L224 109.3V352c0 17.67 14.33 32 32 32c17.67 0 32-14.33 32-32V109.3l73.38 73.38c12.49 12.49 32.75 12.49 45.25-.001c12.49-12.49 12.49-32.75 0-45.25l-128-128C272.4 3.125 264.2 0 256 0S239.6 3.125 233.4 9.375L105.4 137.4C92.88 149.9 92.88 170.1 105.4 182.6zM480 352h-160c0 35.35-28.65 64-64 64s-64-28.65-64-64H32c-17.67 0-32 14.33-32 32v96c0 17.67 14.33 32 32 32h448c17.67 0 32-14.33 32-32v-96C512 366.3 497.7 352 480 352zM432 456c-13.2 0-24-10.8-24-24c0-13.2 10.8-24 24-24s24 10.8 24 24C456 445.2 445.2 456 432 456z" />
-                    </svg>
                     <span className="pointer-events-none inline-block w-full truncate text-left">
-                        {value != null && typeof value === "string" && value.length > 0 ? (value as string) : (value as { name: string }).name ?? "Choose file"}
+                        {value != null && typeof value === "string" && value.length > 0
+                            ? (value as string)
+                            : // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                              (value as { name: string }).name ?? renderString(config.api.file.content, { locale: locale ?? DEFAULT_LOCALE })}
                     </span>
+                    <DocumentArrowUpIcon className="h-4 w-4 text-slate-700 dark:text-slate-200" />
                 </button>
             );
 
@@ -187,7 +188,15 @@ const ApiInput: FC<{
             } else if (isArray) {
                 InputField = array.length === 0 && <AddArrayItemButton onClick={onAddArrayItem} />;
             } else if (param.enum) {
-                InputField = <InputDropdown onInputChange={onInputChange} options={param.enum} value={value as string} />;
+                InputField = (
+                    <InputDropdown
+                        config={config}
+                        locale={locale ?? DEFAULT_LOCALE}
+                        onInputChange={onInputChange}
+                        options={param.enum}
+                        value={value as string}
+                    />
+                );
             } else {
                 InputField = (
                     <input
@@ -207,20 +216,25 @@ const ApiInput: FC<{
             className={clsx(
                 "text-[0.84rem]",
                 ((isObject && isExpandedProperties) || array.length > 0) &&
-                    "dark:bg-white/5 -mx-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 dark:border-slate-700",
+                    "-mx-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-white/5",
             )}
         >
             <div className="group flex items-center space-x-2">
                 <div
                     className={clsx(
-                        "flex flex-1 items-center font-mono text-slate-600 dark:text-slate-300",
+                        "flex flex-1 items-center text-slate-600 dark:text-slate-300",
                         isObject && "cursor-pointer",
                         onDeleteArrayItem && "invisible", // Array items don't have parameter names
                     )}
                     onClick={() => isObject && setIsExpandedProperties(!isExpandedProperties)}
                 >
-                    {param.name}
-                    {param.required && <span className="text-red-600 dark:text-red-400">*</span>}
+                    <span className="truncate font-semibold">{param.name}</span>
+                    <span className="ml-1">{lowerCaseParameterType}</span>
+                    {param.required && (
+                        <span className="ml-1 lowercase text-red-600 dark:text-red-400">
+                            {renderString(config.api.param.required.content, { locale: locale ?? DEFAULT_LOCALE })}
+                        </span>
+                    )}
                 </div>
                 <div className={clsx("flex-initial", onDeleteArrayItem ? "w-[calc(40%-1.05rem)] sm:w-[calc(33%-1.05rem)]" : "w-2/5 sm:w-1/3")}>
                     {InputField}
@@ -229,11 +243,10 @@ const ApiInput: FC<{
                     <button
                         className="fill-red-600 py-1 hover:fill-red-800 dark:fill-red-400 dark:hover:fill-red-200"
                         onClick={onDeleteArrayItem}
+                        title={renderString(config.api.array.delete.content, { locale: locale ?? DEFAULT_LOCALE })}
                         type="button"
                     >
-                        <svg className="h-3" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M424 80C437.3 80 448 90.75 448 104C448 117.3 437.3 128 424 128H412.4L388.4 452.7C385.9 486.1 358.1 512 324.6 512H123.4C89.92 512 62.09 486.1 59.61 452.7L35.56 128H24C10.75 128 0 117.3 0 104C0 90.75 10.75 80 24 80H93.82L130.5 24.94C140.9 9.357 158.4 0 177.1 0H270.9C289.6 0 307.1 9.358 317.5 24.94L354.2 80H424zM177.1 48C174.5 48 171.1 49.34 170.5 51.56L151.5 80H296.5L277.5 51.56C276 49.34 273.5 48 270.9 48H177.1zM364.3 128H83.69L107.5 449.2C108.1 457.5 115.1 464 123.4 464H324.6C332.9 464 339.9 457.5 340.5 449.2L364.3 128z" />
-                        </svg>
+                        <TrashIcon className="block h-4 w-4 text-red-500" />
                     </button>
                 )}
             </div>
@@ -258,7 +271,7 @@ const ApiInput: FC<{
                 <div className={clsx("mt-1 space-y-2 pb-1 pt-2", !isObject && "border-t border-slate-100 dark:border-slate-700")}>
                     {array.map((item, index) => (
                         <ApiInput
-                            onChangeParam={(parentInputs: string[], parameterName: string, parameterValue: ApiInputValue) =>
+                            onChangeParam={(_parentInputs: string[], _parameterName: string, parameterValue: ApiInputValue) =>
                                 onArrayParentChange(index, parameterValue)
                             }
                             key={`${item.param.name}${index}`}

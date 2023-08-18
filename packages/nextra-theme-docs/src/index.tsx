@@ -69,8 +69,8 @@ const Body: FC<{
     const content = (
         <>
             {children}
-            {activeType === "doc" && <hr className="my-8 lg:hidden" />}
-            {activeType === "doc" && (
+            {["api", "doc"].includes(activeType) && <hr className="my-8 lg:hidden" />}
+            {["api", "doc"].includes(activeType) && (
                 <div className="flex flex-col justify-items-end gap-2 text-right lg:!hidden">
                     <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
                 </div>
@@ -91,7 +91,7 @@ const Body: FC<{
     return (
         <article
             className={cn(classes.main, "nextra-content flex min-h-[calc(100vh-var(--nextra-navbar-height))] min-w-0 lg:justify-center overflow-x-hidden", {
-                "bg-white dark:bg-darker-800": activeType === "doc",
+                "bg-white dark:bg-darker-800": ["api", "doc"].includes(activeType),
                 "nextra-body-typesetting-article": themeContext.typesetting === "article",
                 "pr-[calc(env(safe-area-inset-right)-1.5rem)] pb-6 lg:pb-0": themeContext.layout !== "full",
             })}
@@ -99,6 +99,7 @@ const Body: FC<{
             <main
                 className={cn("w-full min-w-0", {
                     "lg:max-w-4xl pt-4 px-2 md:px-6 lg:px-8": isDocumentPage,
+                    "px-4": activeType === "api",
                 })}
             >
                 {isDocumentPage && breadcrumb}
@@ -294,7 +295,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     {pageType === "doc" && !["full", "raw"].includes(themeContext.layout) && (
                                         <>
                                             {config.content?.showTitle !== false && (
-                                                <h1 className="mt-4 hyphens-auto text-3xl font-bold leading-loose tracking-tight lg:text-4xl xl:text-5xl">
+                                                <h1 className="mt-4 inline-block text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-200 sm:text-3xl">
                                                     {activePath[Object.keys(activePath).length - 1]?.title}
                                                 </h1>
                                             )}

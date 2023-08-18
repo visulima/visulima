@@ -35,7 +35,7 @@ export interface SearchResult {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type ActiveType = string | "doc" | "error" | "hidden" | "page";
+export type ActiveType = string | "api" | "doc" | "hidden" | "page";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 export type DocsItem = {

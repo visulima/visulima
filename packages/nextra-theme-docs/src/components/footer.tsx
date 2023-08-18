@@ -23,7 +23,7 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
                     : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
             )}
         >
-            <div className={cn("mx-auto flex flex-col lg:max-w-[90rem] lg:flex-row", activeType === "doc" && "bg-white dark:bg-darker-800")}>
+            <div className={cn("mx-auto flex flex-col lg:max-w-[90rem] lg:flex-row", ["doc", "api"].includes(activeType) && "bg-white dark:bg-darker-800")}>
                 <div
                     className={cn(
                         "flex lg:flex-col py-6 lg:w-64 lg:shrink-0",
@@ -34,11 +34,15 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
                 >
                     {(hasI18n || config.darkMode) && (
                         <div
-                            className={cn("ml-auto mr-auto flex gap-2 lg:px-6 lg:-ml-2", activeType === "doc" && !isLayoutRaw ? "lg:!hidden" : "lg:mb-12", {
-                                "items-center": hasI18n && config.darkMode,
-                            })}
+                            className={cn(
+                                "ml-auto mr-auto flex gap-2 lg:px-6 lg:-ml-2",
+                                ["api", "doc"].includes(activeType) && !isLayoutRaw ? "lg:!hidden" : "lg:mb-12",
+                                {
+                                    "items-center": hasI18n && config.darkMode,
+                                },
+                            )}
                         >
-                            {hasI18n && <LocaleSwitch options={config.i18n} />}
+                            {hasI18n && <LocaleSwitch />}
                             {hasI18n && config.darkMode && <div className="grow" />}
                             {config.darkMode && <ThemeSwitch locale={locale} />}
                         </div>

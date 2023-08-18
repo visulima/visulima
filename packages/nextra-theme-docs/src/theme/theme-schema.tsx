@@ -29,8 +29,58 @@ const i18nSchema = z.array(
 const reactNode = [isReactNode, { message: "Must be React.ReactNode or React.FC" }] as const;
 const fc = [isFunction, { message: "Must be React.FC" }] as const;
 
+const stringOrFunction = z.string().or(
+    z
+        .function()
+        .args(z.object({ locale: z.string() }).strict())
+        .returns(z.string()),
+);
+
 export const themeSchema = z
     .object({
+        api: z
+            .object({
+                array: z
+                    .object({
+                        add: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                        delete: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                    })
+                    .strict(),
+                file: z
+                    .object({
+                        content: stringOrFunction,
+                    })
+                    .strict(),
+                param: z
+                    .object({
+                        required: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                    })
+                    .strict(),
+                select: z
+                    .object({
+                        content: stringOrFunction,
+                    })
+                    .strict(),
+                snippet: z
+                    .object({
+                        visibleLanguages: z.array(z.string()).length(4),
+                        title: stringOrFunction,
+                    })
+                    .strict(),
+            })
+            .strict(),
         backToTop: z
             .object({
                 active: z.boolean(),
@@ -135,12 +185,7 @@ export const themeSchema = z
         i18n: i18nSchema,
         localSwitch: z
             .object({
-                title: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
+                title: stringOrFunction,
             })
             .strict(),
         logo: z.custom<FC | ReactNode>(...reactNode),
@@ -216,25 +261,10 @@ export const themeSchema = z
                 codeblocks: z.boolean(),
                 component: z.custom<FC<{ className?: string; directories: Item[] }> | ReactNode>(...reactNode),
                 emptyResult: z.custom<FC | ReactNode>(...reactNode),
-                error: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
-                loading: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
+                error: stringOrFunction,
+                loading: stringOrFunction,
                 // Can't be React component
-                placeholder: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
+                placeholder: stringOrFunction,
                 position: z.enum(["sidebar", "navbar"]),
             })
             .strict(),
@@ -254,30 +284,10 @@ export const themeSchema = z
             .strict(),
         themeSwitch: z
             .object({
-                dark: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
-                light: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
-                system: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
-                title: z.string().or(
-                    z
-                        .function()
-                        .args(z.object({ locale: z.string() }).strict())
-                        .returns(z.string()),
-                ),
+                dark: stringOrFunction,
+                light: stringOrFunction,
+                system: stringOrFunction,
+                title: stringOrFunction,
             })
             .strict(),
         // eslint-disable-next-line zod/require-strict

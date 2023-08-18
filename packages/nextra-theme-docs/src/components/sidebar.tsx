@@ -21,7 +21,7 @@ const TreeState: Record<string, boolean> = Object.create(null) as Record<string,
 
 const FocusedItemContext = createContext<string | null>(null);
 
-const OnFocusItemContext = createContext<null | ((item: string | null) => any)>(null);
+const OnFocusItemContext = createContext<((item: string | null) => any) | null>(null);
 
 const classes = {
     active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
