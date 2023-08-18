@@ -21,7 +21,7 @@ const BaseUrlDropdown: FC<{
                 aria-label="Select API base"
                 className="absolute inset-0 z-10 cursor-pointer opacity-0"
                 defaultValue={defaultValue}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(event) => onChange(event.target.value)}
             >
                 <option disabled>Select API base</option>
                 {baseUrls.map((baseUrl) => (

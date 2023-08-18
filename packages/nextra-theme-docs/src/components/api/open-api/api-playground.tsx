@@ -1,23 +1,15 @@
 import { clsx } from "clsx";
+// eslint-disable-next-line no-restricted-imports
 import set from "lodash.set";
-import type { ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 import { useState } from "react";
 
-import { getMethodBgColor, getMethodBgHoverColor, getMethodBorderColor, getMethodTextColor } from "../../utils/api-playground-colors";
+import { getMethodBgColor, getMethodBgHoverColor, getMethodBorderColor, getMethodTextColor } from "../../../utils/api-playground-colors";
 import ApiInput from "./inputs/api-input";
 import type { ApiInputValue, ParameterGroup, RequestMethods } from "./types";
-import Button from "../button";
+import Button from "../../button";
 
-const ApiPlayground = ({
-    header = undefined,
-    isSendingRequest,
-    method,
-    onChangeParamValues,
-    onSendRequest,
-    paramGroups,
-    paramValues,
-    response = undefined,
-}: {
+const ApiPlayground: FC<{
     /** Header to show above parameter inputs. */
     header?: ReactNode;
 
@@ -29,7 +21,7 @@ const ApiPlayground = ({
     method: RequestMethods;
 
     /** Callback when the user changes a parameter's value. */
-    onChangeParamValues: (parameterValues: Record<string, Record<string, any>>) => void;
+    onChangeParamValues: (parameterValues: Record<string, Record<string, ApiInputValue>>) => void;
 
     /** Callback when the user clicks the Send Request button. */
     onSendRequest: () => void;
@@ -38,12 +30,12 @@ const ApiPlayground = ({
     paramGroups: ParameterGroup[];
 
     /** Values to show in the ApiInputs. Key is the param group name. */
-    paramValues: Record<string, Record<string, any>>;
+    paramValues: Record<string, Record<string, ApiInputValue>>;
 
     /** Response to show underneath the playground.
      *  This component does not automatically syntax highlight code. */
     response?: ReactNode;
-}) => {
+}> = ({ header = undefined, isSendingRequest, method, onChangeParamValues, onSendRequest, paramGroups, paramValues, response = undefined }) => {
     const [currentActiveParameterGroup, setCurrentActiveParameterGroup] = useState<ParameterGroup | undefined>(paramGroups[0]);
 
     const setParameterInObject = (parameterGroupName: string, parentInputs: string[], parameterName: string, value: ApiInputValue) => {
@@ -85,6 +77,7 @@ const ApiPlayground = ({
                     <div className="mt-4 space-y-2">
                         {currentActiveParameterGroup?.params.map((parameter, index) => (
                             <ApiInput
+                                /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                                 onChangeParam={(parentInputs: string[], parameterName: string, parameterValue: ApiInputValue) =>
                                     setParameterInObject(currentActiveParameterGroup.name, parentInputs, parameterName, parameterValue)
                                 }

@@ -39,6 +39,49 @@ const stringOrFunction = z.string().or(
 // eslint-disable-next-line import/exports-last
 export const themeSchema = z
     .object({
+        api: z
+            .object({
+                array: z
+                    .object({
+                        add: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                        delete: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                    })
+                    .strict(),
+                file: z
+                    .object({
+                        content: stringOrFunction,
+                    })
+                    .strict(),
+                param: z
+                    .object({
+                        required: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                    })
+                    .strict(),
+                select: z
+                    .object({
+                        content: stringOrFunction,
+                    })
+                    .strict(),
+                snippet: z
+                    .object({
+                        visibleLanguages: z.array(z.string()).length(4),
+                        title: stringOrFunction,
+                    })
+                    .strict(),
+            })
+            .strict(),
         backToTop: z
             .object({
                 active: z.boolean(),

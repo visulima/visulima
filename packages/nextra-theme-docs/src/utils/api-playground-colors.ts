@@ -44,7 +44,7 @@ export const getMethodBgHoverColor = (method?: string): string => {
     }
 };
 
-export const getMethodTextColor = (method?: string) => {
+export const getMethodTextColor = (method?: string): string => {
     switch (method?.toUpperCase()) {
         case "GET": {
             return "text-green-600 dark:text-green-500";
