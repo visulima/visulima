@@ -152,7 +152,7 @@
         "tailwindcss-hyphens": "^0.1.0",
         "tsup": "7.2.0",
         "typescript": "^5.1.6",
-        "vitest": "^0.34.1",
+        "vitest": "^0.34.3",
         "zod": "^3.22.0"
     },
     "peerDependencies": {

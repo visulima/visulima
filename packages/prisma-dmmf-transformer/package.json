@@ -96,7 +96,7 @@
         "semantic-release": "21.0.7",
         "tsup": "7.2.0",
         "typescript": "5.1.6",
-        "vitest": "0.34.1"
+        "vitest": "0.34.3"
     },
     "peerDependencies": {
         "@prisma/client": "3.* || 4.*",
