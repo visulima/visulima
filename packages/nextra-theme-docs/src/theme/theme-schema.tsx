@@ -7,6 +7,7 @@ import type { DefaultToastOptions } from "react-hot-toast";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
+import { supportedLanguages } from "@readme/oas-to-snippet";
 import type { NavBarProperties } from "../components/navbar";
 import type { TOCProperties as TOCPageContentProperties } from "../components/toc/toc-page-content";
 import type { TOCProperties as TOCSidebarProperties } from "../components/toc/toc-sidebar";
@@ -36,7 +37,8 @@ const stringOrFunction = z.string().or(
         .returns(z.string()),
 );
 
-// eslint-disable-next-line import/exports-last
+const supportedDefaultLanguages = Object.keys(supportedLanguages);
+
 export const themeSchema = z
     .object({
         api: z
@@ -60,9 +62,19 @@ export const themeSchema = z
                         content: stringOrFunction,
                     })
                     .strict(),
+                oas: z.object({}).catchall(z.any()).optional(),
                 param: z
                     .object({
                         required: z
+                            .object({
+                                content: stringOrFunction,
+                            })
+                            .strict(),
+                    })
+                    .strict(),
+                request_header: z
+                    .object({
+                        server: z
                             .object({
                                 content: stringOrFunction,
                             })
@@ -76,8 +88,12 @@ export const themeSchema = z
                     .strict(),
                 snippet: z
                     .object({
-                        visibleLanguages: z.array(z.string()).length(4),
+                        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+                        defaultLanguage: z.string().regex(new RegExp(`^${supportedDefaultLanguages.join("|")}$`, "s")),
+                        defaultSwitchLanguage: z.string().regex(new RegExp(`^${supportedDefaultLanguages.join("|")}$`, "s")),
+                        languageSwitcherTitle: stringOrFunction,
                         title: stringOrFunction,
+                        visibleLanguages: z.array(z.string()).length(3),
                     })
                     .strict(),
             })
@@ -278,6 +294,7 @@ export const themeSchema = z
             .strict(),
         sidebar: z
             .object({
+                apiMethodComponent: z.custom<FC<{ method?: string }> | ReactNode>(...reactNode),
                 autoCollapse: z.boolean().optional(),
                 defaultMenuCollapseLevel: z.number().min(1).int(),
                 icon: z.custom<FC<{ className: string; route: string; title: string; type: string }> | ReactNode>(...reactNode).optional(),

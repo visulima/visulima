@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import type { ComponentProps, ReactElement } from "react";
 import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs/config";
 import { useConfig } from "@visulima/nextra-theme-docs/config";
+import petstore from "./swagger.json";
 
 const SWRLogo = (props: ComponentProps<"svg">): ReactElement => (
     <svg viewBox="0 0 291 69" fill="none" {...props}>
@@ -62,6 +63,9 @@ const FOOTER_LINK_TEXT = {
 };
 
 const config: DocumentationThemeConfig = {
+    api: {
+        oas: petstore,
+    },
     banner: {
         content: "SWR 2.0 is out! Read more →",
         key: "swr-2",

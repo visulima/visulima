@@ -1,6 +1,7 @@
 import { GitHubIcon } from "nextra/icons";
 import { isValidElement } from "react";
 
+import cn from "clsx";
 import Anchor from "../components/anchor";
 import FlexSearch from "../components/flexsearch";
 import Navbar from "../components/navbar";
@@ -8,6 +9,7 @@ import TocPageContent from "../components/toc/toc-page-content";
 import TocSidebar from "../components/toc/toc-sidebar";
 import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import getGitEditUrl from "../utils/get-git-edit-url";
+import { getMethodRingColor, getMethodTextColor } from "../components/api/open-api/utils/api-playground-colors";
 
 export const DEFAULT_THEME: DocumentationThemeConfig = {
     api: {
@@ -64,6 +66,7 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
                 return "Choose File";
             },
         },
+        oas: undefined,
         param: {
             required: {
                 content: ({ locale }: { locale: string }) => {
@@ -80,6 +83,25 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
                     }
 
                     return "Required";
+                },
+            },
+        },
+        request_header: {
+            server: {
+                content: ({ locale }: { locale: string }) => {
+                    if (locale === "zh-CN") {
+                        return "选择服务器";
+                    }
+
+                    if (locale === "ru") {
+                        return "Выберите сервер";
+                    }
+
+                    if (locale === "fr") {
+                        return "Sélectionner un serveur";
+                    }
+
+                    return "Select a server";
                 },
             },
         },
@@ -101,6 +123,23 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
             },
         },
         snippet: {
+            defaultLanguage: "shell",
+            defaultSwitchLanguage: "python",
+            languageSwitcherTitle: ({ locale }: { locale: string }) => {
+                if (locale === "zh-CN") {
+                    return "切换语言";
+                }
+
+                if (locale === "ru") {
+                    return "Переключить язык";
+                }
+
+                if (locale === "fr") {
+                    return "Changer de langue";
+                }
+
+                return "Switch language";
+            },
             title: ({ locale }: { locale: string }) => {
                 if (locale === "zh-CN") {
                     return "语言";
@@ -111,12 +150,12 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
                 }
 
                 if (locale === "fr") {
-                    return "Langage";
+                    return "Langue";
                 }
 
                 return "Language";
             },
-            visibleLanguages: ["shell", "node", "ruby", "php"],
+            visibleLanguages: ["shell", "node", "php"],
         },
     },
     backToTop: {
@@ -336,6 +375,12 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         labels: "bug",
     },
     sidebar: {
+        apiMethodComponent: ({ method }) =>
+            method && (
+                <span className={cn("inline-block px-1 py-px text-xs rounded w-12 text-center", getMethodTextColor(method), getMethodRingColor(method))}>
+                    {method.toUpperCase()}
+                </span>
+            ),
         autoCollapse: true,
         defaultMenuCollapseLevel: 2,
         mobileBreakpoint: 1023,

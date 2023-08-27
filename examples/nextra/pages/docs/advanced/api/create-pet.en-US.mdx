@@ -1,13 +1,14 @@
 import { OpenApiView } from "@visulima/nextra-theme-docs/components";
 
 <OpenApiView
-    method={"GET"}
+    path={"/pet"}
+    method={"POST"}
     paramGroups={[
         {
             name: "Body",
             params: [
                 {
-                    name: "Text Input",
+                    name: "Text Input So Long That It Wraps To The Next Line",
                     placeholder: "Placeholder Value",
                     required: true,
                     type: "text",

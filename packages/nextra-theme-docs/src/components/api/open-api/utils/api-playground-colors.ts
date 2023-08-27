@@ -1,22 +1,22 @@
 export const getMethodBgColor = (method?: string): string => {
     switch (method?.toUpperCase()) {
         case "GET": {
-            return "bg-green-600";
+            return "bg-emerald-400/10";
         }
         case "POST": {
-            return "bg-blue-600";
+            return "bg-sky-400/10";
         }
         case "PUT": {
-            return "bg-yellow-600";
+            return "bg-amber-400/10";
         }
         case "DELETE": {
-            return "bg-red-600";
+            return "bg-rose-50";
         }
         case "PATCH": {
-            return "bg-orange-600";
+            return "bg-orange-400/10";
         }
         default: {
-            return "bg-slate-600";
+            return "bg-slate-400/10";
         }
     }
 };
@@ -47,16 +47,16 @@ export const getMethodBgHoverColor = (method?: string): string => {
 export const getMethodTextColor = (method?: string): string => {
     switch (method?.toUpperCase()) {
         case "GET": {
-            return "text-green-600 dark:text-green-500";
+            return "text-emerald-500 dark:text-emerald-400";
         }
         case "POST": {
-            return "text-blue-600 dark:text-blue-500";
+            return "text-sky-500 dark:text-sky-400";
         }
         case "PUT": {
-            return "text-yellow-600 dark:text-yellow-500";
+            return "text-amber-500 dark:text-amber-400";
         }
         case "DELETE": {
-            return "text-red-600 dark:text-red-500";
+            return "text-red-500 dark:text-rose-400";
         }
         case "PATCH": {
             return "text-orange-600 dark:text-orange-500";
@@ -67,25 +67,48 @@ export const getMethodTextColor = (method?: string): string => {
     }
 };
 
+export const getMethodRingColor = (method?: string): string => {
+    switch (method?.toUpperCase()) {
+        case "GET": {
+            return "ring-1 ring-inset ring-emerald-300 dark:ring-emerald-400/30";
+        }
+        case "POST": {
+            return "ring-1 ring-inset ring-sky-300 dark:ring-sky-400/30";
+        }
+        case "PUT": {
+            return "ring-1 ring-inset ring-amber-300 bg-amber-400/10 dark:ring-amber-400/30";
+        }
+        case "DELETE": {
+            return "ring-1 ring-inset ring-rose-200 bg-rose-50 dark:ring-rose-500/20";
+        }
+        case "PATCH": {
+            return "ring-1 ring-inset ring-orange-600 dark:ring-orange-500";
+        }
+        default: {
+            return "ring-1 ring-inset ring-slate-600 dark:ring-slate-500";
+        }
+    }
+};
+
 export const getMethodBorderColor = (method?: string): string => {
     switch (method?.toUpperCase()) {
         case "GET": {
-            return "border-green-600 dark:border-green-500";
+            return "border-emerald-400";
         }
         case "POST": {
-            return "border-blue-600 dark:border-blue-500";
+            return "border-sky-400";
         }
         case "PUT": {
-            return "border-yellow-600 dark:border-yellow-500";
+            return "border-amber-400";
         }
         case "DELETE": {
-            return "border-red-600 dark:border-red-500";
+            return "border-rose-50";
         }
         case "PATCH": {
-            return "border-orange-600 dark:border-orange-500";
+            return "border-orange-400";
         }
         default: {
-            return "border-slate-600 dark:border-slate-500";
+            return "border-slate-400";
         }
     }
 };

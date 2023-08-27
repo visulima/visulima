@@ -1,10 +1,10 @@
 {
-    "get-todo": {
-        "title": "Get Todo",
+    "create-pet": {
+        "title": "/pet",
         "description": "Get a todo by id",
-        "type": "api",
         "theme": {
-            "layout": "api"
+            "type": "api",
+            "method": "post"
         }
     }
 }

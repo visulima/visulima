@@ -1,20 +1,3 @@
-export type RequestMethods =
-    | "COPY"
-    | "DELETE"
-    | "GET"
-    | "HEAD"
-    | "LINK"
-    | "LOCK"
-    | "OPTIONS"
-    | "PATCH"
-    | "POST"
-    | "PROPFIND"
-    | "PURGE"
-    | "PUT"
-    | "UNLINK"
-    | "UNLOCK"
-    | "VIEW";
-
 export interface ParameterGroup {
     name: string;
     params: Parameter[];
@@ -31,4 +14,21 @@ export interface Parameter {
     type?: string;
 }
 
-export type ApiInputValue = boolean[] | File | File[] | number[] | string[] | boolean | number | string | null | undefined;
+export type ApiInputValue =
+    | ArrayBuffer
+    | boolean[]
+    | File
+    | File[]
+    | number[]
+    | Record<string, unknown>
+    | string[]
+    | boolean
+    | number
+    | string
+    | null
+    | undefined;
+
+export interface Server {
+    description?: string;
+    url: string;
+}
