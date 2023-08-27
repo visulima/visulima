@@ -94,7 +94,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
     const isLayoutRaw = themeContext.layout === "raw";
 
     return (
-        <>
+        <header className="header-border dark:header-border sticky top-0 z-20 w-full bg-white dark:bg-darker-800 print:hidden">
             {config.navbar.linkBack && (
                 <div className="bg-gray-100 p-4 text-center font-medium lg:hidden">
                     {renderComponent(config.navbar.linkBack, {
@@ -102,7 +102,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                     })}
                 </div>
             )}
-            <div className="nextra-nav-container header-border dark:header-border sticky top-0 z-20 w-full bg-white dark:bg-darker-800">
+            <div className="nextra-nav-container">
                 <div
                     className={cn(
                         "pointer-events-none absolute z-[-1] h-full w-full",
@@ -114,13 +114,13 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                 />
                 <nav
                     className={cn(
-                        "mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800",
+                        "mx-auto flex max-w-[90rem] bg-white dark:bg-darker-800 gap-6 items-center",
                         ["hidden", "page"].includes(activeType) || isLayoutRaw ? "px-2 md:px-6 lg:px-8" : "pr-6 xl:pr-0",
                     )}
                 >
                     <div
                         className={cn(
-                            "grow lg:grow-0 w-2/4 lg:w-64 h-[var(--nextra-navbar-height)] flex items-center",
+                            "w-2/4 md:w-full md:max-w-[256px] h-[var(--nextra-navbar-height)] flex items-center",
                             ["hidden", "page"].includes(activeType) || isLayoutRaw
                                 ? ""
                                 : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-4",
@@ -137,7 +137,15 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                             <div className="flex items-center ltr:mr-auto rtl:ml-auto">{renderComponent(config.logo)}</div>
                         )}
                     </div>
-                    <div className="hidden h-[var(--nextra-navbar-height)] grow items-center justify-end gap-2 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] lg:!flex">
+                    {config.search.position === "navbar" && (
+                        <div className="flex h-[var(--nextra-navbar-height)] grow items-center">
+                            {renderComponent(config.search.component, {
+                                className: "hidden lg:!inline-block mx-min-w-[200px]",
+                                directories: flatDirectories,
+                            })}
+                        </div>
+                    )}
+                    <div className="hidden h-[var(--nextra-navbar-height)] grow-0 items-center justify-end gap-2 lg:!flex">
                         {items.map((pageOrMenu, index) => {
                             if (pageOrMenu.display === "hidden") {
                                 return null;
@@ -194,21 +202,9 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                                 </Anchor>
                             );
                         })}
-                    </div>
-                    {config.search.position === "navbar" && (
-                        <div className="mr-2 flex h-[var(--nextra-navbar-height)] items-center">
-                            {renderComponent(config.search.component, {
-                                className: "hidden lg:!inline-block mx-min-w-[200px]",
-                                directories: flatDirectories,
-                            })}
-                        </div>
-                    )}
-                    <div className="flex h-[var(--nextra-navbar-height)] items-center">
-                        {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
-                        <>
-                            {projectLink}
-                            {chatLink}
-                        </>
+                        {(projectLink || chatLink) && <div className="hidden md:!block md:h-5 md:w-px md:bg-gray-900/10 md:dark:bg-gray-700" />}
+                        {projectLink}
+                        {chatLink}
                     </div>
                     <div className="flex h-[var(--nextra-navbar-height)] items-center">
                         <button
@@ -229,7 +225,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                     )}
                 </nav>
             </div>
-        </>
+        </header>
     );
 };
 

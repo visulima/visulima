@@ -10,7 +10,7 @@ const TocPageContent: FC<TOCProperties> = ({ headings, wrapperRef }) => {
 
     return (
         <div
-            className={cn("pt-8 text-sm [hyphens:auto] mb-8", {
+            className={cn("pt-8 text-sm [hyphens:auto] mb-8 print:hidden", {
                 hidden: headings.length === 0,
             })}
             ref={wrapperRef}

@@ -41,7 +41,9 @@
         "title": "Examples",
         "theme": {
             "layout": "full",
-            "prose": false
+            "prose": false,
+            "hero": false,
+            "breadcrumb": false
         }
     },
     "blog": {

@@ -8,14 +8,23 @@ import CopyToClipboard from "./copy-to-clipboard";
 
 const Pre = ({
     children,
-    className = "code-block",
+    classNames = {},
     filename = undefined,
     hasCopyCode = undefined,
+    header = undefined,
     ...properties
-}: ComponentProps<"pre"> & {
-    filename?: string;
-    hasCopyCode?: boolean;
-}): ReactElement => {
+}: Exclude<
+    ComponentProps<"pre"> & {
+        classNames?: {
+            pre?: string;
+            root?: string;
+        };
+        filename?: string;
+        hasCopyCode?: boolean;
+        header?: ReactElement;
+    },
+    "className"
+>): ReactElement => {
     const reference = useRef<HTMLPreElement | undefined>();
 
     const toggleWordWrap = useCallback(() => {
@@ -34,11 +43,14 @@ const Pre = ({
         <div
             className={cn(
                 "nextra-code-block",
+                "not-prose overflow-hidden",
                 "mt-5 mb-8 first:mt-0 last:mb-0 py-2",
                 "bg-gray-800 dark:bg-gray-800/40",
                 "shadow-lg dark:shadow-none",
                 "dark:ring-1 dark:ring-gray-300/10",
                 "rounded-lg overflow-hidden relative",
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                classNames?.root,
             )}
         >
             {filename ? (
@@ -72,8 +84,14 @@ const Pre = ({
                     {hasCopyCode && <CopyToClipboard getValue={() => reference.current?.querySelector("code")?.textContent ?? ""} tabIndex={-1} />}
                 </div>
             )}
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <pre className={[className, "bg-transparent shadow-none my-0"].join(" ")} ref={reference as LegacyRef<HTMLPreElement> | undefined} {...properties}>
+            {header}
+            <pre
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                className={[classNames?.pre ?? "code-block", "bg-transparent shadow-none my-0 p-4 relative"].join(" ")}
+                ref={reference as LegacyRef<HTMLPreElement> | undefined}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...properties}
+            >
                 {children}
             </pre>
         </div>

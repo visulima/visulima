@@ -34,7 +34,8 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
     return (
         <div
             className={cn(
-                "flex items-stretch border-t py-8 dark:border-neutral-800",
+                "print:hidden",
+                "flex lg:flex-row flex-col items-stretch border-t py-8 dark:border-neutral-800",
                 "contrast-more:border-neutral-400 dark:contrast-more:border-neutral-400",
                 layout === "full" && "mb-8",
             )}
@@ -43,7 +44,7 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
                 <Anchor
                     className={cn(
                         classes.link,
-                        next ? "max-w-[50%] mr-4" : "max-w-full",
+                        next ? "max-w-full lg:max-w-[50%] lg:mr-4" : "max-w-full",
                         "ltr:pr-4 rtl:pl-4",
                         "flex-grow border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}
@@ -61,9 +62,9 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
                 <Anchor
                     className={cn(
                         classes.link,
-                        previous ? "max-w-[50%]" : "max-w-full",
-                        "ltr:ml-auto ltr:pl-4 ltr:text-right rtl:mr-auto rtl:pr-4 rtl:text-left",
-                        "flex-grow ml-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
+                        previous ? "max-w-full lg:max-w-[50%] mt-4 lg:!mt-0" : "max-w-full",
+                        "lg:ltr:ml-auto ltr:pl-4 ltr:text-right lg:rtl:mr-auto rtl:pr-4 rtl:text-left",
+                        "flex-grow lg:ml-4 border border-solid dark:border-primary-100/10 transition-all hover:-translate-y-1",
                     )}
                     href={next.route}
                     title={next.title}

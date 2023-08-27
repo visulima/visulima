@@ -1,9 +1,6 @@
 {
     "basic": {
-        "title": "Basic Usage",
-        "theme": {
-            "prose": true
-        }
+        "title": "Basic Usage"
     },
     "auth": "Authentication",
     "optimistic-ui": "Optimistic UI",

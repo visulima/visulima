@@ -2,17 +2,23 @@ import type { ComponentProps, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { Balancer } from "react-wrap-balancer";
 
-import { useSetActiveAnchor } from "../contexts";
+import cn from "clsx";
+import { useRouter } from "next/router";
+import { useConfig, useSetActiveAnchor } from "../contexts";
 import { useIntersectionObserver, useSlugCounter, useSlugs } from "../contexts/active-anchor";
+import { renderString } from "./render";
+import { DEFAULT_LOCALE } from "../constants/base";
 
 const createHeaderLink =
     (Tag: `h${2 | 3 | 4 | 5 | 6}`) =>
-    ({ children, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
+    ({ children, className, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
         const setActiveAnchor = useSetActiveAnchor();
         const slugs = useSlugs();
         const observer = useIntersectionObserver();
         const obReference = useRef<HTMLAnchorElement>(null);
         const referenceObject = useSlugCounter();
+        const config = useConfig();
+        const { locale } = useRouter();
 
         useEffect(() => {
             const heading = obReference.current;
@@ -44,13 +50,18 @@ const createHeaderLink =
 
         return (
             <Tag
+                className={cn({
+                    "sr-only": className === "sr-only",
+                })}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
                 <Balancer>{children}</Balancer>
-                <span className="absolute -mt-20" id={id} ref={obReference} />
-                {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-                <a aria-label="Permalink for this section" className="subheading-anchor" href={`#${id}`} />
+                {id && (
+                    <a className="subheading-anchor" href={`#${id}`} id={id} ref={obReference}>
+                        <div className="sr-only">{renderString(config.content.permalink.label, { locale: locale ?? DEFAULT_LOCALE })}</div>
+                    </a>
+                )}
             </Tag>
         );
     };

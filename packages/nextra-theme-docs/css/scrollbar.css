@@ -1,6 +1,6 @@
 .nextra-scrollbar {
     scrollbar-width: thin; /* Firefox */
-    scrollbar-color: rgba(115, 115, 115, 0.4) transparent; /* Firefox */
+    scrollbar-color: oklch(55.55% 0 0 / 40%) transparent; /* Firefox */
 
     scrollbar-gutter: stable;
     &::-webkit-scrollbar {
@@ -10,14 +10,16 @@
         @apply bg-transparent;
     }
     &::-webkit-scrollbar-thumb {
-        @apply rounded-[20px];
+        @apply rounded-[10px];
     }
     &:hover::-webkit-scrollbar-thumb {
-        @apply shadow-[inset_0_0_0_5px_var(--tw-shadow-color)];
+        border: 3px solid transparent;
+        background-color: var(--tw-shadow-color);
+        background-clip: content-box;
         @apply shadow-neutral-500/20 hover:shadow-neutral-500/40;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1023px) {
         .nextra-container & {
             scrollbar-gutter: auto;
         }

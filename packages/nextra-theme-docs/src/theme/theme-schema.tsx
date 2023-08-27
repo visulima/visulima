@@ -38,49 +38,6 @@ const stringOrFunction = z.string().or(
 
 export const themeSchema = z
     .object({
-        api: z
-            .object({
-                array: z
-                    .object({
-                        add: z
-                            .object({
-                                content: stringOrFunction,
-                            })
-                            .strict(),
-                        delete: z
-                            .object({
-                                content: stringOrFunction,
-                            })
-                            .strict(),
-                    })
-                    .strict(),
-                file: z
-                    .object({
-                        content: stringOrFunction,
-                    })
-                    .strict(),
-                param: z
-                    .object({
-                        required: z
-                            .object({
-                                content: stringOrFunction,
-                            })
-                            .strict(),
-                    })
-                    .strict(),
-                select: z
-                    .object({
-                        content: stringOrFunction,
-                    })
-                    .strict(),
-                snippet: z
-                    .object({
-                        visibleLanguages: z.array(z.string()).length(4),
-                        title: stringOrFunction,
-                    })
-                    .strict(),
-            })
-            .strict(),
         backToTop: z
             .object({
                 active: z.boolean(),
@@ -118,10 +75,11 @@ export const themeSchema = z
         // eslint-disable-next-line zod/require-strict
         content: z
             .object({
+                permalink: z.object({ label: stringOrFunction }).strict(),
                 showDescription: z.boolean().optional(),
                 showTitle: z.boolean().optional(),
             })
-            .optional(),
+            .strict(),
         darkMode: z.boolean(),
         direction: z.enum(["ltr", "rtl"]),
         docsRepositoryBase: z.string().startsWith("https://"),
@@ -279,6 +237,7 @@ export const themeSchema = z
                 autoCollapse: z.boolean().optional(),
                 defaultMenuCollapseLevel: z.number().min(1).int(),
                 icon: z.custom<FC<{ className: string; route: string; title: string; type: string }> | ReactNode>(...reactNode).optional(),
+                mobileBreakpoint: z.number().min(0).int(),
                 titleComponent: z.custom<FC<{ route: string; title: string; type: string }> | ReactNode>(...reactNode),
             })
             .strict(),

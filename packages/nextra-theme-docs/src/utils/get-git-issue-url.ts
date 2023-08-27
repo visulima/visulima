@@ -8,7 +8,9 @@ const getGitIssueUrl = ({ labels, repository = "", title }: { labels?: string; r
     }
 
     if (repo.resource.includes("github")) {
-        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/issues/new?title=${encodeURIComponent(title)}`;
+        return `${repo.protocol}://${repo.resource}/${repo.owner}/${repo.name}/-/issues/new?issue[title]=${encodeURIComponent(title)}${
+            labels ? `&issue[description]=/label${encodeURIComponent(` ~${labels}\n`)}` : ""
+        }`;
     }
 
     return "#";

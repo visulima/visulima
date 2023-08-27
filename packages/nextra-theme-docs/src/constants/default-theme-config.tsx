@@ -10,115 +10,6 @@ import type { DocumentationThemeConfig } from "../theme/theme-schema";
 import getGitEditUrl from "../utils/get-git-edit-url";
 
 export const DEFAULT_THEME: DocumentationThemeConfig = {
-    api: {
-        array: {
-            add: {
-                content: ({ locale }: { locale: string }) => {
-                    if (locale === "zh-CN") {
-                        return "添加项目";
-                    }
-
-                    if (locale === "ru") {
-                        return "Добавить элемент";
-                    }
-
-                    if (locale === "fr") {
-                        return "Ajouter un élément";
-                    }
-
-                    return "Add Item";
-                },
-            },
-            delete: {
-                content: ({ locale }: { locale: string }) => {
-                    if (locale === "zh-CN") {
-                        return "删除项目";
-                    }
-
-                    if (locale === "ru") {
-                        return "Удалить элемент";
-                    }
-
-                    if (locale === "fr") {
-                        return "Supprimer un élément";
-                    }
-
-                    return "Delete Item";
-                },
-            },
-        },
-        file: {
-            content: ({ locale }: { locale: string }) => {
-                if (locale === "zh-CN") {
-                    return "选择文件";
-                }
-
-                if (locale === "ru") {
-                    return "Выберите файл";
-                }
-
-                if (locale === "fr") {
-                    return "Choisir un fichier";
-                }
-
-                return "Choose File";
-            },
-        },
-        param: {
-            required: {
-                content: ({ locale }: { locale: string }) => {
-                    if (locale === "zh-CN") {
-                        return "必填";
-                    }
-
-                    if (locale === "ru") {
-                        return "Обязательный";
-                    }
-
-                    if (locale === "fr") {
-                        return "Requis";
-                    }
-
-                    return "Required";
-                },
-            },
-        },
-        select: {
-            content: ({ locale }: { locale: string }) => {
-                if (locale === "zh-CN") {
-                    return "选择";
-                }
-
-                if (locale === "ru") {
-                    return "Выбрать";
-                }
-
-                if (locale === "fr") {
-                    return "Sélectionner";
-                }
-
-                return "Select";
-            },
-        },
-        snippet: {
-            title: ({ locale }: { locale: string }) => {
-                if (locale === "zh-CN") {
-                    return "语言";
-                }
-
-                if (locale === "ru") {
-                    return "Язык";
-                }
-
-                if (locale === "fr") {
-                    return "Langage";
-                }
-
-                return "Language";
-            },
-            visibleLanguages: ["shell", "node", "ruby", "php"],
-        },
-    },
     backToTop: {
         active: true,
         content: ({ locale }: { locale: string }) => {
@@ -142,6 +33,23 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         key: "nextra-banner",
     },
     content: {
+        permalink: {
+            label: ({ locale }: { locale: string }) => {
+                if (locale === "zh-CN") {
+                    return "Permalink for this section";
+                }
+
+                if (locale === "ru") {
+                    return "Ссылка на этот раздел";
+                }
+
+                if (locale === "fr") {
+                    return "Lien permanent pour cette section";
+                }
+
+                return "Permalink for this section";
+            },
+        },
         showDescription: true,
         showTitle: true,
     },
@@ -321,8 +229,8 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     sidebar: {
         autoCollapse: true,
         defaultMenuCollapseLevel: 2,
-        // eslint-disable-next-line react/jsx-no-useless-fragment
-        titleComponent: ({ title }) => <>{title}</>,
+        mobileBreakpoint: 1023,
+        titleComponent: ({ title }) => <span className="grow">{title}</span>,
     },
     themeSwitch: {
         dark: ({ locale }) => {
