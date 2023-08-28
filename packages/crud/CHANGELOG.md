@@ -1,3 +1,21 @@
+## @visulima/crud [2.0.0](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.14...@visulima/crud@2.0.0) (2023-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* update minimum Node.js version requirement to 18
+
+### Features
+
+* refactor query parsing and update dependencies ([#203](https://github.com/visulima/visulima/issues/203)) ([cf77427](https://github.com/visulima/visulima/commit/cf7742795f970ebeeb5da22a82fd17750028ee87))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.0
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.0
+
 ## @visulima/crud [1.0.14](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.13...@visulima/crud@1.0.14) (2023-07-28)
 
 
