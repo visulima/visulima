@@ -23,7 +23,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
     });
 
     if (modelName === undefined) {
-        throw new Error(`Couldn't find model name for url ${url}`);
+        throw new Error(`Couldn't find model ${modelName} name for url ${url}`);
     }
 
     return {
