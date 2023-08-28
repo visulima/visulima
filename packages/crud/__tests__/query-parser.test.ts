@@ -6,6 +6,7 @@ import parseQuery from "../src/query-parser";
 describe("parse select", () => {
     it("should parse simple select", () => {
         const url = "http://localhost/?select=user,post";
+
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({

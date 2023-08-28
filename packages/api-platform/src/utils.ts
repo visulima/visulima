@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { parse as urlParse } from "node:url";
+import { URL } from "node:url";
 
 type IncomingApiRequest<TApiRequest = IncomingMessage> = TApiRequest & {
     body?: any;
@@ -29,12 +29,19 @@ export const parseBody = async (request: IncomingApiRequest): Promise<any> => {
     return data ? JSON.parse(data) : null;
 };
 
-export const parseQuery = (request: IncomingApiRequest): unknown => {
+export const parseQuery = (request: IncomingApiRequest): Record<string, unknown> => {
     if (request.query) {
         return request.query;
     }
 
-    return urlParse(request.url ?? "", true).query;
+    if (!request.url) {
+        return {};
+    }
+
+    // Note: Fake protocol is required to parse query string
+    const url = new URL(`https://${request.headers.host?.replace(/\/$/, "")}/${request.url}`);
+
+    return Object.fromEntries(url.searchParams.entries());
 };
 
 export const toHeaderCase = (string_: string): string =>

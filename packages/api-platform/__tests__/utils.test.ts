@@ -130,7 +130,7 @@ describe("utils", () => {
 
     describe("parseQuery", () => {
         it("returns request.query when it is provided", async () => {
-            const request = { query: { message: "Hello" } };
+            const request = { headers: { host: "example.com" }, query: { message: "Hello" } };
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
 
@@ -138,7 +138,7 @@ describe("utils", () => {
         });
 
         it("returns query string object parsed from request.url when request.query is not provided", async () => {
-            const request = { query: null, url: "http://example.com?message=Hello" };
+            const request = { headers: { host: "example.com/" }, query: null, url: "/?message=Hello" };
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
 
@@ -147,7 +147,7 @@ describe("utils", () => {
         });
 
         it("returns empty object when request.url is not provided and request.query is not provided", async () => {
-            const request = { query: null, url: null };
+            const request = { headers: { host: "example.com" }, query: null, url: null };
             const expected = {};
             const actual = parseQuery(request as unknown as IncomingMessage);
 
