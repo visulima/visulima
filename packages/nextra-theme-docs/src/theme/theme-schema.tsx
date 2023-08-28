@@ -72,7 +72,7 @@ export const themeSchema = z
             })
             .optional(),
         components: z.custom<MdxComponents | MergeComponents | null | undefined>(...fc).optional(),
-        // eslint-disable-next-line zod/require-strict
+
         content: z
             .object({
                 permalink: z.object({ label: stringOrFunction }).strict(),

@@ -1,6 +1,6 @@
 import type { FC, SVGAttributes } from "react";
 
-const QuestionMarkCircleIcon: FC<SVGAttributes<SVGElement>> = (properties) => (
+const QuestionMarkCircleIcon: FC<SVGAttributes<SVGElement>> = (properties = {}) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <svg aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...properties}>
         <path
