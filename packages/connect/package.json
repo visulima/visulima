@@ -107,7 +107,7 @@
         "zod": "^3.19.1"
     },
     "engines": {
-        "node": ">=16.18.0 <=20.*"
+        "node": ">=18.* <=20.*"
     },
     "publishConfig": {
         "access": "public",

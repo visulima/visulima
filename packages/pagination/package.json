@@ -89,7 +89,7 @@
         "vitest": "^0.34.3"
     },
     "engines": {
-        "node": ">=16.18.0 <=20.*"
+        "node": ">=18.* <=20.*"
     },
     "publishConfig": {
         "access": "public",

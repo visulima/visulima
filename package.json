@@ -152,7 +152,7 @@
     },
     "packageManager": "pnpm@8.6.12",
     "engines": {
-        "node": ">=16.18.0 <=20.*"
+        "node": ">=18.* <=20.*"
     },
     "anolilab": {
         "eslint-config": {
