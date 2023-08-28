@@ -1,3 +1,14 @@
+## @visulima/pagination [3.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.6...@visulima/pagination@3.0.0) (2023-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* update minimum Node.js version requirement to 18
+
+### Features
+
+* refactor query parsing and update dependencies ([#203](https://github.com/visulima/visulima/issues/203)) ([cf77427](https://github.com/visulima/visulima/commit/cf7742795f970ebeeb5da22a82fd17750028ee87))
+
 ## @visulima/pagination [2.0.6](https://github.com/visulima/visulima/compare/@visulima/pagination@2.0.5...@visulima/pagination@2.0.6) (2023-07-28)
 
 
