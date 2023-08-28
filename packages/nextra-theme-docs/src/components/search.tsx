@@ -63,7 +63,10 @@ const Search: FC<SearchProperties> = ({
 
             if (keyboardEvent.key === "/" || (keyboardEvent.key === "k" && (keyboardEvent.metaKey /* for Mac */ || /* for non-Mac */ keyboardEvent.ctrlKey))) {
                 keyboardEvent.preventDefault();
-                input.current.focus();
+
+                input.current.focus({
+                    preventScroll: true,
+                });
             } else if (keyboardEvent.key === "Escape") {
                 setShow(false);
 

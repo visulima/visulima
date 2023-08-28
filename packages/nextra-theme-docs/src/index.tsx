@@ -46,7 +46,7 @@ const Body: FC<{
     const mounted = useMounted();
 
     if (themeContext.layout === "raw") {
-        return <div className={cn("nextra-content w-full break-words")}>{children}</div>;
+        return <div className={cn("w-full break-words")}>{children}</div>;
     }
 
     const date = themeContext.timestamp && config.gitTimestamp && timestamp ? new Date(timestamp) : null;
@@ -260,8 +260,9 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                         "nextra-content lg:min-w-0 min-h-[calc(100vh-var(--nextra-navbar-height)-var(--nextra-menu-switcher-height))] w-full break-words",
                                         {
                                             "nextra-body-typesetting-article": themeContext.typesetting === "article",
-                                            "pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] pb-6 lg:!pb-0":
+                                            "pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] pb-6":
                                                 themeContext.layout !== "full",
+                                            "lg:!pb-0": pageType === "doc",
                                         },
                                     )}
                                 >
