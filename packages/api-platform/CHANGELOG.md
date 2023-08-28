@@ -1,3 +1,23 @@
+## @visulima/api-platform [2.0.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.15...@visulima/api-platform@2.0.0) (2023-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* update minimum Node.js version requirement to 18
+
+### Features
+
+* refactor query parsing and update dependencies ([#203](https://github.com/visulima/visulima/issues/203)) ([cf77427](https://github.com/visulima/visulima/commit/cf7742795f970ebeeb5da22a82fd17750028ee87))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 2.0.0
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.0
+* **@visulima/crud:** upgraded to 2.0.0
+* **@visulima/readdir:** upgraded to 2.0.0
+
 ## @visulima/api-platform [1.2.15](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.14...@visulima/api-platform@1.2.15) (2023-07-31)
 
 
