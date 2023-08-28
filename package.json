@@ -150,7 +150,7 @@
         "tsup": "^7.2.0",
         "typescript": "^5.2.2"
     },
-    "packageManager": "pnpm@8.6.12",
+    "packageManager": "pnpm@8.7.0",
     "engines": {
         "node": ">=18.* <=20.*"
     },
