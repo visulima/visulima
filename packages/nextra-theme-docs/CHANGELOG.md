@@ -1,3 +1,19 @@
+## @visulima/nextra-theme-docs [3.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.3.0...@visulima/nextra-theme-docs@3.0.0) (2023-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* update minimum Node.js version requirement to 18
+
+### Features
+
+* refactor query parsing and update dependencies ([#203](https://github.com/visulima/visulima/issues/203)) ([cf77427](https://github.com/visulima/visulima/commit/cf7742795f970ebeeb5da22a82fd17750028ee87))
+
+
+### Miscellaneous Chores
+
+* update dependencies for various packages ([b6054fa](https://github.com/visulima/visulima/commit/b6054faf6bc2b4e4f9cb7e1b1746b0b5acddca50))
+
 ## @visulima/nextra-theme-docs [2.3.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.2.1...@visulima/nextra-theme-docs@2.3.0) (2023-08-14)
 
 
