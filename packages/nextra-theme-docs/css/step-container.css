@@ -4,7 +4,7 @@
 }
 
 .steps-container h3 {
-    @apply mb-3
+    @apply mb-3;
 }
 
 .steps-container h3,

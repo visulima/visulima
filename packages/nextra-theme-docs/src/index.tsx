@@ -259,10 +259,10 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     className={cn(
                                         "nextra-content lg:min-w-0 min-h-[calc(100vh-var(--nextra-navbar-height)-var(--nextra-menu-switcher-height))] w-full break-words",
                                         {
+                                            "lg:!pb-0": pageType === "doc",
                                             "nextra-body-typesetting-article": themeContext.typesetting === "article",
                                             "pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)] pb-6":
                                                 themeContext.layout !== "full",
-                                            "lg:!pb-0": pageType === "doc",
                                         },
                                     )}
                                 >

@@ -1,6 +1,8 @@
 article.nextra-body-typesetting-article {
     font-size: 17px;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+        "rlig" 1,
+        "calt" 1;
 
     h1 {
         @apply mt-6 mb-4 text-center;

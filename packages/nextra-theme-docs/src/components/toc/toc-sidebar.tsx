@@ -43,7 +43,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
     return (
         <div
             className={cn(
-                "nextra-scrollbar md:sticky overflow-y-auto pt-8 text-sm [hyphens:auto] top-[var(--nextra-navbar-height)]",
+                "nextra-scrollbar lg:sticky overflow-y-auto pt-8 text-sm [hyphens:auto] top-[var(--nextra-navbar-height)]",
                 "max-h-[calc(100vh-var(--nextra-navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4",
                 "opacity-0",
                 {

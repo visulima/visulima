@@ -32,7 +32,7 @@
         "graph": "nx dep-graph",
         "preinstall": "node verify-node-version.js && pnpx only-allow pnpm",
         "postinstall": "is-ci || husky install",
-        "lint": "pnpm run lint:prettier && pnpm run lint:eslint",
+        "lint": "pnpm run lint:prettier && pnpm run lint:eslint && pnpm run sort-package-json",
         "lint:eslint": "pnpm run lint:eslint:root && nx run-many --target=lint:eslint --all --parallel",
         "lint:eslint:api-platform": "pnpm --filter \"api-platform\" run lint:eslint",
         "lint:eslint:connect": "pnpm --filter \"connect\" run lint:eslint",

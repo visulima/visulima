@@ -11,8 +11,8 @@
         "lint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --cache",
         "lint:eslint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
-        "lint:prettier": "prettier --config=.prettierrc.js --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "start": "next start"
     },
     "browserslist": [
