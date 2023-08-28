@@ -65,28 +65,28 @@
         "micromatch": "^4.0.5"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^11.3.2",
+        "@anolilab/eslint-config": "^11.3.3",
         "@anolilab/prettier-config": "^5.0.3",
         "@anolilab/semantic-release-preset": "^6.0.4",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/micromatch": "^4.0.2",
         "@types/node": "18.17.1",
-        "@vitest/coverage-v8": "^0.34.1",
+        "@vitest/coverage-v8": "^0.34.3",
         "cross-env": "^7.0.3",
-        "eslint": "^8.47.0",
+        "eslint": "^8.48.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.2.8",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "prettier": "^3.0.1",
+        "prettier": "^3.0.2",
         "rimraf": "^5.0.1",
-        "semantic-release": "^21.0.7",
+        "semantic-release": "^21.1.1",
         "tsup": "^7.2.0",
-        "typescript": "^5.1.6",
-        "vitest": "^0.34.1"
+        "typescript": "^5.2.2",
+        "vitest": "^0.34.3"
     },
     "engines": {
-        "node": ">=16.18.0 <=20.*"
+        "node": ">=18.* <=20.*"
     },
     "publishConfig": {
         "access": "public",

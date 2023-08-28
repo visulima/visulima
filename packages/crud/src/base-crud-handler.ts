@@ -38,7 +38,13 @@ async function baseHandler<R extends IncomingMessage, RResponse extends ServerRe
 ): Promise<ExecuteHandler<R, RResponse>>;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity,func-style
-async function baseHandler<R extends { method: string; url: string }, RResponse, T, Q extends ParsedQueryParameters = any, M extends string = string>(
+async function baseHandler<
+    R extends { headers: { host?: string }; method: string; url: string },
+    RResponse,
+    T,
+    Q extends ParsedQueryParameters = any,
+    M extends string = string,
+>(
     responseExecutor: (responseOrContext: RResponse, responseConfig: ResponseConfig) => Promise<RResponse>,
     finalExecutor: (responseOrContext: RResponse) => Promise<void>,
     adapter: Adapter<T, Q>,
@@ -103,7 +109,7 @@ async function baseHandler<R extends { method: string; url: string }, RResponse,
 
             await adapter.connect?.();
 
-            const parsedQuery = parseQuery(request.url);
+            const parsedQuery = parseQuery(`https://${request.headers.host?.replace(/\/$/, "")}/${request.url}`);
             const parameters: HandlerParameters<T, Q> = {
                 adapter,
                 query: adapter.parseQuery(modelName as M, parsedQuery),

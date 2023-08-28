@@ -104,7 +104,7 @@ export type WhereField = Condition & {
 
 export type OrderByOperator = "$asc" | "$desc";
 
-export type OrderByField = Record<string, TOrderByOperator>;
+export type OrderByField = Record<string, OrderByOperator>;
 
 export interface ParsedQueryParameters {
     distinct?: string;
