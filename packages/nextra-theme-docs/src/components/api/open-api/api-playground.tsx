@@ -3,10 +3,11 @@ import cn from "clsx";
 import set from "lodash.set";
 import type { FC, ReactNode } from "react";
 import { useState } from "react";
+import type RMOAS from "oas/dist/rmoas.types";
 
-import { getMethodBgColor, getMethodBgHoverColor, getMethodBorderColor, getMethodRingColor, getMethodTextColor } from "./utils/api-playground-colors";
+import { getMethodBgColor, getMethodBgHoverColor, getMethodBorderColor, getMethodTextColor } from "./utils/api-playground-colors";
 import ApiInput from "./inputs/api-input";
-import type { ApiInputValue, ParameterGroup, RequestMethods } from "./types";
+import type { ApiInputValue, ParameterGroup } from "./types";
 import Button from "../../button";
 
 const ApiPlayground: FC<{
@@ -18,7 +19,7 @@ const ApiPlayground: FC<{
     isSendingRequest: boolean;
 
     /** Request method. */
-    method: RequestMethods;
+    method: RMOAS.HttpMethods;
 
     /** Callback when the user changes a parameter's value. */
     onChangeParamValues: (parameterValues: Record<string, Record<string, ApiInputValue>>) => void;

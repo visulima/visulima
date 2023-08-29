@@ -71,7 +71,7 @@ const Body: FC<{
                 </div>
             )}
             {isDocumentPage && gitTimestampElement}
-            {(isDocumentPage || activeType === "api") && config.comments && (
+            {isDocumentPage && themeContext.type !== "api" && config.comments && (
                 <div className="mb-8">
                     <hr />
                     <Comments config={config} />
@@ -82,8 +82,8 @@ const Body: FC<{
     );
 
     const body = config.main?.({ children: content }) ?? content;
-    const WrapperElement = isDocumentPage || themeContext.type === "api" ? "article" : Fragment;
-    const HeaderWrapperElement = isDocumentPage || themeContext.type === "api" ? "header" : Fragment;
+    const WrapperElement = isDocumentPage ? "article" : Fragment;
+    const HeaderWrapperElement = isDocumentPage ? "header" : Fragment;
 
     return (
         <WrapperElement>
