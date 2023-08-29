@@ -1,3 +1,18 @@
+## @visulima/crud [2.0.1](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.0...@visulima/crud@2.0.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* fixed wrong settings for node 18+ in typescript ([ac6711f](https://github.com/visulima/visulima/commit/ac6711fd2b4fdc5506b03e3a6ae25bb983aa6ea3))
+* remove unused files and refactor imports and typings ([ba2ab03](https://github.com/visulima/visulima/commit/ba2ab03d2d7aff5f49c4d6714a61b99706778f19))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.1
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.1
+
 ## @visulima/crud [2.0.0](https://github.com/visulima/visulima/compare/@visulima/crud@1.0.14...@visulima/crud@2.0.0) (2023-08-28)
 
 
