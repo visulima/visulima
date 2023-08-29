@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "display": "React + Node 16",
+    "display": "React + Node 18",
     "extends": "../../tsconfig.base.json",
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
@@ -9,6 +9,7 @@
         "verbatimModuleSyntax": false,
         "paths": {
             "zod": ["node_modules/zod"]
-        }
+        },
+        "moduleResolution": "bundler"
     }
 }

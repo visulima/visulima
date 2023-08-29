@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "display": "React + Node 16",
+    "display": "React + Node 18",
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "baseUrl": ".",

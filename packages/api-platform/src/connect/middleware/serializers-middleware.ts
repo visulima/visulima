@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { NextHandler, ValueOrPromise } from "@visulima/connect";
 import debug from "debug";
-import type { NextApiResponse } from "next";
+import type { NextApiResponse } from "next/types";
 
 import type { Serializers } from "../../serializers";
 import { serialize } from "../../serializers";

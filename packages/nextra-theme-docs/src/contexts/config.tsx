@@ -1,5 +1,5 @@
 import { ThemeProvider } from "next-themes";
-import type { FrontMatter, PageMapItem, PageOpts } from "nextra";
+import type { FrontMatter, PageMapItem, PageOpts } from "nextra/types";
 import { metaSchema } from "nextra/normalize-pages";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useContext, useMemo, useState } from "react";

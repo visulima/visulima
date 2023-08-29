@@ -14,7 +14,7 @@ import useFathom from "../src/hooks/use-fathom";
 const MyApp: FC<AppProps & { Component: AppProps["Component"] & { getLayout?: (component: ReactElement) => ReactElement } }> = ({ Component, pageProps }) => {
     useFathom();
 
-    const getLayout = Component.getLayout ?? ((page) => page);
+    const getLayout: (component: ReactElement) => ReactElement = Component.getLayout ?? ((page) => page);
 
     return (
         <>

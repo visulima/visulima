@@ -36,19 +36,37 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
-            "require": "./dist/index.js",
-            "import": "./dist/index.mjs",
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
             "style": "./style.css"
         },
         "./components": {
             "types": "./dist/components.d.mts",
-            "require": "./dist/components.js",
-            "import": "./dist/components.mjs"
+            "require": {
+                "types": "./dist/components.d.ts",
+                "default": "./dist/components.js"
+            },
+            "import": {
+                "types": "./dist/components.d.mts",
+                "default": "./dist/components.mjs"
+            }
         },
         "./config": {
             "types": "./dist/config.d.mts",
-            "require": "./dist/config.js",
-            "import": "./dist/config.mjs"
+            "require": {
+                "types": "./dist/config.d.ts",
+                "default": "./dist/config.js"
+            },
+            "import": {
+                "types": "./dist/config.d.mts",
+                "default": "./dist/config.mjs"
+            }
         },
         "./component-style": "./component-style.css",
         "./style": "./style.css",

@@ -3,7 +3,7 @@ import "./theme/polyfill";
 
 import cn from "clsx";
 import { useRouter } from "next/router";
-import type { NextraThemeLayoutProps, PageOpts } from "nextra";
+import type { NextraThemeLayoutProps, PageOpts } from "nextra/types";
 import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";

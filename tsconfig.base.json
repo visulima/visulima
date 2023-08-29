@@ -1,12 +1,15 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node16/tsconfig"],
-    "display": "React + Node 16",
+    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node18/tsconfig"],
+    "display": "React + Node 18",
     "compilerOptions": {
         "baseUrl": "./",
 
-        "target": "es2021",
+        "target": "ES2021",
+        "module": "ES2022",
         "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "resolvePackageJsonExports": true,
+
         "jsx": "react-jsx",
 
         "noEmit": true,
@@ -25,7 +28,6 @@
         "useUnknownInCatchVariables": true,
 
         "isolatedModules": true,
-        "verbatimModuleSyntax": true,
         "resolveJsonModule": true,
         "inlineSources": false,
 
@@ -35,9 +37,7 @@
 
         "noPropertyAccessFromIndexSignature": true,
 
-        "exactOptionalPropertyTypes": false,
-
-        "moduleResolution": "node"
+        "exactOptionalPropertyTypes": false
     },
     "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**"]
 }
