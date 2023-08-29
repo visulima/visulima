@@ -135,6 +135,7 @@
         "prettier": "^3.0.2",
         "rimraf": "^5.0.1",
         "semantic-release": "^21.1.1",
+        "sort-package-json": "^2.5.1",
         "tsup": "^7.2.0",
         "typescript": "^5.2.2",
         "vitest": "^0.34.3",

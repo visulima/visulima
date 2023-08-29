@@ -1332,6 +1332,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.28)(typescript@5.2.2)
@@ -1436,6 +1439,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.28)(typescript@5.2.2)
@@ -1488,9 +1494,6 @@ importers:
       lodash.set:
         specifier: ^4.3.2
         version: 4.3.2
-      match-sorter:
-        specifier: ^6.3.1
-        version: 6.3.1
       next-seo:
         specifier: ^6.1.0
         version: 6.1.0(next@13.4.15)(react-dom@18.2.0)(react@18.2.0)
@@ -1663,6 +1666,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tailwindcss:
         specifier: ^3.3.3
         version: 3.3.3
@@ -1746,6 +1752,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.28)(typescript@5.2.2)
@@ -1828,6 +1837,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.28)(typescript@5.2.2)
@@ -1892,6 +1904,9 @@ importers:
       semantic-release:
         specifier: ^21.0.2
         version: 21.1.1
+      sort-package-json:
+        specifier: ^2.5.1
+        version: 2.5.1
       tsup:
         specifier: 7.1.0
         version: 7.1.0(postcss@8.4.28)(typescript@5.2.2)
@@ -16407,13 +16422,6 @@ packages:
       regexp.prototype.flags: 1.5.0
     dev: false
 
-  /match-sorter@6.3.1:
-    resolution: {integrity: sha512-mxybbo3pPNuA+ZuCUhm5bwNkXrJTbsk5VWbR5wiwz/GC6LIiegBGn2w3O08UG/jdbYLinw51fSQ5xNU1U3MgBw==}
-    dependencies:
-      '@babel/runtime': 7.22.11
-      remove-accents: 0.4.2
-    dev: false
-
   /match-test-replace@1.4.0:
     resolution: {integrity: sha512-eHbBXYgF1r2Dh7ArYFr+Y/LltcoVr3diTAQ05aMykBm0vLptQy8Ez2iew8+yTBmYbJFq3C4WKy9h/kvUfQmrtA==}
     dev: false
@@ -20497,10 +20505,6 @@ packages:
     dependencies:
       argparse: 1.0.10
       autolinker: 3.16.2
-    dev: false
-
-  /remove-accents@0.4.2:
-    resolution: {integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==}
     dev: false
 
   /rename-overwrite@4.0.3:
