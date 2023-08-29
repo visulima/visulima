@@ -24,8 +24,8 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
     const config = useConfig();
     const nav = config.navigation;
     const navigation: Exclude<DocumentationThemeConfig["navigation"], boolean> = typeof nav === "boolean" ? { next: nav, prev: nav } : nav;
-    const previous = navigation.prev && flatDirectories[currentIndex - 1];
-    const next = navigation.next && flatDirectories[currentIndex + 1];
+    const previous: DocumentationItem | undefined = navigation.prev ? flatDirectories[currentIndex - 1] : undefined;
+    const next: DocumentationItem | undefined = navigation.next ? flatDirectories[currentIndex + 1] : undefined;
 
     if (!previous && !next) {
         return null;

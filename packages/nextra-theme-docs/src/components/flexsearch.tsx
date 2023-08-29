@@ -5,7 +5,7 @@ import BaseFlexSearch from "flexsearch";
 import { useRouter } from "next/router";
 import type { ReactElement, ReactNode } from "react";
 import { useCallback, useState } from "react";
-import type { SearchData } from "nextra";
+import type { SearchData } from "nextra/types";
 
 import { DEFAULT_LOCALE } from "../constants/base";
 import type { SearchResult } from "../types";

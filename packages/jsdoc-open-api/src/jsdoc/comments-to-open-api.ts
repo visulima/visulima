@@ -372,6 +372,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return jsDocumentComments
         .filter((comment) => openAPIRegex.test(comment.description.trim()))
         .map((comment) => {

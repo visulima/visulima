@@ -3,7 +3,7 @@ import path from "node:path";
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
 import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
 import type { NextConfig } from "next/types";
-import type { NextJsWebpackConfig } from "next/dist/server/config-shared";
+import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
 
 const withOpenApi =
@@ -21,7 +21,7 @@ const withOpenApi =
     (nextConfig: NextConfig): NextConfig =>
         ({
             ...nextConfig,
-            webpack: (config: Configuration, options: any) => {
+            webpack: (config: Configuration, options: WebpackConfigContext) => {
                 if (!options.isServer) {
                     return config;
                 }
