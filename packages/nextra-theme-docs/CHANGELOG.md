@@ -1,3 +1,21 @@
+## @visulima/nextra-theme-docs [4.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@3.0.0...@visulima/nextra-theme-docs@4.0.0) (2023-08-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* changed exports path for the components and config
+
+### Features
+
+* fixed found design issues, adjusted search from right to left ([#201](https://github.com/visulima/visulima/issues/201)) ([3f28da2](https://github.com/visulima/visulima/commit/3f28da2d6f4d11a8833ae419001b9f6f432ae300))
+
+
+### Bug Fixes
+
+* fixed wrong settings for node 18+ in typescript ([ac6711f](https://github.com/visulima/visulima/commit/ac6711fd2b4fdc5506b03e3a6ae25bb983aa6ea3))
+* remove unused files and refactor imports and typings ([ba2ab03](https://github.com/visulima/visulima/commit/ba2ab03d2d7aff5f49c4d6714a61b99706778f19))
+* updated various package dependencies and optimized code formatting. ([5d71d91](https://github.com/visulima/visulima/commit/5d71d913e857b71a7b741abe848780aaa22d679f))
+
 ## @visulima/nextra-theme-docs [3.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@2.3.0...@visulima/nextra-theme-docs@3.0.0) (2023-08-28)
 
 
