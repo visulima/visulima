@@ -15,7 +15,7 @@
 @import "./zoom.css";
 
 html {
-    @apply antialiased text-base;
+    @apply antialiased text-base scroll-pt-[--nextra-navbar-height];
     scroll-padding-top: var(--nextra-navbar-height);
     font-feature-settings:
         "rlig" 1,
@@ -58,21 +58,25 @@ a,
 summary {
     @apply rounded;
 }
-
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
     .nextra-sidebar-container {
         @apply fixed pt-[calc(var(--nextra-navbar-height))] top-0 w-full bottom-0 z-[15] overscroll-contain bg-white dark:bg-dark;
         transition: transform 0.8s cubic-bezier(0.52, 0.16, 0.04, 1);
         will-change: transform, opacity;
         contain: layout style;
         backface-visibility: hidden;
+
+        & > .nextra-scrollbar {
+            mask-image: linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px);
+        }
     }
+
     .nextra-banner-container ~ div {
         .nextra-sidebar-container {
             @apply pt-[6.5rem];
         }
         &.nextra-nav-container {
-            @apply top-10 lg:top-0;
+            @apply top-10 md:top-0;
         }
     }
     .nextra-banner-hidden {
@@ -83,9 +87,16 @@ summary {
             @apply !top-0;
         }
     }
+    .nextra-search .excerpt {
+        @apply overflow-hidden text-ellipsis;
+        display: -webkit-box;
+        line-clamp: 1;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+    }
 }
 
-@media (prefers-reduced-motion: reduce) and (max-width: 1024px) {
+@media (prefers-reduced-motion: reduce) and (max-width: 1023px) {
     article:before,
     .nextra-sidebar-container,
     .nextra-sidebar-container.open,
@@ -107,9 +118,8 @@ article details > summary {
     }
 }
 
-@media (min-width: 768px) {
-    .nextra-toc > .div,
-    .nextra-sidebar-container {
+@media (min-width: 1023px) {
+    .nextra-toc > .div {
         mask-image: linear-gradient(to bottom, transparent, #000 20px), linear-gradient(to left, #000 10px, transparent 10px);
     }
 }
@@ -221,8 +231,8 @@ article a[href^="https://"]::after
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
 }
 
-.footnotes > h2 {
-    @apply mt-10 border-b pb-1 text-3xl border-neutral-200/70 contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400;
+.footnotes ol {
+    @apply border-t !ml-0 border-neutral-200/70 contrast-more:border-neutral-400 dark:border-primary-100/10 contrast-more:dark:border-neutral-400 text-neutral-400 text-sm;
 }
 
 .footnotes a[data-footnote-backref] {
@@ -230,7 +240,7 @@ article a[href^="https://"]::after
 }
 
 @layer utilities {
-    .prose :where(iframe):not(:where([class~="not-prose"] *)) {
+    .prose:not(.layout-full) :where(iframe):not(:where([class~="not-prose"] *)) {
         @apply aspect-video w-full h-auto mt-8 !bg-white dark:!bg-dark;
     }
 }

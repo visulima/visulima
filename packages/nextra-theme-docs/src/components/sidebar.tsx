@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import type { Heading } from "nextra";
-import { useFSRoute } from "nextra/hooks";
+import { useFSRoute, useMounted } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
 import type { FC, MouseEvent } from "react";
@@ -10,18 +10,18 @@ import scrollIntoView from "scroll-into-view-if-needed";
 import { DEFAULT_LOCALE } from "../constants/base";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
 import { renderComponent } from "../utils/render";
-import useCurrentWidth from "../utils/use-current-width";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
 import cn from "../utils/cn";
+import useWindowSize from "../utils/use-window-size";
 
 const TreeState: Record<string, boolean> = Object.create(null) as Record<string, boolean>;
 
 const FocusedItemContext = createContext<string | null>(null);
 
-const OnFocuseItemContext = createContext<((item: string | null) => unknown) | null>(null);
+const OnFocusItemContext = createContext<((item: string | null) => unknown) | null>(null);
 
 const classes = {
     active: cn("font-semibold text-primary-600", "contrast-more:border-primary-500 contrast-more:dark:border-primary-500"),
@@ -40,7 +40,7 @@ const classes = {
         "flex px-2 py-1.5 text-sm transition-colors [word-break:break-word] group",
         "cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:border",
     ),
-    list: cn("flex flex-col gap-1"),
+    list: "flex flex-col gap-1",
 };
 
 const FolderLevelContext = createContext(0);
@@ -221,12 +221,12 @@ const Separator: FC<{ title: string }> = ({ title }) => {
 
 const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item }) => {
     const route = useFSRoute();
-    const onFocus = useContext(OnFocuseItemContext);
+    const onFocus = useContext(OnFocusItemContext);
 
     // It is possible that the item doesn't have any route - for example an external link.
     const active = item.route && [`${route}/`, route].includes(`${item.route}/`);
 
-    const activeAnchor = useActiveAnchor();
+    const activeId = useActiveAnchor();
     const { setMenu } = useMenu();
     const config = useConfig();
 
@@ -249,7 +249,7 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                 onFocus={() => {
                     onFocus?.(item.route);
                 }}
-                className={cn(classes.link, active ? classes.active : classes.inactive)}
+                className={cn(classes.link, active ? classes.active : classes.inactive, "items-center")}
                 href={(item as PageItem).href ?? item.route}
                 newWindow={(item as PageItem).newWindow}
             >
@@ -274,8 +274,8 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                                 className={cn(
                                     classes.link,
                                     'flex gap-2 before:opacity-25 before:content-["#"]',
-                                    // eslint-disable-next-line security/detect-object-injection
-                                    activeAnchor[id]?.isActive ? classes.active : classes.inactive,
+
+                                    activeId === id ? classes.active : classes.inactive,
                                 )}
                                 onClick={() => {
                                     setMenu(false);
@@ -319,19 +319,20 @@ interface SideBarProperties {
     flatDirectories: Item[];
     fullDirectories: Item[];
     headings?: Heading[];
-    includePlaceholder: boolean;
 }
 
-const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectories, flatDirectories, fullDirectories, headings = [], includePlaceholder }) => {
+const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectories, flatDirectories, fullDirectories, headings = [] }) => {
     const config = useConfig();
     const { menu, setMenu } = useMenu();
     const router = useRouter();
     const anchors = useMemo(() => headings.filter((v) => v.depth === 2), [headings]);
     const [focused, setFocused] = useState<string | null>(null);
-    const currentWidth = useCurrentWidth();
+    const { width } = useWindowSize();
 
     const containerReference = useRef<HTMLDivElement>(null);
     const sidebarReference = useRef<HTMLDivElement>(null);
+
+    const mounted = useMounted();
 
     useEffect(() => {
         if (menu) {
@@ -344,7 +345,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
     useEffect(() => {
         const activeElement = containerReference.current?.querySelector("li.active");
 
-        if (activeElement && (window.innerWidth > 767 || menu)) {
+        if (activeElement && ((width && width > config.sidebar.mobileBreakpoint) || menu)) {
             const scroll = () => {
                 scrollIntoView(activeElement, {
                     block: "center",
@@ -361,85 +362,78 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                 scroll();
             }
         }
-    }, [menu]);
+    }, [config.sidebar.mobileBreakpoint, menu, width]);
 
     // Always close mobile nav when route was changed (e.g. logo click)
     useEffect(() => {
         setMenu(false);
     }, [router.asPath, setMenu]);
 
-    useEffect(() => {
-        if (currentWidth > 1024) {
-            setMenu(false);
-        }
-    }, [currentWidth, setMenu]);
-
     const hasI18n = config.i18n.length > 1;
     const hasMenu = config.darkMode || hasI18n;
 
     return (
         <>
-            {includePlaceholder && asPopover ? <div className="h-0 shrink-0 max-xl:hidden" /> : null}
             {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
             <div
-                className={cn(
-                    "motion-reduce:transition-none [transition:background-color_1.5s_ease]",
-                    menu ? "fixed inset-0 z-10 bg-black/80 dark:bg-black/60" : "bg-transparent",
-                )}
+                className={cn("motion-reduce:transition-none [transition:background-color_1.5s_ease]", {
+                    "bg-transparent": !menu,
+                    "fixed inset-0 z-10 bg-black/80 dark:bg-black/60": menu,
+                })}
                 onClick={() => setMenu(false)}
             />
             <aside
                 className={cn(
                     "nextra-sidebar-container flex flex-col",
                     "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65",
-                    "lg:top-16 lg:shrink-0 motion-reduce:transform-none",
-                    "transform-gpu transition-all ease-in-out",
-                    "lg:w-64",
-                    asPopover ? "lg:!hidden" : "lg:sticky lg:self-start lg:w-64",
-                    hasMenu && "with-menu",
+                    "lg:top-0 lg:shrink-0 motion-reduce:transform-none",
+                    "transform-gpu transition-all ease-in-out lg:w-64",
+                    "print:hidden",
+                    asPopover ? "lg:!hidden" : "lg:sticky lg:self-start",
                     menu ? "max-lg:[transform:translate3d(0,0,0)]" : "max-lg:[transform:translate3d(0,-100%,0)]",
                 )}
                 ref={containerReference}
             >
-                <div className={cn("px-4 pt-4", config.search.position === "navbar" ? "md:hidden" : "")}>
+                <div className={cn("px-4 pt-4", config.search.position === "navbar" ? "lg:hidden" : "")}>
                     {renderComponent(config.search.component, {
                         directories: flatDirectories,
                     })}
                 </div>
                 <FocusedItemContext.Provider value={focused}>
-                    <OnFocuseItemContext.Provider
+                    <OnFocusItemContext.Provider
                         // eslint-disable-next-line react/jsx-no-constructed-context-values
                         value={(item) => {
                             setFocused(item);
                         }}
                     >
                         <div
-                            className={cn(
-                                "overflow-y-auto overflow-x-hidden p-4",
-                                "grow md:h-[calc(100vh-var(--nextra-navbar-height)-var(--nextra-menu-height))] pr-2",
-                            )}
+                            className={cn("overflow-y-auto overflow-x-hidden nextra-scrollbar", "p-2 pr-4", "lg:h-[calc(100vh-var(--nextra-menu-height))]")}
                             ref={sidebarReference}
                         >
                             <div className="transform-gpu ease-in-out motion-reduce:transition-none">
-                                <Menu
-                                    // the sidebar when `floatTOC` is enabled.
-                                    anchors={config.tocSidebar.float ? [] : anchors}
-                                    className="max-lg:hidden"
-                                    // When the viewport size is larger than `md`, hide the anchors in
-                                    // The sidebar menu, shows only the docs directories.
-                                    directories={documentsDirectories}
-                                    onlyCurrentDocs
-                                />
-                                <Menu
-                                    // Always show the anchor links on mobile (`md`).
-                                    anchors={anchors}
-                                    className="lg:hidden"
-                                    // The mobile dropdown menu, shows all the directories.
-                                    directories={fullDirectories}
-                                />
+                                {mounted && width && width > config.sidebar.mobileBreakpoint && (
+                                    <Menu
+                                        // the sidebar when `floatTOC` is enabled.
+                                        anchors={config.tocSidebar.float ? [] : anchors}
+                                        className="nextra-menu-desktop max-lg:!hidden"
+                                        // When the viewport size is larger than `md`, hide the anchors in
+                                        // The sidebar menu, shows only the docs directories.
+                                        directories={documentsDirectories}
+                                        onlyCurrentDocs
+                                    />
+                                )}
+                                {mounted && width && width < config.sidebar.mobileBreakpoint && (
+                                    <Menu
+                                        // Always show the anchor links on mobile (`md`).
+                                        anchors={anchors}
+                                        className="nextra-menu-mobile lg:!hidden"
+                                        // The mobile dropdown menu, shows all the directories.
+                                        directories={fullDirectories}
+                                    />
+                                )}
                             </div>
                         </div>
-                    </OnFocuseItemContext.Provider>
+                    </OnFocusItemContext.Provider>
                 </FocusedItemContext.Provider>
 
                 {hasMenu && (
@@ -455,7 +449,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                         )}
                         data-toggle-animation="off"
                     >
-                        {hasI18n && <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" />}
+                        <LocaleSwitch className="ltr:mr-auto rtl:ml-auto" />
                         {hasI18n && config.darkMode && <div className="grow" />}
                         {config.darkMode && <ThemeSwitch locale={router.locale ?? DEFAULT_LOCALE} />}
                     </div>

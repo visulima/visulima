@@ -9,6 +9,7 @@ import cn from "../utils/cn";
 import usePopper from "../utils/use-popper";
 
 interface MenuProperties {
+    children?: ReactElement;
     className?: string;
     onChange: (option: MenuOption) => void;
     options: MenuOption[];
@@ -26,7 +27,7 @@ const Portal: FC<PropsWithChildren> = ({ children = undefined }) => {
     return createPortal(children, document.body);
 };
 
-const Select: FC<MenuProperties> = ({ className = undefined, onChange, options, selected, title = undefined }) => {
+const Select: FC<MenuProperties> = ({ children = undefined, className = undefined, onChange, options, selected, title = undefined }) => {
     // eslint-disable-next-line @arthurgeron/react-usememo/require-usememo
     const [trigger, container] = usePopper({
         modifiers: [
@@ -60,7 +61,7 @@ const Select: FC<MenuProperties> = ({ className = undefined, onChange, options, 
                     ref={trigger}
                     title={title}
                 >
-                    {selected.name}
+                    {children ?? selected.name}
                     <Portal>
                         <Transition
                             as={Listbox.Options}

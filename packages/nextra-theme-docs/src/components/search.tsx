@@ -63,7 +63,10 @@ const Search: FC<SearchProperties> = ({
 
             if (keyboardEvent.key === "/" || (keyboardEvent.key === "k" && (keyboardEvent.metaKey /* for Mac */ || /* for non-Mac */ keyboardEvent.ctrlKey))) {
                 keyboardEvent.preventDefault();
-                input.current.focus();
+
+                input.current.focus({
+                    preventScroll: true,
+                });
             } else if (keyboardEvent.key === "Escape") {
                 setShow(false);
 
@@ -171,7 +174,7 @@ const Search: FC<SearchProperties> = ({
                     "border dark:border-gray-100/20 dark:bg-darker-800",
                     "contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current",
                     "items-center gap-1 transition-opacity",
-                    value ? "z-20 flex cursor-pointer hover:opacity-70" : "pointer-events-none hidden sm:flex",
+                    value ? "z-20 flex cursor-pointer hover:opacity-70" : "pointer-events-none hidden lg:!flex",
                 )}
                 onClick={async () => {
                     await onChange("");
@@ -198,7 +201,7 @@ const Search: FC<SearchProperties> = ({
     }, []);
 
     return (
-        <div className={cn("nextra-search relative lg:w-64", className)}>
+        <div className={cn("nextra-search relative w-full", className)}>
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */}
             {renderList && <div className="fixed inset-0 z-10" onClick={() => setShow(false)} />}
 
@@ -245,7 +248,7 @@ const Search: FC<SearchProperties> = ({
                         "absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-lg py-2.5 shadow-lg",
                         "max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)]",
                         "lg:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)]",
-                        "inset-x-0 ltr:lg:left-auto rtl:lg:right-auto",
+                        "inset-x-0 ltr:lg:right-auto rtl:lg:right-auto",
                         "contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50",
                         overlayClassName,
                     )}

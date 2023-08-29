@@ -35,6 +35,8 @@
 
 ---
 
+![Look and feel](./theme.png)
+
 ## Install
 
 If you have a Nextra project, you can install the theme with:

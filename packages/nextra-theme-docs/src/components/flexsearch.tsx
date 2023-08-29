@@ -51,7 +51,7 @@ const loadIndexesPromises = new Map<string, Promise<void>>();
 const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> => {
     // eslint-disable-next-line compat/compat
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
-    const data = (await response.json()) as SearchData;
+    const searchData = (await response.json()) as SearchData;
 
     const pageIndex: PageIndex = new BaseFlexSearch.Document({
         cache: 100,
@@ -86,27 +86,22 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
 
     let pageId = 0;
 
-    Object.keys(data).forEach((route) => {
+    Object.entries(searchData).forEach(([route, structurizedData]) => {
         let pageContent = "";
 
         pageId += 1;
 
-        // eslint-disable-next-line security/detect-object-injection
-        Object.keys(data[route].data).forEach((heading) => {
-            const [hash, text] = heading.split("#");
-            const url = route + (hash ? `#${hash}` : "");
-            // eslint-disable-next-line security/detect-object-injection
-            const title = text ?? data[route]?.title;
-
-            // eslint-disable-next-line security/detect-object-injection
-            const content = data[route]?.data[heading] ?? "";
-            const paragraphs = content.split("\n").filter(Boolean);
+        Object.entries(structurizedData.data).forEach(([key, content]) => {
+            const [headingId, headingValue] = key.split("#");
+            const url = route + (headingId ? `#${headingId}` : "");
+            const title = headingValue ?? structurizedData.title;
+            const paragraphs = content.split("\n");
 
             sectionIndex.add({
-                content: title ?? "",
+                content: title,
                 id: url,
                 pageId: `page_${pageId}`,
-                title: title ?? "",
+                title,
                 url,
                 ...(paragraphs[0] && { display: paragraphs[0] }),
             });
@@ -116,7 +111,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
                     content: paragraph,
                     id: `${url}_${index}`,
                     pageId: `page_${pageId}`,
-                    title: title ?? "",
+                    title,
                     url,
                 });
             });
@@ -128,8 +123,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         pageIndex.add({
             content: pageContent,
             id: pageId,
-            // eslint-disable-next-line security/detect-object-injection
-            title: data[route]?.title ?? "",
+            title: structurizedData.title,
         });
     });
 
@@ -221,7 +215,6 @@ const FlexSearch = ({ className = undefined }: { className?: string }): ReactEle
                                 <HighlightMatches match={searchString} value={title} />
                             </div>
                             {content && (
-                                // eslint-disable-next-line tailwindcss/no-custom-classname
                                 <div className="excerpt mt-1 text-sm leading-[1.35rem] text-gray-600 dark:text-gray-400 contrast-more:dark:text-gray-50">
                                     <HighlightMatches match={searchString} value={content} />
                                 </div>

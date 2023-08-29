@@ -9,5 +9,8 @@
         "type": "separator"
     },
     "more": "More: A Super Super Super Super Long Directory",
-    "file-name.with.DOTS": "Filenames with Dots"
+    "file-name.with.DOTS": "Filenames with Dots",
+    "api": {
+        "title": "API"
+    }
 }

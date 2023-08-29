@@ -11,8 +11,8 @@
         "lint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --cache",
         "lint:eslint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
-        "lint:prettier": "prettier --config=.prettierrc.js --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "start": "next start"
     },
     "browserslist": [
@@ -58,7 +58,6 @@
         "@types/node": "18.17.1",
         "@types/react": "18.2.21",
         "@types/react-dom": "18.2.7",
-        "autoprefixer": "^10.4.15",
         "cross-env": "^7.0.3",
         "eslint": "^8.48.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -73,6 +72,7 @@
         "postcss": "^8.4.28",
         "postcss-cli": "^10.1.0",
         "postcss-import": "^15.1.0",
+        "postcss-lightningcss": "0.9.0",
         "prettier": "^3.0.2",
         "sort-package-json": "^2.5.1",
         "symlink-dir": "^5.1.1",

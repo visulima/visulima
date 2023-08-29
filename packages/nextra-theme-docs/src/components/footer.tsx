@@ -16,6 +16,7 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
     return (
         <footer
             className={cn(
+                "nextra-footer-container print:hidden",
                 "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
                 config.footer.className,
                 ["hidden", "page"].includes(activeType) || isLayoutRaw
@@ -38,7 +39,7 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
                                 "items-center": hasI18n && config.darkMode,
                             })}
                         >
-                            {hasI18n && <LocaleSwitch options={config.i18n} />}
+                            {hasI18n && <LocaleSwitch />}
                             {hasI18n && config.darkMode && <div className="grow" />}
                             {config.darkMode && <ThemeSwitch locale={locale} />}
                         </div>

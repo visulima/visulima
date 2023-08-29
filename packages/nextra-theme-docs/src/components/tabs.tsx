@@ -64,6 +64,7 @@ export const Tabs = ({
         };
 
         const index = Number(localStorage.getItem(storageKey));
+
         setSelectedIndex(Number.isNaN(index) ? 0 : index);
 
         window.addEventListener("storage", handleEvent);
@@ -78,6 +79,7 @@ export const Tabs = ({
         if (isValidElement(child)) {
             if ((child as ReactElement<TabProperties>).type === Tab) {
                 const { disabled, title } = (child as ReactElement<TabProperties>).props;
+
                 tabs.push({
                     disabled,
                     label: title,

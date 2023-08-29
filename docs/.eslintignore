@@ -11,6 +11,8 @@ coverage
 .next
 .secretlintrc.js
 
+theme.config.tsx
+
 __test__/__fixture__
 __test__/__snapshots__
 

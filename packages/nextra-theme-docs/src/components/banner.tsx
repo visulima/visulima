@@ -22,7 +22,7 @@ const Banner = (): ReactElement | null => {
             <script dangerouslySetInnerHTML={{ __html: hideBannerScript }} />
             <div
                 className={cn(
-                    "nextra-banner-container sticky top-0 z-20 flex items-center lg:relative",
+                    "nextra-banner-container sticky top-0 z-20 flex items-center lg:relative print:hidden",
                     "bg-neutral-900 text-sm text-slate-50",
                     "h-[var(--nextra-banner-height)] [body.nextra-banner-hidden_&]:hidden",
                     "dark:bg-[linear-gradient(1deg,#383838,#212121)] dark:text-white",
@@ -33,7 +33,7 @@ const Banner = (): ReactElement | null => {
                     className={cn(
                         "mx-auto w-full max-w-[90rem]",
                         "truncate whitespace-nowrap",
-                        "py-1 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)]",
+                        "py-1 pl-[max(env(safe-area-inset-left),1rem)] pr-[max(env(safe-area-inset-right),1rem)]",
                         "text-center font-medium",
                     )}
                 >
