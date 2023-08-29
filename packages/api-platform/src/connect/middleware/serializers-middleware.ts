@@ -29,6 +29,7 @@ const serializersMiddleware =
         } else if (typeof (response as NextApiResponse).json === "function") {
             log("response.json() is not supported by @visulima/api-platform serializer. Use response.send() or response.end() instead.");
         } else {
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             const oldEnd = response.end;
 
             // @ts-expect-error TS2322: Type

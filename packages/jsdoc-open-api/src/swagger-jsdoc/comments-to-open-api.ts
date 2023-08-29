@@ -67,6 +67,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
 const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return jsDocumentComments.map((comment) => {
         // Line count, number of tags + 1 for description.
         // - Don't count line-breaking due to long descriptions

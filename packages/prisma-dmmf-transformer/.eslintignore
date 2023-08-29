@@ -8,3 +8,5 @@ __fixtures__
 .prettierrc.js
 _meta.*.json
 tsup.config.ts
+
+README.md

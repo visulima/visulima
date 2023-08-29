@@ -4,10 +4,12 @@ import { LiveEditor } from "@visulima/nextra-theme-docs/components";
 
 To include a live code editor, add `live` in the head of your code block:
 
-```tsx
+```jsx
+import { LiveEditor } from "@visulima/nextra-theme-docs/components";
+
 <LiveEditor language="js">
     <div>Example</div>
-</LiveEditor>
+</LiveEditor>;
 ```
 
 **Result:**
@@ -20,13 +22,15 @@ To include a live code editor, add `live` in the head of your code block:
 
 By default only a single JSX expression is allowed. It is common to have to write more complex examples. The `noInline` flag makes it possible. When activated, you have to call a `render()` method to define the expression rendered in preview:
 
-```tsx
+```jsx
+import { LiveEditor } from "@visulima/nextra-theme-docs/components";
+
 <LiveEditor
-    language="jsx"
-    noInline
     code={`const content = 'Example';
 render(<div>{content}</div>)`}
-/>
+    language="jsx"
+    noInline
+/>;
 ```
 
 **Result:**

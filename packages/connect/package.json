@@ -69,7 +69,7 @@
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
-        "lint:eslint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
         "lint:prettier": "prettier --config=.prettierrc.js --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
