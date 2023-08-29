@@ -2,29 +2,34 @@ import cn from "clsx";
 import type { Heading } from "nextra";
 import { ArrowRightIcon } from "nextra/icons";
 import type { FC } from "react";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
 import { useConfig } from "../../contexts";
-import type { ActiveAnchor } from "../../contexts/active-anchor";
 import { renderComponent } from "../../utils/render";
 
-const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix = "" }) => {
+const Toc: FC<TOCProperties> = ({ activeId = undefined, headings, isPage = false, prefix = "" }) => {
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 
-    const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
-    const hasHeadings = items.length > 0;
+    const hasHeadings = headings.length > 0;
     const tocConfig = prefix === "sidebar" ? config.tocSidebar : config.tocContent;
 
     if (hasHeadings) {
         return (
-            <div ref={tocReference}>
+            <div className={isPage ? "" : "inline-block"} ref={tocReference}>
                 <p className="mb-2 font-semibold uppercase tracking-wide text-gray-500 contrast-more:text-gray-800 dark:text-gray-400 contrast-more:dark:text-gray-50">
                     {renderComponent(config.tocSidebar.title)}
                 </p>
                 <ul className="leading-normal" key={prefix}>
-                    {items.map(({ depth, id, value }) => (
-                        <li className={isPage ? "" : "scroll-my-6 scroll-py-6"} key={`${prefix}${id}`}>
+                    {headings.map(({ depth, id, value }) => (
+                        <li
+                            className={
+                                isPage
+                                    ? ""
+                                    : "group flex items-start whitespace-pre-wrap text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                            }
+                            key={`${prefix}${id}`}
+                        >
                             <a
                                 className={cn(
                                     isPage
@@ -45,9 +50,9 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
                                     isPage
                                         ? "border-solid border-b dark:border-primary-100/10 contrast-more:border-neutral-400 py-2"
                                         : "my-2 scroll-my-6 scroll-py-6",
-                                    isPage ? "flex justify-between items-center w-full" : "inline-block w-full",
-                                    // eslint-disable-next-line security/detect-object-injection
-                                    activeAnchor[id]?.isActive
+                                    isPage ? "flex justify-between items-center w-full" : "inline-block w-full transition-colors subpixel-antialiased",
+
+                                    activeId === id
                                         ? "text-primary-500 subpixel-antialiased contrast-more:!text-primary-500"
                                         : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300",
                                     "contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words",
@@ -77,7 +82,7 @@ const Toc: FC<TOCProperties> = ({ activeAnchor, headings, isPage = false, prefix
 };
 
 export interface TOCProperties {
-    activeAnchor: ActiveAnchor;
+    activeId?: string;
     headings: Heading[];
     isPage?: boolean;
     prefix?: string;

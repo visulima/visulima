@@ -66,6 +66,7 @@ export const createConfig = (config?: Options & Object) =>
             sourcemap: true,
             clean: true,
             splitting: true,
+            shims: true,
             target: tsconfig.compilerOptions.target as "es2021",
             env: {
                 NODE_ENV: process.env["NODE_ENV"],

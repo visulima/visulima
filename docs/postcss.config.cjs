@@ -2,6 +2,8 @@ module.exports = {
     plugins: {
         "postcss-import": {},
         tailwindcss: {},
-        autoprefixer: {},
+        "postcss-lightningcss": {
+            browsers: ">= .25%",
+        },
     },
 };

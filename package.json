@@ -57,7 +57,7 @@
         "lint:eslint:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:eslint",
         "lint:eslint:readdir": "pnpm --filter \"readdir\" run lint:eslint",
         "lint:eslint:root": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
-        "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix",
+        "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix && pnpm run sort-package-json",
         "lint:prettier": "pnpm run lint:prettier:root && nx run-many --target=lint:prettier --all --parallel",
         "lint:prettier:fix": "pnpm run lint:prettier:fix:root && nx run-many --target=lint:prettier:fix --all --parallel",
         "lint:prettier:fix:root": "prettier --config=.prettierrc.js --write '*.{json,yml,yaml,js,ts}'",

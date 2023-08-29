@@ -50,6 +50,7 @@ const Head = (): ReactElement => {
           --nextra-primary-hue: ${lightHue}deg;
           --nextra-navbar-height: 4rem;
           --nextra-menu-height: 3.75rem;
+          --nextra-menu-switcher-height: 2.5rem;
           --nextra-banner-height: 2.5rem;
         }
 

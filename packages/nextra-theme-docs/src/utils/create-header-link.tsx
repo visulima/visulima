@@ -2,55 +2,53 @@ import type { ComponentProps, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { Balancer } from "react-wrap-balancer";
 
-import { useSetActiveAnchor } from "../contexts";
-import { useIntersectionObserver, useSlugCounter, useSlugs } from "../contexts/active-anchor";
+import cn from "clsx";
+import { useRouter } from "next/router";
+import { useConfig, useObserver } from "../contexts";
+import { renderString } from "./render";
+import { DEFAULT_LOCALE } from "../constants/base";
 
 const createHeaderLink =
     (Tag: `h${2 | 3 | 4 | 5 | 6}`) =>
-    ({ children, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
-        const setActiveAnchor = useSetActiveAnchor();
-        const slugs = useSlugs();
-        const observer = useIntersectionObserver();
-        const obReference = useRef<HTMLAnchorElement>(null);
-        const referenceObject = useSlugCounter();
+    ({ children, className, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
+        const anchorReference = useRef<HTMLAnchorElement>(null);
+        const observer = useObserver();
+        const config = useConfig();
+        const { locale } = useRouter();
 
         useEffect(() => {
-            const heading = obReference.current;
-
-            if (!heading) {
+            if (!id || !observer) {
                 return;
             }
 
-            slugs.set(heading, [id, (referenceObject.current += 1)]);
-            observer?.observe(heading);
+            const element = anchorReference.current;
+
+            if (element) {
+                observer.observe(element);
+            }
 
             // eslint-disable-next-line consistent-return
             return () => {
-                observer?.disconnect();
-                slugs.delete(heading);
-
-                setActiveAnchor((f) => {
-                    const returnValue = { ...f };
-
-                    if (id && id in returnValue) {
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
-                        delete returnValue[id];
-                    }
-
-                    return returnValue;
-                });
+                if (element) {
+                    observer.unobserve(element);
+                }
             };
-        }, [id, slugs, observer, setActiveAnchor, referenceObject]);
+        }, [id, observer]);
 
         return (
             <Tag
+                className={cn({
+                    "sr-only": className === "sr-only",
+                })}
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...properties}
             >
                 <Balancer>{children}</Balancer>
-                <span className="absolute -mt-20" id={id} ref={obReference} />
-                {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
-                <a aria-label="Permalink for this section" className="subheading-anchor" href={`#${id}`} />
+                {id && (
+                    <a className="subheading-anchor" href={`#${id}`} id={id} ref={anchorReference}>
+                        <div className="sr-only">{renderString(config.content.permalink.label, { locale: locale ?? DEFAULT_LOCALE })}</div>
+                    </a>
+                )}
             </Tag>
         );
     };

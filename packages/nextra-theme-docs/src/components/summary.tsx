@@ -24,7 +24,7 @@ const Summary = ({
         <summary
             className={cn(
                 variant === "default" ? "flex items-center cursor-pointer list-none p-1 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800" : "",
-                "before:mr-1 before:inline-block before:transition-transform before:content-[''] dark:before:invert",
+                "before:mr-1 before:inline-block before:transition-transform before:content-[''] dark:before:invert before:shrink-0",
                 "rtl:before:rotate-180 [[data-expanded]>&]:before:rotate-90",
                 className,
             )}

@@ -1,31 +1,28 @@
 .nextra-cards {
-  display: grid;
-  --rows: 3;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(max(250px, calc((100% - 1rem * 2) / var(--rows))), 1fr)
-  );
+    display: grid;
+    --rows: 3;
+    grid-template-columns: repeat(auto-fill, minmax(max(250px, calc((100% - 1rem * 2) / var(--rows))), 1fr));
 }
 
 .nextra-card img {
-  -webkit-user-drag: none;
+    -webkit-user-drag: none;
 }
 
 .nextra-card:hover svg {
-  color: currentColor;
+    color: currentColor;
 }
 
 .nextra-card svg {
-  width: 1.5rem;
-  transition: color 0.3s ease;
+    width: 1.5rem;
+    transition: color 0.3s ease;
 }
 
 .nextra-card p {
-  margin-top: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .nextra-card .nextra-card-title {
-  display: flex;
-  font-weight: 600;
-  align-items: flex-start;
+    display: flex;
+    font-weight: 600;
+    align-items: flex-start;
 }

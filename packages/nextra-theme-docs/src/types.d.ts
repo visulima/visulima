@@ -1,10 +1,14 @@
 import type { PageOpts as BasePageOptions, Folder, MdxFile } from "nextra";
-import type { PageTheme } from "nextra/normalize-pages";
+import type { PageTheme as BasePageTheme } from "nextra/normalize-pages";
 import type { ReactNode } from "react";
 
-import type { DocumentationThemeConfig } from ".";
+import type { DocumentationThemeConfig } from "./theme/theme-schema";
 
 declare module "nextra/normalize-pages" {
+    export type PageTheme = BasePageTheme & {
+        prose?: boolean;
+    };
+
     export interface Item extends MdxFile {
         children?: Item[];
         description?: string;
@@ -35,7 +39,7 @@ export interface SearchResult {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type ActiveType = string | "doc" | "error" | "hidden" | "page";
+export type ActiveType = string | "doc" | "hidden" | "page";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 export type DocsItem = {

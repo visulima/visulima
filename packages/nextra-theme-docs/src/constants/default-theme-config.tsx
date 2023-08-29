@@ -33,6 +33,23 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
         key: "nextra-banner",
     },
     content: {
+        permalink: {
+            label: ({ locale }: { locale: string }) => {
+                if (locale === "zh-CN") {
+                    return "Permalink for this section";
+                }
+
+                if (locale === "ru") {
+                    return "Ссылка на этот раздел";
+                }
+
+                if (locale === "fr") {
+                    return "Lien permanent pour cette section";
+                }
+
+                return "Permalink for this section";
+            },
+        },
         showDescription: true,
         showTitle: true,
     },
@@ -212,8 +229,8 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     sidebar: {
         autoCollapse: true,
         defaultMenuCollapseLevel: 2,
-        // eslint-disable-next-line react/jsx-no-useless-fragment
-        titleComponent: ({ title }) => <>{title}</>,
+        mobileBreakpoint: 1023,
+        titleComponent: ({ title }) => <span className="grow">{title}</span>,
     },
     themeSwitch: {
         dark: ({ locale }) => {

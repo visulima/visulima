@@ -1,8 +1,8 @@
 /* eslint sort-keys: error */
 import { useRouter } from "next/router";
 import type { ComponentProps, ReactElement } from "react";
-import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
-import { useConfig } from "@visulima/nextra-theme-docs";
+import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs/config";
+import { useConfig } from "@visulima/nextra-theme-docs/config";
 
 const SWRLogo = (props: ComponentProps<"svg">): ReactElement => (
     <svg viewBox="0 0 291 69" fill="none" {...props}>
@@ -63,8 +63,8 @@ const FOOTER_LINK_TEXT = {
 
 const config: DocumentationThemeConfig = {
     banner: {
-        key: "swr-2",
         content: "SWR 2.0 is out! Read more →",
+        key: "swr-2",
     },
     darkMode: true,
     docsRepositoryBase: "https://github.com/shuding/nextra/blob/core/examples/swr-site",
@@ -143,6 +143,8 @@ const config: DocumentationThemeConfig = {
         link: "https://github.com/vercel/swr",
     },
     sidebar: {
+        autoCollapse: true,
+        defaultMenuCollapseLevel: 1,
         titleComponent: ({ title, type }) =>
             type === "separator" ? (
                 <div className="flex items-center gap-2">
@@ -150,18 +152,61 @@ const config: DocumentationThemeConfig = {
                     {title}
                 </div>
             ) : (
-                <>{title}</>
+                <span className="grow">{title}</span>
             ),
     },
     tocSidebar: {
         extraContent: <img alt="placeholder cat" src="https://placekitten.com/g/300/200" />,
         float: true,
+        headingComponent: function Heading({ id, children }) {
+            return (
+                <>
+                    {children}
+                    {id === "installation" && " 💿"}
+                </>
+            );
+        },
     },
     useNextSeoProps() {
         const { locale } = useRouter();
         return {
             titleTemplate: `%s | SWR (${locale})`,
         };
+    },
+    hero: {
+        height: 300,
+        component: () => (
+            <div className="">
+                <div className="py-16 sm:px-2 lg:relative lg:px-0 lg:py-20">
+                    <div className="grid max-w-2xl grid-cols-1 items-center gap-x-8 gap-y-16 px-4 lg:max-w-8xl lg:grid-cols-2 lg:px-8 xl:gap-x-16 xl:px-12">
+                        <div className="relative z-10 md:text-center lg:text-left">
+                            <div className="relative">
+                                <p className="inline bg-gradient-to-r from-indigo-200 via-sky-400 to-indigo-200 bg-clip-text font-display text-5xl tracking-tight text-transparent">
+                                    Never miss the cache again.
+                                </p>
+                                <p className="mt-3 text-2xl tracking-tight text-slate-400">
+                                    Cache every single thing your app could ever do ahead of time, so your code never even has to run at all.
+                                </p>
+                                <div className="mt-8 flex gap-4 md:justify-center lg:justify-start">
+                                    <a
+                                        className="rounded-full bg-sky-300 py-2 px-4 text-sm font-semibold text-slate-900 hover:bg-sky-200 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300/50 active:bg-sky-500"
+                                        href="/"
+                                    >
+                                        Get started
+                                    </a>
+                                    <a
+                                        className="rounded-full bg-slate-800 py-2 px-4 text-sm font-medium text-white hover:bg-slate-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50 active:text-slate-400"
+                                        href="/"
+                                    >
+                                        View on GitHub
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ),
     },
 };
 

@@ -32,7 +32,14 @@ module.exports = {
             settings: {
                 tailwindcss: {
                     config: "./tailwind.config.js",
-                    whitelist: ["nextra-code-block", "md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800"],
+                    whitelist: [
+                        "md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
+                        "nextra-code-block",
+                        "nextra-breadcrumb",
+                        "nextra-bleed",
+                        "nextra-menu-desktop",
+                        "nextra-menu-mobile",
+                    ],
                 },
             },
         },

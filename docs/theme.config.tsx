@@ -1,5 +1,5 @@
-import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs";
-import { Anchor } from "@visulima/nextra-theme-docs";
+import type { DocumentationThemeConfig } from "@visulima/nextra-theme-docs/config";
+import { Anchor } from "@visulima/nextra-theme-docs/components";
 import cn from "clsx";
 import { useRouter } from "next/router";
 import { DiscordIcon } from "nextra/icons";

@@ -10,7 +10,7 @@ const makePrimaryColor =
     };
 
 module.exports = {
-    content: ["./src/**/*.tsx", "./components/**/*.js", "./pages/**/*.{md,mdx}", "./theme.config.tsx"],
+    content: ["./src/**/*.tsx", "./src/**/*.ts"],
     corePlugins: {
         preflight: process.env.PREFLIGHT === "true",
     },

@@ -10,13 +10,16 @@
     },
     "examples": {
         "title": "Ejemplos",
-        "type": "page"
+        "type": "page",
+        "theme": {
+            "layout": "full",
+            "prose": false,
+            "breadcrumb": false,
+            "hero": false
+        }
     },
     "blog": {
         "title": "Blog",
-        "type": "page",
-        "theme": {
-            "sidebar": false
-        }
+        "type": "page"
     }
 }
