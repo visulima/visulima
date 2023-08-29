@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
 import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
-import type { NextConfig } from "next";
+import type { NextConfig } from "next/types";
 import type { NextJsWebpackConfig } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
 

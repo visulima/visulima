@@ -1,10 +1,11 @@
 import { load, trackPageview } from "fathom-client";
+import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import environment from "../env/env-client";
 
 const useFathom = (): void => {
-    const router = useRouter();
+    const router: NextRouter = useRouter();
 
     useEffect(() => {
         if (process.env.NODE_ENV === "production" && environment.NEXT_PUBLIC_FATHOM_ID) {

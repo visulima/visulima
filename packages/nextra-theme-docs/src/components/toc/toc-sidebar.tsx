@@ -1,4 +1,4 @@
-import type { Heading } from "nextra";
+import type { Heading } from "nextra/types";
 import type { FC } from "react";
 import { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";

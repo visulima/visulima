@@ -1,5 +1,5 @@
 import debug from "debug";
-import type { GetStaticProps } from "next";
+import type { GetStaticProps } from "next/types";
 import type { OpenAPIV3 } from "openapi-types";
 
 const swaggerDebug = debug("visulima:api-platform:swagger:get-static-properties-swagger");

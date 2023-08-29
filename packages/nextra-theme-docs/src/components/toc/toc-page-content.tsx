@@ -1,5 +1,5 @@
 import cn from "clsx";
-import type { Heading } from "nextra";
+import type { Heading } from "nextra/types";
 import type { FC, Ref } from "react";
 
 import Toc from "./toc";
