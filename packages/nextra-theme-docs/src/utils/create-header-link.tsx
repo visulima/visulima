@@ -11,7 +11,7 @@ import { DEFAULT_LOCALE } from "../constants/base";
 const createHeaderLink =
     (Tag: `h${2 | 3 | 4 | 5 | 6}`) =>
     ({ children, className, id = "", ...properties }: ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6">): ReactElement => {
-        const anchorRef = useRef<HTMLAnchorElement>(null);
+        const anchorReference = useRef<HTMLAnchorElement>(null);
         const observer = useObserver();
         const config = useConfig();
         const { locale } = useRouter();
@@ -21,12 +21,17 @@ const createHeaderLink =
                 return;
             }
 
-            const el = anchorRef.current!;
+            const element = anchorReference.current;
 
-            observer.observe(el);
+            if (element) {
+                observer.observe(element);
+            }
 
+            // eslint-disable-next-line consistent-return
             return () => {
-                observer.unobserve(el);
+                if (element) {
+                    observer.unobserve(element);
+                }
             };
         }, [id, observer]);
 
@@ -40,7 +45,7 @@ const createHeaderLink =
             >
                 <Balancer>{children}</Balancer>
                 {id && (
-                    <a className="subheading-anchor" href={`#${id}`} id={id} ref={anchorRef}>
+                    <a className="subheading-anchor" href={`#${id}`} id={id} ref={anchorReference}>
                         <div className="sr-only">{renderString(config.content.permalink.label, { locale: locale ?? DEFAULT_LOCALE })}</div>
                     </a>
                 )}

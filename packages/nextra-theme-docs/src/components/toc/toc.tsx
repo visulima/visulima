@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { useConfig } from "../../contexts";
 import { renderComponent } from "../../utils/render";
 
-const Toc: FC<TOCProperties> = ({ activeId, headings, isPage = false, prefix = "" }) => {
+const Toc: FC<TOCProperties> = ({ activeId = undefined, headings, isPage = false, prefix = "" }) => {
     const config = useConfig();
     const tocReference = useRef<HTMLDivElement>(null);
 
@@ -51,7 +51,7 @@ const Toc: FC<TOCProperties> = ({ activeId, headings, isPage = false, prefix = "
                                         ? "border-solid border-b dark:border-primary-100/10 contrast-more:border-neutral-400 py-2"
                                         : "my-2 scroll-my-6 scroll-py-6",
                                     isPage ? "flex justify-between items-center w-full" : "inline-block w-full transition-colors subpixel-antialiased",
-                                    // eslint-disable-next-line security/detect-object-injection
+
                                     activeId === id
                                         ? "text-primary-500 subpixel-antialiased contrast-more:!text-primary-500"
                                         : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300",

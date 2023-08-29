@@ -62,7 +62,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
                         "bg-white dark:bg-darker-800",
                     )}
                 >
-                    <MetaInfo config={config} filePath={filePath} locale={locale} route={route} hidden={activeIndex < 2} />
+                    <MetaInfo config={config} filePath={filePath} hidden={activeIndex < 2} locale={locale} route={route} />
 
                     {renderComponent(config.tocSidebar.extraContent)}
                 </div>

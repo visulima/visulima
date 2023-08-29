@@ -274,7 +274,7 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                                 className={cn(
                                     classes.link,
                                     'flex gap-2 before:opacity-25 before:content-["#"]',
-                                    // eslint-disable-next-line security/detect-object-injection
+
                                     activeId === id ? classes.active : classes.inactive,
                                 )}
                                 onClick={() => {

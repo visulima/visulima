@@ -11,12 +11,12 @@ const linkClassName = cn(
     "contrast-more:text-gray-800 contrast-more:dark:text-gray-50",
 );
 
-const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: string; hidden?: boolean }> = ({
+const MetaInfo: FC<{ config: Config; filePath: string; hidden?: boolean; locale: string; route: string }> = ({
     config,
     filePath,
+    hidden = false,
     locale,
     route,
-    hidden = false,
 }) => (
     <>
         {config.feedback.content ? (

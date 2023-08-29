@@ -7,27 +7,32 @@ import "intersection-observer";
 const ActiveAnchorContext = createContext("");
 const ObserverContext = createContext<IntersectionObserver | null>(null);
 
-export const useActiveAnchor = () => useContext(ActiveAnchorContext);
-export const useObserver = () => useContext(ObserverContext);
+export const useActiveAnchor: () => string = () => useContext(ActiveAnchorContext);
+export const useObserver: () => IntersectionObserver | null = () => useContext(ObserverContext);
 
-export function ActiveAnchorProvider({ children }: { children: ReactNode }): ReactElement {
+export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const [activeId, setActiveId] = useState("");
-    const observerRef = useRef<ContextType<typeof ObserverContext>>(null);
+    const observerReference = useRef<ContextType<typeof ObserverContext>>(null);
 
     useEffect(() => {
-        observerRef.current?.disconnect();
+        observerReference.current?.disconnect();
 
-        observerRef.current = new IntersectionObserver(
+        // eslint-disable-next-line compat/compat
+        observerReference.current = new IntersectionObserver(
             (entries) => {
-                for (const entry of entries) {
+                entries.forEach((entry) => {
                     if (entry.intersectionRatio > 0 && entry.isIntersecting) {
-                        setActiveId(entry.target.getAttribute("id")!);
+                        const id = entry.target.getAttribute("id");
+
+                        if (id) {
+                            setActiveId(id);
+                        }
                     }
-                }
+                });
             },
             { rootMargin: "0px 0px -80%" },
         );
-        const observer = observerRef.current;
+        const observer = observerReference.current;
 
         return () => {
             observer.disconnect();
@@ -35,8 +40,8 @@ export function ActiveAnchorProvider({ children }: { children: ReactNode }): Rea
     }, []);
 
     return (
-        <ObserverContext.Provider value={observerRef.current}>
+        <ObserverContext.Provider value={observerReference.current}>
             <ActiveAnchorContext.Provider value={activeId}>{children}</ActiveAnchorContext.Provider>
         </ObserverContext.Provider>
     );
-}
+};
