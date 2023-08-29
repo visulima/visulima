@@ -1,3 +1,20 @@
+## @visulima/api-platform [2.0.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.0...@visulima/api-platform@2.0.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* fixed wrong settings for node 18+ in typescript ([ac6711f](https://github.com/visulima/visulima/commit/ac6711fd2b4fdc5506b03e3a6ae25bb983aa6ea3))
+* remove unused files and refactor imports and typings ([ba2ab03](https://github.com/visulima/visulima/commit/ba2ab03d2d7aff5f49c4d6714a61b99706778f19))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 2.0.1
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.1
+* **@visulima/crud:** upgraded to 2.0.1
+* **@visulima/readdir:** upgraded to 2.0.1
+
 ## @visulima/api-platform [2.0.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@1.2.15...@visulima/api-platform@2.0.0) (2023-08-28)
 
 
