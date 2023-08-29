@@ -1,5 +1,42 @@
 {
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"]
+        },
+        "test": {
+            "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+        },
+        "lint": {
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+        },
+        "build-storybook": {
+            "inputs": ["default", "^production", "{workspaceRoot}/.storybook/**/*", "{projectRoot}/.storybook/**/*", "{projectRoot}/tsconfig.storybook.json"]
+        }
+    },
     "extends": "@nrwl/workspace/presets/npm.json",
+    "affected": {
+        "defaultBase": "main"
+    },
+    "namedInputs": {
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
+        "production": [
+            "default",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/vite.config.ts",
+            "!{projectRoot}/.eslintrc.json",
+            "!{projectRoot}/.storybook/**/*",
+            "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+            "!{projectRoot}/tsconfig.storybook.json"
+        ]
+    },
+    "implicitDependencies": {
+        "package.json": {
+            "dependencies": "*",
+            "devDependencies": "*"
+        },
+        ".eslintrc.json": "*"
+    },
     "tasksRunnerOptions": {
         "default": {
             "runner": "nx/tasks-runners/default",
@@ -12,7 +49,8 @@
                     "build:readdir",
                     "test",
                     "lint:eslint",
-                    "lint:eslint:fix"
+                    "lint:eslint:fix",
+                    "build-storybook"
                 ]
             }
         }
@@ -36,9 +74,6 @@
                 "projects": "dependencies"
             }
         ]
-    },
-    "affected": {
-        "defaultBase": "main"
     },
     "pluginsConfig": {
         "@nrwl/js": {
