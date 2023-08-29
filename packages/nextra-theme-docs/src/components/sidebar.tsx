@@ -226,7 +226,7 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
     // It is possible that the item doesn't have any route - for example an external link.
     const active = item.route && [`${route}/`, route].includes(`${item.route}/`);
 
-    const activeAnchor = useActiveAnchor();
+    const activeId = useActiveAnchor();
     const { setMenu } = useMenu();
     const config = useConfig();
 
@@ -275,7 +275,7 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                                     classes.link,
                                     'flex gap-2 before:opacity-25 before:content-["#"]',
                                     // eslint-disable-next-line security/detect-object-injection
-                                    activeAnchor[id]?.isActive ? classes.active : classes.inactive,
+                                    activeId === id ? classes.active : classes.inactive,
                                 )}
                                 onClick={() => {
                                     setMenu(false);
@@ -415,7 +415,7 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                                     <Menu
                                         // the sidebar when `floatTOC` is enabled.
                                         anchors={config.tocSidebar.float ? [] : anchors}
-                                        className="nextra-menu-desktop max-md:!hidden"
+                                        className="nextra-menu-desktop max-lg:!hidden"
                                         // When the viewport size is larger than `md`, hide the anchors in
                                         // The sidebar menu, shows only the docs directories.
                                         directories={documentsDirectories}

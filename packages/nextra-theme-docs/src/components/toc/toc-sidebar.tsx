@@ -1,6 +1,6 @@
 import type { Heading } from "nextra";
 import type { FC } from "react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { useActiveAnchor, useConfig } from "../../contexts";
@@ -11,23 +11,20 @@ import Toc from "./toc";
 
 const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false, locale, route }) => {
     const config = useConfig();
-    const activeAnchor = useActiveAnchor();
+    const activeId = useActiveAnchor();
     const tocReference = useRef<HTMLDivElement | null>(null);
 
-    const items = useMemo(() => headings.filter((heading) => heading.depth > 1), [headings]);
-
-    const hasHeadings = items.length > 0;
+    const hasHeadings = headings.length > 0;
+    const activeIndex = headings.findIndex(({ id }) => id === activeId);
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
-    const activeSlug = Object.entries(activeAnchor).find(([, { isActive }]) => isActive)?.[0];
-
     useEffect(() => {
-        if (!activeSlug) {
+        if (!activeId) {
             return;
         }
 
-        const anchor = tocReference.current?.querySelector(`li > a[href="#${activeSlug}"]`);
+        const anchor = tocReference.current?.querySelector(`li > a[href="#${activeId}"]`);
 
         if (anchor) {
             scrollIntoView(anchor, {
@@ -38,7 +35,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
                 scrollMode: "always",
             });
         }
-    }, [activeSlug]);
+    }, [activeId]);
 
     return (
         <div
@@ -54,7 +51,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
             )}
             ref={tocReference}
         >
-            <Toc activeAnchor={activeAnchor} headings={headings} prefix="sidebar" />
+            <Toc activeId={activeId} headings={headings} prefix="sidebar" />
 
             {hasMetaInfo && (
                 <div
@@ -65,7 +62,7 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
                         "bg-white dark:bg-darker-800",
                     )}
                 >
-                    <MetaInfo config={config} filePath={filePath} locale={locale} route={route} />
+                    <MetaInfo config={config} filePath={filePath} locale={locale} route={route} hidden={activeIndex < 2} />
 
                     {renderComponent(config.tocSidebar.extraContent)}
                 </div>

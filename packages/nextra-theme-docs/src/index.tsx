@@ -25,7 +25,6 @@ import Sidebar from "./components/sidebar";
 import { SkipNavContent } from "./components/skip-nav";
 import { DEFAULT_LOCALE } from "./constants/base";
 import { ActiveAnchorProvider, ConfigProvider, useConfig } from "./contexts";
-import { SlugCounterContext } from "./contexts/active-anchor";
 import getComponents from "./mdx-components";
 import { renderComponent } from "./utils/render";
 import useOnScreen from "./utils/use-on-screen";
@@ -322,17 +321,11 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-const Index: FC<NextraThemeLayoutProps> = ({ children = undefined, ...context }) => {
-    const counter = useRef(0);
-
-    return (
-        <ConfigProvider value={context}>
-            <SlugCounterContext.Provider value={counter}>
-                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
-            </SlugCounterContext.Provider>
-        </ConfigProvider>
-    );
-};
+const Index: FC<NextraThemeLayoutProps> = ({ children = undefined, ...context }) => (
+    <ConfigProvider value={context}>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
+    </ConfigProvider>
+);
 
 export default Index;

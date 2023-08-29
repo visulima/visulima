@@ -11,7 +11,13 @@ const linkClassName = cn(
     "contrast-more:text-gray-800 contrast-more:dark:text-gray-50",
 );
 
-const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: string }> = ({ config, filePath, locale, route }) => (
+const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: string; hidden?: boolean }> = ({
+    config,
+    filePath,
+    locale,
+    route,
+    hidden = false,
+}) => (
     <>
         {config.feedback.content ? (
             <Anchor
@@ -47,7 +53,7 @@ const MetaInfo: FC<{ config: Config; filePath: string; locale: string; route: st
                 onClick={() => {
                     window.scrollTo({ behavior: "smooth", left: 0, top: 0 });
                 }}
-                className={linkClassName}
+                className={cn(linkClassName, hidden ? "opacity-0" : "opacity-100")}
                 type="button"
             >
                 {renderComponent(config.backToTop.content, { locale })}

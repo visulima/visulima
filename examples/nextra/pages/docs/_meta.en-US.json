@@ -3,7 +3,11 @@
         "title": "Getting Started",
         "type": "separator"
     },
-    "getting-started": {},
+    "getting-started": {
+        "theme": {
+            "hero": false
+        }
+    },
     "options": {},
     "global-configuration": {},
     "data-fetching": {},

@@ -37,7 +37,7 @@ const NavbarMenu: FC<PropsWithChildren<{ className?: string; menu: MenuItem }>> 
                                 <Menu.Item key={key}>
                                     <Anchor
                                         className={cn(
-                                            "relative hidden w-full select-none whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 md:inline-block relative",
+                                            "hidden w-full select-none whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 lg:inline-block relative",
                                             "py-1.5 ltr:pl-3 ltr:pr-9 rtl:pr-3 rtl:pl-9",
                                         )}
                                         /* eslint-disable-next-line security/detect-object-injection */
@@ -120,7 +120,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                 >
                     <div
                         className={cn(
-                            "w-2/4 md:w-full md:max-w-[256px] h-[var(--nextra-navbar-height)] flex items-center",
+                            "w-2/4 lg:w-full lg:max-w-[256px] h-[var(--nextra-navbar-height)] flex items-center",
                             ["hidden", "page"].includes(activeType) || isLayoutRaw
                                 ? ""
                                 : "lg:bg-x-gradient-gray-200-gray-400-75 lg:dark:bg-x-gradient-dark-700-dark-800-65 pl-4",
@@ -202,7 +202,7 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                                 </Anchor>
                             );
                         })}
-                        {(projectLink || chatLink) && <div className="hidden md:!block md:h-5 md:w-px md:bg-gray-900/10 md:dark:bg-gray-700" />}
+                        {(projectLink || chatLink) && <div className="hidden lg:!block lg:h-5 lg:w-px lg:bg-gray-900/10 lg:dark:bg-gray-700" />}
                         {projectLink}
                         {chatLink}
                     </div>

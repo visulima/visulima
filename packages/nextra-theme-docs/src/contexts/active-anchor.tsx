@@ -1,111 +1,42 @@
+import type { ContextType, ReactElement, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import "intersection-observer";
 
-import type { Dispatch, MutableRefObject, ReactElement, ReactNode, SetStateAction } from "react";
-import { createContext, useContext, useRef, useState } from "react";
+// Separate the state of 2 contexts to avoid re-renders of the content triggered
+// by the state update
+const ActiveAnchorContext = createContext("");
+const ObserverContext = createContext<IntersectionObserver | null>(null);
 
-import { IS_BROWSER } from "../constants/base";
+export const useActiveAnchor = () => useContext(ActiveAnchorContext);
+export const useObserver = () => useContext(ObserverContext);
 
-interface Anchor {
-    aboveHalfViewport: boolean;
-    index: number;
-    insideHalfViewport: boolean;
-    isActive?: boolean;
-}
+export function ActiveAnchorProvider({ children }: { children: ReactNode }): ReactElement {
+    const [activeId, setActiveId] = useState("");
+    const observerRef = useRef<ContextType<typeof ObserverContext>>(null);
 
-const ActiveAnchorContext = createContext<ActiveAnchor>({});
-const SetActiveAnchorContext = createContext<Dispatch<SetStateAction<ActiveAnchor>>>((v) => v);
+    useEffect(() => {
+        observerRef.current?.disconnect();
 
-const IntersectionObserverContext = createContext<IntersectionObserver | null>(null);
-const slugs = new WeakMap<HTMLAnchorElement, [string, number]>();
-const SlugsContext = createContext<WeakMap<HTMLAnchorElement, [string, number]>>(slugs);
-
-export const SlugCounterContext = createContext<MutableRefObject<number>>({ current: 0 });
-
-export const useSlugCounter = (): MutableRefObject<number> => useContext(SlugCounterContext);
-
-export type ActiveAnchor = Record<string, Anchor>;
-
-// Separate the state as 2 contexts here to avoid
-// re-renders of the content triggered by the state update.
-export const useActiveAnchor = (): ActiveAnchor => useContext(ActiveAnchorContext);
-export const useSetActiveAnchor = (): Dispatch<SetStateAction<ActiveAnchor>> => useContext(SetActiveAnchorContext);
-
-export const useIntersectionObserver = (): IntersectionObserver | null => useContext(IntersectionObserverContext);
-export const useSlugs = (): WeakMap<HTMLAnchorElement, [string, number]> => useContext(SlugsContext);
-
-export const ActiveAnchorProvider = ({ children }: { children: ReactNode }): ReactElement => {
-    const [activeAnchor, setActiveAnchor] = useState<ActiveAnchor>({});
-    const observerReference = useRef<IntersectionObserver | null>(null);
-
-    if (IS_BROWSER && !observerReference.current) {
-        observerReference.current = new IntersectionObserver(
-            // eslint-disable-next-line sonarjs/cognitive-complexity
+        observerRef.current = new IntersectionObserver(
             (entries) => {
-                setActiveAnchor((anchor) => {
-                    const returnValue: ActiveAnchor = { ...anchor };
-
-                    entries.forEach((entry) => {
-                        if (entry.rootBounds && slugs.has(entry.target as HTMLAnchorElement)) {
-                            const [slug, index] = slugs.get(entry.target as HTMLAnchorElement) as [string, number];
-
-                            const aboveHalfViewport =
-                                entry.boundingClientRect.y + entry.boundingClientRect.height <= entry.rootBounds.y + entry.rootBounds.height;
-                            const insideHalfViewport = entry.intersectionRatio > 0;
-
-                            // eslint-disable-next-line security/detect-object-injection
-                            returnValue[slug] = {
-                                aboveHalfViewport,
-                                index,
-                                insideHalfViewport,
-                            };
-                        }
-                    });
-
-                    let activeSlug: keyof ActiveAnchor = "";
-                    let smallestIndexInViewport = Number.POSITIVE_INFINITY;
-                    let largestIndexAboveViewport = -1;
-
-                    Object.entries(returnValue).forEach(([slug, returnValue_]) => {
-                        // eslint-disable-next-line no-param-reassign
-                        returnValue_.isActive = false;
-
-                        if (returnValue_.insideHalfViewport && returnValue_.index < smallestIndexInViewport) {
-                            smallestIndexInViewport = returnValue_.index;
-                            activeSlug = slug;
-                        }
-                        if (
-                            smallestIndexInViewport === Number.POSITIVE_INFINITY &&
-                            returnValue_.aboveHalfViewport &&
-                            returnValue_.index > largestIndexAboveViewport
-                        ) {
-                            largestIndexAboveViewport = returnValue_.index;
-                            activeSlug = slug;
-                        }
-                    });
-
-                    // eslint-disable-next-line security/detect-object-injection
-                    if (returnValue[activeSlug]) {
-                        // eslint-disable-next-line security/detect-object-injection
-                        (returnValue[activeSlug] as Anchor).isActive = true;
+                for (const entry of entries) {
+                    if (entry.intersectionRatio > 0 && entry.isIntersecting) {
+                        setActiveId(entry.target.getAttribute("id")!);
                     }
-
-                    return returnValue;
-                });
+                }
             },
-            {
-                rootMargin: "0px 0px -50%",
-                threshold: [0, 1],
-            },
+            { rootMargin: "0px 0px -80%" },
         );
-    }
+        const observer = observerRef.current;
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
 
     return (
-        <ActiveAnchorContext.Provider value={activeAnchor}>
-            <SetActiveAnchorContext.Provider value={setActiveAnchor}>
-                <SlugsContext.Provider value={slugs}>
-                    <IntersectionObserverContext.Provider value={observerReference.current}>{children}</IntersectionObserverContext.Provider>
-                </SlugsContext.Provider>
-            </SetActiveAnchorContext.Provider>
-        </ActiveAnchorContext.Provider>
+        <ObserverContext.Provider value={observerRef.current}>
+            <ActiveAnchorContext.Provider value={activeId}>{children}</ActiveAnchorContext.Provider>
+        </ObserverContext.Provider>
     );
-};
+}
