@@ -24,10 +24,10 @@ jobs:
         outputs:
             packages: "${{ steps.changes.outputs.packages }}"
         steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v2.5.1
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09" # v2.5.1
               with:
-                egress-policy: audit
+                  egress-policy: "audit"
 
             - name: "Git checkout"
               uses: "actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9" # v3.5.3
@@ -107,10 +107,10 @@ jobs:
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure
-            - name: Harden Runner
-              uses: step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09 # v2.5.1
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09" # v2.5.1
               with:
-                egress-policy: audit
+                  egress-policy: audit
 
             - name: "Check for failures"
               if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
