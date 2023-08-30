@@ -1,19 +1,19 @@
-import "@storybook/addon-console";
-
-import type { Preview } from "@storybook/react";
-import { withThemeByDataAttribute } from "@storybook/addon-styling";
 import { withConsole } from "@storybook/addon-console";
+
+import type { Preview, StoryContext } from "@storybook/react";
+import { withThemeByDataAttribute } from "@storybook/addon-styling";
 
 const preview: Preview = {
     decorators: [
-        (storyFn, context) => withConsole()(storyFn)(context),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return
+        (storyFunction, context: StoryContext) => withConsole({})(storyFunction)(context),
         withThemeByDataAttribute({
-            themes: {
-                light: "light",
-                dark: "dark",
-            },
-            defaultTheme: "light",
             attributeName: "data-mode",
+            defaultTheme: "light",
+            themes: {
+                dark: "dark",
+                light: "light",
+            },
         }),
     ],
     parameters: {

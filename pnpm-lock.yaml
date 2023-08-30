@@ -19,26 +19,30 @@ overrides:
   got@<11.8.5: '>=11.8.5'
   trim@<0.0.3: '>=0.0.3'
   chrono-node@<2.2.4: '>=2.2.4'
+  conventional-changelog-conventionalcommits: 6.1.0
 
 importers:
 
   .:
     dependencies:
       '@anolilab/commitlint-config':
-        specifier: ^3.0.4
-        version: 3.0.4(@commitlint/cli@17.7.1)
+        specifier: ^3.0.5
+        version: 3.0.5(@commitlint/cli@17.7.1)
       '@anolilab/eslint-config':
-        specifier: ^11.3.4
-        version: 11.3.4(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
+        specifier: ^11.3.5
+        version: 11.3.5(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/lint-staged-config':
-        specifier: ^2.0.5
-        version: 2.0.5(@types/node@20.2.3)(husky@8.0.3)
+        specifier: ^2.0.6
+        version: 2.0.6(@types/node@20.2.3)(husky@8.0.3)
       '@anolilab/prettier-config':
-        specifier: ^5.0.3
-        version: 5.0.3(prettier@3.0.3)
+        specifier: ^5.0.4
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/textlint-config':
-        specifier: ^8.0.4
-        version: 8.0.4(textlint@13.3.3)
+        specifier: ^8.0.5
+        version: 8.0.5(textlint@13.3.3)
+      '@arthurgeron/eslint-plugin-react-usememo':
+        specifier: ^1.1.4
+        version: 1.1.4
       '@commitlint/cli':
         specifier: ^17.7.1
         version: 17.7.1
@@ -105,18 +109,21 @@ importers:
       '@storybook/testing-library':
         specifier: ~0.2.0
         version: 0.2.0
+      '@testing-library/react':
+        specifier: ^14.0.0
+        version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
       '@tsconfig/node18':
         specifier: ^18.2.1
         version: 18.2.1
       '@tsconfig/strictest':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.0.2
+        version: 2.0.2
       '@types/node':
         specifier: ^20.2.3
         version: 20.2.3
       browserslist-config-anolilab:
-        specifier: ^5.0.3
-        version: 5.0.3
+        specifier: ^5.0.4
+        version: 5.0.4
       commitizen:
         specifier: ^4.3.0
         version: 4.3.0
@@ -138,9 +145,24 @@ importers:
       eslint-plugin-etc:
         specifier: ^2.0.3
         version: 2.0.3(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-jsx-a11y:
+        specifier: ^6.7.1
+        version: 6.7.1(eslint@8.48.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.48.0)
+      eslint-plugin-react:
+        specifier: 7.33.2
+        version: 7.33.2(eslint@8.48.0)
+      eslint-plugin-react-hooks:
+        specifier: 4.6.0
+        version: 4.6.0(eslint@8.48.0)
+      eslint-plugin-storybook:
+        specifier: ^0.6.13
+        version: 0.6.13(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-testing-library:
+        specifier: ^6.0.1
+        version: 6.0.1(eslint@8.48.0)(typescript@5.2.2)
       husky:
         specifier: ^8.0.3
         version: 8.0.3
@@ -1994,14 +2016,14 @@ packages:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.19
 
-  /@anolilab/commitlint-config@3.0.4(@commitlint/cli@17.7.1):
-    resolution: {integrity: sha512-sQW6tfICVVQhwyJQE/xnbJ8XZyosK5ZCbbjmSDTmSfYS2mDkRLNiy8/QgNBMLAelsT8WzF5Pgx0EiSMEwabjbg==}
+  /@anolilab/commitlint-config@3.0.5(@commitlint/cli@17.7.1):
+    resolution: {integrity: sha512-MDZdoaL8qxeQL/bZxxEjMrgl+ZwQT/5a/gwHV4UKreGDyBWiiT2BOtMjLRo3aG2je1G7Q4UoNBw6ksp3UQU/uA==}
     engines: {node: '>=18'}
     requiresBuild: true
     peerDependencies:
       '@commitlint/cli': ^17.6.5
     dependencies:
-      '@anolilab/package-json-utils': 3.0.4
+      '@anolilab/package-json-utils': 3.0.5
       '@commitlint/cli': 17.7.1
       '@commitlint/config-conventional': 17.7.0
       '@commitlint/core': 17.7.1
@@ -2287,16 +2309,109 @@ packages:
       - tailwindcss
       - ts-node
       - typescript
+    dev: true
 
-  /@anolilab/lint-staged-config@2.0.5(@types/node@20.2.3)(husky@8.0.3):
-    resolution: {integrity: sha512-wyICXHYtN00IWED9jUmQ33cCN8rQWx6foKmjRN94hiIZQzV0edpelY0kIsEav8NDkqGwkBI5imnJqNBjJ7/GtQ==}
+  /@anolilab/eslint-config@11.3.5(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2):
+    resolution: {integrity: sha512-lbLKJn4jzIg3PesPGLX1+q1SsRpDpCMdjqAAG7JktVy0NWaO4U60D0k7VbNndnv1g9/SozsU4F4IXX75kslieQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      eslint: ^8.15.0
+    dependencies:
+      '@anolilab/package-json-utils': 3.0.5
+      '@babel/eslint-parser': 7.22.11(eslint@8.48.0)
+      '@babel/plugin-syntax-import-assertions': 7.22.5(@babel/core@7.22.11)
+      '@html-eslint/eslint-plugin': 0.19.1
+      '@html-eslint/parser': 0.19.1
+      '@rushstack/eslint-patch': 1.3.3
+      '@rushstack/eslint-plugin-security': 0.6.0(eslint@8.48.0)(typescript@5.2.2)
+      '@typescript-eslint/eslint-plugin': 6.5.0(@typescript-eslint/parser@6.5.0)(eslint@8.48.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 6.5.0(eslint@8.48.0)(typescript@5.2.2)
+      confusing-browser-globals: 1.0.11
+      eslint: 8.48.0
+      eslint-define-config: 1.23.0
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 3.6.0(@typescript-eslint/parser@6.5.0)(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.48.0)
+      eslint-plugin-antfu: 0.41.0(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-compat: 4.2.0(eslint@8.48.0)
+      eslint-plugin-es-x: 7.2.0(eslint@8.48.0)
+      eslint-plugin-eslint-comments: 3.2.0(eslint@8.48.0)
+      eslint-plugin-html: 7.1.0
+      eslint-plugin-i: 2.28.0(@typescript-eslint/parser@6.5.0)(eslint-import-resolver-typescript@3.6.0)(eslint@8.48.0)
+      eslint-plugin-jsonc: 2.9.0(eslint@8.48.0)
+      eslint-plugin-markdown: 3.0.1(eslint@8.48.0)
+      eslint-plugin-mdx: 2.2.0(eslint@8.48.0)
+      eslint-plugin-no-loops: 0.3.0(eslint@8.48.0)
+      eslint-plugin-no-secrets: 0.8.9(eslint@8.48.0)
+      eslint-plugin-no-use-extend-native: 0.5.0
+      eslint-plugin-perfectionist: 1.5.1(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-promise: 6.1.1(eslint@8.48.0)
+      eslint-plugin-regexp: 1.15.0(eslint@8.48.0)
+      eslint-plugin-security: 1.7.1
+      eslint-plugin-simple-import-sort: 10.0.0(eslint@8.48.0)
+      eslint-plugin-sonarjs: 0.21.0(eslint@8.48.0)
+      eslint-plugin-toml: 0.5.0(eslint@8.48.0)
+      eslint-plugin-unicorn: 48.0.1(eslint@8.48.0)
+      eslint-plugin-yml: 1.8.0(eslint@8.48.0)
+      find-up: 5.0.0
+      globals: 13.21.0
+      jsonc-eslint-parser: 2.3.0
+      read-pkg-up: 7.0.1
+      semver: 7.5.4
+      toml-eslint-parser: 0.6.0
+      tsup: 7.1.0(postcss@8.4.29)(typescript@5.2.2)
+      yaml-eslint-parser: 1.2.2
+    optionalDependencies:
+      '@arthurgeron/eslint-plugin-react-usememo': 1.1.4
+      '@tanstack/eslint-plugin-query': 4.34.1(eslint@8.48.0)
+      eslint-plugin-array-func: 3.1.8(eslint@8.48.0)
+      eslint-plugin-ava: 14.0.0(eslint@8.48.0)
+      eslint-plugin-babel: 5.3.1(eslint@8.48.0)
+      eslint-plugin-cypress: 2.14.0(eslint@8.48.0)
+      eslint-plugin-editorconfig: 4.0.3
+      eslint-plugin-jest: 27.2.3(@typescript-eslint/eslint-plugin@6.5.0)(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-jest-async: 1.0.3
+      eslint-plugin-jest-dom: 5.1.0(@testing-library/dom@9.3.1)(eslint@8.48.0)
+      eslint-plugin-jest-formatting: 3.1.0(eslint@8.48.0)
+      eslint-plugin-jsdoc: 46.5.1(eslint@8.48.0)
+      eslint-plugin-jsx-a11y: 6.7.1(eslint@8.48.0)
+      eslint-plugin-n: 16.0.2(eslint@8.48.0)
+      eslint-plugin-no-unsanitized: 4.0.2(eslint@8.48.0)
+      eslint-plugin-playwright: 0.16.0(eslint-plugin-jest@27.2.3)(eslint@8.48.0)
+      eslint-plugin-prefer-object-spread: 1.2.1(eslint@8.48.0)
+      eslint-plugin-react: 7.33.2(eslint@8.48.0)
+      eslint-plugin-react-hooks: 4.6.0(eslint@8.48.0)
+      eslint-plugin-react-redux: 4.0.0(eslint-plugin-react@7.33.2)(eslint@8.48.0)
+      eslint-plugin-storybook: 0.6.13(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-tailwindcss: 3.13.0(tailwindcss@3.3.3)
+      eslint-plugin-testing-library: 6.0.1(eslint@8.48.0)(typescript@5.2.2)
+      eslint-plugin-tsdoc: 0.2.17
+      eslint-plugin-you-dont-need-lodash-underscore: 6.13.0
+      eslint-plugin-you-dont-need-momentjs: 1.6.0(eslint@8.48.0)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@swc/core'
+      - '@testing-library/dom'
+      - eslint-import-resolver-webpack
+      - eslint-plugin-import
+      - jest
+      - postcss
+      - supports-color
+      - tailwindcss
+      - ts-node
+      - typescript
+    dev: false
+
+  /@anolilab/lint-staged-config@2.0.6(@types/node@20.2.3)(husky@8.0.3):
+    resolution: {integrity: sha512-Gm6XZE22y8iSYMScNf6FGD1S6TzRprwVlJcDTnjJKf7hUYI/w1ABtA8GoJuFW8VCj4ZKJ4BDkN5CE45MxsmECA==}
     engines: {node: '>=18'}
     requiresBuild: true
     peerDependencies:
       husky: ^8.x
-      lint-staged: ^13.x
+      lint-staged: ^13.x || ^14.0.0
     dependencies:
-      '@anolilab/package-json-utils': 3.0.4
+      '@anolilab/package-json-utils': 3.0.5
       cross-env: 7.0.3
       find-up: 5.0.0
       husky: 8.0.3
@@ -2328,6 +2443,15 @@ packages:
     dependencies:
       dot-path-value: 0.0.10
       read-pkg-up: 7.0.1
+    dev: true
+
+  /@anolilab/package-json-utils@3.0.5:
+    resolution: {integrity: sha512-0cwWHsD+TlFxl1OvcYpqxmrec/V2v15j6gjL5pvbiyTbp0ctNY64EdawIJKjvtAS3vN7GhOBHNWSHpS8KTEfHA==}
+    engines: {node: '>=18'}
+    dependencies:
+      dot-path-value: 0.0.10
+      read-pkg-up: 7.0.1
+    dev: false
 
   /@anolilab/prettier-config@5.0.3(prettier@3.0.2):
     resolution: {integrity: sha512-IJfQRZNn5cClUKQeGdavQwZ1g2T3PL5VRODNYUicJGSArXzRcbUWczx7/P7HRbnFaKZqU8akYQ1fwZf8R7/uIQ==}
@@ -2349,6 +2473,18 @@ packages:
     dependencies:
       '@anolilab/package-json-utils': 3.0.4
       prettier: 3.0.3
+    dev: true
+
+  /@anolilab/prettier-config@5.0.4(prettier@3.0.3):
+    resolution: {integrity: sha512-xyCMRihZrnGYk4eftz6TgQBBD6xfbWAa02FL8r3YvAwou8fgHw0keqMn9DE7KfYTVp9YznlTe/j4VuokVKtP/Q==}
+    engines: {node: '>=18'}
+    requiresBuild: true
+    peerDependencies:
+      prettier: 2.x || 3.x
+    dependencies:
+      '@anolilab/package-json-utils': 3.0.5
+      prettier: 3.0.3
+    dev: false
 
   /@anolilab/semantic-release-preset@6.0.4(semantic-release@21.1.1):
     resolution: {integrity: sha512-xUgJNioDfhHpCNbzA4ND/qYpCEjA/BHKJbS0hF1kE4esKNbLJURi6ZKZ5BwzyHvBV8mdrcmRymixo9OMhyHj3w==}
@@ -2371,14 +2507,14 @@ packages:
       - supports-color
     dev: true
 
-  /@anolilab/textlint-config@8.0.4(textlint@13.3.3):
-    resolution: {integrity: sha512-XdzOZXf7jP4YDkzcYka659BZTiPu1Qwjm0chbvm34ht3jmL9ixrCEBchca1GoaBlREH7ByDQnSdyyIL+I5O7ww==}
+  /@anolilab/textlint-config@8.0.5(textlint@13.3.3):
+    resolution: {integrity: sha512-giq86T9YUSTeJpzWC19ak+3kowwJakpHv4hJgDWmEE2Qd7syudkgz40uSi0ZcOTOBVe31adv4JLRx7Ku0DQR1w==}
     engines: {node: '>=18'}
     requiresBuild: true
     peerDependencies:
       textlint: ^13.3.2
     dependencies:
-      '@anolilab/package-json-utils': 3.0.4
+      '@anolilab/package-json-utils': 3.0.5
       '@textlint-rule/textlint-rule-no-invalid-control-character': 2.0.0
       '@textlint-rule/textlint-rule-no-unmatched-pair': 1.0.9
       '@textlint-rule/textlint-rule-preset-google': 0.1.2
@@ -8326,7 +8462,6 @@ packages:
     requiresBuild: true
     dependencies:
       lodash: 4.17.21
-    optional: true
 
   /@storybook/csf@0.1.1:
     resolution: {integrity: sha512-4hE3AlNVxR60Wc5KSC68ASYzUobjPqtSKyhV6G+ge0FIXU55N5nTY7dXGRZHQGDBPq+XqchMkIdlkHPRs8nTHg==}
@@ -9336,7 +9471,6 @@ packages:
       '@types/react-dom': 18.2.7
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-    dev: true
 
   /@testing-library/user-event@14.4.3(@testing-library/dom@9.3.1):
     resolution: {integrity: sha512-kCUc5MEwaEMakkO5x7aoD+DLi02ehmEM2QCGWvNqAS1dV/fAvORWEjnjsEIvml59M7Y5kCkWN6fCCyPOe8OL6Q==}
@@ -9845,8 +9979,8 @@ packages:
     resolution: {integrity: sha512-RDDZFuofwkcKpl8Vpj5wFbY+H53xOtqK7ckEL1sXsbPwvKwDdjQf3LkHbtt9sxIHn9nWIEwkmCwBRZ6z5TKU2A==}
     dev: false
 
-  /@tsconfig/strictest@2.0.1:
-    resolution: {integrity: sha512-7JHHCbyCsGUxLd0pDbp24yz3zjxw2t673W5oAP6HCEdr/UUhaRhYd3SSnUsGCk+VnPVJVA4mXROzbhI+nyIk+w==}
+  /@tsconfig/strictest@2.0.2:
+    resolution: {integrity: sha512-jt4jIsWKvUvuY6adJnQJlb/UR7DdjC8CjHI/OaSQruj2yX9/K6+KOvDt/vD6udqos/FUk5Op66CvYT7TBLYO5Q==}
     dev: false
 
   /@types/accepts@1.3.5:
@@ -11960,8 +12094,8 @@ packages:
       pako: 0.2.9
     dev: false
 
-  /browserslist-config-anolilab@5.0.3:
-    resolution: {integrity: sha512-rBwYeRnj3PdIjVUehKFmzap94a6wqL5T9b3gduuhAQgvX+ZZ1EvTlWbzHsWR5jNu5fAXleLbsHwAStPpfqZPcA==}
+  /browserslist-config-anolilab@5.0.4:
+    resolution: {integrity: sha512-gVB0Q5grmp7712bStsKxEowW/4K9EhS0QjoEvzF4Zj7AvQnO5E8lT84XpsmxDQQIAW9CN3pdmiR5uLDxAg59pw==}
     engines: {node: '>=18'}
     dev: false
 
@@ -14822,6 +14956,29 @@ packages:
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
+    dev: true
+    optional: true
+
+  /eslint-plugin-jsdoc@46.5.1(eslint@8.48.0):
+    resolution: {integrity: sha512-CPbvKprmEuJYoxMj5g8gXfPqUGgcqMM6jpH06Kp4pn5Uy5MrPkFKzoD7UFp2E4RBzfXbJz1+TeuEivwFVMkXBg==}
+    engines: {node: '>=16'}
+    requiresBuild: true
+    peerDependencies:
+      eslint: ^7.0.0 || ^8.0.0
+    dependencies:
+      '@es-joy/jsdoccomment': 0.40.1
+      are-docs-informative: 0.0.2
+      comment-parser: 1.4.0
+      debug: 4.3.4
+      escape-string-regexp: 4.0.0
+      eslint: 8.48.0
+      esquery: 1.5.0
+      is-builtin-module: 3.2.1
+      semver: 7.5.4
+      spdx-expression-parse: 3.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
     optional: true
 
   /eslint-plugin-jsonc@2.9.0(eslint@8.48.0):
@@ -15098,7 +15255,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - typescript
-    optional: true
 
   /eslint-plugin-tailwindcss@3.13.0(tailwindcss@3.3.3):
     resolution: {integrity: sha512-Fcep4KDRLWaK3KmkQbdyKHG0P4GdXFmXdDaweTIPcgOP60OOuWFbh1++dufRT28Q4zpKTKaHwTsXPJ4O/EjU2Q==}

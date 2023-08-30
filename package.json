@@ -106,11 +106,12 @@
         "extends browserslist-config-anolilab"
     ],
     "dependencies": {
-        "@anolilab/commitlint-config": "^3.0.4",
-        "@anolilab/eslint-config": "^11.3.4",
-        "@anolilab/lint-staged-config": "^2.0.5",
-        "@anolilab/prettier-config": "^5.0.3",
-        "@anolilab/textlint-config": "^8.0.4",
+        "@anolilab/commitlint-config": "^3.0.5",
+        "@anolilab/eslint-config": "^11.3.5",
+        "@anolilab/lint-staged-config": "^2.0.6",
+        "@anolilab/prettier-config": "^5.0.4",
+        "@anolilab/textlint-config": "^8.0.5",
+        "@arthurgeron/eslint-plugin-react-usememo": "^1.1.4",
         "@commitlint/cli": "^17.7.1",
         "@commitlint/config-conventional": "^17.7.0",
         "@nrwl/cli": "latest",
@@ -133,10 +134,11 @@
         "@storybook/react-vite": "7.4.0",
         "@storybook/test-runner": "^0.13.0",
         "@storybook/testing-library": "~0.2.0",
+        "@testing-library/react": "^14.0.0",
         "@tsconfig/node18": "^18.2.1",
-        "@tsconfig/strictest": "^2.0.1",
+        "@tsconfig/strictest": "^2.0.2",
         "@types/node": "^20.2.3",
-        "browserslist-config-anolilab": "^5.0.3",
+        "browserslist-config-anolilab": "^5.0.4",
         "commitizen": "^4.3.0",
         "core-js": "^3.32.1",
         "cross-env": "^7.0.3",
@@ -144,11 +146,16 @@
         "eslint": "^8.48.0",
         "eslint-plugin-editorconfig": "^4.0.3",
         "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-jsx-a11y": "^6.7.1",
         "eslint-plugin-mdx": "^2.2.0",
+        "eslint-plugin-react": "7.33.2",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-storybook": "^0.6.13",
+        "eslint-plugin-testing-library": "^6.0.1",
         "husky": "^8.0.3",
         "is-ci": "^3.0.1",
-        "mvdir": "^1.0.21",
         "load-tsconfig": "^0.2.5",
+        "mvdir": "^1.0.21",
         "nx": "16.7.4",
         "plop": "^3.1.2",
         "postcss": "^8.4.29",
@@ -175,7 +182,8 @@
     "anolilab": {
         "eslint-config": {
             "plugin": {
-                "tsdoc": false
+                "tsdoc": false,
+                "testing-library-dom": false
             },
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
@@ -198,7 +206,8 @@
             "esbuild": "^0.18.17",
             "got@<11.8.5": ">=11.8.5",
             "trim@<0.0.3": ">=0.0.3",
-            "chrono-node@<2.2.4": ">=2.2.4"
+            "chrono-node@<2.2.4": ">=2.2.4",
+            "conventional-changelog-conventionalcommits": "6.1.0"
         }
     }
 }

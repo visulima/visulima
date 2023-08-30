@@ -3,7 +3,6 @@ import postcss from "postcss";
 import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
-    stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
     addons: [
         "@storybook/addon-essentials",
         "@storybook/addon-interactions",
@@ -20,16 +19,17 @@ const config: StorybookConfig = {
             },
         },
     ],
+    docs: {
+        autodocs: "tag",
+    },
     framework: {
         name: "@storybook/react-vite",
         options: {},
     },
-    docs: {
-        autodocs: "tag",
-    },
+    stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
 
-    viteFinal: async (config) =>
-        mergeConfig(config, {
+    viteFinal: async (vConfig) =>
+        mergeConfig(vConfig, {
             plugins: [],
         }),
 };
