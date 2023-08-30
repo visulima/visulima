@@ -15,7 +15,7 @@ permissions: {}
 jobs:
     main:
         permissions:
-            pull-requests: "read" # to analyze PRs (amannn/action-semantic-pull-request)
+            pull-requests: "write" # to analyze PRs (amannn/action-semantic-pull-request)
             statuses: "write" # to mark status of analyzed PR (amannn/action-semantic-pull-request)
         runs-on: "ubuntu-latest"
         name: "Semantic Pull Request"
@@ -43,7 +43,7 @@ jobs:
                       infra
                       revert
 
-            - uses: "marocchino/sticky-pull-request-comment@v2"
+            - uses: "marocchino/sticky-pull-request-comment@efaaab3fd41a9c3de579aba759d2552635e590fd # v2.8.0"
               # When the previous steps fails, the workflow would stop. By adding this
               # condition you can continue the execution with the populated error message.
               if: "always() && (steps.lint_pr_title.outputs.error_message != null)"
@@ -62,7 +62,7 @@ jobs:
 
               # Delete a previous comment when the issue has been resolved
             - if: "${{ steps.lint_pr_title.outputs.error_message == null }}"
-              uses: "marocchino/sticky-pull-request-comment@v2"
+              uses: "marocchino/sticky-pull-request-comment@efaaab3fd41a9c3de579aba759d2552635e590fd # v2.8.0"
               with:
                   header: "pr-title-lint-error"
                   message: |
