@@ -1,11 +1,11 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "React + Node 18",
-    "extends": "../../tsconfig.base.json",
+    "extends": "./tsconfig.base.json",
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": ["tsup.config.ts"],
+    "include": ["tsup.config.ts", ".storybook/**/*.ts"],
     "exclude": [
         "dist/**/*",
         "node_modules/**/*",
