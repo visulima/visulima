@@ -72,13 +72,13 @@
         "qs": "^6.11.2"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^11.3.3",
-        "@anolilab/prettier-config": "^5.0.3",
-        "@anolilab/semantic-release-preset": "^6.0.4",
+        "@anolilab/eslint-config": "^11.3.5",
+        "@anolilab/prettier-config": "^5.0.4",
+        "@anolilab/semantic-release-preset": "^6.0.5",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/micromatch": "^4.0.2",
-        "@types/node": "18.17.1",
-        "@types/qs": "^6.9.7",
+        "@types/node": "18.17.12",
+        "@types/qs": "^6.9.8",
         "@vitest/coverage-v8": "^0.34.3",
         "cross-env": "^7.0.3",
         "eslint": "^8.48.0",
