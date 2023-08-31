@@ -247,7 +247,7 @@
         "express": "^4.18.2",
         "fastify": "^4.22.0",
         "koa": "^2.14.2",
-        "next": "^13.4.12",
+        "next": "^13.4.19",
         "rate-limiter-flexible": "^2.4.2",
         "redoc": "^2.1.1",
         "swagger-ui-dist": "^4.19.1",

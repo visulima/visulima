@@ -105,7 +105,7 @@
         "vitest": "^0.34.3"
     },
     "optionalDependencies": {
-        "next": "^13.4.12"
+        "next": "^13.4.19"
     },
     "engines": {
         "node": ">=18.* <=20.*"
