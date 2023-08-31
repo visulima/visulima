@@ -84,7 +84,7 @@
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.2.8",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "prettier": "^3.0.2",
+        "prettier": "^3.0.3",
         "rimraf": "^5.0.1",
         "semantic-release": "^21.1.1",
         "sort-package-json": "^2.5.1",
