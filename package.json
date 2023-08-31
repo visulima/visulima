@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "nx run-many --target=build --all --parallel",
-        "build:docs": "pnpm --filter \"docs\" run build",
+        "build:docs": "pnpm run build:storybook",
         "build:packages": "nx run-many --target=build --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs",
         "build:prod:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run build:prod",
         "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=connect,readdir,jsdoc-open-api,api-platform,crud,pagination,prisma-dmmf-transformer,health-check,nextra-theme-docs",
