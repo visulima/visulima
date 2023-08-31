@@ -257,8 +257,8 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0
       framer-motion:
-        specifier: ^10.16.1
-        version: 10.16.1(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^10.16.2
+        version: 10.16.2(react-dom@18.2.0)(react@18.2.0)
       fs-extra:
         specifier: ^11.1.1
         version: 11.1.1
@@ -451,8 +451,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       mobx:
-        specifier: ^6.10.1
-        version: 6.10.1
+        specifier: ^6.10.2
+        version: 6.10.2
       next:
         specifier: 12.3.4
         version: 12.3.4(react-dom@18.2.0)(react@18.2.0)
@@ -464,7 +464,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       redoc:
         specifier: ^2.1.1
-        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
+        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
       styled-components:
         specifier: ^6.0.7
         version: 6.0.7(react-dom@18.2.0)(react@18.2.0)
@@ -515,8 +515,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       mobx:
-        specifier: ^6.10.1
-        version: 6.10.1
+        specifier: ^6.10.2
+        version: 6.10.2
       next:
         specifier: 13.1.5
         version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
@@ -528,7 +528,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       redoc:
         specifier: ^2.1.1
-        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
+        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
       styled-components:
         specifier: ^6.0.7
         version: 6.0.7(react-dom@18.2.0)(react@18.2.0)
@@ -628,8 +628,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       mobx:
-        specifier: ^6.10.1
-        version: 6.10.1
+        specifier: ^6.10.2
+        version: 6.10.2
       next:
         specifier: 13.1.5
         version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
@@ -644,7 +644,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       redoc:
         specifier: ^2.1.1
-        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
+        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
       styled-components:
         specifier: ^6.0.7
         version: 6.0.7(react-dom@18.2.0)(react@18.2.0)
@@ -701,8 +701,8 @@ importers:
         specifier: ^0.1.13
         version: 0.1.13
       mobx:
-        specifier: ^6.10.1
-        version: 6.10.1
+        specifier: ^6.10.2
+        version: 6.10.2
       next:
         specifier: 13.1.5
         version: 13.1.5(react-dom@18.2.0)(react@18.2.0)
@@ -717,7 +717,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       redoc:
         specifier: ^2.1.1
-        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
+        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
       styled-components:
         specifier: ^6.0.7
         version: 6.0.7(react-dom@18.2.0)(react@18.2.0)
@@ -823,8 +823,8 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0
       framer-motion:
-        specifier: ^10.16.1
-        version: 10.16.1(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^10.16.2
+        version: 10.16.2(react-dom@18.2.0)(react@18.2.0)
       intersection-observer:
         specifier: ^0.12.2
         version: 0.12.2
@@ -908,7 +908,7 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1
       yaml:
-        specifier: ^2.3.1
+        specifier: ^2.3.2
         version: 2.3.2
       zod-to-ts:
         specifier: ^1.2.0
@@ -948,11 +948,11 @@ importers:
         specifier: ^13.4.19
         version: 13.4.19(react-dom@18.2.0)(react@18.2.0)
       rate-limiter-flexible:
-        specifier: ^2.4.2
-        version: 2.4.2
+        specifier: ^3.0.0
+        version: 3.0.0
       redoc:
         specifier: ^2.1.1
-        version: 2.1.1(core-js@3.32.1)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
+        version: 2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7)
       swagger-ui-dist:
         specifier: ^4.19.1
         version: 4.19.1
@@ -968,7 +968,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1090,8 +1090,8 @@ importers:
         specifier: ^12.1.3
         version: 12.1.3
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1153,7 +1153,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1203,8 +1203,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1250,7 +1250,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1318,8 +1318,8 @@ importers:
         specifier: ^12.1.3
         version: 12.1.3
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1368,7 +1368,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1406,8 +1406,8 @@ importers:
         specifier: ^1.13.0
         version: 1.13.0
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1445,7 +1445,7 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
       yaml:
-        specifier: ^2.3.1
+        specifier: ^2.3.2
         version: 2.3.2
     optionalDependencies:
       cli-progress:
@@ -1463,7 +1463,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1513,8 +1513,8 @@ importers:
         specifier: ^12.1.3
         version: 12.1.3
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1612,7 +1612,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1731,8 +1731,8 @@ importers:
         specifier: 0.9.0
         version: 0.9.0(postcss@8.4.29)
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1785,7 +1785,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1826,8 +1826,8 @@ importers:
         specifier: ^12.1.3
         version: 12.1.3
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1861,7 +1861,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1908,8 +1908,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       prettier:
-        specifier: 3.0.2
-        version: 3.0.2
+        specifier: 3.0.3
+        version: 3.0.3
       prisma:
         specifier: 4.16.2
         version: 4.16.2
@@ -1943,7 +1943,7 @@ importers:
         version: 11.3.5(@testing-library/dom@9.3.1)(eslint@8.48.0)(postcss@8.4.29)(tailwindcss@3.3.3)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.4
-        version: 5.0.4(prettier@3.0.2)
+        version: 5.0.4(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
         specifier: ^6.0.5
         version: 6.0.5(semantic-release@21.1.1)
@@ -1978,8 +1978,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       prettier:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -2166,17 +2166,6 @@ packages:
     dependencies:
       dot-path-value: 0.0.10
       read-pkg-up: 7.0.1
-
-  /@anolilab/prettier-config@5.0.4(prettier@3.0.2):
-    resolution: {integrity: sha512-xyCMRihZrnGYk4eftz6TgQBBD6xfbWAa02FL8r3YvAwou8fgHw0keqMn9DE7KfYTVp9YznlTe/j4VuokVKtP/Q==}
-    engines: {node: '>=18'}
-    requiresBuild: true
-    peerDependencies:
-      prettier: 2.x || 3.x
-    dependencies:
-      '@anolilab/package-json-utils': 3.0.5
-      prettier: 3.0.2
-    dev: true
 
   /@anolilab/prettier-config@5.0.4(prettier@3.0.3):
     resolution: {integrity: sha512-xyCMRihZrnGYk4eftz6TgQBBD6xfbWAa02FL8r3YvAwou8fgHw0keqMn9DE7KfYTVp9YznlTe/j4VuokVKtP/Q==}
@@ -3723,7 +3712,6 @@ packages:
   /@commitlint/config-validator@17.6.7:
     resolution: {integrity: sha512-vJSncmnzwMvpr3lIcm0I8YVVDJTzyjy7NZAeXbTXy+MPUdAr9pKyyg7Tx/ebOQ9kqzE6O9WT6jg2164br5UdsQ==}
     engines: {node: '>=v14'}
-    requiresBuild: true
     dependencies:
       '@commitlint/types': 17.4.4
       ajv: 8.12.0
@@ -3757,7 +3745,6 @@ packages:
   /@commitlint/execute-rule@17.4.0:
     resolution: {integrity: sha512-LIgYXuCSO5Gvtc0t9bebAMSwd68ewzmqLypqI2Kke1rqOqqDbMpYcYfoPfFlv9eyLIh4jocHWwCK5FS7z9icUA==}
     engines: {node: '>=v14'}
-    requiresBuild: true
     dev: false
 
   /@commitlint/format@17.4.4:
@@ -3837,7 +3824,6 @@ packages:
   /@commitlint/resolve-extends@17.6.7:
     resolution: {integrity: sha512-PfeoAwLHtbOaC9bGn/FADN156CqkFz6ZKiVDMjuC2N5N0740Ke56rKU7Wxdwya8R8xzLK9vZzHgNbuGhaOVKIg==}
     engines: {node: '>=v14'}
-    requiresBuild: true
     dependencies:
       '@commitlint/config-validator': 17.6.7
       '@commitlint/types': 17.4.4
@@ -3880,7 +3866,6 @@ packages:
   /@cspotcode/source-map-support@0.8.1:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
-    requiresBuild: true
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
     dev: false
@@ -5031,7 +5016,6 @@ packages:
   /@jest/schemas@29.6.3:
     resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-    requiresBuild: true
     dependencies:
       '@sinclair/typebox': 0.27.8
 
@@ -5232,7 +5216,6 @@ packages:
 
   /@jridgewell/trace-mapping@0.3.9:
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
-    requiresBuild: true
     dependencies:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -5445,6 +5428,7 @@ packages:
   /@next/env@13.4.15:
     resolution: {integrity: sha512-GQXUy/y5NW4VbrKQMbLjsuTykJ7+Jtb9zcKH1WrmgI1zG7yCoZQaoI65YFNksEh+9EPSHX6Xr7U1/StIIAOXog==}
     requiresBuild: true
+    dev: true
 
   /@next/env@13.4.19:
     resolution: {integrity: sha512-FsAT5x0jF2kkhNkKkukhsyYOrRqtSxrEhfliniIq0bwWbuXLgyt3Gv0Ml+b91XwjwArmuP7NxCiGd++GGKdNMQ==}
@@ -5523,6 +5507,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-darwin-arm64@13.4.19:
@@ -5566,6 +5551,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-darwin-x64@13.4.19:
@@ -5645,6 +5631,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-linux-arm64-gnu@13.4.19:
@@ -5688,6 +5675,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-linux-arm64-musl@13.4.19:
@@ -5731,6 +5719,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-linux-x64-gnu@13.4.19:
@@ -5774,6 +5763,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-linux-x64-musl@13.4.19:
@@ -5817,6 +5807,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-win32-arm64-msvc@13.4.19:
@@ -5860,6 +5851,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-win32-ia32-msvc@13.4.19:
@@ -5903,6 +5895,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@next/swc-win32-x64-msvc@13.4.19:
@@ -7424,7 +7417,6 @@ packages:
 
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
-    requiresBuild: true
 
   /@sindresorhus/is@5.6.0:
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -9732,22 +9724,18 @@ packages:
 
   /@tsconfig/node10@1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
-    requiresBuild: true
     dev: false
 
   /@tsconfig/node12@1.0.11:
     resolution: {integrity: sha512-cqefuRsh12pWyGsIoBKJA9luFu3mRxCA+ORZvA4ktLSzIuCUtWVxGIuXigEwO5/ywWFMZ2QEGKWvkZG1zDMTag==}
-    requiresBuild: true
     dev: false
 
   /@tsconfig/node14@1.0.3:
     resolution: {integrity: sha512-ysT8mhdixWK6Hw3i1V2AeRqZ5WfXg1G43mqoYlM2nc6388Fq5jcXyr5mRsqViLx/GJYdoL0bfXD8nmF+Zn/Iow==}
-    requiresBuild: true
     dev: false
 
   /@tsconfig/node16@1.0.4:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
-    requiresBuild: true
     dev: false
 
   /@tsconfig/node18@18.2.1:
@@ -10177,7 +10165,6 @@ packages:
 
   /@types/node@20.4.7:
     resolution: {integrity: sha512-bUBrPjEry2QUTsnuEjzjbS7voGWCc30W0qzgMf90GPeDGFRakvrz47ju+oqDAKCXLUCe39u57/ORMl/O/04/9g==}
-    requiresBuild: true
     dev: false
 
   /@types/normalize-package-data@2.4.1:
@@ -11258,7 +11245,6 @@ packages:
 
   /arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
-    requiresBuild: true
     dev: false
 
   /arg@5.0.2:
@@ -12887,7 +12873,6 @@ packages:
   /cosmiconfig-typescript-loader@5.0.0(@types/node@20.4.7)(cosmiconfig@8.2.0)(typescript@5.2.2):
     resolution: {integrity: sha512-+8cK7jRAReYkMwMiG+bxhcNKiHJDM6bR9FD/nGBXOWdMLuYawjF5cGrtLilJ+LGd3ZjCXnJjR5DkfWPoIVlqJA==}
     engines: {node: '>=v16'}
-    requiresBuild: true
     peerDependencies:
       '@types/node': '*'
       cosmiconfig: '>=8.2'
@@ -12935,7 +12920,6 @@ packages:
 
   /create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
-    requiresBuild: true
     dev: false
 
   /cross-env@7.0.3:
@@ -16064,8 +16048,8 @@ packages:
     resolution: {integrity: sha512-by7U5W8dkIzcvDofUcO42yl9JbnHTEDBrzu3pt5fKT+Z4Oy85I21K80EYJYdjQGC2qum4Vo55Ag57iiIK4FYuA==}
     dev: false
 
-  /framer-motion@10.16.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-K6TXr5mZtitC/dxQCBdg7xzdN0d5IAIrlaqCPKtIQVdzVPGC0qBuJKXggHX1vjnP5gPOFwB1KbCCTWcnFc3kWg==}
+  /framer-motion@10.16.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-aY6L9YMvqMWtfOQptaUvvr8dp97jskXY5UYLQM0vOPxKeERrG/Z034EIQZ/52u7MeCT0HlCQy3/l0HdUZCB9Tw==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
@@ -20067,7 +20051,6 @@ packages:
 
   /make-error@1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
-    requiresBuild: true
     dev: false
 
   /make-iterator@1.0.1:
@@ -21230,25 +21213,6 @@ packages:
       ufo: 1.3.0
     dev: true
 
-  /mobx-react-lite@3.4.3(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-NkJREyFTSUXR772Qaai51BnE1voWx56LOL80xG7qkZr6vo8vEaLF3sz1JNUVh+rxmUzxYaqOhfuxTfqUh0FXUg==}
-    requiresBuild: true
-    peerDependencies:
-      mobx: ^6.1.0
-      react: ^16.8.0 || ^17 || ^18
-      react-dom: '*'
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
-    dependencies:
-      mobx: 6.10.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
   /mobx-react-lite@3.4.3(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-NkJREyFTSUXR772Qaai51BnE1voWx56LOL80xG7qkZr6vo8vEaLF3sz1JNUVh+rxmUzxYaqOhfuxTfqUh0FXUg==}
     requiresBuild: true
@@ -21264,27 +21228,6 @@ packages:
         optional: true
     dependencies:
       mobx: 6.10.2
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-    optional: true
-
-  /mobx-react@7.6.0(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-+HQUNuh7AoQ9ZnU6c4rvbiVVl+wEkb9WqYsVDzGLng+Dqj1XntHu79PvEWKtSMoMj67vFp/ZPXcElosuJO8ckA==}
-    requiresBuild: true
-    peerDependencies:
-      mobx: ^6.1.0
-      react: ^16.8.0 || ^17 || ^18
-      react-dom: '*'
-      react-native: '*'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
-    dependencies:
-      mobx: 6.10.1
-      mobx-react-lite: 3.4.3(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
@@ -21307,11 +21250,6 @@ packages:
       mobx-react-lite: 3.4.3(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-    dev: false
-    optional: true
-
-  /mobx@6.10.1:
-    resolution: {integrity: sha512-oKibSy1GDJI+KfCKbqgFbxYt7DcpZ6jkq9byTzr9AYDGWOg4snI9Ux21U3hpFqhK4Ouw78CJQomRDbfXo1R6pg==}
     dev: false
 
   /mobx@6.10.2:
@@ -21655,12 +21593,12 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    dev: true
 
   /next@13.4.19(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-HuPSzzAbJ1T4BD8e0bs6B9C1kWQ6gv8ykZoRWs5AQoiIuqbGHHdQO7Ljuvg05Q0Z24E2ABozHe6FxDvI6HfyAw==}
     engines: {node: '>=16.8.0'}
     hasBin: true
-    requiresBuild: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
       react: ^18.2.0
@@ -21776,48 +21714,6 @@ packages:
       zod: 3.22.2
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /nextra@2.12.3(next@13.4.19)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-0d8wXpGAccFpMFZuxnlnN56MIZj+AWGYXW3Xk6ByXyr0Mb+B/C/0aGZV5YrBex0V1wEqMGQl4LLAJI+AfCbSXg==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      next: '>=9.5.3'
-      react: '>=16.13.1'
-      react-dom: '>=16.13.1'
-    dependencies:
-      '@headlessui/react': 1.7.17(react-dom@18.2.0)(react@18.2.0)
-      '@mdx-js/mdx': 2.3.0
-      '@mdx-js/react': 2.3.0(react@18.2.0)
-      '@napi-rs/simple-git': 0.1.9
-      '@theguild/remark-mermaid': 0.0.4(react@18.2.0)
-      '@theguild/remark-npm2yarn': 0.1.1
-      clsx: 2.0.0
-      github-slugger: 2.0.0
-      graceful-fs: 4.2.11
-      gray-matter: 4.0.3
-      katex: 0.16.8
-      lodash.get: 4.4.2
-      next: 13.4.19(react-dom@18.2.0)(react@18.2.0)
-      next-mdx-remote: 4.4.1(react-dom@18.2.0)(react@18.2.0)
-      p-limit: 3.1.0
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      rehype-katex: 6.0.3
-      rehype-pretty-code: 0.9.11(shiki@0.14.3)
-      rehype-raw: 7.0.0
-      remark-gfm: 3.0.1
-      remark-math: 5.1.1
-      remark-reading-time: 2.0.1
-      shiki: 0.14.3
-      slash: 3.0.0
-      title: 3.5.3
-      unist-util-remove: 4.0.0
-      unist-util-visit: 5.0.0
-      zod: 3.22.2
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
 
   /nice-try@1.0.5:
     resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
@@ -23579,12 +23475,6 @@ packages:
     hasBin: true
     dev: false
 
-  /prettier@3.0.2:
-    resolution: {integrity: sha512-o2YR9qtniXvwEZlOKbveKfDQVyqxbEIWn48Z8m3ZJjBjcCmUy3xZGIv+7AkaeuaTr6yPXJjwv07ZWlsWbEy1rQ==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dev: true
-
   /prettier@3.0.3:
     resolution: {integrity: sha512-L/4pUDMxcNa8R/EthV08Zt42WBO4h1rarVtK0K+QJG0X187OLo7l699jWw0GKuwzkPQ//jMFA/8Xm6Fh3J/DAg==}
     engines: {node: '>=14'}
@@ -23909,8 +23799,8 @@ packages:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
 
-  /rate-limiter-flexible@2.4.2:
-    resolution: {integrity: sha512-rMATGGOdO1suFyf/mI5LYhts71g1sbdhmd6YvdiXO2gJnd42Tt6QS4JUKJKSWVVkMtBacm6l40FR7Trjo6Iruw==}
+  /rate-limiter-flexible@3.0.0:
+    resolution: {integrity: sha512-janAJkWxWxmLka0hV+XvCTo0M8keeSeOuz8ZL33cTXrkS4ek9mQ2VJm9ri7fm03oTVth19Sfqb1ijCmo7K/vAg==}
     requiresBuild: true
     dev: false
     optional: true
@@ -24511,48 +24401,7 @@ packages:
     dependencies:
       esprima: 4.0.1
 
-  /redoc@2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7):
-    resolution: {integrity: sha512-0Gb5VDK1K19LrCv7UfUUjCmmOhpq31G309nbGjbTprbRZOCsQWIpWvesCjlfYi50UILab8lyJUXab4L1wraO1g==}
-    engines: {node: '>=6.9', npm: '>=3.0.0'}
-    peerDependencies:
-      core-js: ^3.1.4
-      mobx: ^6.0.4
-      react: ^16.8.4 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.4 || ^17.0.0 || ^18.0.0
-      styled-components: ^4.1.1 || ^5.1.1 || ^6.0.5
-    dependencies:
-      '@redocly/openapi-core': 1.0.2(encoding@0.1.13)
-      classnames: 2.3.2
-      core-js: 3.32.1
-      decko: 1.2.0
-      dompurify: 2.4.7
-      eventemitter3: 4.0.7
-      json-pointer: 0.6.2
-      lunr: 2.3.9
-      mark.js: 8.11.1
-      marked: 4.3.0
-      mobx: 6.10.1
-      mobx-react: 7.6.0(mobx@6.10.1)(react-dom@18.2.0)(react@18.2.0)
-      openapi-sampler: 1.3.1
-      path-browserify: 1.0.1
-      perfect-scrollbar: 1.5.5
-      polished: 4.2.2
-      prismjs: 1.29.0
-      prop-types: 15.8.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      react-tabs: 3.2.3(react@18.2.0)
-      slugify: 1.4.7
-      stickyfill: 1.1.1
-      styled-components: 6.0.7(react-dom@18.2.0)(react@18.2.0)
-      swagger2openapi: 7.0.8(encoding@0.1.13)
-      url-template: 2.0.8
-    transitivePeerDependencies:
-      - encoding
-      - react-native
-    dev: false
-
-  /redoc@2.1.1(core-js@3.32.1)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7):
+  /redoc@2.1.1(core-js@3.32.1)(encoding@0.1.13)(mobx@6.10.2)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.0.7):
     resolution: {integrity: sha512-0Gb5VDK1K19LrCv7UfUUjCmmOhpq31G309nbGjbTprbRZOCsQWIpWvesCjlfYi50UILab8lyJUXab4L1wraO1g==}
     engines: {node: '>=6.9', npm: '>=3.0.0'}
     peerDependencies:
@@ -24592,7 +24441,6 @@ packages:
       - encoding
       - react-native
     dev: false
-    optional: true
 
   /redux-immutable@4.0.0(immutable@3.8.2):
     resolution: {integrity: sha512-SchSn/DWfGb3oAejd+1hhHx01xUoxY+V7TeK0BKqpkLKiQPVFf7DYzEaKmrEVxsWxielKfSK9/Xq66YyxgR1cg==}
@@ -25188,7 +25036,6 @@ packages:
   /reusify@1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
-    requiresBuild: true
 
   /rfdc@1.3.0:
     resolution: {integrity: sha512-V2hovdzFbOi77/WajaSMXk2OLm+xNIeQdMMuB7icj7bk6zi2F8GGAxigcnDFpJHbNyNcgyJDiP+8nOrY5cZGrA==}
@@ -27410,7 +27257,6 @@ packages:
   /ts-node@10.9.1(@types/node@20.4.7)(typescript@5.2.2):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
-    requiresBuild: true
     peerDependencies:
       '@swc/core': '>=1.2.50'
       '@swc/wasm': '>=1.2.50'
@@ -27580,7 +27426,6 @@ packages:
   /type-fest@0.21.3:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
-    requiresBuild: true
 
   /type-fest@0.6.0:
     resolution: {integrity: sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg==}
@@ -28224,7 +28069,6 @@ packages:
 
   /v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
-    requiresBuild: true
     dev: false
 
   /v8-compile-cache@2.3.0:
@@ -29047,7 +28891,6 @@ packages:
   /yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
-    requiresBuild: true
     dev: false
 
   /yocto-queue@0.1.0:
