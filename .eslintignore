@@ -23,6 +23,7 @@ examples
 packages
 plop/package/src
 plop/package-configuration.js
+storybook
 
 bench
 README.md

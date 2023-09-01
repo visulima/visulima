@@ -9,5 +9,5 @@
             "flexsearch": ["./node_modules/@types/flexsearch"]
         }
     },
-    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts"]
+    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "__stories__/**/*", "*.d.ts", "build.config.ts", "tsup.config.ts"]
 }

@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useMemo, useState } from "react";
-import Oas, { Operation } from "oas";
+import type { Operation } from "oas";
+import Oas from "oas";
 import type { HttpMethods } from "oas/dist/rmoas.types";
 
 import ApiPlayground from "./api-playground";

@@ -1,5 +1,5 @@
 declare module "*.svg" {
-    import { ComponentPropsWithRef } from "react";
+    import type { ComponentPropsWithRef } from "react";
 
-    export default (props: ComponentPropsWithRef<"svg">) => JSX.Element;
+    export default (properties: ComponentPropsWithRef<"svg">) => JSX.Element;
 }

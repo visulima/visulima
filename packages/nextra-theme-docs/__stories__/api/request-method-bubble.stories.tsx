@@ -1,43 +1,41 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
-import * as React from 'react';
+import type { ComponentMeta, ComponentStory } from "@storybook/react";
+import * as React from "react";
 
-import { RequestMethodBubble } from '../../Api';
+import { RequestMethodBubble } from "../../Api";
 
 export default {
-  title: 'Api/RequestMethodBubble',
-  component: RequestMethodBubble,
+    component: RequestMethodBubble,
+    title: "Api/RequestMethodBubble",
 } as ComponentMeta<typeof RequestMethodBubble>;
 
-const Template: ComponentStory<typeof RequestMethodBubble> = (args) => (
-  <RequestMethodBubble {...args} />
-);
+const Template: ComponentStory<typeof RequestMethodBubble> = (arguments_) => <RequestMethodBubble {...arguments_} />;
 
 export const GET = Template.bind({});
 GET.args = {
-  method: 'GET',
+    method: "GET",
 };
 
 export const POST = Template.bind({});
 POST.args = {
-  method: 'POST',
+    method: "POST",
 };
 
 export const PUT = Template.bind({});
 PUT.args = {
-  method: 'PUT',
+    method: "PUT",
 };
 
 export const DELETE = Template.bind({});
 DELETE.args = {
-  method: 'DELETE',
+    method: "DELETE",
 };
 
 export const PATCH = Template.bind({});
 PATCH.args = {
-  method: 'PATCH',
+    method: "PATCH",
 };
 
 export const OPTIONS = Template.bind({});
 OPTIONS.args = {
-  method: 'OPTIONS',
+    method: "OPTIONS",
 };

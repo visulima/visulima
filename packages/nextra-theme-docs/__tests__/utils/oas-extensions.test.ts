@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import petstore from "@readme/oas-examples/3.0/json/petstore.json";
 import Oas from "oas";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -60,14 +59,12 @@ describe("oas-extensions", () => {
 
         describe("oas-level extensions", () => {
             it("should use the default extension value if the extension is not present", () => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const oas = Oas.init(petstore);
 
                 expect(getExtension(SAMPLES_LANGUAGES, oas)).toStrictEqual(["shell", "node", "ruby", "php", "python", "java", "csharp"]);
             });
 
             it("should locate an extensions under `n-readme`", () => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const oas = Oas.init({
                     ...petstore,
                     "n-readme": {
@@ -79,14 +76,12 @@ describe("oas-extensions", () => {
             });
 
             it("should locate an extensions listed at the root", () => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const oas = Oas.init({ ...petstore, [`n-${EXPLORER_ENABLED}`]: false });
 
                 expect(getExtension(EXPLORER_ENABLED, oas)).toBeFalsy();
             });
 
             it("should not throw if `n-readme` is not an object", () => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const oas = Oas.init({
                     ...petstore,
                     "n-readme": true,
@@ -96,7 +91,6 @@ describe("oas-extensions", () => {
             });
 
             it("should not pick up the `code-samples` extension", () => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const oas = Oas.init({
                     ...petstore,
                     "n-readme": {
@@ -118,7 +112,6 @@ describe("oas-extensions", () => {
             let oas: Oas;
 
             beforeEach(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 oas = Oas.init(petstore);
             });
 
