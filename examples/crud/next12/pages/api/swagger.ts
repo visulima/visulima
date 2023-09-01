@@ -1,4 +1,4 @@
-import { swaggerApiRoute } from "../../../../../packages/api-platform/framework/next";
+import { swaggerApiRoute } from "@visulima/api-platform/framework/next";
 
 import { prisma } from "../../lib/prisma-client";
 
