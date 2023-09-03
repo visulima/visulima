@@ -1,6 +1,6 @@
 import prisma from "./client";
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import/prefer-default-export,func-style
 export async function createSeedData(): Promise<void> {
     /**
      * USERS
@@ -43,7 +43,7 @@ export async function createSeedData(): Promise<void> {
                     id: user1.id,
                 },
             },
-            // eslint-disable-next-line sonarjs/no-duplicate-string
+
             content: "Lorem ipsum",
         },
     });
@@ -64,12 +64,12 @@ export async function createSeedData(): Promise<void> {
      */
     await prisma.comment.create({
         data: {
-            content: "Lorem ipsum",
             author: {
                 connect: {
                     id: user3.id,
                 },
             },
+            content: "Lorem ipsum",
             post: {
                 connect: {
                     id: post1.id,
@@ -80,12 +80,12 @@ export async function createSeedData(): Promise<void> {
 
     await prisma.comment.create({
         data: {
-            content: "Lorem ipsum",
             author: {
                 connect: {
                     id: user4.id,
                 },
             },
+            content: "Lorem ipsum",
             post: {
                 connect: {
                     id: post2.id,

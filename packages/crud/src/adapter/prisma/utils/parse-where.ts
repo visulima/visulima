@@ -1,6 +1,6 @@
-import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types";
+import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types.d";
 import isPrimitive from "../../../utils/is-primitive";
-import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types";
+import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types.d";
 
 const isObject = (a: any) => a instanceof Object;
 
@@ -20,7 +20,7 @@ const operatorsAssociation: {
     $starts: "startsWith",
 };
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-useless-flag
+// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-useless-flag,require-unicode-regexp
 const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
 
 const getSearchValue = (originalValue: any): SearchCondition => {
@@ -38,7 +38,6 @@ const getSearchValue = (originalValue: any): SearchCondition => {
 const isRelation = (key: string, manyRelations: string[]): boolean => {
     // Get the key containing . and remove the property name
     const splitKey = key.split(".");
-
     splitKey.splice(-1, 1);
 
     return manyRelations.includes(splitKey.join("."));
@@ -50,8 +49,8 @@ const parseSimpleField = (value: Condition): Record<string, Condition> | undefin
 
     if (prismaOperator) {
         return {
-            [prismaOperator]: value[operator as string],
-        } as Record<string, Condition>;
+            [prismaOperator]: value[operator as string] as Condition,
+        };
     }
 
     return undefined;
@@ -108,7 +107,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
         const value = object[key];
 
         if (isRelation(key, manyRelations)) {
-            parseRelation(value as WhereCondition, key, parsed, manyRelations);
+            parseRelation(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         } else if (isPrimitive(value)) {
             parsed[key] = value as SearchCondition;
         } else if (isObject(value)) {
@@ -186,9 +185,9 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          * }
          */
         if (isRelation(key, manyRelations)) {
-            parseRelation(value as WhereCondition, key, parsed, manyRelations);
+            parseRelation(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         } else {
-            basicParse(value as Condition, key, parsed, manyRelations);
+            basicParse(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         }
     });
 

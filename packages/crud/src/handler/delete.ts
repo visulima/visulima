@@ -2,9 +2,7 @@ import createHttpError from "http-errors";
 
 import type { DeleteHandler } from "../types.d";
 
-const deleteHandler: DeleteHandler = async ({
-    adapter, query, resourceName, resourceId,
-}) => {
+const deleteHandler: DeleteHandler = async ({ adapter, query, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

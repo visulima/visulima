@@ -1,20 +1,28 @@
-import type { Post, User } from "@prisma/client";
-import { Prisma, PrismaClient } from "@prisma/client";
+import type { Post, PrismaClient, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import type { RequestOptions } from "node-mocks-http";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createMocks as createHttpMocks } from "node-mocks-http";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+// eslint-disable-next-line n/no-unpublished-import
 import CrudHandler from "../../../utils/crud-handler";
 import prisma from "./client";
 import { createSeedData } from "./seed";
+// eslint-disable-next-line n/no-unpublished-import
 import PrismaAdapter from "../../../../src/adapter/prisma";
-import type {Adapter} from "../../../../src";
+// eslint-disable-next-line n/no-unpublished-import
+import type { Adapter } from "../../../../src/types.d";
 
-const createMocks = (options: RequestOptions) => {
+const createMocks = (
+    options: RequestOptions,
+): {
+    req: NextApiRequest;
+    res: NextApiResponse;
+} => {
     const { req, res } = createHttpMocks(options);
 
     return {
@@ -26,21 +34,21 @@ const createMocks = (options: RequestOptions) => {
     };
 };
 
-describe("Prisma interraction", () => {
+describe("prisma interraction", () => {
     beforeAll(async () => {
         await createSeedData();
     });
+
     let adapter: PrismaAdapter<Post | User, Prisma.ModelName, PrismaClient>;
     let handler: NextApiHandler<Post | User>;
 
     beforeEach(async () => {
         adapter = new PrismaAdapter<Post | User, Prisma.ModelName, PrismaClient>({
-            prismaClient: prisma,
             manyRelations: {
                 [Prisma.ModelName.User]: ["post.author", "comment.post", "comment.author"],
             },
+            prismaClient: prisma,
         });
-        // @TODO fix typing
         handler = await CrudHandler(adapter as Adapter<any, any>, {
             models: {
                 [Prisma.ModelName.User]: {
@@ -50,23 +58,31 @@ describe("Prisma interraction", () => {
         });
     });
 
+    afterAll(async () => {
+        await prisma.comment.deleteMany();
+        await prisma.post.deleteMany();
+        await prisma.user.deleteMany();
+        await prisma.$disconnect();
+    });
+
     it("should get the list of users", async () => {
         const { req, res } = createMocks({
-            url: "/api/users",
             method: "GET",
+            url: "/api/users",
         });
 
         const expectedResult = await prisma.user.findMany();
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should get a page based paginated users list", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?page=2&limit=2",
             method: "GET",
+            url: "/api/users?page=2&limit=2",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -76,6 +92,7 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith({
             data: expectedResult,
             meta: {
@@ -96,19 +113,20 @@ describe("Prisma interraction", () => {
         const user = await prisma.user.findFirst();
 
         const { req, res } = createMocks({
-            url: `/api/users/${user?.id}`,
             method: "GET",
+            url: `/api/users/${user?.id}`,
         });
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(user);
     });
 
     it("should get the list of users with only their email", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?select=email",
             method: "GET",
+            url: "/api/users?select=email",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -119,13 +137,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should get the list of users with only their email and posts", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?select=email,posts",
             method: "GET",
+            url: "/api/users?select=email,posts",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -137,13 +156,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should get the list of users with only their email and posts ids", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?select=email,posts,posts.id",
             method: "GET",
+            url: "/api/users?select=email,posts,posts.id",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -159,13 +179,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should get the list of users with only their email, posts ids, comments and comments users", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?select=email,posts,posts.id,posts.comment,posts.comment.author",
             method: "GET",
+            url: "/api/users?select=email,posts,posts.id,posts.comment,posts.comment.author",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -173,12 +194,12 @@ describe("Prisma interraction", () => {
                 email: true,
                 posts: {
                     select: {
-                        id: true,
                         comment: {
                             select: {
                                 author: true,
                             },
                         },
+                        id: true,
                     },
                 },
             },
@@ -186,13 +207,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should return the first 2 users", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?limit=2",
             method: "GET",
+            url: "/api/users?limit=2",
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -201,22 +223,24 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should return 2 users after the first 2 ones", async () => {
         const { req, res } = createMocks({
-            url: "/api/users?skip=2&limit=2",
             method: "GET",
+            url: "/api/users?skip=2&limit=2",
         });
 
         const expectedResult = await prisma.user.findMany({
-            take: 2,
             skip: 2,
+            take: 2,
         });
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
@@ -224,26 +248,27 @@ describe("Prisma interraction", () => {
         const firstUser = await prisma.user.findFirst();
 
         const { req, res } = createMocks({
-            url: `/api/users?limit=2&cursor={"id":${firstUser?.id}}`,
             method: "GET",
+            url: `/api/users?limit=2&cursor={"id":${firstUser?.id}}`,
         });
 
         const expectedResult = await prisma.user.findMany({
-            take: 2,
             cursor: {
                 id: firstUser?.id,
             },
+            take: 2,
         });
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should filter user by its email", async () => {
         const { req, res } = createMocks({
-            url: '/api/users?where={"email":{"$eq":"johndoe1@gmail.com"}}',
             method: "GET",
+            url: '/api/users?where={"email":{"$eq":"johndoe1@gmail.com"}}',
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -256,13 +281,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should filter users where email does not match", async () => {
         const { req, res } = createMocks({
-            url: '/api/users?where={"email":{"$neq":"johndoe1@gmail.com"}}',
             method: "GET",
+            url: '/api/users?where={"email":{"$neq":"johndoe1@gmail.com"}}',
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -275,13 +301,14 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should filter users where email starts with john and ends with .com", async () => {
         const { req, res } = createMocks({
-            url: '/api/users?where={"email":{"$and":{"$starts":"john", "$ends":".com"}}}',
             method: "GET",
+            url: '/api/users?where={"email":{"$and":{"$starts":"john", "$ends":".com"}}}',
         });
 
         const expectedResult = await prisma.user.findMany({
@@ -292,18 +319,18 @@ describe("Prisma interraction", () => {
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
     it("should create a user", async () => {
         const { req, res } = createMocks({
-            url: "/api/users",
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            method: "POST",
             body: {
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 email: "createdjohn@gmail.com",
             },
+
+            method: "POST",
+            url: "/api/users",
         });
 
         await handler(req, res);
@@ -314,6 +341,7 @@ describe("Prisma interraction", () => {
             },
         });
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
@@ -324,13 +352,12 @@ describe("Prisma interraction", () => {
             },
         });
         const { req, res } = createMocks({
-            url: `/api/users/${user?.id}`,
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            method: "PATCH",
             body: {
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 email: "updated@gmail.com",
             },
+
+            method: "PATCH",
+            url: `/api/users/${user?.id}`,
         });
 
         await handler(req, res);
@@ -341,6 +368,7 @@ describe("Prisma interraction", () => {
             },
         });
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
@@ -351,26 +379,26 @@ describe("Prisma interraction", () => {
             },
         });
         const { req, res } = createMocks({
-            url: `/api/users/${user?.id}?select=email`,
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            method: "PATCH",
             body: {
-                // eslint-disable-next-line sonarjs/no-duplicate-string
                 email: "updated1@gmail.com",
             },
+
+            method: "PATCH",
+            url: `/api/users/${user?.id}?select=email`,
         });
 
         await handler(req, res);
 
         const expectedResult = await prisma.user.findFirst({
-            where: {
-                email: "updated1@gmail.com",
-            },
             select: {
                 email: true,
             },
+            where: {
+                email: "updated1@gmail.com",
+            },
         });
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
@@ -381,19 +409,13 @@ describe("Prisma interraction", () => {
             },
         });
         const { req, res } = createMocks({
-            url: `/api/users/${user?.id}`,
             method: "DELETE",
+            url: `/api/users/${user?.id}`,
         });
 
         await handler(req, res);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(res.end).toHaveBeenCalledWith(user);
-    });
-
-    afterAll(async () => {
-        await prisma.comment.deleteMany();
-        await prisma.post.deleteMany();
-        await prisma.user.deleteMany();
-        await prisma.$disconnect();
     });
 });

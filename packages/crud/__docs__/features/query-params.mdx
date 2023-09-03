@@ -40,24 +40,24 @@ Example :
 
 A JSON representation of the search conditions, heavily inspired on what [nest-crud](https://github.com/nestjsx/crud/wiki/Requests#search) does. It supports the following operators:
 
-- `$eq` (`=`, equal)
-- `$neq` (`!=`, not equal)
-- `$in` (`IN`, in range, must be an array)
-- `$notin` (`NOT IN`, not in range, must be an array)
-- `$lt` (`<`, lower than, must be a numeric value)
-- `$lte` (`<=`, lower than or equal, must be a numeric value)
-- `$gt` (`>`, greater than, must be a numeric value)
-- `$gte` (`>=`, greater than or equal, must be a numeric value)
-- `$cont` (`LIKE %val%`, contains string value)
-- `$starts` (`LIKE val%`, field starts with value)
-- `$ends` (`LIKE %val`, field ends with value)
-- `$isnull`, (`IS NULL`, must be used in a string, e.g: `"myfield": "$isnull"`)
+-   `$eq` (`=`, equal)
+-   `$neq` (`!=`, not equal)
+-   `$in` (`IN`, in range, must be an array)
+-   `$notin` (`NOT IN`, not in range, must be an array)
+-   `$lt` (`<`, lower than, must be a numeric value)
+-   `$lte` (`<=`, lower than or equal, must be a numeric value)
+-   `$gt` (`>`, greater than, must be a numeric value)
+-   `$gte` (`>=`, greater than or equal, must be a numeric value)
+-   `$cont` (`LIKE %val%`, contains string value)
+-   `$starts` (`LIKE val%`, field starts with value)
+-   `$ends` (`LIKE %val`, field ends with value)
+-   `$isnull`, (`IS NULL`, must be used in a string, e.g: `"myfield": "$isnull"`)
 
 We also provide 3 operators to combine multiple search:
 
-- `$and` (`AND`), should be an object, this is the same thing as just providing an JSON object to the query param
-- `$or` (`OR`), should be an object, this will apply an `OR` condition between each properties of the object
-- `$not` (`NOT`), should be an object, this should match all the data in the database that do not match those criteria.
+-   `$and` (`AND`), should be an object, this is the same thing as just providing an JSON object to the query param
+-   `$or` (`OR`), should be an object, this will apply an `OR` condition between each properties of the object
+-   `$not` (`NOT`), should be an object, this should match all the data in the database that do not match those criteria.
 
 Example :
 
@@ -69,8 +69,8 @@ Example :
 
 A JSON representation of the field to order by and its direction. This should be an object containing only 1 key (name of the field to order by) with a valid order operator. These are the 2 available operators:
 
-- `$asc` for ascending order
-- `$desc` for descending order
+-   `$asc` for ascending order
+-   `$desc` for descending order
 
 Example :
 

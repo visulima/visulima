@@ -1,10 +1,10 @@
 {
-  "name": "crud-prisma-integration",
-  "dependencies": {
-    "prisma": "^4.15.0",
-    "@prisma/client": "4.14.1"
-  },
-  "scripts": {
-    "postinstall": "prisma db push && prisma generate"
-  }
+    "name": "crud-prisma-integration",
+    "dependencies": {
+        "prisma": "^4.15.0",
+        "@prisma/client": "4.14.1"
+    },
+    "scripts": {
+        "postinstall": "prisma db push && prisma generate"
+    }
 }
