@@ -4,9 +4,7 @@ import { ApiError } from "next/dist/server/api-utils";
 import type { ServerResponse } from "node:http";
 import type { RequestOptions } from "node-mocks-http";
 import { createMocks as createHttpMocks } from "node-mocks-http";
-import {
-    describe, expect, it, vi,
-} from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { Adapter, ParsedQueryParameters } from "../../src/types.d";
 import { RouteType } from "../../src/types.d";
@@ -14,7 +12,12 @@ import CrudHandler from "../utils/crud-handler";
 import InvalidAdapter from "../utils/invalid-adapter";
 import NoopAdapter from "../utils/noop-adapter";
 
-const createMocks = (options: RequestOptions) => {
+const createMocks = (
+    options: RequestOptions,
+): {
+    req: RequestOptions["req"];
+    res: ServerResponse & { end: (data?: any) => void };
+} => {
     const { req, res } = createHttpMocks(options);
 
     return {
@@ -31,7 +34,7 @@ const generateNoopAdapter = (
         [name in keyof Adapter<unknown, unknown>]?: (...arguments_: any[]) => any;
     },
     models: string[] = [],
-) => {
+): Adapter<any, any, any> => {
     class NoopAdapterExtension extends NoopAdapter implements Adapter<unknown, ParsedQueryParameters> {}
 
     const instance = new NoopAdapterExtension(models);
@@ -44,33 +47,37 @@ const generateNoopAdapter = (
     return instance;
 };
 
-describe("Handler", () => {
+describe("handler", () => {
     it("should run the handler correctly", async () => {
         const handler = await CrudHandler(new NoopAdapter(["foo"]));
         const { req, res } = createMocks({
-            url: "/foo",
             method: "GET",
+            url: "/foo",
         });
 
         await handler(req, res);
-        expect(res.end).toHaveBeenCalled();
+
+        expect(res.end).toHaveBeenCalledWith();
     });
 
     it("should throw an error with an invalid adapter", async () => {
-        expect(() => CrudHandler({
-            // @ts-expect-error
-            adapter: new InvalidAdapter(),
-        })).rejects.toBeInstanceOf(Error);
+        await expect(
+            async () =>
+                await CrudHandler({
+                    // @ts-expect-error
+                    adapter: new InvalidAdapter(),
+                }),
+        ).rejects.toBeInstanceOf(Error);
     });
 
     it("should return a 404 error when no path matches", async () => {
         const handler = await CrudHandler(new NoopAdapter());
         const { req, res } = createMocks({
-            url: "/bar",
             method: "GET",
+            url: "/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /bar"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /bar"');
     });
 
     it("should run onRequest", async () => {
@@ -82,14 +89,15 @@ describe("Handler", () => {
             },
         });
         const { req, res } = createMocks({
-            url: "/foo/bar",
             method: "GET",
+            url: "/foo/bar",
         });
 
         await handler(req, res);
+
         expect(onRequest).toHaveBeenCalledWith(req, res, {
-            routeType: RouteType.READ_ALL,
             resourceName: "foo",
+            routeType: RouteType.READ_ALL,
         });
     });
 
@@ -102,8 +110,8 @@ describe("Handler", () => {
             },
         });
         const { req, res } = createMocks({
-            url: "/foo/bar",
             method: "GET",
+            url: "/foo/bar",
         });
 
         await handler(req, res);
@@ -124,17 +132,16 @@ describe("Handler", () => {
 
         const handler = await CrudHandler(new NoopAdapter(["foo"]), {
             callbacks: {
-                onRequest,
                 onError,
+                onRequest,
             },
         });
         const { req, res } = createMocks({
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"error"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"error"');
 
         expect(onError).toHaveBeenCalledWith(req, res, error);
     });
@@ -149,16 +156,16 @@ describe("Handler", () => {
 
         const handler = await CrudHandler(new NoopAdapter(["foo"]), {
             callbacks: {
-                onRequest,
                 onError,
+                onRequest,
             },
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Error"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Error"');
 
         expect(onError).toHaveBeenCalledWith(req, res, error);
     });
@@ -173,16 +180,16 @@ describe("Handler", () => {
 
         const handler = await CrudHandler(new NoopAdapter(["foo"]), {
             callbacks: {
-                onRequest,
                 onError,
+                onRequest,
             },
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Error"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Error"');
 
         expect(onError).toHaveBeenCalledWith(req, res, error);
     });
@@ -203,11 +210,11 @@ describe("Handler", () => {
 
         const handler = await CrudHandler(adapter);
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"test"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"test"');
 
         expect(adapter.handleError).toHaveBeenCalledWith(error);
     });
@@ -221,11 +228,11 @@ describe("Handler", () => {
             },
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo/bar"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo/bar"');
     });
 
     it("should trigger a 404 if we fetch a route that is in the exclude option", async () => {
@@ -237,11 +244,11 @@ describe("Handler", () => {
             },
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
-        await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo/bar"');
+        await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo/bar"');
     });
 
     it("should trigger the formatResourceId option if provided", async () => {
@@ -251,8 +258,8 @@ describe("Handler", () => {
             formatResourceId,
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
         await handler(req, res);
@@ -270,8 +277,8 @@ describe("Handler", () => {
             },
         });
         const { req, res } = createMocks({
-            url: "/api/foo/bar",
             method: "GET",
+            url: "/api/foo/bar",
         });
 
         await handler(req, res);
@@ -293,8 +300,8 @@ describe("Handler", () => {
         });
 
         const { req, res } = createMocks({
-            url: "/api/foo/bar?foo=bar",
             method: "GET",
+            url: "/api/foo/bar?foo=bar",
         });
 
         await handler(req, res);
@@ -319,16 +326,16 @@ describe("Handler", () => {
         const handler = await CrudHandler(adapter);
 
         const { req, res } = createMocks({
-            url: "/api/foo/bar?foo=bar",
             method: "GET",
+            url: "/api/foo/bar?foo=bar",
         });
 
         await handler(req, res);
-        expect(connect).toHaveBeenCalled();
-        expect(disconnect).toHaveBeenCalled();
+        expect(connect).toHaveBeenCalledWith();
+        expect(disconnect).toHaveBeenCalledWith();
     });
 
-    describe("Read one", () => {
+    describe("read one", () => {
         it("should read one resource correctly", async () => {
             const data = { foo: "bar" };
             const getOne = vi.fn(() => data);
@@ -336,8 +343,8 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
                 method: "GET",
+                url: "/api/foo/bar",
             });
 
             await handler(req, res);
@@ -351,16 +358,15 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
                 method: "GET",
+                url: "/api/foo/bar",
             });
 
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
         });
     });
 
-    describe("Read all", () => {
+    describe("read all", () => {
         it("should read a collection of resources", async () => {
             const collection = [{ id: 1 }, { id: 2 }];
             const getAll = vi.fn(() => collection);
@@ -368,15 +374,15 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo",
                 method: "GET",
+                url: "/api/foo",
             });
             await handler(req, res);
             expect(res.end).toHaveBeenCalledWith(collection);
         });
     });
 
-    describe("Create one", () => {
+    describe("create one", () => {
         it("should return a 201 status code upon a resource creation", async () => {
             const data = { foo: "bar" };
             const create = vi.fn(() => data);
@@ -384,32 +390,35 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo",
                 method: "POST",
+                url: "/api/foo",
             });
 
             await handler(req, res);
 
             expect(res.end).toHaveBeenCalledWith(data);
-            expect(res.statusCode).toEqual(201);
+            expect(res.statusCode).toBe(201);
         });
     });
 
-    describe("Update one", () => {
+    describe("update one", () => {
         it("should update an existing resource", async () => {
             const data = { id: 1 };
             const body = { foo: "bar" };
+            const parseQuery = vi.fn(() => {
+                return {};
+            });
             const getOne = vi.fn(() => data);
             const update = vi.fn(() => {
                 return { ...data, ...body };
             });
-            const adapter = generateNoopAdapter({ getOne, update }, ["foo"]);
+            const adapter = generateNoopAdapter({ getOne, parseQuery, update }, ["foo"]);
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
-                method: "PUT",
                 body,
+                method: "PUT",
+                url: "/api/foo/bar",
             });
 
             await handler(req, res);
@@ -425,27 +434,30 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
                 method: "PUT",
+                url: "/api/foo/bar",
             });
 
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
 
             expect(update).not.toHaveBeenCalled();
         });
     });
 
-    describe("Delete one", () => {
+    describe("delete one", () => {
         it("should correctly delete a resource", async () => {
             const data = { id: 1 };
             const getOne = vi.fn(() => data);
+            const parseQuery = vi.fn(() => {
+                return {};
+            });
             const deleteFunction = vi.fn(() => data);
-            const adapter = generateNoopAdapter({ getOne, delete: deleteFunction }, ["foo"]);
+            const adapter = generateNoopAdapter({ delete: deleteFunction, getOne, parseQuery }, ["foo"]);
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
                 method: "DELETE",
+                url: "/api/foo/bar",
             });
 
             await handler(req, res);
@@ -457,30 +469,30 @@ describe("Handler", () => {
         it("should throw a 404 when deleting a non existing resource", async () => {
             const getOne = vi.fn(() => null);
             const deleteFunction = vi.fn(() => null);
-            const adapter = generateNoopAdapter({ getOne, delete: deleteFunction }, ["foo"]);
+            const adapter = generateNoopAdapter({ delete: deleteFunction, getOne }, ["foo"]);
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo/bar",
                 method: "DELETE",
+                url: "/api/foo/bar",
             });
 
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"foo bar not found"');
 
             expect(deleteFunction).not.toHaveBeenCalledWith();
         });
     });
 
-    describe("Unknown method", () => {
+    describe("unknown method", () => {
         it("should return 404 upon unknown method", async () => {
             const handler = await CrudHandler(new NoopAdapter(["foo"]));
 
             const { req, res } = createMocks({
-                url: "/api/foo",
                 method: "OPTIONS",
+                url: "/api/foo",
             });
 
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Route not found: /api/foo"');
         });
 
         it("should return 404 upon unknwon method even if accessibleRoutes allows it", async () => {
@@ -493,11 +505,11 @@ describe("Handler", () => {
             });
 
             const { req, res } = createMocks({
-                url: "/api/foo",
                 method: "OPTIONS",
+                url: "/api/foo",
             });
 
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /api/foo"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /api/foo"');
         });
 
         it("should return 404 upon unknwon method even if its the only one not excluded", async () => {
@@ -510,22 +522,22 @@ describe("Handler", () => {
             });
 
             const { req, res } = createMocks({
-                url: "/api/foo",
                 method: "OPTIONS",
+                url: "/api/foo",
             });
 
-            await expect(() => handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /api/foo"');
+            await expect(async () => await handler(req, res)).rejects.toThrowErrorMatchingInlineSnapshot('"Couldn\'t find model name for url /api/foo"');
         });
     });
 
-    describe("Pagination", () => {
+    describe("pagination", () => {
         it("should get page based pagination data", async () => {
             const mockResources = [{ id: 1 }];
             const getAll = vi.fn(() => mockResources);
             const getPaginationData = vi.fn(() => {
                 return {
-                    total: mockResources.length,
                     pageCount: 1,
+                    total: mockResources.length,
                 };
             });
             const adapter = generateNoopAdapter({ getAll, getPaginationData }, ["foo"]);
@@ -533,11 +545,12 @@ describe("Handler", () => {
             const handler = await CrudHandler(adapter);
 
             const { req, res } = createMocks({
-                url: "/api/foo?page=1",
                 method: "GET",
+                url: "/api/foo?page=1",
             });
 
             await handler(req, res);
+
             expect(res.end).toHaveBeenCalledWith({
                 data: mockResources,
                 meta: {

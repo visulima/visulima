@@ -11,6 +11,7 @@ Result: array of resources | pagination object with data
 Status Codes: 200
 
 ### Get one resource
+
 `GET /heroes/:id`
 
 `GET /heroes/:heroId/perks:id`
@@ -21,6 +22,7 @@ Result: resource object | error object
 Status Codes: 200 | 404
 
 ### Create one resource
+
 `POST /heroes`
 
 `POST /heroes/:heroId/perks`
@@ -32,6 +34,7 @@ Result: created resource object | error object
 Status Codes: 201 | 400
 
 ### Create many resources
+
 `POST /heroes/bulk`
 
 `POST /heroes/:heroId/perks/bulk`
@@ -40,14 +43,16 @@ Request Body: array of resources objects | array of resources objects with neste
 
 ```json
 {
-  "bulk": [{ "name": "Batman" }, { "name": "Batgirl" }]
+    "bulk": [{ "name": "Batman" }, { "name": "Batgirl" }]
 }
 ```
+
 Result: array of created resources | error object
 
 Status codes: 201 | 400
 
 ### Update one resource
+
 `PATCH /heroes/:id`
 
 `PATCH /heroes/:heroId/perks/:id`
@@ -61,6 +66,7 @@ Result:: updated partial resource object | error object
 Status codes: 200 | 400 | 404
 
 ### Replace one resource
+
 `PUT /heroes/:id`
 
 `PUT /heroes/:heroId/perks/:id`
@@ -74,6 +80,7 @@ Result:: replaced resource object | error object
 Status codes: 200 | 400
 
 ### Delete one resource
+
 `DELETE /heroes/:id`
 
 `DELETE /heroes/:heroId/perks/:id`

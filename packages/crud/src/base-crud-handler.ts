@@ -11,9 +11,7 @@ import readHandler from "./handler/read";
 import updateHandler from "./handler/update";
 import parseQuery from "./query-parser";
 import { unmarshal } from "./serialization/json";
-import type {
-    Adapter, ExecuteHandler, HandlerOptions, HandlerParameters, ParsedQueryParameters,
-} from "./types.d";
+import type { Adapter, ExecuteHandler, HandlerOptions, HandlerParameters, ParsedQueryParameters } from "./types.d";
 import { RouteType } from "./types.d";
 import formatResourceId from "./utils/format-resource-id";
 import getAccessibleRoutes from "./utils/get-accessible-routes";
@@ -21,7 +19,10 @@ import { getResourceNameFromUrl } from "./utils/get-resource-name-from-url";
 import getRouteType from "./utils/get-route-type";
 import validateAdapterMethods from "./utils/validate-adapter-methods";
 
-type ResponseConfig = { status: number; data: any };
+interface ResponseConfig {
+    data: any;
+    status: number;
+}
 
 async function baseHandler<R extends Request, Context, T, Q extends ParsedQueryParameters = any, M extends string = string>(
     responseExecutor: (responseOrContext: Context, responseConfig: ResponseConfig) => Promise<Response>,
@@ -66,6 +67,7 @@ async function baseHandler<
             perPage: 20,
         },
         serialization: {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             marshal: (value: any) => value,
             unmarshal,
         },
@@ -88,10 +90,11 @@ async function baseHandler<
     });
 
     return async (request, responseOrContext) => {
-        const { resourceName, modelName } = getResourceNameFromUrl(request.url, modelRoutes as { [key in M]: string });
+        const { modelName, resourceName } = getResourceNameFromUrl(request.url, modelRoutes as { [key in M]: string });
 
         try {
             if (!resourceName) {
+                // eslint-disable-next-line @typescript-eslint/dot-notation
                 if (process.env["NODE_ENV"] === "development") {
                     const mappedModels = await adapter.mapModelsToRouteNames?.();
 
@@ -103,12 +106,12 @@ async function baseHandler<
                 throw createHttpError(404, `Resource not found: ${request.url}`);
             }
 
-            const { routeType, resourceId } = getRouteType(request.method, request.url, resourceName);
+            const { resourceId, routeType } = getRouteType(request.method, request.url, resourceName);
 
             await config.callbacks?.onRequest?.(request, responseOrContext, {
-                routeType,
                 resourceId,
                 resourceName,
+                routeType,
             });
 
             if (routeType === null) {
@@ -137,8 +140,8 @@ async function baseHandler<
             const executeCrud = async (): Promise<ResponseConfig> => {
                 try {
                     let responseConfig: ResponseConfig = {
-                        status: 404,
                         data: "Method not found",
+                        status: 404,
                     };
 
                     // eslint-disable-next-line default-case
@@ -154,12 +157,12 @@ async function baseHandler<
                         case RouteType.READ_ALL: {
                             responseConfig = await (config.handlers?.list ?? listHandler)<T, Q>({
                                 ...parameters,
+                                pagination: config.pagination,
                                 query: {
                                     ...parameters.query,
-                                    page: parsedQuery.page ? Number(parsedQuery.page) : undefined,
                                     limit: parsedQuery.limit ? Number(parsedQuery.limit) : undefined,
+                                    page: parsedQuery.page ? Number(parsedQuery.page) : undefined,
                                 },
-                                pagination: config.pagination,
                             });
 
                             break;
@@ -183,8 +186,8 @@ async function baseHandler<
 
                             responseConfig = await (config.handlers?.update ?? updateHandler)<T, Q, R>({
                                 ...parameters,
-                                resourceId: resourceIdFormatted,
                                 request: typedRequest,
+                                resourceId: resourceIdFormatted,
                             });
 
                             break;

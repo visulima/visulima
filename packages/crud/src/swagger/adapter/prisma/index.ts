@@ -8,27 +8,25 @@ import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes"
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
-const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: { [key: string]: OpenAPIV3.ExampleObject }): OpenAPIV3.PathsObject => {
+const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: Record<string, OpenAPIV3.ExampleObject>): OpenAPIV3.PathsObject => {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     Object.values(swaggerPaths).forEach((pathSpec) => {
         Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
             if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
                 Object.values((methodSpec as OpenAPIV3.OperationObject).responses).forEach((responseSpec) => {
                     if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {
-                        Object.values(
-                            (responseSpec as OpenAPIV3.ResponseObject).content as {
-                                [media: string]: OpenAPIV3.MediaTypeObject;
-                            },
-                        ).forEach((contentSpec) => {
-                            if (typeof contentSpec.example === "string") {
-                                const example = contentSpec.example.replace("#/components/examples/", "");
+                        Object.values((responseSpec as OpenAPIV3.ResponseObject).content as Record<string, OpenAPIV3.MediaTypeObject>).forEach(
+                            (contentSpec) => {
+                                if (typeof contentSpec.example === "string") {
+                                    const example = contentSpec.example.replace("#/components/examples/", "");
 
-                                if (examples[example as keyof typeof examples]?.value !== undefined) {
-                                    // eslint-disable-next-line no-param-reassign
-                                    contentSpec.example = (examples[example as keyof typeof examples] as typeof examples)["value"];
+                                    if (examples[example as keyof typeof examples]?.value !== undefined) {
+                                        // eslint-disable-next-line no-param-reassign
+                                        contentSpec.example = (examples[example as keyof typeof examples] as typeof examples)["value"];
+                                    }
                                 }
-                            }
-                        });
+                            },
+                        );
                     }
                 });
             }
@@ -39,24 +37,20 @@ const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, exa
 };
 
 const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePrismaClient>(
-    prismaClient: PrismaClient & FakePrismaClient,
+    prismaClient: FakePrismaClient & PrismaClient,
     {
-        models: ctorModels,
-        swagger = { models: {}, allowedMediaTypes: { "application/json": true } },
         crud = { models: {} },
         exposeStrategy = "all",
+        models: ctorModels,
+        swagger = { allowedMediaTypes: { "application/json": true }, models: {} },
     }: ModelsToOpenApiParameters<M>,
 ): Promise<{
     components: {
-        schemas: {
-            [key: string]: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject;
-        };
-        examples: {
-            [key: string]: OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject;
-        };
+        examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>;
+        schemas: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>;
     };
-    tags: OpenAPIV3.TagObject[];
     paths: OpenAPIV3.PathsObject;
+    tags: OpenAPIV3.TagObject[];
 }> => {
     let dmmf: any;
     let prismaDmmfModels: any;
@@ -101,9 +95,9 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     const swaggerRoutes = getModelsAccessibleRoutes(models, crud.models, exposeStrategy);
     const swaggerTags = getSwaggerTags(models, swagger.models);
     const swaggerPaths = getSwaggerPaths({
-        routes: swaggerRoutes,
-        modelsConfig: swagger.models,
         models: crud.models,
+        modelsConfig: swagger.models,
+        routes: swaggerRoutes,
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
     });
 
@@ -111,22 +105,22 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     const examples = parser.getExampleModelsSchemas(dModels, schemas);
 
     return {
-        components: { schemas, examples },
+        components: { examples, schemas },
+        paths: overwritePathsExampleWithModel(swaggerPaths, examples as Record<string, OpenAPIV3.ExampleObject>),
         tags: swaggerTags,
-        paths: overwritePathsExampleWithModel(swaggerPaths, examples as { [key: string]: OpenAPIV3.ExampleObject }),
     };
 };
 
 export interface ModelsToOpenApiParameters<M extends string> {
-    exposeStrategy?: "all" | "none";
-    models?: M[];
-    swagger?: Partial<{
-        models: SwaggerModelsConfig<M>;
-        allowedMediaTypes: { [key: string]: boolean };
-    }>;
     crud?: {
         models: ModelsOptions<M>;
     };
+    exposeStrategy?: "all" | "none";
+    models?: M[];
+    swagger?: Partial<{
+        allowedMediaTypes: Record<string, boolean>;
+        models: SwaggerModelsConfig<M>;
+    }>;
 }
 
 export default modelsToOpenApi;

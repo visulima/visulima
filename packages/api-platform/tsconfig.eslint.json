@@ -6,5 +6,5 @@
         "baseUrl": ".",
         "verbatimModuleSyntax": true
     },
-    "include": ["__docs__/**/*.mdx", "__tests__/**/*.ts", "src/**/*.tsx", "src/**/*.ts", "*.d.ts", "build.config.ts", "tsup.config.ts"]
+    "include": ["__docs__/**/*", "__tests__/**/*.ts", "src/**/*.tsx", "src/**/*.ts", "*.d.ts", "build.config.ts", "tsup.config.ts"]
 }

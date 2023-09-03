@@ -35,7 +35,7 @@ type SwaggerParameter = {
     schema: any & {
         type: string;
     };
-}
+};
 
 type ModelsConfig = {
     tag: OpenAPIV3.TagObject;
@@ -63,7 +63,7 @@ type ModelOption = {
 
 type ModelsOptions<M extends string = string> = {
     [key in M]?: ModelOption;
-}
+};
 
 interface ModelsToOpenApiParameters<M extends string, PrismaClient> {
     prismaClient: PrismaClient;

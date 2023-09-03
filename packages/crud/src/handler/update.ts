@@ -2,9 +2,7 @@ import createHttpError from "http-errors";
 
 import type { UpdateHandler } from "../types.d";
 
-const updateHandler: UpdateHandler = async ({
-    adapter, query, resourceName, resourceId, request,
-}) => {
+const updateHandler: UpdateHandler = async ({ adapter, query, request, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -12,8 +10,8 @@ const updateHandler: UpdateHandler = async ({
         const updatedResource = await adapter.update(resourceName, resourceId, request.body, query);
 
         return {
-            status: 201,
             data: updatedResource,
+            status: 201,
         };
     }
 

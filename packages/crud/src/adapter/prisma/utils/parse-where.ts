@@ -49,7 +49,7 @@ const parseSimpleField = (value: Condition): Record<string, Condition> | undefin
 
     if (prismaOperator) {
         return {
-            [prismaOperator]: value[operator as string],
+            [prismaOperator]: value[operator as string] as Condition,
         };
     }
 
@@ -57,7 +57,6 @@ const parseSimpleField = (value: Condition): Record<string, Condition> | undefin
 };
 
 const parseRelation = (
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     value: Condition | Date | WhereCondition | boolean | number | string,
     key: string,
     parsed: PrismaWhereField,
@@ -108,7 +107,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
         const value = object[key];
 
         if (isRelation(key, manyRelations)) {
-            parseRelation(value, key, parsed, manyRelations);
+            parseRelation(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         } else if (isPrimitive(value)) {
             parsed[key] = value as SearchCondition;
         } else if (isObject(value)) {
@@ -123,7 +122,6 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
     return parsed;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const basicParse = (value: Condition | Date | WhereCondition | boolean | number | string, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
     if (isPrimitive(value)) {
         // eslint-disable-next-line no-param-reassign
@@ -187,9 +185,9 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          * }
          */
         if (isRelation(key, manyRelations)) {
-            parseRelation(value, key, parsed, manyRelations);
+            parseRelation(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         } else {
-            basicParse(value, key, parsed, manyRelations);
+            basicParse(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         }
     });
 
