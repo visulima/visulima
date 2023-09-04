@@ -34,7 +34,7 @@ const createMocks = (
     };
 };
 
-describe.skipIf(() => process.platform === "win32")("prisma interraction", () => {
+describe("prisma interraction", () => {
     beforeAll(async () => {
         await createSeedData();
     });
