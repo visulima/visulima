@@ -57,6 +57,13 @@ module.exports = {
                 "no-secrets/no-secrets": "off",
             },
         },
+        {
+            files: ["__tests__/integration/adapter/prisma/index.test.ts"],
+            rules: {
+                "vitest/require-hook": "off",
+                "vitest/require-top-level-describe": "off",
+            },
+        },
     ],
     parserOptions: {
         ecmaVersion: 2021,
