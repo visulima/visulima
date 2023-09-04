@@ -2,10 +2,10 @@ import { readFileSync } from "node:fs";
 import { cwd as nodeCwd } from "node:process";
 
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
-import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
+import { jsDocumentCommentsToOpenApi, openapiJsDocumentCommentsToOpenApi, parseFile } from "@visulima/jsdoc-open-api";
 import { toNamespacedPath } from "pathe";
 
-import type { Route } from "../types";
+import type { Route } from "../types.d";
 
 // eslint-disable-next-line regexp/no-unused-capturing-group
 const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
@@ -22,9 +22,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false):
 
     specs = [...specs, ...parsedJsDocumentFile.map((item) => item.spec)];
 
-    const parsedSwaggerJsDocumentFile = parseFile(apiRouteFile, swaggerJsDocumentCommentsToOpenApi, verbose);
+    const parsedOpenapiJsDocumentFile = parseFile(apiRouteFile, openapiJsDocumentCommentsToOpenApi, verbose);
 
-    specs = [...specs, ...parsedSwaggerJsDocumentFile.map((item) => item.spec)];
+    specs = [...specs, ...parsedOpenapiJsDocumentFile.map((item) => item.spec)];
 
     const routes: Route[] = [];
 

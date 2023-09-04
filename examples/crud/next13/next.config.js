@@ -4,22 +4,22 @@ const packageJson = require("./package.json");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
-    swcMinify: true,
     env: {
         NEXT_PUBLIC_APP_ORIGIN: process.env.VERCEL_URL || "http://localhost:3000",
     },
     experimental: {
-        transpilePackages: ["swagger-client", "swagger-ui-react"],
+        transpilePackages: ["openapi-client", "openapi-ui-react"],
     },
+    reactStrictMode: true,
+    swcMinify: true,
 };
 
 module.exports = withOpenApi({
     definition: {
         info: {
+            description: packageJson.description,
             title: packageJson.name,
             version: packageJson.version,
-            description: packageJson.description,
         },
         schemes: ["http", "https"],
         servers: [

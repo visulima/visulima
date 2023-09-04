@@ -1,8 +1,9 @@
-import { swaggerApiRoute } from "@visulima/api-platform/framework/next";
+import { handler } from "@visulima/api-platform/openapi";
+import { modelsToOpenApi } from "@visulima/crud/openapi/adapter/prisma";
 
 import { prisma } from "../../lib/prisma-client";
 
-export default swaggerApiRoute({
+export default handler({
     allowedMediaTypes: {
         "application/json": true,
         "application/vnd.api+json": true,
@@ -12,7 +13,5 @@ export default swaggerApiRoute({
         "text/html": true,
         "text/xml": true,
     },
-    crud: {
-        prismaClient: prisma,
-    },
+    specs: [modelsToOpenApi(prisma)],
 });

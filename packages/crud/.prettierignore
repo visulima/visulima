@@ -8,5 +8,7 @@ coverage
 node_modules
 .eslintcache
 
+__tests__/integration/adapter/prisma/prisma-client
+
 **/tsconfig.json
 **/jsconfig.json

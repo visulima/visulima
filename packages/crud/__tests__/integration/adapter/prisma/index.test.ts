@@ -6,7 +6,7 @@ import type { RequestOptions } from "node-mocks-http";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createMocks as createHttpMocks } from "node-mocks-http";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // eslint-disable-next-line n/no-unpublished-import
 import CrudHandler from "../../../utils/crud-handler";
@@ -65,7 +65,7 @@ describe("prisma interraction", () => {
         await prisma.$disconnect();
     });
 
-    test("should get the list of users", async () => {
+    it("should get the list of users", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users",
@@ -79,7 +79,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should get a page based paginated users list", async () => {
+    it("should get a page based paginated users list", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?page=2&limit=2",
@@ -109,7 +109,7 @@ describe("prisma interraction", () => {
         });
     });
 
-    test("should get the user with first id", async () => {
+    it("should get the user with first id", async () => {
         const user = await prisma.user.findFirst();
 
         const { req, res } = createMocks({
@@ -123,7 +123,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(user);
     });
 
-    test("should get the list of users with only their email", async () => {
+    it("should get the list of users with only their email", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?select=email",
@@ -141,7 +141,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should get the list of users with only their email and posts", async () => {
+    it("should get the list of users with only their email and posts", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?select=email,posts",
@@ -160,7 +160,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should get the list of users with only their email and posts ids", async () => {
+    it("should get the list of users with only their email and posts ids", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?select=email,posts,posts.id",
@@ -183,7 +183,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should get the list of users with only their email, posts ids, comments and comments users", async () => {
+    it("should get the list of users with only their email, posts ids, comments and comments users", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?select=email,posts,posts.id,posts.comment,posts.comment.author",
@@ -211,7 +211,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should return the first 2 users", async () => {
+    it("should return the first 2 users", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?limit=2",
@@ -227,7 +227,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should return 2 users after the first 2 ones", async () => {
+    it("should return 2 users after the first 2 ones", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: "/api/users?skip=2&limit=2",
@@ -244,7 +244,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should return 2 users based on a cursor", async () => {
+    it("should return 2 users based on a cursor", async () => {
         const firstUser = await prisma.user.findFirst();
 
         const { req, res } = createMocks({
@@ -265,7 +265,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should filter user by its email", async () => {
+    it("should filter user by its email", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: '/api/users?where={"email":{"$eq":"johndoe1@gmail.com"}}',
@@ -285,7 +285,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should filter users where email does not match", async () => {
+    it("should filter users where email does not match", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: '/api/users?where={"email":{"$neq":"johndoe1@gmail.com"}}',
@@ -305,7 +305,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should filter users where email starts with john and ends with .com", async () => {
+    it("should filter users where email starts with john and ends with .com", async () => {
         const { req, res } = createMocks({
             method: "GET",
             url: '/api/users?where={"email":{"$and":{"$starts":"john", "$ends":".com"}}}',
@@ -323,7 +323,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should create a user", async () => {
+    it("should create a user", async () => {
         const { req, res } = createMocks({
             body: {
                 email: "createdjohn@gmail.com",
@@ -345,7 +345,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should update a user", async () => {
+    it("should update a user", async () => {
         const user = await prisma.user.findFirst({
             where: {
                 email: "createdjohn@gmail.com",
@@ -372,7 +372,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should update a user and respond with only its email", async () => {
+    it("should update a user and respond with only its email", async () => {
         const user = await prisma.user.findFirst({
             where: {
                 email: "updated@gmail.com",
@@ -402,7 +402,7 @@ describe("prisma interraction", () => {
         expect(res.end).toHaveBeenCalledWith(expectedResult);
     });
 
-    test("should delete the previously created user", async () => {
+    it("should delete the previously created user", async () => {
         const user = await prisma.user.findFirst({
             where: {
                 email: "updated1@gmail.com",

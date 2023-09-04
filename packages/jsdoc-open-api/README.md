@@ -178,7 +178,7 @@ The library will take the contents of @openapi (or @swagger):
  * @openapi
  * /:
  *   get:
- *     description: Welcome to swagger-jsdoc!
+ *     description: Welcome to openapi-jsdoc!
  *     responses:
  *       200:
  *         description: Returns a mysterious string.

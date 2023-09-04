@@ -2,19 +2,19 @@ import Head from "next/head";
 import type { InferGetStaticPropsType, NextPage } from "next/types";
 import { RedocStandalone } from "redoc";
 
-import type getStaticProps from "../get-static-properties-swagger";
+import type getStaticProps from "../get-static-properties-openapi";
 
 const RedocApiDocument: (
     name: string,
-    swagger?: Exclude<
+    options?: Exclude<
         {
             specUrl?: string;
         },
         "spec"
     >,
 ) => NextPage<InferGetStaticPropsType<typeof getStaticProps>> =
-    (name, swagger = {}) =>
-    ({ swaggerData }: InferGetStaticPropsType<typeof getStaticProps>) => (
+    (name, options) =>
+    ({ openapiData }: InferGetStaticPropsType<typeof getStaticProps>) => (
         <>
             <Head>
                 <title>{name}</title>
@@ -27,7 +27,7 @@ body {
                 </style>
             </Head>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <RedocStandalone {...swagger} spec={swaggerData} />
+            <RedocStandalone {...options} spec={openapiData} />
         </>
     );
 

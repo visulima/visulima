@@ -1,10 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
-import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
-import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
+import { OpenapiCompilerPlugin } from "@visulima/jsdoc-open-api";
 import type { NextConfig } from "next/types";
+import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
 
 const withOpenApi =
@@ -42,7 +41,7 @@ const withOpenApi =
                     plugins: [
                         // @ts-expect-error: ignore
                         ...config.plugins,
-                        new SwaggerCompilerPlugin(
+                        new OpenapiCompilerPlugin(
                             `${options.dir}/${output}`,
                             sources.map((source) => {
                                 const combinedPath = path.join(options.dir as string, source.replace("./", ""));

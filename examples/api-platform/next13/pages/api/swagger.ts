@@ -1,6 +1,6 @@
-import { swaggerApiRoute } from "@visulima/api-platform/framework/next";
+import { handler } from "@visulima/api-platform/openapi";
 
-export default swaggerApiRoute({
+export default handler({
     allowedMediaTypes: {
         "application/json": true,
         "application/vnd.api+json": true,
