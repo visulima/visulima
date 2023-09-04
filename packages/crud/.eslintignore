@@ -11,4 +11,6 @@ vitest.config.ts
 _meta.*.json
 tsup.config.ts
 
+__tests__/integration/adapter/prisma/prisma-client
+
 README.md

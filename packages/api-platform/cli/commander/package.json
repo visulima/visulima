@@ -6,8 +6,14 @@
     "exports": {
         ".": {
             "types": "./../dist/framework/cli/commander/index.d.ts",
-            "require": "./../dist/framework/cli/commander/index.js",
-            "import": "./../dist/framework/cli/commander/index.mjs"
+            "require": {
+                "default": "./../dist/framework/cli/commander/index.js",
+                "types": "./../dist/framework/cli/commander/index.d.ts"
+            },
+            "import": {
+                "default": "./../dist/framework/cli/commander/index.mjs",
+                "types": "./../dist/framework/cli/commander/index.d.mts"
+            }
         },
         "./package.json": "./package.json"
     },

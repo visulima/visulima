@@ -1,0 +1,23 @@
+{
+    "name": "@visulima/api-platform-openapi",
+    "version": "0.0.0",
+    "description": "Visulima API platform is a set of tools to build and consume web APIs; Next.js version",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./../../dist/openapi/index.d.ts",
+            "require": {
+                "types": "./../../dist/openapi/index.d.ts",
+                "default": "./../../dist/openapi/index.js"
+            },
+            "import": {
+                "types": "./../../dist/openapi/index.d.mts",
+                "default": "./../../dist/openapi/index.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "../../../dist/openapi/index.js",
+    "module": "../../../dist/openapi/index.mjs",
+    "types": "../../dist/openapi/index.d.ts"
+}

@@ -60,15 +60,15 @@
             "require": "./dist/framework/next/index.js",
             "import": "./dist/framework/next/index.mjs"
         },
-        "./swagger": {
-            "types": "./dist/swagger/index.d.ts",
-            "require": "./dist/swagger/index.js",
-            "import": "./dist/swagger/index.mjs"
+        "./openapi": {
+            "types": "./dist/openapi/index.d.ts",
+            "require": "./dist/openapi/index.js",
+            "import": "./dist/openapi/index.mjs"
         },
-        "./swagger/prisma": {
-            "types": "./dist/swagger/adapter/prisma/index.d.ts",
-            "require": "./dist/swagger/adapter/prisma/index.js",
-            "import": "./dist/swagger/adapter/prisma/index.mjs"
+        "./openapi/adapter/prisma": {
+            "types": "./dist/openapi/adapter/prisma/index.d.ts",
+            "require": "./dist/openapi/adapter/prisma/index.js",
+            "import": "./dist/openapi/adapter/prisma/index.mjs"
         },
         "./package.json": "./package.json"
     },
@@ -167,8 +167,8 @@
     "sources": [
         "src/index.ts",
         "src/framework/next/index.ts",
-        "src/swagger/index.ts",
-        "src/swagger/adapter/prisma/index.ts",
+        "src/openapi/index.ts",
+        "src/openapi/adapter/prisma/index.ts",
         "src/adapter/prisma/index.ts",
         "src/serialization/json.ts",
         "src/serialization/superjson.ts"

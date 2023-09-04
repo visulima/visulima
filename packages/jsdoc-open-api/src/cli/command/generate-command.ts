@@ -10,7 +10,7 @@ import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
-import swaggerJsDocumentCommentsToOpenApi from "../../swagger-jsdoc/comments-to-open-api";
+import swaggerJsDocumentCommentsToOpenApi from "../../openapi-jsdoc/comments-to-open-api";
 import validate from "../../validate";
 
 const generateCommand = async (
@@ -112,7 +112,7 @@ const generateCommand = async (
 
     if (options.verbose) {
         // eslint-disable-next-line no-console
-        console.log("Validating swagger spec");
+        console.log("Validating openapi spec");
     }
 
     if (options.veryVerbose) {

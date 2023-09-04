@@ -1,7 +1,7 @@
 {
     "name": "@visulima/jsdoc-open-api-cli-commander",
     "version": "0.0.0",
-    "description": "Generates swagger doc based on JSDoc; Commander commands.",
+    "description": "Generates openapi doc based on JSDoc; Commander commands.",
     "license": "MIT",
     "exports": {
         ".": {

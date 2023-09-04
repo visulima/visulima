@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import process from "node:process";
 
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
-import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
+import { jsDocumentCommentsToOpenApi, openapiJsDocumentCommentsToOpenApi, parseFile } from "@visulima/jsdoc-open-api";
 
 import type { Route } from "../types.d";
 
@@ -17,9 +17,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
     specs = [...specs, ...parsedJsDocumentFile.map((item) => item.spec)];
 
-    const parsedSwaggerJsDocumentFile = parseFile(apiRouteFile, swaggerJsDocumentCommentsToOpenApi, verbose);
+    const parsedOpenapiJsDocumentFile = parseFile(apiRouteFile, openapiJsDocumentCommentsToOpenApi, verbose);
 
-    specs = [...specs, ...parsedSwaggerJsDocumentFile.map((item) => item.spec)];
+    specs = [...specs, ...parsedOpenapiJsDocumentFile.map((item) => item.spec)];
 
     const routes: Route[] = [];
 

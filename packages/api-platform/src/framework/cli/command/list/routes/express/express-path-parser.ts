@@ -66,7 +66,7 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
     routes.push(parseRouteLayer(layer as Required<Layer>, keys, path));
 };
 
-// @TODO use this to parse the express swagger
+// @TODO use this to parse the express openapi
 
 /**
  * Parses an Express app and generates list of routes with metadata.

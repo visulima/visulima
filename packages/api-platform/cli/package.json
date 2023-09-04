@@ -6,8 +6,14 @@
     "exports": {
         ".": {
             "types": "./../dist/framework/cli/index.d.ts",
-            "require": "./../dist/framework/cli/index.js",
-            "import": "./../dist/framework/cli/index.mjs"
+            "require": {
+                "default": "./../dist/framework/cli/index.js",
+                "types": "./../dist/framework/cli/index.d.ts"
+            },
+            "import": {
+                "default": "./../dist/framework/cli/index.mjs",
+                "types": "./../dist/framework/cli/index.d.mts"
+            }
         },
         "./package.json": "./package.json"
     },

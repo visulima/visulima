@@ -1,6 +1,6 @@
 import express from "express";
 import Cors from "cors";
-import { swaggerHandler } from "@visulima/api-platform";
+import { handler } from "@visulima/api-platform/openapi";
 
 const PORT = process.env.PORT || 3002;
 
@@ -39,8 +39,8 @@ app.patch("/blog/:id", (_request, response) => response.sendStatus(200));
 app.delete("/blog/:id", (_request, response) => response.sendStatus(200));
 
 app.use(
-    "/api/swagger",
-    swaggerHandler({
+    "/api/openapi",
+    handler({
         allowedMediaTypes: {
             "application/json": true,
         },

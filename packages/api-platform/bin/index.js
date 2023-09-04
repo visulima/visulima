@@ -17,8 +17,8 @@ program.name("@visulima/api-platform").description("CLI for the visulima api-pla
 
 listCommand(program, "framework:list");
 
-initCommand(program, "swagger:init");
-generateCommand(program, "swagger:generate");
+initCommand(program, "openapi:init");
+generateCommand(program, "openapi:generate");
 
 program.parse(process.argv);
 

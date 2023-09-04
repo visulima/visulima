@@ -191,4 +191,4 @@ repository:
 
     # https://developer.github.com/v3/repos/branches/#remove-branch-protection
 
-    topics: "anolilab, typescript, nodejs, javascript, nextjs, next, react, reactjs, api, swagger, openapi, api-platform, api"
+    topics: "anolilab, typescript, nodejs, javascript, nextjs, next, react, reactjs, api, openapi, openapi, api-platform, api"

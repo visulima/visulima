@@ -11,7 +11,7 @@ const generateCommand = (program: Command, commandName = "generate", configName 
         .usage("[options] <path ...>")
         .argument("[path ...]", "Paths to files or directories to parse")
         .option("-c, --config [.openapirc.js]", "@visulima/jsdoc-open-api config file path.")
-        .option("-o, --output [swaggerSpec.json]", "Output swagger specification.")
+        .option("-o, --output [swaggerSpec.json]", "Output openapi specification.")
         .option("-v, --verbose", "Verbose output.")
         .option("-vv, --very-verbose", "Very verbose output.")
 
