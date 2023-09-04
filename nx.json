@@ -1,17 +1,13 @@
 {
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
-            "inputs": ["production", "^production"]
+            "dependsOn": ["^build"]
         },
-        "test": {
-            "inputs": ["default", "^production", "{workspaceRoot}/vitest.config.ts"]
+        "prepare": {
+            "dependsOn": ["^prepare"]
         },
-        "lint": {
-            "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
-        },
-        "build-storybook": {
-            "inputs": ["default", "^production", "{workspaceRoot}/.storybook/**/*", "{projectRoot}/.storybook/**/*", "{projectRoot}/tsconfig.storybook.json"]
+        "package": {
+            "dependsOn": ["^package"]
         }
     },
     "extends": "@nrwl/workspace/presets/npm.json",
@@ -29,13 +25,6 @@
             "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
             "!{projectRoot}/tsconfig.storybook.json"
         ]
-    },
-    "implicitDependencies": {
-        "package.json": {
-            "dependencies": "*",
-            "devDependencies": "*"
-        },
-        ".eslintrc.json": "*"
     },
     "tasksRunnerOptions": {
         "default": {
@@ -55,30 +44,11 @@
             }
         }
     },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ],
-        "prepare": [
-            {
-                "target": "prepare",
-                "projects": "dependencies"
-            }
-        ],
-        "package": [
-            {
-                "target": "package",
-                "projects": "dependencies"
-            }
-        ]
-    },
     "pluginsConfig": {
         "@nrwl/js": {
             "analyzeSourceFiles": false
         }
     },
-    "defaultBase": "main"
+    "defaultBase": "main",
+    "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
