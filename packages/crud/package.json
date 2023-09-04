@@ -103,7 +103,6 @@
         "path-to-regexp": "^6.2.1"
     },
     "devDependencies": {
-        "@visulima/prisma-dmmf-transformer": "2.0.1",
         "@anolilab/eslint-config": "^11.3.5",
         "@anolilab/prettier-config": "^5.0.4",
         "@anolilab/semantic-release-preset": "^6.0.5",
@@ -113,7 +112,8 @@
         "@types/json-schema": "7.0.13",
         "@types/lodash.set": "^4.3.7",
         "@types/node": "18.17.12",
-        "@vitest/coverage-v8": "^0.34.6",
+        "@visulima/prisma-dmmf-transformer": "2.0.1",
+        "@vitest/coverage-v8": "^0.34.3",
         "cross-env": "^7.0.3",
         "eslint": "^8.51.0",
         "eslint-plugin-deprecation": "^2.0.0",
