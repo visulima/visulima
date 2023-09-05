@@ -1249,6 +1249,9 @@ importers:
       '@types/node':
         specifier: 18.17.12
         version: 18.17.12
+      '@visulima/nextra-theme-docs':
+        specifier: workspace:*
+        version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^0.34.3
         version: 0.34.3(vitest@0.34.3)
