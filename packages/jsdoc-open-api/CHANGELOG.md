@@ -1,3 +1,16 @@
+## @visulima/jsdoc-open-api [2.0.2](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.1...@visulima/jsdoc-open-api@2.0.2) (2023-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update package versions in pnpm-lock file ([6917001](https://github.com/visulima/visulima/commit/69170010084f572f6f4609a68ab653c68e8cfe64))
+
+
+
+### Dependencies
+
+* **@visulima/readdir:** upgraded to 2.0.2
+
 ## @visulima/jsdoc-open-api [2.0.1](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.0...@visulima/jsdoc-open-api@2.0.1) (2023-08-29)
 
 
