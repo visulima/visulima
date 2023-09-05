@@ -1,3 +1,21 @@
+## @visulima/connect [2.1.0](https://github.com/visulima/visulima/compare/@visulima/connect@2.0.1...@visulima/connect@2.1.0) (2023-09-05)
+
+
+### Features
+
+* added new methods, added new examples, fixed issue with undefined next handler call ([#208](https://github.com/visulima/visulima/issues/208)) ([759be69](https://github.com/visulima/visulima/commit/759be6913d6aad438e6528160d9d695c376e4a81))
+
+
+### Bug Fixes
+
+* **deps:** update package versions in pnpm-lock file ([6917001](https://github.com/visulima/visulima/commit/69170010084f572f6f4609a68ab653c68e8cfe64))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.1
+
 ## @visulima/connect [2.0.1](https://github.com/visulima/visulima/compare/@visulima/connect@2.0.0...@visulima/connect@2.0.1) (2023-08-29)
 
 
