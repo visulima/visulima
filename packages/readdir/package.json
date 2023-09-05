@@ -82,7 +82,7 @@
         "eslint": "^8.48.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-mdx": "^2.2.0",
-        "eslint-plugin-vitest": "^0.2.8",
+        "eslint-plugin-vitest": "^0.3.1",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "prettier": "^3.0.3",
         "rimraf": "^5.0.1",
