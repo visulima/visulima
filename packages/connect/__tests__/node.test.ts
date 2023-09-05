@@ -474,12 +474,11 @@ describe("createRouter", () => {
         expect(getPathname("/foo/bar?q=quz")).toBe("/foo/bar");
     });
 
-    it("execute handlers without a next function", async () => {
+    it("use() - execute handlers without a next function", async () => {
         const defaultProps = { global: { yo: "yo" } };
         const withGlobal = () =>
             createRouter().use(async (_request, _response, next) => {
-                // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
-                const nextResults = next ? await next() : undefined;
+                const nextResults = await next();
 
                 return {
                     ...nextResults,

@@ -34,7 +34,7 @@ export class Router<H extends FunctionLike> {
             const function_ = fns[++index];
 
             if (function_ === undefined) {
-                return () => {};
+                return Promise.resolve();
             }
 
             return function_(...arguments_, next);
