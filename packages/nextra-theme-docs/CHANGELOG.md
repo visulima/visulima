@@ -1,3 +1,16 @@
+## @visulima/nextra-theme-docs [4.0.1](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.0...@visulima/nextra-theme-docs@4.0.1) (2023-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update package versions in pnpm-lock file ([6917001](https://github.com/visulima/visulima/commit/69170010084f572f6f4609a68ab653c68e8cfe64))
+
+
+### Miscellaneous Chores
+
+* **deps:** update devdependencies ([#195](https://github.com/visulima/visulima/issues/195)) ([3a1ed84](https://github.com/visulima/visulima/commit/3a1ed8498d9594ef2fce342632c8acd6f8822fa6))
+* fixed files with nx repair ([3424d8b](https://github.com/visulima/visulima/commit/3424d8ba1b1253e30c66efbbf3d8964875a96d44))
+
 ## @visulima/nextra-theme-docs [4.0.0](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@3.0.0...@visulima/nextra-theme-docs@4.0.0) (2023-08-29)
 
 
