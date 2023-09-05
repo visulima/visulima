@@ -35,14 +35,14 @@ const Home: NextPage = () => {
                         </a>
                     </Link>
 
-                    <Link href="/examples/connect/pages/api-routes">
+                    <Link href="/api-routes">
                         <a className={styles.card}>
                             <h2>API Routes</h2>
                             <p>Use @visulima/connect in API Routes</p>
                         </a>
                     </Link>
 
-                    <Link href="/examples/connect/pages/edge-api-routes">
+                    <Link href="/edge-api-routes">
                         <a className={styles.card}>
                             <h2>Edge API Routes (Beta)</h2>
                             <p>Use @visulima/connect in API Routes</p>

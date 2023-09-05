@@ -11,7 +11,7 @@ const noop: AnyHandler = async () => {
     /** noop */
 };
 
-const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT"];
+const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CONNECT", "TRACE"];
 
 const testUrl = "http://localhost/foo/bar";
 const badFunction = () => {

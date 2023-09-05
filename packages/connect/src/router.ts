@@ -26,11 +26,19 @@ export class Router<H extends FunctionLike> {
         public routes: Route<Nextable<H>>[] = [],
     ) {}
 
-    public static async exec<FL extends FunctionLike>(fns: Nextable<FL>[], ...arguments_: Parameters<FL>): Promise<any> {
+    public static async exec<FL extends FunctionLike>(fns: (Nextable<FL> | undefined)[], ...arguments_: Parameters<FL>): Promise<any> {
         let index = 0;
 
-        // eslint-disable-next-line no-plusplus
-        const next = () => (fns[++index] as FunctionLike)(...arguments_, next);
+        const next = () => {
+            // eslint-disable-next-line no-plusplus,@typescript-eslint/naming-convention,no-underscore-dangle
+            const function_ = fns[++index];
+
+            if (function_ === undefined) {
+                return () => {};
+            }
+
+            return function_(...arguments_, next);
+        };
 
         return (fns[index] as FunctionLike)(...arguments_, next);
     }
@@ -158,6 +166,7 @@ export class Router<H extends FunctionLike> {
                         return function_;
                     }),
                 );
+
                 if (!route.isMiddleware) {
                     middleOnly = false;
                 }

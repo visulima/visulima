@@ -14,7 +14,7 @@ const badFunction = () => {
     // throw new Error("bad function");
 };
 
-const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT"];
+const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CONNECT", "TRACE"];
 
 describe("createRouter", () => {
     it("internals", () => {
@@ -472,5 +472,31 @@ describe("createRouter", () => {
     it("getPathname() - returns pathname correctly", async () => {
         expect(getPathname("/foo/bar")).toBe("/foo/bar");
         expect(getPathname("/foo/bar?q=quz")).toBe("/foo/bar");
+    });
+
+    it("execute handlers without a next function", async () => {
+        const defaultProps = { global: { yo: "yo" } };
+        const withGlobal = () =>
+            createRouter().use(async (_request, _response, next) => {
+                // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
+                const nextResults = next ? await next() : undefined;
+
+                return {
+                    ...nextResults,
+                    props: { ...nextResults?.props, ...defaultProps },
+                };
+            });
+
+        const getServerSideProps = async (context: { req: IncomingMessage; res: ServerResponse }) =>
+            await createRouter().use(withGlobal()).run(context.req, context.res);
+
+        await expect(
+            getServerSideProps({
+                req: { method: "GET", url: "/foo/bar" } as IncomingMessage,
+                res: {} as ServerResponse,
+            }),
+        ).resolves.toStrictEqual({
+            props: { ...defaultProps },
+        });
     });
 });
