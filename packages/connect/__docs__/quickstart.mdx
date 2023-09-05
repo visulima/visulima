@@ -1,0 +1,87 @@
+import { Callout, Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
+import { PartyPopper } from "lucide-react";
+
+Visulima Connect is a promise-based method routing and middleware layer. It is designed to work with Express.js, Next.js and many other frameworks.
+
+## Start to use it
+
+<Steps>
+### Install
+
+In your project directory, run the following command to install the dependency:
+
+<Tabs>
+    <Tab title="pnpm">``` pnpm i @visulima/connect ```</Tab>
+    <Tab title="npm">``` npm i @visulima/connect ```</Tab>
+    <Tab title="yarn">``` yarn add @visulima/connect ```</Tab>
+</Tabs>
+
+### Ready to Go!
+
+> In this Example we will use Next.js
+
+Now, you can create your first api route as `pages/api/hello.js`:
+
+```tsx filename="pages/api/hello.js"
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createNodeRouter, expressWrapper } from "@visulima/connect";
+import cors from "cors";
+
+// Default Req and Res are IncomingMessage and ServerResponse
+// You may want to pass in NextApiRequest and NextApiResponse
+const router = createNodeRouter<NextApiRequest, NextApiResponse>({
+    onError: (err, req, res) => {
+        console.error(err.stack);
+        res.status(500).end("Something broke!");
+    },
+    onNoMatch: (req, res) => {
+        res.status(404).end("Page is not found");
+    },
+});
+
+router
+    .use(expressWrapper(cors())) // express middleware are supported if you wrap it with expressWrapper
+    .use(async (req, res, next) => {
+        const start = Date.now();
+
+        await next(); // call next in chain
+
+        const end = Date.now();
+
+        console.log(`Request took ${end - start}ms`);
+    })
+    .get((req, res) => {
+        res.json({ user: { name: "John Doe" } });
+    });
+
+export default router.handler();
+```
+
+<span className="flex gap-4">
+    And run the `next` or `next dev` command specified in `package.json` to start developing the project! <PartyPopper size={24} className="inline mt-0.5" />
+</span>
+
+### Now you can use it in your frontend
+
+```js filename="pages/index.js"
+import { useEffect, useState } from "react";
+
+export default function Home() {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        // You can use any fetch library you want
+        fetch("/api/hello")
+            .then((res) => res.json())
+            .then((data) => setData(data));
+    }, []);
+
+    return (
+        <div>
+            <h1>{data?.user?.name ?? "Hello World"}</h1>
+        </div>
+    );
+}
+```
+
+</Steps>

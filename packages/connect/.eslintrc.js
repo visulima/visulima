@@ -50,6 +50,7 @@ module.exports = {
                 "jsx-a11y/anchor-has-content": "off",
                 // @see https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/917
                 "jsx-a11y/heading-has-content": "off",
+                "unicorn/prevent-abbreviations": "off",
             },
         },
     ],
