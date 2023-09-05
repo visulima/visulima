@@ -1,0 +1,14 @@
+{
+    "introduction": {
+        "title": "Introduction",
+        "description": "This is the introduction to the course."
+    },
+    "quickstart": {
+        "title": "Quickstart",
+        "description": "Start here to build awesome apis quickly"
+    },
+    "next": {
+        "title": "Next.js Examples",
+        "description": "Examples of how to use @visulima/connect with Next.js"
+    }
+}

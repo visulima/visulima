@@ -1,6 +1,6 @@
 import type { AnyZodObject } from "zod";
 
-export type HttpMethod = "DELETE" | "GET" | "HEAD" | "PATCH" | "POST" | "PUT";
+export type HttpMethod = "CONNECT" | "DELETE" | "GET" | "HEAD" | "OPTIONS" | "PATCH" | "POST" | "PUT" | "TRACE";
 
 export type FunctionLike = (...arguments_: any[]) => any;
 

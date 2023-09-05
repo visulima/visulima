@@ -54,17 +54,23 @@ export class NodeRouter<
 
     public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
 
+    public connect: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "CONNECT");
+
     public delete: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "DELETE");
 
     public get: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "GET");
 
     public head: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "HEAD");
 
+    public options: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "OPTIONS");
+
     public patch: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PATCH");
 
     public post: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "POST");
 
     public put: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "PUT");
+
+    public trace: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "TRACE");
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? onNoMatch;
@@ -156,6 +162,7 @@ export class NodeRouter<
             // eslint-disable-next-line no-param-reassign
             base = "/";
         }
+
         this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
 
         return this;

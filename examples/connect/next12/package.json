@@ -1,0 +1,29 @@
+{
+    "name": "nextjs_12_example_connect",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "clean": "rimraf ./.next ./out ./coverage ./tsconfig.tsbuildinfo node_modules",
+        "dev": "next dev",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/connect": "workspace:*",
+        "cookie": "^0.5.0",
+        "next": "12.3.4",
+        "react": "18.2.0",
+        "react-dom": "18.2.0"
+    },
+    "devDependencies": {
+        "@types/cookie": "^0.5.1",
+        "@types/node": "20.2.3",
+        "@types/react": "18.2.21",
+        "@types/react-dom": "18.2.7",
+        "eslint": "8.48.0",
+        "eslint-config-next": "13.4.19",
+        "rimraf": "^5.0.1",
+        "typescript": "5.2.2"
+    }
+}

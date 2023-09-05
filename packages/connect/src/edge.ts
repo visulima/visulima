@@ -44,17 +44,23 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
     public all: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "");
 
+    public connect: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "CONNECT");
+
     public delete: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "DELETE");
 
     public get: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "GET");
 
     public head: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "HEAD");
 
+    public options: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "OPTIONS");
+
     public patch: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "PATCH");
 
     public post: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "POST");
 
     public put: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "PUT");
+
+    public trace: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "TRACE");
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);

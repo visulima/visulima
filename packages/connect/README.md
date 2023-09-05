@@ -1,11 +1,14 @@
 <div align="center">
   <h3>Visulima connect</h3>
   <p>
-  The promise-based method routing and middleware layer with zod validation for <a href="https://nextjs.org/" title="Next.js">Next.js</a> (API Routes, Edge API Routes, getServerSideProps, Middleware) and many other frameworks is built on top of
+  The promise-based method routing and middleware layer with zod validation for <a href="https://nextjs.org/" title="Next.js">Next.js</a> (API Routes, Edge API Routes, App Router, getServerSideProps, Middleware) and many other frameworks is built on top of
 
-[next-connect](https://github.com/hoangvvo/next-connect),
 [http-errors](https://github.com/jshttp/http-errors),
 [regexparam](https://github.com/lukeed/regexparam)
+
+and based on
+
+[next-connect](https://github.com/hoangvvo/next-connect)
 
   </p>
 </div>
@@ -110,7 +113,7 @@ router
         },
     );
 
-export default router.nodeHandler();
+export default router.handler();
 ```
 
 ### Next.js getServerSideProps
@@ -219,7 +222,7 @@ router
         });
     });
 
-export default router.nodeHandler();
+export default router.handler();
 ```
 
 ### Next.js Middleware
@@ -339,7 +342,7 @@ router.get((req, res, next) => {
 
 Same as [.METHOD](#methodpattern-fns) but accepts _any_ methods.
 
-### router.nodeHandler(options)
+### router.handler(options)
 
 Create a nodeHandler to handle incoming requests.
 
@@ -358,7 +361,7 @@ function onError(err, req, res) {
 
 const router = createNodeRouter({ onError });
 
-export default router.nodeHandler();
+export default router.handler();
 ```
 
 **options.onNoMatch**
@@ -373,7 +376,7 @@ function onNoMatch(req, res) {
 
 const router = createNodeRouter({ onNoMatch });
 
-export default router.nodeHandler();
+export default router.handler();
 ```
 
 ### router.run(req, res)
@@ -468,7 +471,7 @@ const nodeHandler = router
         res.send("ok");
         console.log("request is completed");
     })
-    .nodeHandler();
+    .handler();
 
 await nodeHandler(req, res);
 console.log("finally"); // this will run before the get layer gets to finish
@@ -487,12 +490,12 @@ export default createNodeRouter().use(a).use(b);
 // api/foo.js
 import router from "api-libs/base";
 
-export default router.get(x).nodeHandler();
+export default router.get(x).handler();
 
 // api/bar.js
 import router from "api-libs/base";
 
-export default router.get(y).nodeHandler();
+export default router.get(y).handler();
 ```
 
 This is because, in each API Route, the same router instance is mutated, leading to undefined behaviors.
@@ -505,12 +508,12 @@ export default createNodeRouter().use(a).use(b);
 // api/foo.js
 import router from "api-libs/base";
 
-export default router.clone().get(x).nodeHandler();
+export default router.clone().get(x).handler();
 
 // api/bar.js
 import router from "api-libs/base";
 
-export default router.clone().get(y).nodeHandler();
+export default router.clone().get(y).handler();
 ```
 
 3. **DO NOT** use response function like `res.(s)end` or `res.redirect` inside `getServerSideProps`.
@@ -541,7 +544,7 @@ export async function getServerSideProps({ req, res }) {
 ```javascript
 // page/index.js
 const router = createNodeRouter().use(foo).use(bar);
-const nodeHandler = router.nodeHandler();
+const nodeHandler = router.handler();
 
 export async function getServerSideProps({ req, res }) {
     await nodeHandler(req, res); // BAD: You should call router.run(req, res);
@@ -572,7 +575,7 @@ const router = createNodeRouter()
         res.send(`Hello ${req.params.userId}`);
     });
 
-export default router.nodeHandler();
+export default router.handler();
 ```
 
 While this allows quick migration from Express.js, consider separating routes into different files (`/api/user/[userId].js`, `/api/hello.js`) in the future.
