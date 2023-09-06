@@ -1,6 +1,7 @@
 import type { GetRouteType } from "./utils/get-route-type";
 
 export type CreateHandler = <T, Q, Request>(
+    // eslint-disable-next-line no-use-before-define
     parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },
 ) => Promise<{
     data: any;
@@ -8,13 +9,16 @@ export type CreateHandler = <T, Q, Request>(
 }>;
 
 export type DeleteHandler = <T, Q>(
+    // eslint-disable-next-line no-use-before-define
     parameters: UniqueResourceHandlerParameters<T, Q>,
 ) => Promise<{
     data: any;
     status: number;
 }>;
 
+// eslint-disable-next-line no-use-before-define
 export type ListHandler = <T, Q extends ParsedQueryParameters>(
+    // eslint-disable-next-line no-use-before-define
     parameters: HandlerParameters<T, Q> & { pagination: PaginationConfig },
 ) => Promise<{
     data: any;
@@ -22,6 +26,7 @@ export type ListHandler = <T, Q extends ParsedQueryParameters>(
 }>;
 
 export type GetHandler = <T, Q>(
+    // eslint-disable-next-line no-use-before-define
     parameters: UniqueResourceHandlerParameters<T, Q>,
 ) => Promise<{
     data: any;
@@ -29,6 +34,7 @@ export type GetHandler = <T, Q>(
 }>;
 
 export type UpdateHandler = <T, Q, Request>(
+    // eslint-disable-next-line no-use-before-define
     parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
 ) => Promise<{
     data: any;
@@ -74,6 +80,7 @@ export interface HandlerOptions<M extends string, Request, Response> {
         update?: UpdateHandler;
     };
     models?: ModelsOptions<M>;
+    // eslint-disable-next-line no-use-before-define
     pagination?: PaginationConfig;
     serialization?: {
         marshal: MarshalFunction;
@@ -86,12 +93,14 @@ export interface PaginationConfig {
 }
 
 export interface HandlerParameters<T, Q> {
+    // eslint-disable-next-line no-use-before-define
     adapter: Adapter<T, Q>;
     query: Q;
     resourceName: string;
 }
 
 export interface UniqueResourceHandlerParameters<T, Q> {
+    // eslint-disable-next-line no-use-before-define
     adapter: Adapter<T, Q>;
     query: Q;
     resourceId: number | string;
@@ -106,6 +115,7 @@ export interface Adapter<T, Q, M extends string = string> {
     getAll: (resourceName: M, query: Q) => Promise<T[]>;
     getModels: () => M[];
     getOne: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
+    // eslint-disable-next-line no-use-before-define
     getPaginationData: (resourceName: M, query: Q) => Promise<PaginationData>;
     handleError?: (error: Error) => void;
     init?: () => Promise<void>;
@@ -113,6 +123,7 @@ export interface Adapter<T, Q, M extends string = string> {
     models?: M[];
     parseQuery: (
         resourceName: M,
+        // eslint-disable-next-line no-use-before-define
         query: ParsedQueryParameters,
         serialization: {
             marshal: MarshalFunction;

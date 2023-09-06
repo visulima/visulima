@@ -38,6 +38,7 @@ const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, exa
 
 const modelsToOpenapi = async <M extends string = string, PrismaClient = FakePrismaClient>(
     prismaClient: FakePrismaClient & PrismaClient,
+    // eslint-disable-next-line no-use-before-define
     { crud, exposeStrategy, models: ctorModels, swagger }: ModelsToOpenApiParameters<M> = {},
 ): Promise<{
     components: {

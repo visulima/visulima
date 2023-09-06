@@ -56,65 +56,22 @@ const parseSimpleField = (value: Condition): Record<string, Condition> | undefin
     return undefined;
 };
 
-const parseRelation = (
-    value: Condition | Date | WhereCondition | boolean | number | string,
-    key: string,
-    parsed: PrismaWhereField,
-    manyRelations: string[],
-) => {
-    // Reverse the keys so that we can format our object by nesting
-    // eslint-disable-next-line etc/no-assign-mutated-array
-    const fields = key.split(".").reverse();
-
-    let formatFields: Record<string, any> = {};
-
-    fields.forEach((field, index) => {
-        // If we iterate over the property name, which is index 0, we parse it like a normal field
-        if (index === 0) {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            basicParse(value, field, formatFields, manyRelations);
-            // Else we format the relation filter in the prisma way
-        } else {
-            formatFields = {
-                [field]: {
-                    some: formatFields,
-                },
-            };
-        }
-    });
-
-    // Retrieve the main relation field
-    // eslint-disable-next-line etc/no-assign-mutated-array
-    const initialFieldKey = fields.reverse()[0] as string;
-    // Retrieve the old parsed version
-    const oldParsed = parsed[initialFieldKey] as PrismaRelationFilter;
-
-    // Format correctly in the prisma way
-    // eslint-disable-next-line no-param-reassign
-    parsed[initialFieldKey] = {
-        some: {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            ...(oldParsed?.some as object),
-            ...formatFields[initialFieldKey]?.some,
-        },
-    };
-};
-
 const parseObjectCombination = (object: Condition, manyRelations: string[]): PrismaFieldFilter => {
     const parsed: PrismaFieldFilter = {};
 
     Object.keys(object).forEach((key) => {
-        const value = object[key];
+        const value = object[key as string];
 
         if (isRelation(key, manyRelations)) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-use-before-define
             parseRelation(value as Condition | Date | WhereCondition | boolean | number | string, key, parsed, manyRelations);
         } else if (isPrimitive(value)) {
-            parsed[key] = value as SearchCondition;
+            parsed[key as string] = value as SearchCondition;
         } else if (isObject(value)) {
             const fieldResult = parseSimpleField(value as Condition);
 
             if (fieldResult) {
-                parsed[key] = fieldResult;
+                parsed[key as string] = fieldResult;
             }
         }
     });
@@ -125,7 +82,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
 const basicParse = (value: Condition | Date | WhereCondition | boolean | number | string, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
     if (isPrimitive(value)) {
         // eslint-disable-next-line no-param-reassign
-        parsed[key] = getSearchValue(value);
+        parsed[key as string] = getSearchValue(value);
     } else {
         switch (key) {
             case "$or": {
@@ -151,18 +108,61 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
             }
             default: {
                 // eslint-disable-next-line no-param-reassign
-                parsed[key] = parseSimpleField(value as Condition);
+                parsed[key as string] = parseSimpleField(value as Condition);
                 break;
             }
         }
     }
 };
 
+const parseRelation = (
+    value: Condition | Date | WhereCondition | boolean | number | string,
+    key: string,
+    parsed: PrismaWhereField,
+    manyRelations: string[],
+) => {
+    // Reverse the keys so that we can format our object by nesting
+    // eslint-disable-next-line etc/no-assign-mutated-array
+    const fields = key.split(".").reverse();
+
+    let formatFields: Record<string, any> = {};
+
+    fields.forEach((field, index) => {
+        // If we iterate over the property name, which is index 0, we parse it like a normal field
+        if (index === 0) {
+            basicParse(value, field, formatFields, manyRelations);
+            // Else we format the relation filter in the prisma way
+        } else {
+            formatFields = {
+                [field]: {
+                    some: formatFields,
+                },
+            };
+        }
+    });
+
+    // Retrieve the main relation field
+    // eslint-disable-next-line etc/no-assign-mutated-array
+    const initialFieldKey = fields.reverse()[0] as string;
+    // Retrieve the old parsed version
+    const oldParsed = parsed[initialFieldKey as string] as PrismaRelationFilter;
+
+    // Format correctly in the prisma way
+    // eslint-disable-next-line no-param-reassign
+    parsed[initialFieldKey as string] = {
+        some: {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            ...(oldParsed?.some as object),
+            ...formatFields[initialFieldKey as string]?.some,
+        },
+    };
+};
+
 const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhereField => {
     const parsed: PrismaWhereField = {};
 
     Object.keys(where).forEach((key) => {
-        const value = where[key];
+        const value = where[key as string];
         /**
          * If the key without property name is a relation
          *

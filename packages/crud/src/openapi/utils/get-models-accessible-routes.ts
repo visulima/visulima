@@ -5,10 +5,14 @@ import type { Routes } from "../types";
 const getModelsAccessibleRoutes = <M extends string>(modelNames: M[], models?: ModelsOptions<M>, defaultExposeStrategy: "all" | "none" = "all"): Routes<M> =>
     // eslint-disable-next-line unicorn/no-array-reduce
     modelNames.reduce((accumulator, modelName) => {
-        if (models?.[modelName]) {
+        if (models?.[modelName as M]) {
             return {
                 ...accumulator,
-                [modelName]: getAccessibleRoutes((models[modelName] as ModelOption).only, (models[modelName] as ModelOption).exclude, defaultExposeStrategy),
+                [modelName]: getAccessibleRoutes(
+                    (models[modelName as M] as ModelOption).only,
+                    (models[modelName as M] as ModelOption).exclude,
+                    defaultExposeStrategy,
+                ),
             };
         }
 

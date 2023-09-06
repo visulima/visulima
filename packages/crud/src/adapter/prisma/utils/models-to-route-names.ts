@@ -1,11 +1,10 @@
 type RouteMap<M extends string> = { [key in M]?: string };
 
-const modelsToRouteNames = <M extends string = string>(mappingsMap: Record<string, object>, models: M[]): RouteMap<M> => {
+const modelsToRouteNames = <M extends string = string>(mappingsMap: Record<M, Record<"name" | "plural", string>>, models: M[]): RouteMap<M> => {
     const routesMap: RouteMap<M> = {};
 
     models.forEach((model) => {
-        // @ts-expect-error
-        routesMap[model] = mappingsMap[model].plural;
+        routesMap[model as M] = mappingsMap[model as M].plural;
     });
 
     return routesMap;

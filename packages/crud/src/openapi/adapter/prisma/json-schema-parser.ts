@@ -94,15 +94,15 @@ class JsonSchemaParser {
     ): Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> {
         const referenceToSchema = (reference: string) => {
             const name = reference.replace("#/components/schemas/", "");
-            const model = schemas[name] as OpenAPIV3.SchemaObject;
+            const model = schemas[name as string] as OpenAPIV3.SchemaObject;
 
             const values: Record<string, object[] | string> = {};
 
             Object.entries((model.properties as OpenAPIV3.SchemaObject | undefined) ?? {}).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                values[key] = type === "array" ? [arrayItemsToSchema(v.items)] : type;
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-use-before-define
+                values[key as string] = type === "array" ? [arrayItemsToSchema(v.items)] : type;
             });
 
             return values;
@@ -112,7 +112,7 @@ class JsonSchemaParser {
             const values: Record<string, object[] | object | string> = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
-                values[key] =
+                values[key as string] =
                     (value as { $ref?: string }).$ref === undefined
                         ? ((value as OpenAPIV3.SchemaObject).type as string)
                         : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
@@ -126,13 +126,13 @@ class JsonSchemaParser {
 
             Object.entries(items).forEach(([key, value]) => {
                 if (value.items.$ref !== undefined) {
-                    values[key] = [referenceToSchema(value.items.$ref)];
+                    values[key as string] = [referenceToSchema(value.items.$ref)];
                 } else if (value.type === "array") {
-                    values[key] = [arrayItemsToSchema(value.items)];
+                    values[key as string] = [arrayItemsToSchema(value.items)];
                 } else if (value.type === "object") {
-                    values[key] = objectPropertiesToSchema(value.properties);
+                    values[key as string] = objectPropertiesToSchema(value.properties);
                 } else {
-                    values[key] = value.type;
+                    values[key as string] = value.type;
                 }
             });
 
@@ -142,25 +142,26 @@ class JsonSchemaParser {
         // eslint-disable-next-line unicorn/no-array-reduce
         return modelNames.reduce((accumulator, modelName) => {
             const value: Record<string, object[] | object | string> = {};
-            const model = schemas[modelName] as OpenAPIV3.SchemaObject;
+            const model = schemas[modelName as string] as OpenAPIV3.SchemaObject;
 
             Object.entries(model.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
                 if (type === "array") {
-                    value[key] = [referenceToSchema(v.items.$ref)];
+                    value[key as string] = [referenceToSchema(v.items.$ref)];
                 } else if (type === "object") {
-                    value[key] = objectPropertiesToSchema(v.properties);
+                    value[key as string] = objectPropertiesToSchema(v.properties);
                 } else {
-                    value[key] = type;
+                    value[key as string] = type;
                 }
             });
 
+            // eslint-disable-next-line security/detect-object-injection
             const pagination = this.getPaginationDataSchema()[PAGINATION_SCHEMA_NAME] as OpenAPIV3.SchemaObject;
             const meta: Record<string, string> = {};
 
             Object.entries(pagination.properties as OpenAPIV3.SchemaObject).forEach(([key, v]) => {
-                meta[key] = (v as OpenAPIV3.SchemaObject).type as string;
+                meta[key as string] = (v as OpenAPIV3.SchemaObject).type as string;
             });
 
             return {
@@ -228,6 +229,7 @@ class JsonSchemaParser {
             });
 
             methods.forEach(({ name: method, schemaName }) => {
+                // eslint-disable-next-line security/detect-object-injection
                 const dataFields = this.dmmf.mutationType.fieldMap[method].args[0].inputTypes[0].type.fields;
                 const requiredProperties: string[] = [];
                 // eslint-disable-next-line unicorn/no-array-reduce
@@ -283,7 +285,7 @@ class JsonSchemaParser {
                     return propertiesAccumulator;
                 }, {});
 
-                accumulator[schemaName] = {
+                accumulator[schemaName as string] = {
                     properties,
                     type: "object",
                     xml: {
@@ -292,7 +294,7 @@ class JsonSchemaParser {
                 };
 
                 if (requiredProperties.length > 0) {
-                    accumulator[schemaName].required = requiredProperties;
+                    accumulator[schemaName as string].required = requiredProperties;
                 }
             });
 
@@ -300,7 +302,7 @@ class JsonSchemaParser {
         }, {});
 
         this.schemaInputTypes.forEach((value, key) => {
-            definitions[key] = {
+            definitions[key as string] = {
                 properties: value,
                 type: "object",
                 xml: {
@@ -318,18 +320,18 @@ class JsonSchemaParser {
         Object.keys(modelsDefinitions).forEach((definition: number | string) => {
             // @TODO: added the correct type
             // @ts-expect-error
-            const { properties } = modelsDefinitions[definition];
+            const { properties } = modelsDefinitions[definition as string];
 
             Object.keys(properties).forEach((property: string) => {
-                if (Array.isArray(properties[property].type) && properties[property].type.includes("null")) {
-                    properties[property].type = properties[property].type.filter((type: string) => type !== "null");
+                if (Array.isArray(properties[property as string].type) && properties[property as string].type.includes("null")) {
+                    properties[property as string].type = properties[property as string].type.filter((type: string) => type !== "null");
 
-                    if (properties[property].type.length === 1) {
+                    if (properties[property as string].type.length === 1) {
                         // eslint-disable-next-line prefer-destructuring
-                        properties[property].type = properties[property].type[0];
+                        properties[property as string].type = properties[property as string].type[0];
                     }
 
-                    properties[property].nullable = true;
+                    properties[property as string].nullable = true;
                 }
             });
         });

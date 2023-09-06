@@ -32,8 +32,12 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
-                "no-use-before-define": "off",
-                "security/detect-object-injection": "off",
+            },
+        },
+        {
+            files: ["__tests__/integration/adapter/prisma/index.test.ts"],
+            rules: {
+                "@typescript-eslint/no-redundant-type-constituents": "off",
             },
         },
         {

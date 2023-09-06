@@ -6,6 +6,7 @@ interface PathMatch {
     id: string;
 }
 
+// eslint-disable-next-line no-use-before-define
 const getRouteType: (method: string, url: string, resourceName: string) => GetRouteType = (method, url, resourceName) => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];

@@ -159,12 +159,13 @@ const generateSwaggerPathObject = <M extends string>({
     routeTypes,
     tag,
 }: GenerateSwaggerPathObjectParameters<M>): Record<string, any> => {
-    const methods: Record<string, any> = {};
+    const methods: { [Method in HttpMethod]?: any } = {};
 
     routeTypes.forEach((routeType) => {
         if (routeTypes.includes(routeType)) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
+            const returnType =
+                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+                modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName as M]?.type?.name ?? modelName;
             const method: HttpMethod = getRouteTypeMethod(routeType);
             const response = generateSwaggerResponse(routeType, returnType);
 
@@ -172,7 +173,7 @@ const generateSwaggerPathObject = <M extends string>({
                 throw new TypeError(`Route type ${routeType}; response config was not found.`);
             }
 
-            methods[method] = {
+            methods[method as HttpMethod] = {
                 parameters: getQueryParameters(routeType).map((queryParameter) => {
                     return { ...queryParameter, in: "query" };
                 }),
@@ -180,16 +181,16 @@ const generateSwaggerPathObject = <M extends string>({
                 responses: {
                     [response.statusCode]: response.content,
 
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    ...modelsConfig?.[modelName]?.routeTypes?.[routeType]?.responses,
+                    // eslint-disable-next-line security/detect-object-injection
+                    ...modelsConfig?.[modelName as M]?.routeTypes?.[routeType]?.responses,
                 },
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                summary: modelsConfig?.[modelName]?.routeTypes?.[routeType]?.summary,
+                // eslint-disable-next-line security/detect-object-injection
+                summary: modelsConfig?.[modelName as M]?.routeTypes?.[routeType]?.summary,
                 tags: [tag],
             };
 
             if (hasId) {
-                methods[method].parameters.push({
+                methods[method as HttpMethod].parameters.push({
                     description: `ID of the ${modelName}`,
                     in: "path",
                     name: "id",
@@ -201,9 +202,9 @@ const generateSwaggerPathObject = <M extends string>({
             }
 
             if (routeType === RouteType.UPDATE) {
-                methods[method].requestBody = generateRequestBody("Update", returnType);
+                methods[method as HttpMethod].requestBody = generateRequestBody("Update", returnType);
             } else if (routeType === RouteType.CREATE) {
-                methods[method].requestBody = generateRequestBody("Create", returnType);
+                methods[method as HttpMethod].requestBody = generateRequestBody("Create", returnType);
             }
         }
     });
@@ -220,20 +221,18 @@ interface GetSwaggerPathsParameters<M extends string> {
 
 const getOpenapiPaths = <M extends string>({ models, modelsConfig, routes, routesMap }: GetSwaggerPathsParameters<M>): Record<string, any> =>
     // eslint-disable-next-line unicorn/no-array-reduce
-    Object.keys(routes).reduce((accumulator: Record<string, any>, value: M | string) => {
-        const routeTypes = routes[value] as RouteType[];
+    (Object.keys(routes) as M[]).reduce((accumulator: Record<string, any>, value: M) => {
+        const routeTypes = routes[value as keyof typeof routes] as RouteType[];
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] ?? value;
+        const resourceName = models?.[value as M]?.name ? (models[value as M] as ModelOption).name : routesMap?.[value as M] ?? value;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const tag = modelsConfig?.[value]?.tag.name ?? value;
+        const tag = modelsConfig?.[value as M]?.tag.name ?? value;
 
         if (routeTypes.includes(RouteType.CREATE) || routeTypes.includes(RouteType.READ_ALL)) {
             const path = `/${resourceName}`;
             const routeTypesToUse = [RouteType.READ_ALL, RouteType.CREATE].filter((routeType) => routeTypes.includes(routeType));
 
-            accumulator[path] = generateSwaggerPathObject({
+            accumulator[path as keyof typeof accumulator] = generateSwaggerPathObject({
                 modelName: value as M,
                 modelsConfig,
                 routeTypes: routeTypesToUse,
@@ -245,7 +244,7 @@ const getOpenapiPaths = <M extends string>({ models, modelsConfig, routes, route
             const path = `/${resourceName}/{id}`;
             const routeTypesToUse = [RouteType.READ_ONE, RouteType.UPDATE, RouteType.DELETE].filter((routeType) => routeTypes.includes(routeType));
 
-            accumulator[path] = generateSwaggerPathObject({
+            accumulator[path as keyof typeof accumulator] = generateSwaggerPathObject({
                 hasId: true,
                 modelName: value as M,
                 modelsConfig,

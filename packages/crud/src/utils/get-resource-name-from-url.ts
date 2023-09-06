@@ -15,7 +15,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
     }
 
     const modelName = (Object.keys(models) as M[]).find((name) => {
-        const routeName = models[name];
+        const routeName = models[name as keyof typeof models];
         const camelCaseModel = ensureCamelCase(routeName);
 
         // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
@@ -28,6 +28,6 @@ export const getResourceNameFromUrl = <M extends string = string>(
 
     return {
         modelName,
-        resourceName: models[modelName],
+        resourceName: models[modelName as keyof typeof models],
     };
 };

@@ -86,7 +86,7 @@ async function baseHandler<
     const modelRoutes: { [key in M]?: string } = {};
 
     adapter.getModels().forEach((modelName) => {
-        modelRoutes[modelName as M] = config.models?.[modelName as M]?.name ?? routeNames?.[modelName] ?? modelName;
+        modelRoutes[modelName as M] = config.models?.[modelName as M]?.name ?? routeNames?.[modelName as M] ?? modelName;
     });
 
     return async (request, responseOrContext) => {
