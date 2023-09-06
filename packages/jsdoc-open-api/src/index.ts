@@ -4,4 +4,3 @@ export { default as openapiJsDocumentCommentsToOpenApi } from "./openapi-jsdoc/c
 export { default as parseFile } from "./parse-file";
 export { default as SpecBuilder } from "./spec-builder";
 export { default as yamlLoc } from "./util/yaml-loc";
-export { default as OpenapiCompilerPlugin } from "./webpack/openapi-compiler-plugin";

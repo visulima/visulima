@@ -30,4 +30,5 @@ module.exports = withOpenApi({
     },
     sources: ["pages/api"],
     verbose: false,
+    output: "../../swagger/swagger.json",
 })(nextConfig);

@@ -1,26 +1,15 @@
-import { mkdir, writeFile } from "node:fs";
-import { dirname } from "node:path";
 import { exit } from "node:process";
 
 import { collect } from "@visulima/fs";
 import type { Compiler } from "webpack";
 
-import { DEFAULT_EXCLUDE } from "../constants";
-import type { BaseDefinition } from "../exported";
-import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
-import parseFile from "../parse-file";
-import SpecBuilder from "../spec-builder";
-import swaggerJsDocumentCommentsToOpenApi from "../openapi-jsdoc/comments-to-open-api";
-import validate from "../validate";
-
-const errorHandler = (error: any) => {
-    if (error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
-
-        exit(1);
-    }
-};
+import { DEFAULT_EXCLUDE } from "../../constants";
+import type { BaseDefinition } from "../../exported";
+import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
+import parseFile from "../../parse-file";
+import SpecBuilder from "../../spec-builder";
+import swaggerJsDocumentCommentsToOpenApi from "../../openapi-jsdoc/comments-to-open-api";
+import validate from "../../validate";
 
 class OpenapiCompilerPlugin {
     private readonly assetsPath: string;
@@ -112,17 +101,17 @@ class OpenapiCompilerPlugin {
                 exit(1);
             }
 
-            const { assetsPath } = this;
+            const swaggerJson = JSON.stringify(spec, null, 2);
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            mkdir(dirname(assetsPath), { recursive: true }, (error) => {
-                if (error) {
-                    errorHandler(error);
-                }
-
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
-            });
+            // @ts-expect-error: This property should be overwritten
+            compilation.assets[this.assetsPath] = {
+                size() {
+                    return swaggerJson.length;
+                },
+                source() {
+                    return swaggerJson;
+                },
+            };
 
             if (this.verbose) {
                 // eslint-disable-next-line no-console

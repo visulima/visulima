@@ -70,6 +70,17 @@
                 "default": "./dist/cli/commander/index.mjs"
             }
         },
+        "./webpack/plugin": {
+            "types": "./dist/webpack/plugin/index.d.ts",
+            "require": {
+                "types": "./dist/webpack/plugin/index.d.ts",
+                "default": "./dist/webpack/plugin/index.js"
+            },
+            "import": {
+                "types": "./dist/webpack/plugin/index.d.mts",
+                "default": "./dist/webpack/plugin/index.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.js",
@@ -175,6 +186,7 @@
     "sources": [
         "src/index.ts",
         "src/cli/index.ts",
-        "src/cli/commander/index.ts"
+        "src/cli/commander/index.ts",
+        "src/webpack/plugin/index.ts"
     ]
 }
