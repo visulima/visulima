@@ -285,9 +285,9 @@
         "koa": "^2.14.2",
         "next": "^13.4.19",
         "rate-limiter-flexible": "^3.0.0",
-        "redoc": "^2.1.2",
-        "swagger-ui-dist": "^5.6.1",
-        "swagger-ui-react": "^5.6.1",
+        "redoc": "^2.1.1",
+        "swagger-ui-dist": ">=4.0.0 <= 5",
+        "swagger-ui-react": ">=4.0.0 <= 5",
         "webpack": "^5.88.2"
     },
     "engines": {
