@@ -1,14 +1,14 @@
 {
-  "openapi": "3.0.0",
-  "info": {
-    "description": "API Platform with crud distribution for Next.js",
-    "title": "nextjs_13_example_crud",
-    "version": "0.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:3000/api"
-    }
-  ],
-  "paths": {}
+    "openapi": "3.0.0",
+    "info": {
+        "description": "API Platform with crud distribution for Next.js",
+        "title": "nextjs_13_example_crud",
+        "version": "0.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000/api"
+        }
+    ],
+    "paths": {}
 }

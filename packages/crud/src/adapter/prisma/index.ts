@@ -209,6 +209,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         }
 
         if (query.originalQuery?.["where"]) {
+            // eslint-disable-next-line security/detect-object-injection
             parsed.where = parsePrismaWhere(unmarshal(query.originalQuery["where"]), this.manyRelations[resourceName] ?? []);
         }
 

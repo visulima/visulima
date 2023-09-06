@@ -39,7 +39,7 @@ app.patch("/blog/:id", (_request, response) => response.sendStatus(200));
 app.delete("/blog/:id", (_request, response) => response.sendStatus(200));
 
 app.use(
-    "/api/openapi",
+    "/api/swagger",
     handler({
         allowedMediaTypes: {
             "application/json": true,

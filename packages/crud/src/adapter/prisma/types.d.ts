@@ -12,6 +12,11 @@ export type PrismaFieldFilterOperator = {
     [key in PrismaWhereOperator]?: SearchCondition;
 };
 
+export interface PrismaRelationFilter {
+    // eslint-disable-next-line no-use-before-define
+    some?: PrismaFieldFilter | SearchCondition;
+}
+
 export type PrismaFieldFilter = Record<string, Condition | PrismaFieldFilterOperator | PrismaRelationFilter | SearchCondition | undefined>;
 
 export type PrismaWhereField = PrismaFieldFilter & {
@@ -19,10 +24,6 @@ export type PrismaWhereField = PrismaFieldFilter & {
     NOT?: PrismaFieldFilter;
     OR?: PrismaFieldFilter;
 };
-
-export interface PrismaRelationFilter {
-    some?: PrismaFieldFilter | SearchCondition;
-}
 
 export type PrismaOrderBy = Record<string, PrismaOrderByOperator>;
 

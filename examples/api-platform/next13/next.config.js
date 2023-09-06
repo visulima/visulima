@@ -9,7 +9,7 @@ const nextConfig = {
     },
     reactStrictMode: true,
     swcMinify: true,
-    transpilePackages: ["openapi-client", "openapi-ui-react"],
+    transpilePackages: ["swagger-client", "swagger-ui-react"],
 };
 
 module.exports = withOpenApi({

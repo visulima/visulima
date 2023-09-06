@@ -22,7 +22,7 @@ const parseWhere = (where: string): WhereField => {
     const parsed: WhereField = {};
 
     Object.keys(whereObject).forEach((key) => {
-        set(parsed, key, whereObject[key]);
+        set(parsed, key, whereObject[key as string]);
     });
 
     return parsed;
@@ -36,7 +36,7 @@ const parseOrderBy = (orderBy: string): OrderByField => {
         const key = Object.keys(orderByObject)[0] as string;
 
         if (orderByObject[key as keyof typeof orderByObject] === "$asc" || orderByObject[key as keyof typeof orderByObject] === "$desc") {
-            parsed[key] = orderByObject[key as keyof typeof orderByObject];
+            parsed[key as keyof typeof parsed] = orderByObject[key as keyof typeof orderByObject];
         }
     }
 

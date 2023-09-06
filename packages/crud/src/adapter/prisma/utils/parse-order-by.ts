@@ -10,9 +10,9 @@ const parsePrismaOrderBy = (orderBy: OrderByField): PrismaOrderBy => {
     const parsed: PrismaOrderBy = {};
 
     Object.keys(orderBy).forEach((key) => {
-        const value = orderBy[key];
+        const value = orderBy[key as string];
 
-        parsed[key] = operatorsAssociation[value as OrderByOperator];
+        parsed[key as string] = operatorsAssociation[value as OrderByOperator];
     });
 
     return parsed;

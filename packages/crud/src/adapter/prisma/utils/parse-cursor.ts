@@ -5,10 +5,10 @@ const parsePrismaCursor = (cursor: Record<string, boolean | number | string>): P
     const parsed: PrismaCursor = {};
 
     Object.keys(cursor).forEach((key) => {
-        const value = cursor[key];
+        const value = cursor[key as string];
 
         if (isPrimitive(value)) {
-            parsed[key] = value as boolean | number | string;
+            parsed[key as string] = value as boolean | number | string;
         }
     });
 

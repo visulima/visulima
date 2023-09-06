@@ -1,5 +1,3 @@
-import type { Post, PrismaClient, User } from "@prisma/client";
-import { Prisma } from "@prisma/client";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 
 import type { RequestOptions } from "node-mocks-http";
@@ -7,6 +5,10 @@ import type { RequestOptions } from "node-mocks-http";
 import { createMocks as createHttpMocks } from "node-mocks-http";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+// eslint-disable-next-line n/no-unpublished-import
+import { Prisma } from "./prisma-client";
+// eslint-disable-next-line n/no-unpublished-import
+import type { Post, PrismaClient, User } from "./prisma-client";
 
 // eslint-disable-next-line n/no-unpublished-import
 import CrudHandler from "../../../utils/crud-handler";
@@ -40,7 +42,7 @@ describe("prisma interraction", () => {
     });
 
     let adapter: PrismaAdapter<Post | User, Prisma.ModelName, PrismaClient>;
-    let handler: NextApiHandler<Post | User>;
+    let handler: NextApiHandler;
 
     beforeEach(async () => {
         adapter = new PrismaAdapter<Post | User, Prisma.ModelName, PrismaClient>({
