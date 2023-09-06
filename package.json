@@ -28,7 +28,7 @@
         "example:connect:next:13:app:dev": "nx run-many --target=dev --projects=connect,nextjs_13_app_example_connect",
         "example:connect:next:13:dev": "nx run-many --target=dev --projects=connect,nextjs_13_example_connect",
         "example:crud:next:12:dev": "nx run-many --target=dev --projects=crud,api-platform,nextjs_12_example_crud",
-        "example:crud:next:13:dev": "nx run-many --target=dev --projects=crud,api-platform,nextjs_13_example_crud",
+        "example:crud:next:13:dev": "nx run-many --target=dev --projects=nextjs_13_example_crud",
         "example:health-check:next:12:dev": "nx run-many --target=dev --projects=health_check,api-platform,nextjs_12_example_health_check",
         "example:health-check:next:13:dev": "nx run-many --target=dev --projects=health_check,api-platform,nextjs_13_example_health_check",
         "example:nextra:build": "nx run-many --target=build --projects=nextra-theme-docs,nextra_example",

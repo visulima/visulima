@@ -1,16 +1,14 @@
-import { mkdir, writeFile } from "node:fs";
-import { dirname } from "node:path";
 import { exit } from "node:process";
 
 import { collect } from "@visulima/readdir";
 import type { Compiler } from "webpack";
 
-import type { BaseDefinition } from "../exported.d";
-import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
-import parseFile from "../parse-file";
-import SpecBuilder from "../spec-builder";
-import swaggerJsDocumentCommentsToOpenApi from "../openapi-jsdoc/comments-to-open-api";
-import validate from "../validate";
+import type { BaseDefinition } from "../../exported.d";
+import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
+import parseFile from "../../parse-file";
+import SpecBuilder from "../../spec-builder";
+import swaggerJsDocumentCommentsToOpenApi from "../../openapi-jsdoc/comments-to-open-api";
+import validate from "../../validate";
 
 const exclude = [
     "coverage/**",
@@ -36,15 +34,6 @@ const exclude = [
     "**/package.json5",
     "**/.next/**",
 ];
-
-const errorHandler = (error: any) => {
-    if (error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
-
-        exit(1);
-    }
-};
 
 class OpenapiCompilerPlugin {
     private readonly assetsPath: string;
@@ -75,7 +64,7 @@ class OpenapiCompilerPlugin {
 
     public apply(compiler: Compiler): void {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        compiler.hooks.make.tapAsync("OpenapiCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
+        compiler.hooks.make.tapAsync("OpenapiCompilerPlugin", async (compilation, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to openapi build");
 
@@ -96,7 +85,7 @@ class OpenapiCompilerPlugin {
                             matchBase: true,
                         },
                     },
-                    skip: [...this.ignore, ...exclude],
+                    skip: [...this.ignore, ...exclude, this.assetsPath],
                 });
 
                 if (this.verbose) {
@@ -145,17 +134,18 @@ class OpenapiCompilerPlugin {
                 exit(1);
             }
 
-            const { assetsPath } = this;
+            const swaggerJson = JSON.stringify(spec, null, 2);
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            mkdir(dirname(assetsPath), { recursive: true }, (error) => {
-                if (error) {
-                    errorHandler(error);
-                }
-
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
-            });
+            // @ts-expect-error: This property should be overwritten
+            // eslint-disable-next-line no-param-reassign
+            compilation.assets[this.assetsPath] = {
+                size() {
+                    return swaggerJson.length;
+                },
+                source() {
+                    return swaggerJson;
+                },
+            };
 
             if (this.verbose) {
                 // eslint-disable-next-line no-console

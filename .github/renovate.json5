@@ -4,6 +4,7 @@
     labels: ["c: dependencies"],
     reviewersFromCodeOwners: true,
     rangeStrategy: "bump",
+    ignorePaths: ["**/examples/**"],
     packageRules: [
         {
             groupName: "devDependencies",
@@ -26,10 +27,6 @@
             rangeStrategy: "replace",
         },
         {
-            groupName: "typescript-eslint",
-            matchPackagePrefixes: ["@typescript-eslint/"],
-        },
-        {
             groupName: "vitest",
             matchPackageNames: ["@vitest/coverage-c8", "@vitest/ui", "vitest"],
         },
@@ -38,8 +35,12 @@
             matchPackageNames: ["@types/prettier", "prettier"],
         },
         {
+            groupName: "eslint",
+            matchPackageNames: ["eslint", "eslint-"],
+        },
+        {
             groupName: "typescript",
-            matchPackageNames: ["typescript"],
+            matchPackageNames: ["typescript", "@typescript-eslint/"],
         },
     ],
     vulnerabilityAlerts: {

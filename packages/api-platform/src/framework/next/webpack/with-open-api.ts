@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
-import { OpenapiCompilerPlugin } from "@visulima/jsdoc-open-api";
+import { OpenapiCompilerPlugin } from "@visulima/jsdoc-open-api/webpack/plugin";
 import type { NextConfig } from "next/types";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
@@ -9,13 +9,16 @@ import type { Configuration } from "webpack";
 const withOpenApi =
     ({
         definition,
+        ignore = [],
         output = "swagger/swagger.json",
         sources,
         verbose,
     }: {
         definition: Exclude<BaseDefinition, "openapi"> & { openapi?: string };
+        ignore?: string[];
         output: string;
         sources: string[];
+        swaggerApiPath: string;
         verbose?: boolean;
     }) =>
     (nextConfig: NextConfig): NextConfig =>
@@ -42,7 +45,7 @@ const withOpenApi =
                         // @ts-expect-error: ignore
                         ...config.plugins,
                         new OpenapiCompilerPlugin(
-                            `${options.dir}/${output}`,
+                            output,
                             sources.map((source) => {
                                 const combinedPath = path.join(options.dir as string, source.replace("./", ""));
 
@@ -56,7 +59,7 @@ const withOpenApi =
                                 openapi: "3.0.0",
                                 ...definition,
                             },
-                            { verbose },
+                            { ignore, verbose },
                         ),
                     ],
                 };

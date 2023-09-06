@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`openapi-handler > should merge multiple OpenAPI specs and extend them with allowed media types 1`] = `
+[MockFunction spy] {
+  "calls": [
+    [
+      "{
+  \\"info\\": {
+    \\"title\\": \\"API 2\\"
+  },
+  \\"paths\\": {
+    \\"/path1\\": {
+      \\"get\\": {
+        \\"responses\\": {
+          \\"200\\": {
+            \\"description\\": \\"OK\\"
+          }
+        }
+      }
+    },
+    \\"/path2\\": {
+      \\"post\\": {
+        \\"responses\\": {
+          \\"201\\": {
+            \\"description\\": \\"Created\\"
+          }
+        }
+      }
+    }
+  }
+}",
+    ],
+  ],
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;

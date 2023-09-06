@@ -1,0 +1,3 @@
+{
+    "reject": ["swagger-ui-dist", "swagger-ui-react"]
+}

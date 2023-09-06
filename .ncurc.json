@@ -1,11 +1,5 @@
 {
     "upgrade": true,
-    "reject": [
-        "read-pkg-up",
-        "chalk",
-        "next",
-        "@types/node",
-        "prisma",
-        "@prisma/client"
-    ]
+    "mergeConfig": true,
+    "reject": ["read-pkg-up", "chalk", "@types/node", "prisma", "@prisma/client"]
 }
