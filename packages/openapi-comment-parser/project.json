@@ -1,0 +1,8 @@
+{
+    "name": "openapi-comment-parser",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/openapi-comment-parser/src",
+    "projectType": "library",
+    "tags": ["openapi-comment-parser"],
+    "implicitDependencies": []
+}

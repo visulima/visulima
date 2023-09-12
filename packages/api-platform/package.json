@@ -179,7 +179,7 @@
     },
     "dependencies": {
         "@visulima/connect": "3.0.9",
-        "@visulima/jsdoc-open-api": "2.0.42",
+        "@visulima/openapi": "1.0.0",
         "accepts": "^1.3.8",
         "debug": "^4.3.4",
         "http-errors": "^2.0.0",
