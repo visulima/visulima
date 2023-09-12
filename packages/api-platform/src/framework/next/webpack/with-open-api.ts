@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
-import { OpenapiCompilerPlugin } from "@visulima/jsdoc-open-api/webpack/plugin";
+import compilerPlugin from "@visulima/jsdoc-open-api/plugin/webpack";
 import type { NextConfig } from "next/types";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
@@ -44,9 +44,9 @@ const withOpenApi =
                     plugins: [
                         // @ts-expect-error: ignore
                         ...config.plugins,
-                        new OpenapiCompilerPlugin(
-                            output,
-                            sources.map((source) => {
+                        compilerPlugin({
+                            exclude: ignore,
+                            include: sources.map((source) => {
                                 const combinedPath = path.join(options.dir as string, source.replace("./", ""));
 
                                 // Check if the path is a directory
@@ -54,13 +54,14 @@ const withOpenApi =
 
                                 return combinedPath;
                             }),
-                            {
+                            outputFilePath: output,
+                            swaggerDefinition: {
                                 // @ts-expect-error: This property should be overwritten
                                 openapi: "3.0.0",
                                 ...definition,
                             },
-                            { ignore, verbose },
-                        ),
+                            verbose,
+                        }),
                     ],
                 };
 
