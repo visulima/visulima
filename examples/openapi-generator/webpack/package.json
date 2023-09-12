@@ -1,5 +1,5 @@
 {
-    "name": "jsdoc-open-api_example_webpack",
+    "name": "openapi_example_webpack",
     "version": "1.0.0",
     "private": true,
     "scripts": {

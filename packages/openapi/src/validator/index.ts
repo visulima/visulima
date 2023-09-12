@@ -1,145 +1,174 @@
 import { readFileSync } from "node:fs";
-import { URL, fileURLToPath } from "node:url";
 import Ajv04 from "ajv-draft-04";
 import addFormats from "ajv-formats";
 import Ajv2020 from "ajv/dist/2020";
-import { readFile } from "node:fs/promises";
-import { JSON_SCHEMA, load } from "js-yaml";
+import type Ajv from "ajv";
+import type { ErrorObject, Options, ValidateFunction } from "ajv";
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
-import { resolve } from "./resolve";
-
-const openApiVersions = new Set(["2.0", "3.0", "3.1"]);
-const ajvVersions = {
+const openApiVersions = ["3.0", "3.1"];
+const ajvVersions: Record<string, typeof Ajv> = {
     "http://json-schema.org/draft-04/schema#": Ajv04,
     "https://json-schema.org/draft/2020-12/schema": Ajv2020,
 };
-const inlinedReferences = "x-inlined-refs";
 
-function localFile(fileName) {
-    return fileURLToPath(new URL(fileName, import.meta.url));
-}
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+const importJSON = (file: string): any => JSON.parse(readFileSync(file, "utf8"));
 
-function importJSON(file) {
-    return JSON.parse(readFileSync(localFile(file)));
-}
+const getOpenApiVersion = (
+    specification: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document | object,
+): {
+    specificationVersion?: string;
+    version?: string;
+} => {
+    let specificationVersion: string | undefined;
+    let version: string | undefined;
 
-function getOpenApiVersion(specification) {
-    for (const version of openApiVersions) {
-        const specificationType = version === "2.0" ? "swagger" : "openapi";
-        const property = specification[specificationType];
-        if (typeof property === "string" && property.startsWith(version)) {
-            return {
-                specificationType,
-                specificationVersion: property,
-                version,
-            };
+    openApiVersions.forEach((oVersion) => {
+        // @ts-expect-error - TS doesn't like the dynamic property access
+        const property = specification.openapi;
+
+        if (typeof property === "string" && property.startsWith(oVersion)) {
+            specificationVersion = property;
+            version = oVersion;
         }
-    }
+    });
+
     return {
-        specificationType: undefined,
-        specificationVersion: undefined,
-        version: undefined,
+        specificationVersion,
+        version,
     };
+};
+
+interface CacheValue {
+    schema: Record<string, unknown>;
+    validate: ValidateFunction;
 }
 
-async function getSpecFromData(data) {
-    const yamlOptions = { schema: JSON_SCHEMA };
-    if (typeof data === "object") {
-        return data;
-    }
-    if (typeof data === "string") {
-        if (data.includes("\n")) {
-            try {
-                return load(data, yamlOptions);
-            } catch {
-                return undefined;
-            }
-        }
-        try {
-            const fileData = await readFile(data, "utf-8");
-            return load(fileData, yamlOptions);
-        } catch {
-            return undefined;
-        }
-    }
-    return undefined;
-}
+const ajvCache: Record<string, CacheValue | undefined> = {};
 
-export class Validator {
-    static supportedVersions = openApiVersions;
+const getAjvValidator = (version: string, ajvOptions: Options = {}): CacheValue => {
+    if (ajvCache[version] === undefined) {
+        const schema = importJSON(`${__dirname}/../schemas/v${version}/schema.json`);
 
-    constructor(ajvOptions = {}) {
-        // AJV is a bit too strict in its strict validation of openAPI schemas
-        // so switch strict mode and validateFormats off
-        if (ajvOptions.strict !== "log") {
-            ajvOptions.strict = false;
-        }
-        this.ajvOptions = ajvOptions;
-        this.ajvValidators = {};
-        this.externalRefs = {};
-    }
+        const AjvClass = ajvVersions[schema.$schema] as typeof Ajv;
+        const ajv = new AjvClass({
+            allErrors: true,
+            coerceTypes: "array",
+            discriminator: true,
+            strictTypes: false,
+            ...ajvOptions,
+        });
 
-    async addSpecRef(data, uri) {
-        const spec = await getSpecFromData(data);
-        if (spec === undefined) {
-            throw new Error("Cannot find JSON, YAML or filename in data");
-        }
+        addFormats(ajv);
 
-        const newUri = uri || spec.$id;
-        if (typeof newUri !== "string") {
-            throw new TypeError("uri parameter or $id attribute must be a string");
-        }
+        ajv.addFormat("media-range", true); // used in 3.1
 
-        spec.$id = newUri;
-        this.externalRefs[newUri] = spec;
-    }
-
-    getAjvValidator(version) {
-        if (!this.ajvValidators[version]) {
-            const schema = importJSON(`./schemas/v${version}/schema.json`);
-            const schemaVersion = schema.$schema;
-            const AjvClass = ajvVersions[schemaVersion];
-            const ajv = new AjvClass(this.ajvOptions);
-            addFormats(ajv);
-            ajv.addFormat("media-range", true); // used in 3.1
-            this.ajvValidators[version] = ajv.compile(schema);
-        }
-        return this.ajvValidators[version];
-    }
-
-    resolveRefs(options = {}) {
-        return resolve(this.specification || options.specification);
-    }
-
-    async validate(data) {
-        const specification = await getSpecFromData(data);
-        this.specification = specification;
-        if (specification === undefined || specification === null) {
-            return {
-                errors: "Cannot find JSON, YAML or filename in data",
-                valid: false,
-            };
-        }
-        if (Object.keys(this.externalRefs).length > 0) {
-            specification[inlinedReferences] = this.externalRefs;
-        }
-        const { specificationType, specificationVersion, version } = getOpenApiVersion(specification);
-        this.version = version;
-        this.specificationVersion = specificationVersion;
-        this.specificationType = specificationType;
-        if (!version) {
-            return {
-                errors: "Cannot find supported swagger/openapi version in specification, version must be a string.",
-                valid: false,
-            };
-        }
-        const validate = this.getAjvValidator(version);
-        const result = {
-            valid: validate(specification),
+        ajvCache[version] = {
+            schema,
+            validate: ajv.compile(schema),
         };
-        if (validate.errors) {
-            result.errors = validate.errors;
-        }
-        return result;
     }
+
+    return ajvCache[version] as CacheValue;
+};
+
+/**
+ * Because of the way that Ajv works, if a validation error occurs deep within a schema there's a chance that errors
+ * will also be thrown for its immediate parents, leading to a case where we'll eventually show the error indecipherable
+ * errors like "$ref is missing here!" instance of what's _actually_ going on where they may have mistyped `enum` as
+ * `enumm`.
+ *
+ * To alleviate this confusing noise, we're compressing Ajv errors down to only surface the deepest point for each
+ * lineage, so that if a user typos `enum` as `enumm` we'll surface just that error for them (because really that's
+ * **the** error).
+ */
+const reduceAjvErrors = (errors: ErrorObject[]): ErrorObject[] => {
+    const flattened = new Map();
+
+    errors.forEach((error) => {
+        // These two errors appear when a child schema of them has a problem and instead of polluting the user with
+        // indecipherable noise we should instead relay the more specific error to them. If this is all that's present in
+        // the stack then as a safety net before we wrap up we'll just return the original `errors` stack.
+        if (["must have required property '$ref'", "must match exactly one schema in oneOf"].includes(error.message ?? "")) {
+            return;
+        }
+
+        // If this is our first run through let's initialize our dataset and move along.
+        if (flattened.size === 0) {
+            flattened.set(error.instancePath, error);
+
+            return;
+        }
+
+        if (flattened.has(error.instancePath)) {
+            // If we already have an error recorded for this `instancePath` we can ignore it because we (likely) already have
+            // recorded the more specific error.
+            return;
+        }
+
+        // If this error hasn't already been recorded, maybe it's an error against the same `instancePath` stack, in which
+        // case we should ignore it because the more specific error has already been recorded.
+        let shouldRecordError = true;
+
+        flattened.forEach((flat) => {
+            if (flat.instancePath.includes(error.instancePath)) {
+                shouldRecordError = false;
+            }
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (shouldRecordError) {
+            flattened.set(error.instancePath, error);
+        }
+    });
+
+    // If we weren't able to fold errors down for whatever reason just return the original stack.
+    if (flattened.size === 0) {
+        return errors;
+    }
+
+    return [...flattened.values()] as ErrorObject[];
+};
+
+interface ReturnValue {
+    errors?: (Error | ErrorObject)[];
+    specification: {
+        version: string | undefined;
+    };
+    valid: boolean;
 }
+
+/**
+ * Validates the given Swagger API against the Swagger 2.0 or OpenAPI 3.0 and 3.1 schemas.
+ */
+export const validate = async (data: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document | object): Promise<ReturnValue> => {
+    const { specificationVersion, version } = getOpenApiVersion(data);
+
+    if (!version) {
+        return {
+            errors: [new Error("Cannot find supported swagger/openapi version in specification, version must be a string.")],
+            specification: {
+                version: undefined,
+            },
+            valid: false,
+        };
+    }
+
+    const { validate: ajvValidate } = getAjvValidator(version);
+
+    const result: ReturnValue = {
+        specification: {
+            version: specificationVersion,
+        },
+        valid: ajvValidate(data),
+    };
+
+    if (ajvValidate.errors) {
+        result.errors = reduceAjvErrors(ajvValidate.errors);
+    }
+
+    return result;
+};
+
+export const supportedOpenApiVersions = openApiVersions;

@@ -1,5 +1,5 @@
 {
-    "name": "jsdoc-open-api_example_esbuild",
+    "name": "openapi_example_esbuild",
     "version": "1.0.0",
     "private": true,
     "scripts": {

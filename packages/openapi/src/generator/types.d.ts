@@ -1,4 +1,4 @@
-import type { BaseDefinition } from "../../exported";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 export interface Options {
     exclude?: ReadonlyArray<string> | string;
@@ -6,6 +6,6 @@ export interface Options {
     include: string[];
     outputFilePath: string;
     stopOnInvalid?: boolean;
-    swaggerDefinition: BaseDefinition;
+    swaggerDefinition: { info: OpenAPIV3_1.InfoObject | OpenAPIV3.InfoObject; openapi: string } & (Partial<OpenAPIV3_1.Document> | Partial<OpenAPIV3.Document>);
     verbose?: boolean;
 }

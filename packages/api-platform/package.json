@@ -75,7 +75,6 @@
             }
         },
         "./framework/next": {
-            "types": "./dist/framework/next/index-server.d.ts",
             "browser": "./dist/framework/next/index-browser.js",
             "require": {
                 "types": "./dist/framework/next/index-server.d.ts",
@@ -87,7 +86,6 @@
             }
         },
         "./framework/next/pages/swagger": {
-            "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/swagger/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
@@ -99,7 +97,6 @@
             }
         },
         "./framework/next/pages/redoc": {
-            "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/redoc/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
@@ -111,7 +108,6 @@
             }
         },
         "./cli": {
-            "types": "./dist/framework/cli/index.d.ts",
             "require": {
                 "types": "./dist/framework/cli/index.d.ts",
                 "default": "./dist/framework/cli/index.js"
@@ -122,7 +118,6 @@
             }
         },
         "./cli/commander": {
-            "types": "./dist/framework/cli/commander/index.d.ts",
             "require": {
                 "types": "./dist/framework/cli/commander/index.d.ts",
                 "default": "./dist/framework/cli/commander/index.js"
@@ -133,7 +128,6 @@
             }
         },
         "./openapi": {
-            "types": "./dist/openapi/index.d.ts",
             "require": {
                 "types": "./dist/openapi/index.d.ts",
                 "default": "./dist/openapi/index.js"
@@ -180,6 +174,7 @@
     "dependencies": {
         "@visulima/connect": "3.0.9",
         "@visulima/openapi": "1.0.0",
+        "@visulima/openapi-comment-parser": "1.0.0",
         "accepts": "^1.3.8",
         "debug": "^4.3.4",
         "http-errors": "^2.0.0",
