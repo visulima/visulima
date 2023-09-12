@@ -1,33 +1,32 @@
 import { readFileSync } from "node:fs";
 import process from "node:process";
-
-import type { OpenApiObject } from "@visulima/jsdoc-open-api";
-import { jsDocumentCommentsToOpenApi, openapiJsDocumentCommentsToOpenApi, parseFile } from "@visulima/jsdoc-open-api";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+import { parseLongSyntax, parseShortSyntax } from "@visulima/openapi-comment-parser";
 
 import type { Route } from "../types.d";
 
 // eslint-disable-next-line regexp/no-unused-capturing-group
-const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
+const extensionRegex = /\.(js|ts|mjs|cjs)$/;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = false): Route[] => {
-    let specs: OpenApiObject[] = [];
+const apiRouteFileParser = (apiRouteFilePath: string, cwdPath: string, verbose = false): Route[] => {
+    let specs: (OpenAPIV3_1.Document | OpenAPIV3.Document)[] = [];
 
-    const parsedJsDocumentFile = parseFile(apiRouteFile, jsDocumentCommentsToOpenApi, verbose);
+    const content = readFileSync(apiRouteFilePath, { encoding: "utf8" });
+
+    const parsedJsDocumentFile = parseShortSyntax(content, verbose);
 
     specs = [...specs, ...parsedJsDocumentFile.map((item) => item.spec)];
 
-    const parsedOpenapiJsDocumentFile = parseFile(apiRouteFile, openapiJsDocumentCommentsToOpenApi, verbose);
+    const parsedOpenapiJsDocumentFile = parseLongSyntax(content, verbose);
 
     specs = [...specs, ...parsedOpenapiJsDocumentFile.map((item) => item.spec)];
 
     const routes: Route[] = [];
 
     if (specs.length === 0) {
-        const apiRouteFileContent = readFileSync(apiRouteFile, "utf8");
-
-        apiRouteFileContent.split(/\r?\n/u).forEach((line) => {
-            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/u.exec(line);
+        content.split(/\r?\n/).forEach((line) => {
+            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/.exec(line);
 
             if (match) {
                 let [, method] = match;
@@ -37,9 +36,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
                 }
 
                 routes.push({
-                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                    file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                     method: method as string,
-                    path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                    path: content.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
                 });
             }
@@ -47,9 +46,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
         if (routes.length === 0) {
             routes.push({
-                file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
-                path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                path: content.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
             });
         }
@@ -65,7 +64,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    file: apiRouteFile.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                    file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                     method: method.toUpperCase(),
                     path: path.replaceAll("\\", "/"),
                     tags: methodSpec.tags,

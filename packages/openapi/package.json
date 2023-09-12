@@ -47,7 +47,6 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
             "require": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
@@ -58,7 +57,6 @@
             }
         },
         "./cli": {
-            "types": "./dist/cli/index.d.ts",
             "require": {
                 "types": "./dist/cli/index.d.ts",
                 "default": "./dist/cli/index.js"
@@ -69,7 +67,6 @@
             }
         },
         "./esbuild": {
-            "types": "./dist/esbuild.d.ts",
             "require": {
                 "types": "./dist/esbuild.d.ts",
                 "default": "./dist/esbuild.js"
@@ -80,7 +77,6 @@
             }
         },
         "./nuxt": {
-            "types": "./dist/nuxt.d.ts",
             "require": {
                 "types": "./dist/nuxt.d.ts",
                 "default": "./dist/nuxt.js"
@@ -91,7 +87,6 @@
             }
         },
         "./rollup": {
-            "types": "./dist/rollup.d.ts",
             "require": {
                 "types": "./dist/rollup.d.ts",
                 "default": "./dist/rollup.js"
@@ -102,7 +97,6 @@
             }
         },
         "./vite": {
-            "types": "./dist/vite.d.ts",
             "require": {
                 "types": "./dist/vite.d.ts",
                 "default": "./dist/vite.js"
@@ -113,7 +107,6 @@
             }
         },
         "./webpack": {
-            "types": "./dist/webpack.d.ts",
             "require": {
                 "types": "./dist/webpack.d.ts",
                 "default": "./dist/webpack.js"
@@ -135,6 +128,7 @@
         "bin/**",
         "cli/**",
         "dist/**",
+        "schemas/**",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
@@ -154,6 +148,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@json-schema-tools/dereferencer": "^1.6.1",
         "@readme/better-ajv-errors": "^1.6.0",
         "@visulima/openapi-comment-parser": "1.0.0",
         "@visulima/readdir": "2.0.2",
@@ -173,6 +168,7 @@
         "@anolilab/semantic-release-preset": "^6.0.5",
         "@nuxt/kit": "^3.6.5",
         "@nuxt/schema": "^3.6.5",
+        "@octokit/rest": "^20.0.1",
         "@rspack/core": "^0.3.2",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/cli-progress": "^3.11.1",

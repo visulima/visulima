@@ -1,9 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule } from "@nuxt/kit";
 import vite from "./vite";
 import webpack from "./webpack";
-import type { Options } from "./core/types.d";
-// eslint-disable-next-line import/no-extraneous-dependencies
+import type { Options } from "./generator/types.d";
 import "@nuxt/schema";
 
 export type ModuleOptions = Options;

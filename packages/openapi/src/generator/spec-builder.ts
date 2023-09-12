@@ -1,24 +1,30 @@
-import type { OpenAPIV3_1 } from "openapi-types";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+// eslint-disable-next-line no-restricted-imports
 import merge from "lodash.merge";
 
-class SpecBuilder implements OpenAPIV3_1.Document {
-    public components?: OpenAPIV3_1.ComponentsObject;
+class SpecBuilder {
+    public components?: OpenAPIV3_1.ComponentsObject | OpenAPIV3.ComponentsObject;
 
     public externalDocs?: OpenAPIV3_1.ExternalDocumentationObject;
 
-    public info: OpenAPIV3_1.InfoObject;
+    public info: OpenAPIV3_1.InfoObject | OpenAPIV3.InfoObject;
 
     public openapi: string;
 
-    public paths: OpenAPIV3_1.PathsObject;
+    public paths: OpenAPIV3_1.PathsObject | OpenAPIV3.PathsObject;
 
     public security?: OpenAPIV3_1.SecurityRequirementObject[];
 
-    public servers?: OpenAPIV3_1.ServerObject[];
+    public servers?: (OpenAPIV3_1.ServerObject | OpenAPIV3.ServerObject)[];
 
     public tags?: OpenAPIV3_1.TagObject[];
 
-    public constructor(baseDefinition: OpenAPIV3_1.Document) {
+    public constructor(
+        baseDefinition: { info: OpenAPIV3_1.InfoObject | OpenAPIV3.InfoObject; openapi: string } & (
+            | Partial<OpenAPIV3_1.Document>
+            | Partial<OpenAPIV3.Document>
+        ),
+    ) {
         this.openapi = baseDefinition.openapi;
         this.info = baseDefinition.info;
         this.servers = baseDefinition.servers;

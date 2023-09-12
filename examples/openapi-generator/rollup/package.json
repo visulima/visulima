@@ -1,5 +1,5 @@
 {
-    "name": "jsdoc-open-api_example_rollup",
+    "name": "openapi_example_rollup",
     "version": "1.0.0",
     "private": true,
     "scripts": {
