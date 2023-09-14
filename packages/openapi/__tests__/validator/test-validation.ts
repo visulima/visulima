@@ -1,9 +1,9 @@
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
-import { URL, fileURLToPath } from "url";
-import { readFile } from "fs/promises";
-import { Validator } from "../index.js";
+import { URL, fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+import { Validator } from "..";
 
 function localFile(fileName) {
 	return fileURLToPath(new URL(fileName, import.meta.url));
@@ -21,7 +21,7 @@ const subSpecYamlFileName = localFile("./validation/sub-spec.v3.yaml");
 const subSpec2YamlFileName = localFile("./validation/sub-spec2.v3.yaml");
 const subSpecUri = "http://www.example.com/subspec";
 const subSpecUri2 = "subspec2";
-const inlinedRefs = "x-inlined-refs";
+const inlinedReferences = "x-inlined-refs";
 
 async function testVersion(version) {
 	test(`version ${version} works`, async (t) => {
@@ -30,16 +30,16 @@ async function testVersion(version) {
 
 		const res = await validator.validate(petStoreSpec);
 		assert.equal(res.valid, true, "petstore spec is valid");
-		const ver = validator.version;
+		const version_ = validator.version;
 		assert.equal(
-			ver,
+			version_,
 			version,
 			"petstore spec version matches expected version",
 		);
 	});
 }
 
-test("Validator.supportedVersions should be a Set", (t) => {
+test("validator.supportedVersions should be a Set", (t) => {
 	assert.equal(
 		Validator.supportedVersions instanceof Set,
 		true,
@@ -64,7 +64,7 @@ test("defect specification should fail", async (t) => {
 	const validator = new Validator();
 	const res = await validator.validate(invalidSpec);
 	assert.equal(res.valid, false, "defect specification is invalid");
-	assert.equal(res.errors instanceof Array, true, "got array with errors");
+	assert.equal(Array.isArray(res.errors), true, "got array with errors");
 });
 
 test("undefined specification should fail", async (t) => {
@@ -84,9 +84,9 @@ test("yaml specification as string works", async (t) => {
 
 	const res = await validator.validate(yamlSpec);
 	assert.equal(res.valid, true, "yaml spec as string is valid");
-	const valVer = validator.version;
+	const valueVersion = validator.version;
 	assert.equal(
-		valVer,
+		valueVersion,
 		"3.0",
 		"yaml validator version matches expected version",
 	);
@@ -104,11 +104,11 @@ test("multiple consecutive validations work", async (t) => {
 	assert.equal(res.valid, true, "yaml spec as string is valid in round 1");
 	const res2 = await validator.validate(yamlSpec);
 	assert.equal(res2.valid, true, "yaml spec as string is valid in round 2");
-	const ver = validator.version;
-	assert.equal(ver, "3.0", "yaml spec version matches expected version");
+	const {version} = validator;
+	assert.equal(version, "3.0", "yaml spec version matches expected version");
 });
 
-test("Invalid yaml specification as string gives an error", async (t) => {
+test("invalid yaml specification as string gives an error", async (t) => {
 	const yamlSpec = `
   yaml : : :
   yaml : : :
@@ -129,8 +129,8 @@ test("yaml specification as filename works", async (t) => {
 
 	const res = await validator.validate(yamlFileName);
 	assert.equal(res.valid, true, "yaml spec as filename is valid");
-	const ver = validator.version;
-	assert.equal(ver, "3.0", "yaml spec version matches expected version");
+	const {version} = validator;
+	assert.equal(version, "3.0", "yaml spec version matches expected version");
 });
 
 test("original petstore spec works", async (t) => {
@@ -138,9 +138,9 @@ test("original petstore spec works", async (t) => {
 	const petStoreSpec = importJSON("./validation/petstore-swagger.v2.json");
 	const res = await validator.validate(petStoreSpec);
 	assert.equal(res.valid, true, "original petstore spec is valid");
-	const ver = validator.version;
+	const {version} = validator;
 	assert.equal(
-		ver,
+		version,
 		"2.0",
 		"original petstore spec version matches expected version",
 	);
@@ -155,14 +155,14 @@ test("original petstore spec works", async (t) => {
 test(`original petstore spec works with AJV strict:"log" option`, async (t) => {
 	let logcount = 0;
 	const log = () => logcount++;
-	const logger = { log, warn: log, error: log };
-	const validator = new Validator({ strict: "log", logger });
+	const logger = { error: log, log, warn: log };
+	const validator = new Validator({ logger, strict: "log" });
 	const petStoreSpec = importJSON("./validation/petstore-swagger.v2.json");
 	const res = await validator.validate(petStoreSpec);
 	assert.equal(res.valid, true, "original petstore spec is valid");
-	const ver = validator.version;
+	const {version} = validator;
 	assert.equal(
-		ver,
+		version,
 		"2.0",
 		"original petstore spec version matches expected version",
 	);
@@ -175,7 +175,7 @@ test(`original petstore spec works with AJV strict:"log" option`, async (t) => {
 	assert.equal(logcount > 0, true, "warnings are being logged");
 });
 
-test("Invalid filename returns an error", async (t) => {
+test("invalid filename returns an error", async (t) => {
 	const validator = new Validator();
 
 	const res = await validator.validate("nonExistingFilename");
@@ -221,12 +221,12 @@ test("addSpecRef works", async (t) => {
 	const res = await validator.validate(mainSpecYamlFileName);
 	assert.equal(res.valid, true, "main spec + subspec is valid");
 	assert.equal(
-		validator.specification[inlinedRefs][subSpecUri].components.requestBodies
+		validator.specification[inlinedReferences][subSpecUri].components.requestBodies
 			.Pet.required,
 		true,
 	);
 	assert.equal(
-		validator.specification[inlinedRefs][subSpecUri2].get.summary,
+		validator.specification[inlinedReferences][subSpecUri2].get.summary,
 		"Finds Pets by status",
 	);
 	const resolvedSpec = validator.resolveRefs();

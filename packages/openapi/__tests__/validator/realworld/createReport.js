@@ -1,5 +1,5 @@
 function escapeMarkDown(string) {
-	return string.replace(/[.*+?^~${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+	return string.replaceAll(/[.*+?^~${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 function minorVersion(version) {
@@ -13,18 +13,18 @@ function processErrors(errors) {
 		const path = item.instancePath;
 		if (!data[path]) {
 			data[path] = {
-				path,
+				errorIdx: {},
+				errors: [],
 				gitHubUrl: item.gitHubUrl,
 				hasValue: item.hasInstanceValue,
+				path,
 				value: JSON.stringify(item.instanceValue, null, 2),
-				errors: [],
-				errorIdx: {},
 			};
 		}
 		const error = {
 			keyword: item.keyword,
-			params: JSON.stringify(item.params),
 			message: item.message,
+			params: JSON.stringify(item.params),
 		};
 		const errorKey = JSON.stringify(error);
 		if (!data[path].errorIdx[errorKey]) {
@@ -53,7 +53,7 @@ AJV errors:
    |Keyword |Params |Message |
    |--------|-------|--------|
 ${item.errors
-	.map((err) => `   |${err.keyword} |${err.params}| ${err.message}`)
+	.map((error) => `   |${error.keyword} |${error.params}| ${error.message}`)
 	.join("\n")}
 `;
 	}

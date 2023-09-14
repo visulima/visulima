@@ -1,35 +1,30 @@
 import yaml from "yaml";
-import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
-import yamlLoc from "./yaml-loc";
-import ParseError from "../parse-error";
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
-const ALLOWED_KEYS = new Set(["openapi", "info", "servers", "security", "tags", "externalDocs", "components", "paths"]);
+import yamlLoc from "./yaml-loc";
+
+const ALLOWED_KEYS = new Set(["swagger", "openapi", "info", "servers", "security", "tags", "externalDocs", "components", "paths"]);
 
 const parseYaml = (
     yamlString: string,
-    filePath: string,
-): {
-    loc: number;
-    spec: OpenAPIV3_1.Document | OpenAPIV3.Document;
-}[] => {
+):
+    | {
+          loc: number;
+          spec: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document;
+      }
+    | undefined => {
     const spec = yaml.parse(yamlString);
-    const invalidKeys = Object.keys(spec).filter((key) => !ALLOWED_KEYS.has(key));
 
-    if (invalidKeys.length > 0) {
-        const error = new ParseError(`Unexpected keys: ${invalidKeys.join(", ")}`);
+    if (spec.swagger || spec.openapi) {
+        const invalidKeys = Object.keys(spec).filter((key) => !ALLOWED_KEYS.has(key));
+        const filteredSpec = Object.fromEntries(Object.entries(spec).filter(([key]) => ALLOWED_KEYS.has(key)));
 
-        error.filePath = filePath;
-
-        throw error;
-    }
-
-    if (Object.keys(spec).some((key) => ALLOWED_KEYS.has(key))) {
         const loc = yamlLoc(yamlString);
 
-        return [{ loc, spec }];
+        return { loc: loc - invalidKeys.length, spec: filteredSpec as OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document };
     }
 
-    return [];
+    return undefined;
 };
 
 export default parseYaml;

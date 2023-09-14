@@ -5,10 +5,15 @@
     "license": "MIT",
     "exports": {
         ".": {
-            "types": "./../../../../dist/framework/next/routes/pages/redoc/index.d.ts",
             "browser": "./../../../../dist/framework/next/routes/pages/redoc/index.js",
-            "require": "./../../../../dist/framework/next/routes/pages/redoc/index.js",
-            "import": "./../../../../dist/framework/next/routes/pages/redoc/index.mjs"
+            "require": {
+                "types": "./../../../../dist/framework/next/routes/pages/redoc/index.d.ts",
+                "default": "./../../../../dist/framework/next/routes/pages/redoc/index.js"
+            },
+            "import": {
+                "types": "./../../../../dist/framework/next/routes/pages/redoc/index.d.mts",
+                "default": "./../../../../dist/framework/next/routes/pages/redoc/index.mjs"
+            }
         },
         "./package.json": "./package.json"
     },

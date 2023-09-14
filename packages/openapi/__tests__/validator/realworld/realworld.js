@@ -1,14 +1,15 @@
 // test the validator against the APIs of https://apis.guru
-import { createRequire } from "module";
+import { createRequire } from "node:module";
+import { writeFileSync } from "node:fs";
+import { JSON_SCHEMA, load } from "js-yaml";
+import { argv, exit } from "node:process";
+import { Validator } from "../..";
+import { createReport } from "./createReport.js";
+
 const importJSON = createRequire(import.meta.url);
 const localFile = (fileName) => new URL(fileName, import.meta.url).pathname;
-import { Validator } from "../../index.js";
 const validator = new Validator();
-import { writeFileSync } from "fs";
-import { JSON_SCHEMA, load } from "js-yaml";
-import { argv, exit } from "process";
-import { createReport } from "./createReport.js";
-const yamlOpts = { schema: JSON_SCHEMA };
+const yamlOptions = { schema: JSON_SCHEMA };
 const failedFile = localFile("./failed.json");
 const reportFile = localFile("./failed.md");
 const newFailedFile = localFile("./failed.updated.json");
@@ -23,22 +24,22 @@ function loadFailedData(fileName) {
 		data.failedTests = data.failedTests || [];
 		data.failedTests.forEach((item) => dataMap.set(item.name, item));
 		return dataMap;
-	} catch (_) {
+	} catch {
 		return dataMap;
 	}
 }
 
 function sample(fullMap, percentage) {
 	const { floor, random } = Math;
-	const len = fullMap.size;
-	const size = floor(len * (percentage / 100));
+	const length_ = fullMap.size;
+	const size = floor(length_ * (percentage / 100));
 	const sampleMap = new Map();
-	const mapKeys = Array.from(fullMap.keys());
-	for (let i = 0; i < size; i++) {
+	const mapKeys = [...fullMap.keys()];
+	for (let index = 0; index < size; index++) {
 		let index;
 		let key;
 		do {
-			index = floor(random() * len);
+			index = floor(random() * length_);
 			key = mapKeys[index];
 		} while (sampleMap.has(key));
 
@@ -47,12 +48,12 @@ function sample(fullMap, percentage) {
 	return sampleMap;
 }
 
-function unescapeJsonPointer(str) {
-	return str.replace(/~1/g, "/").replace(/~0/g, "~");
+function unescapeJsonPointer(string_) {
+	return string_.replaceAll('~1', "/").replaceAll('~0', "~");
 }
 
 function escapeRegExp(string) {
-	return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+	return string.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 function makeRexp(pathItem) {
@@ -63,56 +64,52 @@ function makeRexp(pathItem) {
 function yamlLine(yamlSpec, path) {
 	const lines = yamlSpec.split("\n");
 	const paths = path.split("/").slice(1);
-	let num = 0;
+	let number_ = 0;
 	for (const pathItem of paths) {
-		if (Number.isInteger(+pathItem) && num) {
-			num = findArrayItem(lines, num, pathItem);
-		} else {
-			num = findItem(lines, num, pathItem);
-		}
+		number_ = Number.isInteger(+pathItem) && number_ ? findArrayItem(lines, number_, pathItem) : findItem(lines, number_, pathItem);
 	}
-	return num + 1;
+	return number_ + 1;
 }
 
-function findArrayItem(lines, num, pathIdx) {
-	if (num > lines.length - 2) {
-		return num;
+function findArrayItem(lines, number_, pathIndex) {
+	if (number_ > lines.length - 2) {
+		return number_;
 	}
-	const firstItem = lines[num + 1];
+	const firstItem = lines[number_ + 1];
 	const match = firstItem.match(/^\s*-/);
 	if (match === null) {
 		// it was not an array index, but a key
-		return findItem(lines, num, pathIdx);
+		return findItem(lines, number_, pathIndex);
 	}
 	const prefix = match[0];
-	let lineNum = num;
-	let pathIdxCtr = pathIdx;
-	while (pathIdxCtr > 0) {
-		lineNum++;
-		if (lines[lineNum].startsWith(prefix)) {
-			pathIdxCtr--;
+	let lineNumber = number_;
+	let pathIndexCtr = pathIndex;
+	while (pathIndexCtr > 0) {
+		lineNumber++;
+		if (lines[lineNumber].startsWith(prefix)) {
+			pathIndexCtr--;
 		}
 	}
-	return lineNum + 1;
+	return lineNumber + 1;
 }
 
-function findItem(lines, num, pathItem) {
-	let lineNum = num;
+function findItem(lines, number_, pathItem) {
+	let lineNumber = number_;
 	const token = new RegExp(`^\\s*"?${makeRexp(pathItem)}"?:`);
-	const maxNum = lines.length - 1;
-	while (!lines[lineNum].match(token) && lineNum < maxNum) {
-		lineNum++;
+	const maxNumber = lines.length - 1;
+	while (!lines[lineNumber].match(token) && lineNumber < maxNumber) {
+		lineNumber++;
 	}
-	return lineNum;
+	return lineNumber;
 }
 
 function getInstanceValue(yamlSpec, path) {
 	if (path === "") {
 		return [false, "content too large to display here"];
 	}
-	const obj = load(yamlSpec, yamlOpts);
+	const object = load(yamlSpec, yamlOptions);
 	const paths = path.split("/").slice(1);
-	const result = paths.reduce((o, n) => o[unescapeJsonPointer(n)], obj);
+	const result = paths.reduce((o, n) => o[unescapeJsonPointer(n)], object);
 	return [true, result];
 }
 
@@ -137,13 +134,13 @@ async function fetchApiList(percentage, onlyFailed = false) {
 			const api = apiList[key];
 			const latestVersion = api.versions[api.preferred];
 			apiMap.set(key, {
-				name: key,
 				apiVersion: api.preferred,
-				openApiVersion: latestVersion.openapiVer,
-				yamlUrl: latestVersion.swaggerYamlUrl,
-				jsonUrl: latestVersion.swaggerUrl,
 				gitHubUrl: yamlToGitHub(latestVersion.swaggerYamlUrl),
+				jsonUrl: latestVersion.swaggerUrl,
+				name: key,
+				openApiVersion: latestVersion.openapiVer,
 				updated: latestVersion.updated,
+				yamlUrl: latestVersion.swaggerYamlUrl,
 			});
 		}
 	}
@@ -170,12 +167,12 @@ function writeReport(ci, totalSize, results, failed) {
 	const jsonFile = ci ? failedFile : newFailedFile;
 	const mdFile = ci ? reportFile : newReportFile;
 	const data = {
-		testDate: new Date().toISOString(),
-		totalApiCount: totalSize,
-		testedAPICount: results.total,
 		failedAPICount: results.invalid,
+		failedTests: [...failed.values()],
 		knownFailedCount: results.knownFailed,
-		failedTests: Array.from(failed.values()),
+		testDate: new Date().toISOString(),
+		testedAPICount: results.total,
+		totalApiCount: totalSize,
 	};
 	console.log("new/updated failures found");
 	console.log(`creating ${jsonFile}`);
@@ -187,11 +184,11 @@ function writeReport(ci, totalSize, results, failed) {
 async function doTest(apiList) {
 	const failed = new Map();
 	const results = {
-		total: apiList.size,
 		current: 0,
-		valid: 0,
 		invalid: 0,
 		knownFailed: 0,
+		total: apiList.size,
+		valid: 0,
 	};
 	for (const [name, api] of apiList) {
 		const spec = await fetchYaml(api.yamlUrl);
@@ -226,7 +223,7 @@ async function doTest(apiList) {
 		}
 		console.log(JSON.stringify(results), name);
 	}
-	return { results, failed };
+	return { failed, results };
 }
 
 async function testAPIs(testPercentage, onlyFailed, ci) {
@@ -238,7 +235,7 @@ async function testAPIs(testPercentage, onlyFailed, ci) {
 		percentage,
 		onlyFailed,
 	);
-	const { results, failed } = await doTest(apiList);
+	const { failed, results } = await doTest(apiList);
 	console.log(
 		`Finished testing ${results.total} APIs
      ${results.invalid} tests failed of which ${results.knownFailed} were known failures`,
@@ -256,18 +253,18 @@ async function testAPIs(testPercentage, onlyFailed, ci) {
 	}
 }
 
-function parseArgs() {
-	const args = argv.slice(2);
-	const params = new Set();
-	const opts = ["failedOnly", "all", "ci"];
-	args.forEach((arg) => {
-		opts.forEach((opt) => {
-			if (`--${opt}`.startsWith(arg)) {
-				params.add(opt);
+function parseArguments() {
+	const arguments_ = argv.slice(2);
+	const parameters_ = new Set();
+	const options = ["failedOnly", "all", "ci"];
+	arguments_.forEach((argument) => {
+		options.forEach((opt) => {
+			if (`--${opt}`.startsWith(argument)) {
+				parameters_.add(opt);
 			}
 		});
 	});
-	if (params.size !== args.length) {
+	if (parameters_.size !== arguments_.length) {
 		console.log(`
         usage: ${argv[1].split("/").pop()} [--failedOnly] [--all]
         where: 
@@ -277,13 +274,13 @@ function parseArgs() {
         `);
 		exit(1);
 	}
-	return params;
+	return parameters_;
 }
 
-const params = parseArgs();
-const failedOnly = params.has("failedOnly");
-const percentage = params.has("all") ? 100 : defaultPercentage;
-if (params.has("ci")) {
+const parameters = parseArguments();
+const failedOnly = parameters.has("failedOnly");
+const percentage = parameters.has("all") ? 100 : defaultPercentage;
+if (parameters.has("ci")) {
 	console.log("Working in CI mode, overwriting results if anything changed");
 }
-testAPIs(percentage, failedOnly, params.has("ci"));
+testAPIs(percentage, failedOnly, parameters.has("ci"));

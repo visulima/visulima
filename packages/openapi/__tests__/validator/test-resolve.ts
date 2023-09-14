@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
-import { Validator } from "../index.js";
+import { Validator } from "..";
 
 const validator = new Validator();
 const resolve = (specification) => validator.resolveRefs({ specification });
@@ -11,28 +11,28 @@ test("non object returns undefined", async (t) => {
 	assert.equal(res, undefined);
 });
 
-test("Local $refs", async (t) => {
+test("local $refs", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
 		$schema: "http://json-schema.org/draft-07/schema#",
 
 		definitions: {
 			address: {
-				type: "object",
 				properties: {
-					street_address: { type: "string" },
 					city: { type: "string" },
 					state: { type: "string" },
+					street_address: { type: "string" },
 					subAddress: { $ref: "http://www.example.com/#/definitions/address" },
 				},
+				type: "object",
 			},
 			req: { required: ["billing_address"] },
 		},
-		type: "object",
 		properties: {
 			billing_address: { $ref: "#/definitions/address" },
 			shipping_address: { $ref: "#/definitions/address" },
 		},
+		type: "object",
 	};
 	const res = resolve(schema);
 	const ptr = res.properties.billing_address.properties;
@@ -52,14 +52,14 @@ test("Local $refs", async (t) => {
 test("number in path", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
+		$ref: "#/definitions/2",
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			2: {
 				required: ["billing_address"],
 			},
 		},
-		$ref: "#/definitions/2",
 	};
 	const res = resolve(schema);
 	assert.equal(res.required[0], "billing_address", "followed number in path");
@@ -68,14 +68,14 @@ test("number in path", async (t) => {
 test("ref to #", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
+		$ref: "#",
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			2: {
 				required: ["billing_address"],
 			},
 		},
-		$ref: "#",
 	};
 	const res = resolve(schema);
 	assert.equal(
@@ -88,15 +88,15 @@ test("ref to #", async (t) => {
 test("$ref to $anchor", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
+		$ref: "#myAnchor",
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			req: {
-				required: ["billing_address"],
 				$anchor: "myAnchor",
+				required: ["billing_address"],
 			},
 		},
-		$ref: "#myAnchor",
 	};
 	const res = resolve(schema);
 	assert.equal(res.required[0], "billing_address", "followed $ref to $anchor");
@@ -104,16 +104,16 @@ test("$ref to $anchor", async (t) => {
 
 test("$dynamicRef to $dynamicAnchor", async (t) => {
 	const schema = {
+		$dynamicRef: "#myAnchor",
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			req: {
-				required: ["billing_address"],
 				$dynamicAnchor: "myAnchor",
+				required: ["billing_address"],
 			},
 		},
-		$dynamicRef: "#myAnchor",
 	};
 	const res = resolve(schema);
 	assert.equal(res.required[0], "billing_address", "followed $ref to $anchor");
@@ -122,8 +122,8 @@ test("$dynamicRef to $dynamicAnchor", async (t) => {
 test("non-existing path throws error", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
 		$ref: "#/definitions/req",
+		$schema: "http://json-schema.org/draft-07/schema#",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -137,11 +137,11 @@ test("non-existing path throws error", async (t) => {
 test("non-existing leaf path throws error", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
+		$ref: "#/definitions/non-existing",
 		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			req: { required: ["billing_address"] },
 		},
-		$ref: "#/definitions/non-existing",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -155,11 +155,11 @@ test("non-existing leaf path throws error", async (t) => {
 test("non-existing uri throws error", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
+		$ref: "http://www.example.com/failed#/definitions/req",
 		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			req: { required: ["billing_address"] },
 		},
-		$ref: "http://www.example.com/failed#/definitions/req",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -173,11 +173,11 @@ test("non-existing uri throws error", async (t) => {
 test("non-existing uri without path throws error", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
+		$ref: "http://www.example.com/failed",
 		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			req: { required: ["billing_address"] },
 		},
-		$ref: "http://www.example.com/failed",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -191,8 +191,8 @@ test("non-existing uri without path throws error", async (t) => {
 test("non-existing $anchor throws error", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
 		$ref: "#undefinedAnchor",
+		$schema: "http://json-schema.org/draft-07/schema#",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -205,9 +205,9 @@ test("non-existing $anchor throws error", async (t) => {
 
 test("non-existing $dynamicAnchor throws error", async (t) => {
 	const schema = {
+		$dynamicRef: "#undefinedAnchor",
 		$id: "http://www.example.com/",
 		$schema: "http://json-schema.org/draft-07/schema#",
-		$dynamicRef: "#undefinedAnchor",
 	};
 	assert.throws(
 		() => resolve(schema),
@@ -272,14 +272,14 @@ test("non-unique $dynamicAnchor throws error", async (t) => {
 test("correctly URL encoded URI", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
+		$ref: "%23%2Fdefinitions%2F~1path%7Bid%7D", // "#/definitions/~1path{id}"
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			"/path{id}": {
 				required: ["billing_address"],
 			},
 		},
-		$ref: "%23%2Fdefinitions%2F~1path%7Bid%7D", // "#/definitions/~1path{id}"
 	};
 	const res = resolve(schema);
 	assert.equal(
@@ -292,14 +292,14 @@ test("correctly URL encoded URI", async (t) => {
 test("incorrectly URL encoded URI also works (normally blocked by schema format)", async (t) => {
 	const schema = {
 		$id: "http://www.example.com/",
-		$schema: "http://json-schema.org/draft-07/schema#",
+		$ref: "#/definitions/~1path{id}",
 
+		$schema: "http://json-schema.org/draft-07/schema#",
 		definitions: {
 			"/path{id}": {
 				required: ["billing_address"],
 			},
 		},
-		$ref: "#/definitions/~1path{id}",
 	};
 	const res = resolve(schema);
 	assert.equal(

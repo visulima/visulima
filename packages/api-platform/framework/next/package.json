@@ -5,10 +5,15 @@
     "license": "MIT",
     "exports": {
         ".": {
-            "types": "./../../dist/framework/next/index-server.d.ts",
             "browser": "./../../dist/framework/next/index-browser.js",
-            "require": "./../../dist/framework/next/index-server.js",
-            "import": "./../../dist/framework/next/index-server.mjs"
+            "require": {
+                "types": "./../../dist/framework/next/index-server.d.ts",
+                "default": "./../../dist/framework/next/index-server.js"
+            },
+            "import": {
+                "types": "./../../dist/framework/next/index-server.d.mts",
+                "default": "./../../dist/framework/next/index-server.mjs"
+            }
         },
         "./package.json": "./package.json"
     },

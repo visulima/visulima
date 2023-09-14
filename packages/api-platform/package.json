@@ -198,6 +198,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@testing-library/react": "^15.0.7",
         "@total-typescript/ts-reset": "^0.5.1",
+        "@visulima/openapi-comment-parser": "1.0.0",
         "@types/accepts": "^1.3.7",
         "@types/cors": "^2.8.17",
         "@types/debug": "^4.1.12",
@@ -268,7 +269,8 @@
         "@hapi/hapi": "^21.3.9",
         "@koa/router": "^12.0.1",
         "@visulima/crud": "2.0.21",
-        "@visulima/readdir": "2.0.12",
+        "@visulima/fs": "^2.1.0",
+        "@visulima/openapi": "1.0.0",
         "chalk": "5.3.0",
         "commander": "^12.0.0",
         "cors": "^2.8.5",
@@ -295,7 +297,7 @@
         "@visulima/crud": {
             "optional": true
         },
-        "@visulima/readdir": {
+        "@visulima/fs": {
             "optional": true
         },
         "chalk": {

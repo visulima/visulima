@@ -2,7 +2,7 @@
   <h3>Visulima openapi-comment-parser </h3>
   <p>
 
-Visulima jsdoc-open-api parser and generator is a forked version of [openapi-comment-parser](https://github.com/bee-travels/openapi-comment-parser) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc) its built on top of [swagger](https://swagger.io/) and [JSDoc](https://jsdoc.app/), for speed and minimal runtime overhead.
+Visulima openapi comment parser is a forked version of [openapi-comment-parser](https://github.com/bee-travels/openapi-comment-parser) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc) its built on top of [swagger](https://swagger.io/) and [JSDoc](https://jsdoc.app/), for speed and minimal runtime overhead.
 
   </p>
 </div>
@@ -217,7 +217,7 @@ For more information, see [Authentication](/docs/short/authentication.md).
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/jsdoc-open-api?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/@visulima/openapi-comment-parser?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/jsdoc-open-api/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/jsdoc-open-api/v/latest "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/openapi-comment-parser/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/openapi-comment-parser/v/latest "npm"

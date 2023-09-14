@@ -4,7 +4,7 @@ import colors from "ansi-colors";
 import { readFileSync } from "node:fs";
 import { extname } from "node:path";
 import { parseLongSyntax, parseShortSyntax } from "@visulima/openapi-comment-parser";
-import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 import JsonSchemaDereferencer from "@json-schema-tools/dereferencer";
 
 import SpecBuilder from "../spec-builder";
@@ -12,8 +12,8 @@ import parseYaml from "./parse-yaml";
 import { validate } from "../../validator";
 
 const generateCode = async (
-    foundFiles: string[],
-    swaggerDefinition: { info: OpenAPIV3_1.InfoObject | OpenAPIV3.InfoObject; openapi: string } & (Partial<OpenAPIV3_1.Document> | Partial<OpenAPIV3.Document>),
+    foundFiles: ReadonlyArray<string>,
+    swaggerDefinition: Partial<OpenAPIV2.Document> | Partial<OpenAPIV3_1.Document> | Partial<OpenAPIV3.Document>,
     verbose: boolean,
     stopOnInvalid: boolean,
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -45,21 +45,27 @@ const generateCode = async (
 
         try {
             if ([".yaml", ".yml"].includes(extension)) {
-                const parsedYaml = parseYaml(content, filePath);
+                const parsedYaml = parseYaml(content);
 
-                spec.addData(parsedYaml.map(({ spec: data }) => data as OpenAPIV3_1.Document));
+                if (typeof parsedYaml === "object") {
+                    spec.addData(parsedYaml.spec);
+                }
             } else if ([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"].includes(extension)) {
                 const parsedShortJsDocumentFile = parseShortSyntax(content);
 
-                spec.addData(parsedShortJsDocumentFile.map(({ spec: data }) => data as OpenAPIV3_1.Document));
+                parsedShortJsDocumentFile.forEach(({ spec: data }) => {
+                    spec.addData(data as OpenAPIV3_1.Document | OpenAPIV3.Document);
+                });
 
                 const parsedLongJsDocumentFile = parseLongSyntax(content);
 
-                spec.addData(parsedLongJsDocumentFile.map(({ spec: data }) => data as OpenAPIV3_1.Document));
+                parsedLongJsDocumentFile.forEach(({ spec: data }) => {
+                    spec.addData(data as OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document);
+                });
             } else if (extension === ".json") {
                 const parsedJson = JSON.parse(content);
 
-                if (parsedJson.openapi) {
+                if (typeof parsedJson === "object" && (parsedJson.openapi || parsedJson.swagger)) {
                     spec.addData(parsedJson);
                 }
             }

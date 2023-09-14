@@ -4,8 +4,7 @@ const { exit } = require("node:process");
 
 const { Command } = require("commander");
 
-const { generateCommand, initCommand } = require("@visulima/jsdoc-open-api/cli/commander");
-
+const { generateCommand } = require("@visulima/openapi/cli/commander");
 const { listCommand } = require("../dist/framework/cli/commander");
 
 // eslint-disable-next-line no-underscore-dangle
@@ -17,7 +16,6 @@ program.name("@visulima/api-platform").description("CLI for the visulima api-pla
 
 listCommand(program, "framework:list");
 
-initCommand(program, "openapi:init");
 generateCommand(program, "openapi:generate");
 
 program.parse(process.argv);
