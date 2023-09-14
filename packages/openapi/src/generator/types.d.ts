@@ -1,8 +1,9 @@
 import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 export interface Options {
-    exclude?: ReadonlyArray<string> | string;
+    exclude?: string[];
     extensions?: string[];
+    followSymlinks?: boolean;
     include: string[];
     outputFilePath: string;
     stopOnInvalid?: boolean;

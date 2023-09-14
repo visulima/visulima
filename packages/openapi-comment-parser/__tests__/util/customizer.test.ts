@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import customizer from "../../src/short-syntax/customizer";
+import customizer from "../../src/utils/customizer";
 
 describe('customizer', () => {
     it('should concatenate sourceValue to objectValue when objectValue is an array', () => {
@@ -10,7 +10,7 @@ describe('customizer', () => {
 
         const result = customizer(objectValue, sourceValue);
 
-        expect(result).toEqual(expectedResult);
+        expect(result).toStrictEqual(expectedResult);
     });
 
     it('should return undefined when objectValue is not an array', () => {

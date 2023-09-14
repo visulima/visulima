@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import commentsToOpenApi from "../../src/long-syntax/comments-to-open-api";
+import commentsToOpenApi from "../../src/short-syntax/comments-to-open-api";
 
 describe("code blocks", () => {
     it("keeps spacing", () => {

@@ -36,9 +36,9 @@ const apiRouteFileParser = (apiRouteFilePath: string, cwdPath: string, verbose =
                 }
 
                 routes.push({
-                    file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                    file: apiRouteFilePath.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                     method: method as string,
-                    path: content.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                    path: apiRouteFilePath.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
                 });
             }
@@ -46,9 +46,9 @@ const apiRouteFileParser = (apiRouteFilePath: string, cwdPath: string, verbose =
 
         if (routes.length === 0) {
             routes.push({
-                file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                file: apiRouteFilePath.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
-                path: content.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                path: apiRouteFilePath.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
             });
         }
@@ -57,17 +57,17 @@ const apiRouteFileParser = (apiRouteFilePath: string, cwdPath: string, verbose =
     }
 
     specs.forEach((spec) => {
-        const paths = Object.entries(spec?.paths ?? {});
+        const paths = Object.entries(spec?.paths ?? {}) as [string, OpenAPIV3_1.PathItemObject | OpenAPIV3.PathItemObject][];
 
         paths.forEach(([path, pathSpec]) => {
             const methods = Object.entries(pathSpec);
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    file: content.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
+                    file: apiRouteFilePath.replace(`${process.cwd()}${process.platform === "win32" ? "\\" : "/"}`, ""),
                     method: method.toUpperCase(),
                     path: path.replaceAll("\\", "/"),
-                    tags: methodSpec.tags,
+                    tags: (methodSpec as OpenAPIV3.OperationObject)?.tags ?? [],
                 });
             });
         });

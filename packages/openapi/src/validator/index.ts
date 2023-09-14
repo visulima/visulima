@@ -6,7 +6,8 @@ import type Ajv from "ajv";
 import type { ErrorObject, Options, ValidateFunction } from "ajv";
 import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
-const openApiVersions = ["3.0", "3.1"];
+import getOpenApiVersion from "./util/get-openapi-version";
+
 const ajvVersions: Record<string, typeof Ajv> = {
     "http://json-schema.org/draft-04/schema#": Ajv04,
     "https://json-schema.org/draft/2020-12/schema": Ajv2020,
@@ -14,31 +15,6 @@ const ajvVersions: Record<string, typeof Ajv> = {
 
 // eslint-disable-next-line security/detect-non-literal-fs-filename
 const importJSON = (file: string): any => JSON.parse(readFileSync(file, "utf8"));
-
-const getOpenApiVersion = (
-    specification: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document | object,
-): {
-    specificationVersion?: string;
-    version?: string;
-} => {
-    let specificationVersion: string | undefined;
-    let version: string | undefined;
-
-    openApiVersions.forEach((oVersion) => {
-        // @ts-expect-error - TS doesn't like the dynamic property access
-        const property = specification.openapi;
-
-        if (typeof property === "string" && property.startsWith(oVersion)) {
-            specificationVersion = property;
-            version = oVersion;
-        }
-    });
-
-    return {
-        specificationVersion,
-        version,
-    };
-};
 
 interface CacheValue {
     schema: Record<string, unknown>;

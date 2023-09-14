@@ -4,20 +4,20 @@ import { test } from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 
 const schema = {
-	$schema: "https://json-schema.org/draft/2020-12/schema",
-
-	type: "object",
-	properties: {
-		schema: { $dynamicRef: "#meta" },
-	},
-	unevaluatedProperties: false,
-
 	$defs: {
 		schema: {
 			$dynamicAnchor: "meta",
 			type: ["object", "boolean"],
 		},
 	},
+
+	$schema: "https://json-schema.org/draft/2020-12/schema",
+	properties: {
+		schema: { $dynamicRef: "#meta" },
+	},
+	type: "object",
+
+	unevaluatedProperties: false,
 };
 
 const data = {

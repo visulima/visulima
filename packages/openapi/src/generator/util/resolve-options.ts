@@ -1,4 +1,4 @@
-import type { Options } from "./types";
+import type { Options } from "../types";
 
 const exclude = [
     "coverage/**",
@@ -27,13 +27,13 @@ const exclude = [
 
 const defaultOptions: Partial<Options> = {
     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml", ".json"],
+    followSymlinks: false,
     include: [],
     stopOnInvalid: true,
     verbose: false,
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export const resolveOptions = (options: Options | undefined): Required<Options> => {
+const resolveOptions = (options: Options | undefined): Required<Options> => {
     const resolved = { ...defaultOptions, ...options, exclude: [...exclude, ...(options?.exclude ?? [])] } as Required<Options>;
 
     if (resolved.include.length === 0) {
@@ -46,3 +46,5 @@ export const resolveOptions = (options: Options | undefined): Required<Options> 
 
     return resolved;
 };
+
+export default resolveOptions;

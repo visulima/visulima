@@ -1,53 +1,27 @@
 import type { UnpluginBuildContext, UnpluginFactory } from "unplugin";
-import { collect } from "@visulima/readdir";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+ 
 import sources from "webpack-sources";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { Compilation } from "webpack";
 import type { Compiler as RsCompiler } from "@rspack/core";
 
 import type { Options } from "./types";
-import { resolveOptions } from "./options";
+import resolveOptions from "./util/resolve-options";
 import generateCode from "./util/generate-code";
+import collectFiles from "./util/collect-files";
 
 const PLUGIN_NAME = "openapi-jsdoc-compiler";
 
 const unpluginFactory: UnpluginFactory<Options, false> = (options) => {
     const config = resolveOptions(options);
 
-    let files: string[] = [];
+    let files: ReadonlyArray<string> = [];
     let fileContent: string | undefined;
 
     const buildStart = async (context: UnpluginBuildContext) => {
-        // eslint-disable-next-line no-console
-        console.log("\nStarting the search for OpenApi jsdoc files to parse...");
-
-        // eslint-disable-next-line no-restricted-syntax
-        for await (const directory of config.include) {
-            files = await collect(directory, {
-                extensions: config.extensions,
-                includeDirs: false,
-                minimatchOptions: {
-                    match: {
-                        debug: config.verbose,
-                        matchBase: true,
-                    },
-                    skip: {
-                        debug: config.verbose,
-                        matchBase: true,
-                    },
-                },
-                skip: [...config.exclude, config.outputFilePath],
-            });
-
-            if (config.verbose) {
-                // eslint-disable-next-line no-console
-                console.log(`Found ${files.length} files in "${directory}" directory`);
-                // eslint-disable-next-line no-console
-                console.log(files);
-            }
-        }
+        files = await collectFiles(config.include, [...config.exclude, config.outputFilePath], config.extensions, config.verbose, config.followSymlinks);
 
         files.forEach((file) => {
             context.addWatchFile(file);

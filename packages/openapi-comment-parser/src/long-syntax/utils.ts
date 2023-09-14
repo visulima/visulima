@@ -29,13 +29,10 @@ export const hasEmptyProperty = (object: Record<string, any>): boolean =>
  */
 export const isTagPresentInTags = (tag: Spec, tags: Spec[]): boolean => tags.some((targetTag) => tag.name === targetTag.name);
 
-export const getSwaggerVersionFromSpec = (tag: Spec): "v2" | "v3" | "v4" => {
+export const getSwaggerVersionFromSpec = (tag: Spec): "v2" | "v3" => {
     switch (tag.tag) {
         case "openapi": {
             return "v3";
-        }
-        case "asyncapi": {
-            return "v4";
         }
         case "swagger": {
             return "v2";

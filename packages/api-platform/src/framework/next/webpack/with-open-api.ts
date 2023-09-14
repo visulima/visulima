@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { BaseDefinition } from "@visulima/jsdoc-open-api";
-import compilerPlugin from "@visulima/jsdoc-open-api/plugin/webpack";
+import compilerPlugin from "@visulima/openapi/webpack";
 import type { NextConfig } from "next/types";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { Configuration } from "webpack";
+import type { OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 const withOpenApi =
     ({
@@ -14,7 +14,7 @@ const withOpenApi =
         sources,
         verbose,
     }: {
-        definition: Exclude<BaseDefinition, "openapi"> & { openapi?: string };
+        definition: Exclude<OpenAPIV3_1.Document | OpenAPIV3.Document, "openapi"> & { openapi?: string };
         ignore?: string[];
         output: string;
         sources: string[];

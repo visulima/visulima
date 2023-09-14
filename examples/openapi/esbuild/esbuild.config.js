@@ -1,5 +1,5 @@
 const { build } = require("esbuild");
-const jsdocOpenApi = require("@visulima/openapi/esbuild");
+const openApiPlugin = require("@visulima/openapi/esbuild");
 
 const packageJson = require("./package.json");
 
@@ -10,7 +10,7 @@ build({
     platform: "node",
     packages: "external",
     plugins: [
-        jsdocOpenApi({
+        openApiPlugin({
             include: ["src"],
             outputFilePath: "swagger/swagger.json",
             swaggerDefinition: {

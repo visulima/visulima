@@ -66,6 +66,16 @@
                 "default": "./dist/cli/index.mjs"
             }
         },
+        "./cli/commander": {
+            "require": {
+                "types": "./dist/cli/commander/index.d.ts",
+                "default": "./dist/cli/commander/index.js"
+            },
+            "import": {
+                "types": "./dist/cli/commander/index.d.mts",
+                "default": "./dist/cli/commander/index.mjs"
+            }
+        },
         "./esbuild": {
             "require": {
                 "types": "./dist/esbuild.d.ts",
@@ -149,7 +159,6 @@
     },
     "dependencies": {
         "@json-schema-tools/dereferencer": "^1.6.1",
-        "@readme/better-ajv-errors": "^1.6.0",
         "@visulima/openapi-comment-parser": "1.0.0",
         "@visulima/readdir": "2.0.2",
         "ajv": "^8.12.0",
@@ -170,6 +179,7 @@
         "@nuxt/schema": "^3.6.5",
         "@octokit/rest": "^20.0.1",
         "@rspack/core": "^0.3.2",
+        "commander": "^11.0.0",
         "@rushstack/eslint-plugin-security": "^0.6.0",
         "@types/cli-progress": "^3.11.1",
         "@types/http-errors": "^2.0.1",
@@ -178,8 +188,7 @@
         "@types/node": "18.17.12",
         "@types/webpack-sources": "^3.2.0",
         "@vitest/coverage-v8": "^0.34.3",
-        "c8": "^8.0.1",
-        "commander": "^11.0.0",
+        "giget": "^1.1.2",
         "cross-env": "^7.0.3",
         "eslint": "^8.48.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -206,7 +215,8 @@
         "esbuild": "*",
         "rollup": "^3",
         "vite": ">=3",
-        "webpack": "^4 || ^5"
+        "webpack": "^4 || ^5",
+        "webpack-sources": "^3.2.3"
     },
     "peerDependenciesMeta": {
         "@nuxt/kit": {
@@ -255,6 +265,7 @@
     "sources": [
         "src/index.ts",
         "src/cli/index.ts",
+        "src/cli/commander/index.ts",
         "src/esbuild.ts",
         "src/nuxt.ts",
         "src/rollup.ts",

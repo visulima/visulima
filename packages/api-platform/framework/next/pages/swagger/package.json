@@ -5,10 +5,14 @@
     "license": "MIT",
     "exports": {
         ".": {
-            "types": "./../../../../dist/framework/next/routes/pages/swagger/index.d.ts",
-            "browser": "./../../../../dist/framework/next/routes/pages/swagger/index.js",
-            "require": "./../../../../dist/framework/next/routes/pages/swagger/index.js",
-            "import": "./../../../../dist/framework/next/routes/pages/swagger/index.mjs"
+            "require": {
+                "types": "./../../../../dist/framework/next/routes/pages/swagger/index.d.ts",
+                "default": "./../../../../dist/framework/next/routes/pages/swagger/index.js"
+            },
+            "import": {
+                "types": "./../../../../dist/framework/next/routes/pages/swagger/index.d.mts",
+                "default": "./../../../../dist/framework/next/routes/pages/swagger/index.mjs"
+            }
         },
         "./package.json": "./package.json"
     },

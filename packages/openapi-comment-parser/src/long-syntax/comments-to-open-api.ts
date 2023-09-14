@@ -13,14 +13,13 @@ import { getSwaggerVersionFromSpec, hasEmptyProperty } from "./utils";
 const specificationTemplate = {
     v2: ["paths", "definitions", "responses", "parameters", "securityDefinitions"],
     v3: ["paths", "definitions", "responses", "parameters", "securityDefinitions", "components"],
-    v4: ["components", "channels"],
 };
 
 type ExtendedYAMLError = YAMLError & { annotation?: string };
 
 const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
     specs.map((spec: Spec) => {
-        if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && spec.description !== "") {
+        if ((spec.tag === "openapi" || spec.tag === "swagger") && spec.description !== "") {
             const parsed = yaml.parseDocument(spec.description);
 
             if (parsed.errors.length > 0) {

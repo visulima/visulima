@@ -1,13 +1,13 @@
-import { createHash } from "crypto";
-import { readFileSync } from "fs";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert/strict";
 import { test } from "node:test";
-import { URL } from "url";
-import { readdir } from "fs/promises";
-import { Validator } from "../index.js";
+import { URL } from "node:url";
+import { readdir } from "node:fs/promises";
+import { Validator } from "..";
 import { Snapshot } from "./snapshot.js";
 
-const supportedVersions = Validator.supportedVersions;
+const {supportedVersions} = Validator;
 
 function localPath(path) {
 	return new URL(path, import.meta.url).pathname;
@@ -17,9 +17,9 @@ const snapShotFile = localPath("snapshots-check-versions.json");
 const updateSnapShot = process.argv[2] !== undefined;
 const snapshot = new Snapshot(snapShotFile, updateSnapShot);
 
-function matchSnapshot(obj, name) {
+function matchSnapshot(object, name) {
 	const hash = createHash("sha256");
-	hash.update(JSON.stringify(obj));
+	hash.update(JSON.stringify(object));
 	const hashValue = hash.digest("hex");
 	return snapshot.match(hashValue, name);
 }
@@ -30,8 +30,7 @@ function readJSON(file) {
 }
 
 async function getOpenApiSchemasVersions(oasdir) {
-	const dirs = (await readdir(oasdir)).filter((d) => !d.endsWith(".html"));
-	return dirs;
+	return (await readdir(oasdir)).filter((d) => !d.endsWith(".html"));
 }
 
 async function testVersion(version) {
