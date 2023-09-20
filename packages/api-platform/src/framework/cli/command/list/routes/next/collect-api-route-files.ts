@@ -1,7 +1,6 @@
 import { statSync } from "node:fs";
 import { join } from "node:path";
 
- 
 import { collect } from "@visulima/readdir";
 
 import { ALLOWED_EXTENSIONS } from "../../utils";

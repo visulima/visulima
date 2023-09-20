@@ -15,13 +15,11 @@ const parseYaml = (
     | undefined => {
     const spec = yaml.parse(yamlString);
 
-    if (spec.swagger || spec.openapi) {
-        const invalidKeys = Object.keys(spec).filter((key) => !ALLOWED_KEYS.has(key));
+    if (Object.keys(spec).some((key) => ALLOWED_KEYS.has(key))) {
+        const loc = yamlLoc(yamlString);
         const filteredSpec = Object.fromEntries(Object.entries(spec).filter(([key]) => ALLOWED_KEYS.has(key)));
 
-        const loc = yamlLoc(yamlString);
-
-        return { loc: loc - invalidKeys.length, spec: filteredSpec as OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document };
+        return { loc, spec: filteredSpec as OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document };
     }
 
     return undefined;

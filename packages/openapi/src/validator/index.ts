@@ -25,7 +25,7 @@ const ajvCache: Record<string, CacheValue | undefined> = {};
 
 const getAjvValidator = (version: string, ajvOptions: Options = {}): CacheValue => {
     if (ajvCache[version] === undefined) {
-        const schema = importJSON(`${__dirname}/../schemas/v${version}/schema.json`);
+        const schema = importJSON(`${__dirname}/../../schemas/v${version}/schema.json`);
 
         const AjvClass = ajvVersions[schema.$schema] as typeof Ajv;
         const ajv = new AjvClass({
@@ -118,7 +118,7 @@ interface ReturnValue {
 /**
  * Validates the given Swagger API against the Swagger 2.0 or OpenAPI 3.0 and 3.1 schemas.
  */
-export const validate = async (data: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document | object): Promise<ReturnValue> => {
+const validate = async (data: OpenAPIV2.Document | OpenAPIV3_1.Document | OpenAPIV3.Document | object): Promise<ReturnValue> => {
     const { specificationVersion, version } = getOpenApiVersion(data);
 
     if (!version) {
@@ -147,4 +147,4 @@ export const validate = async (data: OpenAPIV2.Document | OpenAPIV3_1.Document |
     return result;
 };
 
-export const supportedOpenApiVersions = openApiVersions;
+export default validate;

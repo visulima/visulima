@@ -1,4 +1,3 @@
- 
 import chalk from "chalk";
 
 import type { Route } from "./types";
