@@ -1,7 +1,7 @@
 import type { UnpluginBuildContext, UnpluginFactory } from "unplugin";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
- 
+
 import sources from "webpack-sources";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { Compilation } from "webpack";

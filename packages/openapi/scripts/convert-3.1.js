@@ -20,7 +20,7 @@ function getLatestSchema(version) {
 }
 
 function escapeJsonPointer(string_) {
-    return string_.replaceAll('~', "~0").replaceAll('/', "~1");
+    return string_.replaceAll("~", "~0").replaceAll("/", "~1");
 }
 
 const isObject = (object) => typeof object === "object" && object !== null;

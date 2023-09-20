@@ -9,17 +9,15 @@ Once the script completes it creates a `failed.update.json` which you can diff w
 It also creates a `failed.update.md`.
 
 You can run the script via:
+
 ```bash
 npm run realWorldTest
 npm run realWorldTestAll
 npm run realWorldTestFailed
 npm run realWorldTestCI
 ```
-- `realWorldTest` takes a random sample from the set of APIs
-- `realWorldTestAll` tests all available APIs
-- `realworldTestFailed` only tests the APIs listed in failed.json
-- `realworldTestCI` tests all available APIs and overwrites `failed.json` and `failed.md`
 
-
-
-
+-   `realWorldTest` takes a random sample from the set of APIs
+-   `realWorldTestAll` tests all available APIs
+-   `realworldTestFailed` only tests the APIs listed in failed.json
+-   `realworldTestCI` tests all available APIs and overwrites `failed.json` and `failed.md`

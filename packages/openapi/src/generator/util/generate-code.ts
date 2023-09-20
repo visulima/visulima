@@ -1,15 +1,16 @@
 import { exit } from "node:process";
 import cliProgress from "cli-progress";
-import colors from "ansi-colors";
+import chalk from "chalk";
 import { readFileSync } from "node:fs";
 import { extname } from "node:path";
 import { parseLongSyntax, parseShortSyntax } from "@visulima/openapi-comment-parser";
 import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
-import JsonSchemaDereferencer from "@json-schema-tools/dereferencer";
+import safeStringify from "fast-safe-stringify";
+import { dereferenceSync } from "dereference-json-schema";
 
 import SpecBuilder from "../spec-builder";
 import parseYaml from "./parse-yaml";
-import { validate } from "../../validator";
+import validator from "../../validator";
 
 const generateCode = async (
     foundFiles: ReadonlyArray<string>,
@@ -23,7 +24,7 @@ const generateCode = async (
     const singleBar = new cliProgress.SingleBar(
         {
             clearOnComplete: false,
-            format: `{value}/{total} | ${colors.green("{bar}")} | {filename}`,
+            format: `{value}/{total} | ${chalk.green("{bar}")} | {filename}`,
             hideCursor: true,
         },
         cliProgress.Presets.shades_grey,
@@ -81,28 +82,28 @@ const generateCode = async (
 
     singleBar.stop();
 
-    const jsonSchemaDereferencer = new JsonSchemaDereferencer(spec);
-
     try {
         // eslint-disable-next-line no-console
         console.log("\nResolving OpenApi spec $ref values...");
 
-        const resolvedSpec = await jsonSchemaDereferencer.resolve();
+        const resolvedSpec = dereferenceSync(spec);
 
         // eslint-disable-next-line no-console
         console.log("\nValidating OpenApi spec...");
 
+        const specString = safeStringify(resolvedSpec, undefined, 2);
+
         if (verbose) {
             // eslint-disable-next-line no-console
-            console.log(`\n${JSON.stringify(resolvedSpec, null, 2)}\n`);
+            console.log(`\n${specString}\n`);
         }
 
-        await validate(JSON.parse(JSON.stringify(resolvedSpec)));
+        await validator(JSON.parse(specString));
 
         // eslint-disable-next-line no-console
         console.log("\nOpenApi spec is valid\n");
 
-        return JSON.stringify(resolvedSpec, null, 2);
+        return specString;
     } catch (error: any) {
         // eslint-disable-next-line no-console
         console.error(error);

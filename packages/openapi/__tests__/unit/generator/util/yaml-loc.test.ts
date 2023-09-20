@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import yamlLoc from "../../../src/generator/util/yaml-loc";
+import yamlLoc from "../../../../src/generator/util/yaml-loc";
 
 describe("yamlLoc", () => {
     it("handles simplest case", () => {
