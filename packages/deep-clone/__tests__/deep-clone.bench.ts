@@ -2,7 +2,6 @@ import { deepCopy as mfederczukClone } from "@mfederczuk/deeptools";
 import cloneDeep from "clone-deep";
 import deepCopy from "deep-copy";
 import fastCopy from "fast-copy";
-import { copy as fastestJsonCopy } from "fastest-json-copy";
 import lodashCloneDeep from "lodash.clonedeep";
 import nanoCopy from "nano-copy";
 import nanoclone from "nanoclone";
@@ -53,10 +52,6 @@ describe("clone", () => {
 
     bench("fast-copy", () => {
         fastCopy(data);
-    });
-
-    bench("fastest-json-copy", () => {
-        fastestJsonCopy(data);
     });
 
     bench("plain-object-clone", () => {
