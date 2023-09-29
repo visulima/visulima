@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
-import Ajv04 from "ajv-draft-04";
-import addFormats from "ajv-formats";
-import Ajv2020 from "ajv/dist/2020";
+
 import type Ajv from "ajv";
 import type { ErrorObject, Options, ValidateFunction } from "ajv";
+import Ajv2020 from "ajv/dist/2020";
+import Ajv04 from "ajv-draft-04";
+import addFormats from "ajv-formats";
 import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "openapi-types";
 
 import getOpenApiVersion from "./util/get-openapi-version";

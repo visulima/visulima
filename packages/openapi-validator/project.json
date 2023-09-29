@@ -1,0 +1,8 @@
+{
+    "name": "openapi-validator",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/openapi-validator/src",
+    "projectType": "library",
+    "tags": ["openapi-validator"],
+    "implicitDependencies": []
+}
