@@ -166,7 +166,7 @@
         "lightningcss-cli": "^1.21.7",
         "next": "^13.4.19",
         "nextra": "2.12.3",
-        "postcss": "^8.4.29",
+        "postcss": "^8.4.31",
         "postcss-cli": "^10.1.0",
         "postcss-focus-visible": "^9.0.0",
         "postcss-import": "^15.1.0",

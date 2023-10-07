@@ -69,7 +69,7 @@
         "eslint-plugin-vitest": "^0.3.1",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "eslint-plugin-zod": "^1.4.0",
-        "postcss": "^8.4.29",
+        "postcss": "^8.4.31",
         "postcss-cli": "^10.1.0",
         "postcss-import": "^15.1.0",
         "postcss-lightningcss": "0.9.0",
