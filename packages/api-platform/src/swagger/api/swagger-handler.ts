@@ -70,7 +70,8 @@ const swaggerHandler = <M extends string, PrismaClient>(
 
         let data: Buffer | Uint8Array | string;
 
-        if (typeof request.headers.accept === "string" && /yaml|yml/u.test(request.headers.accept)) {
+        // eslint-disable-next-line require-unicode-regexp
+        if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);
 
             data = yamlTransformer(spec);

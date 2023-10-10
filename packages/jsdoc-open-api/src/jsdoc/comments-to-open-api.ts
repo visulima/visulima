@@ -367,8 +367,8 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
     });
 
 const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    // eslint-disable-next-line regexp/no-unused-capturing-group
-    const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/u;
+    // eslint-disable-next-line regexp/no-unused-capturing-group,require-unicode-regexp
+    const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
 

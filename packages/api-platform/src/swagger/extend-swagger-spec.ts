@@ -333,7 +333,8 @@ export default function extendSwaggerSpec(
                 }),
         },
         {
-            regex: /yaml|yml/u,
+            // eslint-disable-next-line require-unicode-regexp
+            regex: /yaml|yml/,
             transformer: (value) => stringify(value, { indent: 2 }),
         },
     ],

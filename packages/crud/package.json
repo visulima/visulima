@@ -89,7 +89,7 @@
         "path-to-regexp": "^6.2.1"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^14.0.23",
+        "@anolilab/eslint-config": "^14.0.24",
         "@anolilab/prettier-config": "^5.0.11",
         "@anolilab/semantic-release-preset": "^8.0.0",
         "@babel/core": "^7.23.0",

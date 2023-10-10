@@ -20,8 +20,8 @@ const operatorsAssociation: {
     $starts: "startsWith",
 };
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-useless-flag
-const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/gu.test(value);
+// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-useless-flag,require-unicode-regexp
+const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
 
 const getSearchValue = (originalValue: any): SearchCondition => {
     if (isDateString(originalValue)) {
