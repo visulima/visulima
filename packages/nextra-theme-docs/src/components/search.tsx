@@ -184,7 +184,8 @@ const Search: FC<SearchProperties> = ({
                 {value && focused
                     ? "ESC"
                     : mounted &&
-                      (navigator.userAgent.includes("Macintosh") ? (
+                      // eslint-disable-next-line ssr-friendly/no-dom-globals-in-react-fc,@typescript-eslint/no-unnecessary-condition
+                      (navigator && navigator.userAgent.includes("Macintosh") ? (
                           <>
                               <span className="text-xs">⌘</span>K
                           </>
@@ -217,13 +218,13 @@ const Search: FC<SearchProperties> = ({
                     await onChange(eventValue);
                     setShow(Boolean(eventValue));
                 }}
+                onCompositionEnd={handleComposition}
+                onCompositionStart={handleComposition}
                 /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                 onFocus={async () => {
                     await onActive?.(true);
                     setFocused(true);
                 }}
-                onCompositionEnd={handleComposition}
-                onCompositionStart={handleComposition}
                 onKeyDown={handleKeyDown}
                 placeholder={renderString(config.search.placeholder, { locale })}
                 ref={input}
@@ -252,10 +253,10 @@ const Search: FC<SearchProperties> = ({
                         "contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50",
                         overlayClassName,
                     )}
+                    ref={ulReference}
                     style={{
                         transition: "max-height .2s ease", // don't work with tailwindcss
                     }}
-                    ref={ulReference}
                 >
                     {error ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-red-500">

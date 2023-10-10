@@ -1,8 +1,8 @@
 import cn from "clsx";
+import type { ImageProps } from "next/image";
+import Image from "next/image";
 import type { FC } from "react";
 
-import Image from "next/image";
-import type { ImageProps } from "next/image";
 import Zoom from "./zoom";
 
 const ImageFrame: FC<ImageProps & { alt: string; caption?: string; full?: boolean; src: string; zoom?: boolean }> = ({

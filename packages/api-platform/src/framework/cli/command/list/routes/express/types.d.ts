@@ -27,7 +27,6 @@ export interface Key {
 }
 
 export interface Layer {
-    // eslint-disable-next-line no-use-before-define
     handle?: Route | Router;
     keys: Key[];
     method: string;
@@ -35,7 +34,7 @@ export interface Layer {
     params?: PathParams;
     path?: string;
     regexp: ExpressRegex;
-    // eslint-disable-next-line no-use-before-define
+
     route?: Route;
     stack: Layer[];
 }

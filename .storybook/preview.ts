@@ -1,7 +1,6 @@
 import { withConsole } from "@storybook/addon-console";
-
-import type { Preview, StoryContext } from "@storybook/react";
 import { withThemeByDataAttribute } from "@storybook/addon-styling";
+import type { Preview, StoryContext } from "@storybook/react";
 
 const preview: Preview = {
     decorators: [
@@ -20,8 +19,8 @@ const preview: Preview = {
         actions: { argTypesRegex: "^on[A-Z].*" },
         controls: {
             matchers: {
-                color: /(background|color)$/i,
-                date: /Date$/,
+                color: /(background|color)$/iu,
+                date: /Date$/u,
             },
         },
     },

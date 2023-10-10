@@ -1,8 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import { describe, expect, it, vi } from "vitest";
 
 import { Router } from "../src";
-import { NodeRouter, createRouter, getPathname } from "../src/node";
+import { createRouter, getPathname, NodeRouter } from "../src/node";
 
 type AnyHandler = (...arguments_: any[]) => any;
 
@@ -273,6 +274,7 @@ describe("createRouter", () => {
                 expect(this.statusCode, "set 500 status code").toBe(500);
 
                 expect(chunk).toBe("Internal Server Error");
+                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
@@ -300,6 +302,7 @@ describe("createRouter", () => {
             end(chunk) {
                 expect(response.statusCode).toBe(500);
                 expect(chunk).toBe("Internal Server Error");
+                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             },
         } as ServerResponse;
@@ -327,6 +330,7 @@ describe("createRouter", () => {
             end(chunk) {
                 expect(this.statusCode, "set 500 status code").toBe(500);
                 expect(chunk).toBe("Internal Server Error");
+                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;

@@ -19,7 +19,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
         const camelCaseModel = ensureCamelCase(routeName);
 
         // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-        return new RegExp(`(${routeName}|${camelCaseModel}$)|(${routeName}|${camelCaseModel}/)`, "g").test(realPath);
+        return new RegExp(`(${routeName}|${camelCaseModel}$)|(${routeName}|${camelCaseModel}/)`, "gu").test(realPath);
     });
 
     if (modelName === undefined) {

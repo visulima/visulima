@@ -1,4 +1,5 @@
 import { existsSync, realpathSync, writeFileSync } from "node:fs";
+
 import readPkgUp from "read-pkg-up";
 
 const initCommand = (configName: string, packageJsonPath = process.cwd()): void => {

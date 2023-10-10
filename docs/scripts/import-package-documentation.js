@@ -1,14 +1,14 @@
+// eslint-disable-next-line import/no-unused-modules
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
 import { walk } from "@visulima/readdir";
-
-import yargs from "yargs/yargs";
-
-import { hideBin } from "yargs/helpers";
 import fse from "fs-extra";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import symlinkDir from "symlink-dir";
+import { hideBin } from "yargs/helpers";
+import yargs from "yargs/yargs";
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -59,7 +59,7 @@ const command = async () => {
 
     const paths = [];
 
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
     for await (const result of walk(searchPath, {
         extensions: [".mdx", ".md", ".json", ".apng", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico", ".pdf", ".avif", ".mp4", ".webm", ".mov"],
         followSymlinks: false,
@@ -129,7 +129,7 @@ const command = async () => {
             }
         });
 
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
         for await (const result of Object.values(symlinkPaths)) {
             await symlinkDir(result.src, result.dest);
         }

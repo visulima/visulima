@@ -1,5 +1,5 @@
 import type { XmlElement } from "jstoxml";
-import xml from "jstoxml";
+import { toXML } from "jstoxml";
 import type { OpenAPIV3 } from "openapi-types";
 import { stringify } from "yaml";
 
@@ -325,15 +325,15 @@ export default function extendSwaggerSpec(
     allowedMediaTypes?: Record<string, boolean>,
     transformers: Transformers = [
         {
-            regex: /xml/,
+            regex: /xml/u,
             transformer: (value: XmlElement | XmlElement[] | undefined) =>
-                xml.toXML(value, {
+                toXML(value, {
                     header: true,
                     indent: "  ",
                 }),
         },
         {
-            regex: /yaml|yml/,
+            regex: /yaml|yml/u,
             transformer: (value) => stringify(value, { indent: 2 }),
         },
     ],

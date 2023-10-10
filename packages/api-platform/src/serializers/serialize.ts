@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import accepts from "accepts";
 
 import { toHeaderCase } from "../utils";
@@ -43,7 +44,7 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
         });
 
         if (!breakTypes) {
-            if (/yaml|yml/.test(type)) {
+            if (/yaml|yml/u.test(type)) {
                 response.setHeader(contentTypeKey, type);
 
                 serializedData = yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data);

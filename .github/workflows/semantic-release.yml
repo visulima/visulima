@@ -93,7 +93,7 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm multi-semantic-release"
+              run: "pnpm exec multi-semantic-release"
 
     pnpm-lock-update:
         needs: "semantic-release"

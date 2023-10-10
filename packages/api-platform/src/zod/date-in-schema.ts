@@ -1,5 +1,5 @@
 import type { ParseInput, ParseReturnType, ZodTypeDef } from "zod";
-import { INVALID, ZodIssueCode, ZodParsedType, ZodType, addIssueToContext } from "zod";
+import { addIssueToContext, INVALID, ZodIssueCode, ZodParsedType, ZodType } from "zod";
 
 const zodDateInKind = "ZodDateIn";
 
@@ -9,7 +9,7 @@ const zodDateInKind = "ZodDateIn";
 // 2021-01-01T00:00:00
 // 2021-01-01
 // eslint-disable-next-line security/detect-unsafe-regex
-export const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)?Z?$/;
+export const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)?Z?$/u;
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 export interface ZodDateInDef extends ZodTypeDef {

@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
 import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
-import type { NextConfig } from "next/types";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
+import type { NextConfig } from "next/types";
 import type { Configuration } from "webpack";
 
 const withOpenApi =

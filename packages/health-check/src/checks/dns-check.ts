@@ -23,7 +23,7 @@ const dnsCheck =
         const cacheable = new CacheableLookup(config);
 
         try {
-            const meta = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
+            const meta = await cacheable.lookupAsync(host.replace(/^https?:\/\//u, ""), {
                 hints,
                 ...(family === "all" ? { all: true } : { family }),
             });

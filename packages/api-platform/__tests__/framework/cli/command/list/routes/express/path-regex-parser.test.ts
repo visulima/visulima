@@ -22,20 +22,20 @@ describe("path-regex-parser", () => {
     });
 
     it("handles fast slash", () => {
-        const fastSlash = /test/ as ExpressRegex;
+        const fastSlash = /test/u as ExpressRegex;
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
         expect(pathRegexParser(fastSlash, [])).toBe("");
     });
 
     it("handles fast star", () => {
-        const fastStar = /test/ as ExpressRegex;
+        const fastStar = /test/u as ExpressRegex;
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
         expect(pathRegexParser(fastStar, [])).toBe("*");
     });
 
     it("handles custom regex path", () => {
-        expect(pathRegexParser(/test/ as ExpressRegex, [])).toBe("/test/");
+        expect(pathRegexParser(/test/u as ExpressRegex, [])).toBe("/test/");
     });
 });

@@ -37,12 +37,12 @@ const ServerSideErrorPage = (): ReactElement | null => {
                     Oops something went wrong. Try to refresh this page or <br /> feel free to contact us if the problem presists.
                 </p>
                 <Anchor
+                    className="mt-10 block text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                     href={getGitIssueUrl({
                         labels,
                         repository: config.docsRepositoryBase,
                         title: `Got server-side error in \`${mounted ? asPath : ""}\` url. Please fix!`,
                     })}
-                    className="mt-10 block text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                     newWindow
                 >
                     {renderComponent(content)}

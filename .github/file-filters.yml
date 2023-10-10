@@ -3,14 +3,17 @@
 frontend_lintable:
     - "**/*.[tj]{s,sx}"
     - "**/tsconfig*.json"
+    - "pnpm-lock.yaml"
 
 markdown_lintable:
     - "**/*.md"
     - "**/*.mdx"
+    - "pnpm-lock.yaml"
 
 yaml_lintable:
     - "**/*.yml"
     - "**/*.yaml"
+    - "pnpm-lock.yaml"
 
 packages: &packages
     - "**/tsconfig*.json"

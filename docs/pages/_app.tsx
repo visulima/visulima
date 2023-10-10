@@ -6,6 +6,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import type { FC, ReactElement } from "react";
 import React from "react";
+
 import useFathom from "../src/hooks/use-fathom";
 
 // TODO: add accessibility report back if nextra version is updated

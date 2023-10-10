@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -109,7 +110,7 @@ async function baseHandler<
 
             await adapter.connect?.();
 
-            const parsedQuery = parseQuery(`https://${request.headers.host?.replace(/\/$/, "")}/${request.url}`);
+            const parsedQuery = parseQuery(`https://${request.headers.host?.replace(/\/$/u, "")}/${request.url}`);
             const parameters: HandlerParameters<T, Q> = {
                 adapter,
                 query: adapter.parseQuery(modelName as M, parsedQuery),

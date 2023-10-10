@@ -1,4 +1,5 @@
 import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { getApp, getAppWorkingDirectoryPath, getFrameworkName } from "../../../../../src/framework/cli/command/list/utils";

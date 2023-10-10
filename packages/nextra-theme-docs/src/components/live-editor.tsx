@@ -1,26 +1,28 @@
+import cn from "clsx";
+import { decode } from "he";
 import { themes } from "prism-react-renderer";
-import { LiveError, LivePreview, LiveProvider, LiveEditor as ReactLiveEditor } from "react-live";
 import type { ComponentProps, ReactElement } from "react";
 import React, { useMemo, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { decode } from "he";
-import cn from "clsx";
+import { LiveEditor as ReactLiveEditor, LiveError, LivePreview, LiveProvider } from "react-live";
+
 import CopyToClipboard from "./copy-to-clipboard";
 
 const importToRequire = (code: string) =>
     code
         // { a as b } => { a: b }
-        .replaceAll(/([\w$]+) as ([\w$]+)/gi, "$1: $2")
+        .replaceAll(/([\w$]+) as ([\w$]+)/giu, "$1: $2")
         // import { a } from "a" => const { a } = require("b")
-        // eslint-disable-next-line unicorn/better-regex
-        .replaceAll(/import \{([^}]+)\} from ([^\s;]+);?/g, "const {$1} = require($2);")
+        .replaceAll(/import \{([^}]+)\} from ([^\s;]+);?/gu, "const {$1} = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        .replaceAll(/import (\S+) from ([^\s;]+);?/g, "const $1 = require($2).default || require($2);")
+        .replaceAll(/import (\S+) from ([^\s;]+);?/gu, "const $1 = require($2).default || require($2);")
         // import * as a from "a"
-        .replaceAll(/import \* as (\S+) from ([^\s;]+);?/g, "const $1 = require($2);")
+        .replaceAll(/import \* as (\S+) from ([^\s;]+);?/gu, "const $1 = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        // eslint-disable-next-line unicorn/better-regex
-        .replaceAll(/import (.+),\s?\{([^}]+)\} from ([^\s;]+);?/g, ["const $1 = require($3).default || require($3);", "const {$2} = require($3);"].join("\n"));
+        .replaceAll(
+            /import (.+),\s?\{([^}]+)\} from ([^\s;]+);?/gu,
+            ["const $1 = require($3).default || require($3);", "const {$2} = require($3);"].join("\n"),
+        );
 
 const LiveEditor = ({
     children = undefined,

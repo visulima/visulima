@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useMounted } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
-import type { ReactElement } from "react";
+import type { JSX, ReactElement } from "react";
 
 import { useConfig } from "../contexts";
 import getGitIssueUrl from "../utils/get-git-issue-url";
@@ -62,12 +62,12 @@ const NotFoundPage = (): ReactElement | null => {
                         Back to Homepage
                     </Anchor>
                     <Anchor
+                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                         href={getGitIssueUrl({
                             labels,
                             repository: config.docsRepositoryBase,
                             title: `Found broken \`${mounted ? asPath : ""}\` link. Please fix!`,
                         })}
-                        className="basis-2/4 text-right text-primary-600 underline decoration-from-font [text-underline-position:from-font]"
                         newWindow
                     >
                         {renderComponent(content)}

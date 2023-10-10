@@ -7,7 +7,6 @@ type NextFunction = (error?: any) => void;
 
 const expressWrapper =
     <Request extends IncomingMessage, Response extends ServerResponse>(
-        // eslint-disable-next-line no-use-before-define
         function_: ExpressRequestHandler<Request, Response>,
     ): Nextable<RequestHandler<Request, Response>> =>
     async (request, response, next) =>

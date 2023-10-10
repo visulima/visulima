@@ -12,7 +12,7 @@ const pingCheck =
     (host: string, options?: extendedPingOptions): Checker =>
     async () => {
         try {
-            const response = await ping(host.replace(/^https?:\/\//, ""), options);
+            const response = await ping(host.replace(/^https?:\/\//u, ""), options);
 
             if (!response.alive) {
                 return {

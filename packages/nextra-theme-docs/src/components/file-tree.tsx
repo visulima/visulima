@@ -8,21 +8,20 @@ const useIndent = () => useContext(context);
 
 interface FolderProperties {
     children: ReactNode;
-    // eslint-disable-next-line react/require-default-props
+
     defaultOpen?: boolean;
-    // eslint-disable-next-line react/require-default-props
+
     label?: ReactElement;
     name: string;
-    // eslint-disable-next-line react/require-default-props
+
     onToggle?: (open: boolean) => void;
-    // eslint-disable-next-line react/require-default-props
+
     open?: boolean;
 }
 
 interface FileProperties {
-    // eslint-disable-next-line react/require-default-props
     active?: boolean;
-    // eslint-disable-next-line react/require-default-props
+
     label?: ReactElement;
     name: string;
 }

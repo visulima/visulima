@@ -1,5 +1,5 @@
-import type { Express, NextFunction, Request, RequestHandler, Response, Router } from "express";
-import express from "express";
+import type { Express, NextFunction, Request, RequestHandler, Response } from "express";
+import express, { Router } from "express";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { operationObject } from "../../../../../../../__fixtures__/express/const";
@@ -28,8 +28,8 @@ describe("express-path-parser", () => {
 
     beforeEach(() => {
         app = express();
-        router = express.Router();
-        subrouter = express.Router();
+        router = Router();
+        subrouter = Router();
     });
 
     it("runs the example code", () => {
@@ -133,7 +133,7 @@ describe("express-path-parser", () => {
     });
 
     it("regex path parameters", () => {
-        app.post(/\/abc|\/xyz/, successResponse);
+        app.post(/\/abc|\/xyz/u, successResponse);
 
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
@@ -144,7 +144,7 @@ describe("express-path-parser", () => {
     });
 
     it("array of path parameters", () => {
-        app.get(["/abcd", "/xyza", /\/lmn|\/pqr/], successResponse);
+        app.get(["/abcd", "/xyza", /\/lmn|\/pqr/u], successResponse);
 
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
@@ -258,8 +258,8 @@ describe("express-path-parser", () => {
     });
 
     it("nested sub-routes with a path parameters Router", () => {
-        const router2 = express.Router();
-        const subrouter2 = express.Router();
+        const router2 = Router();
+        const subrouter2 = Router();
 
         subrouter.get("/endpoint", successResponse);
         subrouter.post("/endpoint2", successResponse);

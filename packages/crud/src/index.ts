@@ -1,10 +1,7 @@
 export { default as PrismaAdapter } from "./adapter/prisma";
-
-export { default as modelsToOpenApi } from "./swagger/adapter/prisma";
 export type { ModelsToOpenApiParameters } from "./swagger/adapter/prisma";
-
+export { default as modelsToOpenApi } from "./swagger/adapter/prisma";
 export type { SwaggerModelsConfig } from "./swagger/types.d";
-
 export type {
     Adapter,
     Condition,

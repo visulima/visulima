@@ -19,7 +19,7 @@ export const parseBody = async (request: IncomingApiRequest): Promise<any> => {
 
     const buffers = [];
 
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
     for await (const chunk of request) {
         buffers.push(chunk);
     }
@@ -39,7 +39,7 @@ export const parseQuery = (request: IncomingApiRequest): Record<string, unknown>
     }
 
     // Note: Fake protocol is required to parse query string
-    const url = new URL(`https://${request.headers.host?.replace(/\/$/, "")}/${request.url}`);
+    const url = new URL(`https://${request.headers.host?.replace(/\/$/u, "")}/${request.url}`);
 
     return Object.fromEntries(url.searchParams.entries());
 };
@@ -47,7 +47,7 @@ export const parseQuery = (request: IncomingApiRequest): Record<string, unknown>
 export const toHeaderCase = (string_: string): string =>
     string_
         .toLowerCase()
-        .replaceAll(/[^\s\w]/g, " ") // Remove all non-word characters
+        .replaceAll(/[^\s\w]/gu, " ") // Remove all non-word characters
         .trimEnd() // Remove trailing spaces
-        .replaceAll(/\s+|_/g, "-") // Replace multiple spaces or underline with a single hyphen
-        .replaceAll(/\b\w/g, (c) => c.toUpperCase());
+        .replaceAll(/\s+|_/gu, "-") // Replace multiple spaces or underline with a single hyphen
+        .replaceAll(/\b\w/gu, (c) => c.toUpperCase());
