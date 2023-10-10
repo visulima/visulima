@@ -1,4 +1,4 @@
-import cn from "clsx";
+import { clsx } from "clsx";
 import { decode } from "he";
 import { themes } from "prism-react-renderer";
 import type { ComponentProps, ReactElement } from "react";
@@ -11,18 +11,20 @@ import CopyToClipboard from "./copy-to-clipboard";
 const importToRequire = (code: string) =>
     code
         // { a as b } => { a: b }
-        .replaceAll(/([\w$]+) as ([\w$]+)/giu, "$1: $2")
+        // eslint-disable-next-line require-unicode-regexp
+        .replaceAll(/([\w$]+) as ([\w$]+)/gi, "$1: $2")
         // import { a } from "a" => const { a } = require("b")
-        .replaceAll(/import \{([^}]+)\} from ([^\s;]+);?/gu, "const {$1} = require($2);")
+        // eslint-disable-next-line unicorn/better-regex,require-unicode-regexp
+        .replaceAll(/import \{([^}]+)\} from ([^\s;]+);?/g, "const {$1} = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        .replaceAll(/import (\S+) from ([^\s;]+);?/gu, "const $1 = require($2).default || require($2);")
+        // eslint-disable-next-line require-unicode-regexp
+        .replaceAll(/import (\S+) from ([^\s;]+);?/g, "const $1 = require($2).default || require($2);")
         // import * as a from "a"
-        .replaceAll(/import \* as (\S+) from ([^\s;]+);?/gu, "const $1 = require($2);")
+        // eslint-disable-next-line require-unicode-regexp
+        .replaceAll(/import \* as (\S+) from ([^\s;]+);?/g, "const $1 = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        .replaceAll(
-            /import (.+),\s?\{([^}]+)\} from ([^\s;]+);?/gu,
-            ["const $1 = require($3).default || require($3);", "const {$2} = require($3);"].join("\n"),
-        );
+        // eslint-disable-next-line unicorn/better-regex,require-unicode-regexp
+        .replaceAll(/import (.+),\s?\{([^}]+)\} from ([^\s;]+);?/g, ["const $1 = require($3).default || require($3);", "const {$2} = require($3);"].join("\n"));
 
 const LiveEditor = ({
     children = undefined,
@@ -78,13 +80,13 @@ const LiveEditor = ({
             <LiveError />
 
             <div
-                className={cn(
+                className={clsx(
                     "nextra-code-block",
-                    "mt-5 mb-8 first:mt-0 last:mb-0 py-2",
+                    "mb-8 mt-5 py-2 first:mt-0 last:mb-0",
                     "bg-gray-800 dark:bg-gray-800/40",
                     "shadow-lg dark:shadow-none",
                     "dark:ring-1 dark:ring-gray-300/10",
-                    "rounded-lg overflow-hidden relative",
+                    "relative overflow-hidden rounded-lg",
                 )}
             >
                 {filename ? (
@@ -100,9 +102,9 @@ const LiveEditor = ({
                     </div>
                 ) : (
                     <div
-                        className={cn([
-                            "opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100",
-                            "flex gap-1 absolute m-2 right-0 z-10",
+                        className={clsx([
+                            "opacity-0 transition-opacity focus-within:opacity-100 [div:hover>&]:opacity-100",
+                            "absolute right-0 z-10 m-2 flex gap-1",
                         ])}
                     >
                         {/* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */}
