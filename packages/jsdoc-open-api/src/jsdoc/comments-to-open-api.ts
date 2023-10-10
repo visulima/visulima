@@ -35,8 +35,8 @@ const formatMap: Record<string, string> = {
 const parseDescription = (tag: Spec): { description: string | undefined; name: string; rawType: string; required: boolean; schema: object | undefined } => {
     const rawType = tag.type;
     const isArray = rawType.endsWith("[]");
-    // eslint-disable-next-line regexp/no-invalid-regexp
-    const parsedType = rawType.replace(/\[]$/u, "");
+    // eslint-disable-next-line require-unicode-regexp,regexp/strict
+    const parsedType = rawType.replace(/\[]$/, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
     const isFormat = Object.keys(formatMap).includes(parsedType);

@@ -20,8 +20,8 @@ describe("mapKeysToPath", () => {
     it("handles optional parameters", () => {
         const optional = twoDynamicPaths();
 
-        // eslint-disable-next-line no-useless-escape,security/detect-unsafe-regex,regexp/no-useless-escape,regexp/no-useless-non-capturing-group,regexp/no-useless-lazy
-        optional.regex = /^\/sub-sub-route(?:\/([^\/]+?))?\/(?:([^\/]+?))\/?(?=\/|$)/iu as ExpressRegex;
+        // eslint-disable-next-line no-useless-escape,security/detect-unsafe-regex,regexp/no-useless-escape,regexp/no-useless-non-capturing-group,regexp/no-useless-lazy,require-unicode-regexp,unicorn/better-regex
+        optional.regex = /^\/sub-sub-route(?:\/([^\/]+?))?\/(?:([^\/]+?))\/?(?=\/|$)/i as ExpressRegex;
 
         (optional.keys[0] as Record<string, any>)["optional"] = true;
 

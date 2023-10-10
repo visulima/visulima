@@ -22,20 +22,23 @@ describe("path-regex-parser", () => {
     });
 
     it("handles fast slash", () => {
-        const fastSlash = /test/u as ExpressRegex;
+        // eslint-disable-next-line require-unicode-regexp
+        const fastSlash = /test/ as ExpressRegex;
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
         expect(pathRegexParser(fastSlash, [])).toBe("");
     });
 
     it("handles fast star", () => {
-        const fastStar = /test/u as ExpressRegex;
+        // eslint-disable-next-line require-unicode-regexp
+        const fastStar = /test/ as ExpressRegex;
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
         expect(pathRegexParser(fastStar, [])).toBe("*");
     });
 
     it("handles custom regex path", () => {
-        expect(pathRegexParser(/test/u as ExpressRegex, [])).toBe("/test/");
+        // eslint-disable-next-line require-unicode-regexp
+        expect(pathRegexParser(/test/ as ExpressRegex, [])).toBe("/test/");
     });
 });
