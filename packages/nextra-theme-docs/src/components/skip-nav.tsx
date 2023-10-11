@@ -36,7 +36,6 @@ const DEFAULT_ID = "nextra-skip-nav";
 const DEFAULT_LABEL = "Skip to content";
 
 type SkipNavLinkProperties = Omit<ComponentProps<"a">, "children" | "href" | "ref"> & {
-    // eslint-disable-next-line react/require-default-props
     label?: string;
 };
 

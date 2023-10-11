@@ -22,6 +22,7 @@ describe("path-regex-parser", () => {
     });
 
     it("handles fast slash", () => {
+        // eslint-disable-next-line require-unicode-regexp
         const fastSlash = /test/ as ExpressRegex;
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
@@ -29,6 +30,7 @@ describe("path-regex-parser", () => {
     });
 
     it("handles fast star", () => {
+        // eslint-disable-next-line require-unicode-regexp
         const fastStar = /test/ as ExpressRegex;
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
@@ -36,6 +38,7 @@ describe("path-regex-parser", () => {
     });
 
     it("handles custom regex path", () => {
+        // eslint-disable-next-line require-unicode-regexp
         expect(pathRegexParser(/test/ as ExpressRegex, [])).toBe("/test/");
     });
 });

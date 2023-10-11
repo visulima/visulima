@@ -23,7 +23,7 @@ const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string):
         throw new Error("Only one metadata middleware is allowed per route");
     }
 
-    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/g, "/");
+    const path = (basePath + layer.route.path).replaceAll(/\/{2,}/gu, "/");
 
     if (filtered.length === 0) {
         return { method: lastRequestHandler.method, path, pathParams: pathParameters };

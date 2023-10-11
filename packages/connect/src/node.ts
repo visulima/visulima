@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import type { AnyZodObject, ZodObject } from "zod";
 
 import withZod from "./adapter/with-zod";
@@ -11,8 +12,8 @@ import type {
     HttpMethod,
     Nextable,
     RouteMatch,
-    RouteShortcutMethod,
     RoutesExtendedRequestHandler,
+    RouteShortcutMethod,
     ValueOrPromise,
 } from "./types";
 
@@ -43,15 +44,6 @@ export class NodeRouter<
     Response extends ServerResponse = ServerResponse,
     Schema extends AnyZodObject = ZodObject<never>,
 > {
-    private readonly onError: (
-        error: unknown,
-        ...arguments_: Parameters<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>
-    ) => ReturnType<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>;
-
-    private readonly onNoMatch: RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>;
-
-    private router = new Router<RequestHandler<Request, Response>>();
-
     public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
 
     public connect: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "CONNECT");
@@ -72,46 +64,18 @@ export class NodeRouter<
 
     public trace: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "TRACE");
 
+    private readonly onError: (
+        error: unknown,
+        ...arguments_: Parameters<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>
+    ) => ReturnType<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>>;
+
+    private readonly onNoMatch: RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>;
+
+    private router = new Router<RequestHandler<Request, Response>>();
+
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? onNoMatch;
         this.onError = options.onError ?? onError;
-    }
-
-    private add(
-        method: HttpMethod | "",
-        routeOrFunction: Nextable<RequestHandler<Request, Response>> | RouteMatch,
-        zodOrRouteOrFunction?: Nextable<RequestHandler<Request, Response>> | RouteMatch | Schema,
-        ...fns: Nextable<RequestHandler<Request, Response>>[]
-    ) {
-        if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
-            // eslint-disable-next-line no-param-reassign
-            fns = [zodOrRouteOrFunction];
-        } else if (typeof zodOrRouteOrFunction === "object") {
-            if (typeof routeOrFunction === "function") {
-                // eslint-disable-next-line no-param-reassign
-                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
-            } else {
-                // eslint-disable-next-line no-param-reassign
-                fns = fns.map((function_) =>
-                    withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_),
-                );
-            }
-        } else if (typeof zodOrRouteOrFunction === "function") {
-            // eslint-disable-next-line no-param-reassign
-            fns = [zodOrRouteOrFunction];
-        }
-
-        this.router.add(method, routeOrFunction, ...fns);
-
-        return this;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private prepareRequest(request: Request & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<Request, Response>>) {
-        request.params = {
-            ...findResult.params,
-            ...request.params, // original params will take precedence
-        };
     }
 
     public clone(): NodeRouter<Request, Response, Schema> {
@@ -166,6 +130,43 @@ export class NodeRouter<
         this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
 
         return this;
+    }
+
+    private add(
+        method: HttpMethod | "",
+        routeOrFunction: Nextable<RequestHandler<Request, Response>> | RouteMatch,
+        zodOrRouteOrFunction?: Nextable<RequestHandler<Request, Response>> | RouteMatch | Schema,
+        ...fns: Nextable<RequestHandler<Request, Response>>[]
+    ) {
+        if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        } else if (typeof zodOrRouteOrFunction === "object") {
+            if (typeof routeOrFunction === "function") {
+                // eslint-disable-next-line no-param-reassign
+                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
+            } else {
+                // eslint-disable-next-line no-param-reassign
+                fns = fns.map((function_) =>
+                    withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_),
+                );
+            }
+        } else if (typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        }
+
+        this.router.add(method, routeOrFunction, ...fns);
+
+        return this;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private prepareRequest(request: Request & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<Request, Response>>) {
+        request.params = {
+            ...findResult.params,
+            ...request.params, // original params will take precedence
+        };
     }
 }
 

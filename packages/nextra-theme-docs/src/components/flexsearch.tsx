@@ -1,18 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - This file is copied from the Nextra repository and is not type safe.
 import cn from "clsx";
-import BaseFlexSearch from "flexsearch";
+import { Document } from "flexsearch";
 import { useRouter } from "next/router";
+import type { SearchData } from "nextra/types";
 import type { ReactElement, ReactNode } from "react";
 import { useCallback, useState } from "react";
-import type { SearchData } from "nextra/types";
 
 import { DEFAULT_LOCALE } from "../constants/base";
 import type { SearchResult } from "../types";
 import HighlightMatches from "./highlight-matches";
 import Search from "./search";
 
-type SectionIndex = BaseFlexSearch.Document<
+type SectionIndex = Document<
     {
         content: string;
         display?: string;
@@ -24,7 +24,7 @@ type SectionIndex = BaseFlexSearch.Document<
     ["title", "content", "url", "display"]
 >;
 
-type PageIndex = BaseFlexSearch.Document<
+type PageIndex = Document<
     {
         content: string;
         id: number;
@@ -53,7 +53,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
     const searchData = (await response.json()) as SearchData;
 
-    const pageIndex: PageIndex = new BaseFlexSearch.Document({
+    const pageIndex: PageIndex = new Document({
         cache: 100,
         context: {
             bidirectional: true,
@@ -68,7 +68,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         tokenize: "full",
     });
 
-    const sectionIndex: SectionIndex = new BaseFlexSearch.Document({
+    const sectionIndex: SectionIndex = new Document({
         cache: 100,
         context: {
             bidirectional: true,

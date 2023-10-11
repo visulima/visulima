@@ -14,3 +14,6 @@ README.md
 tsconfig.json
 tsconfig.dev.json
 tsconfig.eslint.json
+
+# TODO: Remove after babel file was added
+__docs__

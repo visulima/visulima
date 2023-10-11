@@ -4,7 +4,7 @@ import { memo } from "react";
 
 interface MatchArguments {
     match: string;
-    // eslint-disable-next-line react/require-default-props
+
     value?: string;
 }
 
@@ -15,11 +15,12 @@ const HighlightMatches = memo<MatchArguments>(({ match, value }: MatchArguments)
     const splitText = [...value];
     const escapedSearch: string = escapeStringRegexp(match.trim()) as string;
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
-    const regexp = new RegExp(escapedSearch.replaceAll(" ", "|"), "gi");
+    const regexp = new RegExp(escapedSearch.replaceAll(" ", "|"), "giu");
     let result;
     let index = 0;
     const content: (ReactNode | string)[] = [];
 
+    // eslint-disable-next-line no-loops/no-loops
     while (
         (result = regexp.exec(value)) &&
         // case `>  ` replaced previously to `>||` + some character provoke memory leak because

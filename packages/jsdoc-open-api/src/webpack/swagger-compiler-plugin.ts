@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from "node:fs";
 import { dirname } from "node:path";
 import { exit } from "node:process";
-import { collect } from "@visulima/readdir";
 
+import { collect } from "@visulima/readdir";
 import type { Compiler } from "webpack";
 
 import type { BaseDefinition } from "../exported.d";
@@ -81,7 +81,7 @@ class SwaggerCompilerPlugin {
 
             const spec = new SpecBuilder(this.swaggerDefinition);
 
-            // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations
+            // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
             for await (const dir of this.sources) {
                 const files = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],

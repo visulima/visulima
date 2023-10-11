@@ -187,12 +187,12 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
 
                             return (
                                 <Anchor
+                                    aria-current={!page.newWindow && isActive}
                                     className={cn(
                                         classes.link,
                                         "relative -ml-2 hidden whitespace-nowrap p-2 lg:!inline-block",
                                         isInactive ? classes.inactive : classes.active,
                                     )}
-                                    aria-current={!page.newWindow && isActive}
                                     href={href}
                                     key={String(String(page.route) + index + page.type)}
                                     newWindow={page.newWindow ?? false}

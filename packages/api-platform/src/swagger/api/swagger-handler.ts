@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
+
 import type { ModelsToOpenApiParameters, SwaggerModelsConfig } from "@visulima/crud";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { modelsToOpenApi } from "@visulima/crud";
@@ -15,7 +16,6 @@ import extendSwaggerSpec from "../extend-swagger-spec";
 const swaggerCrudDebug = debug("visulima:api-platform:swagger:crud:get-static-properties-swagger");
 
 const swaggerHandler = <M extends string, PrismaClient>(
-    // eslint-disable-next-line no-use-before-define
     options: Partial<SwaggerHandlerOptions<M, PrismaClient>> = {},
 ): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const {
@@ -70,6 +70,7 @@ const swaggerHandler = <M extends string, PrismaClient>(
 
         let data: Buffer | Uint8Array | string;
 
+        // eslint-disable-next-line require-unicode-regexp
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);
 

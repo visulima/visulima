@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import { GlobeIcon } from "nextra/icons";
 import type { FC } from "react";
-
 import { useCallback, useMemo } from "react";
+
 import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig } from "../contexts";
 import { renderString } from "../utils/render";
@@ -50,14 +50,14 @@ const LocaleSwitch: FC<LocaleSwitchProperties> = ({ className = undefined, lite 
 
     return (
         <Select
+            className={className}
+            onChange={onChange}
             options={config.i18n.map((l) => {
                 return {
                     key: l.locale,
                     name: l.name,
                 };
             })}
-            className={className}
-            onChange={onChange}
             selected={selectedValue}
             title={renderString(config.localSwitch.title, { locale: locale ?? DEFAULT_LOCALE })}
         />

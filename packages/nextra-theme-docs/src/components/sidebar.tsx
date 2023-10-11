@@ -1,21 +1,21 @@
 import { useRouter } from "next/router";
-import type { Heading } from "nextra/types";
 import { useFSRoute, useMounted } from "nextra/hooks";
 import { ArrowRightIcon } from "nextra/icons";
 import type { Item, MenuItem, PageItem } from "nextra/normalize-pages";
+import type { Heading } from "nextra/types";
 import type { FC, MouseEvent } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import scrollIntoView from "scroll-into-view-if-needed";
 
 import { DEFAULT_LOCALE } from "../constants/base";
 import { useActiveAnchor, useConfig, useMenu } from "../contexts";
+import cn from "../utils/cn";
 import { renderComponent } from "../utils/render";
+import useWindowSize from "../utils/use-window-size";
 import Anchor from "./anchor";
 import Collapse from "./collapse";
 import LocaleSwitch from "./locale-switch";
 import ThemeSwitch from "./theme-switch";
-import cn from "../utils/cn";
-import useWindowSize from "../utils/use-window-size";
 
 const TreeState: Record<string, boolean> = Object.create(null) as Record<string, boolean>;
 
@@ -237,6 +237,9 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
     return (
         <li className={cn(classes.list, { active })}>
             <Anchor
+                className={cn(classes.link, active ? classes.active : classes.inactive, "items-center")}
+                href={(item as PageItem).href ?? item.route}
+                newWindow={(item as PageItem).newWindow}
                 /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                 onBlur={() => {
                     onFocus?.(null);
@@ -249,9 +252,6 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
                 onFocus={() => {
                     onFocus?.(item.route);
                 }}
-                className={cn(classes.link, active ? classes.active : classes.inactive, "items-center")}
-                href={(item as PageItem).href ?? item.route}
-                newWindow={(item as PageItem).newWindow}
             >
                 {config.sidebar.icon &&
                     renderComponent(config.sidebar.icon, {
@@ -277,10 +277,10 @@ const File: FC<{ anchors: Heading[]; item: Item | PageItem }> = ({ anchors, item
 
                                     activeId === id ? classes.active : classes.inactive,
                                 )}
+                                href={`#${id}`}
                                 onClick={() => {
                                     setMenu(false);
                                 }}
-                                href={`#${id}`}
                             >
                                 {value}
                             </a>

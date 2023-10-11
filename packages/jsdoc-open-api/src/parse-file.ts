@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import yaml from "yaml";
 
 import type { OpenApiObject } from "./exported.d";

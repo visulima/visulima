@@ -25,7 +25,7 @@ const mapKeysToPath = (layerRegexPath: ExpressRegex, keys: Key[]): string => {
         .replace("/?(?=\\/|$)/i", "")
         .replace("/^", "")
         .replaceAll("\\", "")
-        .replaceAll(/\/{2,}/g, "/");
+        .replaceAll(/\/{2,}/gu, "/");
 };
 
 export default mapKeysToPath;

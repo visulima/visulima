@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import accepts from "accepts";
 
 import { toHeaderCase } from "../utils";
@@ -43,6 +44,7 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
         });
 
         if (!breakTypes) {
+            // eslint-disable-next-line require-unicode-regexp
             if (/yaml|yml/.test(type)) {
                 response.setHeader(contentTypeKey, type);
 

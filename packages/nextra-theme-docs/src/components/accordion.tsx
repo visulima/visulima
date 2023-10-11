@@ -40,6 +40,8 @@ const Accordion: FC<{
             role="listitem"
         >
             <button
+                aria-controls={`accordion-collapse-body-${id}`}
+                aria-expanded={open}
                 className={cn(
                     "not-prose flex flex-row items-center content-center w-full py-4 px-5 space-x-2 hover:bg-gray-100 hover:dark:bg-gray-800",
                     {
@@ -52,8 +54,6 @@ const Accordion: FC<{
                     "focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800",
                     classes?.button,
                 )}
-                aria-controls={`accordion-collapse-body-${id}`}
-                aria-expanded={open}
                 data-accordion-target={`accordion-collapse-body-${id}`}
                 id={`accordion-collapse-heading-${id}`}
                 onClick={() => setOpen(!open)}
@@ -69,6 +69,7 @@ const Accordion: FC<{
                 })}
             </button>
             <div
+                aria-labelledby={`accordion-collapse-heading-${id}`}
                 className={cn(
                     "p-5 dark:border-gray-700",
                     {
@@ -77,7 +78,6 @@ const Accordion: FC<{
                     },
                     classes?.content,
                 )}
-                aria-labelledby={`accordion-collapse-heading-${id}`}
                 id={`accordion-collapse-body-${id}`}
             >
                 {children}

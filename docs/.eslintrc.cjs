@@ -30,7 +30,9 @@ module.exports = {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
-            rules: {},
+            rules: {
+                "import/no-unused-modules": "off",
+            },
         },
         {
             files: ["*.js", "*.jsx"],

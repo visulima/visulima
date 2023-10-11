@@ -18,7 +18,7 @@ describe("connect/handler", () => {
                     isMiddleware: false,
                     keys: false,
                     method: "GET",
-                    pattern: /test/,
+                    pattern: /test/u,
                 },
             ]);
         } catch (error: any) {
@@ -76,7 +76,7 @@ describe("connect/handler", () => {
                         response.statusCode = (error as HttpError).statusCode;
                         response.end((error as HttpError).message);
                     },
-                    regex: /application\/yaml/,
+                    regex: /application\/yaml/u,
                 },
             ],
             false,

@@ -1,5 +1,5 @@
-import nextra from "nextra";
 import { remarkCodeHike } from "@code-hike/mdx";
+import nextra from "nextra";
 import theme from "shiki/themes/nord.json" assert { type: "json" };
 
 const withNextra = nextra({
@@ -23,4 +23,5 @@ const nextConfig = {
     swcMinify: true,
 };
 
+// eslint-disable-next-line import/no-unused-modules
 export default withNextra(nextConfig);

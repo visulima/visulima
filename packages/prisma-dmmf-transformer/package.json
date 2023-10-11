@@ -75,35 +75,38 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "5.2.0",
-        "@prisma/internals": "5.2.0"
+        "@prisma/generator-helper": "5.4.2",
+        "@prisma/internals": "5.4.2"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^11.3.5",
-        "@anolilab/prettier-config": "^5.0.4",
-        "@anolilab/semantic-release-preset": "^6.0.5",
+        "@anolilab/eslint-config": "^14.0.24",
+        "@anolilab/prettier-config": "^5.0.11",
+        "@anolilab/semantic-release-preset": "^8.0.0",
+        "@babel/core": "^7.23.0",
         "@prisma/client": "4.16.2",
-        "@rushstack/eslint-plugin-security": "^0.6.0",
-        "@types/json-schema": "7.0.12",
-        "@types/micromatch": "4.0.2",
+        "@rushstack/eslint-plugin-security": "^0.7.1",
+        "@types/json-schema": "7.0.13",
+        "@types/micromatch": "4.0.3",
         "@types/node": "18.17.12",
-        "@vitest/coverage-v8": "0.34.3",
+        "@vitest/coverage-v8": "0.34.6",
         "ajv": "8.12.0",
         "ajv-formats": "2.1.1",
         "cross-env": "7.0.3",
-        "eslint": "^8.48.0",
+        "eslint": "^8.51.0",
+        "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.28.1",
         "eslint-plugin-mdx": "^2.2.0",
-        "eslint-plugin-vitest": "^0.3.1",
+        "eslint-plugin-vitest": "^0.3.2",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "prettier": "3.0.3",
         "prisma": "4.16.2",
-        "rimraf": "5.0.1",
-        "semantic-release": "21.1.1",
-        "sort-package-json": "^2.5.1",
+        "rimraf": "5.0.5",
+        "semantic-release": "22.0.5",
+        "sort-package-json": "^2.6.0",
         "tsup": "7.2.0",
         "typescript": "5.2.2",
-        "vitest": "0.34.3"
+        "vitest": "0.34.6"
     },
     "peerDependencies": {
         "@prisma/client": "3.* || 4.*",
@@ -124,7 +127,8 @@
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
             "info_on_disabling_prettier_conflict_rule": false,
-            "info_on_disabling_jsonc_sort_keys_rule": false
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
         }
     }
 }

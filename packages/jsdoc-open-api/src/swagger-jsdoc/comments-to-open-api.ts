@@ -37,7 +37,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
                 errorString += verbose
                     ? (parsed.errors as ExtendedYAMLError[])
                           // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                          .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replace(/\n/g, "\n  ")}\n\`\`\``)
+                          .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replace(/\n/gu, "\n  ")}\n\`\`\``)
                           .join("\n")
                     : // eslint-disable-next-line @typescript-eslint/no-base-to-string
                       parsed.errors.map((error) => error.toString()).join("\n");

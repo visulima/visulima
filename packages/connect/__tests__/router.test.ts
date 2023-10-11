@@ -70,7 +70,7 @@ describe("router", () => {
             route: "/bar",
         });
 
-        context.add("PUT", /^\/foo\/(?<hello>\w+)\/?$/, noop);
+        context.add("PUT", /^\/foo\/(?<hello>\w+)\/?$/u, noop);
 
         expect(context.routes, 'added "PUT /^[/]foo[/](?<hello>\\w+)[/]?$/" route successfully').toHaveLength(3);
 
@@ -489,7 +489,7 @@ describe("router", () => {
 
         context.add(
             "GET",
-            /^\/foo\/(?<title>\w+)\/?$/,
+            /^\/foo\/(?<title>\w+)\/?$/u,
             ((request) => {
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, '~> 1st "GET /^[/]foo[/](?<title>\\w+)[/]?$/" ran first').toBe(1);
@@ -539,7 +539,7 @@ describe("router", () => {
                 expect(request.chain++, "~~> ran 2nd").toBe(1);
             }) as AnyHandler)
             // eslint-disable-next-line security/detect-unsafe-regex
-            .add("GET", /^\/foo(?:\/(?<title>\w+))?\/?$/, ((request) => {
+            .add("GET", /^\/foo(?:\/(?<title>\w+))?\/?$/u, ((request) => {
                 expect(true, '~> ran "GET /^[/]foo[/](?<title>\\w+)?[/]?$/" route').toBeTruthy(); // x2
 
                 // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
@@ -557,7 +557,7 @@ describe("router", () => {
                     expect(request.chain++, "~~> ran 2nd").toBe(1);
                 }
             }) as AnyHandler)
-            .add("GET", /^\/foo\/(?<wild>.*)$/, ((request) => {
+            .add("GET", /^\/foo\/(?<wild>.*)$/u, ((request) => {
                 expect(true, '~> ran "GET /^[/]foo[/](?<wild>.*)$/" route').toBeTruthy();
 
                 expect(request.params.wild, '~~> saw "params.wild" value').toBe("bar");
@@ -664,7 +664,7 @@ describe("router", () => {
         });
 
         // unsupported
-        expect(() => new Router().use(/\/not\/supported/, subContext), "throws unsupported message").toThrow(
+        expect(() => new Router().use(/\/not\/supported/u, subContext), "throws unsupported message").toThrow(
             new Error("Mounting a router to RegExp base is not supported"),
         );
     });

@@ -4,6 +4,7 @@ import Router from "@koa/router";
 import type { Express } from "express";
 import express from "express";
 import type { FastifyInstance } from "fastify";
+// eslint-disable-next-line import/no-named-as-default
 import fastify from "fastify";
 import Koa from "koa";
 import { beforeEach, describe, expect, it } from "vitest";

@@ -1,6 +1,7 @@
-import type { FC } from "react";
 import { useTheme } from "next-themes";
 import { useMounted } from "nextra/hooks";
+import type { FC } from "react";
+
 import { useConfig } from "../contexts";
 import { Tab, Tabs } from "./tabs";
 
@@ -45,7 +46,8 @@ const Sandbox: FC<{
             classes={{
                 tabs: "relative text-white bg-gray-200 rounded-t-lg dark:bg-gray-700",
             }}
-            defaultIndex={mounted && navigator.userAgent.includes("Safari") ? Object.keys(providers).indexOf("CodeSandbox") : 1}
+            /* eslint-disable-next-line ssr-friendly/no-dom-globals-in-react-fc,@typescript-eslint/no-unnecessary-condition */
+            defaultIndex={mounted && navigator && navigator.userAgent.includes("Safari") ? Object.keys(providers).indexOf("CodeSandbox") : 1}
             disableScrollBar
             prefix="sandbox"
             storageKey="sandbox"
