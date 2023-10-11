@@ -1,17 +1,16 @@
 import { withConsole } from "@storybook/addon-console";
-import { withThemeByDataAttribute } from "@storybook/addon-styling";
-import type { Preview, StoryContext } from "@storybook/react";
+import { withThemeByClassName } from "@storybook/addon-themes";
+import type { Preview, ReactRenderer, StoryContext } from "@storybook/react";
 
 const preview: Preview = {
     decorators: [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return
         (storyFunction, context: StoryContext) => withConsole({})(storyFunction)(context),
-        withThemeByDataAttribute({
-            attributeName: "data-mode",
+        withThemeByClassName<ReactRenderer>({
             defaultTheme: "light",
             themes: {
                 dark: "dark",
-                light: "light",
+                light: "",
             },
         }),
     ],
