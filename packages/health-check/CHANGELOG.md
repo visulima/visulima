@@ -1,3 +1,11 @@
+## @visulima/health-check [2.0.3](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.2...@visulima/health-check@2.0.3) (2023-10-11)
+
+
+### Bug Fixes
+
+* update all deps ([#215](https://github.com/visulima/visulima/issues/215)) ([c077ad8](https://github.com/visulima/visulima/commit/c077ad88a8a9427831b077bb729edd5b7e590ee8))
+* updated deps ([b5a74f6](https://github.com/visulima/visulima/commit/b5a74f6bb8d7bf133e1df39cc67a80f93b287d1e))
+
 ## @visulima/health-check [2.0.2](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.1...@visulima/health-check@2.0.2) (2023-09-05)
 
 
