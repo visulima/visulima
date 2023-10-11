@@ -2,8 +2,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import generateCode from "../../generator/util/generate-code";
 import collectFiles from "../../generator/util/collect-files";
+import generateCode from "../../generator/util/generate-code";
 import resolveOptions from "../../generator/util/resolve-options";
 
 const generateCommand = async (

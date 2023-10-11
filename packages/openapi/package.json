@@ -159,20 +159,15 @@
     },
     "dependencies": {
         "@visulima/openapi-comment-parser": "1.0.0",
+        "@visulima/openapi-validator": "1.0.0",
+        "@visulima/openapi-ref-resolver": "1.0.0",
         "@visulima/readdir": "2.0.3",
-        "@visulima/deep-clone": "1.0.0",
-        "ajv": "^8.12.0",
-        "ajv-draft-04": "^1.0.0",
-        "ajv-formats": "^2.1.1",
         "chalk": "5.3.0",
         "cli-progress": "^3.12.0",
         "fast-safe-stringify": "^2.1.1",
         "lodash.merge": "^4.6.2",
         "lodash.mergewith": "^4.6.2",
-        "unplugin": "^1.5.0",
-        "json-pointer": "^0.6.2",
-        "bl": "^6.0.7",
-        "yaml": "^2.3.2"
+        "unplugin": "^1.5.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^14.0.24",
@@ -180,7 +175,6 @@
         "@anolilab/semantic-release-preset": "^8.0.0",
         "@nuxt/kit": "^3.7.4",
         "@nuxt/schema": "^3.7.4",
-        "@types/json-pointer": "^1.0.32",
         "@total-typescript/ts-reset": "^0.5.1",
         "@octokit/rest": "^20.0.2",
         "@rspack/core": "^0.3.6",

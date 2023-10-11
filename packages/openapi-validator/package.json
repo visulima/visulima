@@ -4,8 +4,17 @@
     "description": "Fastest deep clone implementation.",
     "keywords": [
         "anolilab",
-        "visulima"
+        "visulima",
+        "openapi",
+        "validator",
+        "validation",
+        "schema",
+        "swagger",
+        "swagger3",
+        "swagger2",
+        "swagger3.1"
     ],
+    "type": "module",
     "homepage": "https://visulima.com/packages/openapi-validator",
     "repository": {
         "type": "git",
@@ -30,20 +39,14 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "require": {
+            "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
-            },
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
             }
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
+    "module": "dist/index.js",
     "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [

@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { resolve } from "node:path";
 import { URL, pathToFileURL } from "node:url";
-import { JSON_SCHEMA, load } from "js-yaml";
+import { JSON_SCHEMA, load } from "yaml";
 
 import deepClone from "@visulima/deep-clone";
 import JsonNavigation from "./json-navigation";

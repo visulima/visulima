@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node18/tsconfig", "@tsconfig/esm/tsconfig"],
+    "display": "Node 18 + Strict + ESM",
+    "compilerOptions": {
+        "baseUrl": "./",
+        "resolvePackageJsonExports": true,
+        "declaration": true,
+        "alwaysStrict": true,
+        "strictNullChecks": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "strictFunctionTypes": true,
+        "stripInternal": true,
+        "noImplicitThis": true,
+        "useUnknownInCatchVariables": true,
+        "resolveJsonModule": true,
+        "removeComments": true,
+        "tsBuildInfoFile": ".tsbuildinfo"
+    },
+    "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**"]
+}
