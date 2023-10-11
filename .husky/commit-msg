@@ -9,7 +9,7 @@
 echo --------------------------------------------
 echo Starting Git hook: commit-msg
 
-pnpm commitlint --edit "${1}"
+pnpm exec commitlint --edit "${1}"
 
 echo Finished Git hook: commit-msg
 echo --------------------------------------------

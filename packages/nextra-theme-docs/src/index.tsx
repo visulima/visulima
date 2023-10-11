@@ -3,11 +3,11 @@ import "./theme/polyfill";
 
 import cn from "clsx";
 import { useRouter } from "next/router";
-import type { NextraThemeLayoutProps, PageOpts } from "nextra/types";
 import { useFSRoute, useMounted } from "nextra/hooks";
 import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
+import type { NextraThemeLayoutProps, PageOpts } from "nextra/types";
 import type { FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject } from "react";
 import { Fragment, useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
@@ -266,9 +266,11 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                     )}
                                 >
                                     <Body
+                                        activeType={pageType}
                                         breadcrumb={
                                             !["hidden", "page"].includes(pageType) && themeContext.breadcrumb ? <Breadcrumb activePath={activePath} /> : null
                                         }
+                                        filePath={filePath}
                                         header={
                                             pageType === "doc" &&
                                             !["full", "raw"].includes(themeContext.layout) && (
@@ -285,14 +287,12 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
                                                 </>
                                             )
                                         }
+                                        locale={locale}
                                         navigation={
                                             !["hidden", "page"].includes(pageType) && themeContext.pagination ? (
                                                 <NavLinks currentIndex={activeIndex} flatDirectories={flatDocumentsDirectories} layout={themeContext.layout} />
                                             ) : null
                                         }
-                                        activeType={pageType}
-                                        filePath={filePath}
-                                        locale={locale}
                                         route={route}
                                         themeContext={themeContext}
                                         timestamp={timestamp}

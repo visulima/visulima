@@ -41,6 +41,7 @@ const Banner = (): ReactElement | null => {
                 </div>
                 {banner.dismissible && (
                     <button
+                        className="w-8 opacity-80 hover:opacity-100 ltr:mr-2 rtl:ml-2"
                         onClick={() => {
                             try {
                                 localStorage.setItem(banner.key, "0");
@@ -50,7 +51,6 @@ const Banner = (): ReactElement | null => {
 
                             document.body.classList.add("nextra-banner-hidden");
                         }}
-                        className="w-8 opacity-80 hover:opacity-100 ltr:mr-2 rtl:ml-2"
                         type="button"
                     >
                         <XIcon className="mx-auto h-4 w-4" />

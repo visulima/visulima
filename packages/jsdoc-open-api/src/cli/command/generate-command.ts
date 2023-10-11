@@ -1,9 +1,10 @@
 import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import cliProgress from "cli-progress";
+
 import { collect } from "@visulima/readdir";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { MultiBar, Presets } from "cli-progress";
 
 import type { BaseDefinition } from "../../exported.d";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
@@ -46,17 +47,17 @@ const generateCommand = async (
         throw new Error(`No config file found, on: ${options.config ?? ".openapirc.js"}\n`);
     }
 
-    const multibar = new cliProgress.MultiBar(
+    const multibar = new MultiBar(
         {
             clearOnComplete: false,
             format: "{value}/{total} | {bar} | {filename}",
             hideCursor: true,
         },
-        cliProgress.Presets.shades_grey,
+        Presets.shades_grey,
     );
     const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
 
-    // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations
+    // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
     for await (const dir of paths) {
         // Check if the path is a directory
         // eslint-disable-next-line security/detect-non-literal-fs-filename

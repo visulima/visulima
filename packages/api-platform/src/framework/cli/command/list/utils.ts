@@ -1,5 +1,6 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { parse } from "node:path";
+
 import type { PackageJson } from "type-fest";
 
 interface AppExport {
@@ -13,6 +14,7 @@ export const getAppWorkingDirectoryPath = (appFilePath: string): string | null =
     let lastParsedPath = parse(appFilePath);
 
     // Once the following condition returns false it means we traversed the whole file system
+    // eslint-disable-next-line no-loops/no-loops
     while (lastParsedPath.base && lastParsedPath.root !== lastParsedPath.dir) {
         const parentDirectionItems = readdirSync(lastParsedPath.dir);
 

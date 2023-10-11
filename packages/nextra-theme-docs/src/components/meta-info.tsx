@@ -21,6 +21,7 @@ const MetaInfo: FC<{ config: Config; filePath: string; hidden?: boolean; locale:
     <>
         {config.feedback.content ? (
             <Anchor
+                className={linkClassName}
                 href={
                     config.feedback.link
                         ? config.feedback.link({
@@ -35,7 +36,6 @@ const MetaInfo: FC<{ config: Config; filePath: string; hidden?: boolean; locale:
                               title: `Feedback for “${config.title}”`,
                           })
                 }
-                className={linkClassName}
                 newWindow
             >
                 {renderComponent(config.feedback.content, { locale })}
@@ -50,10 +50,10 @@ const MetaInfo: FC<{ config: Config; filePath: string; hidden?: boolean; locale:
 
         {config.backToTop.active && (
             <button
+                className={cn(linkClassName, hidden ? "opacity-0" : "opacity-100")}
                 onClick={() => {
                     window.scrollTo({ behavior: "smooth", left: 0, top: 0 });
                 }}
-                className={cn(linkClassName, hidden ? "opacity-0" : "opacity-100")}
                 type="button"
             >
                 {renderComponent(config.backToTop.content, { locale })}

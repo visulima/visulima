@@ -3,7 +3,7 @@ import "isomorphic-fetch";
 import { describe, expect, it, vi } from "vitest";
 
 import { Router } from "../src";
-import { EdgeRouter, createEdgeRouter, getPathname } from "../src/edge";
+import { createEdgeRouter, EdgeRouter, getPathname } from "../src/edge";
 
 type AnyHandler = (...arguments_: any[]) => any;
 
@@ -278,6 +278,7 @@ describe("edge", () => {
             expect(response.status, "set 500 status code").toBe(500);
 
             await expect(response.text()).resolves.toBe("Internal Server Error");
+            // eslint-disable-next-line security/detect-object-injection
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
             index += 1;
         };
@@ -316,7 +317,10 @@ describe("edge", () => {
             // eslint-disable-next-line promise/always-return
             .then(async (response: Response) => {
                 expect(response.status, `called console.error ${index}`).toBe(500);
+
                 await expect(response.text()).resolves.toBe("Internal Server Error");
+
+                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             });
     });
@@ -330,7 +334,10 @@ describe("edge", () => {
 
         const testResponse = async (response: Response) => {
             expect(response.status, "set 500 status code").toBe(500);
+
             await expect(response.text()).resolves.toBe("Internal Server Error");
+
+            // eslint-disable-next-line security/detect-object-injection
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
             index += 1;

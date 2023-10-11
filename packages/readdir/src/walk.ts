@@ -1,8 +1,9 @@
 import type { Dirent, Stats } from "node:fs";
 import { promises } from "node:fs";
 import { basename, join, normalize } from "node:path";
-import micromatch from "micromatch";
+
 import type { Options as MicromatchOptions } from "micromatch";
+import micromatch from "micromatch";
 
 const include = (
     path: string,
@@ -25,7 +26,7 @@ const include = (
     return !(skip && micromatch.isMatch(path, skip, minimatchOptions.skip));
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle,no-use-before-define
+// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
     // eslint-disable-next-line no-param-reassign
     path = normalize(path);
@@ -102,7 +103,7 @@ export default async function* walk(
         return;
     }
 
-    // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename
+    // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename,no-loops/no-loops
     for await (const entry of await promises.readdir(directory, {
         withFileTypes: true,
     })) {

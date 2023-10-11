@@ -8,7 +8,6 @@ import { parse } from "regexparam";
 import type { FindResult, FunctionLike, HttpMethod, Nextable, RouteMatch } from "./types";
 
 export type Route<H> = {
-    // eslint-disable-next-line no-use-before-define
     fns: (H | Router<H extends FunctionLike ? H : never>)[];
     isMiddleware: boolean;
     method: HttpMethod | "";
@@ -21,11 +20,6 @@ export type Route<H> = {
 );
 
 export class Router<H extends FunctionLike> {
-    public constructor(
-        public base = "/",
-        public routes: Route<Nextable<H>>[] = [],
-    ) {}
-
     public static async exec<FL extends FunctionLike>(fns: (Nextable<FL> | undefined)[], ...arguments_: Parameters<FL>): Promise<any> {
         let index = 0;
 
@@ -40,8 +34,14 @@ export class Router<H extends FunctionLike> {
             return function_(...arguments_, next);
         };
 
+        // eslint-disable-next-line security/detect-object-injection
         return (fns[index] as FunctionLike)(...arguments_, next);
     }
+
+    public constructor(
+        public base = "/",
+        public routes: Route<Nextable<H>>[] = [],
+    ) {}
 
     public add(method: HttpMethod | "", route: Nextable<H> | RouteMatch, ...fns: Nextable<H>[]): this {
         if (typeof route === "function") {
@@ -111,6 +111,7 @@ export class Router<H extends FunctionLike> {
                 if (matches.groups !== void 0) {
                     Object.keys(matches.groups).forEach((key) => {
                         // @ts-expect-error @TODO: fix this
+                        // eslint-disable-next-line security/detect-object-injection
                         parameters[key] = matches.groups[key] as string;
                     });
                 }
@@ -123,11 +124,13 @@ export class Router<H extends FunctionLike> {
                     return;
                 }
 
+                // eslint-disable-next-line no-loops/no-loops
                 for (let index = 0; index < route.keys.length; ) {
+                    // eslint-disable-next-line security/detect-object-injection
                     const parameterKey = route.keys[index];
 
                     // @ts-expect-error @TODO: fix this
-                    // eslint-disable-next-line no-plusplus
+                    // eslint-disable-next-line no-plusplus,security/detect-object-injection
                     parameters[parameterKey] = matches[++index];
                 }
 

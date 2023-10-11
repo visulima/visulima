@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Paginator, paginate } from "../src";
+import { paginate, Paginator } from "../src";
 
 describe("paginator", () => {
     it("should return the correct values for all public variables", () => {

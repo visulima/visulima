@@ -25,29 +25,11 @@ interface AdapterCtorArguments<M extends string, PrismaClient> {
 type Delegate<T> = Record<PrismaAction, (...arguments_: any[]) => Promise<T>>;
 
 export default class PrismaAdapter<T, M extends string, PrismaClient> implements Adapter<T, PrismaParsedQueryParameters, M> {
+    public models?: M[];
+
     private readonly ctorModels?: M[];
 
     private dmmf: any;
-
-    private readonly getPrismaClientModels = async (): Promise<Record<string, object>> => {
-        // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._dmmf !== undefined) {
-            // eslint-disable-next-line no-underscore-dangle
-            this.dmmf = this.prismaClient._dmmf;
-
-            return this.dmmf?.mappingsMap as Record<string, object>;
-        }
-
-        // eslint-disable-next-line no-underscore-dangle
-        if (this.prismaClient._getDmmf !== undefined) {
-            // eslint-disable-next-line no-underscore-dangle
-            this.dmmf = await this.prismaClient._getDmmf();
-
-            return this.dmmf.mappingsMap as Record<string, object>;
-        }
-
-        throw new Error("Couldn't get prisma client models");
-    };
 
     private readonly manyRelations: {
         [key in M]?: string[];
@@ -57,21 +39,11 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
 
     private readonly prismaClient: FakePrismaClient & PrismaClient;
 
-    public models?: M[];
-
     public constructor({ manyRelations = {}, models, primaryKey = "id", prismaClient }: AdapterCtorArguments<M, FakePrismaClient & PrismaClient>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
         this.ctorModels = models;
-    }
-
-    private getPrismaDelegate(resourceName: M): Delegate<T> {
-        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`] as Delegate<T>;
-    }
-
-    public get client(): PrismaClient {
-        return this.prismaClient;
     }
 
     public async connect(): Promise<void> {
@@ -234,5 +206,33 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
                 [this.primaryKey]: resourceId,
             },
         });
+    }
+
+    public get client(): PrismaClient {
+        return this.prismaClient;
+    }
+
+    private readonly getPrismaClientModels = async (): Promise<Record<string, object>> => {
+        // eslint-disable-next-line no-underscore-dangle
+        if (this.prismaClient._dmmf !== undefined) {
+            // eslint-disable-next-line no-underscore-dangle
+            this.dmmf = this.prismaClient._dmmf;
+
+            return this.dmmf?.mappingsMap as Record<string, object>;
+        }
+
+        // eslint-disable-next-line no-underscore-dangle
+        if (this.prismaClient._getDmmf !== undefined) {
+            // eslint-disable-next-line no-underscore-dangle
+            this.dmmf = await this.prismaClient._getDmmf();
+
+            return this.dmmf.mappingsMap as Record<string, object>;
+        }
+
+        throw new Error("Couldn't get prisma client models");
+    };
+
+    private getPrismaDelegate(resourceName: M): Delegate<T> {
+        return this.prismaClient[`${resourceName.charAt(0).toLowerCase()}${resourceName.slice(1)}`] as Delegate<T>;
     }
 }

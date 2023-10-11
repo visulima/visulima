@@ -1,6 +1,6 @@
 import cn from "clsx";
-import type { Heading } from "nextra/types";
 import { ArrowRightIcon } from "nextra/icons";
+import type { Heading } from "nextra/types";
 import type { FC } from "react";
 import { useRef } from "react";
 

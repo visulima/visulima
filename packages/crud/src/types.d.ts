@@ -4,7 +4,6 @@ import type { Handler as ListHandler } from "./handler/list";
 import type { Handler as GetHandler } from "./handler/read";
 import type { Handler as UpdateHandler } from "./handler/update";
 
-// eslint-disable-next-line no-shadow
 export enum RouteType {
     CREATE = "CREATE",
     DELETE = "DELETE",

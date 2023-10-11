@@ -283,6 +283,8 @@ export const themeSchema = z
     })
     .strict();
 
+// @see https://github.com/colinhacks/zod/discussions/2527
+// eslint-disable-next-line deprecation/deprecation
 export const publicThemeSchema = themeSchema.deepPartial().extend({
     // to have `locale` and `text` as required properties
     i18n: i18nSchema,

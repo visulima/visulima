@@ -4,7 +4,6 @@ import type { ComponentProps, ReactElement } from "react";
 import { forwardRef } from "react";
 
 type AnchorProperties = Omit<ComponentProps<"a">, "ref"> & {
-    // eslint-disable-next-line react/require-default-props
     newWindow?: boolean;
 };
 

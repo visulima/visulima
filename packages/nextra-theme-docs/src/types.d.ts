@@ -1,5 +1,5 @@
-import type { PageOpts as BasePageOptions, Folder, MdxFile } from "nextra/types";
 import type { PageTheme as BasePageTheme } from "nextra/normalize-pages";
+import type { Folder, MdxFile, PageOpts as BasePageOptions } from "nextra/types";
 import type { ReactNode } from "react";
 
 import type { DocumentationThemeConfig } from "./theme/theme-schema";

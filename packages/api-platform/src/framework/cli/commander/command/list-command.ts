@@ -1,4 +1,5 @@
 import { exit } from "node:process";
+
 import type { Command } from "commander";
 
 import command from "../../command/list/list-command";

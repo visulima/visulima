@@ -1,12 +1,13 @@
 import { readFileSync } from "node:fs";
 import process from "node:process";
+
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
 import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
 
 import type { Route } from "../types.d";
 
 // eslint-disable-next-line regexp/no-unused-capturing-group
-const extensionRegex = /\.(js|ts|mjs|cjs)$/;
+const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = false): Route[] => {
@@ -25,8 +26,8 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
     if (specs.length === 0) {
         const apiRouteFileContent = readFileSync(apiRouteFile, "utf8");
 
-        apiRouteFileContent.split(/\r?\n/).forEach((line) => {
-            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/.exec(line);
+        apiRouteFileContent.split(/\r?\n/u).forEach((line) => {
+            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/u.exec(line);
 
             if (match) {
                 let [, method] = match;

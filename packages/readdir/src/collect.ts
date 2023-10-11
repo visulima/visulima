@@ -9,7 +9,7 @@ const collect = async (directory: string, options: Partial<Options & { extension
 
     const entries: string[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
     for await (const entry of walk(directory, config)) {
         entries.push(entry.path);
     }

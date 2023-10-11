@@ -1,12 +1,12 @@
+import cn from "clsx";
+import { useRouter } from "next/router";
 import type { ComponentProps, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { Balancer } from "react-wrap-balancer";
 
-import cn from "clsx";
-import { useRouter } from "next/router";
+import { DEFAULT_LOCALE } from "../constants/base";
 import { useConfig, useObserver } from "../contexts";
 import { renderString } from "./render";
-import { DEFAULT_LOCALE } from "../constants/base";
 
 const createHeaderLink =
     (Tag: `h${2 | 3 | 4 | 5 | 6}`) =>

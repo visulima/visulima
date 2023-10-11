@@ -35,7 +35,7 @@ const formatMap: Record<string, string> = {
 const parseDescription = (tag: Spec): { description: string | undefined; name: string; rawType: string; required: boolean; schema: object | undefined } => {
     const rawType = tag.type;
     const isArray = rawType.endsWith("[]");
-    // eslint-disable-next-line regexp/strict
+    // eslint-disable-next-line require-unicode-regexp,regexp/strict
     const parsedType = rawType.replace(/\[]$/, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
@@ -94,7 +94,7 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
     }
 
     // remove the optional dash from the description.
-    let description: string | undefined = tag.description.trim().replace(/^- /, "");
+    let description: string | undefined = tag.description.trim().replace(/^- /u, "");
 
     if (description === "") {
         description = undefined;
@@ -170,7 +170,7 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                     parameters: [
                         {
                             description: parsedResponse.description,
-                            in: tag.tag.replace(/Param$/, ""),
+                            in: tag.tag.replace(/Param$/u, ""),
                             name: parsedResponse.name,
                             required: parsedResponse.required,
                             schema: parsedResponse.schema,
@@ -367,7 +367,7 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
     });
 
 const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    // eslint-disable-next-line regexp/no-unused-capturing-group
+    // eslint-disable-next-line regexp/no-unused-capturing-group,require-unicode-regexp
     const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });

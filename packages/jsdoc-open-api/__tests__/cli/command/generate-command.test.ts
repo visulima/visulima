@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-namespace
 import * as fs from "node:fs";
 import { join } from "node:path";
+
 import { describe, expect, it, vi } from "vitest";
 
 import generateCommand from "../../../src/cli/command/generate-command";

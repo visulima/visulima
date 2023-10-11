@@ -2,7 +2,6 @@ import cn from "clsx";
 import type { ComponentProps, ReactNode } from "react";
 import { forwardRef } from "react";
 
-// eslint-disable-next-line react/require-default-props
 type InputProperties = ComponentProps<"input"> & { suffix?: ReactNode };
 
 const Input = forwardRef<HTMLInputElement, InputProperties>(({ className, suffix, ...properties }, forwardedReference) => (

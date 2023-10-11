@@ -10,8 +10,8 @@ import type {
     HttpMethod,
     Nextable,
     RouteMatch,
-    RouteShortcutMethod,
     RoutesExtendedRequestHandler,
+    RouteShortcutMethod,
     ValueOrPromise,
 } from "./types";
 
@@ -33,15 +33,6 @@ export const getPathname = (request: Request & { nextUrl?: URL }): string =>
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | void>;
 
 export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends AnyZodObject = ZodObject<any>> {
-    private readonly onError: (
-        error: unknown,
-        ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
-    ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>;
-
-    private readonly onNoMatch: RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>;
-
-    private router = new Router<RequestHandler<R, Context>>();
-
     public all: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "");
 
     public connect: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "CONNECT");
@@ -62,6 +53,15 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
     public trace: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "TRACE");
 
+    private readonly onError: (
+        error: unknown,
+        ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
+    ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>;
+
+    private readonly onNoMatch: RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>;
+
+    private router = new Router<RequestHandler<R, Context>>();
+
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);
         this.onError =
@@ -70,42 +70,6 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
                 error: unknown,
                 ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
             ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
-    }
-
-    private add(
-        method: HttpMethod | "",
-        routeOrFunction: Nextable<RequestHandler<R, Context>> | RouteMatch,
-        zodOrRouteOrFunction?: Nextable<RequestHandler<R, Context>> | RouteMatch | Schema,
-        ...fns: Nextable<RequestHandler<R, Context>>[]
-    ) {
-        if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
-            // eslint-disable-next-line no-param-reassign
-            fns = [zodOrRouteOrFunction];
-        } else if (typeof zodOrRouteOrFunction === "object") {
-            // eslint-disable-next-line unicorn/prefer-ternary
-            if (typeof routeOrFunction === "function") {
-                // eslint-disable-next-line no-param-reassign
-                fns = [withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
-            } else {
-                // eslint-disable-next-line no-param-reassign
-                fns = fns.map((function_) => withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, function_));
-            }
-        } else if (typeof zodOrRouteOrFunction === "function") {
-            // eslint-disable-next-line no-param-reassign
-            fns = [zodOrRouteOrFunction];
-        }
-
-        this.router.add(method, routeOrFunction, ...fns);
-
-        return this;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private prepareRequest(request: R & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<R, Context>>) {
-        request.params = {
-            ...findResult.params,
-            ...request.params, // original params will take precedence
-        };
     }
 
     public clone(): EdgeRouter<R, Context, RResponse, Schema> {
@@ -163,6 +127,42 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         this.router.use(base, ...fns.map((function_) => (function_ instanceof EdgeRouter ? function_.router : function_)));
 
         return this;
+    }
+
+    private add(
+        method: HttpMethod | "",
+        routeOrFunction: Nextable<RequestHandler<R, Context>> | RouteMatch,
+        zodOrRouteOrFunction?: Nextable<RequestHandler<R, Context>> | RouteMatch | Schema,
+        ...fns: Nextable<RequestHandler<R, Context>>[]
+    ) {
+        if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        } else if (typeof zodOrRouteOrFunction === "object") {
+            // eslint-disable-next-line unicorn/prefer-ternary
+            if (typeof routeOrFunction === "function") {
+                // eslint-disable-next-line no-param-reassign
+                fns = [withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
+            } else {
+                // eslint-disable-next-line no-param-reassign
+                fns = fns.map((function_) => withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, function_));
+            }
+        } else if (typeof zodOrRouteOrFunction === "function") {
+            // eslint-disable-next-line no-param-reassign
+            fns = [zodOrRouteOrFunction];
+        }
+
+        this.router.add(method, routeOrFunction, ...fns);
+
+        return this;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private prepareRequest(request: R & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<R, Context>>) {
+        request.params = {
+            ...findResult.params,
+            ...request.params, // original params will take precedence
+        };
     }
 }
 

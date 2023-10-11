@@ -1,5 +1,5 @@
 import { Listbox, Transition } from "@headlessui/react";
-import clsx from "clsx";
+import { clsx } from "clsx";
 import { useMounted } from "nextra/hooks";
 import { CheckIcon } from "nextra/icons";
 import type { FC, PropsWithChildren, ReactElement } from "react";

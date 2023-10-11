@@ -2,6 +2,7 @@ import { load, trackPageview } from "fathom-client";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+
 import environment from "../env/env-client";
 
 const useFathom = (): void => {

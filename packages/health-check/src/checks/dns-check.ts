@@ -23,6 +23,7 @@ const dnsCheck =
         const cacheable = new CacheableLookup(config);
 
         try {
+            // eslint-disable-next-line require-unicode-regexp
             const meta = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
                 hints,
                 ...(family === "all" ? { all: true } : { family }),

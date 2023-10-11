@@ -1,6 +1,6 @@
-import qs from "qs";
+import { stringify } from "qs";
 
-import type { Paginator as IPaginator, PaginationMeta, PaginationResult } from "./types";
+import type { PaginationMeta, PaginationResult, Paginator as IPaginator } from "./types";
 
 type UrlsForRange = { isActive: boolean; page: number; url: string }[];
 
@@ -9,12 +9,6 @@ type UrlsForRange = { isActive: boolean; page: number; url: string }[];
  * `offset` and `limit` based pagination.
  */
 export default class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
-    private qs: Record<string, unknown> = {};
-
-    private readonly rows: T[];
-
-    private url = "/";
-
     /**
      * The first page is always 1
      */
@@ -24,6 +18,12 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      * Find if results set is empty or not
      */
     public readonly isEmpty: boolean;
+
+    private qs: Record<string, unknown> = {};
+
+    private readonly rows: T[];
+
+    private url = "/";
 
     public constructor(
         private readonly totalNumber: number,
@@ -99,7 +99,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      * page
      */
     public getUrl(page: number): string {
-        const qstring = qs.stringify({ ...this.qs, page: page < 1 ? 1 : page });
+        const qstring = stringify({ ...this.qs, page: page < 1 ? 1 : page });
 
         return `${this.url}?${qstring}`;
     }
@@ -110,12 +110,32 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     public getUrlsForRange(start: number, end: number): UrlsForRange {
         const urls: UrlsForRange = [];
 
-        // eslint-disable-next-line no-plusplus
+        // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = start; index <= end; index++) {
             urls.push({ isActive: index === this.currentPage, page: index, url: this.getUrl(index) });
         }
 
         return urls;
+    }
+
+    /**
+     * Define query string to be appended to the pagination links
+     */
+    public queryString(values: Record<string, unknown>): this {
+        this.qs = values;
+
+        return this;
+    }
+
+    /**
+     * Returns JSON representation of the paginated
+     * data
+     */
+    public toJSON(): PaginationResult<T> {
+        return {
+            data: this.all(),
+            meta: this.getMeta(),
+        };
     }
 
     /**
@@ -148,26 +168,6 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      */
     public get lastPage(): number {
         return Math.max(Math.ceil(this.total / this.perPage), 1);
-    }
-
-    /**
-     * Define query string to be appended to the pagination links
-     */
-    public queryString(values: Record<string, unknown>): this {
-        this.qs = values;
-
-        return this;
-    }
-
-    /**
-     * Returns JSON representation of the paginated
-     * data
-     */
-    public toJSON(): PaginationResult<T> {
-        return {
-            data: this.all(),
-            meta: this.getMeta(),
-        };
     }
 
     /**

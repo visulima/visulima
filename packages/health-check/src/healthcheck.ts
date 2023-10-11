@@ -1,37 +1,10 @@
-import type { Checker, HealthReport, HealthReportEntry, HealthCheck as HealthcheckInterface } from "./types.d";
+import type { Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry } from "./types.d";
 
 class Healthcheck implements HealthcheckInterface {
     /**
      * A copy of registered checkers
      */
     private healthCheckers: Record<string, Checker> = {};
-
-    /**
-     * Invokes a given checker to collect the report metrics.
-     */
-    private async invokeChecker(service: string, reportSheet: HealthReport): Promise<boolean> {
-        // eslint-disable-next-line security/detect-object-injection
-        const checker = this.healthCheckers[service] as Checker;
-
-        let report: HealthReportEntry;
-
-        try {
-            report = await checker();
-
-            report.displayName = report.displayName || service;
-        } catch (error) {
-            report = {
-                displayName: service,
-                health: { healthy: false, message: (error as Error).message, timestamp: new Date().toISOString() },
-                meta: { fatal: true },
-            };
-        }
-
-        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
-        reportSheet[service] = report;
-
-        return report.health.healthy;
-    }
 
     public addChecker(service: string, checker: Checker): void {
         // eslint-disable-next-line security/detect-object-injection
@@ -68,6 +41,33 @@ class Healthcheck implements HealthcheckInterface {
      */
     public get servicesList(): string[] {
         return Object.keys(this.healthCheckers);
+    }
+
+    /**
+     * Invokes a given checker to collect the report metrics.
+     */
+    private async invokeChecker(service: string, reportSheet: HealthReport): Promise<boolean> {
+        // eslint-disable-next-line security/detect-object-injection
+        const checker = this.healthCheckers[service] as Checker;
+
+        let report: HealthReportEntry;
+
+        try {
+            report = await checker();
+
+            report.displayName = report.displayName || service;
+        } catch (error) {
+            report = {
+                displayName: service,
+                health: { healthy: false, message: (error as Error).message, timestamp: new Date().toISOString() },
+                meta: { fatal: true },
+            };
+        }
+
+        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+        reportSheet[service] = report;
+
+        return report.health.healthy;
     }
 }
 

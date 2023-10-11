@@ -10,6 +10,9 @@ css
 coverage
 .next
 .secretlintrc.js
+.eslintrc.cjs
+.prettierrc.cjs
+postcss.config.cjs
 
 theme.config.tsx
 

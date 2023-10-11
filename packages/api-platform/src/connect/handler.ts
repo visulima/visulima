@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+
 import type { FunctionLike, Nextable, Route, ValueOrPromise } from "@visulima/connect";
 import createHttpError from "http-errors";
 
@@ -17,7 +18,7 @@ export const onError =
             errorHandler = JsonapiErrorHandler;
         }
 
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
         for (const { handler, regex } of errorHandlers) {
             if (regex.test(apiFormat)) {
                 errorHandler = handler;

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import baseHandler from "../src/base-crud-handler";
 import type { Adapter } from "../src";
+import baseHandler from "../src/base-crud-handler";
 
 const baseMockAdapter: Adapter<any, any> = {
     connect: vi.fn(),

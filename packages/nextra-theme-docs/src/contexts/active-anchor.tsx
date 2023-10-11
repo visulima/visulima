@@ -1,6 +1,7 @@
+import "intersection-observer";
+
 import type { ContextType, ReactElement, ReactNode } from "react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import "intersection-observer";
 
 // Separate the state of 2 contexts to avoid re-renders of the content triggered
 // by the state update

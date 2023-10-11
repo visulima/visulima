@@ -30,5 +30,4 @@ export { default as Tooltip } from "./components/tooltip";
 export { default as Tr } from "./components/tr";
 export { default as Ul } from "./components/ul";
 export { default as Zoom } from "./components/zoom";
-
 export { default as toast } from "react-hot-toast";
