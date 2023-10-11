@@ -191,8 +191,8 @@ importers:
         specifier: 16.10.0
         version: 16.10.0
       nx-cloud:
-        specifier: 16.5.1
-        version: 16.5.1
+        specifier: 16.5.2
+        version: 16.5.2
       plop:
         specifier: ^4.0.0
         version: 4.0.0
@@ -254,8 +254,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.2.2)(zod@3.22.4)
       '@vercel/og':
-        specifier: ^0.5.17
-        version: 0.5.17
+        specifier: ^0.5.18
+        version: 0.5.18
       '@visulima/nextra-theme-docs':
         specifier: workspace:*
         version: link:../packages/nextra-theme-docs
@@ -275,8 +275,8 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       lucide-react:
-        specifier: ^0.284.0
-        version: 0.284.0(react@18.2.0)
+        specifier: ^0.285.0
+        version: 0.285.0(react@18.2.0)
       next:
         specifier: 13.4.19
         version: 13.4.19(@babel/core@7.23.0)(react-dom@18.2.0)(react@18.2.0)
@@ -309,8 +309,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       '@axe-core/react':
-        specifier: ^4.7.3
-        version: 4.7.3
+        specifier: ^4.8.0
+        version: 4.8.0
       '@babel/core':
         specifier: ^7.23.0
         version: 7.23.0
@@ -991,10 +991,10 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1034,10 +1034,10 @@ importers:
         specifier: ^12.0.0
         version: 12.0.0
       '@visulima/crud':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../crud
       '@visulima/readdir':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../readdir
       chalk:
         specifier: 5.3.0
@@ -1052,8 +1052,8 @@ importers:
         specifier: ^4.18.2
         version: 4.18.2
       fastify:
-        specifier: ^4.23.2
-        version: 4.23.2
+        specifier: ^4.24.0
+        version: 4.24.0
       koa:
         specifier: ^2.14.2
         version: 2.14.2
@@ -1295,7 +1295,7 @@ importers:
         specifier: 18.17.12
         version: 18.17.12
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.1
+        specifier: 4.0.2
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^0.34.6
@@ -1331,8 +1331,8 @@ importers:
         specifier: ^4.18.2
         version: 4.18.2
       fastify:
-        specifier: ^4.23.2
-        version: 4.23.2
+        specifier: ^4.24.0
+        version: 4.24.0
       isomorphic-fetch:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1364,10 +1364,10 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../prisma-dmmf-transformer
       http-errors:
         specifier: ^2.0.0
@@ -1576,7 +1576,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/readdir':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../readdir
       comment-parser:
         specifier: ^1.4.0
@@ -2577,10 +2577,10 @@ packages:
       default-browser-id: 3.0.0
     dev: false
 
-  /@axe-core/react@4.7.3:
-    resolution: {integrity: sha512-dN2ZqUdaWJNmxEuedJKkAZBBQWs1qj/Aeby2x8ZKMhhcDBGkcT42MRlaOMWTvPG/YosP6RaGi160eFFZ3TiUMg==}
+  /@axe-core/react@4.8.0:
+    resolution: {integrity: sha512-1k95h6nfhFcS+1BzPNto7jQQsnead28tiVL6CJtE+Ho6/X6gMOMffU2RCHYbiDwM9D0PoEBucB0ar7BvdJc0ZQ==}
     dependencies:
-      axe-core: 4.7.2
+      axe-core: 4.8.2
       requestidlecallback: 0.3.0
     dev: true
 
@@ -6048,10 +6048,10 @@ packages:
       - nx
     dev: false
 
-  /@nrwl/nx-cloud@16.5.1:
-    resolution: {integrity: sha512-ICsZNJanMaJg6VLfPQwmhwLPONN7chyf23bJk1VPzDdlF/XytCQ542LkR3PvSyBAH/Uxx5JevwnKoewX8UxIlA==}
+  /@nrwl/nx-cloud@16.5.2:
+    resolution: {integrity: sha512-oHO5T1HRJsR9mbRd8eUqMBPCgqVZLSbAh3zJoPFmhEmjbM4YB9ePRpgYFT8dRNeZUOUd/8Yt7Pb6EVWOHvpD/w==}
     dependencies:
-      nx-cloud: 16.5.1
+      nx-cloud: 16.5.2
     transitivePeerDependencies:
       - debug
     dev: false
@@ -8649,6 +8649,7 @@ packages:
 
   /@swagger-api/apidom-ast@0.75.0:
     resolution: {integrity: sha512-IOAVA835ZuNFR23Tpca/q1FUyv4cQ8c4nnN3NsmXU+rLP+qrhsyyqkUa0pRAMvE77EfZfOcfJpUo0WTYozPTag==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@types/ramda': 0.29.3
@@ -8660,6 +8661,7 @@ packages:
 
   /@swagger-api/apidom-core@0.75.0:
     resolution: {integrity: sha512-DuWQm0YYhBhEDX/u8EbLtKhWpgrk7+DjYD6WYh8emt6eZGpRuVWDABPN6LXZy4BpQ60Fy0aBSZaSf5C+404LCw==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-ast': 0.75.0
@@ -8673,6 +8675,7 @@ packages:
 
   /@swagger-api/apidom-json-pointer@0.75.0:
     resolution: {integrity: sha512-BdwXIHA3Ulmdik3bOzvX2n320fDcdOX+GO0eUG2Ewi7OHI5gQEQZdkeGONF6PFpG5M5afKYnduYOxkz4MPQEjA==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-core': 0.75.0
@@ -8752,6 +8755,7 @@ packages:
 
   /@swagger-api/apidom-ns-openapi-3-0@0.75.0:
     resolution: {integrity: sha512-ndJC9QeIIMeK2WpeJeEGUuwcmDXXuEtOKl9GCX4sbXicZbI00cv7FJCJeFPL7QdVsHFfAm+e9DbDgn1k2K7Eww==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-core': 0.75.0
@@ -8764,6 +8768,7 @@ packages:
 
   /@swagger-api/apidom-ns-openapi-3-1@0.75.0:
     resolution: {integrity: sha512-j2lvGKceplAVDnhm84klUPzBAwJewdpZf7fD28szEeMMNfXi40y70rs6iFKTH6FVuBc/k5/nf/M44tQY+sdqGw==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-ast': 0.75.0
@@ -8923,6 +8928,7 @@ packages:
 
   /@swagger-api/apidom-reference@0.75.0(debug@4.3.4):
     resolution: {integrity: sha512-3eqMfGaNBa3+Ao/9zrRPfxCuz9/3jag3W2XV8xuS4Xq2g3xqCEzPPUeraf6zoerk5EdXMSSoO6O8v074E4R4dg==}
+    requiresBuild: true
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-core': 0.75.0
@@ -10152,6 +10158,7 @@ packages:
 
   /@types/ramda@0.29.3:
     resolution: {integrity: sha512-Yh/RHkjN0ru6LVhSQtTkCRo6HXkfL9trot/2elzM/yXLJmbLm2v6kJc8yftTnwv1zvUob6TEtqI2cYjdqG3U0Q==}
+    requiresBuild: true
     dependencies:
       types-ramda: 0.29.4
     dev: false
@@ -10617,12 +10624,12 @@ packages:
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  /@vercel/og@0.5.17:
-    resolution: {integrity: sha512-/GOyUBq3MhB3ygbhTJoZ0cHvwlyKdt0g8f4npuj4mwFlp57S7j4XWwgtqILK3XdFf25esN9i77fInrDkeRJfgA==}
+  /@vercel/og@0.5.18:
+    resolution: {integrity: sha512-l519y6hscj14VkORBKshExoWaXWB4MqGUCIhY3gcXYir4aJ3J+9BU1E/CQ9yKsNmkgY+1VXOgjnq9zUT4B49KQ==}
     engines: {node: '>=16'}
     dependencies:
       '@resvg/resvg-wasm': 2.4.1
-      satori: 0.10.8
+      satori: 0.10.9
       yoga-wasm-web: 0.3.3
     dev: false
 
@@ -11508,6 +11515,11 @@ packages:
   /axe-core@4.7.2:
     resolution: {integrity: sha512-zIURGIS1E1Q4pcrMjp+nnEh+16G56eG/MUllJH8yEvw7asDo7Ac9uhC9KIH5jzpITueEZolfYglnCGIuSBz39g==}
     engines: {node: '>=4'}
+
+  /axe-core@4.8.2:
+    resolution: {integrity: sha512-/dlp0fxyM3R8YW7MFzaHWXrf4zzbr0vaYb23VBFCl83R7nWNPg/yaQw2Dc8jzCMmDVLhSdzH8MjrsuIUuvX+6g==}
+    engines: {node: '>=4'}
+    dev: true
 
   /axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
@@ -12889,6 +12901,7 @@ packages:
 
   /cross-fetch@3.1.8(encoding@0.1.13):
     resolution: {integrity: sha512-cvA+JwZoU0Xq+h6WkMvAUqPEYy92Obet6UdKLfW60qn99ftItKjB5T+BkyWOFWe2pUyfQ+IJHmpOTznqk1M6Kg==}
+    requiresBuild: true
     dependencies:
       node-fetch: 2.7.0(encoding@0.1.13)
     transitivePeerDependencies:
@@ -15372,6 +15385,7 @@ packages:
 
   /fast-json-patch@3.1.1:
     resolution: {integrity: sha512-vf6IHUX2SBcA+5/+4883dsIjpBTqmfBjmYiWK1savxQmFk4JfBMLa7ynTYOs1Rolp/T1betJxHiGD3g1Mn8lUQ==}
+    requiresBuild: true
     dev: false
 
   /fast-json-stable-stringify@2.1.0:
@@ -15411,8 +15425,8 @@ packages:
     resolution: {integrity: sha512-cIusKBIt/R/oI6z/1nyfe2FvGKVTohVRfvkOhvx0nCEW+xf5NoCXjAHcWp93uOUBchzYcsvPlrapAdX1uW+YGg==}
     requiresBuild: true
 
-  /fastify@4.23.2:
-    resolution: {integrity: sha512-WFSxsHES115svC7NrerNqZwwM0UOxbC/P6toT9LRHgAAFvG7o2AN5W+H4ihCtOGuYXjZf4z+2jXC89rVEoPWOA==}
+  /fastify@4.24.0:
+    resolution: {integrity: sha512-6Uu2cCAV1UgexPnWKchgRt77lng9ivNmyFhPMcgUbJ4VaVBE1l6aYluiYZiVsgOBFpHrmdj7FD6n1aHswln4yQ==}
     dependencies:
       '@fastify/ajv-compiler': 3.5.0
       '@fastify/error': 3.3.0
@@ -15421,7 +15435,7 @@ packages:
       avvio: 8.2.1
       fast-content-type-parse: 1.0.0
       fast-json-stringify: 5.8.0
-      find-my-way: 7.6.2
+      find-my-way: 7.7.0
       light-my-request: 5.10.0
       pino: 8.15.0
       process-warning: 2.2.0
@@ -15575,8 +15589,8 @@ packages:
       resolve-dir: 0.1.1
     dev: false
 
-  /find-my-way@7.6.2:
-    resolution: {integrity: sha512-0OjHn1b1nCX3eVbm9ByeEHiscPYiHLfhei1wOUU9qffQkk98wE0Lo8VrVYfSGMgnSnDh86DxedduAnBf4nwUEw==}
+  /find-my-way@7.7.0:
+    resolution: {integrity: sha512-+SrHpvQ52Q6W9f3wJoJBbAQULJuNEEQwBvlvYwACDhBTLOTMiQ0HYWh4+vC3OivGP2ENcTI1oKlFA2OepJNjhQ==}
     engines: {node: '>=14'}
     requiresBuild: true
     dependencies:
@@ -15792,6 +15806,7 @@ packages:
 
   /form-data-encoder@1.9.0:
     resolution: {integrity: sha512-rahaRMkN8P8d/tgK/BLPX+WBVM27NbvdXBxqQujBtkDAIFspaRqN7Od7lfdGQA6KAD+f82fYCLBq1ipvcu8qLw==}
+    requiresBuild: true
     dev: false
 
   /form-data-encoder@2.1.4:
@@ -15823,6 +15838,7 @@ packages:
   /formdata-node@4.4.1:
     resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
     engines: {node: '>= 12.20'}
+    requiresBuild: true
     dependencies:
       node-domexception: 1.0.0
       web-streams-polyfill: 4.0.0-beta.3
@@ -19385,8 +19401,8 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /lucide-react@0.284.0(react@18.2.0):
-    resolution: {integrity: sha512-dVSMHYAya/TeY3+vsk+VQJEKNQN2AhIo0+Dp09B2qpzvcBuu93H98YZykFcjIAfmanFiDd8nqfXFR38L757cyQ==}
+  /lucide-react@0.285.0(react@18.2.0):
+    resolution: {integrity: sha512-TvWtS0Zc2lT0wTMyD+sEB7x9TM/38MQMJfJbQMMWJOsPx+lEaWBk1aKalqhCZj/Vbl2r00Uqln7xTTY2T7R63g==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
     dependencies:
@@ -20447,6 +20463,7 @@ packages:
   /minim@0.23.8:
     resolution: {integrity: sha512-bjdr2xW1dBCMsMGGsUeqM4eFI60m94+szhxWys+B1ztIt6gWSfeGBdSVCIawezeHYLYn0j6zrsXdQS/JllBzww==}
     engines: {node: '>=6'}
+    requiresBuild: true
     dependencies:
       lodash: 4.17.21
     dev: false
@@ -20471,6 +20488,7 @@ packages:
   /minimatch@7.4.6:
     resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
     engines: {node: '>=10'}
+    requiresBuild: true
     dependencies:
       brace-expansion: 2.0.1
     dev: false
@@ -21150,6 +21168,7 @@ packages:
   /node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    requiresBuild: true
     dev: false
 
   /node-emoji@2.1.0:
@@ -21441,11 +21460,11 @@ packages:
     resolution: {integrity: sha512-ub5E4+FBPKwAZx0UwIQOjYWGHTEq5sPqHQNRN8Z9e4A7u3Tj1weLJsL59yH9vmvqEtBHaOmT6cYQKIZOxp35FQ==}
     dev: true
 
-  /nx-cloud@16.5.1:
-    resolution: {integrity: sha512-CBR/NkPWDBOIYO2NYgJyS9znvQeEX2M9sbW+7lpWqVtY1Gap6Vmg0WlJ0UuwSXY5lyrKkB4I9eDXn3eNLdj7Yg==}
+  /nx-cloud@16.5.2:
+    resolution: {integrity: sha512-1t1Ii9gojl8r/8hFGaZ/ZyYR0Cb0hzvXLCsaFuvg+EJEFdvua3P4cfNya/0bdRrm+7Eb/ITUOskbvYq4TSlyGg==}
     hasBin: true
     dependencies:
-      '@nrwl/nx-cloud': 16.5.1
+      '@nrwl/nx-cloud': 16.5.2
       axios: 1.1.3
       chalk: 4.1.2
       dotenv: 10.0.0
@@ -22904,6 +22923,7 @@ packages:
 
   /punycode@1.4.1:
     resolution: {integrity: sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==}
+    requiresBuild: true
     dev: false
 
   /punycode@2.3.0:
@@ -22978,6 +22998,7 @@ packages:
   /ramda-adjunct@4.1.1(ramda@0.29.0):
     resolution: {integrity: sha512-BnCGsZybQZMDGram9y7RiryoRHS5uwx8YeGuUeDKuZuvK38XO6JJfmK85BwRWAKFA6pZ5nZBO/HBFtExVaf31w==}
     engines: {node: '>=0.10.3'}
+    requiresBuild: true
     peerDependencies:
       ramda: '>= 0.29.0'
     dependencies:
@@ -24260,8 +24281,8 @@ packages:
   /safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  /satori@0.10.8:
-    resolution: {integrity: sha512-WlPLxgpx5kIyMuOO6qi98DhZGIbRk5XJRqENkt6D6gyDBWGyo3M5kcSl0X/oSFHUH+n4unlzwMejoPM47s4zug==}
+  /satori@0.10.9:
+    resolution: {integrity: sha512-XU9EELUEZuioT4acLIpCXxHcFzrsC8muvg0MY28d+TlqwxbkTzBmWbw+3+hnCzXT7YZ0Qm8k3eXktDaEu+qmEw==}
     engines: {node: '>=16'}
     dependencies:
       '@shuding/opentype.js': 1.4.0-beta.0
@@ -24552,6 +24573,7 @@ packages:
   /short-unique-id@4.4.4:
     resolution: {integrity: sha512-oLF1NCmtbiTWl2SqdXZQbo5KM1b7axdp0RgQLq8qCBBLoq+o3A5wmLrNM6bZIh54/a8BJ3l69kTXuxwZ+XCYuw==}
     hasBin: true
+    requiresBuild: true
     dev: false
 
   /should-equal@2.0.0:
@@ -24890,6 +24912,7 @@ packages:
 
   /stampit@4.3.2:
     resolution: {integrity: sha512-pE2org1+ZWQBnIxRPrBM2gVupkuDD0TTNIo1H6GdT/vO82NXli2z8lRE8cu/nBIHrcOCXFBAHpb9ZldrB2/qOA==}
+    requiresBuild: true
     dev: false
 
   /state-toggle@1.0.3:
@@ -26267,6 +26290,7 @@ packages:
 
   /ts-toolbelt@9.6.0:
     resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
+    requiresBuild: true
     dev: false
 
   /tsconfig-paths@4.2.0:
@@ -26480,6 +26504,7 @@ packages:
 
   /types-ramda@0.29.4:
     resolution: {integrity: sha512-XO/820iRsCDwqLjE8XE+b57cVGPyk1h+U9lBGpDWvbEky+NQChvHVwaKM05WnW1c5z3EVQh8NhXFmh2E/1YazQ==}
+    requiresBuild: true
     dependencies:
       ts-toolbelt: 9.6.0
     dev: false
@@ -26875,6 +26900,7 @@ packages:
 
   /unraw@3.0.0:
     resolution: {integrity: sha512-08/DA66UF65OlpUDIQtbJyrqTR0jTAlJ+jsnkQ4jxR7+K5g5YG1APZKQSMCE1vqqmD+2pv6+IdEjmopFatacvg==}
+    requiresBuild: true
     dev: false
 
   /untildify@4.0.0:
@@ -26945,6 +26971,7 @@ packages:
 
   /url@0.11.1:
     resolution: {integrity: sha512-rWS3H04/+mzzJkv0eZ7vEDGiQbgquI1fGfOad6zKvgYQi1SzMmhl7c/DdRGxhaWrVH6z0qWITo8rpnxK/RfEhA==}
+    requiresBuild: true
     dependencies:
       punycode: 1.4.1
       qs: 6.11.2
@@ -27387,6 +27414,7 @@ packages:
   /web-streams-polyfill@4.0.0-beta.3:
     resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
     engines: {node: '>= 14'}
+    requiresBuild: true
     dev: false
 
   /web-tree-sitter@0.20.3:
