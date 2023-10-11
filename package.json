@@ -154,6 +154,7 @@
         "@storybook/testing-library": "~0.2.2",
         "@testing-library/react": "^14.0.0",
         "@tsconfig/node18": "^18.2.2",
+        "@tsconfig/esm": "^1.0.5",
         "@tsconfig/strictest": "^2.0.2",
         "@types/node": "^20.2.3",
         "browserslist-config-anolilab": "^5.0.11",
@@ -199,7 +200,7 @@
         "typescript": "^5.2.2",
         "vite": "^4.4.11"
     },
-    "packageManager": "pnpm@8.8.0",
+    "packageManager": "pnpm@8.9.0",
     "engines": {
         "node": ">=18.* <=20.*"
     },
