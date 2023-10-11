@@ -14,11 +14,11 @@
         "@visulima/health-check": "workspace:*",
         "chalk": "4.1.2",
         "commander": "^11.0.0",
-        "next": "13.4.19",
+        "next": "13.5.4",
         "react": "18.2.0",
         "react-dom": "18.2.0",
-        "swagger-ui-react": "^5.6.2",
-        "zod": "^3.22.2"
+        "swagger-ui-react": "^5.9.0",
+        "zod": "^3.22.4"
     },
     "devDependencies": {
         "@types/cookie": "^0.5.2",
