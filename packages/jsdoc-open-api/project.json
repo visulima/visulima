@@ -3,6 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/jsdoc-open-api/src",
     "projectType": "library",
-    "tags": ["jsdoc-open-api"],
+    "tags": ["type:package", "jsdoc-open-api"],
     "implicitDependencies": []
 }

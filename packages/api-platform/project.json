@@ -3,6 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/api-platform/src",
     "projectType": "library",
-    "tags": ["api-platform"],
+    "tags": ["type:package", "api-platform"],
     "implicitDependencies": []
 }

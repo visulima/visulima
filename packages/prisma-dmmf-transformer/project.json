@@ -3,6 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/prisma-dmmf-transformer/src",
     "projectType": "library",
-    "tags": ["prisma", "prisma-dmmf-transformer"],
+    "tags": ["type:package", "prisma", "prisma-dmmf-transformer"],
     "implicitDependencies": []
 }
