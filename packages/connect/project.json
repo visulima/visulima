@@ -3,6 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/connect/src",
     "projectType": "library",
-    "tags": ["connect"],
+    "tags": ["type:package", "connect"],
     "implicitDependencies": []
 }

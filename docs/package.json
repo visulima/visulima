@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "next build",
+        "build:prod": "next build",
         "dev": "next dev",
         "docs:copy": "node scripts/import-package-documentation.js --path ../packages --copy",
         "docs:symlink": "node scripts/import-package-documentation.js --path ../packages --symlink",
@@ -32,7 +33,7 @@
         "fathom-client": "^3.5.0",
         "framer-motion": "^10.16.4",
         "fs-extra": "^11.1.1",
-        "lucide-react": "^0.285.0",
+        "lucide-react": "^0.286.0",
         "next": "13.4.19",
         "nextra": "2.13.2",
         "react": "^18.2.0",
@@ -46,7 +47,7 @@
         "@anolilab/prettier-config": "^5.0.11",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.0.1",
         "@axe-core/react": "^4.8.0",
-        "@babel/core": "^7.23.0",
+        "@babel/core": "^7.23.2",
         "@babel/eslint-parser": "^7.22.15",
         "@babel/plugin-syntax-import-assertions": "^7.22.5",
         "@next/eslint-plugin-next": "^13.5.4",
@@ -69,7 +70,7 @@
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
         "eslint-plugin-ssr-friendly": "^1.2.0",
-        "eslint-plugin-testing-library": "^6.0.2",
+        "eslint-plugin-testing-library": "^6.1.0",
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "eslint-plugin-vitest": "^0.3.2",
         "eslint-plugin-vitest-globals": "^1.4.0",
@@ -94,7 +95,8 @@
             "info_on_disabling_jsx_react_rule": false,
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
-            "info_on_disabling_etc_no_deprecated": false
+            "info_on_disabling_etc_no_deprecated": false,
+            "info_on_testing_library_framework": false
         }
     }
 }
