@@ -41,7 +41,6 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
             "require": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
@@ -52,7 +51,6 @@
             }
         },
         "./cli": {
-            "types": "./dist/cli/index.d.ts",
             "require": {
                 "types": "./dist/cli/index.d.ts",
                 "default": "./dist/cli/index.js"
@@ -63,7 +61,6 @@
             }
         },
         "./cli/commander": {
-            "types": "./dist/cli/commander/index.d.ts",
             "require": {
                 "types": "./dist/cli/commander/index.d.ts",
                 "default": "./dist/cli/commander/index.js"
@@ -92,6 +89,7 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
+        "check:packagejson": "publint --strict",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",

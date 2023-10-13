@@ -54,7 +54,6 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "types": "./dist/index-server.d.ts",
             "browser": "./dist/index-browser.js",
             "require": {
                 "types": "./dist/index-server.d.ts",
@@ -66,7 +65,6 @@
             }
         },
         "./next": {
-            "types": "./dist/framework/next/index-server.d.ts",
             "browser": "./dist/framework/next/index-browser.js",
             "require": {
                 "types": "./dist/framework/next/index-server.d.ts",
@@ -78,7 +76,6 @@
             }
         },
         "./next/pages/swagger": {
-            "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/swagger/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
@@ -90,7 +87,6 @@
             }
         },
         "./next/pages/redoc": {
-            "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
             "browser": "./dist/framework/next/routes/pages/redoc/index.js",
             "require": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
@@ -102,14 +98,13 @@
             }
         },
         "./cli": {
-            "types": "./dist/framework/cli/index-server.d.ts",
             "require": {
-                "types": "./dist/framework/cli/index-server.d.ts",
-                "default": "./dist/framework/cli/index-server.js"
+                "types": "./dist/framework/cli/index.d.ts",
+                "default": "./dist/framework/cli/index.js"
             },
             "import": {
-                "types": "./dist/framework/cli/index-server.d.mts",
-                "default": "./dist/framework/cli/index-server.mjs"
+                "types": "./dist/framework/cli/index.d.mts",
+                "default": "./dist/framework/cli/index.mjs"
             }
         },
         "./package.json": "./package.json"
@@ -133,6 +128,7 @@
     "scripts": {
         "build": "rimraf dist && cross-env NODE_ENV=development tsup",
         "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
+        "check:packagejson": "publint --strict",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",

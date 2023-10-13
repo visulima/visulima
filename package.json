@@ -14,7 +14,7 @@
         "build:prod:readdir": "pnpm --filter \"readdir\" run build:prod",
         "build:readdir": "pnpm --filter \"readdir\" run build",
         "build:storybook": "storybook build -o ./storybook-static && node ./scripts/mv.js",
-        "check": "manypkg check",
+        "check:packagejson": "nx run-many --target=check:packagejson --parallel --projects=tag:type:package",
         "clean": "nx run-many --target=clean --all --parallel && rimraf ./node_modules",
         "dev:docs": "pnpm run docs:symlink:docs && nx run-many --target=dev --parallel --projects=tag:type:nextra",
         "dev:storybook": "storybook dev -p 6006 -s ./public",
@@ -109,7 +109,7 @@
     "browserslist": [
         "extends browserslist-config-anolilab"
     ],
-    "dependencies": {
+    "devDependencies": {
         "@anolilab/commitlint-config": "^5.0.0",
         "@anolilab/eslint-config": "^14.0.24",
         "@anolilab/lint-staged-config": "^2.1.1",
@@ -169,6 +169,7 @@
         "plop": "^4.0.0",
         "prettier": "^3.0.3",
         "pretty-quick": "^3.1.3",
+        "publint": "^0.2.4",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "read-pkg": "^8.1.0",
