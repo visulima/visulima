@@ -16,11 +16,11 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@8ca2b8b2ece13480cda6dacd3511b49857a23c09" # v2.5.1
+              uses: "step-security/harden-runner@1b05615854632b887b69ae1be8cbefe72d3ae423" # v2.6.0
               with:
                   egress-policy: "audit"
 
-            - uses: "actions/first-interaction@1d8459ca65b335265f1285568221e229d45a995e" # v1.1.1
+            - uses: "actions/first-interaction@1dbfe1ba5525b8257e1f259b09745bee346d62d8" # v1.2.0
               with:
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
                   issue-message: "Awesome! Thank you for taking the time to create your first issue! Please review the [guidelines](https://narrowspark.com/docs/current/contributing)"
