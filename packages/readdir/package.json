@@ -31,7 +31,6 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
             "require": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
@@ -56,6 +55,7 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
+        "check:packagejson": "publint --strict",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
