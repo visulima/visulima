@@ -3,7 +3,8 @@
     "version": "0.0.0",
     "private": true,
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "docs"
     ],
     "scripts": {
         "build": "nx run-many --target=build --all --parallel",
@@ -123,8 +124,8 @@
         "@anolilab/textlint-config": "^8.0.13",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.0.1",
         "@babel/core": "^7.23.2",
-        "@commitlint/cli": "^17.7.2",
-        "@commitlint/config-conventional": "^17.7.0",
+        "@commitlint/cli": "^17.8.0",
+        "@commitlint/config-conventional": "^17.8.0",
         "@nrwl/tao": "16.10.0",
         "@nrwl/workspace": "16.10.0",
         "@octokit/rest": "^20.0.2",
@@ -166,7 +167,7 @@
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "husky": "^8.0.3",
         "is-ci": "^3.0.1",
-        "lint-staged": "^14.0.1",
+        "lint-staged": "^15.0.1",
         "load-tsconfig": "^0.2.5",
         "mvdir": "^1.0.21",
         "nx": "^17.0.0-beta.2",
