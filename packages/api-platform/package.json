@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "anolilab",
@@ -141,8 +141,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "2.1.1",
-        "@visulima/jsdoc-open-api": "2.0.3",
+        "@visulima/connect": "2.1.2",
+        "@visulima/jsdoc-open-api": "2.0.4",
         "accepts": "^1.3.8",
         "debug": "^4.3.4",
         "http-errors": "^2.0.0",
@@ -182,8 +182,8 @@
         "@types/react-dom": "^18.2.13",
         "@types/swagger-ui-react": "^4.18.0",
         "@types/webpack": "^5.28.3",
-        "@visulima/crud": "2.0.3",
-        "@visulima/readdir": "2.0.3",
+        "@visulima/crud": "2.0.4",
+        "@visulima/readdir": "2.0.4",
         "@vitest/coverage-v8": "^0.34.6",
         "chalk": "5.3.0",
         "commander": "^11.1.0",
@@ -239,8 +239,8 @@
     "optionalDependencies": {
         "@hapi/hapi": "^21.3.2",
         "@koa/router": "^12.0.0",
-        "@visulima/crud": "2.0.3",
-        "@visulima/readdir": "2.0.3",
+        "@visulima/crud": "2.0.4",
+        "@visulima/readdir": "2.0.4",
         "chalk": "5.3.0",
         "commander": "^11.1.0",
         "cors": "^2.8.5",
