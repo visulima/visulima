@@ -13,6 +13,10 @@ inject-react-import.js
 vitest.config.ts
 tsup.config.ts
 tsconfig.eslint.json
+tsconfig.base.json
+tsconfig.esm.base.json
+tsconfig.react-esm.base.json
+.lintstagedrc.js
 
 docs
 examples
@@ -22,4 +26,3 @@ plop/package-configuration.js
 
 bench
 README.md
-tsconfig.base.json
