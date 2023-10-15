@@ -26,6 +26,7 @@ jobs:
             frontend_lintable: "${{ steps.changes.outputs.frontend_lintable }}"
             markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
             yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
+            package_json_lintable: "${{ steps.changes.outputs.package_json_lintable }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@1b05615854632b887b69ae1be8cbefe72d3ae423" # v2.6.0
@@ -87,6 +88,48 @@ jobs:
 
             - name: "lint"
               run: "pnpm run lint:eslint"
+
+    package-json-lint:
+        if: "needs.files-changed.outputs.package_json_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (package.json)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@1b05615854632b887b69ae1be8cbefe72d3ae423" # v2.6.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608" # v4.1.0
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+              with:
+                  run_install: false
+
+            - name: "Use Node.js 18.x"
+              uses: "actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d" # v3.8.1
+              with:
+                  node-version: "18.x"
+                  cache: "pnpm"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile"
+
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "pnpm audit signatures"
+
+            - name: "Build"
+              run: "pnpm run build:packages"
+
+            - name: "lint package.json"
+              run: "pnpm run lint:packagejson"
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
@@ -164,7 +207,7 @@ jobs:
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
     # This check is the only required Github check
     test-required-check:
-        needs: ["files-changed", "eslint", "yaml-lint"] # TODO add "markdown-lint"
+        needs: ["files-changed", "eslint", "yaml-lint", "package-json-lint"] # TODO add "markdown-lint"
         name: "Check Lint Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always()"
