@@ -1,9 +1,14 @@
 **/.git
 **/.svn
 **/.hg
+
 **/node_modules
 **/.next
 **/dist
+**/__fixtures__
+
 **/CHANGELOG.md
+
 pnpm-lock.yaml
 pnpm-workspace.yaml
+

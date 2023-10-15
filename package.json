@@ -94,6 +94,7 @@
         "test:coverage:health-check": "pnpm --filter \"health-check\" run coverage",
         "test:coverage:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run coverage",
         "test:coverage:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run coverage",
+        "test:coverage:package": "pnpm --filter \"package\" run coverage",
         "test:coverage:pagination": "pnpm --filter \"pagination\" run coverage",
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run coverage",
         "test:coverage:readdir": "pnpm --filter \"readdir\" run coverage",
@@ -101,6 +102,7 @@
         "test:health-check": "pnpm --filter \"health-check\" run test",
         "test:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run test",
         "test:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run test",
+        "test:package": "pnpm --filter \"package\" run test",
         "test:pagination": "pnpm --filter \"pagination\" run test",
         "test:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test",
         "test:readdir": "pnpm --filter \"readdir\" run test",
@@ -184,7 +186,7 @@
         "typescript": "^5.2.2",
         "vite": "^4.4.11"
     },
-    "packageManager": "pnpm@8.9.0",
+    "packageManager": "pnpm@8.9.1",
     "engines": {
         "node": ">=18.* <=20.*"
     },
