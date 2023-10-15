@@ -2,8 +2,12 @@
 .env*
 *.ico
 *.lock
+
 dist
-CHANGELOG.md
 coverage
 node_modules
+
+CHANGELOG.md
 .eslintcache
+
+__fixtures__
