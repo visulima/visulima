@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {

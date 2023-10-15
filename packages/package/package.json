@@ -1,0 +1,170 @@
+{
+    "name": "@visulima/package",
+    "version": "1.0.0",
+    "description": "One Package to rule them all, finds your root-dir, monorepo, package manager or tsconfig.json",
+    "keywords": [
+        "anolilab",
+        "package",
+        "pkg-types",
+        "find-up-pkg",
+        "read-pkg",
+        "read-pkg-up",
+        "read-tsconfig",
+        "tsconfig",
+        "get-tsconfig",
+        "find-monorepo-root",
+        "pkg-up",
+        "pkg-dir",
+        "package-json",
+        "package.json",
+        "tsconfig.json",
+        "packages",
+        "monorepo",
+        "pkg-manager",
+        "package-manager",
+        "find",
+        "root"
+    ],
+    "homepage": "https://visulima.com/packages/package",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/package"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        },
+        "./monorepo": {
+            "import": {
+                "types": "./dist/monorepo.d.ts",
+                "default": "./dist/monorepo.js"
+            }
+        },
+        "./package": {
+            "import": {
+                "types": "./dist/package.d.ts",
+                "default": "./dist/package.js"
+            }
+        },
+        "./package-json": {
+            "import": {
+                "types": "./dist/package-json.d.ts",
+                "default": "./dist/package-json.js"
+            }
+        },
+        "./package-manager": {
+            "import": {
+                "types": "./dist/package-manager.d.ts",
+                "default": "./dist/package-manager.js"
+            }
+        },
+        "./tsconfig": {
+            "import": {
+                "types": "./dist/tsconfig.d.ts",
+                "default": "./dist/tsconfig.js"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "coverage": "vitest run --coverage",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "detect-indent": "^7.0.1",
+        "find-up": "^6.3.0",
+        "get-tsconfig": "^4.7.2",
+        "read-pkg": "^8.1.0",
+        "strip-json-comments": "^5.0.1"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^14.0.24",
+        "@anolilab/prettier-config": "^5.0.11",
+        "@anolilab/semantic-release-preset": "^8.0.0",
+        "@babel/core": "^7.23.2",
+        "@rushstack/eslint-plugin-security": "^0.7.1",
+        "@total-typescript/ts-reset": "^0.5.1",
+        "@types/node": "18.17.12",
+        "@vitest/coverage-v8": "^0.34.6",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.51.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.28.1",
+        "eslint-plugin-mdx": "^2.2.0",
+        "eslint-plugin-tsdoc": "^0.2.17",
+        "eslint-plugin-vitest": "^0.3.2",
+        "eslint-plugin-vitest-globals": "^1.4.0",
+        "prettier": "^3.0.3",
+        "rimraf": "^5.0.5",
+        "semantic-release": "^22.0.5",
+        "sort-package-json": "^2.6.0",
+        "tsup": "^7.2.0",
+        "typescript": "^5.2.2",
+        "vitest": "^0.34.6"
+    },
+    "engines": {
+        "node": ">=18.* <=20.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    },
+    "sources": [
+        "src/index.ts",
+        "src/monorepo.ts",
+        "src/package.ts",
+        "src/package-json.ts",
+        "src/package-manager.ts",
+        "src/tsconfig.ts"
+    ]
+}

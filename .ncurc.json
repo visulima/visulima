@@ -1,4 +1,5 @@
 {
     "upgrade": true,
-    "reject": ["read-pkg-up", "chalk", "next", "@types/node", "prisma", "@prisma/client", "@types/swagger-ui-react", "swagger-ui-dist", "swagger-ui-react"]
+    "reject": ["read-pkg-up", "chalk", "next", "@types/node", "prisma", "@prisma/client", "@types/swagger-ui-react", "swagger-ui-dist", "swagger-ui-react"],
+    "workspaces": true
 }

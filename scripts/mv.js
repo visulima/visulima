@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 const mvdir = require("mvdir");
 const path = require("node:path");
 
