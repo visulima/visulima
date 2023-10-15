@@ -150,8 +150,8 @@
         "jstoxml": "^3.2.8",
         "lodash.merge": "^4.6.2",
         "schema-dts": "^1.1.2",
-        "ts-japi": "^1.9.0",
-        "yaml": "^2.3.2",
+        "ts-japi": "^1.9.1",
+        "yaml": "^2.3.3",
         "zod-to-ts": "^1.2.0"
     },
     "devDependencies": {
@@ -205,7 +205,7 @@
         "eslint-plugin-vitest-globals": "^1.4.0",
         "eslint-plugin-zod": "^1.4.0",
         "express": "^4.18.2",
-        "fastify": "^4.24.1",
+        "fastify": "^4.24.2",
         "koa": "^2.14.2",
         "mobx": "^6.10.2",
         "next": "^13.4.19",
@@ -221,14 +221,14 @@
         "secretlint": "7.0.7",
         "semantic-release": "^22.0.5",
         "sort-package-json": "^2.6.0",
-        "styled-components": "^6.0.9",
+        "styled-components": "^6.1.0",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
         "tsup": "^7.2.0",
         "type-fest": "^4.4.0",
         "typescript": "^5.2.2",
         "vitest": "^0.34.6",
-        "webpack": "^5.88.2",
+        "webpack": "^5.89.0",
         "zod": "^3.22.4"
     },
     "peerDependencies": {
@@ -245,14 +245,14 @@
         "commander": "^11.1.0",
         "cors": "^2.8.5",
         "express": "^4.18.2",
-        "fastify": "^4.24.1",
+        "fastify": "^4.24.2",
         "koa": "^2.14.2",
         "next": "^13.5.4",
         "rate-limiter-flexible": "^3.0.0",
         "redoc": "^2.1.2",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
-        "webpack": "^5.88.2"
+        "webpack": "^5.89.0"
     },
     "engines": {
         "node": ">=18.* <=20.*"

@@ -5,6 +5,4 @@ packages:
     - "!**/__fixtures__/**"
     - "!**/__tests__/**"
     - "!**/__test__/**"
-    - "visulima"
     - "docs"
-    - "storybook"
