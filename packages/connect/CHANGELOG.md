@@ -1,3 +1,16 @@
+## @visulima/connect [2.1.2](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.1...@visulima/connect@2.1.2) (2023-10-15)
+
+
+### Bug Fixes
+
+* removed types from exports key ([80bd356](https://github.com/visulima/visulima/commit/80bd356659a45bd351a60870b0f380569c75e0c1))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.3
+
 ## @visulima/connect [2.1.1](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.0...@visulima/connect@2.1.1) (2023-10-11)
 
 
