@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [2.0.4](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.3...@visulima/prisma-dmmf-transformer@2.0.4) (2023-10-15)
+
+
+### Bug Fixes
+
+* removed types from exports key ([80bd356](https://github.com/visulima/visulima/commit/80bd356659a45bd351a60870b0f380569c75e0c1))
+
 ## @visulima/prisma-dmmf-transformer [2.0.3](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.2...@visulima/prisma-dmmf-transformer@2.0.3) (2023-10-11)
 
 
