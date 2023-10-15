@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
         "visulima",
@@ -103,7 +103,7 @@
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "^10.1.0",
-        "@visulima/readdir": "2.0.3",
+        "@visulima/readdir": "2.0.4",
         "comment-parser": "^1.4.0",
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
