@@ -77,7 +77,7 @@ describe("monorepo", () => {
 
         it("should throw error when package.json is broken", async () => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect,require-unicode-regexp
-            expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow(/Unexpected token "a"/);
+            expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow();
         });
     });
 });

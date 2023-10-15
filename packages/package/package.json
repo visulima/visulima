@@ -79,10 +79,10 @@
                 "default": "./dist/package-manager.js"
             }
         },
-        "./ts-config": {
+        "./tsconfig": {
             "import": {
-                "types": "./dist/ts-config.d.ts",
-                "default": "./dist/ts-config.js"
+                "types": "./dist/tsconfig.d.ts",
+                "default": "./dist/tsconfig.js"
             }
         },
         "./package.json": "./package.json"
@@ -98,12 +98,12 @@
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
-        "check:packagejson": "publint --strict",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "lint:packagejson": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
