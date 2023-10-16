@@ -135,14 +135,14 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## License
 
-The visulima readdir is open-sourced software licensed under the [MIT][license-url]
+The visulima deep-clone is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/readdir?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/@visulima/deep-clone?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/readdir/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/readdir/v/latest "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/deep-clone/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/deep-clone/v/latest "npm"
 [mdn-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 [mdn-type-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
 [mdn-syntax-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
