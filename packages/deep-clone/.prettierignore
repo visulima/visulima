@@ -1,0 +1,13 @@
+.gitkeep
+.env*
+*.ico
+*.lock
+
+dist
+coverage
+node_modules
+
+CHANGELOG.md
+.eslintcache
+
+__fixtures__
