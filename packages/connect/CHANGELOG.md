@@ -1,3 +1,10 @@
+## @visulima/connect [2.1.3](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.2...@visulima/connect@2.1.3) (2023-10-16)
+
+
+### Bug Fixes
+
+* updated all deps ([a8aa029](https://github.com/visulima/visulima/commit/a8aa0295118a4d5248844e89a95ea332f65434cb))
+
 ## @visulima/connect [2.1.2](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.1...@visulima/connect@2.1.2) (2023-10-15)
 
 
