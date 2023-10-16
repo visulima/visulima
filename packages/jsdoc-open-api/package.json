@@ -106,7 +106,7 @@
         "@visulima/readdir": "2.0.4",
         "comment-parser": "^1.4.0",
         "lodash.mergewith": "^4.6.2",
-        "read-pkg-up": "^7.0.1",
+        "read-pkg-up": "^10.0.0",
         "yaml": "^2.3.3"
     },
     "devDependencies": {
