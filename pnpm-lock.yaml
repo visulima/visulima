@@ -144,7 +144,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.7.1
         version: 6.7.1(eslint@8.51.0)
@@ -367,7 +367,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.7.1
         version: 6.7.1(eslint@8.51.0)
@@ -1174,7 +1174,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.7.1
         version: 6.7.1(eslint@8.51.0)
@@ -1317,7 +1317,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -1429,7 +1429,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.7.1
         version: 6.7.1(eslint@8.51.0)
@@ -1483,6 +1483,123 @@ importers:
         version: 0.34.6(jsdom@22.1.0)
 
   packages/crud/next: {}
+
+  packages/deep-clone:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^14.0.24
+        version: 14.0.24(@arthurgeron/eslint-plugin-react-usememo@2.0.1)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.28.1)(eslint-plugin-jsx-a11y@6.7.1)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.51.0)(typescript@5.2.2)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.11
+        version: 5.0.11(prettier@3.0.3)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.0
+        version: 8.0.0(semantic-release@22.0.5)
+      '@mfederczuk/deeptools':
+        specifier: 2.1.0-indev01
+        version: 2.1.0-indev01
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.7.1
+        version: 0.7.1(eslint@8.51.0)(typescript@5.2.2)
+      '@total-typescript/ts-reset':
+        specifier: ^0.5.1
+        version: 0.5.1
+      '@types/lodash.clonedeep':
+        specifier: ^4.5.7
+        version: 4.5.7
+      '@types/node':
+        specifier: 18.17.12
+        version: 18.17.12
+      '@ungap/structured-clone':
+        specifier: ^1.2.0
+        version: 1.2.0
+      '@vitest/coverage-v8':
+        specifier: ^0.34.6
+        version: 0.34.6(vitest@0.34.6)
+      clone-deep:
+        specifier: ^4.0.1
+        version: 4.0.1
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      deep-copy:
+        specifier: ^1.4.2
+        version: 1.4.2
+      eslint:
+        specifier: ^8.51.0
+        version: 8.51.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.51.0)(typescript@5.2.2)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
+      eslint-plugin-mdx:
+        specifier: ^2.2.0
+        version: 2.2.0(eslint@8.51.0)
+      eslint-plugin-tsdoc:
+        specifier: ^0.2.17
+        version: 0.2.17
+      eslint-plugin-vitest:
+        specifier: ^0.3.2
+        version: 0.3.2(eslint@8.51.0)(typescript@5.2.2)(vitest@0.34.6)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.4.0
+        version: 1.4.0
+      fast-copy:
+        specifier: ^3.0.1
+        version: 3.0.1
+      jsdom:
+        specifier: ^22.1.0
+        version: 22.1.0
+      jsondiffpatch:
+        specifier: ^0.5.0
+        version: 0.5.0
+      lodash.clonedeep:
+        specifier: ^4.5.0
+        version: 4.5.0
+      nano-copy:
+        specifier: ^0.1.0
+        version: 0.1.0
+      nanoclone:
+        specifier: ^1.0.2
+        version: 1.0.2
+      plain-object-clone:
+        specifier: ^2.0.0
+        version: 2.0.0
+      prettier:
+        specifier: ^3.0.3
+        version: 3.0.3
+      ramda:
+        specifier: ^0.29.1
+        version: 0.29.1
+      rfdc:
+        specifier: ^1.3.0
+        version: 1.3.0
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      semantic-release:
+        specifier: ^22.0.5
+        version: 22.0.5
+      sort-package-json:
+        specifier: ^2.6.0
+        version: 2.6.0
+      standard:
+        specifier: ^17.1.0
+        version: 17.1.0
+      tsup:
+        specifier: 7.1.0
+        version: 7.1.0(postcss@8.4.31)(typescript@5.2.2)
+      type-fest:
+        specifier: ^4.4.0
+        version: 4.4.0
+      typescript:
+        specifier: ^5.1.6
+        version: 5.2.2
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(jsdom@22.1.0)
 
   packages/health-check:
     dependencies:
@@ -1538,7 +1655,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -1651,7 +1768,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -1842,7 +1959,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.7.1
         version: 6.7.1(eslint@8.51.0)
@@ -2000,7 +2117,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -2082,7 +2199,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -2176,7 +2293,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -2255,7 +2372,7 @@ importers:
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-import:
         specifier: npm:eslint-plugin-i@^2.28.1
-        version: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+        version: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       eslint-plugin-mdx:
         specifier: ^2.2.0
         version: 2.2.0(eslint@8.51.0)
@@ -5576,6 +5693,10 @@ packages:
       '@types/mdx': 2.0.7
       '@types/react': 18.2.28
       react: 18.2.0
+
+  /@mfederczuk/deeptools@2.1.0-indev01:
+    resolution: {integrity: sha512-+vAcEbPNRzN2eH4sPHCs+fv9mZJlD5vFqyx8ScL4rRyYd67cX+J7Di0//QHRGnA79hDQk2/eHataCJLsyAhn5A==}
+    dev: true
 
   /@microsoft/tsdoc-config@0.16.2:
     resolution: {integrity: sha512-OGiIzzoBLgWWR0UdRJX98oYO+XKGf7tiK4Zk6tQ/E4IJqGCe7dvkTvgDZV5cFJUzLGDOjeAXrnZoA6QkVySuxw==}
@@ -9095,8 +9216,8 @@ packages:
     dependencies:
       '@babel/runtime-corejs3': 7.22.11
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
       unraw: 3.0.0
     dev: false
@@ -9109,8 +9230,8 @@ packages:
       '@swagger-api/apidom-ast': 0.75.0
       '@types/ramda': 0.29.3
       minim: 0.23.8
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       short-unique-id: 4.4.4
       stampit: 4.3.2
     dev: false
@@ -9122,8 +9243,8 @@ packages:
       '@babel/runtime-corejs3': 7.22.11
       '@swagger-api/apidom-core': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
 
   /@swagger-api/apidom-ns-api-design-systems@0.75.0:
@@ -9134,8 +9255,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-openapi-3-1': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
     optional: true
@@ -9148,8 +9269,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-json-schema-draft-7': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
     optional: true
@@ -9162,8 +9283,8 @@ packages:
       '@swagger-api/apidom-ast': 0.75.0
       '@swagger-api/apidom-core': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
 
@@ -9175,8 +9296,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-json-schema-draft-4': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
     optional: true
@@ -9189,8 +9310,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-json-schema-draft-6': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
     optional: true
@@ -9203,8 +9324,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-json-schema-draft-4': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
 
@@ -9217,8 +9338,8 @@ packages:
       '@swagger-api/apidom-core': 0.75.0
       '@swagger-api/apidom-ns-openapi-3-0': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     dev: false
 
@@ -9231,8 +9352,8 @@ packages:
       '@swagger-api/apidom-ns-api-design-systems': 0.75.0
       '@swagger-api/apidom-parser-adapter-json': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9245,8 +9366,8 @@ packages:
       '@swagger-api/apidom-ns-api-design-systems': 0.75.0
       '@swagger-api/apidom-parser-adapter-yaml-1-2': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9259,8 +9380,8 @@ packages:
       '@swagger-api/apidom-ns-asyncapi-2': 0.75.0
       '@swagger-api/apidom-parser-adapter-json': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9273,8 +9394,8 @@ packages:
       '@swagger-api/apidom-ns-asyncapi-2': 0.75.0
       '@swagger-api/apidom-parser-adapter-yaml-1-2': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9286,8 +9407,8 @@ packages:
       '@swagger-api/apidom-ast': 0.75.0
       '@swagger-api/apidom-core': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
       tree-sitter: 0.20.4
       tree-sitter-json: 0.20.0
@@ -9304,8 +9425,8 @@ packages:
       '@swagger-api/apidom-ns-openapi-3-0': 0.75.0
       '@swagger-api/apidom-parser-adapter-json': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9318,8 +9439,8 @@ packages:
       '@swagger-api/apidom-ns-openapi-3-1': 0.75.0
       '@swagger-api/apidom-parser-adapter-json': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9332,8 +9453,8 @@ packages:
       '@swagger-api/apidom-ns-openapi-3-0': 0.75.0
       '@swagger-api/apidom-parser-adapter-yaml-1-2': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9346,8 +9467,8 @@ packages:
       '@swagger-api/apidom-ns-openapi-3-1': 0.75.0
       '@swagger-api/apidom-parser-adapter-yaml-1-2': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
     dev: false
     optional: true
 
@@ -9359,8 +9480,8 @@ packages:
       '@swagger-api/apidom-ast': 0.75.0
       '@swagger-api/apidom-core': 0.75.0
       '@types/ramda': 0.29.3
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
       tree-sitter: 0.20.4
       tree-sitter-yaml: 0.5.0
@@ -9378,8 +9499,8 @@ packages:
       axios: 1.5.0(debug@4.3.4)
       minimatch: 7.4.6
       process: 0.11.10
-      ramda: 0.29.0
-      ramda-adjunct: 4.1.1(ramda@0.29.0)
+      ramda: 0.29.1
+      ramda-adjunct: 4.1.1(ramda@0.29.1)
       stampit: 4.3.2
     optionalDependencies:
       '@swagger-api/apidom-json-pointer': 0.75.0
@@ -10504,6 +10625,12 @@ packages:
       '@types/node': 20.8.6
     dev: true
 
+  /@types/lodash.clonedeep@4.5.7:
+    resolution: {integrity: sha512-ccNqkPptFIXrpVqUECi60/DFxjNKsfoQxSQsgcBJCX/fuX1wgyQieojkcWH/KpE3xzLoWN/2k+ZeGqIN3paSvw==}
+    dependencies:
+      '@types/lodash': 4.14.197
+    dev: true
+
   /@types/lodash.merge@4.6.7:
     resolution: {integrity: sha512-OwxUJ9E50gw3LnAefSHJPHaBLGEKmQBQ7CZe/xflHkyy/wH2zVyEIAKReHvVrrn7zKdF58p16We9kMfh7v0RRQ==}
     dependencies:
@@ -10586,6 +10713,10 @@ packages:
 
   /@types/node@18.16.14:
     resolution: {integrity: sha512-+ImzUB3mw2c5ISJUq0punjDilUQ5GnUim0ZRvchHIWJmOC0G+p0kzhXBqj6cDjK0QdPFwzrHWgrJp3RPvCG5qg==}
+    dev: true
+
+  /@types/node@18.17.12:
+    resolution: {integrity: sha512-d6xjC9fJ/nSnfDeU0AMDsaJyb1iHsqCSOdi84w4u+SlN/UgQdY5tRhpMzaFYsI4mnpvgTivEaQd0yOUhAtOnEQ==}
     dev: true
 
   /@types/node@18.18.5:
@@ -13987,6 +14118,11 @@ packages:
     resolution: {integrity: sha512-Q6fKUPqnAHAyhiUgFU7BUzLiv0kd8saH9al7tnu5Q/okj6dnupxyTgFIBjVzJATdfIAm9NAsvXNzjaKa+bxVyA==}
     dev: true
 
+  /deep-copy@1.4.2:
+    resolution: {integrity: sha512-VxZwQ/1+WGQPl5nE67uLhh7OqdrmqI1OazrraO9Bbw/M8Bt6Mol/RxzDA6N6ZgRXpsG/W9PgUj8E1LHHBEq2GQ==}
+    engines: {node: '>=4.0.0'}
+    dev: true
+
   /deep-eql@4.1.3:
     resolution: {integrity: sha512-WaEtAOpRA1MQ0eohqZjpGD8zdI0Ovsm8mmFhaDN8dvDZzyoUMcYDnf5Y6iu7HTXxf8JDS23qWa4a+hKCDyOPzw==}
     engines: {node: '>=6'}
@@ -14285,6 +14421,10 @@ packages:
 
   /didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
+    dev: true
+
+  /diff-match-patch@1.0.5:
+    resolution: {integrity: sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==}
     dev: true
 
   /diff-sequences@28.1.1:
@@ -14876,6 +15016,31 @@ packages:
       - eslint-import-resolver-webpack
       - supports-color
 
+  /eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.33.2)(eslint@8.51.0):
+    resolution: {integrity: sha512-+1EV/R0JxEK1L0NGolAr8Iktm3Rgotx3BKwgaX+eAuSX8D952LULKtjgZD3F+e6SvibONnhLwoTi9DPxN5LvvQ==}
+    peerDependencies:
+      eslint: ^8.8.0
+      eslint-plugin-react: ^7.28.0
+    dependencies:
+      eslint: 8.51.0
+      eslint-plugin-react: 7.33.2(eslint@8.51.0)
+    dev: true
+
+  /eslint-config-standard@17.1.0(eslint-plugin-import@2.28.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.51.0):
+    resolution: {integrity: sha512-IwHwmaBNtDK4zDHQukFDW5u/aTb8+meQWZvNFWkiGmbWjD6bqyuSSBxxXKkCftCUzc1zwCH2m/baCNDLGmuO5Q==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      eslint: ^8.0.1
+      eslint-plugin-import: ^2.25.2
+      eslint-plugin-n: '^15.0.0 || ^16.0.0 '
+      eslint-plugin-promise: ^6.0.0
+    dependencies:
+      eslint: 8.51.0
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.3)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+      eslint-plugin-n: 15.7.0(eslint@8.51.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.51.0)
+    dev: true
+
   /eslint-define-config@1.23.0:
     resolution: {integrity: sha512-4mMyu0JuBkQHsCtR+42irIQdFLmLIW+pMAVcyOV/gZRL4O1R8iuH0eMG3oL3Cbi1eo9fDAfT5CIHVHgdyxcf6w==}
     engines: {node: ^16.13.0 || >=18.0.0, npm: '>=7.0.0', pnpm: '>= 8.6.0'}
@@ -14938,7 +15103,7 @@ packages:
       enhanced-resolve: 5.15.0
       eslint: 8.51.0
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
-      eslint-plugin-import: /eslint-plugin-i@2.28.1(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+      eslint-plugin-import: /eslint-plugin-i@2.28.1(eslint@8.51.0)
       fast-glob: 3.3.1
       get-tsconfig: 4.7.2
       is-core-module: 2.13.0
@@ -15097,6 +15262,17 @@ packages:
       eslint: 8.51.0
     dev: true
 
+  /eslint-plugin-es@4.1.0(eslint@8.51.0):
+    resolution: {integrity: sha512-GILhQTnjYE2WorX5Jyi5i4dz5ALWxBIdQECVQavL6s7cI76IZTDWleTHkxz/QT3kvcs2QlGHvKLYsSlPOlPXnQ==}
+    engines: {node: '>=8.10.0'}
+    peerDependencies:
+      eslint: '>=4.19.1'
+    dependencies:
+      eslint: 8.51.0
+      eslint-utils: 2.1.0
+      regexpp: 3.2.0
+    dev: true
+
   /eslint-plugin-eslint-comments@3.2.0(eslint@8.51.0):
     resolution: {integrity: sha512-0jkOl0hfojIHHmEHgmNdqv4fmh7300NdpA9FFpF7zaoLvB/QeXOGNLIo86oAveJFrfB1p05kC8hpEMHM8DwWVQ==}
     engines: {node: '>=6.5.0'}
@@ -15143,6 +15319,29 @@ packages:
       eslint: 8.51.0
       eslint-import-resolver-node: 0.3.9
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.5)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+      get-tsconfig: 4.7.2
+      is-glob: 4.0.3
+      minimatch: 3.1.2
+      resolve: 1.22.4
+      semver: 7.5.4
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: true
+
+  /eslint-plugin-i@2.28.1(eslint@8.51.0):
+    resolution: {integrity: sha512-a4oVt0j3ixNhGhvV4XF6NS7OWRFK2rrJ0Q5C4S2dSRb8FxZi31J0uUd5WJLL58wnVJ/OiQ1BxiXnFA4dWQO1Cg==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      eslint: ^7.2.0 || ^8
+    dependencies:
+      debug: 3.2.7
+      doctrine: 2.1.0
+      eslint: 8.51.0
+      eslint-import-resolver-node: 0.3.9
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.3)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
       get-tsconfig: 4.7.2
       is-glob: 4.0.3
       minimatch: 3.1.2
@@ -15254,6 +15453,23 @@ packages:
       vfile: 5.3.7
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /eslint-plugin-n@15.7.0(eslint@8.51.0):
+    resolution: {integrity: sha512-jDex9s7D/Qial8AGVIHq4W7NswpUD5DPDL2RH8Lzd9EloWUuvUkHfv4FRLMipH5q2UtyurorBkPeNi1wVWNh3Q==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      eslint: '>=7.0.0'
+    dependencies:
+      builtins: 5.0.1
+      eslint: 8.51.0
+      eslint-plugin-es: 4.1.0(eslint@8.51.0)
+      eslint-utils: 3.0.0(eslint@8.51.0)
+      ignore: 5.2.4
+      is-core-module: 2.13.0
+      minimatch: 3.1.2
+      resolve: 1.22.4
+      semver: 7.5.4
     dev: true
 
   /eslint-plugin-n@16.1.0(eslint@8.51.0):
@@ -15578,6 +15794,28 @@ packages:
     dependencies:
       esrecurse: 4.3.0
       estraverse: 5.3.0
+
+  /eslint-utils@2.1.0:
+    resolution: {integrity: sha512-w94dQYoauyvlDc43XnGB8lU3Zt713vNChgt4EWwhXAP2XkBvndfxF0AgIqKOOasjPIPzj9JqgwkwbCYD0/V3Zg==}
+    engines: {node: '>=6'}
+    dependencies:
+      eslint-visitor-keys: 1.3.0
+    dev: true
+
+  /eslint-utils@3.0.0(eslint@8.51.0):
+    resolution: {integrity: sha512-uuQC43IGctw68pJA1RgbQS8/NP7rch6Cwd4j3ZBtgo4/8Flj4eGE7ZYSZRN3iq5pVUv6GPdW5Z1RFleo84uLDA==}
+    engines: {node: ^10.0.0 || ^12.0.0 || >= 14.0.0}
+    peerDependencies:
+      eslint: '>=5'
+    dependencies:
+      eslint: 8.51.0
+      eslint-visitor-keys: 2.1.0
+    dev: true
+
+  /eslint-visitor-keys@1.3.0:
+    resolution: {integrity: sha512-6J72N8UNa462wa/KFODt/PJ3IU60SDpC3QXC1Hjc1BXXpfL2C9R5+AU7jhe0F6GREqVMh4Juu+NY7xn+6dipUQ==}
+    engines: {node: '>=4'}
+    dev: true
 
   /eslint-visitor-keys@2.1.0:
     resolution: {integrity: sha512-0rSmRBzXgDzIsD6mGdJgevzgezI534Cer5L/vyMX0kHzT/jiB43jRhd9YUlMGYLQy2zprNmoT8qasCGtY+QaKw==}
@@ -15969,6 +16207,10 @@ packages:
   /fast-content-type-parse@1.1.0:
     resolution: {integrity: sha512-fBHHqSTFLVnR61C+gltJuE5GkVQMV0S2nqUO8TJ+5Z3qAKG8vAx4FKai1s5jq/inV1+sREynIWSuQ6HgoSXpDQ==}
     requiresBuild: true
+
+  /fast-copy@3.0.1:
+    resolution: {integrity: sha512-Knr7NOtK3HWRYGtHoJrjkaWepqT8thIVGAwt0p0aUs1zqkAzXZV4vo9fFNwyb5fcqK1GKYFYxldQdIDVKhUAfA==}
+    dev: true
 
   /fast-decode-uri-component@1.0.1:
     resolution: {integrity: sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==}
@@ -16635,6 +16877,11 @@ packages:
   /get-stdin@5.0.1:
     resolution: {integrity: sha512-jZV7n6jGE3Gt7fgSTJoz91Ak5MuTLwMwkoYdjxuJ/AmjIsE1UC03y/IWkZCQGEvVNS9qoRNwy5BCqxImv0FVeA==}
     engines: {node: '>=0.12.0'}
+    dev: true
+
+  /get-stdin@8.0.0:
+    resolution: {integrity: sha512-sY22aA6xchAzprjyqmSEQv4UbAAzRN0L2dQB0NlN5acTTK9Don6nhoc3eAbUnpZiCANAMfd/+40kVdKfFygohg==}
+    engines: {node: '>=10'}
     dev: true
 
   /get-stdin@9.0.0:
@@ -19263,6 +19510,16 @@ packages:
   /jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
 
+  /jsondiffpatch@0.5.0:
+    resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
+    engines: {node: '>=8.17.0'}
+    hasBin: true
+    dependencies:
+      chalk: 3.0.0
+      diff-match-patch: 1.0.5
+    dev: true
+    bundledDependencies: []
+
   /jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
     optionalDependencies:
@@ -19774,6 +20031,17 @@ packages:
       strip-bom: 3.0.0
     dev: true
 
+  /load-json-file@5.3.0:
+    resolution: {integrity: sha512-cJGP40Jc/VXUsp8/OrnyKyTZ1y6v/dphm3bioS+RrKXjK2BB6wHUd6JptZEFDGgGahMT+InnZO5i1Ei9mpC8Bw==}
+    engines: {node: '>=6'}
+    dependencies:
+      graceful-fs: 4.2.11
+      parse-json: 4.0.0
+      pify: 4.0.1
+      strip-bom: 3.0.0
+      type-fest: 0.3.1
+    dev: true
+
   /load-plugin@3.0.0:
     resolution: {integrity: sha512-od7eKCCZ62ITvFf8nHHrIiYmgOHb4xVNDRDqxBWSaao5FZyyZVX8OmRCbwjDGPrSrgIulwPNyBsWCGnhiDC0oQ==}
     dependencies:
@@ -19850,6 +20118,10 @@ packages:
 
   /lodash.castarray@4.4.0:
     resolution: {integrity: sha512-aVx8ztPv7/2ULbArGJ2Y42bG1mEQ5mGjpdvrbJcJFU3TbYybe+QlLS4pst9zV52ymy2in1KpFPiZnAOATxD4+Q==}
+    dev: true
+
+  /lodash.clonedeep@4.5.0:
+    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
     dev: true
 
   /lodash.debounce@4.0.8:
@@ -21372,6 +21644,14 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /nano-copy@0.1.0:
+    resolution: {integrity: sha512-pGKyTD9KTR+2voBOGaLsZgDE82Bwi91V0BOa7aZGK3Q5gKidkoW7zXMXaC0xRo7sajl/OyZmILKRTTedakEBgw==}
+    dev: true
+
+  /nanoclone@1.0.2:
+    resolution: {integrity: sha512-rgGQL9k7pkQX4mxw59vDBhUQs8eMDa68YdnI+tHJCBDaORGlXJy1b1cLwnGUBarDT+gk0TGQDXIdl/WGTwtmyQ==}
+    dev: true
 
   /nanoid@3.3.6:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
@@ -23320,6 +23600,14 @@ packages:
       load-json-file: 4.0.0
     dev: true
 
+  /pkg-conf@3.1.0:
+    resolution: {integrity: sha512-m0OTbR/5VPNPqO1ph6Fqbj7Hv6QU7gR/tQW40ZqrL1rjgCU85W6C1bJn0BItuJqnR98PWzw7Z8hHeChD1WrgdQ==}
+    engines: {node: '>=6'}
+    dependencies:
+      find-up: 3.0.0
+      load-json-file: 5.3.0
+    dev: true
+
   /pkg-dir@3.0.0:
     resolution: {integrity: sha512-/E57AYkoeQ25qkxMj5PBOVgF8Kiu/h7cYS30Z5+R7WaiCCBfLq58ZI/dSeaEKb9WVJV5n/03QwrN3IeWIFllvw==}
     engines: {node: '>=6'}
@@ -23347,6 +23635,10 @@ packages:
       jsonc-parser: 3.2.0
       mlly: 1.4.1
       pathe: 1.1.1
+    dev: true
+
+  /plain-object-clone@2.0.0:
+    resolution: {integrity: sha512-66gemNM7aIkdXqB/sQGTYHje1a6FiYYA3hP63b43lzBAqN+lAsCggNcy8M6SU8+ehGZuoQZ9Xrbcm660S4lqwQ==}
     dev: true
 
   /playwright-core@1.37.1:
@@ -23859,18 +24151,22 @@ packages:
     resolution: {integrity: sha512-45gUgmX/RtQOQV1kwM06boP49OYXcKCPrYwdmAvs5YqkpiobhNKKwo524JM6Ma0ko3oN9tXNcWs9+ABq3Ry7YA==}
     dev: true
 
-  /ramda-adjunct@4.1.1(ramda@0.29.0):
+  /ramda-adjunct@4.1.1(ramda@0.29.1):
     resolution: {integrity: sha512-BnCGsZybQZMDGram9y7RiryoRHS5uwx8YeGuUeDKuZuvK38XO6JJfmK85BwRWAKFA6pZ5nZBO/HBFtExVaf31w==}
     engines: {node: '>=0.10.3'}
     requiresBuild: true
     peerDependencies:
       ramda: '>= 0.29.0'
     dependencies:
-      ramda: 0.29.0
+      ramda: 0.29.1
     dev: false
 
   /ramda@0.29.0:
     resolution: {integrity: sha512-BBea6L67bYLtdbOqfp8f58fPMqEwx0doL+pAi8TZyp2YWz8R9G8z9x75CZI8W+ftqhFHCpEX2cRnUUXK130iKA==}
+    dev: true
+
+  /ramda@0.29.1:
+    resolution: {integrity: sha512-OfxIeWzd4xdUNxlWhgFazxsA/nl3mS4/jGZI5n00uWOoSSFRhC1b6gl6xvmzUamgmqELraWp0J/qqVlXYPDPyA==}
 
   /randexp@0.5.3:
     resolution: {integrity: sha512-U+5l2KrcMNOUPYvazA3h5ekF80FHTUG+87SEAmHZmolh1M+i/WyTCxVzmi+tidIa1tM4BSe8g2Y/D3loWDjj+w==}
@@ -24593,6 +24889,11 @@ packages:
     resolution: {integrity: sha512-zRgSaYemnNYxUv+/5SeoHI0eJIgTL/A2pUtXUPLHQxUldagouJ9p+K6IbIZ/JiQuCEv2E2B1O11SjVQy3aMCkw==}
     engines: {node: '>=8'}
     dev: false
+
+  /regexpp@3.2.0:
+    resolution: {integrity: sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==}
+    engines: {node: '>=8'}
+    dev: true
 
   /regexpu-core@5.3.2:
     resolution: {integrity: sha512-RAM5FlZz+Lhmo7db9L298p2vHP5ZywrVXmVXpmAD9GuL5MPH6t9ROw1iA/wfHkQ76Qe7AaPF0nGuim96/IrQMQ==}
@@ -25860,6 +26161,37 @@ packages:
     resolution: {integrity: sha512-pE2org1+ZWQBnIxRPrBM2gVupkuDD0TTNIo1H6GdT/vO82NXli2z8lRE8cu/nBIHrcOCXFBAHpb9ZldrB2/qOA==}
     requiresBuild: true
     dev: false
+
+  /standard-engine@15.1.0:
+    resolution: {integrity: sha512-VHysfoyxFu/ukT+9v49d4BRXIokFRZuH3z1VRxzFArZdjSCFpro6rEIU3ji7e4AoAtuSfKBkiOmsrDqKW5ZSRw==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dependencies:
+      get-stdin: 8.0.0
+      minimist: 1.2.8
+      pkg-conf: 3.1.0
+      xdg-basedir: 4.0.0
+    dev: true
+
+  /standard@17.1.0:
+    resolution: {integrity: sha512-jaDqlNSzLtWYW4lvQmU0EnxWMUGQiwHasZl5ZEIwx3S/ijZDjZOzs1y1QqKwKs5vqnFpGtizo4NOYX2s0Voq/g==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    hasBin: true
+    dependencies:
+      eslint: 8.51.0
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.28.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.51.0)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.33.2)(eslint@8.51.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.3)(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
+      eslint-plugin-n: 15.7.0(eslint@8.51.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.51.0)
+      eslint-plugin-react: 7.33.2(eslint@8.51.0)
+      standard-engine: 15.1.0
+      version-guard: 1.1.1
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: true
 
   /state-toggle@1.0.3:
     resolution: {integrity: sha512-d/5Z4/2iiCnHw6Xzghyhb+GcmF89bxwgXG60wjIiZaxnymbyOmI8Hk4VqHXiVVp6u2ysaskFfXg3ekCj4WNftQ==}
@@ -27421,6 +27753,11 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
 
+  /type-fest@0.3.1:
+    resolution: {integrity: sha512-cUGJnCdr4STbePCgqNFbpVNCepa+kAVohJs1sLhxzdH+gnEoOd8VhbYa7pD3zZYGiURWM2xzEII3fQcRizDkYQ==}
+    engines: {node: '>=6'}
+    dev: true
+
   /type-fest@0.6.0:
     resolution: {integrity: sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg==}
     engines: {node: '>=8'}
@@ -28112,6 +28449,11 @@ packages:
   /vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
+
+  /version-guard@1.1.1:
+    resolution: {integrity: sha512-MGQLX89UxmYHgDvcXyjBI0cbmoW+t/dANDppNPrno64rYr8nH4SHSuElQuSYdXGEs0mUzdQe1BY+FhVPNsAmJQ==}
+    engines: {node: '>=0.10.48'}
+    dev: true
 
   /vfile-find-up@5.0.1:
     resolution: {integrity: sha512-YWx8fhWQNYpHxFkR5fDO4lCdvPcY4jfCG7qUMHVvSp14vRfkEYxFG/vUEV0eJuXoKFfiAmMkAS8dekOYnpAJ+A==}
