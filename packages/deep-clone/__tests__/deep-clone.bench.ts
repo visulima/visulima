@@ -10,93 +10,96 @@ import plainObjectClone from "plain-object-clone";
 import { clone as ramdaClone } from "ramda";
 import rfdc from "rfdc";
 import { bench, describe } from "vitest";
+import ungapStructuredClone from "@ungap/structured-clone";
 
 import data from "../__fixtures__/data.json";
-import visulimaDeepCopy from "../src";
+import { deepClone as visulimaDeepCopy } from "../dist";
 
 describe("clone", () => {
-    it("@visulima/deep-clone - default", () => {
+    bench("@visulima/deep-clone - default", () => {
         visulimaDeepCopy(data);
     });
 
-    it("@visulima/deep-clone - proto", () => {
+    bench("@visulima/deep-clone - proto", () => {
         visulimaDeepCopy(data, {
             proto: true,
         });
     });
 
-    it("@visulima/deep-clone - circles", () => {
+    bench("@visulima/deep-clone - circles", () => {
         visulimaDeepCopy(data, {
             circles: true,
         });
     });
 
-    it("@visulima/deep-clone - circles and proto", () => {
+    bench("@visulima/deep-clone - circles and proto", () => {
         visulimaDeepCopy(data, {
             circles: true,
             proto: true,
         });
     });
 
-    it("deep-copy", () => {
+    bench("deep-copy", () => {
         deepCopy(data);
     });
 
-    it("lodash.clonedeep", () => {
+    bench("lodash.clonedeep", () => {
         lodashCloneDeep(data);
     });
 
-    it("clone-deep", () => {
+    bench("clone-deep", () => {
         cloneDeep(data);
     });
 
-    it("fast-copy", () => {
+    bench("fast-copy", () => {
         fastCopy(data);
     });
 
-    it("plain-object-clone", () => {
+    bench("plain-object-clone", () => {
         plainObjectClone(data);
     });
 
-    it("nano-copy", () => {
-         
+    bench("nano-copy", () => {
         nanoCopy(data);
     });
 
-    it("ramda.clone", () => {
+    bench("ramda.clone", () => {
         ramdaClone(data);
     });
 
-    it("nanoclone", () => {
+    bench("nanoclone", () => {
         nanoclone(data);
     });
 
-    it("@mfederczuk/deeptools copy", () => {
+    bench("@mfederczuk/deeptools copy", () => {
         mfederczukClone(data);
     });
 
-    it("rfdc - default", () => {
-         
+    bench("rfdc - default", () => {
         rfdc()(data);
     });
 
-    it("rfdc - proto", () => {
-         
+    bench("rfdc - proto", () => {
         rfdc({ proto: true })(data);
     });
 
-    it("rfdc - circles", () => {
-         
+    bench("rfdc - circles", () => {
         rfdc({ circles: true })(data);
     });
 
-    it("rfdc - circles and proto", () => {
-         
+    bench("rfdc - circles and proto", () => {
         rfdc({ circles: true, proto: true })(data);
     });
 
-    it("jsondiffpatch clone", () => {
-         
+    bench("jsondiffpatch clone", () => {
         jsondiffpatch.clone(data);
+    });
+
+    bench("@ungap/structured-clone clone", () => {
+        ungapStructuredClone(data);
+    });
+
+    bench("structured-clone clone", () => {
+        structuredClone(data);
     });
 });

@@ -1510,6 +1510,9 @@ importers:
       '@types/node':
         specifier: 18.17.12
         version: 18.17.12
+      '@ungap/structured-clone':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@vitest/coverage-v8':
         specifier: ^0.34.6
         version: 0.34.6(vitest@0.34.6)

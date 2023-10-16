@@ -2,7 +2,7 @@ import type { TypedArray, UnknownRecord } from "type-fest";
 
 type OnIteration = (function_: (oData: any) => unknown, levelData: unknown[] | UnknownRecord, clonedData: unknown[] | UnknownRecord, key: PropertyKey) => void;
 
-type DataType = "buffer" | "date" | "jsdom" | "map" | "object" | "primitive" | "regex" | "set" | "unknown";
+type DataType = "buffer" | "date" | "error" | "jsdom" | "map" | "object" | "primitive" | "regex" | "set" | "unknown";
 
 type DataTypeChecker = (object: any) => boolean;
 
@@ -30,6 +30,12 @@ interface ObjectDataTypeMapping {
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>
     (typeof value === "object" && value !== null) || typeof value === "function";
 
+/**
+ * Copy buffer function for cloning ArrayBuffer, ArrayBufferView, Buffer, or TypedArray objects.
+ *
+ * @param current - The buffer object to be copied. The type of `current` is `ArrayBuffer | ArrayBufferView | Buffer | TypedArray`.
+ * @returns The copied buffer object. The return type of the function is `ArrayBuffer | ArrayBufferView | Buffer | TypedArray`.
+ */
 const copyBuffer = (current: ArrayBuffer | ArrayBufferView | Buffer | TypedArray): ArrayBuffer | ArrayBufferView | Buffer | TypedArray => {
     const typeHandlers: Record<string, new (buffer: any) => any> = {
         BigInt64Array,
@@ -75,6 +81,11 @@ interface FakeJSDOM {
     nodeType?: unknown;
 }
 
+type ExtendedError = Error & { code?: any; errno?: any; syscall?: any };
+
+/**
+ * An Array of checker and handler mappings for different data types.
+ */
 const arrayCheckerHandlers: ArrayDataTypeMapping[] = [
     {
         checker: (object: any) => object instanceof Date,
@@ -83,9 +94,83 @@ const arrayCheckerHandlers: ArrayDataTypeMapping[] = [
     },
     {
         checker: (object: any) => object instanceof RegExp,
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp,require-unicode-regexp
-        handler: (object: RegExp | string) => new RegExp(object),
+        handler: (object: RegExp | string) => {
+            // eslint-disable-next-line require-unicode-regexp,@rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+            const regexClone = new RegExp(object);
+
+            // Any enumerable properties...
+            if (typeof object !== "string") {
+                Object.keys(object).forEach((key) => {
+                    const desc = Object.getOwnPropertyDescriptor(object, key);
+
+                    if (desc) {
+                        // eslint-disable-next-line no-prototype-builtins
+                        if (desc.hasOwnProperty("value")) {
+                            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                            desc.value = deepClone(object[key as keyof RegExp]);
+                        }
+
+                        Object.defineProperty(regexClone, key, desc);
+                    }
+                });
+            }
+
+            return regexClone;
+        },
         type: "regex",
+    },
+    {
+        checker: (object: any) => object instanceof Error,
+        handler: (object: EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError) => {
+            // @ts-expect-error - We don't know the type of the object, can be an error
+            const error = new object.constructor(object.message) as
+                | EvalError
+                | ExtendedError
+                | RangeError
+                | ReferenceError
+                | SyntaxError
+                | TypeError
+                | URIError;
+
+            // If a `stack` property is present, copy it over...
+            if (object.stack) {
+                error.stack = object.stack;
+            }
+
+            // Node.js specific (system errors)...
+            if ((object as ExtendedError).code) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                (error as ExtendedError).code = (object as ExtendedError).code;
+            }
+
+            if ((object as ExtendedError).errno) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                (error as ExtendedError).errno = (object as ExtendedError).errno;
+            }
+
+            if ((object as ExtendedError).syscall) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                (error as ExtendedError).syscall = (object as ExtendedError).syscall;
+            }
+
+            // Any enumerable properties...
+            Object.keys(object).forEach((key) => {
+                const desc = Object.getOwnPropertyDescriptor(object, key);
+
+                if (desc) {
+                    // eslint-disable-next-line no-prototype-builtins
+                    if (desc.hasOwnProperty("value")) {
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                        desc.value = deepClone(object[key as keyof Error]);
+                    }
+
+                    Object.defineProperty(error, key, desc);
+                }
+            });
+
+            return error;
+        },
+        type: "error",
     },
     {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -101,7 +186,13 @@ const arrayCheckerHandlers: ArrayDataTypeMapping[] = [
     {
         checker: (object: any) => typeof object !== "object" || object === null,
         // eslint-disable-next-line @typescript-eslint/ban-types
-        handler: (object: Function | bigint | boolean | number | string | symbol | null | undefined) => object,
+        handler: (object: Function | bigint | boolean | number | string | symbol | null | undefined) => {
+            if (typeof object === "number" || typeof object === "boolean" || typeof object === "string") {
+                return object.valueOf();
+            }
+
+            return object;
+        },
         type: "primitive",
     },
 ];
@@ -180,6 +271,7 @@ const invalidCloneTypeCheckers: ((object: any) => boolean)[] = [
     (object: any) => object instanceof SharedArrayBuffer,
     (object: any) => object instanceof DataView,
     (object: any) => object instanceof Promise,
+    (object: any) => object instanceof Blob,
 ];
 
 /**
@@ -259,6 +351,18 @@ const clone =
 
         afterIteration();
 
+        if (!Object.isExtensible(data)) {
+            Object.preventExtensions(clonedObject);
+        }
+
+        if (Object.isSealed(data)) {
+            Object.seal(clonedObject);
+        }
+
+        if (Object.isFrozen(data)) {
+            Object.freeze(clonedObject);
+        }
+
         return clonedObject;
     };
 
@@ -319,7 +423,8 @@ interface Options {
  * @param options - Optional. The cloning options. Type of this parameter is `Options`.
  * @returns The deep cloned data with its type as `DeepReadwrite<T>`.
  */
-const deepClone = <T = unknown>(originalData: T, options?: Options): DeepReadwrite<T> => {
+// eslint-disable-next-line import/prefer-default-export
+export const deepClone = <T = unknown>(originalData: T, options?: Options): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;
     }
@@ -350,5 +455,3 @@ const deepClone = <T = unknown>(originalData: T, options?: Options): DeepReadwri
         () => {},
     )(originalData) as DeepReadwrite<T>;
 };
-
-export default deepClone;

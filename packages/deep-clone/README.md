@@ -41,13 +41,71 @@ pnpm add @visulima/deep-clone
 
 ## Usage
 
+Copy or deep clone an input value to an arbitrary depth. The function accepts both objects and primitives.
+
 ```typescript
 import deepClone from "@visulima/deep-clone";
 
-const cloned = deepClone({a: 1, b: {c: 2}})
+const cloned = deepClone({ a: 1, b: { c: 2 } });
 
 console.log(cloned); // => {a: 1, b: {c: 2}}
 ```
+
+## Notes
+
+-   List of **supported** values/types:
+
+    -   `undefined`
+    -   `null`
+    -   `boolean`/`Boolean`
+    -   `string`/`String`
+    -   `number`/`Number`
+    -   `function`
+    -   `Object`
+    -   `Date`
+    -   `RegExp`
+    -   `Set`
+    -   `Map`
+    -   [`Error`][mdn-error]
+    -   [`URIError`][mdn-uri-error]
+    -   [`ReferenceError`][mdn-reference-error]
+    -   [`SyntaxError`][mdn-syntax-error]
+    -   [`RangeError`][mdn-range-error]
+    -   [`EvalError`][mdn-eval-error]
+    -   [`TypeError`][mdn-type-error]
+    -   [`System Error`][node-system-error] (Node.js)
+    -   `Array`
+    -   `Int8Array`
+    -   `Uint8Array`
+    -   `Uint8ClampedArray`
+    -   `Init16Array`
+    -   `Uint16Array`
+    -   `Int32Array`
+    -   `Uint32Array`
+    -   `Float32Array`
+    -   `Float64Array`
+    -   `Buffer` ([Node.js][node-buffer])
+
+-   List of **unsupported** values/types:
+
+    -   `DOMElement`: to copy DOM elements, use `element.cloneNode()`.
+    -   `Symbol`
+    -   `WeakMap`
+    -   `WeakSet`
+    -   `Blob`
+    -   `File`
+    -   `FileList`
+    -   `ImageData`
+    -   `ImageBitmap`
+    -   `DataView`
+    -   `Promise`
+    -   `SharedArrayBuffer`
+
+-   The implementation **can** handle circular references.
+-   If a `Number`, `String`, or `Boolean` object is encountered, the value is cloned as a **primitive**. This behavior is intentional. The implementation is opinionated in wanting to **avoid** creating `numbers`, `strings`, and `booleans` via the `new` operator and a constructor.
+-   The implementation **only** checks whether basic `Objects`, `Arrays`, and class instances are `extensible`, `sealed`, and/or `frozen`.
+-   `functions` are **not** cloned; their reference is copied.
+-   The implementation supports custom [`error`][mdn-error] types which are [`Error`][mdn-error] instances (e.g., ES2015 subclasses).
 
 ## Benchmarks
 
@@ -85,3 +143,12 @@ The visulima readdir is open-sourced software licensed under the [MIT][license-u
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/readdir/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/readdir/v/latest "npm"
+[mdn-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
+[mdn-type-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
+[mdn-syntax-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
+[mdn-range-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError
+[mdn-reference-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError
+[mdn-uri-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError
+[mdn-eval-error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError
+[node-system-error]: https://nodejs.org/api/errors.html#errors_class_system_error
+[node-buffer]: http://nodejs.org/api/buffer.html

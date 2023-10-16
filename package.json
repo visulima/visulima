@@ -107,6 +107,7 @@
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run coverage",
         "test:coverage:readdir": "pnpm --filter \"readdir\" run coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
+        "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
         "test:health-check": "pnpm --filter \"health-check\" run test",
         "test:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run test",

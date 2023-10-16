@@ -1,14 +1,22 @@
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
-import deepClone from "../src";
+import { deepClone } from "../src";
+import CustomerrorProto from "../__fixtures__/customerror.proto";
+import customerrorSubclass from "../__fixtures__/customerror.subclass";
 
 const rnd = (max) => Math.round(Math.random() * max);
 
-const standardObjectAssert = (copy: object, input: object): void => {
+const assertObject = (copy: object, input: object): void => {
     expect(copy).toStrictEqual(input);
     expect(String(copy)).toBe(String(input));
     expect(copy).not.toBe(input);
+};
+
+const assertErrorValues = (copy: Error, input: Error) => {
+    expect(copy.message, "equal messages").toStrictEqual(input.message);
+    expect(copy.name, "equal names").toStrictEqual(input.name);
+    expect(copy.stack, "equal stack trace").toStrictEqual(input.stack);
 };
 
 const assertRegExp = (copy: RegExp, input: RegExp) => {
@@ -22,7 +30,7 @@ const assertRegExp = (copy: RegExp, input: RegExp) => {
     expect(copy.unicode).toBe(input.unicode);
     expect(copy.lastIndex).toBe(input.lastIndex);
 
-    standardObjectAssert(copy, input);
+    assertObject(copy, input);
 };
 
 describe("deepClone", () => {
@@ -243,7 +251,7 @@ describe("deepClone", () => {
         expect(fooCopy.yeeHaw).toBe(Foo.prototype.yeeHaw);
         expect(fooCopy.constructor).toBe(Foo);
 
-        standardObjectAssert(fooCopy, fooInput);
+        assertObject(fooCopy, fooInput);
 
         class Bar extends Foo {
             // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
@@ -275,7 +283,7 @@ describe("deepClone", () => {
         expect(Object.getPrototypeOf(Object.getPrototypeOf(barCopy))).toBe(Foo.prototype);
         expect(barCopy.yeeHaw).toBe(Foo.prototype.yeeHaw);
 
-        standardObjectAssert(barCopy, barInput);
+        assertObject(barCopy, barInput);
     });
 
     describe.each([
@@ -386,7 +394,7 @@ describe("deepClone", () => {
 
             expect((yeeCopy as any).haw[key]).toBe((yeeInput as any).haw[key]);
 
-            standardObjectAssert((yeeCopy as any).haw, (yeeInput as any).haw);
+            assertObject((yeeCopy as any).haw, (yeeInput as any).haw);
 
             expect((yeeCopy as any).yeehaw).toBeTruthy();
 
@@ -638,7 +646,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Uint8Array objects`, () => {
@@ -651,7 +659,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Uint8ClampedArray objects`, () => {
@@ -664,7 +672,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Int16Array objects`, () => {
@@ -677,7 +685,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Uint16Array objects`, () => {
@@ -690,7 +698,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Int32Array objects`, () => {
@@ -703,7 +711,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - should work with Uint32Array objects`, () => {
@@ -716,7 +724,7 @@ describe("deepClone", () => {
             expect(fooCopy[2]).toBe(fooInput[2]);
             expect(fooCopy[3]).toBe(fooInput[3]);
             expect(fooCopy[4]).toBe(fooInput[4]);
-            standardObjectAssert(fooCopy, fooInput);
+            assertObject(fooCopy, fooInput);
         });
 
         it(`${label} - maps`, async () => {
@@ -745,6 +753,184 @@ describe("deepClone", () => {
 
             expect([...clone(data).s], "same value").toStrictEqual([1]);
             expect(clone(data).s, "different object").not.toBe(data.s);
+        });
+
+        it(`${label} - generic <Error> object`, () => {
+            const err1 = new Error("beep");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of Error").instanceof(Error);
+
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <TypeError>`, () => {
+            const err1 = new TypeError("invalid type");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of TypeError").instanceof(TypeError);
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <RangeError>`, () => {
+            const err1 = new RangeError("out-of-range");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of RangeError").instanceof(RangeError);
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <SyntaxError>`, () => {
+            const err1 = new SyntaxError("bad syntax");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of SyntaxError").instanceof(SyntaxError);
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <ReferenceError>`, () => {
+            const err1 = new ReferenceError("undefined variable");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of ReferenceError").instanceof(ReferenceError);
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <EvalError>`, () => {
+            const err1 = new EvalError("eval err1");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of EvalError").instanceof(EvalError);
+            assertErrorValues(err2, err1);
+        });
+
+        it(`${label} - <URIError>`, () => {
+            const err1 = new URIError("bad URI");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of URIError").instanceof(URIError);
+            assertErrorValues(err2, err1);
+        });
+
+        it.skip(`${label} - environments missing a "stack" trace`, () => {
+            const createError = (msg: string) => {
+                const err = new Error(msg);
+
+                err.stack = "";
+
+                return err;
+            };
+
+            // Blank `stack` property...
+            const err1 = new Error("beep");
+
+            err1.stack = "";
+            err1.constructor = createError;
+
+            const err2 = clone(err1);
+
+            expect(err2.stack, "no stack trace").toStrictEqual("");
+        });
+
+        it(`${label} - "code" property (Node.js)`, () => {
+            const err1 = new Error("beep") as any;
+            err1.code = 43;
+
+            const err2 = clone(err1);
+            expect(err2.code, "equal codes").toStrictEqual(err1.code);
+        });
+
+        it(`${label} - "errno" property (Node.js)`, () => {
+            const err1 = new Error("beep") as any;
+            err1.errno = "EACCES";
+
+            const err2 = clone(err1);
+
+            expect(err2.errno, "equal errno").toStrictEqual(err1.errno);
+        });
+
+        it(`${label} - "syscall" property (Node.js)`, () => {
+            const err1 = new Error("beep") as any;
+            err1.syscall = "boop";
+
+            const err2 = clone(err1);
+
+            expect(err2.syscall, "equal syscall").toStrictEqual(err1.syscall);
+        });
+
+        it(`${label} - additional (enumerable) properties`, () => {
+            // Data descriptor...
+            const err1 = new Error("errrr") as any;
+            err1.beep = "boop";
+            err1.boop = "beep";
+
+            const err2 = clone(err1);
+
+            expect(err2.beep, "data descriptor").toStrictEqual(err1.beep);
+            expect(err2.boop, "data descriptor").toStrictEqual(err1.boop);
+
+            // Accessor descriptor...
+            const err3 = new Error("errrr");
+
+            Object.defineProperty(err1, "beep", {
+                enumerable: true,
+                configurable: true,
+                get: function get() {
+                    return "boop";
+                },
+            });
+
+            Object.defineProperty(err3, "boop", {
+                enumerable: true,
+                configurable: false,
+                get: function get() {
+                    return "beep";
+                },
+            });
+
+            const err4 = clone(err3) as any;
+
+            expect((err3 as any).beep, "accessor descriptor").toStrictEqual(err4.beep);
+            expect((err3 as any).boop, "accessor descriptor").toStrictEqual(err4.boop);
+
+            // Deep equal...
+            const err5 = new Error("errrr") as any;
+            err5.arr = [1, 2, [3, 4, 5]];
+
+            const err6 = clone(err5);
+
+            expect(err6.arr, "new instances").not.toBe(err5.arr);
+            expect(err6.arr, "deep equal").toStrictEqual(err5.arr);
+        });
+
+        it(`${label} - custom errors (proto)`, () => {
+            // @ts-expect-error - TS doesn't like this
+            const err1 = new CustomerrorProto("custom error");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of CustomError").instanceof(CustomerrorProto);
+            expect(err2, "instance of Error").instanceof(Error);
+            assertErrorValues(err2, err1);
+        });
+
+        it("custom errors (subclass; ES2015)", () => {
+            const CustomError2 = customerrorSubclass();
+
+            const err1 = new CustomError2("custom error");
+            const err2 = clone(err1);
+
+            assertObject(err2, err1);
+            expect(err2, "instance of CustomError").instanceof(CustomError2);
+            expect(err2, "instance of Error").instanceof(Error);
+            assertErrorValues(err2, err1);
         });
     });
 });
