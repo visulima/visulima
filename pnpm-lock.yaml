@@ -1528,6 +1528,9 @@ importers:
       eslint:
         specifier: ^8.51.0
         version: 8.51.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.51.0)(typescript@5.2.2)
       eslint-plugin-etc:
         specifier: ^2.0.3
         version: 2.0.3(eslint@8.51.0)(typescript@5.2.2)

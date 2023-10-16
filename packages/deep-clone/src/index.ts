@@ -423,7 +423,7 @@ interface Options {
  * @param options - Optional. The cloning options. Type of this parameter is `Options`.
  * @returns The deep cloned data with its type as `DeepReadwrite<T>`.
  */
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import/prefer-default-export,import/no-unused-modules
 export const deepClone = <T = unknown>(originalData: T, options?: Options): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;
