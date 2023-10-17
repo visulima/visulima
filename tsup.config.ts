@@ -68,9 +68,8 @@ export const createConfig = (config?: Options & Object) =>
             splitting: true,
             shims: true,
             target: tsconfig.compilerOptions.target as "es2021",
-            env: {
+            env: config?.env ?? {
                 NODE_ENV: process.env["NODE_ENV"],
-                ...config?.env,
             },
             cjsInterop: true,
             declaration: true,

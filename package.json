@@ -7,6 +7,7 @@
         "docs"
     ],
     "scripts": {
+        "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
         "build:docs": "pnpm run docs:copy && nx run-many --target=build:prod --parallel --projects=tag:type:nextra",
         "build:packages": "nx run-many --target=build --parallel --projects=tag:type:package",
@@ -89,7 +90,7 @@
         "lint:types:root": "tsc --noEmit",
         "plop": "plop",
         "prepare": "is-ci || husky install || exit 0",
-        "sort-package-json": "sort-package-json packages/**/package.json visulima/package.json ./package.json examples/**/package.json docs/package.json",
+        "sort-package-json": "sort-package-json packages/**/package.json packages/visulima/visulima/package.json ./package.json examples/**/package.json docs/package.json",
         "storybook": "pnpm --filter \"storybook\" run dev",
         "test": "nx run-many --target=test --all --parallel",
         "test:api-platform": "pnpm --filter \"api-platform\" run test",
@@ -107,7 +108,6 @@
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run coverage",
         "test:coverage:readdir": "pnpm --filter \"readdir\" run coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
-        "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
         "test:health-check": "pnpm --filter \"health-check\" run test",
         "test:jsdoc-open-api": "pnpm --filter \"jsdoc-open-api\" run test",

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { findMonorepoRoot } from "../src/monorepo";
 
-const cwd = join(dirname(fileURLToPath(import.meta.url)), `../__fixtures__/workspaces`);
+const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtures__", "workspaces");
 const packages = ["package-a", "package-b", "package-c"];
 const scenarios = ["pnpm", "yarn", "turbo-pnpm", "turbo-yarn", "turbo-npm", "yarn-packageManager", "npm", "lerna", "lerna-sub-yarn-packageManager"];
 
