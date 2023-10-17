@@ -76,6 +76,9 @@ jobs:
                   node-version: "${{ matrix.node_version }}"
                   cache: "pnpm"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+
             - name: "Check npm version"
               run: "npm -v"
               env:
@@ -85,9 +88,6 @@ jobs:
               run: "pnpm install --frozen-lockfile"
               env:
                   SKIP_CHECK: "true"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm audit signatures"
 
             - name: "Build"
               run: "pnpm run build:packages"
