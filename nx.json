@@ -30,17 +30,7 @@
         "default": {
             "runner": "nx/tasks-runners/default",
             "options": {
-                "cacheableOperations": [
-                    "build",
-                    "build:packages",
-                    "build:prod:packages",
-                    "build:prod:readdir",
-                    "build:readdir",
-                    "test",
-                    "lint:eslint",
-                    "lint:eslint:fix",
-                    "build-storybook"
-                ]
+                "cacheableOperations": ["build", "build:prod", "test", "lint:eslint", "lint:eslint:fix", "build-storybook"]
             }
         }
     },
