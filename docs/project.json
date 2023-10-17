@@ -3,6 +3,6 @@
     "$schema": "../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "docs",
     "projectType": "app",
-    "tags": ["type:nextra", "docs"],
+    "tags": ["docs"],
     "implicitDependencies": ["readdir", "nextra-theme-docs"]
 }

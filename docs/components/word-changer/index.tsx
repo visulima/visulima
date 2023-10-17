@@ -7,7 +7,7 @@ const WordChanger = ({ words }: { words: string[] }): string => {
     const index = useRef(0);
 
     useEffect(() => {
-        let interval: NodeJS.Timer | undefined;
+        let interval: NodeJS.Timeout | undefined;
 
         if (isActive) {
             interval = setInterval(() => {
@@ -22,7 +22,11 @@ const WordChanger = ({ words }: { words: string[] }): string => {
             }, 2500);
         }
 
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     });
 
     return currentWord;
