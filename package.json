@@ -11,7 +11,7 @@
         "audit": "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
-        "build:docs": "pnpm run docs:copy && nx run-many --target=build:prod --parallel --projects=tag:type:nextra",
+        "build:docs": "nx run-many --target=build:prod --parallel --projects=tag:type:nextra && pnpm run docs:copy && pnpm --filter \"docs\" run build",
         "build:packages": "nx run-many --target=build --parallel --projects=tag:type:package",
         "build:prod:nextra-theme-docs": "pnpm --filter \"nextra-theme-docs\" run build:prod",
         "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=tag:type:package",
