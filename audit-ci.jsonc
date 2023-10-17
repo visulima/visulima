@@ -1,0 +1,11 @@
+{
+    // $schema provides code completion hints to IDEs.
+    "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+    "low": true,
+    "package-manager": "pnpm",
+    "report-type": "important",
+    "allowlist": [
+        // This advisory is for a package that use the cnpm as a dev dependency for tests.
+        "GHSA-p8p7-x288-28g6|packages/package > cnpm@7.1.1 > *"
+    ]
+}

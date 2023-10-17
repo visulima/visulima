@@ -7,6 +7,7 @@
         "docs"
     ],
     "scripts": {
+        "audit": "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
         "build:docs": "pnpm run docs:copy && nx run-many --target=build:prod --parallel --projects=tag:type:nextra",
@@ -229,7 +230,9 @@
             "trim@<0.0.3": ">=0.0.3",
             "chrono-node@<2.2.4": ">=2.2.4",
             "postcss@<8.4.31": ">=8.4.31",
-            "zod@<=3.22.2": ">=3.22.3"
+            "zod@<=3.22.2": ">=3.22.3",
+            "tough-cookie@<4.1.3": ">=4.1.3",
+            "@babel/traverse@<7.23.2": ">=7.23.2"
         }
     }
 }

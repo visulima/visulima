@@ -77,11 +77,11 @@ jobs:
                   node-version: "18.x"
                   cache: "pnpm"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm audit signatures"
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -119,11 +119,11 @@ jobs:
                   node-version: "18.x"
                   cache: "pnpm"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm audit signatures"
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -188,13 +188,13 @@ jobs:
                   node-version: "18.x"
                   cache: "pnpm"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
               env:
                   SKIP_CHECK: "true"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm audit signatures"
 
             - name: "lint"
               run: "pnpm run lint:text"

@@ -61,6 +61,9 @@ jobs:
                   node-version: "18.x"
                   cache: "pnpm"
 
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+
             # @see: npm install -g npm@latest is necessary to make provenance available. More info: https://docs.npmjs.com/generating-provenance-statements
             - name: "Upgrade npm to latest version"
               run: "npm install --global npm@9.6.x"
@@ -74,9 +77,6 @@ jobs:
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm audit signatures"
 
             - name: "Build Production"
               run: "pnpm run build:prod:packages"
