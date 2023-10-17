@@ -113,7 +113,7 @@
         "prisma": "3.* || 4.*"
     },
     "engines": {
-        "node": ">=18.* <=20.*"
+        "node": ">=18.* <=21.*"
     },
     "publishConfig": {
         "access": "public",
