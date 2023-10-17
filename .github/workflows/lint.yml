@@ -78,7 +78,7 @@ jobs:
                   cache: "pnpm"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
@@ -120,7 +120,7 @@ jobs:
                   cache: "pnpm"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"
@@ -189,7 +189,7 @@ jobs:
                   cache: "pnpm"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: 'pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type "summary"'
+              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile"

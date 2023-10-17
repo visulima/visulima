@@ -28,15 +28,15 @@
 ## Install
 
 ```sh
-npm install --dev @visulima/readdir
+npm install @visulima/readdir
 ```
 
 ```sh
-yarn add --dev @visulima/readdir
+yarn add @visulima/readdir
 ```
 
 ```sh
-pnpm add --dev @visulima/readdir
+pnpm add @visulima/readdir
 ```
 
 ## Usage
