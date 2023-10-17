@@ -94,7 +94,7 @@ jobs:
 
             - name: "Install Bun for tests"
               if: "matrix.os != 'windows-latest'"
-              run: "pnpm -D add bun --filter=package"
+              run: "pnpm i -D bun --filter=package"
 
             - name: "test and coverage"
               run: "pnpm run test:coverage"
