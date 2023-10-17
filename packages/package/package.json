@@ -140,6 +140,13 @@
         "semantic-release": "^22.0.5",
         "sort-package-json": "^2.6.0",
         "tsup": "^7.2.0",
+        "@pnpm/exe": "^8.6.12",
+        "bun": "^0.8.1",
+        "cnpm": "^7.1.1",
+        "execa": "^5.1.1",
+        "npm": "^8.2.0",
+        "which-pm-runs": "file:",
+        "yarn": "^1.22.17",
         "typescript": "^5.2.2",
         "vitest": "^0.34.6"
     },

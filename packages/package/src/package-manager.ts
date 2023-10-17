@@ -143,3 +143,33 @@ export const findPackageManager = async (cwd?: Options["cwd"]): Promise<PackageM
  * @returns The version of the package manager. The return type of the function is `string`.
  */
 export const getPackageManagerVersion = (name: string): string => execSync(`${name} --version`).toString("utf8").trim();
+
+/**
+ * An asynchronous function that detects what package manager executes the process.
+ *
+ * Supports npm, pnpm, Yarn, cnpm, and bun. And also any other package manager that sets the npm_config_user_agent env variable.
+ *
+ * @returns A `Promise` that resolves to an object containing the name and version of the package manager,
+ * or undefined if the package manager information cannot be determined. The return type of the function
+ * is `Promise<{ name: PackageManager | "cnpm"; version: string } | undefined>`.
+ */
+export const identifyInitiatingPackageManager = async (): Promise<
+    | {
+          name: PackageManager | "cnpm";
+          version: string;
+      }
+    | undefined
+> => {
+    if (!process.env["npm_config_user_agent"]) {
+        return undefined;
+    }
+
+    const pmSpec = process.env["npm_config_user_agent"].split(" ")[0] as string;
+    const separatorPos = pmSpec.lastIndexOf("/");
+    const name = pmSpec.slice(0, Math.max(0, separatorPos));
+
+    return {
+        name: name === "npminstall" ? "cnpm" : (name as PackageManager),
+        version: pmSpec.slice(Math.max(0, separatorPos + 1)),
+    };
+};
