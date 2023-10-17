@@ -45,6 +45,18 @@ module.exports = {
                 "import/no-unused-modules": "off",
             },
         },
+        {
+            files: [
+                "__tests__/monorepo.test.ts",
+                "__tests__/package-json.test.ts",
+                "__tests__/package-manager.test.ts",
+                "__tests__/package.test.ts",
+                "__tests__/tsconfig.test.ts",
+            ],
+            rules: {
+                "import/no-unused-modules": "off",
+            },
+        },
     ],
     parserOptions: {
         ecmaVersion: 2021,

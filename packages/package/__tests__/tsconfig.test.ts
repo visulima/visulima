@@ -1,27 +1,29 @@
 import { existsSync } from "node:fs";
+import { rm, rmdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { findTSConfig, writeTSConfig } from "../src/tsconfig";
-import { rm, rmdir } from "fs/promises";
 
 const cwd = join(dirname(fileURLToPath(import.meta.url)), `../__fixtures__/tsconfig`);
 
 vi.mock("get-tsconfig", async (importOriginal) => {
     const module = await importOriginal();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
         // @ts-expect-error - type mismatch
         ...module,
-        getTsconfig: async (cwd: string | undefined, fileName: string) => {
-            if (cwd.includes("noMatch")) {
+        getTsconfig: async (path: string | undefined, fileName: string) => {
+            if (path.includes("noMatch")) {
                 return null;
             }
 
             // @ts-expect-error - type mismatch
-            return module.getTsconfig(cwd, fileName);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+            return module.getTsconfig(path, fileName);
         },
     };
 });
@@ -31,13 +33,11 @@ describe("tsconfig", () => {
         it("should find the tsconfig.json file", async () => {
             const tsConfig = await findTSConfig(cwd);
 
-            expect(tsConfig.config).not.toBeUndefined();
+            expect(tsConfig.config).toBeDefined();
         });
 
         it("should throw an error when the tsconfig.json file is not found", async () => {
-            expect(async () => {
-                return await findTSConfig(join(cwd, "noMatch"));
-            }).rejects.toThrow("Could not find tsconfig.json");
+            await expect(async () => await findTSConfig(join(cwd, "noMatch"))).rejects.toThrow("Could not find tsconfig.json");
         });
     });
 
@@ -54,7 +54,7 @@ describe("tsconfig", () => {
 
             const tsconfigFilePath = join(cwd, "tsconfig.json");
 
-            expect(existsSync(tsconfigFilePath)).toBe(true);
+            expect(existsSync(tsconfigFilePath)).toBeTruthy();
 
             await rm(tsconfigFilePath);
             await rmdir(cwd);

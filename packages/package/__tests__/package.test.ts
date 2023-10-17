@@ -15,7 +15,7 @@ vi.mock("find-up", async (importOriginal) => {
     return {
         // @ts-expect-error - types are wrong
         ...module,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         findUp,
     };
 });
@@ -56,7 +56,7 @@ describe("package", () => {
             expect(result).toBe("/user/project");
         });
 
-        it("Throws error when no root directory is found", async () => {
+        it("throws error when no root directory is found", async () => {
             // This is used for the lock file lookup
             findUp.mockResolvedValueOnce(undefined);
             // This is used for the git config lookup
@@ -65,9 +65,10 @@ describe("package", () => {
 
             try {
                 await findPackageRoot();
-                expect(true).toBe(false); // This is to make sure error is thrown.
-            } catch (e) {
-                expect(true).toBe(true);
+                expect(true).toBeFalsy(); // This is to make sure error is thrown.
+            } catch {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(true).toBeTruthy();
             }
         });
     });
