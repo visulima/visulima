@@ -95,7 +95,7 @@
         "dev:tailwind:components": "cross-env TAILWIND_MODE=watch PREFLIGHT=false pnpm postcss css/styles.css -o component-style.css --watch",
         "dev:tailwind:full": "cross-env TAILWIND_MODE=watch PREFLIGHT=true pnpm postcss css/styles.css -o style.css --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
-        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
         "lint:packagejson": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.js --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
