@@ -5,5 +5,5 @@ export type { NormalizedPackageJson, NormalizedReadResult } from "./package-json
 export { findPackageJson, parsePackageJson, writePackageJson } from "./package-json";
 export type { PackageManager, PackageManagerResult } from "./package-manager";
 export { findLockFile, findPackageManager, getPackageManagerVersion, identifyInitiatingPackageManager } from "./package-manager";
-export type { TsConfigJson, TsConfigJsonResolved } from "./tsconfig";
+export type { TsConfigJson, TsConfigJsonResolved, TsConfigResult } from "./tsconfig";
 export { findTSConfig, writeTSConfig } from "./tsconfig";

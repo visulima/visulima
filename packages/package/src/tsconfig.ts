@@ -9,8 +9,8 @@ import type { WriteOptions } from "./utils/write-json";
 import { writeJsonFile } from "./utils/write-json";
 
 /**
- * An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" file from a given
- * current working directory.
+ * An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
+ * second attempt is to look for the "jsconfig.json" file from a given current working directory.
  *
  * @param cwd - Optional. The current working directory from which to search for the "tsconfig.json" file.
  *              The type of `cwd` is `string`.
@@ -19,12 +19,19 @@ import { writeJsonFile } from "./utils/write-json";
  * @throws An `Error` when the "tsconfig.json" file is not found.
  */
 export const findTSConfig = async (cwd?: URL | string): Promise<TsConfigResult> => {
+    const searchPath = cwd === undefined ? undefined : toPath(cwd);
+
     // wrong typing in get-tsconfig
     // eslint-disable-next-line @typescript-eslint/await-thenable
-    const config = await getTsconfig(cwd === undefined ? undefined : toPath(cwd), "tsconfig.json");
+    let config = await getTsconfig(searchPath, "tsconfig.json");
 
     if (config === null) {
-        throw new Error("Could not find tsconfig.json");
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        config = await getTsconfig(searchPath, "jsconfig.json");
+    }
+
+    if (config === null) {
+        throw new Error("Could not find a tsconfig.json or jsconfig.json file.");
     }
 
     return config;
@@ -49,4 +56,4 @@ export const writeTSConfig = async (tsConfig: TsConfigJson, options: WriteOption
     await writeJsonFile(path, tsConfig, options);
 };
 
-export type { TsConfigJson, TsConfigJsonResolved } from "get-tsconfig";
+export type { TsConfigJson, TsConfigJsonResolved, TsConfigResult } from "get-tsconfig";
