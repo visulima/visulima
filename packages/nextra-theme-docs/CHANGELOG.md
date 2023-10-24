@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [4.0.5](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.4...@visulima/nextra-theme-docs@4.0.5) (2023-10-24)
+
+
+### Bug Fixes
+
+* changed type to modules, fixed exports, fixed cs, fixed config for i18n to be optional ([#232](https://github.com/visulima/visulima/issues/232)) ([70a92b5](https://github.com/visulima/visulima/commit/70a92b5df47c867d4c6d508bfb6738ee5fba34ef)), closes [#227](https://github.com/visulima/visulima/issues/227)
+
 ## @visulima/nextra-theme-docs [4.0.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.3...@visulima/nextra-theme-docs@4.0.4) (2023-10-24)
 
 
