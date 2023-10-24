@@ -37,7 +37,7 @@ describe("tsconfig", () => {
         });
 
         it("should throw an error when the tsconfig.json file is not found", async () => {
-            await expect(async () => await findTSConfig(join(cwd, "noMatch"))).rejects.toThrow("Could not find tsconfig.json");
+            await expect(async () => await findTSConfig(join(cwd, "noMatch"))).rejects.toThrow("Could not find a tsconfig.json or jsconfig.json file.");
         });
     });
 

@@ -2,7 +2,7 @@ import { platform } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import execa from "execa";
+import { execa } from "execa";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../package.json";
