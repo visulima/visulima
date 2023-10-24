@@ -42,29 +42,29 @@
 If you have a Nextra project, you can install the theme with:
 
 ```sh
-npm install @visulima/nextra-theme-docs
+npm install @visulima/nextra-theme-docs zod
 ```
 
 ```sh
-yarn add @visulima/nextra-theme-docs
+yarn add @visulima/nextra-theme-docs zod
 ```
 
 ```sh
-pnpm add @visulima/nextra-theme-docs
+pnpm add @visulima/nextra-theme-docs zod
 ```
 
 if you don't have a Nextra project, you can use the [Next CLI](https://nextjs.org/docs/api-reference/create-next-app) to create one and install
 
 ```sh
-npm install nextra @visulima/nextra-theme-docs
+npm install nextra @visulima/nextra-theme-docs zod
 ```
 
 ```sh
-yarn add nextra @visulima/nextra-theme-docs
+yarn add nextra @visulima/nextra-theme-docs zod
 ```
 
 ```sh
-pnpm add nextra @visulima/nextra-theme-docs
+pnpm add nextra @visulima/nextra-theme-docs zod
 ```
 
 ## Add Next.js Config
@@ -83,25 +83,48 @@ module.exports = withNextra();
 // module.exports = withNextra({ /* other next.js config */ })
 ```
 
-## Add Css style to your `pages/_app.{js,ts}` or `pages/_app.{jsx,tsx}` file
+## Add Css style to your `pages/_app.{jsx,tsx,mdx}` file
 
-```js
-import "@visulima/nextra-theme-docs/style.css";
+```ts
+import "@visulima/nextra-theme-docs/style";
+
+import type { AppProps } from "next/app";
+import Head from "next/head";
+import type { FC, ReactElement } from "react";
+import React from "react";
+
+const MyApp: FC<AppProps & { Component: AppProps["Component"] & { getLayout?: (component: ReactElement) => ReactElement } }> = ({ Component, pageProps }) => {
+    const getLayout: (component: ReactElement) => ReactElement = Component.getLayout ?? ((page) => page);
+
+    return (
+        <>
+            <Head>
+                <link as="font" crossOrigin="anonymous" href="/Inter.var.woff2" rel="preload" type="font/woff2" />
+            </Head>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            {getLayout(<Component {...pageProps} />)}
+        </>
+    );
+};
+
+export default MyApp;
+
 ```
 
-## Add `SkipNavLink` component your `pages/_document.{js,ts}` or `pages/_document.{jsx,tsx}` file
+## Add `SkipNavLink` component your `pages/_document.{jsx,tsx,mdx}` file
 
-```js
+```ts
+import { SkipNavLink } from "@visulima/nextra-theme-docs/components";
+import Document, { Head, Html, Main, NextScript } from "next/document";
+import type { ReactElement } from "react";
 import React from "react";
-import Document, { Html, Head, Main, NextScript } from "next/document";
-import { SkipNavLink } from "nextra-theme-docs";
 
 class MyDocument extends Document {
-    render() {
+    public render(): ReactElement {
         return (
             <Html lang="en">
                 <Head />
-                <body>
+                <body className="relative">
                     <SkipNavLink />
                     <Main />
                     <NextScript />
@@ -110,7 +133,9 @@ class MyDocument extends Document {
         );
     }
 }
+
 export default MyDocument;
+
 ```
 
 ## Create Docs Theme Config

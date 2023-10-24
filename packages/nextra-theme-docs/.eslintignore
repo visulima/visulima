@@ -1,13 +1,18 @@
 dist
 node_modules
-inject-react-import.js
 coverage
-vitest.config.ts
 recipes
 __fixtures__
-.prettierrc.js
 _meta.*.json
+
 tsup.config.ts
+vitest.config.ts
+.prettierrc.cjs
+.eslintrc.cjs
+.secretlintrc.cjs
+inject-react-import.js
+tailwind.config.cjs
+postcss.config.cjs
 
 README.md
 
@@ -17,5 +22,5 @@ tsconfig.eslint.json
 
 # TODO: Remove after babel file was added
 __docs__
-
+# eslint react hook plugin is broken
 src/components/sandbox.tsx

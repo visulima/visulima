@@ -36,6 +36,7 @@ const stringOrFunction = z.string().or(
         .returns(z.string()),
 );
 
+// eslint-disable-next-line import/exports-last
 export const themeSchema = z
     .object({
         backToTop: z
@@ -140,7 +141,7 @@ export const themeSchema = z
                 height: z.string().or(z.number()),
             })
             .optional(),
-        i18n: i18nSchema,
+        i18n: i18nSchema.default([]),
         localSwitch: z
             .object({
                 title: stringOrFunction,
@@ -285,9 +286,9 @@ export const themeSchema = z
 
 // @see https://github.com/colinhacks/zod/discussions/2527
 // eslint-disable-next-line deprecation/deprecation
-export const publicThemeSchema = themeSchema.deepPartial().extend({
+const publicThemeSchema = themeSchema.deepPartial().extend({
     // to have `locale` and `text` as required properties
-    i18n: i18nSchema,
+    i18n: i18nSchema.optional(),
 });
 
 export type DocumentationThemeConfig = z.infer<typeof themeSchema>;

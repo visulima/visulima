@@ -33,40 +33,20 @@
     "sideEffects": [
         "./src/theme/polyfill.ts"
     ],
+    "type": "module",
     "exports": {
         ".": {
-            "types": "./dist/index.d.mts",
-            "require": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            },
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            },
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
             "style": "./style.css"
         },
         "./components": {
-            "types": "./dist/components.d.mts",
-            "require": {
-                "types": "./dist/components.d.ts",
-                "default": "./dist/components.js"
-            },
-            "import": {
-                "types": "./dist/components.d.mts",
-                "default": "./dist/components.mjs"
-            }
+            "types": "./dist/components.d.ts",
+            "import": "./dist/components.js"
         },
         "./config": {
-            "types": "./dist/config.d.mts",
-            "require": {
-                "types": "./dist/config.d.ts",
-                "default": "./dist/config.js"
-            },
-            "import": {
-                "types": "./dist/config.d.mts",
-                "default": "./dist/config.mjs"
-            }
+            "types": "./dist/config.d.ts",
+            "import": "./dist/config.js"
         },
         "./component-style": "./component-style.css",
         "./style": "./style.css",
@@ -74,13 +54,12 @@
         "./style.css": "./style.css",
         "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.mts",
+    "types": "dist/index.d.ts",
     "files": [
         "dist",
         "component-style.css",
         "style.css",
+        "package.json",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
@@ -94,11 +73,11 @@
         "dev": "cross-env NODE_ENV=development concurrently \"tsup --watch\" \"pnpm dev:tailwind:full\" \"pnpm dev:tailwind:components\"",
         "dev:tailwind:components": "cross-env TAILWIND_MODE=watch PREFLIGHT=false pnpm postcss css/styles.css -o component-style.css --watch",
         "dev:tailwind:full": "cross-env TAILWIND_MODE=watch PREFLIGHT=true pnpm postcss css/styles.css -o style.css --watch",
-        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
-        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:packagejson": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.js --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "minify:css": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' component-style.css -o component-style.css && lightningcss --minify --nesting --bundle --targets '>= 0.25%' style.css -o style.css",
         "test": "vitest run",
@@ -138,6 +117,7 @@
         "@babel/core": "^7.23.2",
         "@mdx-js/react": "^2.3.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
+        "@secretlint/secretlint-rule-preset-recommend": "^7.0.7",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.10",
         "@testing-library/react": "^14.0.0",

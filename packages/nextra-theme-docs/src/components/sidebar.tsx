@@ -380,7 +380,9 @@ const Sidebar: FC<SideBarProperties> = ({ asPopover = false, documentsDirectorie
                     "bg-transparent": !menu,
                     "fixed inset-0 z-10 bg-black/80 dark:bg-black/60": menu,
                 })}
-                onClick={() => setMenu(false)}
+                onClick={() => {
+                    setMenu(false);
+                }}
             />
             <aside
                 className={cn(
