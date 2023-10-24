@@ -42,7 +42,7 @@ jobs:
                   allowed-conclusions: "success,skipped" # all other checks must pass, being skipped or cancelled is not sufficient
 
             - name: "Git checkout"
-              uses: "actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608" # v4.1.0
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
               with:
                   fetch-depth: 0
                   persist-credentials: false
@@ -56,7 +56,7 @@ jobs:
                   run_install: false
 
             - name: "Use Node.js 18.x"
-              uses: "actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d" # v3.8.1
+              uses: "actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7" # v3.8.2
               with:
                   node-version: "18.x"
                   cache: "pnpm"
@@ -108,7 +108,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608" # v4.1.0
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
               with:
                   fetch-depth: 2
               env:
@@ -119,7 +119,7 @@ jobs:
             - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
 
             - name: "Use Node.js 18.x"
-              uses: "actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d" # v3.8.1
+              uses: "actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7" # v3.8.2
               with:
                   node-version: "18.x"
 
