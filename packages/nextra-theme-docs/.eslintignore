@@ -17,3 +17,5 @@ tsconfig.eslint.json
 
 # TODO: Remove after babel file was added
 __docs__
+
+src/components/sandbox.tsx
