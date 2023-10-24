@@ -5,6 +5,7 @@ import type { FC } from "react";
 
 import Zoom from "./zoom";
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const ImageFrame: FC<ImageProps & { alt: string; caption?: string; full?: boolean; src: string; zoom?: boolean }> = ({
     caption = undefined,
     full = undefined,
@@ -23,7 +24,8 @@ const ImageFrame: FC<ImageProps & { alt: string; caption?: string; full?: boolea
         <ResolvedImage
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
-            className={cn("w-auto select-none bg-white rounded-md", full ? "" : "ring-1 ring-gray-200", properties.className ?? "")}
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            className={cn("w-auto select-none bg-white rounded-md", full ? "" : "ring-1 ring-gray-200", properties.className)}
         />
     );
 

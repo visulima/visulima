@@ -16,7 +16,6 @@ const TocSidebar: FC<TOCProperties> = ({ filePath, headings, isOnScreen = false,
 
     const hasHeadings = headings.length > 0;
     const activeIndex = headings.findIndex(({ id }) => id === activeId);
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const hasMetaInfo = Boolean(config.feedback.content || config.editLink.component || config.tocSidebar.extraContent);
 
     useEffect(() => {

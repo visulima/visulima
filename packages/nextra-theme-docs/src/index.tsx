@@ -136,7 +136,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     let pageType = activeType;
     let isErrorPage = false;
 
-    if (["/404", "/500"].includes(route)) {
+    if (["/404", "/500"].includes(route as string)) {
         isErrorPage = true;
         pageType = "page";
     }

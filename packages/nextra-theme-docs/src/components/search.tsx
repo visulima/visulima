@@ -215,7 +215,7 @@ const Search: FC<SearchProperties> = ({
                 onChange={async (event) => {
                     const { value: eventValue } = event.target;
 
-                    await onChange(eventValue);
+                    await onChange(eventValue as string);
                     setShow(Boolean(eventValue));
                 }}
                 onCompositionEnd={handleComposition}

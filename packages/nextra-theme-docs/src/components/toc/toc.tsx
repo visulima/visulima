@@ -81,6 +81,7 @@ const Toc: FC<TOCProperties> = ({ activeId = undefined, headings, isPage = false
     return null;
 };
 
+// eslint-disable-next-line import/no-unused-modules
 export interface TOCProperties {
     activeId?: string;
     headings: Heading[];

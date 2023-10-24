@@ -11,8 +11,10 @@ interface CardBaseProperties {
     title: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type CardLinkProperties = LinkProps & Omit<CardBaseProperties, "href"> & { href: string };
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type Properties = CardBaseProperties | CardLinkProperties;
 
 const Card: FC<PropsWithChildren<Properties>> = ({ children = undefined, classes = undefined, href, icon, title, ...properties }) => {
