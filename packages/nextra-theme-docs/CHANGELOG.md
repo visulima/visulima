@@ -1,3 +1,21 @@
+## @visulima/nextra-theme-docs [4.0.4](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.3...@visulima/nextra-theme-docs@4.0.4) (2023-10-24)
+
+
+### Bug Fixes
+
+* updated deps ([4eedb60](https://github.com/visulima/visulima/commit/4eedb604c4f78cf331195e2c053dc72e1c6cf9ad))
+
+
+### Miscellaneous Chores
+
+* **deps:** update devdependencies ([#221](https://github.com/visulima/visulima/issues/221)) ([eb34652](https://github.com/visulima/visulima/commit/eb346521f2a53d0235ec3b9322d7baa6692a2123))
+
+
+### Continuous Integration
+
+* added lint for package.json ([#218](https://github.com/visulima/visulima/issues/218)) ([7e2b13b](https://github.com/visulima/visulima/commit/7e2b13be4a917fc1d0d649758e1050f8bee6d652))
+* speed up eslint linting with nx ([3dad092](https://github.com/visulima/visulima/commit/3dad0922a3bcbe2359332102505b9b09e0ebd62b))
+
 ## @visulima/nextra-theme-docs [4.0.3](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.2...@visulima/nextra-theme-docs@4.0.3) (2023-10-15)
 
 
