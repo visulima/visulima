@@ -1,3 +1,15 @@
+## @visulima/package [1.2.0](https://github.com/visulima/visulima/compare/@visulima/package@1.1.0...@visulima/package@1.2.0) (2023-10-24)
+
+
+### Features
+
+* extended findTSConfig with jsconfig.json search ([13902fd](https://github.com/visulima/visulima/commit/13902fdc8d3e08719ad52dd89fcc183d9bd9d042))
+
+
+### Bug Fixes
+
+* updated deps ([4eedb60](https://github.com/visulima/visulima/commit/4eedb604c4f78cf331195e2c053dc72e1c6cf9ad))
+
 ## @visulima/package [1.1.0](https://github.com/visulima/visulima/compare/@visulima/package@1.0.0...@visulima/package@1.1.0) (2023-10-17)
 
 
