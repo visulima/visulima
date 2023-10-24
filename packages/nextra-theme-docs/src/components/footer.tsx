@@ -18,7 +18,7 @@ const Footer = ({ activeType, locale, themeContext }: { activeType: string; loca
             className={cn(
                 "nextra-footer-container print:hidden",
                 "pb-[env(safe-area-inset-bottom)] footer-border dark:footer-border",
-                config.footer.className,
+                config.footer.className as string,
                 ["hidden", "page"].includes(activeType) || isLayoutRaw
                     ? "px-2 md:px-6 lg:px-8"
                     : "lg:bg-x-gradient-gray-200-gray-200-50-white-50 lg:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",

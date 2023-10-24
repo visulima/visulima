@@ -72,10 +72,10 @@ export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: {
     const [menu, setMenu] = useState(false);
 
     // Merge only on first load
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     theme ||= {
         ...DEFAULT_THEME,
         ...Object.fromEntries(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             Object.entries(themeConfig).map(([key, value]) => [
                 key,
                 value && typeof value === "object" && DEEP_OBJECT_KEYS.includes(key)
@@ -95,12 +95,14 @@ export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: {
             console.error(`[nextra-theme-docs] Error validating theme config file.\n\n${normalizeZodMessage(error)}`);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         validateMeta(pageOpts.pageMap);
 
         isValidated = true;
     }
 
     const extendedConfig: Config = useMemo(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return {
             ...theme,
             description: pageOpts.description,
@@ -132,5 +134,6 @@ export const ConfigProvider = ({ children, value: { pageOpts, themeConfig } }: {
     );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type Config<FrontMatterType = FrontMatter> = DocumentationThemeConfig &
     Pick<PageOpts<FrontMatterType>, "flexsearch" | "frontMatter" | "title"> & { description?: string };

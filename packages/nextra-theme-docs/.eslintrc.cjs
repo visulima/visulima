@@ -31,7 +31,7 @@ module.exports = {
             },
             settings: {
                 tailwindcss: {
-                    config: "./tailwind.config.js",
+                    config: "./tailwind.config.cjs",
                     whitelist: [
                         "md:dark:bg-x-gradient-dark-700-dark-700-50-dark-800",
                         "nextra-code-block",
@@ -67,6 +67,21 @@ module.exports = {
             },
         },
         {
+            files: [
+                "src/types.d.ts",
+                "src/reset.d.ts",
+                "src/icons/*.tsx",
+                "src/theme/polyfill.ts",
+                "src/components.tsx",
+                "__tests__/dummy.test.ts",
+                "src/config.tsx",
+                "src/index.tsx",
+            ],
+            rules: {
+                "import/no-unused-modules": "off",
+            },
+        },
+        {
             files: ["src/components/flexsearch.tsx"],
             rules: {
                 "@typescript-eslint/no-unsafe-assignment": "off",
@@ -82,6 +97,8 @@ module.exports = {
     },
     root: true,
     rules: {
-        // Customize your rules
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
     },
 };

@@ -121,7 +121,7 @@ export const Tabs = ({
                                 : "border-transparent text-gray-600 hover:border-gray-400 hover:text-black dark:text-gray-200 dark:hover:border-neutral-800 dark:hover:text-white",
                             { "pointer-events-none text-gray-400 dark:text-neutral-400": item.disabled },
                             classes?.tab,
-                        )
+                        ) as string
                     }
                     disabled={item.disabled}
                     // eslint-disable-next-line react/no-array-index-key

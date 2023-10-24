@@ -44,7 +44,7 @@ const Banner = (): ReactElement | null => {
                         className="w-8 opacity-80 hover:opacity-100 ltr:mr-2 rtl:ml-2"
                         onClick={() => {
                             try {
-                                localStorage.setItem(banner.key, "0");
+                                localStorage.setItem(banner.key as string, "0");
                             } catch {
                                 /* empty */
                             }

@@ -30,7 +30,7 @@ const ThemeSwitch: FC<{
 
     const onChange = useCallback(
         (option: MenuOption) => {
-            setTheme(option.key);
+            setTheme(option.key as string);
         },
         [setTheme],
     );

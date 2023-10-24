@@ -210,7 +210,9 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
                         <button
                             aria-label="Menu"
                             className="nextra-hamburger -mr-2 rounded p-2 active:bg-gray-400/20 lg:hidden"
-                            onClick={() => setMenu(!menu)}
+                            onClick={() => {
+                                setMenu(!menu);
+                            }}
                             type="button"
                         >
                             <MenuIcon className={cn({ open: menu })} />

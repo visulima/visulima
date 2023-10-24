@@ -45,6 +45,7 @@ const getComponents = ({
         return { a: A };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
         // eslint-disable-next-line react/jsx-props-no-spreading
         a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />,

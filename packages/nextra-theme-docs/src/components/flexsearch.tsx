@@ -267,12 +267,11 @@ const FlexSearch = ({ className = undefined }: { className?: string }): ReactEle
 
     const preload = useCallback(
         async (active: boolean) => {
-            // eslint-disable-next-line security/detect-object-injection
-            if (active && !indexes[locale]) {
+            if (active && !indexes[locale as string]) {
                 setLoading(true);
 
                 try {
-                    await loadIndexes(basePath, locale);
+                    await loadIndexes(basePath as string, locale as string);
                 } catch {
                     setError(true);
                 }
@@ -291,12 +290,11 @@ const FlexSearch = ({ className = undefined }: { className?: string }): ReactEle
                 return;
             }
 
-            // eslint-disable-next-line security/detect-object-injection
-            if (!indexes[locale]) {
+            if (!indexes[locale as string]) {
                 setLoading(true);
 
                 try {
-                    await loadIndexes(basePath, locale);
+                    await loadIndexes(basePath as string, locale as string);
                 } catch {
                     setError(true);
                 }
