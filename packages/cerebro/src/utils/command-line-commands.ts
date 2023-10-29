@@ -1,0 +1,36 @@
+/** The MIT License (MIT)
+ * Copyright (c) 2015-21 Lloyd Brookes <75pound@gmail.com>
+ */
+
+// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+const isShort = new RegExp(/^-([^\d-])$/);
+// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+const isLong = new RegExp(/^--(\S+)/);
+// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+const isCombined = new RegExp(/^-([^\d-]{2,})$/);
+
+const isOption = (argument: string) => isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);
+
+const commandLineCommands = (commands: (string | null)[], argv: string[]): { argv: string[]; command: string | null | undefined } => {
+    /* if no argv supplied, assume we are parsing process.argv. */
+    /* never modify the global process.argv directly. */
+    // eslint-disable-next-line unicorn/prevent-abbreviations
+    const args = [...process.argv];
+
+    args.splice(0, 2);
+
+    /* the command is the first arg, unless it's an option (e.g. --help) */
+    const command = (argv[0] && isOption(argv[0])) || argv.length === 0 ? null : argv.shift();
+
+    if (typeof command !== "string" || !commands.includes(command)) {
+        const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: ${command}`);
+        error.command = command;
+        error.name = "INVALID_COMMAND";
+
+        throw error;
+    }
+
+    return { argv: args, command };
+};
+
+export default commandLineCommands;

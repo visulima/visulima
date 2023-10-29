@@ -1,0 +1,50 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`command-line-usage/option-list-section > commandLineUsage(section): typical 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m-h[22m, [1m--help[22m                            [90m [39m  Display this usage guide.             
+[90m [39m  [1m--src[22m [4mstring[][24m                        [90m [39m  The input files to process            
+[90m [39m  [1m-t[22m, [1m--timeout[22m [4mnumber[24m                  [90m [39m  Timeout value in ms                   
+"
+`;
+
+exports[`command-line-usage/option-list-section > omit String, correct typeLabel 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m--src[22m [4mstring[24m                          [90m [39m  The input files to process            
+"
+`;
+
+exports[`command-line-usage/option-list-section > omit String, correct typeLabel, lazyMultiple 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m--src[22m [4mstring[][24m                        [90m [39m  The input files to process            
+"
+`;
+
+exports[`command-line-usage/option-list-section > omit String, correct typeLabel, multiple 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m--src[22m [4mstring[][24m                        [90m [39m  The input files to process            
+"
+`;
+
+exports[`command-line-usage/option-list-section > optionDefinition with no description 1`] = `
+"[90m [39m  [1m--one[22m [4mstring[24m                          [90m [39m                                        
+"
+`;
+
+exports[`command-line-usage/option-list-section > reverseNameOrder 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m--timeout[22m, [1m-t[22m [4mnumber[24m                  [90m [39m  Timeout value in ms                   
+"
+`;
+
+exports[`command-line-usage/option-list-section > type Number, correct typeLabel, lazyMultiple 1`] = `
+"[1mOption list[22m
+
+[90m [39m  [1m--src[22m [4mnumber[][24m                        [90m [39m  The input files to process            
+"
+`;
