@@ -1,3 +1,10 @@
+## @visulima/package [1.2.1](https://github.com/visulima/visulima/compare/@visulima/package@1.2.0...@visulima/package@1.2.1) (2023-10-30)
+
+
+### Bug Fixes
+
+* update dependencies in pnpm-lock.yaml ([d3a5626](https://github.com/visulima/visulima/commit/d3a5626d2c751c3e14f592db62b583b28046dcc7))
+
 ## @visulima/package [1.2.0](https://github.com/visulima/visulima/compare/@visulima/package@1.1.0...@visulima/package@1.2.0) (2023-10-24)
 
 
