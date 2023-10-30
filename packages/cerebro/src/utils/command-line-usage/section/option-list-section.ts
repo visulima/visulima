@@ -1,9 +1,9 @@
 import CliTable3 from "cli-table3";
 
-import type { Arguments as IArguments } from "../../@types/command";
-import type { OptionList as IOptionList } from "../../@types/command-line-usage";
-import { CLI_TABLE_COMPACT } from "../../ui/constants";
-import chalkFormat from "../../utils/chalk-format";
+import type { OptionDefinition as IArguments } from "../../../@types/command";
+import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
+import { CLI_TABLE_COMPACT } from "../../../ui/constants";
+import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
 
 class OptionListSection extends BaseSection {
@@ -22,7 +22,7 @@ class OptionListSection extends BaseSection {
         }
 
         if (data.header) {
-            this.header(data.header);
+            this.header(chalkFormat(data.header));
         }
 
         if (groups.length > 0) {
@@ -64,29 +64,32 @@ class OptionListSection extends BaseSection {
             type = type === "boolean" ? "" : `{underline ${type}${multiple}}`;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         type = chalkFormat(definition.typeLabel ?? type);
 
         let result: string;
 
         if (definition.alias) {
             if (definition.name) {
+                const name = isArgument ? definition.name : `{yellow --${definition.name}}`;
+
                 result = reverseNameOrder
-                    ? chalkFormat(`{bold ${isArgument ? "" : "--"}${definition.name}}, {bold -${definition.alias}} ${type}`)
-                    : chalkFormat(`{bold -${definition.alias}}, {bold ${isArgument ? "" : "--"}${definition.name}} ${type}`);
+                    ? chalkFormat(`{bold ${name}}, {bold -${definition.alias}} ${type}`)
+                    : chalkFormat(`{bold -${definition.alias}}, {bold ${name}} ${type}`);
             } else if (reverseNameOrder) {
                 result = chalkFormat(`{bold -${definition.alias}} ${type}`);
             } else {
                 result = chalkFormat(`{bold -${definition.alias}} ${type}`);
             }
         } else {
-            result = chalkFormat(`{bold ${isArgument ? "" : "--"}${definition.name}} ${type}`);
+            result = chalkFormat(`{bold ${isArgument ? definition.name : `{yellow --${definition.name}}`}} ${type}`);
         }
 
         return result;
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private intersect(array1, array2) {
+    private intersect(array1: (string | undefined)[], array2: (string | undefined)[]) {
         return array1.some((item1) => array2.includes(item1));
     }
 }

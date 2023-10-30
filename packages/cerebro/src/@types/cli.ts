@@ -27,7 +27,7 @@ export interface Cli {
      */
     addExtension: (extension: IExtension) => this;
 
-    enableUpdateNotifier: ({ alwaysRun, distTag, updateCheckInterval }: Omit<UpdateNotifierOptions, "debug | pkg">) => this;
+    enableUpdateNotifier: ({ alwaysRun, distTag, updateCheckInterval }: Partial<Omit<UpdateNotifierOptions, "debug | pkg">>) => this;
 
     getCliName: () => string;
 
@@ -37,9 +37,9 @@ export interface Cli {
 
     getCwd: () => string;
 
-    getPackageName: () => string;
+    getPackageName: () => string | undefined;
 
-    getPackageVersion: () => string;
+    getPackageVersion: () => string | undefined;
 
     run: (extraOptions: IOptions) => Promise<void>;
 

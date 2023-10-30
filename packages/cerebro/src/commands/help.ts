@@ -1,17 +1,17 @@
-import type { Cli as ICli, Command as ICommand, Logger as ILogger, Print as IPrint, Toolbox as IToolbox } from "../@types";
+import type { Cli as ICli, Command as ICommand, Logger as ILogger, Toolbox as IToolbox } from "../@types";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
-import commandLineUsage from "../command-line-usage";
 import chalkFormat from "../utils/chalk-format";
+import commandLineUsage from "../utils/command-line-usage";
 
-const printGeneralHelp = (logger: ILogger, runtime: ICli, print: IPrint, commands: Map<string, ICommand>) => {
+const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>) => {
     logger.debug("no command given, printing general help...");
 
     logger.log(
         commandLineUsage([
             {
-                content: `${print.colors.cyan(runtime.getCliName())} ${print.colors.green("<command>")} [positional arguments] [options]`,
-                header: "Usage",
+                content: `{cyan ${runtime.getCliName()}} {green <command>} [positional arguments] {yellow [options]}`,
+                header: "{inverse.cyan  Usage }",
             },
             {
                 content: [...new Set(commands.values())]
@@ -29,40 +29,44 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, print: IPrint, command
                             aliases = ` [${aliases}]`;
                         }
 
-                        return [print.colors.green(command.name) + aliases, command.description ?? ""];
+                        return [`{green ${command.name}} ${aliases}`, command.description ?? ""];
                     }),
-                header: "Available Commands",
+                header: "{inverse.green  Available Commands }",
             },
-            { header: "Global Options", optionList: defaultOptions },
+            { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
             {
-                content: `Run "${runtime.getCliName()} help <command>" or "${runtime.getCliName()} <command> --help" for help with a specific command.`,
+                content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
                 raw: true,
             },
         ]),
     );
 };
 
-const printCommandHelp = (logger: ILogger, commands: Map<string, ICommand>, name: string): void => {
+const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
     const command = commands.get(name) as ICommand;
-
-    logger.log("");
-    logger.info(command.name);
-
-    if (command.description) {
-        logger.log(command.description);
-    }
 
     const usageGroups: Section[] = [];
 
+    usageGroups.push({
+        content: `{cyan ${runtime.getCliName()}} {green ${command.name}}${command.argument ? " [positional arguments]" : ""}${
+            command.options ? " [options]" : ""
+        }`,
+        header: "{inverse.cyan  Usage }",
+    });
+
+    if (command.description) {
+        usageGroups.push({ content: command.description, header: "{inverse.green  Description }"});
+    }
+
     if (command.argument) {
-        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: [command.argument], });
+        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: [command.argument] });
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {
-        usageGroups.push({ header: "Command Options", optionList: command.options });
+        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options });
     }
 
-    usageGroups.push({ header: "Global Options", optionList: defaultOptions });
+    usageGroups.push({ header: "{inverse.yellow  Global Options }", optionList: defaultOptions });
 
     if (command.alias !== undefined && command.alias.length > 0) {
         let alias: string[] = command.alias as string[];
@@ -114,9 +118,9 @@ class HelpCommand implements ICommand {
         logger.log(chalkFormat(header));
 
         if (commandName === "help") {
-            printGeneralHelp(logger, runtime, toolbox.print, this.commands);
+            printGeneralHelp(logger, runtime, this.commands);
         } else {
-            printCommandHelp(logger, this.commands, commandName);
+            printCommandHelp(logger, runtime, this.commands, commandName);
         }
 
         if (footer) {

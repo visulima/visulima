@@ -1,9 +1,9 @@
 import type { TableInstanceOptions } from "cli-table3";
 import CliTable3 from "cli-table3";
 
-import type { Content } from "../../@types/command-line-usage";
-import { CLI_TABLE_COMPACT } from "../../ui/constants";
-import chalkFormat from "../../utils/chalk-format";
+import type { Content } from "../../../@types/command-line-usage";
+import { CLI_TABLE_COMPACT } from "../../../ui/constants";
+import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
 
 const defaultTableOptions: Partial<TableInstanceOptions> = {
@@ -78,14 +78,12 @@ class ContentSection extends BaseSection {
         super();
 
         if (section.header) {
-            this.header(section.header);
+            this.header(chalkFormat(section.header));
         }
 
         if (section.content) {
             /* add content without indentation or wrapping */
             if (section.raw) {
-                this.add("");
-
                 if (Array.isArray(section.content) && section.content.every((value) => typeof value === "string")) {
                     section.content.forEach((row) => {
                         if (Array.isArray(row)) {

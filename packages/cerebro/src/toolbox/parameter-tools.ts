@@ -1,4 +1,4 @@
-import type { OptionDefinition } from "command-line-usage";
+import type { OptionDefinition } from "../@types/command";
 
 import hideBin from "../utils/hide-bin";
 
@@ -15,8 +15,9 @@ const equals = (a: string[], b: string[]) => a.length === b.length && a.every((v
  * anything about it. Validation of command and global argument should be done
  * in tests, not on users machines.
  */
-export const mergeArguments = (argumentLists: OptionDefinition[]): OptionDefinition[] => {
-    const argumentsByName = new Map<string, OptionDefinition>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const mergeArguments = <T = any>(argumentLists: OptionDefinition<T>[]): OptionDefinition<T>[] => {
+    const argumentsByName = new Map<string, OptionDefinition<T>>();
 
     argumentLists.forEach((argument) => {
         argumentsByName.set(argument.name, { ...argumentsByName.get(argument.name), ...argument });

@@ -1,6 +1,6 @@
 import type { TableInstanceOptions } from "cli-table3";
 
-import type { Arguments } from "./command";
+import type { OptionDefinition } from "./command";
 
 /** A Content section comprises a header and one or more lines of content. */
 export interface Content {
@@ -29,7 +29,7 @@ export interface OptionList {
     isArgument?: boolean;
     /** An array of option definition objects. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    optionList?: Arguments<any>[];
+    optionList?: OptionDefinition<any>[];
     /** If true, the option alias will be displayed after the name, i.e. --verbose, -v instead of -v, --verbose). */
     reverseNameOrder?: boolean;
     /** An options object suitable for passing into table. */

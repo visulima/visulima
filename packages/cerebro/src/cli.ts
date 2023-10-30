@@ -13,7 +13,7 @@ import type {
     Options as IOptions,
     Toolbox as IToolbox,
 } from "./@types";
-import type { Arguments } from "./@types/command";
+import type { OptionDefinition } from "./@types/command";
 import HelpCommand from "./commands/help";
 import VersionCommand from "./commands/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
@@ -26,7 +26,6 @@ import logger from "./toolbox/logger-tools";
 import { mergeArguments, parseRawCommand } from "./toolbox/parameter-tools";
 import system from "./toolbox/system-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
-import hasNewVersion from "./update-notifier/has-new-version";
 import checkNodeVersion from "./utils/check-node-version";
 import commandLineCommands from "./utils/command-line-commands";
 import findAlternatives from "./utils/levenstein";
@@ -42,9 +41,9 @@ class Cli implements ICli {
 
     private readonly cliName: string;
 
-    private readonly packageVersion: string;
+    private readonly packageVersion: string | undefined;
 
-    private readonly packageName: string;
+    private readonly packageName: string | undefined;
 
     private readonly extensions: IExtension[] = [];
 
@@ -61,19 +60,19 @@ class Cli implements ICli {
 
     /**
      * @param cliName The cli cliName.
-     * @param packageVersion The packageJson version.
-     * @param packageName The packageJson name.
      * @param options The options for the CLI.
-     *        - argv This should be in the base case process.argv
-     *        - cwd  The path of main folder.
+     *        - argv           This should be in the base case process.argv
+     *        - cwd            The path of main folder.
+     *        - packageName    The packageJson name.
+     *        - packageVersion The packageJson version.
      */
     public constructor(
         cliName: string,
-        packageName: string,
-        packageVersion: string,
         options: {
             argv?: string[];
             cwd?: string;
+            packageName?: string;
+            packageVersion?: string;
         } = {},
     ) {
         this.logger = logger;
@@ -83,7 +82,7 @@ class Cli implements ICli {
 
         env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
 
-        const { argv, cwd } = {
+        const { argv, cwd, packageName, packageVersion } = {
             argv: process.argv,
             cwd: process.cwd(),
             ...options,
@@ -96,7 +95,7 @@ class Cli implements ICli {
         this.cwd = cwd;
         this.defaultCommand = "help";
         this.commandSection = {
-            header: `${this.cliName} ${this.packageVersion}`,
+            header: `${this.cliName}${this.packageVersion ? ` v${this.packageVersion}` : ""}`,
         };
 
         // If the "--quiet"/"-q" flag is ever present, set our global logging
@@ -242,20 +241,27 @@ class Cli implements ICli {
      *   updateCheckInterval: 1000 * 60 * 60
      * });
      */
-    public enableUpdateNotifier({
-        alwaysRun = false,
-        distTag: distributionTag = "latest",
-        updateCheckInterval = 1000 * 60 * 60 * 24,
-    }: Omit<UpdateNotifierOptions, "debug | pkg">): this {
+    public enableUpdateNotifier(options: Partial<Omit<UpdateNotifierOptions, "debug | pkg">> = {}): this {
+        if (!this.packageName || !this.packageVersion) {
+            throw new Error("Cannot enable update notifier without package name and version.");
+        }
+
+        const configKeys = Object.keys(options);
+
+        if (configKeys.length > 0 && !configKeys.includes("alwaysRun") && !configKeys.includes("distTag") && !configKeys.includes("updateCheckInterval")) {
+            throw new Error("Invalid update notifier options, please check the documentation.");
+        }
+
         this.updateNotifierOptions = {
-            alwaysRun,
+            alwaysRun: false,
             debug: env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
-            distTag: distributionTag,
+            distTag: "latest",
             pkg: {
                 name: this.packageName,
                 version: this.packageVersion,
             },
-            updateCheckInterval,
+            updateCheckInterval: 1000 * 60 * 60 * 24,
+            ...options,
         };
 
         return this;
@@ -265,11 +271,11 @@ class Cli implements ICli {
         return this.cliName;
     }
 
-    public getPackageVersion(): string {
+    public getPackageVersion(): string | undefined {
         return this.packageVersion;
     }
 
-    public getPackageName(): string {
+    public getPackageName(): string | undefined {
         return this.packageName;
     }
 
@@ -307,7 +313,7 @@ class Cli implements ICli {
                 this.logger.error(`\r\n"${error.command}" is not an available command.${alternatives}\r\n`);
             }
 
-            this.logger.error(error.message);
+            this.logger.error(error as object);
 
             // eslint-disable-next-line unicorn/no-process-exit
             return process.exit(1);
@@ -452,12 +458,16 @@ class Cli implements ICli {
         await command.execute(toolbox);
     }
 
-    private async updateNotifier(toolbox: IToolbox) {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    private async updateNotifier({ logger, print }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
             (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
-            const { print } = toolbox;
+            // @TODO add a stream logger
+            logger.log("Checking for updates...");
+
+            const hasNewVersion = await import("./update-notifier/has-new-version").then((m) => m.default);
 
             const updateAvailable = await hasNewVersion(this.updateNotifierOptions);
 
@@ -478,7 +488,7 @@ class Cli implements ICli {
     }
 
     // eslint-disable-next-line consistent-return,sonarjs/cognitive-complexity,unicorn/prevent-abbreviations
-    private validateCommandOptions<T>(arguments_: Arguments<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
+    private validateCommandOptions<T>(arguments_: OptionDefinition<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
         const missingOptions = listMissingArguments(arguments_, commandArgs);
 
         if (missingOptions.length > 0) {

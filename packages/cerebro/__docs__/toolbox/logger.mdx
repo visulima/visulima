@@ -1,0 +1,105 @@
+Features for allowing you to log to the console.
+
+You can access these tools on the cerebro toolbox, via `const { toolbox } = require('@visulima/cerebro-core')`.
+
+## clear
+
+This clears the console window.
+
+```js
+toolbox.logger.clear()
+```
+
+## critical
+
+Prints a critical message.
+
+```js
+toolbox.logger.critical("Your system does not have Yarn installed.")
+```
+
+## error
+
+Prints an error message. Use this when something goes Pants-On-Head wrong. What does that mean?
+Well, if your next line of code isn't `process.exit(0)`, then it was probably a warning.
+
+```js
+toolbox.logger.error('Out of disk space.')
+```
+
+## danger
+@todo write doc
+
+## success
+
+Print a "something good just happened" message.
+
+```js
+toolbox.logger.success('We did it!')
+```
+
+## warning
+
+Prints a warning message. Use this when you feel a disturbance in the force.
+
+```js
+toolbox.logger.warning("Your system does not have Yarn installed. It's awesome.")
+```
+
+## info
+
+Prints an informational message. Use this as your goto.
+
+```js
+toolbox.logger.info('Hello. I am a chatty plugin.')
+```
+
+## debug
+
+Only used for debugging your plugins. You can pass this function a string or an object.
+
+```js
+toolbox.logger.debug(someObject, 'download status')
+```
+
+The `message` parameter is object you would like to see.
+
+The `label` is an optional label on a message which is handy if you've got a lot of debug messages, and
+you're losing track of which one is which.
+
+The `showIcon` shows an icon before the message and label.
+
+## log
+@todo write doc
+
+## status
+@todo write doc
+
+## notice
+@todo write doc
+
+## note
+@todo write doc
+
+## processing
+@todo write doc
+
+## terminalInfo
+
+This returns the windows size.
+
+```js
+toolbox.logger.terminalInfo()
+```
+
+## dd
+@todo write doc
+
+## dump
+@todo write doc
+
+## line
+@todo write doc
+
+## center
+@todo write doc

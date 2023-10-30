@@ -1,6 +1,5 @@
 import type { Options as BoxenOptions } from "boxen";
 import type { ChalkInstance, ColorName } from "chalk";
-import type { AnimationFn } from "chalk-animation";
 import type { MultiBar, Options as ProgressOptions, SingleBar } from "cli-progress";
 import type CLITable from "cli-table3";
 import type { Options as OraOptions, Ora } from "ora";
@@ -40,17 +39,7 @@ export interface PrintTableOptions {
 }
 
 export interface Print {
-    /**
-     * Colorful animations in terminal output.
-     */
-    animation: {
-        glitch: AnimationFn;
-        karaoke: AnimationFn;
-        neon: AnimationFn;
-        pulse: AnimationFn;
-        radar: AnimationFn;
-        rainbow: AnimationFn;
-    };
+    annotation: (text: string, annotation: string) => void;
     boxen: (text: string, options?: BoxenOptions) => string;
     clear: () => void;
     /* Colors as seen from colors. */

@@ -1,18 +1,18 @@
-import chalkAnimation from "chalk-animation";
+import boxen from "boxen";
 import type { Options as OraOptions, Ora } from "ora";
 import ora from "ora";
 import terminalLink from "terminal-link";
-import boxen from "boxen";
 
 import type { Print as IPrint } from "../@types";
 import { VERBOSITY_QUIET } from "../constants";
+import annotation from "../ui/annotation";
 import clear from "../ui/clear";
 import colors from "../ui/colors";
 import { justify, truncate,wrap } from "../ui/helpers";
+import instructions from "../ui/instructions";
 import { multiProgress,progress } from "../ui/progress";
 import table from "../ui/table";
 import terminalSize from "../ui/terminal-size";
-import instructions from "../ui/instructions";
 
 /**
  * Print a blank line.
@@ -44,7 +44,7 @@ const log = (arguments_: any, type: "debug" | "error" | "info" | "log" | "warn" 
 };
 
 export default {
-    animation: chalkAnimation,
+    annotation,
     boxen,
     clear,
     colors,

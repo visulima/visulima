@@ -11,7 +11,7 @@ const isCombined = new RegExp(/^-([^\d-]{2,})$/);
 
 const isOption = (argument: string) => isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);
 
-const commandLineCommands = (commands: (string | null)[], argv: string[]): { argv: string[]; command: string | null | undefined } => {
+const commandLineCommands = (commands: (string | null)[], argv: string[]): { argv: string[]; command: string | null } => {
     /* if no argv supplied, assume we are parsing process.argv. */
     /* never modify the global process.argv directly. */
     // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -20,9 +20,9 @@ const commandLineCommands = (commands: (string | null)[], argv: string[]): { arg
     args.splice(0, 2);
 
     /* the command is the first arg, unless it's an option (e.g. --help) */
-    const command = (argv[0] && isOption(argv[0])) || argv.length === 0 ? null : argv.shift();
+    const command = (argv[0] && isOption(argv[0])) || argv.length === 0 ? null : argv.shift() ?? null;
 
-    if (typeof command !== "string" || !commands.includes(command)) {
+    if (!commands.includes(command)) {
         const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: ${command}`);
         error.command = command;
         error.name = "INVALID_COMMAND";
