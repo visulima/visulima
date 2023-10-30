@@ -1,3 +1,16 @@
+## @visulima/connect [2.1.6](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.5...@visulima/connect@2.1.6) (2023-10-30)
+
+
+### Bug Fixes
+
+* update dependencies in pnpm-lock.yaml ([d3a5626](https://github.com/visulima/visulima/commit/d3a5626d2c751c3e14f592db62b583b28046dcc7))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.6
+
 ## @visulima/connect [2.1.5](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.4...@visulima/connect@2.1.5) (2023-10-24)
 
 
