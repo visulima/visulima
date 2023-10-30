@@ -103,7 +103,7 @@
         "eslint": "^8.52.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
-        "eslint-plugin-import": "npm:eslint-plugin-i@^2.28.1",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.0",
         "eslint-plugin-jsx-a11y": "^6.7.1",
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-ssr-friendly": "^1.2.0",

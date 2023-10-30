@@ -75,8 +75,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "5.5.0",
-        "@prisma/internals": "5.5.0"
+        "@prisma/generator-helper": "5.5.2",
+        "@prisma/internals": "5.5.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^14.0.24",
@@ -95,7 +95,7 @@
         "eslint": "^8.52.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
-        "eslint-plugin-import": "npm:eslint-plugin-i@^2.28.1",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.0",
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.3.8",
         "eslint-plugin-vitest-globals": "^1.4.0",
