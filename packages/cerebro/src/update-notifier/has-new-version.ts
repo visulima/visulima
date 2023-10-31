@@ -1,6 +1,6 @@
 import { gt } from "semver";
 
-import { createConfigDirectory, getLastUpdate, saveLastUpdate } from "./cache";
+import { getLastUpdate, saveLastUpdate } from "./cache";
 import getDistributionVersion from "./get-dist-version";
 
 const hasNewVersion = async ({
@@ -11,8 +11,6 @@ const hasNewVersion = async ({
     registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags",
     updateCheckInterval = 1000 * 60 * 60 * 24,
 }: UpdateNotifierOptions): Promise<string | null> => {
-    createConfigDirectory();
-
     const lastUpdateCheck = getLastUpdate(pkg.name);
 
     if (alwaysRun || !lastUpdateCheck || lastUpdateCheck < Date.now() - updateCheckInterval) {

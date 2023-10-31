@@ -7,7 +7,7 @@ import type { Toolbox as IToolbox } from "../src/@types";
 // eslint-disable-next-line import/prefer-default-export,func-style
 export async function run(argv?: string[]): Promise<void> {
     // create a CLI runtime
-    const cerebro = new Cli("cerebro", "test", "0.0.0", { argv: argv ?? process.argv });
+    const cerebro = new Cli("cerebro", { argv: argv ?? process.argv, packageName: "@visulima/cerebro", packageVersion: "0.0.0" });
 
     cerebro
         .addCommand({
@@ -18,8 +18,7 @@ export async function run(argv?: string[]): Promise<void> {
                 logger.info(`  Type cerebro --help for more info`);
             },
             name: "test",
-        })
-        .setDefaultCommand("test");
+        });
 
     // and execute it
     await cerebro.run();

@@ -51,6 +51,8 @@ module.exports = {
         project: "./tsconfig.eslint.json",
         sourceType: "module",
     },
+    // Report unused `eslint-disable` comments.
+    reportUnusedDisableDirectives: true,
     root: true,
     rules: {
         "@typescript-eslint/no-unsafe-call": "off",

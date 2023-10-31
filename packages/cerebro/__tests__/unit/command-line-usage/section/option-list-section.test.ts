@@ -1,7 +1,7 @@
-import type { OptionList as IOptionList } from "command-line-usage";
 import { describe, expect, it } from "vitest";
 
-import OptionListSection from "../../../src/command-line-usage/section/option-list-section";
+import type { OptionList as IOptionList } from "../../../../src/@types/command-line-usage";
+import OptionListSection from "../../../../src/utils/command-line-usage/section/option-list-section";
 
 describe("command-line-usage/option-list-section", () => {
     it("should render a typical output", () => {
@@ -34,9 +34,9 @@ describe("command-line-usage/option-list-section", () => {
             optionList: definitions,
         };
 
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should render the out put in the reverse name order", () => {
@@ -53,17 +53,17 @@ describe("command-line-usage/option-list-section", () => {
             reverseNameOrder: true,
         };
 
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should render the output with no description", () => {
         const result = new OptionListSection({
             optionList: [{ name: "one" }],
-        }).toString();
+        });
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should throw a error if the definition has no name", () => {
@@ -71,7 +71,7 @@ describe("command-line-usage/option-list-section", () => {
             new OptionListSection({
                 // @ts-expect-error - test error
                 optionList: [{ description: "something" }],
-            }).toString();
+            });
         }).toThrow("Invalid option definition, name is required.");
     });
 
@@ -88,9 +88,9 @@ describe("command-line-usage/option-list-section", () => {
             optionList: definitions,
         };
 
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should omit String, correct typeLabel, multiple", () => {
@@ -107,9 +107,9 @@ describe("command-line-usage/option-list-section", () => {
             optionList: definitions,
         };
 
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should omit String, correct typeLabel, lazyMultiple", () => {
@@ -125,9 +125,9 @@ describe("command-line-usage/option-list-section", () => {
             header: "Option list",
             optionList: definitions,
         };
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should output with correct type Number, correct typeLabel and lazyMultiple", () => {
@@ -145,8 +145,8 @@ describe("command-line-usage/option-list-section", () => {
             optionList: definitions,
         };
 
-        const result = new OptionListSection(section as IOptionList).toString();
+        const result = new OptionListSection(section as IOptionList);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 });

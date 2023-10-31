@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import commandLineUsage from "../../src/command-line-usage";
+import commandLineUsage from "../../../src/utils/command-line-usage";
 
 describe("line-usage", () => {
     it("should render a typical output", () => {

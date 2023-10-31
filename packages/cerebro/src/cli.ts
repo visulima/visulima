@@ -1,8 +1,9 @@
+import { checkbox, confirm, editor, expand, input, password, rawlist, select } from "@inquirer/prompts";
 import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
-import { env, isCI } from "std-env";
+import { env, isCI, isTest } from "std-env";
 
 import type {
     Cli as ICli,
@@ -19,17 +20,17 @@ import VersionCommand from "./commands/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
-import printExtension from "./extensions/print-extension";
-import promptExtension from "./extensions/prompt-extension";
-import systemExtension from "./extensions/system-extension";
 import logger from "./toolbox/logger-tools";
-import { mergeArguments, parseRawCommand } from "./toolbox/parameter-tools";
+import printTools from "./toolbox/print-tools";
 import system from "./toolbox/system-tools";
+import systemTools from "./toolbox/system-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
 import checkNodeVersion from "./utils/check-node-version";
 import commandLineCommands from "./utils/command-line-commands";
 import findAlternatives from "./utils/levenstein";
 import listMissingArguments from "./utils/list-missing-arguments";
+import mergeArguments from "./utils/merge-arguments";
+import parseRawCommand from "./utils/parse-raw-command";
 import registerExceptionHandler from "./utils/register-exception-handler";
 
 class Cli implements ICli {
@@ -121,29 +122,16 @@ class Cli implements ICli {
                 this.argv.push(whichNode);
             }
 
-            const whichCerebro = system.which("cerebro");
+            const whichCli = system.which(cliName);
 
-            if (whichCerebro) {
-                this.argv.push(whichCerebro);
+            if (whichCli) {
+                this.argv.push(whichCli);
             }
         }
 
         this.commands = new Map<string, ICommand>();
 
-        /**
-         * Adds the core extensions. These provide the basic features
-         * available in cerebro.
-         */
-        this.addExtension(printExtension);
-        this.addExtension(promptExtension);
-        this.addExtension(systemExtension);
-        this.addExtension({
-            execute: (toolbox: IToolbox) => {
-                // eslint-disable-next-line no-param-reassign
-                toolbox.logger = this.logger;
-            },
-            name: "logger",
-        } as IExtension);
+        this.addCoreExtensions();
 
         this.addCommand(VersionCommand);
         this.addCommand(new HelpCommand(this.commands));
@@ -212,8 +200,7 @@ class Cli implements ICli {
     /**
      * Adds an extension so it is available when commands execute. They usually live
      * the given name on the toolbox object passed to commands, but are able
-     * to manipulate the toolbox object however they want. The second
-     * parameter is a function that allows the extension to attach itself.
+     * to manipulate the toolbox object however they want.
      */
     public addExtension(extension: IExtension): this {
         this.extensions.push(extension);
@@ -293,6 +280,10 @@ class Cli implements ICli {
 
         let parsedArguments: { argv: string[]; command: string | null | undefined };
 
+        this.logger.debug(`process.execPath: ${process.execPath}`);
+        this.logger.debug(`process.execArgv: ${process.execArgv}`);
+        this.logger.debug('process.argv: ${process.argv.join(" ")}');
+
         try {
             parsedArguments = commandLineCommands([null, ...commandNames], parseRawCommand(this.argv));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -316,7 +307,7 @@ class Cli implements ICli {
             this.logger.error(error as object);
 
             // eslint-disable-next-line unicorn/no-process-exit
-            return process.exit(1);
+            return isTest ? undefined : process.exit(1);
         }
 
         const commandName = parsedArguments.command ?? this.defaultCommand;
@@ -326,7 +317,7 @@ class Cli implements ICli {
             this.logger.error(`Command "${command.name}" has no function to execute.`);
 
             // eslint-disable-next-line unicorn/no-process-exit
-            return process.exit(1);
+            return isTest ? undefined : process.exit(1);
         }
 
         const commandArguments = parsedArguments.argv;
@@ -421,7 +412,52 @@ class Cli implements ICli {
         await this.prepareToolboxResult(commandArgs, toolbox as IToolbox, command);
 
         // eslint-disable-next-line unicorn/no-process-exit
-        return process.exit(0);
+        return isTest ? undefined : process.exit(0);
+    }
+
+    /**
+     * Adds the core extensions. These provide the basic features
+     * available in cerebro.
+     */
+    private addCoreExtensions() {
+        this.addExtension({
+            execute: (toolbox: IToolbox): void => {
+                // attach the feature set
+                // eslint-disable-next-line no-param-reassign
+                toolbox.print = printTools;
+            },
+            name: "print",
+        });
+        this.addExtension({
+            execute: (toolbox: IToolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.prompts = {
+                    checkbox,
+                    confirm,
+                    editor,
+                    expand,
+                    input,
+                    password,
+                    rawlist,
+                    select,
+                };
+            },
+            name: "prompt",
+        });
+        this.addExtension({
+            execute: (toolbox: IToolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.system = systemTools;
+            },
+            name: "system",
+        });
+        this.addExtension({
+            execute: (toolbox: IToolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.logger = this.logger;
+            },
+            name: "logger",
+        });
     }
 
     // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -497,7 +533,7 @@ class Cli implements ICli {
             );
 
             // eslint-disable-next-line unicorn/no-process-exit
-            return process.exit(1);
+            return isTest ? undefined : process.exit(1);
         }
 
         // eslint-disable-next-line no-underscore-dangle
@@ -525,7 +561,7 @@ class Cli implements ICli {
             });
 
             // eslint-disable-next-line unicorn/no-process-exit
-            return process.exit(1);
+            return isTest ? undefined : process.exit(1);
         }
     }
 }

@@ -45,7 +45,7 @@ export interface Print {
     /* Colors as seen from colors. */
     colors: Colors;
     /* Prints a divider. */
-    divider: () => void;
+    divider: (options?: { fullWidth?: boolean; width?: number; }) => void;
     justify: (
         columns: string[],
         options: {
@@ -67,8 +67,8 @@ export interface Print {
     print: (arguments_: any, type?: "debug" | "error" | "info" | "log" | "warn") => void;
 
     progress: (options?: ProgressOptions) => SingleBar;
-    /* An `ora`-powered spinner. */
-    spinner: (options?: OraOptions | string) => Ora;
+    /* An `ora`-powered spin. */
+    spin: (options?: OraOptions | string) => Ora;
 
     /* Prints a table of data (usually a 2-dimensional array). */
     table: (head: string[], data: string[][], options?: PrintTableOptions) => void;

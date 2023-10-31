@@ -1,9 +1,4 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "display": "React + Node 18",
     "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "baseUrl": "."
-    },
-    "include": ["__docs__/**/*", "__tests__/**/*", "__integration_tests__/**/*", "src/**/*", "*.d.ts", "tsup.config.ts"]
+    "include": ["__docs__/**/*.mdx", "__tests__/**/*.ts", "src/**/*.ts", "*.d.ts", "build.config.ts", "tsup.config.ts"]
 }

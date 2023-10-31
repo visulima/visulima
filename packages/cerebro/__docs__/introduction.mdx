@@ -1,32 +1,41 @@
-import { Play, Palette, LayoutTemplate, Puzzle } from "lucide-react";
+import { Play, Puzzle } from "lucide-react";
 import { Card, CardGroup } from "@visulima/nextra-theme-docs/components";
 
 Cerebro is a cli framework, that lets you build awesome cli's.
 It has all the great features that you need to build your cli.
 
+![Cerebro Output](/assets/cerebro/cerebro_output.png)
+
 Choose between the cards below to get started.
 
-<Card title="Quick Start" href="/docs/nextra-theme-docs/quickstart" icon={<Play size={20} />}>
-    Learn how to get started with the Visulima Nextra Doc Theme.
+<Card title="Quick Start" href="/docs/cerebro/quickstart" icon={<Play size={20} />}>
+    Learn how to get started with the Visulima Cerebro.
 </Card>
 
-<CardGroup cols={2}>
-    <Card title="Theme Configuration" href="/docs/nextra-theme-docs/configuration/theme" icon={<Palette size={20} />}>
-        Learn how to configure the Visulima Nextra Doc Theme.
+<CardGroup cols={3}>
+    <Card title="Positional argument, argv and options toolbox" href="/docs/cerebro/toolbox/parameters" icon={<Puzzle size={20} />}>
+        Learn how to use the argument, argv and options toolbox.
     </Card>
-    <Card title="Page Configuration" href="/docs/nextra-theme-docs/configuration/page" icon={<LayoutTemplate size={20} />}>
-        Learn how to configure the Visulima Nextra Doc Page.
+    <Card title="Runtime toolbox" href="/docs/cerebro/toolbox/runtime" icon={<Puzzle size={20} />}>
+        Learn how to use runtime toolbox.
+    </Card>
+    <Card title="System toolbox" href="/docs/cerebro/toolbox/system" icon={<Puzzle size={20} />}>
+        Learn how to use system toolbox.
+    </Card>
+</CardGroup>
+<CardGroup cols={3}>
+    <Card title="Logger toolbox" href="/docs/cerebro/toolbox/logger" icon={<Puzzle size={20} />}>
+        Learn how to use logger toolbox.
+    </Card>
+    <Card title="Print toolbox" href="/docs/cerebro/toolbox/print" icon={<Puzzle size={20} />}>
+        Learn how to use print toolbox, to print pretty colors, tables and more.
+    </Card>
+    <Card title="Prompts toolbox" href="/docs/cerebro/toolbox/prompts" icon={<Puzzle size={20} />}>
+        Learn how to use prompts toolbox.
     </Card>
 </CardGroup>
 
-<CardGroup>
-    <Card title="Markdown Syntax" href="/docs/nextra-theme-docs/writing-content/markdown-syntax" icon={<Palette size={20} />}>
-        Learn how to use the Markdown syntax.
-    </Card>
-    <Card title="Images and Embeds" href="/docs/nextra-theme-docs/writing-content/image-embeds" icon={<LayoutTemplate size={20} />}>
-        Learn how to use images and embeds in Markdown and Nextra.
-    </Card>
-    <Card title="Components" href="/docs/nextra-theme-docs/writing-content/components" icon={<Puzzle size={20} />}>
-        Learn how to use the Visulima Nextra Doc Theme components.
-    </Card>
-</CardGroup>
+
+<Card title="Create your own toolbox extension" href="/docs/cerebro/toolbox/create-extension" icon={<Play size={20} />}>
+    Learn how to get create a toolbox extension.
+</Card>

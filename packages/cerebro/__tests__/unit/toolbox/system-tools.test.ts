@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import systemTools from "../../src/toolbox/system-tools";
+import systemTools from "../../../src/toolbox/system-tools";
 
 describe("system-tools", () => {
     it("which - existing package", () => {

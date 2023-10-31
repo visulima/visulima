@@ -1,7 +1,6 @@
 {
     "introduction": {
-        "title": "Introduction",
-        "description": "Build beautiful cli's that converts users"
+        "title": "Introduction"
     },
     "quickstart": {
         "title": "Quick Start",

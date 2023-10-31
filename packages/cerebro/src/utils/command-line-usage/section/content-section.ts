@@ -1,7 +1,7 @@
 import type { TableInstanceOptions } from "cli-table3";
 import CliTable3 from "cli-table3";
 
-import type { Content } from "../../../@types/command-line-usage";
+import type { Content as IContent } from "../../../@types/command-line-usage";
 import { CLI_TABLE_COMPACT } from "../../../ui/constants";
 import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
@@ -74,7 +74,7 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
  */
 class ContentSection extends BaseSection {
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public constructor(section: Content) {
+    public constructor(section: IContent) {
         super();
 
         if (section.header) {
@@ -106,7 +106,7 @@ class ContentSection extends BaseSection {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,class-methods-use-this
-    private getContentLines(content: string[] | string[][] | string | { data: string[]; options: TableInstanceOptions }) {
+    private getContentLines(content: IContent["content"]) {
         if (typeof content === "string") {
             const table = new CliTable3({
                 ...defaultTableOptions,

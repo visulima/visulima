@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { env } from "std-env";
 import stripAnsi from "strip-ansi";
 
 import type { ConfigType, Logger as ILogger } from "../@types";
@@ -21,22 +22,6 @@ const icons = {
 };
 
 class LoggerTools implements ILogger {
-    public static isDebug(): boolean {
-        return Number(process.env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_DEBUG;
-    }
-
-    public static isVerbose(): boolean {
-        return Number(process.env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_VERBOSE;
-    }
-
-    public static isVeryVerbose(): boolean {
-        return Number(process.env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_VERY_VERBOSE;
-    }
-
-    public static isQuiet(): boolean {
-        return Number(process.env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_QUIET;
-    }
-
     private static getIcon(type: string): string {
         if (!icons[type as keyof typeof icons]) {
             throw new Error(`Invalid icon type: ${type}`);
@@ -72,7 +57,7 @@ class LoggerTools implements ILogger {
     private static isPrintable(name: string): boolean {
         switch (name) {
             case "debug": {
-                return Number(process.env["CEREBRO_OUTPUT_LEVEL"]) !== VERBOSITY_QUIET && LoggerTools.isDebug();
+                return Number(env["CEREBRO_OUTPUT_LEVEL"]) !== VERBOSITY_QUIET && Number(env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_DEBUG;
             }
             case "danger":
             case "error":
@@ -83,14 +68,34 @@ class LoggerTools implements ILogger {
             case "success":
             case "warning": {
                 return (
-                    Number(process.env["CEREBRO_OUTPUT_LEVEL"]) !== VERBOSITY_QUIET &&
-                    [VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE].includes(Number(process.env["CEREBRO_OUTPUT_LEVEL"]))
+                    Number(env["CEREBRO_OUTPUT_LEVEL"]) !== VERBOSITY_QUIET &&
+                    [VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE].includes(Number(env["CEREBRO_OUTPUT_LEVEL"]))
                 );
             }
             default: {
                 return true;
             }
         }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public isDebug(): boolean {
+        return Number(env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_DEBUG;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public isVerbose(): boolean {
+        return Number(env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_VERBOSE;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public isVeryVerbose(): boolean {
+        return Number(env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_VERY_VERBOSE;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public isQuiet(): boolean {
+        return Number(env["CEREBRO_OUTPUT_LEVEL"]) === VERBOSITY_QUIET;
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -288,17 +293,6 @@ class LoggerTools implements ILogger {
         printTools.print(output, "info");
 
         return output;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    public processing(message: string): void {
-        // eslint-disable-next-line no-console
-        console.log(chalk.yellow(message));
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    public terminalInfo() {
-        return printTools.terminalSize();
     }
 
     // eslint-disable-next-line class-methods-use-this

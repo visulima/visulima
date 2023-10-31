@@ -1,7 +1,31 @@
 <div align="center">
-  <h3>Visulima cerebro</h3>
+  <h3>Visulima Cerebro</h3>
   <p>
-  cerebro is a delightful toolkit for building Node-based command-line interfaces (CLIs).
+  Cerebro is a delightful toolkit for building Node-based command-line interfaces (CLIs) built on top of
+
+[@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js),
+[boxen](https://github.com/sindresorhus/boxen),
+[chalk](https://github.com/chalk/chalk),
+[chalk-template](https://github.com/chalk/chalk-template),
+[cli-progress](https://github.com/npkgz/cli-progress),
+[cli-table3](https://github.com/cli-table/cli-table3),
+[cli-truncate](https://github.com/sindresorhus/cli-truncate),
+[command-line-args](https://github.com/75lb/command-line-args),
+[cross-spawn](https://github.com/moxystudio/node-cross-spawn),
+[execa](https://github.com/sindresorhus/execa),
+[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein),
+[hard-rejection](https://github.com/sindresorhus/hard-rejection),
+[ora](https://github.com/sindresorhus/ora),
+[semver](https://github.com/npm/node-semver),
+[std-env](https://github.com/unjs/std-env),
+[string-width](https://github.com/sindresorhus/string-width),
+[strip-ansi](https://github.com/chalk/strip-ansi),
+[supports-hyperlinks](https://github.com/jamestalmage/supports-hyperlinks),
+[term-size](https://github.com/sindresorhus/term-size),
+[terminal-link](https://github.com/sindresorhus/terminal-link),
+[which](https://github.com/npm/node-which) and
+[wordwrap](https://github.com/substack/node-wordwrap)
+
   </p>
 </div>
 
@@ -29,10 +53,9 @@
 
 You want to use cerebro if:
 
-* You need to build a CLI app
-* You want to have powerful tools at your fingertips
-* And you don’t want to give up flexibility at the same time
-
+-   You need to build a CLI app
+-   You want to have powerful tools at your fingertips
+-   And you don’t want to give up flexibility at the same time
 
 ## Install
 
@@ -53,31 +76,19 @@ pnpm add @visulima/cerebro
 ```ts
 import Cli from "@visulima/cerebro";
 
-(async () => {
-    try {
-        // Create a CLI runtime
-        const cli = new Cli("cerebro");
+// Create a CLI runtime
+const cli = new Cli("cerebro");
 
-        // Your command
-        cli.addCommand({
-            name: "main:colors",
-            description: "Output colors", // This is used in the help output
-            execute: ({ logger }) => {
-                logger.info("Colors command");
-            },
-        });
+// Your command
+cli.addCommand({
+    name: "main:colors",
+    description: "Output colors", // This is used in the help output
+    execute: ({ logger }) => {
+        logger.info("Colors command");
+    },
+});
 
-        await cli.run();
-    } catch (error) {
-        // Abort via CTRL-C
-        if (!error) {
-            console.log("Goodbye ✌️");
-        } else {
-            // Throw error
-            throw error;
-        }
-    }
-})();
+await cli.run();
 ```
 
 Now you can run your CLI with `node index.js` and you should see the following output:

@@ -7,5 +7,11 @@ export default defineConfig({
     test: {
         environment: "node",
         dir: "./__tests__",
+        server: {
+            deps: {
+                inline: ["vitest-console"],
+            },
+        },
+        setupFiles: "./test-setup-file.ts",
     },
 });

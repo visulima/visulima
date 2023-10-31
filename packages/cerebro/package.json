@@ -71,17 +71,17 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "rimraf dist && cross-env NODE_ENV=development tsup",
+        "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
-        "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:packagejson": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
         "test": "vitest run",
         "test:watch": "vitest"
     },
@@ -100,6 +100,7 @@
         "hard-rejection": "^2.1.0",
         "ora": "^7.0.1",
         "semver": "^7.5.4",
+        "find-cache-dir": "^5.0.0",
         "std-env": "^3.4.3",
         "string-width": "^6.1.0",
         "strip-ansi": "^7.1.0",
@@ -124,8 +125,8 @@
         "@vitest/coverage-v8": "^0.34.6",
         "cross-env": "^7.0.3",
         "eslint": "^8.52.0",
+        "vitest-console": "0.1.1",
         "eslint-plugin-deprecation": "^2.0.0",
-        "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.28.1",
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.3.8",
@@ -133,6 +134,7 @@
         "mock-stdin": "1.0.0",
         "prettier": "^3.0.3",
         "rimraf": "^5.0.5",
+        "@visulima/nextra-theme-docs": "workspace:*",
         "semantic-release": "^22.0.5",
         "sort-package-json": "^2.6.0",
         "temp-write": "^5.0.0",
@@ -149,6 +151,10 @@
     },
     "anolilab": {
         "eslint-config": {
+            "plugin": {
+                "tsdoc": false,
+                "etc": false
+            },
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
             "info_on_disabling_prettier_conflict_rule": false,

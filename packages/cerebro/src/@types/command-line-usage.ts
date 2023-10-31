@@ -1,4 +1,4 @@
-import type { TableInstanceOptions } from "cli-table3";
+import type { TableConstructorOptions } from "cli-table3";
 
 import type { OptionDefinition } from "./command";
 
@@ -11,7 +11,7 @@ export interface Content {
      *  3. An array of arrays (recordset-style data). In this case, the data will be rendered in table format.
      *  3. An object with two properties - data and options. In this case, the data and options will be passed directly to the underlying table module for rendering.
      */
-    content?: string[] | string[][] | string | { data: string[]; options: TableInstanceOptions };
+    content?: string[] | string[][] | string | { data: string[]; options: TableConstructorOptions };
     /** The section header, always bold and underlined. */
     header?: string;
     /** Set to true to avoid indentation and wrapping. Useful for banners. */
@@ -33,7 +33,7 @@ export interface OptionList {
     /** If true, the option alias will be displayed after the name, i.e. --verbose, -v instead of -v, --verbose). */
     reverseNameOrder?: boolean;
     /** An options object suitable for passing into table. */
-    tableOptions?: TableInstanceOptions;
+    tableOptions?: TableConstructorOptions;
 }
 
 export type Section = Content | OptionList;

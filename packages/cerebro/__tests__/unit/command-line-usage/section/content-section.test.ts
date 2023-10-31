@@ -1,9 +1,9 @@
-import type { Content as IContent } from "command-line-usage";
+import type { Content as IContent } from "../../../../src/@types/command-line-usage";
 import { describe, expect, it } from "vitest";
 
-import ContentSection from "../../../src/command-line-usage/section/content-section";
+import ContentSection from "../../../../src/utils/command-line-usage/section/content-section";
 
-describe("line-usage/section-content", () => {
+describe("line-usage/content-section", () => {
     it("should render header only, no content", () => {
         const sections = { header: "header" };
         const result = new ContentSection(sections as IContent).toString();
@@ -41,16 +41,16 @@ describe("line-usage/section-content", () => {
             content: {
                 data: [["one", "two"], ["one", "two"], "foo"],
                 options: {
-                    style: {
-                        "padding-left": "test",
+                    chars: {
+                        "left": "test",
                     },
                 },
             },
         };
 
-        const result = new ContentSection(sections as IContent).toString();
+        const result = new ContentSection(sections as IContent);
 
-        expect(result).toMatchSnapshot();
+        expect(result.toString()).toMatchSnapshot();
     });
 
     it("should render content: raw", () => {
@@ -59,9 +59,9 @@ describe("line-usage/section-content", () => {
             raw: true,
         };
 
-        const result = new ContentSection(sections as IContent).toString();
+        const result = new ContentSection(sections as IContent);
 
-        expect(result).toBe("\nuser-defined\nnew\nlines\n");
+        expect(result.toString()).toBe("user-defined\nnew\nlines\n");
     });
 
     it("should throw a error with content: { options: object, data: section[] }, invalid", () => {
