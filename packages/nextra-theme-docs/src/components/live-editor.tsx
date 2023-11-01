@@ -11,19 +11,14 @@ import CopyToClipboard from "./copy-to-clipboard";
 const importToRequire = (code: string) =>
     code
         // { a as b } => { a: b }
-        // eslint-disable-next-line require-unicode-regexp
         .replaceAll(/([\w$]+) as ([\w$]+)/gi, "$1: $2")
         // import { a } from "a" => const { a } = require("b")
-        // eslint-disable-next-line unicorn/better-regex,require-unicode-regexp
         .replaceAll(/import \{([^}]+)\} from ([^\s;]+);?/g, "const {$1} = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        // eslint-disable-next-line require-unicode-regexp
         .replaceAll(/import (\S+) from ([^\s;]+);?/g, "const $1 = require($2).default || require($2);")
         // import * as a from "a"
-        // eslint-disable-next-line require-unicode-regexp
         .replaceAll(/import \* as (\S+) from ([^\s;]+);?/g, "const $1 = require($2);")
         // import a from "a" => const a = require("a").default || require("a")
-        // eslint-disable-next-line unicorn/better-regex,require-unicode-regexp
         .replaceAll(/import (.+),\s?\{([^}]+)\} from ([^\s;]+);?/g, ["const $1 = require($3).default || require($3);", "const {$2} = require($3);"].join("\n"));
 
 const LiveEditor = ({

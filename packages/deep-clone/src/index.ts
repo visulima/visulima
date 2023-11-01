@@ -95,7 +95,7 @@ const arrayCheckerHandlers: ArrayDataTypeMapping[] = [
     {
         checker: (object: any) => object instanceof RegExp,
         handler: (object: RegExp | string) => {
-            // eslint-disable-next-line require-unicode-regexp,@rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+            // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
             const regexClone = new RegExp(object);
 
             // Any enumerable properties...

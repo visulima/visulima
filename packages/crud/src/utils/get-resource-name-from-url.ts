@@ -18,7 +18,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
         const routeName = models[name];
         const camelCaseModel = ensureCamelCase(routeName);
 
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp,require-unicode-regexp
+        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
         return new RegExp(`(${routeName}|${camelCaseModel}$)|(${routeName}|${camelCaseModel}/)`, "g").test(realPath);
     });
 

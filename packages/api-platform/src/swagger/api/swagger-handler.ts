@@ -70,7 +70,6 @@ const swaggerHandler = <M extends string, PrismaClient>(
 
         let data: Buffer | Uint8Array | string;
 
-        // eslint-disable-next-line require-unicode-regexp
         if (typeof request.headers.accept === "string" && /yaml|yml/.test(request.headers.accept)) {
             response.setHeader("Content-Type", request.headers.accept);
 

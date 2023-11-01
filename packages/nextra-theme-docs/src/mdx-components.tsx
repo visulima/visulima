@@ -18,7 +18,6 @@ import createHeaderLink from "./utils/create-header-link";
 
 const A = ({ className, href = "", ...properties }: Omit<ComponentProps<"a">, "ref"> & { href?: string }) => {
     const isExternal = href.startsWith("http://") || href.startsWith("https://");
-
     const externalClassNames = 'after:content-[""] after:w-3 after:h-3 after:bg-center after:bg-no-repeat after:bg-contain after:inline-block after:ml-1';
 
     return (
@@ -45,7 +44,6 @@ const getComponents = ({
         return { a: A };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
         // eslint-disable-next-line react/jsx-props-no-spreading
         a: (properties) => <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />,
@@ -85,7 +83,6 @@ const getComponents = ({
         tr: Tr,
         // eslint-disable-next-line react/jsx-props-no-spreading
         ul: (properties: ComponentProps<"ul">) => <Ul {...properties} />,
-
         ...components,
     };
 };
