@@ -110,10 +110,10 @@
         "tailwind-merge": "^2.0.0"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^14.0.24",
-        "@anolilab/prettier-config": "^5.0.11",
-        "@anolilab/semantic-release-preset": "^8.0.0",
-        "@arthurgeron/eslint-plugin-react-usememo": "^2.1.1",
+        "@anolilab/eslint-config": "^15.0.0",
+        "@anolilab/prettier-config": "^5.0.12",
+        "@anolilab/semantic-release-preset": "^8.0.1",
+        "@arthurgeron/eslint-plugin-react-usememo": "^2.1.2",
         "@babel/core": "^7.23.2",
         "@mdx-js/react": "^3.0.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
@@ -163,7 +163,7 @@
         "react-dom": "^18.2.0",
         "rimraf": "^5.0.5",
         "rxjs": "^7.8.1",
-        "semantic-release": "^22.0.5",
+        "semantic-release": "^22.0.6",
         "sort-package-json": "^2.6.0",
         "tailwindcss": "^3.3.5",
         "tailwindcss-hyphens": "^0.1.0",

@@ -12,7 +12,6 @@ const pingCheck =
     (host: string, options?: extendedPingOptions): Checker =>
     async () => {
         try {
-            // eslint-disable-next-line require-unicode-regexp
             const response = await ping(host.replace(/^https?:\/\//, ""), options);
 
             if (!response.alive) {
