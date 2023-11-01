@@ -1,4 +1,4 @@
-# OptionDefinition
+# Arguments
 
 By default, `key` will be passed to `fetcher` as the argument. So the following 3 expressions are equivalent:
 
@@ -8,7 +8,7 @@ useSWR("/api/user", (url) => fetcher(url));
 useSWR("/api/user", fetcher);
 ```
 
-## Multiple OptionDefinition [#multiple-arguments]
+## Multiple Arguments [#multiple-arguments]
 
 In some scenarios, it's useful to pass multiple arguments (can be any value or object) to the `fetcher` function.
 For example an authorized fetch request:
