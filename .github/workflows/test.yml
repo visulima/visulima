@@ -48,8 +48,14 @@ jobs:
         needs: "files-changed"
         strategy:
             matrix:
-                os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-                node_version: ["18", "20"]
+                os: "ubuntu-latest"
+                node_version: ["18", "20", "21"]
+                # On the other platforms, we only test the lts node version
+                include:
+                    - os: "macos-latest"
+                      node_version: "20"
+                    - os: "windows-latest"
+                      node_version: 20.3.1 # https://github.com/nodejs/node/issues/48673
             fail-fast: false
         name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
         runs-on: "${{ matrix.os }}"

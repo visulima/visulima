@@ -53,6 +53,7 @@ const Banner = (): ReactElement | null => {
                         }}
                         type="button"
                     >
+                        <span className="sr-only">Close</span>
                         <XIcon className="mx-auto h-4 w-4" />
                     </button>
                 )}
