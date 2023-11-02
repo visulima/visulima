@@ -57,7 +57,7 @@
         "@testing-library/dom": "^9.3.3",
         "@testing-library/react": "^14.0.0",
         "@total-typescript/ts-reset": "^0.5.1",
-        "@types/node": "18.18.8",
+        "@types/node": "20.8.10",
         "@types/react": "18.2.34",
         "@types/react-dom": "18.2.14",
         "cross-env": "^7.0.3",
