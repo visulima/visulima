@@ -114,11 +114,11 @@
         "detect-indent": "^7.0.1",
         "find-up": "^6.3.0",
         "get-tsconfig": "^4.7.2",
-        "read-pkg": "^8.1.0",
+        "read-pkg": "^9.0.0",
         "strip-json-comments": "^5.0.1"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^15.0.0",
+        "@anolilab/eslint-config": "^15.0.1",
         "@anolilab/prettier-config": "^5.0.12",
         "@anolilab/semantic-release-preset": "^8.0.1",
         "@babel/core": "^7.23.2",
@@ -138,7 +138,7 @@
         "eslint-plugin-vitest": "^0.3.8",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "execa": "^8.0.1",
-        "npm": "^10.2.2",
+        "npm": "^10.2.3",
         "prettier": "^3.0.3",
         "rimraf": "^5.0.5",
         "semantic-release": "^22.0.6",
