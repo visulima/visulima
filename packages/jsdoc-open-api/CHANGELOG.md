@@ -1,3 +1,16 @@
+## @visulima/jsdoc-open-api [2.0.8](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.7...@visulima/jsdoc-open-api@2.0.8) (2023-11-02)
+
+
+### Bug Fixes
+
+* added node 21 support ([#226](https://github.com/visulima/visulima/issues/226)) ([bc2e6f2](https://github.com/visulima/visulima/commit/bc2e6f2ca6652c11c9fde8d52912492b5fcc502e))
+
+
+
+### Dependencies
+
+* **@visulima/readdir:** upgraded to 2.0.7
+
 ## @visulima/jsdoc-open-api [2.0.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.6...@visulima/jsdoc-open-api@2.0.7) (2023-10-30)
 
 
