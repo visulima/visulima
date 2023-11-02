@@ -1,3 +1,19 @@
+## @visulima/nextra-theme-docs [4.0.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.6...@visulima/nextra-theme-docs@4.0.7) (2023-11-02)
+
+
+### Bug Fixes
+
+* added node 21 support ([#226](https://github.com/visulima/visulima/issues/226)) ([bc2e6f2](https://github.com/visulima/visulima/commit/bc2e6f2ca6652c11c9fde8d52912492b5fcc502e))
+
+
+### Miscellaneous Chores
+
+* added reportUnusedDisableDirectives to eslint ([797d18f](https://github.com/visulima/visulima/commit/797d18ff84fe6c397c20a3de6d027288cd316901))
+* **deps:** update devdependencies ([#229](https://github.com/visulima/visulima/issues/229)) ([129de7b](https://github.com/visulima/visulima/commit/129de7bfbf3fab8a992770de8c230b5c39c6f51a))
+* update dev dependencies ([c1204b8](https://github.com/visulima/visulima/commit/c1204b8b6b321903955721964d36703f5cdbb9c4))
+* updated dev dependencies ([cf6d866](https://github.com/visulima/visulima/commit/cf6d866b46d9979636f5cffdd48f82899161449d))
+* updated dev dependencies ([0dc7b1f](https://github.com/visulima/visulima/commit/0dc7b1f841651e3316ad0f2c1b2929a341d350a1))
+
 ## @visulima/nextra-theme-docs [4.0.6](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.5...@visulima/nextra-theme-docs@4.0.6) (2023-10-30)
 
 
