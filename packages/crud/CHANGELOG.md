@@ -1,3 +1,17 @@
+## @visulima/crud [2.0.7](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.6...@visulima/crud@2.0.7) (2023-11-02)
+
+
+### Bug Fixes
+
+* added node 21 support ([#226](https://github.com/visulima/visulima/issues/226)) ([bc2e6f2](https://github.com/visulima/visulima/commit/bc2e6f2ca6652c11c9fde8d52912492b5fcc502e))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.7
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.7
+
 ## @visulima/crud [2.0.6](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.5...@visulima/crud@2.0.6) (2023-10-30)
 
 
