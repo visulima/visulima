@@ -1,4 +1,4 @@
-import { createConfig } from "visulima/tsup.config";
+import { createConfig } from "../../tsup.config";
 
 const config = createConfig({
     format: "esm",
