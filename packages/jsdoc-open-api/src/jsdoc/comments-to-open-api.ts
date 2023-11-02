@@ -35,7 +35,7 @@ const formatMap: Record<string, string> = {
 const parseDescription = (tag: Spec): { description: string | undefined; name: string; rawType: string; required: boolean; schema: object | undefined } => {
     const rawType = tag.type;
     const isArray = rawType.endsWith("[]");
-    // eslint-disable-next-line require-unicode-regexp,regexp/strict
+    // eslint-disable-next-line regexp/strict
     const parsedType = rawType.replace(/\[]$/, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
@@ -367,7 +367,7 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
     });
 
 const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    // eslint-disable-next-line regexp/no-unused-capturing-group,require-unicode-regexp
+    // eslint-disable-next-line regexp/no-unused-capturing-group
     const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
 
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });

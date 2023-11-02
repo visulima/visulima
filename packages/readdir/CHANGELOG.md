@@ -1,3 +1,10 @@
+## @visulima/readdir [2.0.6](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.5...@visulima/readdir@2.0.6) (2023-10-30)
+
+
+### Bug Fixes
+
+* update dependencies in pnpm-lock.yaml ([d3a5626](https://github.com/visulima/visulima/commit/d3a5626d2c751c3e14f592db62b583b28046dcc7))
+
 ## @visulima/readdir [2.0.5](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.4...@visulima/readdir@2.0.5) (2023-10-24)
 
 

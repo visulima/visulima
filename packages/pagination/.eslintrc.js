@@ -34,6 +34,8 @@ module.exports = {
         project: "./tsconfig.eslint.json",
         sourceType: "commonjs",
     },
+    // Report unused `eslint-disable` comments.
+    reportUnusedDisableDirectives: true,
     root: true,
     rules: {
         // Customize your rules

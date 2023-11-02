@@ -71,7 +71,7 @@ describe("monorepo", () => {
         it(`should throw error when no match is found`, async () => {
             const root = join(cwd, "noMatch");
 
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect,require-unicode-regexp
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
             expect(async () => await findMonorepoRoot(join(root, "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
         });
 
