@@ -94,7 +94,7 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^15.0.0",
+        "@anolilab/eslint-config": "^15.0.1",
         "@anolilab/prettier-config": "^5.0.12",
         "@anolilab/semantic-release-preset": "^8.0.1",
         "@mfederczuk/deeptools": "2.1.0-indev01",
