@@ -1,7 +1,8 @@
-import hideBin from "../utils/hide-bin";
+import hideBin from "./hide-bin";
 
 const COMMAND_DELIMITER = " ";
 
+// eslint-disable-next-line security/detect-object-injection
 const equals = (a: string[], b: string[]) => a.length === b.length && a.every((v, index) => v === b[index]);
 
 /**

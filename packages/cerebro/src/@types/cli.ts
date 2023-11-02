@@ -3,7 +3,7 @@ import type { Command as ICommand } from "./command";
 import type { Extension as IExtension } from "./extension";
 import type { Options as IOptions } from "./options";
 
-export type CommandSection = { footer?: string; header: string }
+export type CommandSection = { footer?: string; header?: string };
 
 export interface Cli {
     /**
@@ -43,7 +43,7 @@ export interface Cli {
 
     run: (extraOptions: IOptions) => Promise<void>;
 
-    setCommandSection: (commandSection: CommandSection) => this
+    setCommandSection: (commandSection: CommandSection) => this;
 
     /**
      * Set a default command, to display a different command if cli is call without command.

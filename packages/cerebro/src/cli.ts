@@ -15,14 +15,13 @@ import type {
     Toolbox as IToolbox,
 } from "./@types";
 import type { OptionDefinition } from "./@types/command";
-import HelpCommand from "./commands/help";
-import VersionCommand from "./commands/version";
+import HelpCommand from "./command/help";
+import VersionCommand from "./command/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
 import logger from "./toolbox/logger-tools";
 import printTools from "./toolbox/print-tools";
-import system from "./toolbox/system-tools";
 import systemTools from "./toolbox/system-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
 import checkNodeVersion from "./utils/check-node-version";
@@ -116,13 +115,13 @@ class Cli implements ICli {
         }
 
         if (this.argv.length === 0) {
-            const whichNode = system.which("node");
+            const whichNode = systemTools.which("node");
 
             if (whichNode) {
                 this.argv.push(whichNode);
             }
 
-            const whichCli = system.which(cliName);
+            const whichCli = systemTools.which(cliName);
 
             if (whichCli) {
                 this.argv.push(whichCli);
@@ -281,8 +280,8 @@ class Cli implements ICli {
         let parsedArguments: { argv: string[]; command: string | null | undefined };
 
         this.logger.debug(`process.execPath: ${process.execPath}`);
-        this.logger.debug(`process.execArgv: ${process.execArgv}`);
-        this.logger.debug('process.argv: ${process.argv.join(" ")}');
+        this.logger.debug(`process.execArgv: ${process.execArgv.join(" ")}`);
+        this.logger.debug(`process.argv: ${process.argv.join(" ")}`);
 
         try {
             parsedArguments = commandLineCommands([null, ...commandNames], parseRawCommand(this.argv));
@@ -301,10 +300,10 @@ class Cli implements ICli {
                     alternatives = ` Did you mean: \r\n    - ${foundAlternatives.join("    \r\n- ")}`;
                 }
 
-                this.logger.error(`\r\n"${error.command}" is not an available command.${alternatives}\r\n`);
+                this.logger.error(`\r\n"${error.command}" is not an available command.${alternatives}`);
+            } else {
+                this.logger.error(error as object);
             }
-
-            this.logger.error(error as object);
 
             // eslint-disable-next-line unicorn/no-process-exit
             return isTest ? undefined : process.exit(1);

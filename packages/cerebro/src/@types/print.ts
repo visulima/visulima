@@ -45,7 +45,7 @@ export interface Print {
     /* Colors as seen from colors. */
     colors: Colors;
     /* Prints a divider. */
-    divider: (options?: { fullWidth?: boolean; width?: number; }) => void;
+    divider: (options?: { fullWidth?: boolean; width?: number }) => void;
     justify: (
         columns: string[],
         options: {
@@ -64,6 +64,7 @@ export interface Print {
     /**
      * Console.log with some checks.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     print: (arguments_: any, type?: "debug" | "error" | "info" | "log" | "warn") => void;
 
     progress: (options?: ProgressOptions) => SingleBar;

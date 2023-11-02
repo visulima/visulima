@@ -11,6 +11,7 @@ const registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags";
 vi.mock("https", async () => {
     const actual = await vi.importActual("https");
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
         // @ts-expect-error - Mock
         ...actual,
@@ -44,6 +45,6 @@ describe("update-notifier/get-dist-version", () => {
             st.emit("end");
         });
 
-        expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Could not parse version response");
+        await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Could not parse version response");
     });
 });

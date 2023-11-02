@@ -2,11 +2,11 @@
  * Copyright (c) 2015-21 Lloyd Brookes <75pound@gmail.com>
  */
 
-// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const isShort = new RegExp(/^-([^\d-])$/);
-// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const isLong = new RegExp(/^--(\S+)/);
-// eslint-disable-next-line require-unicode-regexp,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const isCombined = new RegExp(/^-([^\d-]{2,})$/);
 
 const isOption = (argument: string) => isShort.test(argument) || isLong.test(argument) || isCombined.test(argument);

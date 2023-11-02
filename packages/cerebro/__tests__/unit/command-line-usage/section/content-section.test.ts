@@ -1,6 +1,6 @@
-import type { Content as IContent } from "../../../../src/@types/command-line-usage";
 import { describe, expect, it } from "vitest";
 
+import type { Content as IContent } from "../../../../src/@types/command-line-usage";
 import ContentSection from "../../../../src/utils/command-line-usage/section/content-section";
 
 describe("line-usage/content-section", () => {
@@ -18,7 +18,6 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections as IContent).toString();
 
-        // eslint-disable-next-line require-unicode-regexp
         expect(/one\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+two/.test(result)).toBeTruthy();
     });
 
@@ -32,7 +31,6 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections as IContent).toString();
 
-        // eslint-disable-next-line require-unicode-regexp
         expect(/one\s+two\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+one\s+two/.test(result)).toBeTruthy();
     });
 
@@ -42,7 +40,7 @@ describe("line-usage/content-section", () => {
                 data: [["one", "two"], ["one", "two"], "foo"],
                 options: {
                     chars: {
-                        "left": "test",
+                        left: "test",
                     },
                 },
             },

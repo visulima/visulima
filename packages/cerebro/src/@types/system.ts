@@ -1,9 +1,12 @@
 import type { ExecOptions, SpawnOptions } from "node:child_process";
 
 import type { Options as ExecaOptions } from "execa";
-import type {
-    EnvObject, ProviderInfo, ProviderName, RuntimeInfo,
-} from "std-env";
+import type { EnvObject, ProviderInfo, ProviderName, RuntimeInfo } from "std-env";
+
+/**
+ * Returns the number of milliseconds from when the timer started.
+ */
+type Timer = () => number;
 
 export interface System {
     env: EnvObject;
@@ -86,11 +89,6 @@ export interface System {
      */
     which: (command: string) => string | null;
 }
-
-/**
- * Returns the number of milliseconds from when the timer started.
- */
-type Timer = () => number;
 
 export type StringOrBuffer = Buffer | string;
 

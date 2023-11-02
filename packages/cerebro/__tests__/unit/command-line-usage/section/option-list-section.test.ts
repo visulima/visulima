@@ -68,6 +68,7 @@ describe("command-line-usage/option-list-section", () => {
 
     it("should throw a error if the definition has no name", () => {
         expect(() => {
+            // eslint-disable-next-line no-new
             new OptionListSection({
                 // @ts-expect-error - test error
                 optionList: [{ description: "something" }],

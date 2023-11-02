@@ -7,7 +7,7 @@ const checkNodeVersion = (): void => {
 
     const nodeVersion = process.version.replace("v", "");
 
-    // eslint-disable-next-line require-unicode-regexp,@typescript-eslint/no-non-null-assertion
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const major = Number(/v([^.]+)/.exec(process.version)![1]);
 
     if (major < minNodeVersion) {

@@ -55,7 +55,7 @@ const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
     });
 
     if (command.description) {
-        usageGroups.push({ content: command.description, header: "{inverse.green  Description }"});
+        usageGroups.push({ content: command.description, header: "{inverse.green  Description }" });
     }
 
     if (command.argument) {
@@ -115,7 +115,9 @@ class HelpCommand implements ICommand {
 
         const { footer, header } = runtime.getCommandSection();
 
-        logger.log(chalkFormat(header));
+        if (header) {
+            logger.log(chalkFormat(header));
+        }
 
         if (commandName === "help") {
             printGeneralHelp(logger, runtime, this.commands);

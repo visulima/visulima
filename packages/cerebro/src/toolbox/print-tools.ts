@@ -41,6 +41,7 @@ const divider = ({ fullWidth = false, width = 80 }: { fullWidth?: boolean; width
  */
 const spin = (config?: OraOptions | string): Ora => ora(config).start();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const log = (arguments_: any, type: "debug" | "error" | "info" | "log" | "warn" = "log"): void => {
     if (process.env["NODE_ENV"] === "test" || Number(process.env["CEREBRO_OUTPUT"]) === VERBOSITY_QUIET) {
         return;

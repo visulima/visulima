@@ -17,11 +17,15 @@ describe("system-tools", () => {
         try {
             await systemTools.run('echo "hi" && non-existing-command');
         } catch (error) {
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.stdout).toContain("hi");
 
+            // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
             if (process.platform === "win32") {
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.stderr).toContain("is not recognized as an internal or external addCommand");
             } else {
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.stderr).toContain("non-existing-command");
             }
         }

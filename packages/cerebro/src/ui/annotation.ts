@@ -1,5 +1,6 @@
 import { stdout } from "supports-hyperlinks";
 
+// eslint-disable-next-line @typescript-eslint/no-shadow
 const annotation = (text: string, annotation: string): void => {
     if (stdout) {
         // \u001b]8;;https://google.com\u0007sometext\u001b]8;;\u0007

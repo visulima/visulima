@@ -38,9 +38,7 @@ import {
 } from "std-env";
 import whichLib from "which";
 
-import type {
-    CerebroError, StringOrBuffer as IStringOrBuffer, System as ISystem,
-} from "../@types";
+import type { CerebroError, StringOrBuffer as IStringOrBuffer, System as ISystem } from "../@types";
 
 /**
  * Executes a commandline program asynchronously.
@@ -49,9 +47,9 @@ import type {
  * @param options Additional child_process options for node.
  * @returns Promise with result.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-redundant-type-constituents
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const run = async (commandLine: string, options: Partial<ExecOptions & { trim: boolean }> = {}): Promise<any> => {
-    const trimmer = options["trim"] ? (value: string) => value.trim() : (value: string) => value;
+    const trimmer = options.trim ? (value: string) => value.trim() : (value: string) => value;
     const { trim, ...nodeOptions } = options;
 
     // eslint-disable-next-line compat/compat
@@ -82,13 +80,12 @@ const run = async (commandLine: string, options: Partial<ExecOptions & { trim: b
  * @returns Promise with result.
  */
 const exec = async (commandLine: string, options: ExecaOptions = {}): Promise<string> =>
-    // eslint-disable-next-line compat/compat,implicit-arrow-linebreak
+    // eslint-disable-next-line compat/compat
     await new Promise((resolve, reject) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const arguments_ = commandLine.split(" ");
 
         execa(arguments_[0] as string, arguments_.slice(1), options)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .then((result) => resolve(result.stdout))
             .catch((error) => reject(error));
     });
@@ -108,25 +105,28 @@ const spawn = async (
     status: number | null;
     stdout: string | null | undefined;
 }> =>
-    // eslint-disable-next-line compat/compat,implicit-arrow-linebreak
+    // eslint-disable-next-line compat/compat
     await new Promise((resolve) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const arguments_ = commandLine.split(" ");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const spawned = crossSpawn(arguments_[0] as string, arguments_.slice(1), options);
 
-        const result = {
-            error: null,
+        const result: {
+            error?: Error;
+            status: number | null;
+            stdout: string | null | undefined;
+        } = {
             status: null,
             stdout: null,
         };
 
         if (spawned.stdout) {
             spawned.stdout.on("data", (data) => {
-                if (result.stdout === null || result.stdout === undefined) {
-                    result.stdout = data;
-                } else {
+                if (typeof result.stdout === "string") {
                     result.stdout += data;
+                } else {
+                    result.stdout = data;
                 }
             });
         }
@@ -146,6 +146,7 @@ const spawn = async (
  * @param command The name of program you're looking for.
  * @return The full path or null.
  */
+// eslint-disable-next-line import/no-named-as-default-member
 const which = (command: string): string | null => whichLib.sync(command, { nothrow: true });
 
 /**

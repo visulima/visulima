@@ -1,10 +1,9 @@
-import stripANSI from "strip-ansi";
+import chalk from "chalk";
+import terminalSize from "term-size";
 import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { mockConsole } from "vitest-console";
 
 import printTools from "../../../src/toolbox/print-tools";
-import chalk from "chalk";
-import terminalSize from "term-size";
 
 const { clearConsole, restoreConsole } = mockConsole({ quiet: true });
 
@@ -16,24 +15,28 @@ describe("print-tools", () => {
     it("should render a divider", () => {
         printTools.divider();
 
+        // eslint-disable-next-line no-console
         expect(console.log).toHaveBeenCalledWith(chalk.grey("-------------------------------------------------------------------------------"));
 
         printTools.divider({ fullWidth: true });
 
         const { columns } = terminalSize();
 
+        // eslint-disable-next-line no-console
         expect(console.log).toHaveBeenCalledWith(chalk.grey(Array.from({ length: columns }).join("-")));
 
         const width = 10;
 
         printTools.divider({ width });
 
+        // eslint-disable-next-line no-console
         expect(console.log).toHaveBeenCalledWith(chalk.grey(Array.from({ length: width }).join("-")));
     });
 
     it("should render a newline", () => {
         printTools.newline();
 
+        // eslint-disable-next-line no-console
         expect(console.log).toHaveBeenCalledWith("");
     });
 

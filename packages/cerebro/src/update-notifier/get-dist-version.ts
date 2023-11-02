@@ -15,6 +15,7 @@ const getDistributionVersion = async (packageName: string, distributionTag: stri
             message.on("end", () => {
                 try {
                     const json = JSON.parse(body) as Record<string, string>;
+                    // eslint-disable-next-line security/detect-object-injection
                     const version = json[distributionTag];
 
                     if (!version) {

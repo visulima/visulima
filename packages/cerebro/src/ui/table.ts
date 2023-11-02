@@ -105,6 +105,7 @@ const findMaxValues = (data: number[][]): number[] => {
  * └──────────────────┴─────────────────┴───────────┘
  * ```
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const table = (head: string[], data: string[][], options: IPrintTableOptions = {}): void => {
     const config = {
         fluidColumnIndex: 0,
@@ -148,6 +149,7 @@ const table = (head: string[], data: string[][], options: IPrintTableOptions = {
             markdownTable.options.style["padding-right"] = 1;
         }
 
+        // eslint-disable-next-line no-console
         console.log(markdownTable.toString());
     } else if (config.format === "lean") {
         const leanTable = new CliTable({
@@ -157,6 +159,7 @@ const table = (head: string[], data: string[][], options: IPrintTableOptions = {
         });
         leanTable.push(...data);
 
+        // eslint-disable-next-line no-console
         console.log(leanTable.toString());
     } else {
         const defaultTable = new CliTable({
@@ -167,6 +170,7 @@ const table = (head: string[], data: string[][], options: IPrintTableOptions = {
         });
         defaultTable.push(...data);
 
+        // eslint-disable-next-line no-console
         console.log(defaultTable.toString());
     }
 };

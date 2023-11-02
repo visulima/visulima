@@ -4,10 +4,10 @@ coverage
 __fixtures__
 
 vitest.config.ts
-.prettierrc.js
-_meta.*.json
-tsup.config.ts
-.eslintrc.cjs
 .prettierrc.cjs
+tsup.config.ts
 .secretlintrc.cjs
+tsconfig.eslint.json
+
 README.md
+

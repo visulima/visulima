@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
+
 import findCacheDirectory from "find-cache-dir";
 
 const FILE_NAME = "last-update-check.json";
@@ -27,7 +28,7 @@ const getConfigFile = (packageName: string): string => {
  * @param {string} packageName - The name of the package.
  * @returns {number | undefined} - The timestamp of the last update check, or undefined if the check failed.
  */
-export const getLastUpdate = (packageName: string): undefined | number => {
+export const getLastUpdate = (packageName: string): number | undefined => {
     const configFile = getConfigFile(packageName);
 
     try {
@@ -53,12 +54,12 @@ export const getLastUpdate = (packageName: string): undefined | number => {
  */
 export const saveLastUpdate = (packageName: string): void => {
     const configFile = getConfigFile(packageName);
-    const configDir = dirname(configFile);
+    const configDirectory = dirname(configFile);
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (!existsSync(configDir)) {
+    if (!existsSync(configDirectory)) {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        mkdirSync(configDir, { recursive: true });
+        mkdirSync(configDirectory, { recursive: true });
     }
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename

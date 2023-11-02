@@ -1,4 +1,4 @@
-import { Callout, Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
+import { Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
 import { PartyPopper } from "lucide-react";
 
 Visulima Nextra Docs Theme is a theme that includes almost everything you need to build a modern documentation website. It includes a top navigation bar, a search bar, a pages sidebar, a TOC sidebar, and other [built-in components](/docs/nextra-theme-docs/writing-content/components).
@@ -23,8 +23,6 @@ Run the following command to install the dependency:
 For this example we will use `bin/cerebro`.
 
 ```js filename="bin/cerebro"
-#!/usr/bin/env node
-
 import Cli from "@visulima/cerebro";
 
 (async () => {
@@ -34,21 +32,21 @@ import Cli from "@visulima/cerebro";
 
         // Your command
         cli.addCommand({
-            name: "hello",
             description: "Say hello",
             execute: ({ logger }) => {
                 logger.log("Hello, world!");
             },
+            name: "hello",
         });
 
         await cli.run();
     } catch (error) {
         // Abort via CTRL-C
-        if (!error) {
-            console.log("Goodbye ✌️");
-        } else {
+        if (error) {
             // Throw error
             throw error;
+        } else {
+            console.log("Goodbye ✌️");
         }
     }
 })();

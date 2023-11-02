@@ -64,7 +64,6 @@ class OptionListSection extends BaseSection {
             type = type === "boolean" ? "" : `{underline ${type}${multiple}}`;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         type = chalkFormat(definition.typeLabel ?? type);
 
         let result: string;
