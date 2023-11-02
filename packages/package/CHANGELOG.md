@@ -1,3 +1,10 @@
+## @visulima/package [1.2.2](https://github.com/visulima/visulima/compare/@visulima/package@1.2.1...@visulima/package@1.2.2) (2023-11-02)
+
+
+### Bug Fixes
+
+* update dependencies ([519d734](https://github.com/visulima/visulima/commit/519d734feccf3cf9266ceaa0f5576a53184bbc18))
+
 ## @visulima/package [1.2.1](https://github.com/visulima/visulima/compare/@visulima/package@1.2.0...@visulima/package@1.2.1) (2023-10-30)
 
 
