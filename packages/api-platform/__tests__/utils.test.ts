@@ -124,6 +124,8 @@ describe("utils", () => {
 
         if (process.version.includes("v19") || process.version.includes("v20")) {
             errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
+        } else if (process.version.includes("v21")) {
+            errorMessage = `Unexpected token 'i', "invalid JSON" is not valid JSON`;
         }
 
         await expect(parseBody(request as unknown as IncomingMessage)).rejects.toThrow(errorMessage);

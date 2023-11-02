@@ -111,7 +111,7 @@
         "next": "^13.5.6"
     },
     "engines": {
-        "node": ">=18.* <=20.*"
+        "node": ">=18.* <=21.*"
     },
     "publishConfig": {
         "access": "public",
