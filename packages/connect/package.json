@@ -82,7 +82,7 @@
         "regexparam": "^2.0.1"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^15.0.0",
+        "@anolilab/eslint-config": "^15.0.1",
         "@anolilab/prettier-config": "^5.0.12",
         "@anolilab/semantic-release-preset": "^8.0.1",
         "@babel/core": "^7.23.2",
