@@ -48,7 +48,8 @@ jobs:
         needs: "files-changed"
         strategy:
             matrix:
-                os: "ubuntu-latest"
+                os:
+                    - "ubuntu-latest"
                 node_version: ["18", "20", "21"]
                 # On the other platforms, we only test the lts node version
                 include:
