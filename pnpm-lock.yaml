@@ -28,23 +28,23 @@ importers:
   .:
     devDependencies:
       '@anolilab/commitlint-config':
-        specifier: ^5.0.1
-        version: 5.0.1(@commitlint/cli@18.2.0)(typescript@5.2.2)
+        specifier: ^5.0.2
+        version: 5.0.2(@commitlint/cli@18.2.0)(typescript@5.2.2)
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/lint-staged-config':
-        specifier: ^2.1.5
-        version: 2.1.5(eslint@8.52.0)(husky@8.0.3)(lint-staged@15.0.2)(prettier@3.0.3)(secretlint@7.0.7)(vite@4.4.7)
+        specifier: ^2.1.6
+        version: 2.1.6(eslint@8.52.0)(husky@8.0.3)(lint-staged@15.0.2)(prettier@3.0.3)(secretlint@7.0.7)(vite@4.4.7)
       '@anolilab/multi-semantic-release':
         specifier: ^1.0.2
         version: 1.0.2(semantic-release@22.0.6)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/textlint-config':
-        specifier: ^8.0.14
-        version: 8.0.14(textlint@13.3.3)
+        specifier: ^8.0.15
+        version: 8.0.15(textlint@13.3.3)
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.1.2
         version: 2.1.2
@@ -118,8 +118,8 @@ importers:
         specifier: ^20.8.10
         version: 20.8.10
       browserslist-config-anolilab:
-        specifier: ^5.0.12
-        version: 5.0.12
+        specifier: ^5.0.13
+        version: 5.0.13
       commitizen:
         specifier: ^4.3.0
         version: 4.3.0(typescript@5.2.2)
@@ -302,11 +302,11 @@ importers:
         version: 3.22.4
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.1.2
         version: 2.1.2
@@ -1079,14 +1079,14 @@ importers:
         version: 5.89.0
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.1.2
         version: 2.1.2
@@ -1276,14 +1276,14 @@ importers:
         version: 2.0.1
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -1382,14 +1382,14 @@ importers:
         version: 6.2.1
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -1486,14 +1486,14 @@ importers:
   packages/deep-clone:
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@mfederczuk/deeptools':
         specifier: 2.1.0-indev01
         version: 2.1.0-indev01
@@ -1617,14 +1617,14 @@ importers:
         version: 13.5.6(@babel/core@7.23.2)(react-dom@18.2.0)(react@18.2.0)
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -1721,14 +1721,14 @@ importers:
         version: 5.89.0
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -1876,14 +1876,14 @@ importers:
         version: 2.0.0
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.1.2
         version: 2.1.2
@@ -2082,14 +2082,14 @@ importers:
         version: 5.0.1
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -2179,14 +2179,14 @@ importers:
         version: 6.11.2
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -2264,14 +2264,14 @@ importers:
         version: 5.5.2
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -2355,14 +2355,14 @@ importers:
         version: 4.0.5
     devDependencies:
       '@anolilab/eslint-config':
-        specifier: ^15.0.1
-        version: 15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
-        specifier: ^5.0.12
-        version: 5.0.12(prettier@3.0.3)
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.0.3)
       '@anolilab/semantic-release-preset':
-        specifier: ^8.0.1
-        version: 8.0.1(semantic-release@22.0.6)
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.6)
       '@babel/core':
         specifier: ^7.23.2
         version: 7.23.2
@@ -2442,14 +2442,14 @@ packages:
       '@jridgewell/gen-mapping': 0.3.3
       '@jridgewell/trace-mapping': 0.3.19
 
-  /@anolilab/commitlint-config@5.0.1(@commitlint/cli@18.2.0)(typescript@5.2.2):
-    resolution: {integrity: sha512-1dMyXVe4URYci7l8VDnfrh9krbVx2KPoVqWFN9MpwWjtiFGw+fmGXMLW/UDO37yOOMbd+2zw4dOvKADJyJlR6Q==}
-    engines: {node: '>=18'}
+  /@anolilab/commitlint-config@5.0.2(@commitlint/cli@18.2.0)(typescript@5.2.2):
+    resolution: {integrity: sha512-VWtD4uwHYCqwcswraGoGXl4qNYmHUHJdLPW8A4CGPJU6O/7sq1TxCJH8OACqvkJMJVx1R5DcblYFMop7DGnsIA==}
+    engines: {node: '>=18.* <=21.*'}
     requiresBuild: true
     peerDependencies:
       '@commitlint/cli': ^17.6.5 || ^18.0.0
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       '@commitlint/cli': 18.2.0(typescript@5.2.2)
       '@commitlint/config-conventional': 18.1.0
       '@commitlint/core': 18.2.0(typescript@5.2.2)
@@ -2460,9 +2460,9 @@ packages:
       - typescript
     dev: true
 
-  /@anolilab/eslint-config@15.0.1(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2):
-    resolution: {integrity: sha512-GQKH/+nDQUDP27kvExO8YVg34QoLouVJBe7znwYV6i53URuO2yzkiGlLZFuyV3s1c//mQdUxKKLlmUmo9myM1A==}
-    engines: {node: '>=18'}
+  /@anolilab/eslint-config@15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2):
+    resolution: {integrity: sha512-H6y0N3COdLnxu6vrHoNZwMLsWXQA9KmlU4gCaJ6d8C8Bu1pfSKMSuR3ra9MBsgDMDV3OQ+DY3uNP1P4OV4eeaA==}
+    engines: {node: '>=18.* <=21.*'}
     hasBin: true
     requiresBuild: true
     peerDependencies:
@@ -2556,7 +2556,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       '@arthurgeron/eslint-plugin-react-usememo': 2.1.2
       '@babel/core': 7.23.2
       '@babel/eslint-parser': 7.22.15(@babel/core@7.23.2)(eslint@8.52.0)
@@ -2625,9 +2625,9 @@ packages:
       - vue-eslint-parser
     dev: true
 
-  /@anolilab/lint-staged-config@2.1.5(eslint@8.52.0)(husky@8.0.3)(lint-staged@15.0.2)(prettier@3.0.3)(secretlint@7.0.7)(vite@4.4.7):
-    resolution: {integrity: sha512-avmb1ER2BktkzQeINqdlBLCsVj40GTxQjR3HuNXX8bKQ8jgto+frHfnF3pQA8HpNjCjxN7teoFn5FSGgSlqekw==}
-    engines: {node: '>=18'}
+  /@anolilab/lint-staged-config@2.1.6(eslint@8.52.0)(husky@8.0.3)(lint-staged@15.0.2)(prettier@3.0.3)(secretlint@7.0.7)(vite@4.4.7):
+    resolution: {integrity: sha512-X8JAX4WU/dsE/CsQ8CniOYaJ4rHdg1ldrvebR856/XxjDtoYW+3dWHb2cy00eYyQ40nVqtJx37MNWCulMrHpnQ==}
+    engines: {node: '>=18.* <=21.*'}
     requiresBuild: true
     peerDependencies:
       eslint: ^8.49.0
@@ -2652,7 +2652,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       eslint: 8.52.0
       find-up: 5.0.0
       husky: 8.0.3
@@ -2690,33 +2690,33 @@ packages:
       - typescript
     dev: true
 
-  /@anolilab/package-json-utils@3.0.8:
-    resolution: {integrity: sha512-QiAEITVwS0A2Dnrk35PZOUipt8L+sMMzY6D3YFWnRpjRLnmmrZbphcoHpNtW0BMPvabYCqSvW9FK4dsokYAKgQ==}
-    engines: {node: '>=18'}
+  /@anolilab/package-json-utils@3.0.9:
+    resolution: {integrity: sha512-CYwpW2hlsOSdwtksYG5vH7Y48X7qwSnvk4yTsplce/FZFZLKRxuCbwlUqgTEYUng3nZ55A+5EC3rEttgor7e9w==}
+    engines: {node: '>=18.* <=21.*'}
     dependencies:
       dot-path-value: 0.0.10
       read-pkg-up: 7.0.1
     dev: true
 
-  /@anolilab/prettier-config@5.0.12(prettier@3.0.3):
-    resolution: {integrity: sha512-Pa3hdJA+u+2+FDJ5YqDxliSEETbZ4gtgxUR6H8uA1d3nMNJe91fq4e2hbg74AEYLp2YExU4uE5o7/m0E5llzYQ==}
-    engines: {node: '>=18'}
+  /@anolilab/prettier-config@5.0.13(prettier@3.0.3):
+    resolution: {integrity: sha512-UqB+ROZGeVAj/eD1dFpRFXj1g+h2uNZ5g7z2utVid28Wh5p+XJ8xW/PdotNCHVs0FG/befYPmiNN8tTB0fa1zQ==}
+    engines: {node: '>=18.* <=21.*'}
     requiresBuild: true
     peerDependencies:
       prettier: 2.x || 3.x
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       prettier: 3.0.3
     dev: true
 
-  /@anolilab/semantic-release-preset@8.0.1(semantic-release@22.0.6):
-    resolution: {integrity: sha512-tfNEzNZQqVbqXMzsx4NhcMGdXxDKtn5P8s1Wbkp8mvVhd6PNfwFDTGSqZsnr+S5MucUD5J8+QVarXW2hqUq46A==}
+  /@anolilab/semantic-release-preset@8.0.2(semantic-release@22.0.6):
+    resolution: {integrity: sha512-2BgiQm7DaXrFA0ErEWepoFTZ1mH/dZTU5y7smPDaUOYcBkrL5cRJeSqW8Cd5vyc8m8EUTUqmlgHvxDK8/HZDgw==}
     engines: {node: ^18.17 || >=20.6.1}
     requiresBuild: true
     peerDependencies:
       semantic-release: '>=22'
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       '@semantic-release/changelog': 6.0.3(semantic-release@22.0.6)
       '@semantic-release/commit-analyzer': 11.0.0(semantic-release@22.0.6)
       '@semantic-release/exec': 6.0.3(semantic-release@22.0.6)
@@ -2730,14 +2730,14 @@ packages:
       - supports-color
     dev: true
 
-  /@anolilab/textlint-config@8.0.14(textlint@13.3.3):
-    resolution: {integrity: sha512-qNsxDr4VWvnHfHrUPEurENXqGn0anhNl0/6dJYx6ieyTcZ2PhD0R71zPLetCnKsKHWUhmavQBP+w1tX2RpzZLg==}
-    engines: {node: '>=18'}
+  /@anolilab/textlint-config@8.0.15(textlint@13.3.3):
+    resolution: {integrity: sha512-mJZ/YEuuVbbOxwckwucDRKvgybM4jgBRbph5VAO8Z+NeCsI3ZaVv3In7qCjEtdIou0hK1+wX+nfrDhUhQx6BGQ==}
+    engines: {node: '>=18.* <=21.*'}
     requiresBuild: true
     peerDependencies:
       textlint: ^13.3.2
     dependencies:
-      '@anolilab/package-json-utils': 3.0.8
+      '@anolilab/package-json-utils': 3.0.9
       '@textlint-rule/textlint-rule-no-invalid-control-character': 2.0.0
       '@textlint-rule/textlint-rule-no-unmatched-pair': 1.0.9
       '@textlint-rule/textlint-rule-preset-google': 0.1.2
@@ -12725,9 +12725,9 @@ packages:
       pako: 0.2.9
     dev: true
 
-  /browserslist-config-anolilab@5.0.12:
-    resolution: {integrity: sha512-8ku+/FM7bjApNXkj7i990MOHc0S2miutBjX0VICf9ryCVB4NbHpsK6VhUtOOKEP58cPut5LxbH/DIUhm1MjqXA==}
-    engines: {node: '>=18'}
+  /browserslist-config-anolilab@5.0.13:
+    resolution: {integrity: sha512-UM+TWfsZmtEzUOOpKPOq/nQfZxejkMK49ncsFznty/jE+sNUM5vXzo25wT96ROoOFI4DktBfrJxRdO2txwRxSg==}
+    engines: {node: '>=18.* <=21.*'}
     dev: true
 
   /browserslist@4.21.10:
@@ -30510,7 +30510,7 @@ packages:
   file:packages/package:
     resolution: {directory: packages/package, type: directory}
     name: '@visulima/package'
-    engines: {node: '>=18.* <=20.*'}
+    engines: {node: '>=18.* <=21.*'}
     dependencies:
       detect-indent: 7.0.1
       find-up: 6.3.0
