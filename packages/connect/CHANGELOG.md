@@ -1,3 +1,16 @@
+## @visulima/connect [2.1.7](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.6...@visulima/connect@2.1.7) (2023-11-02)
+
+
+### Bug Fixes
+
+* added node 21 support ([#226](https://github.com/visulima/visulima/issues/226)) ([bc2e6f2](https://github.com/visulima/visulima/commit/bc2e6f2ca6652c11c9fde8d52912492b5fcc502e))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.7
+
 ## @visulima/connect [2.1.6](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.5...@visulima/connect@2.1.6) (2023-10-30)
 
 
