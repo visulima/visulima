@@ -1,3 +1,10 @@
+## @visulima/api-platform [2.0.9](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.8...@visulima/api-platform@2.0.9) (2023-11-02)
+
+
+### Bug Fixes
+
+* update dependencies ([519d734](https://github.com/visulima/visulima/commit/519d734feccf3cf9266ceaa0f5576a53184bbc18))
+
 ## @visulima/api-platform [2.0.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.7...@visulima/api-platform@2.0.8) (2023-10-30)
 
 
