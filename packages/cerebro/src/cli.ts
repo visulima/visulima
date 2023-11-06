@@ -1,4 +1,3 @@
-import { checkbox, confirm, editor, expand, input, password, rawlist, select } from "@inquirer/prompts";
 import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
@@ -21,8 +20,6 @@ import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VE
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
 import logger from "./toolbox/logger-tools";
-import printTools from "./toolbox/print-tools";
-import systemTools from "./toolbox/system-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
 import checkNodeVersion from "./utils/check-node-version";
 import commandLineCommands from "./utils/command-line-commands";
@@ -112,20 +109,6 @@ class Cli implements ICli {
             env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
         } else if (this.argv.includes("--debug") || this.argv.includes("-vvv")) {
             env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
-        }
-
-        if (this.argv.length === 0) {
-            const whichNode = systemTools.which("node");
-
-            if (whichNode) {
-                this.argv.push(whichNode);
-            }
-
-            const whichCli = systemTools.which(cliName);
-
-            if (whichCli) {
-                this.argv.push(whichCli);
-            }
         }
 
         this.commands = new Map<string, ICommand>();
@@ -420,37 +403,6 @@ class Cli implements ICli {
      */
     private addCoreExtensions() {
         this.addExtension({
-            execute: (toolbox: IToolbox): void => {
-                // attach the feature set
-                // eslint-disable-next-line no-param-reassign
-                toolbox.print = printTools;
-            },
-            name: "print",
-        });
-        this.addExtension({
-            execute: (toolbox: IToolbox) => {
-                // eslint-disable-next-line no-param-reassign
-                toolbox.prompts = {
-                    checkbox,
-                    confirm,
-                    editor,
-                    expand,
-                    input,
-                    password,
-                    rawlist,
-                    select,
-                };
-            },
-            name: "prompt",
-        });
-        this.addExtension({
-            execute: (toolbox: IToolbox) => {
-                // eslint-disable-next-line no-param-reassign
-                toolbox.system = systemTools;
-            },
-            name: "system",
-        });
-        this.addExtension({
             execute: (toolbox: IToolbox) => {
                 // eslint-disable-next-line no-param-reassign
                 toolbox.logger = this.logger;
@@ -494,7 +446,7 @@ class Cli implements ICli {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    private async updateNotifier({ logger, print }: IToolbox) {
+    private async updateNotifier({ logger }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
             (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
@@ -507,15 +459,15 @@ class Cli implements ICli {
             const updateAvailable = await hasNewVersion(this.updateNotifierOptions);
 
             if (updateAvailable) {
-                const template = `Update available ${chalk.dim(this.packageVersion)}${chalk.reset(" → ")}${print.colors.green(updateAvailable)}`;
+                const template = `Update available ${chalk.dim(this.packageVersion)}${chalk.reset(" → ")}${chalk.green(updateAvailable)}`;
 
                 this.logger.error(
                     boxen(template, {
-                        align: "center",
                         borderColor: "yellow",
                         borderStyle: "round",
                         margin: 1,
                         padding: 1,
+                        textAlignment: "center",
                     }),
                 );
             }

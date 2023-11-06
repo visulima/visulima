@@ -2,12 +2,27 @@ import type { TableInstanceOptions } from "cli-table3";
 import CliTable3 from "cli-table3";
 
 import type { Content as IContent } from "../../../@types/command-line-usage";
-import { CLI_TABLE_COMPACT } from "../../../ui/constants";
 import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
 
 const defaultTableOptions: Partial<TableInstanceOptions> = {
-    chars: CLI_TABLE_COMPACT,
+    chars: {
+        bottom: "",
+        "bottom-left": "",
+        "bottom-mid": "",
+        "bottom-right": "",
+        left: " ",
+        "left-mid": "",
+        mid: "",
+        "mid-mid": "",
+        middle: " ",
+        right: "",
+        "right-mid": "",
+        top: "",
+        "top-left": "",
+        "top-mid": "",
+        "top-right": "",
+    },
     colWidths: [40, 40],
     style: { border: [], compact: true, head: [], "padding-left": 2, "padding-right": 1 },
     wordWrap: true,

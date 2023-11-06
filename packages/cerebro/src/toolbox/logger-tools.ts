@@ -1,11 +1,10 @@
 import chalk from "chalk";
 import { env } from "std-env";
 import stripAnsi from "strip-ansi";
+import terminalSize from "term-size";
 
 import type { ConfigType, Logger as ILogger } from "../@types";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "../constants";
-import clear from "../ui/clear";
-import printTools from "./print-tools";
 
 const icons = {
     critical: "🚫",
@@ -19,6 +18,16 @@ const icons = {
     status: "◯",
     success: "✔",
     warning: "⚠️",
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const log = (arguments_: any, type: "debug" | "error" | "info" | "log" | "warn" = "log"): void => {
+    if (process.env["NODE_ENV"] === "test" || Number(process.env["CEREBRO_OUTPUT"]) === VERBOSITY_QUIET) {
+        return;
+    }
+
+    // eslint-disable-next-line no-console,security/detect-object-injection
+    console[type](arguments_);
 };
 
 class LoggerTools implements ILogger {
@@ -125,7 +134,7 @@ class LoggerTools implements ILogger {
         const icon = showIcon ? `${LoggerTools.getIcon("critical")}  ` : "";
         const output = `${chalk.hex("#FF8800").black(label)}${label ? " " : ""}${icon}${chalk.hex("#FF8800")(LoggerTools.formatMessage(message_))}`;
 
-        printTools.print(output, "error");
+        log(output, "error");
 
         return output;
     }
@@ -143,7 +152,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgRed.black(label)}${label ? " " : ""}${chalk.red(icon + message)}`;
 
-        printTools.print(output, "error");
+        log(output, "error");
 
         return output;
     }
@@ -160,7 +169,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgRed.black(label)}${label ? " " : ""}${chalk.red(icon + message)}`;
 
-        printTools.print(output, "error");
+        log(output, "error");
 
         return output;
     }
@@ -177,7 +186,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgGreen.black(label)}${label ? " " : ""}${chalk.green(icon + message)}`;
 
-        printTools.print(output);
+        log(output);
 
         return output;
     }
@@ -194,7 +203,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgYellow.black(label)}${label ? " " : ""}${chalk.yellow(icon + message)}`;
 
-        printTools.print(output, "warn");
+        log(output, "warn");
 
         return output;
     }
@@ -211,7 +220,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgCyan.black(label)}${label ? " " : ""}${chalk.cyan(icon + message)}`;
 
-        printTools.print(output, "info");
+        log(output, "info");
 
         return output;
     }
@@ -228,7 +237,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgGray.black(label)}${label ? " " : ""}${chalk.gray(icon + message)}`;
 
-        printTools.print(output, "debug");
+        log(output, "debug");
 
         return output;
     }
@@ -241,7 +250,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgWhite.black(label)}${label ? " " : ""}${icon + message}`;
 
-        printTools.print(output);
+        log(output);
 
         return output;
     }
@@ -258,7 +267,7 @@ class LoggerTools implements ILogger {
 
         const output = `${chalk.bgMagenta.black(label)}${label ? " " : ""}${chalk.magenta(icon + message)}`;
 
-        printTools.print(output);
+        log(output);
 
         return output;
     }
@@ -274,7 +283,7 @@ class LoggerTools implements ILogger {
         const message = LoggerTools.formatMessage(message_);
         const output = `${chalk.bgBlue.black(label)}${label ? " " : ""}${chalk.blue(icon + message)}`;
 
-        printTools.print(output, "info");
+        log(output, "info");
 
         return output;
     }
@@ -290,18 +299,18 @@ class LoggerTools implements ILogger {
         const message = LoggerTools.formatMessage(message_);
         const output = `${chalk.bgHex("#FF8800").black(label)}${label ? " " : ""}${chalk.hex("#FF8800")(icon + message)}`;
 
-        printTools.print(output, "info");
+        log(output, "info");
 
         return output;
     }
 
     // eslint-disable-next-line class-methods-use-this
     public line(message = ""): string {
-        const windowSize = printTools.terminalSize();
+        const { columns } = terminalSize();
 
-        const output = message.repeat(windowSize.width - 2);
+        const output = message.repeat(columns - 2);
 
-        printTools.print(output);
+        log(output);
 
         return output;
     }
@@ -309,19 +318,19 @@ class LoggerTools implements ILogger {
     // eslint-disable-next-line class-methods-use-this
     public center(message: string, fillText = " "): string {
         // if the terminal width is shorter than message length, dont display fillText
-        const windowSize = printTools.terminalSize();
+        const { columns } = terminalSize();
 
-        if (stripAnsi(message).length >= windowSize.width) {
-            printTools.print(message);
+        if (stripAnsi(message).length >= columns) {
+            log(message);
 
             return message;
         }
 
-        const left = Number.parseInt(String((windowSize.width - stripAnsi(message).length) / 2), 10);
+        const left = Number.parseInt(String((columns - stripAnsi(message).length) / 2), 10);
         const padString = fillText.repeat(left / stripAnsi(fillText).length);
         const output = padString + message + padString;
 
-        printTools.print(output);
+        log(output);
 
         return output;
     }

@@ -38,7 +38,7 @@ export interface PrintTableOptions {
     style?: TableStyle;
 }
 
-export interface Print {
+export interface Types {
     annotation: (text: string, annotation: string) => void;
     boxen: (text: string, options?: BoxenOptions) => string;
     clear: () => void;

@@ -1,38 +1,20 @@
 {
-    "name": "@visulima/cerebro",
+    "name": "@visulima/cerebro-tui",
     "version": "0.0.0",
     "description": "A delightful toolkit for building Node-powered CLIs.",
     "keywords": [
-        "command",
-        "line",
-        "class",
         "terminal",
         "ansi",
         "cli",
-        "opts",
-        "nopt",
-        "options",
-        "args",
-        "argv",
         "interactive",
-        "commander",
-        "clap",
-        "cli-app",
-        "minimist",
-        "command line apps",
-        "command-line-usage",
-        "option",
-        "parser",
-        "argument",
-        "flag",
-        "gluegun",
-        "meow"
+        "cli-table",
+        "tui"
     ],
-    "homepage": "https://visulima.com/packages/cerebro",
+    "homepage": "https://visulima.com/packages/cerebro-ui",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/cerebro"
+        "directory": "packages/cerebro-tui"
     },
     "funding": [
         {
@@ -84,17 +66,21 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@inquirer/prompts": "^3.2.0",
         "boxen": "^7.1.1",
-        "term-size": "^3.0.2",
-        "cli-table3": "^0.6.3",
         "chalk": "^5.3.0",
         "chalk-template": "^1.1.0",
-        "command-line-args": "^5.2.1",
-        "fastest-levenshtein": "^1.0.16",
-        "hard-rejection": "^2.1.0",
-        "find-cache-dir": "^5.0.0",
-        "std-env": "^3.4.3",
-        "strip-ansi": "^7.1.0"
+        "cli-progress": "^3.12.0",
+        "cli-table3": "^0.6.3",
+        "cli-truncate": "^4.0.0",
+
+        "ora": "^7.0.1",
+        "string-width": "^7.0.0",
+        "strip-ansi": "^7.1.0",
+        "supports-hyperlinks": "^3.0.0",
+        "term-size": "^3.0.2",
+        "terminal-link": "^3.0.0",
+        "wordwrap": "^1.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.1",
@@ -105,7 +91,6 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.2",
         "@types/node": "18.18.5",
-        "@types/which": "^3.0.1",
         "@types/wordwrap": "^1.0.2",
         "@vitest/coverage-v8": "^0.34.6",
         "@eslint-types/import": "^2.29.0",

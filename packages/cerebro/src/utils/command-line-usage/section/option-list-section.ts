@@ -2,7 +2,6 @@ import CliTable3 from "cli-table3";
 
 import type { OptionDefinition as IArguments } from "../../../@types/command";
 import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
-import { CLI_TABLE_COMPACT } from "../../../ui/constants";
 import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
 
@@ -35,7 +34,23 @@ class OptionListSection extends BaseSection {
         }
 
         const table = new CliTable3({
-            chars: CLI_TABLE_COMPACT,
+            chars: {
+                bottom: "",
+                "bottom-left": "",
+                "bottom-mid": "",
+                "bottom-right": "",
+                left: " ",
+                "left-mid": "",
+                mid: "",
+                "mid-mid": "",
+                middle: " ",
+                right: "",
+                "right-mid": "",
+                top: "",
+                "top-left": "",
+                "top-mid": "",
+                "top-right": "",
+            },
             colWidths: [40, 40],
             style: { "padding-left": 2, "padding-right": 1 },
             wordWrap: true,

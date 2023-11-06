@@ -21,12 +21,6 @@ class EmptyToolbox implements Partial<IToolbox> {
 
     public runtime?: IToolbox["runtime"];
 
-    public print?: IToolbox["print"];
-
-    public prompts?: IToolbox["prompts"];
-
-    public system?: IToolbox["system"];
-
     public logger?: IToolbox["logger"];
 
     public constructor(commandName: IToolbox["commandName"], command: IToolbox["command"]) {

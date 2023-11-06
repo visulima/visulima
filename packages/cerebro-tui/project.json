@@ -1,0 +1,8 @@
+{
+    "name": "cerebro",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/cerebro-tui/src",
+    "projectType": "library",
+    "tags": ["cerebro-tui", "type:package"],
+    "implicitDependencies": []
+}

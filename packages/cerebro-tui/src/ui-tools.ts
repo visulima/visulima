@@ -4,7 +4,6 @@ import ora from "ora";
 import terminalLink from "terminal-link";
 
 import type { Print as IPrint } from "../@types";
-import { VERBOSITY_QUIET } from "../constants";
 import annotation from "../ui/annotation";
 import clear from "../ui/clear";
 import colors from "../ui/colors";
@@ -41,16 +40,6 @@ const divider = ({ fullWidth = false, width = 80 }: { fullWidth?: boolean; width
  */
 const spin = (config?: OraOptions | string): Ora => ora(config).start();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const log = (arguments_: any, type: "debug" | "error" | "info" | "log" | "warn" = "log"): void => {
-    if (process.env["NODE_ENV"] === "test" || Number(process.env["CEREBRO_OUTPUT"]) === VERBOSITY_QUIET) {
-        return;
-    }
-
-    // eslint-disable-next-line no-console,security/detect-object-injection
-    console[type](arguments_);
-};
-
 export default {
     annotation,
     boxen,
@@ -62,7 +51,6 @@ export default {
     link: terminalLink,
     multiProgress,
     newline,
-    print: log,
     progress,
     spin,
     table,

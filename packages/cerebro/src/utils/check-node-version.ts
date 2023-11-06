@@ -1,5 +1,5 @@
 /**
- * See https://github.com/anolilab/cerebro#supported-nodejs-versions for our
+ * See https://github.com/visulima/cerebro#supported-nodejs-versions for our
  * version support policy. The CEREBRO_MIN_NODE_VERSION is used for testing only.
  */
 const checkNodeVersion = (): void => {

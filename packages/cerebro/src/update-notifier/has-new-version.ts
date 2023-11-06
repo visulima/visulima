@@ -1,5 +1,4 @@
-import { gt } from "semver";
-
+import semverGt from "../semver-gt";
 import { getLastUpdate, saveLastUpdate } from "./cache";
 import getDistributionVersion from "./get-dist-version";
 
@@ -18,7 +17,7 @@ const hasNewVersion = async ({
 
         saveLastUpdate(pkg.name);
 
-        if (gt(latestVersion, pkg.version)) {
+        if (semverGt(latestVersion, pkg.version)) {
             return latestVersion;
         }
 
