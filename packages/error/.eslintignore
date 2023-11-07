@@ -2,6 +2,7 @@ dist
 node_modules
 coverage
 __fixtures__
+__docs__
 
 vitest.config.ts
 .prettierrc.cjs

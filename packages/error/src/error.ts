@@ -47,7 +47,7 @@ export class VisulimaError extends Error {
         this.message = message;
     }
 
-    public setHint(hint: string | string[]): void {
+    public setHint(hint: string[] | string): void {
         this.hint = hint;
     }
 }
