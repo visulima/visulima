@@ -1,3 +1,10 @@
+## @visulima/readdir [2.0.8](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.7...@visulima/readdir@2.0.8) (2023-11-07)
+
+
+### Bug Fixes
+
+* fixed the homepage url of the package ([02075ce](https://github.com/visulima/visulima/commit/02075ce997d62c1caf79690b32dd2f931e64bebe))
+
 ## @visulima/readdir [2.0.7](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.6...@visulima/readdir@2.0.7) (2023-11-02)
 
 
