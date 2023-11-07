@@ -1,0 +1,4 @@
+{
+    "extends": "./tsconfig.json",
+    "include": ["__docs__/**/*.mdx", "__tests__/**/*.ts", "src/**/*.ts", "*.d.ts", "build.config.ts", "tsup.config.ts", "test-setup-file.ts"]
+}
