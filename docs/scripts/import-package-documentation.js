@@ -75,7 +75,7 @@ const command = async () => {
             const relativePath = result.path.replace(searchPath, "").replace("__docs__/", "");
 
             paths.push({
-                dest: `${documentationPath}${relativePath}`,
+                dest: path.join(documentationPath, result.path.includes("/packages/") ? "package" : "", relativePath),
                 packageName: relativePath.split("/")[1],
                 src: result.path,
             });
@@ -93,20 +93,15 @@ const command = async () => {
         }
     }
 
-    // delete old docs
-    paths.forEach(({ packageName }) => {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (fs.existsSync(`${assetsPath}/${packageName}`)) {
-            fse.removeSync(`${assetsPath}/${packageName}`);
-        }
-
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (fs.existsSync(`${documentationPath}/${packageName}`)) {
-            fse.removeSync(`${documentationPath}/${packageName}`);
-        }
-    });
-
     if (copy) {
+        // delete old docs
+        paths.forEach(({ dest }) => {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            if (fs.existsSync(dest)) {
+                fse.removeSync(dest);
+            }
+        });
+
         paths.forEach(({ dest, src }) => {
             fse.copySync(src, dest);
         });
@@ -117,7 +112,7 @@ const command = async () => {
             const splitPath = dest.replace(`${path.join(__dirname, "..")}/`, "").split("/");
             const sourceSplitFolderName = splitPath[0] === "public" ? "__assets__" : "__docs__";
 
-            const key = `${splitPath[0]}/${splitPath[1]}/${splitPath[2]}`;
+            const key = path.join(splitPath[0], splitPath[1], splitPath[2], splitPath[3]);
 
             // eslint-disable-next-line security/detect-object-injection
             if (!symlinkPaths[key]) {
