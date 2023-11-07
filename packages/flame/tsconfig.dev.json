@@ -1,0 +1,9 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "jsx": "react-jsxdev",
+        "paths": {
+            "zod": ["node_modules/zod"]
+        }
+    }
+}
