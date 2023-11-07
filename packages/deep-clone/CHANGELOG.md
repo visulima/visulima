@@ -1,3 +1,10 @@
+## @visulima/deep-clone [1.0.5](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.4...@visulima/deep-clone@1.0.5) (2023-11-07)
+
+
+### Bug Fixes
+
+* fixed the homepage url of the package ([02075ce](https://github.com/visulima/visulima/commit/02075ce997d62c1caf79690b32dd2f931e64bebe))
+
 ## @visulima/deep-clone [1.0.4](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.3...@visulima/deep-clone@1.0.4) (2023-11-02)
 
 
