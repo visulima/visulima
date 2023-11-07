@@ -18,7 +18,7 @@
 next-env.d.ts
 
 # Documentation
-pages/docs/*
+pages/docs/package
 !pages/docs/getting-started
 !pages/docs/prologue
 !pages/docs/_meta.en-US.json
