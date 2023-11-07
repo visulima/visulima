@@ -65,9 +65,10 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind",
-        "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind && pnpm minify:css",
-        "build:tailwind": "cross-env NODE_ENV=production PREFLIGHT=false pnpm postcss css/styles.css -o component-style.css --verbose && cross-env NODE_ENV=production PREFLIGHT=true pnpm postcss css/styles.css -o style.css --verbose",
+        "build": "cross-env NODE_ENV=development tsup && pnpm build:tailwind:style && pnpm build:tailwind:component-style",
+        "build:prod": "cross-env NODE_ENV=production tsup && pnpm build:tailwind:style && pnpm build:tailwind:component-style && pnpm minify:css:style && pnpm minify:css:component-style",
+        "build:tailwind:component-style": "cross-env NODE_ENV=production PREFLIGHT=false pnpm postcss css/styles.css -o component-style.css --verbose",
+        "build:tailwind:style": "cross-env NODE_ENV=production PREFLIGHT=true pnpm postcss css/styles.css -o style.css --verbose",
         "clean": "rimraf node_modules dist .eslintcache ./style.css",
         "coverage": "vitest run --coverage",
         "dev": "cross-env NODE_ENV=development concurrently \"tsup --watch\" \"pnpm dev:tailwind:full\" \"pnpm dev:tailwind:components\"",
@@ -79,7 +80,8 @@
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
-        "minify:css": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' component-style.css -o component-style.css && lightningcss --minify --nesting --bundle --targets '>= 0.25%' style.css -o style.css",
+        "minify:css:component-style": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' component-style.css -o component-style.css",
+        "minify:css:style": "lightningcss --minify --nesting --bundle --targets '>= 0.25%' style.css -o style.css",
         "test": "vitest run",
         "test:watch": "vitest",
         "types": "tsup --dts-only",
