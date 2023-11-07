@@ -1,3 +1,19 @@
+## @visulima/api-platform [2.0.11](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.10...@visulima/api-platform@2.0.11) (2023-11-07)
+
+
+### Bug Fixes
+
+* fixed the homepage url of the package ([02075ce](https://github.com/visulima/visulima/commit/02075ce997d62c1caf79690b32dd2f931e64bebe))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 2.1.8
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.9
+* **@visulima/crud:** upgraded to 2.0.8
+* **@visulima/readdir:** upgraded to 2.0.8
+
 ## @visulima/api-platform [2.0.10](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.9...@visulima/api-platform@2.0.10) (2023-11-02)
 
 
