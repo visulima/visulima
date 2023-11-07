@@ -993,10 +993,10 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 2.1.6
+        specifier: 2.1.7
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.7
+        specifier: 2.0.8
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1036,10 +1036,10 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.6
+        specifier: 2.0.7
         version: link:../crud
       '@visulima/readdir':
-        specifier: 2.0.6
+        specifier: 2.0.7
         version: link:../readdir
       chalk:
         specifier: 5.3.0
@@ -1297,7 +1297,7 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.6
+        specifier: 4.0.7
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^0.34.6
@@ -1366,10 +1366,10 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 3.0.6
+        specifier: 3.0.7
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.6
+        specifier: 2.0.7
         version: link:../prisma-dmmf-transformer
       http-errors:
         specifier: ^2.0.0
@@ -1600,6 +1600,102 @@ importers:
         specifier: ^0.34.6
         version: 0.34.6(jsdom@22.1.0)
 
+  packages/error:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.1
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.2)(@babel/core@7.23.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.2.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.1.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.52.0)(typescript@5.2.2)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.12
+        version: 5.0.13(prettier@3.0.3)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.1
+        version: 8.0.2(semantic-release@22.0.6)
+      '@babel/core':
+        specifier: ^7.23.2
+        version: 7.23.2
+      '@eslint-types/deprecation':
+        specifier: ^2.0.0
+        version: 2.0.0
+      '@eslint-types/import':
+        specifier: ^2.29.0
+        version: 2.29.0
+      '@eslint-types/jsdoc':
+        specifier: ^46.8.2
+        version: 46.8.2
+      '@eslint-types/typescript-eslint':
+        specifier: ^6.9.0
+        version: 6.9.1
+      '@eslint-types/unicorn':
+        specifier: ^48.0.1
+        version: 48.0.1
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.7.1
+        version: 0.7.1(eslint@8.52.0)(typescript@5.2.2)
+      '@total-typescript/ts-reset':
+        specifier: ^0.5.1
+        version: 0.5.1
+      '@types/command-line-args':
+        specifier: ^5.2.2
+        version: 5.2.2
+      '@types/node':
+        specifier: 18.18.5
+        version: 18.18.5
+      '@visulima/nextra-theme-docs':
+        specifier: workspace:*
+        version: link:../nextra-theme-docs
+      '@vitest/coverage-v8':
+        specifier: ^0.34.6
+        version: 0.34.6(vitest@0.34.6)
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      eslint:
+        specifier: ^8.52.0
+        version: 8.52.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.52.0)(typescript@5.2.2)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.0
+        version: /eslint-plugin-i@2.29.0(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.52.0)
+      eslint-plugin-mdx:
+        specifier: ^2.2.0
+        version: 2.2.0(eslint@8.52.0)
+      eslint-plugin-vitest:
+        specifier: ^0.3.8
+        version: 0.3.8(eslint@8.52.0)(typescript@5.2.2)(vitest@0.34.6)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.4.0
+        version: 1.4.0
+      prettier:
+        specifier: ^3.0.3
+        version: 3.0.3
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      semantic-release:
+        specifier: ^22.0.6
+        version: 22.0.6(typescript@5.2.2)
+      sort-package-json:
+        specifier: ^2.6.0
+        version: 2.6.0
+      tsup:
+        specifier: 7.1.0
+        version: 7.1.0(postcss@8.4.31)(typescript@5.2.2)
+      typescript:
+        specifier: ^5.1.6
+        version: 5.2.2
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6(jsdom@22.1.0)
+      vitest-console:
+        specifier: 0.1.1
+        version: 0.1.1
+
   packages/health-check:
     dependencies:
       cacheable-lookup:
@@ -1695,7 +1791,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/readdir':
-        specifier: 2.0.6
+        specifier: 2.0.7
         version: link:../readdir
       comment-parser:
         specifier: ^1.4.1
@@ -4734,6 +4830,26 @@ packages:
   /@eslint-community/regexpp@4.8.0:
     resolution: {integrity: sha512-JylOEEzDiOryeUnFbQz+oViCXS0KsvR1mvHkoMiu5+UiBvy+RYX7tzlIIIEstF/gVa2tj9AQXk3dgnxv6KxhFg==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
+
+  /@eslint-types/deprecation@2.0.0:
+    resolution: {integrity: sha512-dfIjQ/AeTsKPozvipACx1uBZZVT3zEYeF9VMnEdoCe5fJi+DMRdCmBD3AbR+r22/NoYDl8EBdGTKkQxosVPEGA==}
+    dev: true
+
+  /@eslint-types/import@2.29.0:
+    resolution: {integrity: sha512-pJWOpUOWLCXZc4565nfi1QGPb4f2f4+qUNVV/bECA6lYN2sRSSYWe+V9WxrOcEN9PDTl4Us/hHhocrUXt/+zOA==}
+    dev: true
+
+  /@eslint-types/jsdoc@46.8.2:
+    resolution: {integrity: sha512-ghnuupWcuWjY/eehKpCywUY9zPepsos7RUlybOBQf24bg8IRUkMzykLbdCY+0Cdj10tODa1w46ytvlv3KZz79w==}
+    dev: true
+
+  /@eslint-types/typescript-eslint@6.9.1:
+    resolution: {integrity: sha512-mH3DMfVVg1d1oCoyI61J2FM5O7ta6J8PtAobSYrayUZ+7ukXwL2RNVF2sDaoqVrFTDmYBA6ol7VQrk1YgaO96w==}
+    dev: true
+
+  /@eslint-types/unicorn@48.0.1:
+    resolution: {integrity: sha512-j+ZNPbAkdloL5qRePMH+5bPFVa8InlmBbce1LR+gB1Ynb2L9Z89lDkv+pAtR4AuLldfVZdUdZn1wvEvcFThGyA==}
+    dev: true
 
   /@eslint/eslintrc@2.1.2:
     resolution: {integrity: sha512-+wvgpDsrB1YqAMdEUCcnTlpfVBH7Vqn6A/NT3D8WVXFIaKMlErPIZT3oCIAVCOtarRpMtelZLqJeU3t7WY6X6g==}
@@ -10429,6 +10545,10 @@ packages:
       '@types/node': 20.8.10
     dev: true
 
+  /@types/command-line-args@5.2.2:
+    resolution: {integrity: sha512-9aZ7KzLDOBYyqH5J2bvB9edvsMXusX+H/aS8idAJOpWNmscZG5RqO1CVJPFa4Q0/1xKgvxcweXunFVx2l/dYFA==}
+    dev: true
+
   /@types/concat-stream@2.0.0:
     resolution: {integrity: sha512-t3YCerNM7NTVjLuICZo5gYAXYoDvpuuTceCcFQWcDQz26kxUR5uIWolxbIR5jRNIXpMqhOpW/b8imCR1LEmuJw==}
     dependencies:
@@ -10812,6 +10932,10 @@ packages:
 
   /@types/node@18.16.14:
     resolution: {integrity: sha512-+ImzUB3mw2c5ISJUq0punjDilUQ5GnUim0ZRvchHIWJmOC0G+p0kzhXBqj6cDjK0QdPFwzrHWgrJp3RPvCG5qg==}
+    dev: true
+
+  /@types/node@18.18.5:
+    resolution: {integrity: sha512-4slmbtwV59ZxitY4ixUZdy1uRLf9eSIvBWPQxNjhHYWEtn0FryfKpyS2cvADYXTayWdKEIsJengncrVvkI4I6A==}
     dev: true
 
   /@types/node@18.18.8:
@@ -29812,6 +29936,11 @@ packages:
       rollup: 3.28.1
     optionalDependencies:
       fsevents: 2.3.3
+    dev: true
+
+  /vitest-console@0.1.1:
+    resolution: {integrity: sha512-GRRCFSbyW7iOyu9bvJhJlMQtTwAol4zH5i0uHRLWDPcaJND7HjlpbdvaHF4/Cdeh+FH5OQ4qHe4CbvYe0ioLmA==}
+    engines: {node: '>=16'}
     dev: true
 
   /vitest@0.34.6(jsdom@22.1.0):
