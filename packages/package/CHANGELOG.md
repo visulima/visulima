@@ -1,3 +1,10 @@
+## @visulima/package [1.2.4](https://github.com/visulima/visulima/compare/@visulima/package@1.2.3...@visulima/package@1.2.4) (2023-11-07)
+
+
+### Bug Fixes
+
+* fixed the homepage url of the package ([02075ce](https://github.com/visulima/visulima/commit/02075ce997d62c1caf79690b32dd2f931e64bebe))
+
 ## @visulima/package [1.2.3](https://github.com/visulima/visulima/compare/@visulima/package@1.2.2...@visulima/package@1.2.3) (2023-11-02)
 
 
