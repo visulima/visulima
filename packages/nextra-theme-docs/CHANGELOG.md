@@ -1,3 +1,16 @@
+## @visulima/nextra-theme-docs [4.0.8](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.7...@visulima/nextra-theme-docs@4.0.8) (2023-11-07)
+
+
+### Bug Fixes
+
+* fixed the homepage url of the package ([02075ce](https://github.com/visulima/visulima/commit/02075ce997d62c1caf79690b32dd2f931e64bebe))
+
+
+### Miscellaneous Chores
+
+* adjusted build step for nextra theme ([b737886](https://github.com/visulima/visulima/commit/b737886b68dfa970d68aa55c83435dce0aa21d02))
+* changed url for packages ([#249](https://github.com/visulima/visulima/issues/249)) ([43f640f](https://github.com/visulima/visulima/commit/43f640fa648ce60fa858c54a44b16c4447d07e43))
+
 ## @visulima/nextra-theme-docs [4.0.7](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.6...@visulima/nextra-theme-docs@4.0.7) (2023-11-02)
 
 
