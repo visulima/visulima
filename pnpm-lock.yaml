@@ -1692,9 +1692,6 @@ importers:
       vitest:
         specifier: ^0.34.6
         version: 0.34.6(jsdom@22.1.0)
-      vitest-console:
-        specifier: 0.1.1
-        version: 0.1.1
 
   packages/health-check:
     dependencies:
@@ -29936,11 +29933,6 @@ packages:
       rollup: 3.28.1
     optionalDependencies:
       fsevents: 2.3.3
-    dev: true
-
-  /vitest-console@0.1.1:
-    resolution: {integrity: sha512-GRRCFSbyW7iOyu9bvJhJlMQtTwAol4zH5i0uHRLWDPcaJND7HjlpbdvaHF4/Cdeh+FH5OQ4qHe4CbvYe0ioLmA==}
-    engines: {node: '>=16'}
     dev: true
 
   /vitest@0.34.6(jsdom@22.1.0):
