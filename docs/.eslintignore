@@ -22,5 +22,4 @@ __test__/__snapshots__
 _meta.*.json
 
 # Add all package docs to the .gitignore
-pages/docs/connect
-pages/docs/nextra-theme-docs
+pages/docs/package

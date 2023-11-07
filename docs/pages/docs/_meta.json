@@ -9,11 +9,8 @@
     "getting-started": {
         "title": "Getting Started"
     },
-    "-- Packages": {
+    "package": {
         "type": "separator",
         "title": "Packages"
-    },
-    "api-platform": "",
-    "connect": "",
-    "nextra-theme-docs": ""
+    }
 }

@@ -1642,7 +1642,7 @@ importers:
         specifier: 18.18.5
         version: 18.18.5
       '@visulima/nextra-theme-docs':
-        specifier: workspace:*
+        specifier: 4.0.7
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^0.34.6
