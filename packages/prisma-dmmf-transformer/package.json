@@ -14,7 +14,7 @@
         "transformer",
         "json-schema"
     ],
-    "homepage": "https://visulima.com/packages/prisma-dmmf-transformer",
+    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",

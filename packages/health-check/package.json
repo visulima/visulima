@@ -15,7 +15,7 @@
         "http-check",
         "ping-check"
     ],
-    "homepage": "https://visulima.com/packages/health-check",
+    "homepage": "https://www.visulima.com/docs/package/health-check",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
