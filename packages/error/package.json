@@ -10,11 +10,11 @@
         "code-frame",
         "codeframe"
     ],
-    "homepage": "https://visulima.com/packages/cerebro-ui",
+    "homepage": "https://www.visulima.com/docs/package/error",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/cerebro-tui"
+        "directory": "packages/error"
     },
     "funding": [
         {

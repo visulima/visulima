@@ -10,7 +10,7 @@
         "crud",
         "prisma"
     ],
-    "homepage": "https://visulima.com/packages/crud",
+    "homepage": "https://www.visulima.com/docs/package/crud",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
