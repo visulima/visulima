@@ -1,3 +1,5 @@
+import type { TraceMap } from "@jridgewell/trace-mapping";
+
 export interface ErrorProperties {
     hint?: string;
     location?: ErrorLocation;
@@ -43,3 +45,24 @@ export type CodeFrameOptions = {
     linesAbove?: number;
     linesBelow?: number;
 };
+
+export interface Trace extends Partial<SourceCode> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    args: any[];
+    column?: number | undefined;
+    file: string | undefined;
+    internal?: boolean;
+    isConstructor?: boolean;
+    isEval?: boolean;
+    isNative?: boolean;
+    line?: number | undefined;
+    methodName: string | undefined;
+    sourcemap?: TraceMap | undefined;
+    thirdParty?: boolean;
+}
+
+export interface SourceCode {
+    code: string;
+    postCode: string[];
+    preCode: string[];
+}
