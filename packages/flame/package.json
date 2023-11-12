@@ -17,9 +17,13 @@
         "webpack",
         "error-reporting",
         "code-frame",
-        "codeframe"
+        "codeframe",
+        "bug",
+        "reporting",
+        "stacktrace",
+        "diagnostic"
     ],
-    "homepage": "https://visulima.com/packages/flame",
+    "homepage": "https://www.visulima.com/docs/package/flame",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
@@ -40,7 +44,7 @@
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "sideEffects": false,
+    "sideEffects": true,
     "type": "module",
     "exports": {
         ".": {
@@ -49,9 +53,24 @@
                 "default": "./dist/index.js"
             }
         },
+        "./displayer/cli": {
+            "import": {
+                "types": "./dist/cli-displayer.d.ts",
+                "default": "./dist/cli-displayer.js"
+            }
+        },
+        "./displayer/http": {
+            "import": {
+                "types": "./dist/http-displayer.d.ts",
+                "default": "./dist/http-displayer.js"
+            }
+        },
         "./package.json": "./package.json"
     },
-    "source": "src/index.ts",
+    "sources": [
+        "src/displayer/cli-displayer.ts",
+        "src/displayer/http-displayer.ts"
+    ],
     "types": "dist/index.d.ts",
     "files": [
         "dist",
@@ -64,7 +83,7 @@
         "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
-        "dev": "pnpm run build --watch",
+        "dev": "cross-env NODE_ENV=development tsup --watch --onSuccess 'node ./example/index.js'",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:packagejson": "publint --strict",
@@ -74,6 +93,11 @@
         "test": "vitest run",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@visulima/error": "workspace:*",
+        "source-map": "^0.6.1",
+        "shiki": "^0.14.5"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.1",
         "@anolilab/prettier-config": "^5.0.12",
@@ -82,6 +106,7 @@
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.0",
         "@eslint-types/jsdoc": "^46.8.2",
+        "concurrently": "^8.2.2",
         "@eslint-types/typescript-eslint": "^6.9.0",
         "@eslint-types/unicorn": "^48.0.1",
         "@rushstack/eslint-plugin-security": "^0.7.1",
@@ -100,12 +125,17 @@
         "eslint-plugin-vitest-globals": "^1.4.0",
         "prettier": "^3.0.3",
         "rimraf": "^5.0.5",
+        "postcss": "^8.4.31",
+        "postcss-cli": "^10.1.0",
+        "postcss-focus-visible": "^9.0.0",
+        "postcss-import": "^15.1.0",
+        "postcss-lightningcss": "1.0.0",
+        "tailwindcss": "^3.3.5",
         "semantic-release": "^22.0.6",
         "sort-package-json": "^2.6.0",
         "tsup": "^7.2.0",
         "typescript": "^5.2.2",
-        "vitest": "^0.34.6",
-        "vitest-console": "0.1.1"
+        "vitest": "^0.34.6"
     },
     "engines": {
         "node": ">=18.* <=21.*"
