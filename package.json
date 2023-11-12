@@ -20,6 +20,7 @@
         "build:storybook": "storybook build -o ./storybook-static && node ./scripts/mv.js",
         "clean": "nx run-many --target=clean --all --parallel && rimraf ./node_modules",
         "dev:docs": "pnpm run docs:symlink && nx run-many --target=dev --parallel --projects=tag:type:nextra",
+        "dev:flame": "pnpm --filter \"error\" run build && pnpm --filter \"flame\" run dev",
         "dev:storybook": "storybook dev -p 6006 -s ./public",
         "docs:copy": "pnpm --filter \"docs\" run docs:copy",
         "docs:symlink": "pnpm --filter \"docs\" run docs:symlink",
