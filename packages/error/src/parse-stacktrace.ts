@@ -18,18 +18,17 @@ const MAX_CODE_LINES = 6;
 const CHROME_REGEX =
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
     /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-const CHROME_EVAL_REGEX = /\((\S*):(\d+):(\d+)\)|\((\S*)\)/;
+// eslint-disable-next-line security/detect-unsafe-regex
+const CHROME_EVAL_REGEX = /\((\S*):(\d+):(\d+)\)|\((\S*):?(\d+)?\)(,\s)?(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // eslint-disable-next-line security/detect-unsafe-regex
 const WINJS_REGEX = /^\s*at (?:(.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
-const GECKO_REGEX = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
-// eslint-disable-next-line security/detect-unsafe-regex
-const GECKO_EVAL_REGEX = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 const JAVA_SCRIPT_CORE_REGEX =
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
     /^\s*(?:([^\n\r"\u2028\u2029]*".[^\n\r"\u2028\u2029]*"[^\n\r@\u2028\u2029]*(?:@[^\n\r"\u2028\u2029]*"[^\n\r@\u2028\u2029]*)*(?:[\n\r\u2028\u2029][^@]*)?)(?:\((.*?)\))?@)?@?(\S.*?):(\d+)(?::(\d+))?\s*$/;
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
 const NODE_REGEX = /^\s*at (?:([^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+// eslint-disable-next-line security/detect-unsafe-regex
+const NAVTIE_REGEX = /^((\S.*)@)?(\[.*\])$/;
 
 const readFileContext = (path: string | undefined): string => {
     if (!path) {
@@ -78,7 +77,9 @@ const parseNode = (line: string): Trace | undefined => {
         args: [],
         column: parts[4] ? +parts[4] : undefined,
         file: parts[2],
-        line: +parts[3],
+        isEval: false,
+        isNative: false,
+        line: parts[3] ? +parts[3] : undefined,
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         methodName: parts[1] || UNKNOWN_FUNCTION,
     };
@@ -93,43 +94,52 @@ const parseJSC = (line: string): Trace | undefined => {
         return undefined;
     }
 
+    // if a file path has a @ in the string
+    // it can be that a method name was attached to the file path
+    if (parts[3] && parts[3].includes("@")) {
+        // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
+        const subParts = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|http|resource:|\/|\\).*)$|(.*)@(.*)/.exec(parts[3] as string); // h is the first letter of the http/https protocol
+
+        if (subParts) {
+            if (subParts[1] && subParts[3]) {
+                parts[1] = <string>subParts[1];
+                parts[3] = <string>subParts[3];
+            } else if (subParts[5]) {
+                parts[1] = <string>subParts[4];
+                parts[3] = <string>subParts[5];
+            }
+        }
+    }
+
     return {
         args: [],
         column: parts[5] ? +parts[5] : undefined,
         file: parts[3],
-        line: +parts[4],
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        methodName: parts[1] || UNKNOWN_FUNCTION,
+        isEval: false,
+        isInternal: /internal[/\\]/.test(parts[3] as string),
+        isNative: false,
+        line: parts[4] ? +parts[4] : undefined,
+        methodName: parts[1] ?? UNKNOWN_FUNCTION,
     };
 };
 
-const parseGecko = (line: string): Trace | undefined => {
-    const parts = GECKO_REGEX.exec(line);
+const parseNative = (line: string): Trace | undefined => {
+    const parts = NAVTIE_REGEX.exec(line);
 
-    debugLog(`parse gecko error stack line: "${line}"`, parts === null ? "not found" : `found: ${JSON.stringify(parts)}`);
+    debugLog(`parse native error stack line: "${line}"`, parts === null ? "not found" : `found: ${JSON.stringify(parts)}`);
 
     if (!parts) {
         return undefined;
     }
 
-    const isEval = parts[3]?.includes(" > eval");
-
-    const subMatch = parts[3] ? GECKO_EVAL_REGEX.exec(parts[3]) : null;
-
-    if (isEval && subMatch !== null) {
-        // throw out eval line/column and use top-most line number
-        parts[3] = <string>subMatch[1];
-        parts[4] = <string>subMatch[2];
-        parts[5] = undefined; // no column when eval
-    }
-
     return {
-        args: parts[2] ? parts[2].split(",") : [],
-        column: parts[5] ? +parts[5] : undefined,
+        args: [],
+        column: undefined,
         file: parts[3],
-        line: parts[4] ? +parts[4] : undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        methodName: parts[1] || UNKNOWN_FUNCTION,
+        isEval: false,
+        isNative: parts[3] ? (parts[3].startsWith("[native") as boolean) : false,
+        line: undefined,
+        methodName: parts[2] ?? UNKNOWN_FUNCTION,
     };
 };
 
@@ -146,7 +156,9 @@ const parseWinjs = (line: string): Trace | undefined => {
         args: [],
         column: parts[4] ? +parts[4] : undefined,
         file: parts[2],
-        line: +parts[3],
+        isEval: false,
+        isNative: false,
+        line: parts[3] ? +parts[3] : undefined,
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         methodName: parts[1] || UNKNOWN_FUNCTION,
     };
@@ -162,21 +174,42 @@ const parseChrome = (line: string): Trace | undefined => {
     }
 
     const isNative = parts[2] && parts[2].startsWith("native"); // start of line
-    const isEval = parts[2] && parts[2].startsWith("eval"); // start of line
+    let isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
 
-    const subMatch = parts[2] ? CHROME_EVAL_REGEX.exec(parts[2]) : null;
+    let evalOrigin: Trace | undefined;
 
-    if (isEval && subMatch !== null) {
-        // throw out eval line/column and use top-most line/column number
-        parts[2] = subMatch[1] ?? (subMatch[4] as string); // url
-        parts[3] = <string>subMatch[2]; // line
-        parts[4] = <string>subMatch[3]; // column
+    if (isEval) {
+        const subMatch = CHROME_EVAL_REGEX.exec(line);
+
+        if (subMatch && (subMatch[7] || subMatch[4]) && (subMatch[9] || subMatch[2] || subMatch[8])) {
+            evalOrigin = {
+                args: [],
+                column: subMatch[9] ? +subMatch[9] : undefined,
+                file: subMatch[7] ?? subMatch[4],
+                isEval: true,
+                isNative: false,
+                line: subMatch[8] ? +subMatch[8] : subMatch[2] ? +subMatch[2] : undefined,
+                methodName: "eval",
+            } as Trace;
+
+            isEval = false;
+        }
+
+        if (subMatch) {
+            // throw out eval line/column and use top-most line/column number
+            parts[2] = subMatch[1] ?? (subMatch[4] as string); // url
+            parts[3] = <string>subMatch[2]; // line
+            parts[4] = <string>subMatch[3]; // column
+        }
     }
 
     return {
         args: isNative ? [parts[2]] : [],
         column: parts[4] ? +parts[4] : undefined,
+        evalOrigin,
         file: isNative ? undefined : parts[2],
+        isEval: isEval as boolean,
+        isNative: isNative as boolean,
         line: parts[3] ? +parts[3] : undefined,
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         methodName: parts[1] || UNKNOWN_FUNCTION,
@@ -194,7 +227,7 @@ const parse = (error: Error): Trace[] => {
         }
 
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const parseResult = parseChrome(line) || parseWinjs(line) || parseGecko(line) || parseNode(line) || parseJSC(line);
+        const parseResult = parseChrome(line) || parseWinjs(line) || parseNode(line) || parseNative(line) || parseJSC(line);
 
         if (parseResult) {
             stack.push(parseResult);

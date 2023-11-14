@@ -1,165 +1,192 @@
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../__fixtures__/captured-errors";
+import type { Trace } from "../src";
 import { parseStacktrace } from "../src";
 
-expect.extend({
-    toMatchStackFrame(received, [function_, arguments_ = [], file, lineNumber, columnNumber]) {
-        const pass = received.methodName === function_ && received.file === file && received.line === lineNumber && received.column === columnNumber;
+const validateArrays = (
+    expected: unknown[],
+    received: unknown[],
+):
+    | {
+          message: () => string;
+          pass: boolean;
+      }
+    | undefined => {
+    if (expected.length !== received.length) {
+        return {
+            message: () => `received args and expected args do not have the same length`,
+            pass: false,
+        };
+    }
 
-        const sortedExpectedArguments = [...arguments_].sort((a, b) => a - b);
-        const sortedReceivedArguments = [...received.args].sort((a, b) => a - b);
-
-        if (sortedExpectedArguments.length !== sortedReceivedArguments.length) {
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const [index, element] of expected.entries()) {
+        // eslint-disable-next-line security/detect-object-injection
+        if (element !== received[index]) {
             return {
-                message: () => `received args and expected args do not have the same length`,
+                // eslint-disable-next-line security/detect-object-injection
+                message: () => `Element ${JSON.stringify(element)} at index ${index} does not match ${JSON.stringify(received[index])}`,
                 pass: false,
             };
         }
+    }
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const [index, element] of sortedExpectedArguments.entries()) {
-            // eslint-disable-next-line security/detect-object-injection
-            if (element !== sortedReceivedArguments[index]) {
-                return {
-                    // eslint-disable-next-line security/detect-object-injection
-                    message: () => `Element ${JSON.stringify(element)} at index ${index} does not match ${JSON.stringify(sortedReceivedArguments[index])}`,
-                    pass: false,
-                };
-            }
-        }
+    return undefined;
+};
 
-        if (pass) {
-            return {
-                message: () => `expected ${received} not to match stack frame`,
-                pass: true,
-            };
-        }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ExpectedStackFrame = [string?, any[]?, string?, number?, number?, boolean?, boolean?, boolean?, ExpectedStackFrame?];
 
+const toMatchStackFrame: (
+    received: Trace,
+    [function_, arguments_, file, lineNumber, columnNumber, isNative, isEval, isInternal, evalOrigin]: ExpectedStackFrame,
+) => {
+    message: () => string;
+    pass: boolean;
+} = (
+    received,
+    [function_, arguments_ = [], file, lineNumber, columnNumber, isNative = false, isEval = false, isInternal, evalOrigin],
+): {
+    message: () => string;
+    pass: boolean;
+} => {
+    let pass =
+        received.methodName === function_ &&
+        received.file === file &&
+        received.line === lineNumber &&
+        received.column === columnNumber &&
+        received.isNative === isNative &&
+        received.isEval === isEval &&
+        received.isInternal === isInternal;
+
+    const validatedArguments = validateArrays(
+        [...arguments_].sort((a, b) => a - b),
+        [...received.args].sort((a, b) => a - b),
+    );
+
+    if (validatedArguments) {
+        return validatedArguments;
+    }
+
+    if (evalOrigin) {
+        const { pass: evalPass } = toMatchStackFrame(received.evalOrigin, evalOrigin);
+
+        pass = evalPass;
+    }
+
+    if (pass) {
         return {
-            message: () =>
-                `expected ${JSON.stringify(received)} to match stack frame ${JSON.stringify({
-                    args: arguments_,
-                    column: columnNumber,
-                    file,
-                    line: lineNumber,
-                    methodName: function_,
-                })}`,
-            pass: false,
+            message: () => `expected ${received} not to match stack frame`,
+            pass: true,
         };
-    },
+    }
+
+    return {
+        message: () =>
+            `expected ${JSON.stringify(received)} to match stack frame ${JSON.stringify({
+                args: arguments_,
+                column: columnNumber,
+                evalOrigin: evalOrigin
+                    ? {
+                          args: evalOrigin[1],
+                          column: evalOrigin[4],
+                          file: evalOrigin[2],
+                          isEval: true,
+                          line: evalOrigin[3],
+                          methodName: evalOrigin[0],
+                      }
+                    : undefined,
+                file,
+                isEval,
+                isNative,
+                line: lineNumber,
+                methodName: function_,
+            })}`,
+        pass: false,
+    };
+};
+
+expect.extend({
+    toMatchStackFrame,
 });
 
 describe("parse-stacktrace", () => {
-    it("should parse Safari 6 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.SAFARI_6 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(4);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 48, undefined]);
-        expect(stackFrames[1]).toMatchStackFrame(["dumpException3", [], "http://path/to/file.js", 52, undefined]);
-        expect(stackFrames[2]).toMatchStackFrame(["onclick", [], "http://path/to/file.js", 82, undefined]);
-        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined]);
-    });
-
-    it("should parse Safari 7 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.SAFARI_7 as unknown as Error);
+    it("should parses Firefox errors with resource: URLs", () => {
+        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL as unknown as Error);
 
         expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 48, 22]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 107]);
+        expect(stackFrames[0]).toMatchStackFrame(["render", [], "resource://path/data/content/bundle.js", 5529, 16, false, false, false]);
     });
 
-    it("should parse Safari 8 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.SAFARI_8 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 23]);
-    });
-
-    it("should parses Safari 8 eval error", () => {
-        process.env.DEBUG = true;
-        // TODO: Take into account the line and column properties on the error object and use them for the first stack trace.
-        const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["eval", [], "[native code]", undefined, undefined]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 58, 21]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 109, 91]);
-    });
-
-    it("should parse nested eval() from Safari 9", () => {
-        const stackFrames = parseStacktrace(capturedErrors.SAFARI_9_NESTED_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(6);
-        expect(stackFrames[0]).toMatchStackFrame(["baz", [], undefined, undefined, undefined]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], undefined, undefined, undefined]);
-        expect(stackFrames[2]).toMatchStackFrame(["eval code", [], undefined, undefined, undefined]);
-        expect(stackFrames[3]).toMatchStackFrame(["eval", [], "[native code]", undefined, undefined]);
-        expect(stackFrames[4]).toMatchStackFrame(["speak", [], "http://localhost:8080/file.js", 26, 21]);
-        expect(stackFrames[5]).toMatchStackFrame(["global code", [], "http://localhost:8080/file.js", 33, 18]);
-    });
-
-    it("should parse Firefox 31 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_31 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 41, 13]);
-        expect(stackFrames[1]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 1, 1]);
-    });
-
-    it("should parse nested eval() from Firefox 43", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_NESTED_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["baz", [], "http://localhost:8080/file.js", 26, undefined]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://localhost:8080/file.js", 26, undefined]);
-        expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 26, undefined]);
-        expect(stackFrames[3]).toMatchStackFrame(["speak", [], "http://localhost:8080/file.js", 26, 17]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 33, 9]);
-    });
-
-    it("should parse function names containing @ in Firefox 43 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
-
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(['obj["@fn"]', [], "Scratchpad/1", 10, 29]);
-        expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "Scratchpad/1", 11, 1]);
-    });
-
+    // Release 2018
     it("should parse stack traces with @ in the URL", () => {
         const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN as unknown as Error);
 
         expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["who", [], "http://localhost:5000/misc/@stuff/foo.js", 3, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 6, 3]);
+        expect(stackFrames[0]).toMatchStackFrame(["who", [], "http://localhost:5000/misc/@stuff/foo.js", 3, 9, false, false, false]);
+        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 6, 3, false, false, false]);
+        expect(stackFrames[2]).toMatchStackFrame(["where", [], "http://localhost:5000/misc/@stuff/foo.js", 9, 3, false, false, false]);
+        expect(stackFrames[3]).toMatchStackFrame(["why", [], "https://localhost:5000/misc/@stuff/foo.js", 12, 3, false, false, false]);
+        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:5000/misc/@stuff/foo.js", 15, 1, false, false, false]);
     });
 
+    // Release 2018
     it("should parse stack traces with @ in the URL and the method", () => {
         const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
 
         expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(['obj["@who"]', [], "http://localhost:5000/misc/@stuff/foo.js", 4, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 8, 3]);
+        expect(stackFrames[0]).toMatchStackFrame(['obj["@who"]', [], "http://localhost:5000/misc/@stuff/foo.js", 4, 9, false, false, false]);
+        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 8, 3, false, false, false]);
     });
 
     it("should parse V8 Error.stack", () => {
         const stackFrames = parseStacktrace(capturedErrors.CHROME_15 as unknown as Error);
 
         expect(stackFrames).toHaveLength(4);
-        expect(stackFrames[0]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 13, 17]);
-        expect(stackFrames[1]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 16, 5]);
-        expect(stackFrames[2]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 20, 5]);
-        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 24, 4]);
+        expect(stackFrames[0]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 13, 17, false, false]);
+        expect(stackFrames[1]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 16, 5, false, false]);
+        expect(stackFrames[2]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 20, 5, false, false]);
+        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 24, 4, false, false]);
+    });
+
+    it("should parse and set eval origin for eval() from V8", () => {
+        const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL as unknown as Error);
+
+        expect(stackFrames).toHaveLength(6);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "willThrow",
+            undefined,
+            "index.js",
+            11,
+            undefined,
+            false,
+            false,
+            undefined,
+            ["eval", undefined, "<anonymous>", 3, 3, undefined, true],
+        ]);
+        expect(stackFrames[1]).toMatchStackFrame([
+            "eval",
+            undefined,
+            "index.js",
+            11,
+            undefined,
+            false,
+            false,
+            undefined,
+            ["eval", undefined, "<anonymous>", 6, 1, undefined, true],
+        ]);
+        expect(stackFrames[2]).toMatchStackFrame(["h", undefined, "index.js", 11, undefined]);
+        expect(stackFrames[3]).toMatchStackFrame(["g", undefined, "index.js", 6, undefined]);
+        expect(stackFrames[4]).toMatchStackFrame(["f", undefined, "index.js", 2, undefined]);
+        expect(stackFrames[5]).toMatchStackFrame(["<unknown>", undefined, "index.js", 23, undefined]);
     });
 
     it("should parse V8 entries with no location", () => {
         const stackFrames = parseStacktrace({ stack: "Error\n at Array.forEach (native)" } as unknown as Error);
 
         expect(stackFrames).toHaveLength(1);
-        expect(stackFrames[0]).toMatchStackFrame(["Array.forEach", ["native"], undefined, undefined, undefined]);
+        expect(stackFrames[0]).toMatchStackFrame(["Array.forEach", ["native"], undefined, undefined, undefined, true, false]);
     });
 
     it("should parse V8 Error.stack entries with port numbers", () => {
@@ -178,16 +205,68 @@ describe("parse-stacktrace", () => {
     });
 
     it("should parse nested eval() from V8", () => {
+        process.env.DEBUG = "true";
         const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
 
         expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["baz", [], "http://localhost:8080/file.js", 21, 17]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://localhost:8080/file.js", 21, 17]);
-        expect(stackFrames[2]).toMatchStackFrame(["eval", [], "http://localhost:8080/file.js", 21, 17]);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "baz",
+            [],
+            "http://localhost:8080/file.js",
+            21,
+            17,
+            false,
+            false,
+            undefined,
+            ["eval", undefined, "<anonymous>", 6, 1, undefined, true],
+        ]);
+        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://localhost:8080/file.js", 21, 17], false, false, undefined, [
+            "eval",
+            undefined,
+            "<anonymous>",
+            6,
+            1,
+            undefined,
+            true,
+        ]);
+        expect(stackFrames[2]).toMatchStackFrame(["eval", [], "http://localhost:8080/file.js", 21, 17, false, true]);
         expect(stackFrames[3]).toMatchStackFrame(["Object.speak", [], "http://localhost:8080/file.js", 21, 17]);
         expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 31, 13]);
     });
 
+    it("should parses Chrome 76 error with async support", () => {
+        const stackFrames = parseStacktrace(capturedErrors.CHROME_76 as unknown as Error);
+
+        expect(stackFrames).toHaveLength(2);
+        expect(stackFrames[0]).toMatchStackFrame(["bar", [], "<anonymous>", 8, 9]);
+        expect(stackFrames[1]).toMatchStackFrame(["async foo", [], "<anonymous>", 2, 3]);
+    });
+
+    it("should parses Chrome error with webpack URLs", () => {
+        const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK as unknown as Error);
+
+        expect(stackFrames).toHaveLength(5);
+        expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.eval", [], "webpack:///./src/components/test/test.jsx?", 295, 108]);
+        expect(stackFrames[1]).toMatchStackFrame(["TESTTESTTEST.render", [], "webpack:///./src/components/test/test.jsx?", 272, 32]);
+        expect(stackFrames[2]).toMatchStackFrame(["TESTTESTTEST.tryRender", [], "webpack:///./~/react-transform-catch-errors/lib/index.js?", 34, 31]);
+        expect(stackFrames[3]).toMatchStackFrame(["TESTTESTTEST.proxiedMethod", [], "webpack:///./~/react-proxy/modules/createPrototypeProxy.js?", 44, 30]);
+        expect(stackFrames[4]).toMatchStackFrame(["Module../pages/index.js", [], "C:\\root\\server\\development\\pages\\index.js", 182, 7]);
+    });
+
+    it("should parses Chrome error with blob URLs", () => {
+        const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB as unknown as Error);
+
+        expect(stackFrames).toHaveLength(7);
+        expect(stackFrames[1]).toMatchStackFrame(["s", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 29_146]);
+        expect(stackFrames[2]).toMatchStackFrame(["Object.d [as add]", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 30_039]);
+        // eslint-disable-next-line no-secrets/no-secrets
+        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/d4eefe0f-361a-4682-b217-76587d9f712a", 15, 10_978]);
+        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 1, 6911]);
+        expect(stackFrames[5]).toMatchStackFrame(["n.fire", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 3019]);
+        expect(stackFrames[6]).toMatchStackFrame(["n.handle", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 2863]);
+    });
+
+    // Release 2012
     it("should parse IE 10 Error stacks", () => {
         const stackFrames = parseStacktrace(capturedErrors.IE_10 as unknown as Error);
 
@@ -197,6 +276,7 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 82, 1]);
     });
 
+    // Release 2013
     it("should parse IE 11 Error stacks", () => {
         const stackFrames = parseStacktrace(capturedErrors.IE_11 as unknown as Error);
 
@@ -206,17 +286,29 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 1]);
     });
 
+    // Release 2013
+    it("should parses IE 11 eval error", () => {
+        const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL as unknown as Error);
+
+        expect(stackFrames).toHaveLength(3);
+        expect(stackFrames[0]).toMatchStackFrame(["eval code", [], "eval code", 1, 1, false, true]);
+        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 58, 17]);
+        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 109, 1]);
+    });
+
+    // Release 2015
     it("should parse nested eval() from Edge", () => {
         const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL as unknown as Error);
 
         expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["baz", [], "eval code", 1, 18]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "eval code", 2, 90]);
-        expect(stackFrames[2]).toMatchStackFrame(["eval code", [], "eval code", 4, 18]);
+        expect(stackFrames[0]).toMatchStackFrame(["baz", [], "eval code", 1, 18, false, true]);
+        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "eval code", 2, 90, false, true]);
+        expect(stackFrames[2]).toMatchStackFrame(["eval code", [], "eval code", 4, 18, false, true]);
         expect(stackFrames[3]).toMatchStackFrame(["speak", [], "http://localhost:8080/file.js", 25, 17]);
         expect(stackFrames[4]).toMatchStackFrame(["Global code", [], "http://localhost:8080/file.js", 32, 9]);
     });
 
+    // Release 15/10/2014
     it("should parse Opera 25 Error stacks", () => {
         const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
 
@@ -226,14 +318,21 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 168]);
     });
 
+    it("should parses PhantomJS 1.19 error", () => {
+        const stackFrames = parseStacktrace(capturedErrors.PHANTOMJS_1_19 as unknown as Error);
+        expect(stackFrames).toHaveLength(3);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "file:///path/to/file.js", 878, undefined]);
+        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 4283, undefined]);
+        expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 4287, undefined]);
+    });
+
     it("should handle newlines in Error stack messages", () => {
-        process.env.DEBUG = true;
         const stackFrames = parseStacktrace({
             stack:
                 // eslint-disable-next-line no-useless-concat
                 "Error: Problem at this\nlocation. Error code:1234\n" + "    at http://path/to/file.js:47:22\n" + "    at foo (http://path/to/file.js:52:15)",
         } as unknown as Error);
-        console.log(stackFrames);
+
         expect(stackFrames).toHaveLength(2);
         expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
         expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
@@ -261,6 +360,7 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[0]).toMatchStackFrame([
             "tryRunOrWebpackError",
             [],
+            // eslint-disable-next-line no-secrets/no-secrets
             "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js",
             88,
             9,
@@ -304,9 +404,12 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[6]).toMatchStackFrame([
             "Hook.eval [as callAsync]",
             [],
+            // eslint-disable-next-line no-secrets/no-secrets
             "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js",
             33,
             10,
+            false,
+            true,
         ]);
         expect(stackFrames[7]).toMatchStackFrame([
             "Hook.CALL_ASYNC_DELEGATE [as _callAsync]",
@@ -349,7 +452,15 @@ describe("parse-stacktrace", () => {
 
         expect(stackFrames).toHaveLength(10);
         expect(stackFrames[0]).toMatchStackFrame(["new Layout", [], "webpack:///./src/Layout.js?", 25, 5]);
-        expect(stackFrames[1]).toMatchStackFrame(["eval", [], "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?", 90, 24]);
+        expect(stackFrames[1]).toMatchStackFrame([
+            "eval",
+            [],
+            "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
+            90,
+            24,
+            false,
+            true,
+        ]);
         expect(stackFrames[2]).toMatchStackFrame(["instantiate", [], "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?", 98, 9]);
         expect(stackFrames[3]).toMatchStackFrame([
             "Layout",
@@ -357,6 +468,10 @@ describe("parse-stacktrace", () => {
             "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
             undefined,
             undefined,
+            false,
+            false,
+            undefined,
+            ["eval", [], "<anonymous>", 4, 17, false, true],
         ]);
         expect(stackFrames[4]).toMatchStackFrame([
             "ReactCompositeComponentMixin.mountComponent",
@@ -422,37 +537,206 @@ describe("parse-stacktrace", () => {
         expect(stackFrames[8]).toMatchStackFrame(["Function.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_555]);
     });
 
+    it("should parses node.js async errors available with version 12", () => {
+        const stackFrames = parseStacktrace(capturedErrors.NODE_12 as unknown as Error);
+
+        expect(stackFrames).toHaveLength(2);
+        expect(stackFrames[0]).toMatchStackFrame(["promiseMe", [], "/home/xyz/hack/asyncnode.js", 11, 9]);
+        expect(stackFrames[1]).toMatchStackFrame(["async main", [], "/home/xyz/hack/asyncnode.js", 15, 13]);
+    });
+
+    it("should parses node.js errors with <anonymous> calls as well", () => {
+        const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
+
+        expect(stackFrames).toHaveLength(9);
+        expect(stackFrames[0]).toMatchStackFrame(["Spect.get", [], "C:\\projects\\spect\\src\\index.js", 161, 26]);
+        expect(stackFrames[2]).toMatchStackFrame(["(anonymous function).then", [], "C:\\projects\\spect\\src\\index.js", 165, 33]);
+        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
+        expect(stackFrames[6]).toMatchStackFrame(["process.<anonymous>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
+    });
+
     it("should parses JavaScriptCore errors", () => {
         const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_1 as unknown as Error);
 
         expect(stackFrames).toHaveLength(4);
-        expect(stackFrames[0]).toMatchStackFrame(["_exampleFunction", [], "/home/test/project/App.js", 125, 13]);
-        expect(stackFrames[1]).toMatchStackFrame(["_depRunCallbacks", [], "/home/test/project/node_modules/dep/index.js", 77, 45]);
-        expect(stackFrames[2]).toMatchStackFrame(["tryCallTwo", [], "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js", 45, 5]);
-        expect(stackFrames[3]).toMatchStackFrame(["doResolve", [], "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js", 200, 13]);
+        expect(stackFrames[0]).toMatchStackFrame(["_exampleFunction", [], "/home/test/project/App.js", 125, 13, false, false, false]);
+        expect(stackFrames[1]).toMatchStackFrame(["_depRunCallbacks", [], "/home/test/project/node_modules/dep/index.js", 77, 45, false, false, false]);
+        expect(stackFrames[2]).toMatchStackFrame([
+            "tryCallTwo",
+            [],
+            "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
+            45,
+            5,
+            false,
+            false,
+            false,
+        ]);
+        expect(stackFrames[3]).toMatchStackFrame([
+            "doResolve",
+            [],
+            "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
+            200,
+            13,
+            false,
+            false,
+            false,
+        ]);
     });
 
     it("should parses an error in react native", () => {
         const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_2 as unknown as Error);
 
         expect(stackFrames).toHaveLength(11);
-        expect(stackFrames[0]).toMatchStackFrame(["s", [], "33.js", 1, 531]);
-        expect(stackFrames[1]).toMatchStackFrame(["b", [], "1959.js", 1, 1469]);
-        expect(stackFrames[2]).toMatchStackFrame(["onSocketClose", [], "2932.js", 1, 727]);
-        expect(stackFrames[3]).toMatchStackFrame(["value", [], "81.js", 1, 1505]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "102.js", 1, 2956]);
-        expect(stackFrames[5]).toMatchStackFrame(["value", [], "89.js", 1, 1247]);
-        expect(stackFrames[6]).toMatchStackFrame(["value", [], "42.js", 1, 3311]);
-        expect(stackFrames[7]).toMatchStackFrame(["<unknown>", [], "42.js", 1, 822]);
-        expect(stackFrames[8]).toMatchStackFrame(["value", [], "42.js", 1, 2565]);
-        expect(stackFrames[9]).toMatchStackFrame(["value", [], "42.js", 1, 794]);
-        expect(stackFrames[10]).toMatchStackFrame(["value", [], "[native code]", undefined, undefined]);
+        expect(stackFrames[0]).toMatchStackFrame(["s", [], "33.js", 1, 531, false, false, false]);
+        expect(stackFrames[1]).toMatchStackFrame(["b", [], "1959.js", 1, 1469, false, false, false]);
+        expect(stackFrames[2]).toMatchStackFrame(["onSocketClose", [], "2932.js", 1, 727, false, false, false]);
+        expect(stackFrames[3]).toMatchStackFrame(["value", [], "81.js", 1, 1505, false, false, false]);
+        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "102.js", 1, 2956, false, false, false]);
+        expect(stackFrames[5]).toMatchStackFrame(["value", [], "89.js", 1, 1247, false, false, false]);
+        expect(stackFrames[6]).toMatchStackFrame(["value", [], "42.js", 1, 3311, false, false, false]);
+        expect(stackFrames[7]).toMatchStackFrame(["<unknown>", [], "42.js", 1, 822, false, false, false]);
+        expect(stackFrames[8]).toMatchStackFrame(["value", [], "42.js", 1, 2565, false, false, false]);
+        expect(stackFrames[9]).toMatchStackFrame(["value", [], "42.js", 1, 794, false, false, false]);
+        expect(stackFrames[10]).toMatchStackFrame(["value", [], "[native code]", undefined, undefined, true]);
     });
 
     it("should parses very simple JavaScriptCore errors", () => {
         const stackFrames = parseStacktrace({ stack: "global code@stack_traces/test:83:55" } as unknown as Error);
 
         expect(stackFrames).toHaveLength(1);
-        expect(stackFrames[0]).toMatchStackFrame(["global code", [], "stack_traces/test", 83, 55]);
+        expect(stackFrames[0]).toMatchStackFrame(["global code", [], "stack_traces/test", 83, 55, false, false, false]);
+    });
+
+    it("should parses React Native errors on Android", () => {
+        const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE as unknown as Error);
+
+        expect(stackFrames).toHaveLength(8);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "render",
+            [],
+            "/home/username/sample-workspace/sampleapp.collect.react/src/components/GpsMonitorScene.js",
+            78,
+            24,
+        ]);
+        expect(stackFrames[7]).toMatchStackFrame([
+            "this",
+            [],
+            "/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/native/ReactNativeBaseComponent.js",
+            74,
+            41,
+        ]);
+    });
+
+    it("should parses React Native errors on Android Production", () => {
+        const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error);
+
+        expect(stackFrames).toHaveLength(37);
+        expect(stackFrames[0]).toMatchStackFrame(["value", [], "index.android.bundle", 12, 1917, false, false, false]);
+        expect(stackFrames[35]).toMatchStackFrame(["value", [], "index.android.bundle", 29, 927, false, false, false]);
+        expect(stackFrames[36]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined, true]);
+    });
+
+    it("should parses anonymous sources", () => {
+        const stackFrames = parseStacktrace({
+            stack: `x
+          at new <anonymous> (http://www.example.com/test.js:2:1
+          at <anonymous>:1:2`,
+        } as unknown as Error);
+
+        expect(stackFrames).toHaveLength(2);
+        expect(stackFrames[0]).toMatchStackFrame(["new <anonymous>", [], "http://www.example.com/test.js", 2, 1]);
+        expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "<anonymous>", 1, 2]);
+    });
+
+    it("should parses node.js errors", () => {
+        const stackFrames = parseStacktrace({
+            stack: `ReferenceError: test is not defined
+          at repl:1:2
+          at REPLServer.self.eval (repl.js:110:21)
+          at Interface.<anonymous> (repl.js:239:12)
+          at Interface.EventEmitter.emit (events.js:95:17)
+          at emitKey (readline.js:1095:12)`,
+        } as unknown as Error);
+
+        expect(stackFrames).toHaveLength(5);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "repl", 1, 2]);
+        expect(stackFrames[1]).toMatchStackFrame(["REPLServer.self.eval", [], "repl.js", 110, 21]);
+        expect(stackFrames[2]).toMatchStackFrame(["Interface.<anonymous>", [], "repl.js", 239, 12]);
+        expect(stackFrames[3]).toMatchStackFrame(["Interface.EventEmitter.emit", [], "events.js", 95, 17]);
+        expect(stackFrames[4]).toMatchStackFrame(["emitKey", [], "readline.js", 1095, 12]);
+
+        const stackFrames2 = parseStacktrace({
+            stack: `ReferenceError: breakDown is not defined
+          at null._onTimeout (repl:1:25)
+          at Timer.listOnTimeout [as ontimeout] (timers.js:110:15)`,
+        } as unknown as Error);
+
+        expect(stackFrames2).toHaveLength(2);
+        expect(stackFrames2[0]).toMatchStackFrame(["null._onTimeout", [], "repl", 1, 25]);
+        expect(stackFrames2[1]).toMatchStackFrame(["Timer.listOnTimeout [as ontimeout]", [], "timers.js", 110, 15]);
+    });
+
+    it("should parse regular expression in error stacktrace", () => {
+        process.env.DEBUG = "true";
+        const stackFrames = parseStacktrace({
+            stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
+
+If you want to write it to the DOM, pass a string instead: %s=\"%s\" or %s={value.toString()}.
+
+If you used to conditionally omit it with %s={condition && value}, pass %s={condition ? value : undefined} instead.%s", "false", "loading", "loading", "false", "loading", "loading", "loading", "
+    in button (created by Context.Consumer)
+        in StyledButton (at overrideOptional.tsx:16)
+            in Overridable(StyledButton) (at Button.tsx:108)
+                in Button (created by Context.Consumer)
+                    in StyledButton (at Button.tsx:51)
+                        in ButtonWithArrow (at overrideOptional.tsx:16)
+                            in Overridden(Button) (created by Context.Consumer)
+                                in ButtonPrimary (at overrideOptional.tsx:16)
+                                    in Overridden(Styled(Overridable(Button))) (at Submit.tsx:7)
+                                        in Submit (at AddToCartForm.tsx:98)
+                                            in form (created by Form)
+                                                in FormProvider (created by Form)
+                                                    in Form (at AddToCartForm.tsx:97)
+                                                        in AddToCartForm (at ProductAddToCartForm.tsx:68)
+                                                            in ProductAddToCartForm (at ProductPageInfoSide.tsx:244)
+                                                                in div (created by Context.Consumer)
+                                                                    in Card (at ProductPageInfoSide.tsx:153)
+                                                                        in div (created by Context.Consumer)
+                                                                            in ProductInfo (at ProductPageInfoSide.tsx:152)
+                                                                                in ProductPageInfoSide (at ProductPage.tsx:194)
+                                                                                    in div (created by Context.Consumer)
+                                                                                        in ProductTop (at ProductPage.tsx:173)
+                                                                                            in div (created by Context.Consumer)
+                                                                                                in Wrapper (at Container.tsx:114)
+                                                                                                    in ForwardRef(_c) (at ProductPage.tsx:166)
+                                                                                                        in article (at ProductPage.tsx:165)
+                                                                                                            in main (created by Context.Consumer)
+                                                                                                                in Content (at PageWrapper.tsx:74)
+                                                                                                                    in div (created by Context.Consumer)
+                                                                                                                        in Page (at PageWrapper.tsx:65)
+                                                                                                                            in PortalTarget (at PageWrapper.tsx:64)
+                                                                                                                                in PageWrapper (at ProductPage.tsx:156)
+                                                                                                                                    in ProductPage (at overrideOptional.tsx:16)
+                                                                                                                                        in Overridable(ProductPage) (at DynamicRouteResolver.tsx:54)
+                                                                                                                                            in DynamicRouteResolver (created by Context.Consumer)
+                                                                                                                                                in Route (at AppRouter.tsx:25)
+                                                                                                                                                    in Switch (at AppRouter.tsx:14)
+                                                                                                                                                        in AppRouter (at App.tsx:32)
+                                                                                                                                                            in BreakpointsProvider (at AppProviders.tsx:38)
+                                                                                                                                                                in ApolloProvider (at ApolloConnector.tsx:68)
+                                                                                                                                                                    in ApolloConnector (at AppProviders.tsx:30)
+                                                                                                                                                                        in Router (at RouterProvider.tsx:18)
+                                                                                                                                                                            in RouterProvider (at AppProviders.tsx:29)
+                                                                                                                                                                                in StoreViewProvider (at AppProviders.tsx:25)
+                                                                                                                                                                                    in ErrorBoundary (at RootErrorBoundary.tsx:105)
+                                                                                                                                                                                        in RootErrorBoundary (at AppProviders.tsx:24)
+                                                                                                                                                                                            in I18nProvider (at I18nLoader.tsx:19)
+                                                                                                                                                                                                in I18nLoader (at AppProviders.tsx:23)
+                                                                                                                                                                                                    in AppProviders (at App.tsx:28)
+                                                                                                                                                                                                        in App (at src/index.tsx:30)") at console.error (http://localhost:3340/__cypress/runner/cypress_runner.js:140661:26)
+`,
+        } as unknown as Error);
+
+        console.log(stackFrames);
     });
 });

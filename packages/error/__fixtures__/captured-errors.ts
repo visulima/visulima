@@ -50,74 +50,6 @@ export default {
             "at http://localhost:8080/file.js:31:13\n",
     },
 
-    FIREFOX_3: {
-        fileName: "http://127.0.0.1:8000/js/stacktrace.js",
-        lineNumber: 44,
-        message: "this.undef is not a function",
-        name: "TypeError",
-        stack:
-            "()@http://127.0.0.1:8000/js/stacktrace.js:44\n" +
-            "(null)@http://127.0.0.1:8000/js/stacktrace.js:31\n" +
-            "printStackTrace()@http://127.0.0.1:8000/js/stacktrace.js:18\n" +
-            "bar(1)@http://127.0.0.1:8000/js/file.js:13\n" +
-            "bar(2)@http://127.0.0.1:8000/js/file.js:16\n" +
-            "foo()@http://127.0.0.1:8000/js/file.js:20\n" +
-            "@http://127.0.0.1:8000/js/file.js:24\n" +
-            "",
-    },
-
-    FIREFOX_7: {
-        fileName: "file:///G:/js/stacktrace.js",
-        lineNumber: 44,
-        stack:
-            "()@file:///G:/js/stacktrace.js:44\n" +
-            "(null)@file:///G:/js/stacktrace.js:31\n" +
-            "printStackTrace()@file:///G:/js/stacktrace.js:18\n" +
-            "bar(1)@file:///G:/js/file.js:13\n" +
-            "bar(2)@file:///G:/js/file.js:16\n" +
-            "foo()@file:///G:/js/file.js:20\n" +
-            "@file:///G:/js/file.js:24\n" +
-            "",
-    },
-
-    FIREFOX_14: {
-        message: "x is null",
-        stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:1\n" + "",
-        fileName: "http://path/to/file.js",
-        lineNumber: 48,
-    },
-
-    FIREFOX_31: {
-        message: "Default error",
-        name: "Error",
-        stack: "foo@http://path/to/file.js:41:13\n" + "bar@http://path/to/file.js:1:1\n" + "",
-        fileName: "http://path/to/file.js",
-        lineNumber: 41,
-        columnNumber: 12,
-    },
-
-    FIREFOX_43_NESTED_EVAL: {
-        columnNumber: 30,
-        fileName: "http://localhost:8080/file.js line 25 > eval line 2 > eval",
-        lineNumber: 1,
-        message: "message string",
-        stack:
-            "baz@http://localhost:8080/file.js line 26 > eval line 2 > eval:1:30\n" +
-            "foo@http://localhost:8080/file.js line 26 > eval:2:96\n" +
-            "@http://localhost:8080/file.js line 26 > eval:4:18\n" +
-            "speak@http://localhost:8080/file.js:26:17\n" +
-            "@http://localhost:8080/file.js:33:9",
-    },
-
-    FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN: {
-        message: "Dummy error",
-        name: "Error",
-        stack: 'obj["@fn"]@Scratchpad/1:10:29\n' + "@Scratchpad/1:11:1\n" + "",
-        fileName: "Scratchpad/1",
-        lineNumber: 10,
-        columnNumber: 29,
-    },
-
     FIREFOX_60_URL_WITH_AT_SIGN: {
         message: "culprit",
         name: "Error",
@@ -125,7 +57,7 @@ export default {
             "who@http://localhost:5000/misc/@stuff/foo.js:3:9\n" +
             "what@http://localhost:5000/misc/@stuff/foo.js:6:3\n" +
             "where@http://localhost:5000/misc/@stuff/foo.js:9:3\n" +
-            "why@http://localhost:5000/misc/@stuff/foo.js:12:3\n" +
+            "why@https://localhost:5000/misc/@stuff/foo.js:12:3\n" +
             "@http://localhost:5000/misc/@stuff/foo.js:15:1\n",
         fileName: "http://localhost:5000/misc/@stuff/foo.js",
         lineNumber: 3,
@@ -144,51 +76,6 @@ export default {
         fileName: "http://localhost:5000/misc/@stuff/foo.js",
         lineNumber: 4,
         columnNumber: 9,
-    },
-
-    SAFARI_6: {
-        message: "'null' is not an object (evaluating 'x.undef')",
-        stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:82\n" + "[native code]",
-        line: 48,
-        sourceURL: "http://path/to/file.js",
-    },
-
-    SAFARI_7: {
-        message: "'null' is not an object (evaluating 'x.undef')",
-        name: "TypeError",
-        stack: "http://path/to/file.js:48:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:107",
-        line: 47,
-        sourceURL: "http://path/to/file.js",
-    },
-
-    SAFARI_8: {
-        message: "null is not an object (evaluating 'x.undef')",
-        name: "TypeError",
-        stack: "http://path/to/file.js:47:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:23",
-        line: 47,
-        column: 22,
-        sourceURL: "http://path/to/file.js",
-    },
-
-    SAFARI_8_EVAL: {
-        message: "Can't find variable: getExceptionProps",
-        name: "ReferenceError",
-        stack: "eval code\n" + "eval@[native code]\n" + "foo@http://path/to/file.js:58:21\n" + "bar@http://path/to/file.js:109:91",
-        line: 1,
-        column: 18,
-    },
-
-    SAFARI_9_NESTED_EVAL: {
-        column: 39,
-        line: 1,
-        message: "message string",
-        stack:
-            "baz\n" +
-            "foo\n" +
-            "eval code\n" +
-            "eval@[native code]\n" +
-            "speak@http://localhost:8080/file.js:26:21\n" +
-            "global code@http://localhost:8080/file.js:33:18",
     },
 
     IE_11: {
@@ -247,7 +134,6 @@ export default {
             "internal/main/run_main_module.js:17:11",
     },
 
-    // TODO: Add more tests
     NODE_12: {
         message: "Just an Exception",
         name: "Error",
@@ -284,6 +170,19 @@ export default {
     at process.<anonymous> (C:\\project files\\spect\\node_modules\\esm\\esm.js:1:34506)
     at Function.<anonymous> (C:\\project files\\spect\\node_modules\\esm\\esm.js:1:296856)
     at Function.<anonymous> (C:\\project files\\spect\\node_modules\\esm\\esm.js:1:296555)`,
+    },
+
+    CHROME_58_EVAL: {
+        message: "message string",
+        name: "Error",
+        stack:
+            "Error: message string\n" +
+            "at willThrow (eval at h (index.js:11), <anonymous>:3:3)\n" +
+            "at eval (eval at h (index.js:11), <anonymous>:6:1)\n" +
+            "at h (index.js:11)\n" +
+            "at g (index.js:6)\n" +
+            "at f (index.js:2)\n" +
+            "at index.js:23\n",
     },
 
     CHROME_76: {

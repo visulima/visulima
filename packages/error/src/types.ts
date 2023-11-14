@@ -50,15 +50,14 @@ export interface Trace extends Partial<SourceCode> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args: any[];
     column?: number | undefined;
+    evalOrigin?: Trace | undefined;
     file: string | undefined;
-    internal?: boolean;
-    isConstructor?: boolean;
-    isEval?: boolean;
-    isNative?: boolean;
+    isEval: boolean;
+    isInternal?: boolean | undefined;
+    isNative: boolean;
     line?: number | undefined;
     methodName: string | undefined;
     sourcemap?: TraceMap | undefined;
-    thirdParty?: boolean;
 }
 
 export interface SourceCode {

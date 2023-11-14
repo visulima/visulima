@@ -82,6 +82,32 @@ console.log(frame);
 //     |                ^
 ```
 
+## Stacktrace
+
+> Stacktrace parsing only supports stack strings newer than Node.js v18.0.0.
+>
+> Browser older than 6 years are not supported.
+
+```ts
+import { parseStack } from "@visulima/error";
+
+const error = new Error("My error message");
+
+const stack = parseStack(error);
+
+console.log(stack);
+
+// [
+//     {
+//         column: 16,
+//         file: "file:///Users/danielbannert/Projects/visulima/packages/error/src/index.ts",
+//         line: 2,
+//         method: "Object.<anonymous>",
+//     },
+//     ...and so on
+// ];
+```
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
@@ -97,6 +123,9 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+-   [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
+-   [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
+-   [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 
 ## License
 
