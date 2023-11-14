@@ -20,6 +20,7 @@ const CHROME_REGEX =
     /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 // eslint-disable-next-line security/detect-unsafe-regex
 const CHROME_EVAL_REGEX = /\((\S*):(\d+):(\d+)\)|\((\S*):?(\d+)?\)(,\s)?(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
+const CHROME_NESTED_EVAL_REGEX = /\sat\s(\S+)\s\((.*)\)\)?,?\s?(<.*>):(\d+):(\d+)\)?/;
 // eslint-disable-next-line security/detect-unsafe-regex
 const WINJS_REGEX = /^\s*at (?:(.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 const JAVA_SCRIPT_CORE_REGEX =
@@ -164,6 +165,41 @@ const parseWinjs = (line: string): Trace | undefined => {
     };
 };
 
+const parseNestedEval = (line: string): Trace | undefined => {
+    let parts: RegExpExecArray | null = CHROME_NESTED_EVAL_REGEX.exec(line);
+
+    if (!parts) {
+        const subMatch = CHROME_EVAL_REGEX.exec(line as string);
+
+        if (subMatch) {
+            parts = [] as unknown as RegExpExecArray;
+
+            parts[1] = "eval"; // methodName
+            parts[3] = <string>subMatch[1]; // url
+            parts[4] = <string>subMatch[2]; // line
+            parts[5] = <string>subMatch[3]; // column
+        }
+    }
+
+    debugLog(`parse chrome nested eval error stack line: "${line}"`, parts === null ? "not found" : `found: ${JSON.stringify(parts)}`);
+
+    if (!parts) {
+        return undefined;
+    }
+
+    return {
+        args: [],
+        column: parts[5] ? +parts[5] : undefined,
+        evalOrigin: parts[2] ? parseNestedEval(parts[2]) : undefined,
+        file: parts[3],
+        isEval: true,
+        isNative: false,
+        line: parts[4] ? +parts[4] : undefined,
+        methodName: parts[1],
+    };
+};
+
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const parseChrome = (line: string): Trace | undefined => {
     const parts = CHROME_REGEX.exec(line);
 
@@ -174,12 +210,16 @@ const parseChrome = (line: string): Trace | undefined => {
     }
 
     const isNative = parts[2] && parts[2].startsWith("native"); // start of line
-    let isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
+    const isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
 
     let evalOrigin: Trace | undefined;
 
     if (isEval) {
+        const isNestedEval = parts[2] && parts[2].startsWith("eval at"); // start of line
+
         const subMatch = CHROME_EVAL_REGEX.exec(line);
+
+        debugLog(`parse chrome eval error stack line: "${line}"`, subMatch === null ? "not found" : `found: ${JSON.stringify(subMatch)}`);
 
         if (subMatch && (subMatch[7] || subMatch[4]) && (subMatch[9] || subMatch[2] || subMatch[8])) {
             evalOrigin = {
@@ -191,8 +231,8 @@ const parseChrome = (line: string): Trace | undefined => {
                 line: subMatch[8] ? +subMatch[8] : subMatch[2] ? +subMatch[2] : undefined,
                 methodName: "eval",
             } as Trace;
-
-            isEval = false;
+        } else if (isNestedEval) {
+            evalOrigin = parseNestedEval(line);
         }
 
         if (subMatch) {
@@ -216,7 +256,7 @@ const parseChrome = (line: string): Trace | undefined => {
     };
 };
 
-const parse = (error: Error): Trace[] => {
+const parse = (error: Error, options: Partial<{ sourcemap: boolean }> = {}): Trace[] => {
     // @ts-expect-error missing stacktrace property
     const lines = (error.stacktrace ?? error.stack ?? "").split("\n");
 

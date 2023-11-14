@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../__fixtures__/captured-errors";
-import type { Trace } from "../src";
 import { parseStacktrace } from "../src";
 
 describe("parse-stacktrace", () => {
@@ -98,7 +97,6 @@ describe("parse-stacktrace", () => {
     });
 
     it("should parse nested eval() from V8", () => {
-        process.env.DEBUG = "true";
         const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
 
         expect(stackFrames).toHaveLength(5);
@@ -109,20 +107,31 @@ describe("parse-stacktrace", () => {
             21,
             17,
             false,
-            false,
-            undefined,
-            ["eval", undefined, "<anonymous>", 6, 1, undefined, true],
-        ]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://localhost:8080/file.js", 21, 17], false, false, undefined, [
-            "eval",
-            undefined,
-            "<anonymous>",
-            6,
-            1,
-            undefined,
             true,
+            undefined,
+            ["foo", [], "<anonymous>", 1, 30, false, true, undefined, ["eval", undefined, "http://localhost:8080/file.js", 21, 17, undefined, true]],
         ]);
-        expect(stackFrames[2]).toMatchStackFrame(["eval", [], "http://localhost:8080/file.js", 21, 17, false, true]);
+        expect(stackFrames[1]).toMatchStackFrame([
+            "foo",
+            [],
+            "http://localhost:8080/file.js",
+            21,
+            17,
+            false,
+            true,
+            undefined,
+            ["speak", [], "<anonymous>", 2, 96, undefined, true],
+        ]);
+        expect(stackFrames[2]).toMatchStackFrame([
+            "eval",
+            [],
+            "http://localhost:8080/file.js",
+            21,
+            17,
+            false,
+            true,
+            ["speak", [], "<anonymous>", 4, 18, undefined, true]
+        ]);
         expect(stackFrames[3]).toMatchStackFrame(["Object.speak", [], "http://localhost:8080/file.js", 21, 17]);
         expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 31, 13]);
     });
@@ -293,7 +302,6 @@ describe("parse-stacktrace", () => {
             3527,
             9,
         ]);
-
         expect(stackFrames[6]).toMatchStackFrame([
             "Hook.eval [as callAsync]",
             [],
@@ -567,6 +575,38 @@ describe("parse-stacktrace", () => {
         expect(stackFrames2).toHaveLength(2);
         expect(stackFrames2[0]).toMatchStackFrame(["null._onTimeout", [], "repl", 1, 25]);
         expect(stackFrames2[1]).toMatchStackFrame(["Timer.listOnTimeout [as ontimeout]", [], "timers.js", 110, 15]);
+    });
+
+    it("should parse TypeError stack", () => {
+        const stackFrames = parseStacktrace(new TypeError("foo"));
+
+        expect(stackFrames).toHaveLength(10);
+    });
+
+    it("should parse Custom Error stack", () => {
+        class xxx1Error extends TypeError {}
+
+        const stackFrames = parseStacktrace(new xxx1Error("foo"));
+
+        expect(stackFrames).toHaveLength(10);
+    });
+
+    it("should parse Travis Error", () => {
+        const stackFrames = parseStacktrace({
+            stack: `Error: foo
+     at extensions.(anonymous function) (a.js:13:11)`,
+        } as unknown as Error);
+
+        expect(stackFrames).toHaveLength(1);
+        expect(stackFrames[0]).toMatchStackFrame(["extensions.(anonymous function)", [], "a.js", 13, 11]);
+    });
+
+    it("should parse a eval Error", () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,no-eval
+        const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame(["eval", [], `${__dirname}/parse-stacktrace.test.ts`, 605, 45, false, true, undefined, ["eval", [], "<anonymous>", 1, 1, false, true]]);
     });
 
     it("should parse regular expression in error stacktrace", () => {

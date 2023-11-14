@@ -123,9 +123,24 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
--   [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
--   [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
--   [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
+
+## About
+
+### Related Projects
+
+- [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
+- [callsite-record](https://github.com/inikulin/callsite-record): create a fancy log entries for errors and function call sites.
+- [callsites](https://github.com/sindresorhus/callsites): get callsites from the V8 stack trace API.
+- [explain-error](https://github.com/dominictarr/explain-error): wrap an error with additional explanation.
+- [error-wrapper](https://github.com/spudly/error-wrapper): merges the stack of another error to its own.
+- [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
+- [trace](https://github.com/AndreasMadsen/trace): create super long stack traces.
+- [clarify](https://github.com/AndreasMadsen/clarify): remove node related stack trace noise.
+- [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
+- [pretty-error](https://github.com/AriaMinaei/pretty-error): make the call stacks clear.
+- [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
+- [ololog](https://github.com/xpl/ololog): another logger with a similar motivation but only support console.log as its sole transport.
+- [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 
 ## License
 
