@@ -4,7 +4,7 @@ import { expect } from "vitest";
 import type { Trace } from "./src";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ExpectedStackFrame = [string?, any[]?, string?, number?, number?, boolean?, boolean?, boolean?, ExpectedStackFrame?];
+type ExpectedStackFrame = [string?, any[]?, string?, number?, number?, string?, ExpectedStackFrame?];
 
 interface CustomMatchers<R = unknown> {
     toMatchStackFrame: (expected: ExpectedStackFrame) => R;
@@ -49,13 +49,13 @@ const validateArrays = (
 
 const toMatchStackFrame: (
     received: Trace,
-    [function_, arguments_, file, lineNumber, columnNumber, isNative, isEval, isInternal, evalOrigin]: ExpectedStackFrame,
+    [function_, arguments_, file, lineNumber, columnNumber, type, evalOrigin]: ExpectedStackFrame,
 ) => {
     message: () => string;
     pass: boolean;
 } = (
     received,
-    [function_, arguments_ = [], file, lineNumber, columnNumber, isNative = false, isEval = false, isInternal, evalOrigin],
+    [function_, arguments_ = [], file, lineNumber, columnNumber, type, evalOrigin],
 ): {
     message: () => string;
     pass: boolean;
@@ -65,9 +65,7 @@ const toMatchStackFrame: (
         received.file === file &&
         received.line === lineNumber &&
         received.column === columnNumber &&
-        received.isNative === isNative &&
-        received.isEval === isEval &&
-        received.isInternal === isInternal;
+        received.type === type;
 
     const validatedArguments = validateArrays(
         [...arguments_].sort((a, b) => a - b),
@@ -101,16 +99,15 @@ const toMatchStackFrame: (
                           args: evalOrigin[1],
                           column: evalOrigin[4],
                           file: evalOrigin[2],
-                          isEval: true,
                           line: evalOrigin[3],
                           methodName: evalOrigin[0],
+                          type: evalOrigin[5],
                       }
                     : undefined,
                 file,
-                isEval,
-                isNative,
                 line: lineNumber,
                 methodName: function_,
+                type,
             })}`,
         pass: false,
     };

@@ -46,16 +46,30 @@
                 "default": "./dist/index.js"
             }
         },
+        "./error": {
+            "import": {
+                "types": "./dist/error.d.ts",
+                "default": "./dist/error.js"
+            }
+        },
         "./sourcemap": {
             "import": {
                 "types": "./dist/sourcemap.d.ts",
                 "default": "./dist/sourcemap.js"
             }
         },
+        "./stacktrace": {
+            "import": {
+                "types": "./dist/stacktrace.d.ts",
+                "default": "./dist/stacktrace.js"
+            }
+        },
         "./package.json": "./package.json"
     },
     "sources": [
         "src/index.ts",
+        "src/error.ts",
+        "src/stacktrace.ts",
         "src/sourcemap.ts"
     ],
     "types": "dist/index.d.ts",

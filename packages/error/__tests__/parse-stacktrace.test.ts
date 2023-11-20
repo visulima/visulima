@@ -1,620 +1,779 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../__fixtures__/captured-errors";
 import { parseStacktrace } from "../src";
 
 describe("parse-stacktrace", () => {
-    it("should parses Firefox errors with resource: URLs", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["render", [], "resource://path/data/content/bundle.js", 5529, 16, false, false, false]);
-    });
-
-    // Release 2018
-    it("should parse stack traces with @ in the URL", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["who", [], "http://localhost:5000/misc/@stuff/foo.js", 3, 9, false, false, false]);
-        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 6, 3, false, false, false]);
-        expect(stackFrames[2]).toMatchStackFrame(["where", [], "http://localhost:5000/misc/@stuff/foo.js", 9, 3, false, false, false]);
-        expect(stackFrames[3]).toMatchStackFrame(["why", [], "https://localhost:5000/misc/@stuff/foo.js", 12, 3, false, false, false]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:5000/misc/@stuff/foo.js", 15, 1, false, false, false]);
-    });
-
-    // Release 2018
-    it("should parse stack traces with @ in the URL and the method", () => {
-        const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(['obj["@who"]', [], "http://localhost:5000/misc/@stuff/foo.js", 4, 9, false, false, false]);
-        expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 8, 3, false, false, false]);
-    });
-
-    it("should parse V8 Error.stack", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_15 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(4);
-        expect(stackFrames[0]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 13, 17, false, false]);
-        expect(stackFrames[1]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 16, 5, false, false]);
-        expect(stackFrames[2]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 20, 5, false, false]);
-        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 24, 4, false, false]);
-    });
-
-    it("should parse and set eval origin for eval() from V8", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(6);
-        expect(stackFrames[0]).toMatchStackFrame([
-            "willThrow",
-            undefined,
-            "index.js",
-            11,
-            undefined,
-            false,
-            false,
-            undefined,
-            ["eval", undefined, "<anonymous>", 3, 3, undefined, true],
-        ]);
-        expect(stackFrames[1]).toMatchStackFrame([
-            "eval",
-            undefined,
-            "index.js",
-            11,
-            undefined,
-            false,
-            false,
-            undefined,
-            ["eval", undefined, "<anonymous>", 6, 1, undefined, true],
-        ]);
-        expect(stackFrames[2]).toMatchStackFrame(["h", undefined, "index.js", 11, undefined]);
-        expect(stackFrames[3]).toMatchStackFrame(["g", undefined, "index.js", 6, undefined]);
-        expect(stackFrames[4]).toMatchStackFrame(["f", undefined, "index.js", 2, undefined]);
-        expect(stackFrames[5]).toMatchStackFrame(["<unknown>", undefined, "index.js", 23, undefined]);
-    });
-
-    it("should parse V8 entries with no location", () => {
-        const stackFrames = parseStacktrace({ stack: "Error\n at Array.forEach (native)" } as unknown as Error);
-
-        expect(stackFrames).toHaveLength(1);
-        expect(stackFrames[0]).toMatchStackFrame(["Array.forEach", ["native"], undefined, undefined, undefined, true, false]);
-    });
-
-    it("should parse V8 Error.stack entries with port numbers", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_36 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["dumpExceptionError", [], "http://localhost:8080/file.js", 41, 27]);
-    });
-
-    it("should parse error stacks with Constructors", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_46 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["new CustomError", [], "http://localhost:8080/file.js", 41, 27]);
-        expect(stackFrames[1]).toMatchStackFrame(["HTMLButtonElement.onclick", [], "http://localhost:8080/file.js", 107, 146]);
-    });
-
-    it("should parse nested eval() from V8", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame([
-            "baz",
-            [],
-            "http://localhost:8080/file.js",
-            21,
-            17,
-            false,
-            true,
-            undefined,
-            ["foo", [], "<anonymous>", 1, 30, false, true, undefined, ["eval", undefined, "http://localhost:8080/file.js", 21, 17, undefined, true]],
-        ]);
-        expect(stackFrames[1]).toMatchStackFrame([
-            "foo",
-            [],
-            "http://localhost:8080/file.js",
-            21,
-            17,
-            false,
-            true,
-            undefined,
-            ["speak", [], "<anonymous>", 2, 96, undefined, true],
-        ]);
-        expect(stackFrames[2]).toMatchStackFrame([
-            "eval",
-            [],
-            "http://localhost:8080/file.js",
-            21,
-            17,
-            false,
-            true,
-            ["speak", [], "<anonymous>", 4, 18, undefined, true]
-        ]);
-        expect(stackFrames[3]).toMatchStackFrame(["Object.speak", [], "http://localhost:8080/file.js", 21, 17]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 31, 13]);
-    });
-
-    it("should parses Chrome 76 error with async support", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_76 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["bar", [], "<anonymous>", 8, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["async foo", [], "<anonymous>", 2, 3]);
-    });
-
-    it("should parses Chrome error with webpack URLs", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.eval", [], "webpack:///./src/components/test/test.jsx?", 295, 108]);
-        expect(stackFrames[1]).toMatchStackFrame(["TESTTESTTEST.render", [], "webpack:///./src/components/test/test.jsx?", 272, 32]);
-        expect(stackFrames[2]).toMatchStackFrame(["TESTTESTTEST.tryRender", [], "webpack:///./~/react-transform-catch-errors/lib/index.js?", 34, 31]);
-        expect(stackFrames[3]).toMatchStackFrame(["TESTTESTTEST.proxiedMethod", [], "webpack:///./~/react-proxy/modules/createPrototypeProxy.js?", 44, 30]);
-        expect(stackFrames[4]).toMatchStackFrame(["Module../pages/index.js", [], "C:\\root\\server\\development\\pages\\index.js", 182, 7]);
-    });
-
-    it("should parses Chrome error with blob URLs", () => {
-        const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB as unknown as Error);
-
-        expect(stackFrames).toHaveLength(7);
-        expect(stackFrames[1]).toMatchStackFrame(["s", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 29_146]);
-        expect(stackFrames[2]).toMatchStackFrame(["Object.d [as add]", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 30_039]);
-        // eslint-disable-next-line no-secrets/no-secrets
-        expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/d4eefe0f-361a-4682-b217-76587d9f712a", 15, 10_978]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 1, 6911]);
-        expect(stackFrames[5]).toMatchStackFrame(["n.fire", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 3019]);
-        expect(stackFrames[6]).toMatchStackFrame(["n.handle", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 2863]);
-    });
-
-    // Release 2012
-    it("should parse IE 10 Error stacks", () => {
-        const stackFrames = parseStacktrace(capturedErrors.IE_10 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["Anonymous function", [], "http://path/to/file.js", 48, 13]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 46, 9]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 82, 1]);
-    });
-
-    // Release 2013
-    it("should parse IE 11 Error stacks", () => {
-        const stackFrames = parseStacktrace(capturedErrors.IE_11 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["Anonymous function", [], "http://path/to/file.js", 47, 21]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 45, 13]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 1]);
-    });
-
-    // Release 2013
-    it("should parses IE 11 eval error", () => {
-        const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["eval code", [], "eval code", 1, 1, false, true]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 58, 17]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 109, 1]);
-    });
-
-    // Release 2015
-    it("should parse nested eval() from Edge", () => {
-        const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL as unknown as Error);
-
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["baz", [], "eval code", 1, 18, false, true]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "eval code", 2, 90, false, true]);
-        expect(stackFrames[2]).toMatchStackFrame(["eval code", [], "eval code", 4, 18, false, true]);
-        expect(stackFrames[3]).toMatchStackFrame(["speak", [], "http://localhost:8080/file.js", 25, 17]);
-        expect(stackFrames[4]).toMatchStackFrame(["Global code", [], "http://localhost:8080/file.js", 32, 9]);
-    });
-
-    // Release 15/10/2014
-    it("should parse Opera 25 Error stacks", () => {
-        const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
-
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
-        expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 168]);
-    });
-
-    it("should parses PhantomJS 1.19 error", () => {
-        const stackFrames = parseStacktrace(capturedErrors.PHANTOMJS_1_19 as unknown as Error);
-        expect(stackFrames).toHaveLength(3);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "file:///path/to/file.js", 878, undefined]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 4283, undefined]);
-        expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 4287, undefined]);
-    });
-
-    it("should handle newlines in Error stack messages", () => {
-        const stackFrames = parseStacktrace({
-            stack:
+    describe("chrome", () => {
+        it("should match debugger stack trace", () => {
+            const stackFrames = parseStacktrace({
                 // eslint-disable-next-line no-useless-concat
-                "Error: Problem at this\nlocation. Error code:1234\n" + "    at http://path/to/file.js:47:22\n" + "    at foo (http://path/to/file.js:52:15)",
-        } as unknown as Error);
+                stack: "Error: fail\n" + "    at foo (<anonymous>:1:33)\n" + "    at bar (<anonymous>:1:19)\n" + "    at <anonymous>:1:13\n",
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
-        expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
-    });
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["foo", [], "<anonymous>", 1, 33]);
+            expect(stackFrames[1]).toMatchStackFrame(["bar", [], "<anonymous>", 1, 19]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "<anonymous>", 1, 13, "native"]);
+        });
 
-    it("should handle webpack error stack", () => {
-        const stackFrames = parseStacktrace({
-            stack:
-                "at tryRunOrWebpackError (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js:88:9)\n" +
-                "at __webpack_require_module__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5051:12)\n" +
-                "at __webpack_require__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5008:18)\n" +
-                // eslint-disable-next-line no-secrets/no-secrets
-                "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5079:20\n" +
-                "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3485:9)\n" +
-                "at done (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3527:9)\n" +
-                "at Hook.eval [as callAsync] (eval at create (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)\n" +
-                "at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js:18:14)\n" +
-                // eslint-disable-next-line no-secrets/no-secrets
-                "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:4986:43\n" +
-                "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3482:9)\n",
-        } as unknown as Error);
+        it("should patch name with <> characters", () => {
+            const stackFrames = parseStacktrace({
+                // eslint-disable-next-line no-useless-concat
+                stack: "Error\n" + "  at UserContext.<anonymous> (./tests/dom.test.js:23:3 <- ./tests/dom.test.js:435:1307)\n" + "  at <Jasmine>",
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(10);
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["UserContext.<anonymous>", [], "./tests/dom.test.js", 23, 3]);
+            expect(stackFrames[0].sourceOrigin).toMatchObject({
+                column: 1307,
+                file: "./tests/dom.test.js",
+                line: 435,
+            });
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "<Jasmine>", undefined, undefined, "native"]);
+        });
 
-        expect(stackFrames[0]).toMatchStackFrame([
-            "tryRunOrWebpackError",
-            [],
+        it("should parse V8 Error.stack", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_15 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(4);
+            expect(stackFrames[0]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 13, 17, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 16, 5, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 20, 5, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 24, 4, undefined]);
+        });
+
+        it("should parse and set eval origin for eval() from V8", () => {
+            process.env.DEBUG = "true";
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL as unknown as Error);
+
+            expect(stackFrames).toHaveLength(6);
+            expect(stackFrames[0]).toMatchStackFrame([
+                "willThrow",
+                undefined,
+                "index.js",
+                11,
+                undefined,
+                undefined,
+                ["eval", undefined, "<anonymous>", 3, 3, "eval"],
+            ]);
+            expect(stackFrames[1]).toMatchStackFrame([
+                "eval",
+                undefined,
+                "index.js",
+                11,
+                undefined,
+                undefined,
+                ["eval", undefined, "<anonymous>", 6, 1, "eval"],
+            ]);
+            expect(stackFrames[2]).toMatchStackFrame(["h", undefined, "index.js", 11, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["g", undefined, "index.js", 6, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["f", undefined, "index.js", 2, undefined]);
+            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", undefined, "index.js", 23, undefined]);
+        });
+
+        it("should parse error stacks with constructors", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_46 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["new CustomError", [], "http://localhost:8080/file.js", 41, 27]);
+            expect(stackFrames[1]).toMatchStackFrame(["HTMLButtonElement.onclick", [], "http://localhost:8080/file.js", 107, 146]);
+        });
+
+        it("should parse nested eval() from V8", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
+
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame([
+                "baz",
+                [],
+                "http://localhost:8080/file.js",
+                21,
+                17,
+                "eval",
+                ["foo", [], "<anonymous>", 1, 30, "eval", ["eval", undefined, "http://localhost:8080/file.js", 21, 17, "eval"]],
+            ]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://localhost:8080/file.js", 21, 17, "eval", ["speak", [], "<anonymous>", 2, 96, "eval"]]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "eval",
+                [],
+                "http://localhost:8080/file.js",
+                21,
+                17,
+                "eval",
+                ["speak", [], "<anonymous>", 4, 18, "eval"],
+            ]);
+            expect(stackFrames[3]).toMatchStackFrame(["Object.speak", [], "http://localhost:8080/file.js", 21, 17]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:8080/file.js", 31, 13]);
+        });
+
+        it("should parses Chrome 76 error with async support", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_76 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["bar", [], "<anonymous>", 8, 9]);
+            expect(stackFrames[1]).toMatchStackFrame(["async foo", [], "<anonymous>", 2, 3]);
+        });
+
+        it("should parses Chrome error with webpack URLs", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK as unknown as Error);
+
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.eval", [], "webpack:///./src/components/test/test.jsx?", 295, 108]);
+            expect(stackFrames[1]).toMatchStackFrame(["TESTTESTTEST.render", [], "webpack:///./src/components/test/test.jsx?", 272, 32]);
+            expect(stackFrames[2]).toMatchStackFrame(["TESTTESTTEST.tryRender", [], "webpack:///./~/react-transform-catch-errors/lib/index.js?", 34, 31]);
+            expect(stackFrames[3]).toMatchStackFrame(["TESTTESTTEST.proxiedMethod", [], "webpack:///./~/react-proxy/modules/createPrototypeProxy.js?", 44, 30]);
+            expect(stackFrames[4]).toMatchStackFrame(["Module../pages/index.js", [], "C:\\root\\server\\development\\pages\\index.js", 182, 7]);
+        });
+
+        it("should parses Chrome error with blob URLs", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB as unknown as Error);
+
+            expect(stackFrames).toHaveLength(7);
+            expect(stackFrames[1]).toMatchStackFrame(["s", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 31, 29_146]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "Object.d [as add]",
+                [],
+                "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379",
+                31,
+                30_039,
+            ]);
             // eslint-disable-next-line no-secrets/no-secrets
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js",
-            88,
-            9,
-        ]);
-        expect(stackFrames[1]).toMatchStackFrame([
-            "__webpack_require_module__",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
-            5051,
-            12,
-        ]);
-        expect(stackFrames[2]).toMatchStackFrame([
-            "__webpack_require__",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
-            5008,
-            18,
-        ]);
-        expect(stackFrames[3]).toMatchStackFrame([
-            "<unknown>",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
-            5079,
-            20,
-        ]);
-        expect(stackFrames[4]).toMatchStackFrame([
-            "symbolIterator",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
-            3485,
-            9,
-        ]);
-        expect(stackFrames[5]).toMatchStackFrame([
-            "done",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
-            3527,
-            9,
-        ]);
-        expect(stackFrames[6]).toMatchStackFrame([
-            "Hook.eval [as callAsync]",
-            [],
-            // eslint-disable-next-line no-secrets/no-secrets
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js",
-            33,
-            10,
-            false,
-            true,
-        ]);
-        expect(stackFrames[7]).toMatchStackFrame([
-            "Hook.CALL_ASYNC_DELEGATE [as _callAsync]",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js",
-            18,
-            14,
-        ]);
-        expect(stackFrames[8]).toMatchStackFrame([
-            "<unknown>",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
-            4986,
-            43,
-        ]);
-        expect(stackFrames[9]).toMatchStackFrame([
-            "symbolIterator",
-            [],
-            "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
-            3482,
-            9,
-        ]);
+            expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/d4eefe0f-361a-4682-b217-76587d9f712a", 15, 10_978]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 1, 6911]);
+            expect(stackFrames[5]).toMatchStackFrame(["n.fire", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 3019]);
+            expect(stackFrames[6]).toMatchStackFrame(["n.handle", [], "blob:http%3A//localhost%3A8080/abfc40e9-4742-44ed-9dcd-af8f99a29379", 7, 2863]);
+        });
     });
 
-    it("should handle webpack eval stacks", () => {
-        const stackFrames = parseStacktrace({
-            stack:
-                "ReferenceError: chilxdren is not defined\n" +
-                "at new Layout (webpack:///./src/Layout.js?:25:5)\n" +
-                "at eval (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:90:24)\n" +
-                "at instantiate (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:98:9)\n" +
-                "at Layout (eval at proxyClass (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?), <anonymous>:4:17)\n" +
-                "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:170:18)\n" +
-                "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n" +
-                "at Object.ReactReconciler.mountComponent (webpack:///./~/react/lib/ReactReconciler.js?:39:35)\n" +
-                "at ReactCompositeComponentMixin.performInitialMount (webpack:///./~/react/lib/ReactCompositeComponent.js?:289:34)\n" +
-                "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:237:21)\n" +
-                "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n",
-        } as unknown as Error);
+    describe("firefox", () => {
+        it("should parses Firefox errors with resource: URLs", () => {
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL as unknown as Error);
 
-        expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["new Layout", [], "webpack:///./src/Layout.js?", 25, 5]);
-        expect(stackFrames[1]).toMatchStackFrame([
-            "eval",
-            [],
-            "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
-            90,
-            24,
-            false,
-            true,
-        ]);
-        expect(stackFrames[2]).toMatchStackFrame(["instantiate", [], "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?", 98, 9]);
-        expect(stackFrames[3]).toMatchStackFrame([
-            "Layout",
-            [],
-            "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
-            undefined,
-            undefined,
-            false,
-            false,
-            undefined,
-            ["eval", [], "<anonymous>", 4, 17, false, true],
-        ]);
-        expect(stackFrames[4]).toMatchStackFrame([
-            "ReactCompositeComponentMixin.mountComponent",
-            [],
-            "webpack:///./~/react/lib/ReactCompositeComponent.js?",
-            170,
-            18,
-        ]);
-        expect(stackFrames[5]).toMatchStackFrame(["wrapper [as mountComponent]", [], "webpack:///./~/react/lib/ReactPerf.js?", 66, 21]);
-        expect(stackFrames[6]).toMatchStackFrame(["Object.ReactReconciler.mountComponent", [], "webpack:///./~/react/lib/ReactReconciler.js?", 39, 35]);
-        expect(stackFrames[7]).toMatchStackFrame([
-            "ReactCompositeComponentMixin.performInitialMount",
-            [],
-            "webpack:///./~/react/lib/ReactCompositeComponent.js?",
-            289,
-            34,
-        ]);
-        expect(stackFrames[8]).toMatchStackFrame([
-            "ReactCompositeComponentMixin.mountComponent",
-            [],
-            "webpack:///./~/react/lib/ReactCompositeComponent.js?",
-            237,
-            21,
-        ]);
-        expect(stackFrames[9]).toMatchStackFrame(["wrapper [as mountComponent]", [], "webpack:///./~/react/lib/ReactPerf.js?", 66, 21]);
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["render", [], "resource://path/data/content/bundle.js", 5529, 16, undefined]);
+        });
+
+        // Release 2018
+        it("should parse stack traces with @ in the URL", () => {
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN as unknown as Error);
+
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame(["who", [], "http://localhost:5000/misc/@stuff/foo.js", 3, 9, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 6, 3, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["where", [], "http://localhost:5000/misc/@stuff/foo.js", 9, 3, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["why", [], "https://localhost:5000/misc/@stuff/foo.js", 12, 3, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "http://localhost:5000/misc/@stuff/foo.js", 15, 1, undefined]);
+        });
+
+        // Release 2018
+        it("should parse stack traces with @ in the URL and the method", () => {
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
+
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame(['obj["@who"]', [], "http://localhost:5000/misc/@stuff/foo.js", 4, 9, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["what", [], "http://localhost:5000/misc/@stuff/foo.js", 8, 3, undefined]);
+        });
+
+        it("should match debugger stack trace", () => {
+            const stackFrames = parseStacktrace({
+                // eslint-disable-next-line no-useless-concat
+                stack: "foo@debugger eval code:1:27\n" + "bar@debugger eval code:1:13\n" + "@debugger eval code:1:13",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["foo", [], "debugger eval code", 1, 27]);
+            expect(stackFrames[1]).toMatchStackFrame(["bar", [], "debugger eval code", 1, 13]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "debugger eval code", 1, 13]);
+        });
+
+        it("should should match stack trace #2", () => {
+            const stackFrames = parseStacktrace({ stack: "@http://localhost:3000/App.jsx?t=1589606689786:33:7" } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://localhost:3000/App.jsx?t=1589606689786", 33, 7]);
+        });
+
+        it("should should match stack trace #3", () => {
+            const stackFrames = parseStacktrace({
+                stack:
+                    "App@http://localhost:3000/App.jsx?t=1589606715125:31:9\n" +
+                    "E@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:7584\n" +
+                    "b/l.__k<@http://localhost:3000/@modules/preact/dist/preact.mjs?import:1:1908\n" +
+                    "@http://localhost:3000/main.js:52:7\n",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(4);
+            expect(stackFrames[0]).toMatchStackFrame(["App", [], "http://localhost:3000/App.jsx?t=1589606715125", 31, 9]);
+            expect(stackFrames[1]).toMatchStackFrame(["E", [], "http://localhost:3000/@modules/preact/dist/preact.mjs?import", 1, 7584]);
+            expect(stackFrames[2]).toMatchStackFrame(["b/l.__k<", [], "http://localhost:3000/@modules/preact/dist/preact.mjs?import", 1, 1908]);
+            expect(stackFrames[3]).toMatchStackFrame(["<unknown>", [], "http://localhost:3000/main.js", 52, 7]);
+        });
+
+        it("should parse errors from about:blank", () => {
+            process.env.DEBUG = "true";
+            const stackFrames = parseStacktrace({
+                stack: `@about:blank line 5 > injectedScript:1:7\n@debugger eval code:5:15\n`,
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "about:blank line 5 > injectedScript", 1, 7]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "debugger eval code", 5, 15]);
+        });
     });
 
-    it("should handle spaces in Node.js stacks", () => {
-        const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_SPACES as unknown as Error);
+    describe("ie/edge", () => {
+        // Release 2012
+        it("should parse IE 10 Error stacks", () => {
+            const stackFrames = parseStacktrace(capturedErrors.IE_10 as unknown as Error);
 
-        expect(stackFrames).toHaveLength(8);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "/var/app/scratch/my project/index.js", 2, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["Object.<anonymous>", [], "/var/app/scratch/my project/index.js", 2, 9]);
-        expect(stackFrames[2]).toMatchStackFrame(["Module._compile", [], "internal/modules/cjs/loader.js", 774, 30]);
-        expect(stackFrames[3]).toMatchStackFrame(["Object.Module._extensions..js", [], "internal/modules/cjs/loader.js", 785, 10]);
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["<anonymous>", [], "http://path/to/file.js", 48, 13]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 46, 9]);
+            expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 82, 1]);
+        });
+
+        // Release 2013
+        it("should parse IE 11 Error stacks", () => {
+            const stackFrames = parseStacktrace(capturedErrors.IE_11 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["<anonymous>", [], "http://path/to/file.js", 47, 21]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 45, 13]);
+            expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 1]);
+        });
+
+        // Release 2013
+        it("should parses IE 11 eval error", () => {
+            const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL as unknown as Error);
+
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["eval code", [], "eval code", 1, 1, "eval"]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 58, 17]);
+            expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 109, 1]);
+        });
+
+        // Release 2015
+        it("should parse nested eval() from Edge", () => {
+            const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL as unknown as Error);
+
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame(["baz", [], "eval code", 1, 18, "eval"]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "eval code", 2, 90, "eval"]);
+            expect(stackFrames[2]).toMatchStackFrame(["eval code", [], "eval code", 4, 18, "eval"]);
+            expect(stackFrames[3]).toMatchStackFrame(["speak", [], "http://localhost:8080/file.js", 25, 17]);
+            expect(stackFrames[4]).toMatchStackFrame(["Global code", [], "http://localhost:8080/file.js", 32, 9]);
+        });
     });
 
-    it("should handle Node.js stacks with parentheses", () => {
-        const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_PARENTHESES as unknown as Error);
+    describe("webpack", () => {
+        it("should handle webpack error stack", () => {
+            const stackFrames = parseStacktrace({
+                stack:
+                    "at tryRunOrWebpackError (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js:88:9)\n" +
+                    "at __webpack_require_module__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5051:12)\n" +
+                    "at __webpack_require__ (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5008:18)\n" +
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:5079:20\n" +
+                    "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3485:9)\n" +
+                    "at done (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3527:9)\n" +
+                    "at Hook.eval [as callAsync] (eval at create (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:15:1)\n" +
+                    "at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js:18:14)\n" +
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    "at /usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js:4986:43\n" +
+                    "at symbolIterator (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js:3482:9)\n",
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(7);
-        expect(stackFrames[0]).toMatchStackFrame(["Object.<anonymous>", [], "/var/app/scratch/my project (top secret)/index.js", 2, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["Module._compile", [], "internal/modules/cjs/loader.js", 774, 30]);
-        expect(stackFrames[2]).toMatchStackFrame(["Object.Module._extensions..js", [], "internal/modules/cjs/loader.js", 785, 10]);
-        expect(stackFrames[3]).toMatchStackFrame(["Module.load", [], "internal/modules/cjs/loader.js", 641, 32]);
-        expect(stackFrames[4]).toMatchStackFrame(["Function.Module._load", [], "internal/modules/cjs/loader.js", 556, 12]);
-        expect(stackFrames[5]).toMatchStackFrame(["Function.Module.runMain", [], "internal/modules/cjs/loader.js", 837, 10]);
-        expect(stackFrames[6]).toMatchStackFrame(["<unknown>", [], "internal/main/run_main_module.js", 17, 11]);
+            expect(stackFrames).toHaveLength(10);
+
+            expect(stackFrames[0]).toMatchStackFrame([
+                "tryRunOrWebpackError",
+                [],
+                // eslint-disable-next-line no-secrets/no-secrets
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js",
+                88,
+                9,
+            ]);
+            expect(stackFrames[1]).toMatchStackFrame([
+                "__webpack_require_module__",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
+                5051,
+                12,
+            ]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "__webpack_require__",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
+                5008,
+                18,
+            ]);
+            expect(stackFrames[3]).toMatchStackFrame([
+                "<unknown>",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
+                5079,
+                20,
+            ]);
+            expect(stackFrames[4]).toMatchStackFrame([
+                "symbolIterator",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
+                3485,
+                9,
+            ]);
+            expect(stackFrames[5]).toMatchStackFrame([
+                "done",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
+                3527,
+                9,
+            ]);
+            expect(stackFrames[6]).toMatchStackFrame([
+                "Hook.eval [as callAsync]",
+                [],
+                // eslint-disable-next-line no-secrets/no-secrets
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/HookCodeFactory.js",
+                33,
+                10,
+                "eval",
+            ]);
+            expect(stackFrames[7]).toMatchStackFrame([
+                "Hook.CALL_ASYNC_DELEGATE [as _callAsync]",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/tapable/lib/Hook.js",
+                18,
+                14,
+            ]);
+            expect(stackFrames[8]).toMatchStackFrame([
+                "<unknown>",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/Compilation.js",
+                4986,
+                43,
+            ]);
+            expect(stackFrames[9]).toMatchStackFrame([
+                "symbolIterator",
+                [],
+                "/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/neo-async/async.js",
+                3482,
+                9,
+            ]);
+        });
+
+        it("should handle webpack eval stacks", () => {
+            const stackFrames = parseStacktrace({
+                stack:
+                    "ReferenceError: chilxdren is not defined\n" +
+                    "at new Layout (webpack:///./src/Layout.js?:25:5)\n" +
+                    "at eval (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:90:24)\n" +
+                    "at instantiate (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?:98:9)\n" +
+                    "at Layout (eval at proxyClass (webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?), <anonymous>:4:17)\n" +
+                    "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:170:18)\n" +
+                    "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n" +
+                    "at Object.ReactReconciler.mountComponent (webpack:///./~/react/lib/ReactReconciler.js?:39:35)\n" +
+                    "at ReactCompositeComponentMixin.performInitialMount (webpack:///./~/react/lib/ReactCompositeComponent.js?:289:34)\n" +
+                    "at ReactCompositeComponentMixin.mountComponent (webpack:///./~/react/lib/ReactCompositeComponent.js?:237:21)\n" +
+                    "at wrapper [as mountComponent] (webpack:///./~/react/lib/ReactPerf.js?:66:21)\n",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(10);
+            expect(stackFrames[0]).toMatchStackFrame(["new Layout", [], "webpack:///./src/Layout.js?", 25, 5]);
+            expect(stackFrames[1]).toMatchStackFrame(["eval", [], "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?", 90, 24, "eval"]);
+            expect(stackFrames[2]).toMatchStackFrame(["instantiate", [], "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?", 98, 9]);
+            expect(stackFrames[3]).toMatchStackFrame([
+                "Layout",
+                [],
+                "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
+                undefined,
+                undefined,
+                undefined,
+                ["eval", [], "<anonymous>", 4, 17, "eval"],
+            ]);
+            expect(stackFrames[4]).toMatchStackFrame([
+                "ReactCompositeComponentMixin.mountComponent",
+                [],
+                "webpack:///./~/react/lib/ReactCompositeComponent.js?",
+                170,
+                18,
+            ]);
+            expect(stackFrames[5]).toMatchStackFrame(["wrapper [as mountComponent]", [], "webpack:///./~/react/lib/ReactPerf.js?", 66, 21]);
+            expect(stackFrames[6]).toMatchStackFrame(["Object.ReactReconciler.mountComponent", [], "webpack:///./~/react/lib/ReactReconciler.js?", 39, 35]);
+            expect(stackFrames[7]).toMatchStackFrame([
+                "ReactCompositeComponentMixin.performInitialMount",
+                [],
+                "webpack:///./~/react/lib/ReactCompositeComponent.js?",
+                289,
+                34,
+            ]);
+            expect(stackFrames[8]).toMatchStackFrame([
+                "ReactCompositeComponentMixin.mountComponent",
+                [],
+                "webpack:///./~/react/lib/ReactCompositeComponent.js?",
+                237,
+                21,
+            ]);
+            expect(stackFrames[9]).toMatchStackFrame(["wrapper [as mountComponent]", [], "webpack:///./~/react/lib/ReactPerf.js?", 66, 21]);
+        });
+
+        it("should parse source mappings from chrome webpack", () => {
+            const stackFrames = parseStacktrace({
+                // eslint-disable-next-line no-useless-concat
+                stack: "Error: fail\n" + "    at foo (<anonymous>:1:33)\n" + "    at bar (<anonymous>:1:19 <- <anonymous>:2:3)\n" + "    at <anonymous>:1:13\n",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["foo", [], "<anonymous>", 1, 33]);
+            expect(stackFrames[1]).toMatchStackFrame(["bar", [], "<anonymous>", 1, 19]);
+            expect(stackFrames[1].sourceOrigin).toMatchObject({
+                column: 3,
+                file: "<anonymous>",
+                line: 2,
+            });
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "<anonymous>", 1, 13, "native"]);
+        });
+
+        it("should parse webpack-internal", () => {
+            process.env.DEBUG = "true";
+            const stackFrames = parseStacktrace({
+                stack: `
+react-dom.development.js:67 Warning: Each child in a list should have a unique "key" prop. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at Grid (webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js:235:35)
+    at WithStyles (webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js:61:31)
+    at div
+    at Grid (webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js:235:35)
+    at WithStyles (webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js:61:31)
+    at div
+    at Grid (webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js:235:35)
+    at WithStyles (webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js:61:31)
+    at div
+    at div
+    at Container (webpack-internal:///./node_modules/@material-ui/core/esm/Container/Container.js:84:23)
+    at WithStyles (webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js:61:31)
+    at ContentWrapper (webpack-internal:///./src/components/content-wrapper.js:26:23)
+    at div
+    at Grid (webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js:235:35)
+    at WithStyles (webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js:61:31)
+    at Footer (webpack-internal:///./src/components/common/footer/index.js:127:28)
+    at Layout (webpack-internal:///./src/components/Layout/index.js:28:23)
+    at LandingTemplate (webpack-internal:///./src/templates/landing/index.js:105:23)
+    at PageRenderer (webpack-internal:///./.cache/page-renderer.js:23:29)
+    at PageQueryStore (webpack-internal:///./.cache/query-result-store.js:39:30)
+    at RouteHandler
+    at div
+    at FocusHandlerImpl (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:359:5)
+    at FocusHandler (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:330:19)
+    at RouterImpl (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:235:5)
+    at Location (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:64:23)
+    at Router
+    at ScrollHandler (webpack-internal:///./node_modules/gatsby-react-router-scroll/scroll-handler.js:36:35)
+    at RouteUpdates (webpack-internal:///./.cache/navigation.js:286:32)
+    at EnsureResources (webpack-internal:///./.cache/ensure-resources.js:22:30)
+    at LocationHandler (webpack-internal:///./.cache/root.js:67:29)
+    at Location (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:64:23)
+    at Root
+    at ThemeProvider (webpack-internal:///./node_modules/@material-ui/styles/esm/ThemeProvider/ThemeProvider.js:41:24)
+    at TopLayout (webpack-internal:///./plugins/gatsby-plugin-top-layout/TopLayout.js:22:23)
+    at StylesProvider (webpack-internal:///./node_modules/@material-ui/styles/esm/StylesProvider/StylesProvider.js:49:24)
+    at GatedContentHandler (webpack-internal:///./src/utils/GatedContentHandler.js:31:23)
+    at LocationProvider (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:84:5)
+    at Location (webpack-internal:///./node_modules/@gatsbyjs/reach-router/es/index.js:64:23)
+    at withLocation (webpack-internal:///./src/utils/GatedContentHandler.js:70:24)
+    at eval (webpack-internal:///./src/components/Search/SearchContext.js:46:25)
+    at SalesforceProvider (webpack-internal:///./src/components/Salesforce/SalesforceProvider.js:28:66)
+    at CookiesProvider (webpack-internal:///./node_modules/react-cookie/es6/CookiesProvider.js:24:28)
+    at AuthProvider (webpack-internal:///./src/utils/context/AuthContext.js:50:23)
+    at ApolloProvider (webpack-internal:///./node_modules/@apollo/client/react/context/ApolloProvider.js:12:21)
+    at Apollo (webpack-internal:///./src/providers/apollo.js:34:23)
+    at StaticQueryStore (webpack-internal:///./.cache/query-result-store.js:127:32)
+    at ErrorBoundary (webpack-internal:///./.cache/fast-refresh-overlay/components/error-boundary.js:24:35)
+    at DevOverlay (webpack-internal:///./.cache/fast-refresh-overlay/index.js:114:23)
+    at RootWrappedWithOverlayAndProvider
+    at App (webpack-internal:///./.cache/app.js:209:68)
+`,
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(53);
+            expect(stackFrames[0]).toMatchStackFrame(["div", [], undefined, undefined, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["Grid", [], "webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js", 235, 35]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "WithStyles",
+                [],
+                "webpack-internal:///./node_modules/@material-ui/styles/esm/withStyles/withStyles.js",
+                61,
+                31,
+            ]);
+            expect(stackFrames[3]).toMatchStackFrame(["div", [], undefined, undefined, undefined]);
+            expect(stackFrames[42]).toMatchStackFrame(["eval", [], "webpack-internal:///./src/components/Search/SearchContext.js", 46, 25, "eval"]);
+            expect(stackFrames[52]).toMatchStackFrame(["App", [], "webpack-internal:///./.cache/app.js", 209, 68]);
+        });
     });
 
-    it("should parses node error with space in path", () => {
-        const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE as unknown as Error);
+    describe("react native", () => {
+        it("should parses an error in react native", () => {
+            const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_2 as unknown as Error);
 
-        expect(stackFrames).toHaveLength(9);
-        expect(stackFrames[0]).toMatchStackFrame(["Spect.get", [], "C:\\project files\\spect\\src\\index.js", 161, 26]);
-        expect(stackFrames[1]).toMatchStackFrame(["Object.get", [], "C:\\project files\\spect\\src\\index.js", 43, 36]);
-        expect(stackFrames[2]).toMatchStackFrame(["(anonymous function).then", [], "C:\\project files\\spect\\src\\index.js", 165, 33]);
-        expect(stackFrames[3]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", [], "internal/process/task_queues.js", 52, 5]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
-        expect(stackFrames[5]).toMatchStackFrame(["<unknown>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_176]);
-        expect(stackFrames[6]).toMatchStackFrame(["process.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
-        expect(stackFrames[7]).toMatchStackFrame(["Function.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_856]);
-        expect(stackFrames[8]).toMatchStackFrame(["Function.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_555]);
+            expect(stackFrames).toHaveLength(11);
+            expect(stackFrames[0]).toMatchStackFrame(["s", [], "33.js", 1, 531, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["b", [], "1959.js", 1, 1469, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["onSocketClose", [], "2932.js", 1, 727, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["value", [], "81.js", 1, 1505, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "102.js", 1, 2956, undefined]);
+            expect(stackFrames[5]).toMatchStackFrame(["value", [], "89.js", 1, 1247, undefined]);
+            expect(stackFrames[6]).toMatchStackFrame(["value", [], "42.js", 1, 3311, undefined]);
+            expect(stackFrames[7]).toMatchStackFrame(["<unknown>", [], "42.js", 1, 822, undefined]);
+            expect(stackFrames[8]).toMatchStackFrame(["value", [], "42.js", 1, 2565, undefined]);
+            expect(stackFrames[9]).toMatchStackFrame(["value", [], "42.js", 1, 794, undefined]);
+            expect(stackFrames[10]).toMatchStackFrame(["value", [], "[native code]", undefined, undefined, "native"]);
+        });
+
+        it("should parses very simple JavaScriptCore errors", () => {
+            const stackFrames = parseStacktrace({ stack: "global code@stack_traces/test:83:55" } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["global code", [], "stack_traces/test", 83, 55, undefined]);
+        });
+
+        it("should parses React Native errors on Android", () => {
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE as unknown as Error);
+
+            expect(stackFrames).toHaveLength(8);
+            expect(stackFrames[0]).toMatchStackFrame([
+                "render",
+                [],
+                "/home/username/sample-workspace/sampleapp.collect.react/src/components/GpsMonitorScene.js",
+                78,
+                24,
+            ]);
+            expect(stackFrames[7]).toMatchStackFrame([
+                "this",
+                [],
+                "/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/native/ReactNativeBaseComponent.js",
+                74,
+                41,
+            ]);
+        });
+
+        it("should parses React Native errors on Android Production", () => {
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error);
+
+            expect(stackFrames).toHaveLength(37);
+            expect(stackFrames[0]).toMatchStackFrame(["value", [], "index.android.bundle", 12, 1917, undefined]);
+            expect(stackFrames[35]).toMatchStackFrame(["value", [], "index.android.bundle", 29, 927, undefined]);
+            expect(stackFrames[36]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined, "native"]);
+        });
+
+        it("should parses JavaScriptCore errors", () => {
+            const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_1 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(4);
+            expect(stackFrames[0]).toMatchStackFrame(["_exampleFunction", [], "/home/test/project/App.js", 125, 13, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["_depRunCallbacks", [], "/home/test/project/node_modules/dep/index.js", 77, 45, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "tryCallTwo",
+                [],
+                "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
+                45,
+                5,
+                undefined,
+            ]);
+            expect(stackFrames[3]).toMatchStackFrame([
+                "doResolve",
+                [],
+                "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
+                200,
+                13,
+                undefined,
+            ]);
+        });
     });
 
-    it("should parses node.js async errors available with version 12", () => {
-        const stackFrames = parseStacktrace(capturedErrors.NODE_12 as unknown as Error);
+    describe("general", () => {
+        it("should parse V8 entries with no location", () => {
+            const stackFrames = parseStacktrace({ stack: "Error\n at Array.forEach (native)" } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["promiseMe", [], "/home/xyz/hack/asyncnode.js", 11, 9]);
-        expect(stackFrames[1]).toMatchStackFrame(["async main", [], "/home/xyz/hack/asyncnode.js", 15, 13]);
-    });
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["Array.forEach", ["native"], undefined, undefined, undefined, "native"]);
+        });
 
-    it("should parses node.js errors with <anonymous> calls as well", () => {
-        const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
+        it("should parse V8 Error.stack entries with port numbers", () => {
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_36 as unknown as Error);
 
-        expect(stackFrames).toHaveLength(9);
-        expect(stackFrames[0]).toMatchStackFrame(["Spect.get", [], "C:\\projects\\spect\\src\\index.js", 161, 26]);
-        expect(stackFrames[2]).toMatchStackFrame(["(anonymous function).then", [], "C:\\projects\\spect\\src\\index.js", 165, 33]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
-        expect(stackFrames[6]).toMatchStackFrame(["process.<anonymous>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
-    });
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["dumpExceptionError", [], "http://localhost:8080/file.js", 41, 27]);
+        });
 
-    it("should parses JavaScriptCore errors", () => {
-        const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_1 as unknown as Error);
+        it("should handle newlines in Error stack messages", () => {
+            process.env.DEBUG = "true";
+            const stackFrames = parseStacktrace({
+                stack:
+                    "Error: Problem at this\nlocation. Error code:1234\n" +
+                    "    at http://path/to/file.js:47:22\n" +
+                    "    at foo (http://path/to/file.js:52:15)",
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(4);
-        expect(stackFrames[0]).toMatchStackFrame(["_exampleFunction", [], "/home/test/project/App.js", 125, 13, false, false, false]);
-        expect(stackFrames[1]).toMatchStackFrame(["_depRunCallbacks", [], "/home/test/project/node_modules/dep/index.js", 77, 45, false, false, false]);
-        expect(stackFrames[2]).toMatchStackFrame([
-            "tryCallTwo",
-            [],
-            "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
-            45,
-            5,
-            false,
-            false,
-            false,
-        ]);
-        expect(stackFrames[3]).toMatchStackFrame([
-            "doResolve",
-            [],
-            "/home/test/project/node_modules/react-native/node_modules/promise/lib/core.js",
-            200,
-            13,
-            false,
-            false,
-            false,
-        ]);
-    });
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
+        });
 
-    it("should parses an error in react native", () => {
-        const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_2 as unknown as Error);
+        it("should handle spaces in Node.js stacks", () => {
+            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_SPACES as unknown as Error);
 
-        expect(stackFrames).toHaveLength(11);
-        expect(stackFrames[0]).toMatchStackFrame(["s", [], "33.js", 1, 531, false, false, false]);
-        expect(stackFrames[1]).toMatchStackFrame(["b", [], "1959.js", 1, 1469, false, false, false]);
-        expect(stackFrames[2]).toMatchStackFrame(["onSocketClose", [], "2932.js", 1, 727, false, false, false]);
-        expect(stackFrames[3]).toMatchStackFrame(["value", [], "81.js", 1, 1505, false, false, false]);
-        expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "102.js", 1, 2956, false, false, false]);
-        expect(stackFrames[5]).toMatchStackFrame(["value", [], "89.js", 1, 1247, false, false, false]);
-        expect(stackFrames[6]).toMatchStackFrame(["value", [], "42.js", 1, 3311, false, false, false]);
-        expect(stackFrames[7]).toMatchStackFrame(["<unknown>", [], "42.js", 1, 822, false, false, false]);
-        expect(stackFrames[8]).toMatchStackFrame(["value", [], "42.js", 1, 2565, false, false, false]);
-        expect(stackFrames[9]).toMatchStackFrame(["value", [], "42.js", 1, 794, false, false, false]);
-        expect(stackFrames[10]).toMatchStackFrame(["value", [], "[native code]", undefined, undefined, true]);
-    });
+            expect(stackFrames).toHaveLength(8);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "/var/app/scratch/my project/index.js", 2, 9]);
+            expect(stackFrames[1]).toMatchStackFrame(["Object.<anonymous>", [], "/var/app/scratch/my project/index.js", 2, 9]);
+            expect(stackFrames[2]).toMatchStackFrame(["Module._compile", [], "internal/modules/cjs/loader.js", 774, 30]);
+            expect(stackFrames[3]).toMatchStackFrame(["Object.Module._extensions..js", [], "internal/modules/cjs/loader.js", 785, 10]);
+        });
 
-    it("should parses very simple JavaScriptCore errors", () => {
-        const stackFrames = parseStacktrace({ stack: "global code@stack_traces/test:83:55" } as unknown as Error);
+        it("should handle Node.js stacks with parentheses", () => {
+            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_PARENTHESES as unknown as Error);
 
-        expect(stackFrames).toHaveLength(1);
-        expect(stackFrames[0]).toMatchStackFrame(["global code", [], "stack_traces/test", 83, 55, false, false, false]);
-    });
+            expect(stackFrames).toHaveLength(7);
+            expect(stackFrames[0]).toMatchStackFrame(["Object.<anonymous>", [], "/var/app/scratch/my project (top secret)/index.js", 2, 9]);
+            expect(stackFrames[1]).toMatchStackFrame(["Module._compile", [], "internal/modules/cjs/loader.js", 774, 30]);
+            expect(stackFrames[2]).toMatchStackFrame(["Object.Module._extensions..js", [], "internal/modules/cjs/loader.js", 785, 10]);
+            expect(stackFrames[3]).toMatchStackFrame(["Module.load", [], "internal/modules/cjs/loader.js", 641, 32]);
+            expect(stackFrames[4]).toMatchStackFrame(["Function.Module._load", [], "internal/modules/cjs/loader.js", 556, 12]);
+            expect(stackFrames[5]).toMatchStackFrame(["Function.Module.runMain", [], "internal/modules/cjs/loader.js", 837, 10]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", [], "internal/main/run_main_module.js", 17, 11]);
+        });
 
-    it("should parses React Native errors on Android", () => {
-        const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE as unknown as Error);
+        it("should parses node error with space in path", () => {
+            const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE as unknown as Error);
 
-        expect(stackFrames).toHaveLength(8);
-        expect(stackFrames[0]).toMatchStackFrame([
-            "render",
-            [],
-            "/home/username/sample-workspace/sampleapp.collect.react/src/components/GpsMonitorScene.js",
-            78,
-            24,
-        ]);
-        expect(stackFrames[7]).toMatchStackFrame([
-            "this",
-            [],
-            "/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/native/ReactNativeBaseComponent.js",
-            74,
-            41,
-        ]);
-    });
+            expect(stackFrames).toHaveLength(10);
+            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", [], "C:\\project files\\spect\\src\\index.js", 161, 26]);
+            expect(stackFrames[1]).toMatchStackFrame(["Object.get", [], "C:\\project files\\spect\\src\\index.js", 43, 36]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "<anonymous>", undefined, undefined, "native"]);
+            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", [], "C:\\project files\\spect\\src\\index.js", 165, 33]);
+            expect(stackFrames[4]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", [], "internal/process/task_queues.js", 52, 5]);
+            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_176]);
+            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
+            expect(stackFrames[8]).toMatchStackFrame(["Function.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_856]);
+            expect(stackFrames[9]).toMatchStackFrame(["Function.<anonymous>", [], "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 296_555]);
+        });
 
-    it("should parses React Native errors on Android Production", () => {
-        const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error);
+        it("should parses node.js async errors available with version 12", () => {
+            const stackFrames = parseStacktrace(capturedErrors.NODE_12 as unknown as Error);
 
-        expect(stackFrames).toHaveLength(37);
-        expect(stackFrames[0]).toMatchStackFrame(["value", [], "index.android.bundle", 12, 1917, false, false, false]);
-        expect(stackFrames[35]).toMatchStackFrame(["value", [], "index.android.bundle", 29, 927, false, false, false]);
-        expect(stackFrames[36]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined, true]);
-    });
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["promiseMe", [], "/home/xyz/hack/asyncnode.js", 11, 9]);
+            expect(stackFrames[1]).toMatchStackFrame(["async main", [], "/home/xyz/hack/asyncnode.js", 15, 13]);
+        });
 
-    it("should parses anonymous sources", () => {
-        const stackFrames = parseStacktrace({
-            stack: `x
+        it("should parses node.js errors with <anonymous> calls as well", () => {
+            const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
+
+            expect(stackFrames).toHaveLength(10);
+            expect(stackFrames[0]).toMatchStackFrame(["Spect.get", [], "C:\\projects\\spect\\src\\index.js", 161, 26]);
+            expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", [], "C:\\projects\\spect\\src\\index.js", 165, 33]);
+            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
+            expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", [], "C:\\projects\\spect\\node_modules\\esm\\esm.js", 1, 34_506]);
+        });
+
+        it("should parses anonymous sources", () => {
+            const stackFrames = parseStacktrace({
+                stack: `x
           at new <anonymous> (http://www.example.com/test.js:2:1
           at <anonymous>:1:2`,
-        } as unknown as Error);
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(2);
-        expect(stackFrames[0]).toMatchStackFrame(["new <anonymous>", [], "http://www.example.com/test.js", 2, 1]);
-        expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "<anonymous>", 1, 2]);
-    });
+            expect(stackFrames).toHaveLength(2);
+            expect(stackFrames[0]).toMatchStackFrame(["new <anonymous>", [], "http://www.example.com/test.js", 2, 1]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "<anonymous>", 1, 2, "native"]);
+        });
 
-    it("should parses node.js errors", () => {
-        const stackFrames = parseStacktrace({
-            stack: `ReferenceError: test is not defined
+        it("should parses node.js errors", () => {
+            const stackFrames = parseStacktrace({
+                stack: `ReferenceError: test is not defined
           at repl:1:2
           at REPLServer.self.eval (repl.js:110:21)
           at Interface.<anonymous> (repl.js:239:12)
           at Interface.EventEmitter.emit (events.js:95:17)
           at emitKey (readline.js:1095:12)`,
-        } as unknown as Error);
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(5);
-        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "repl", 1, 2]);
-        expect(stackFrames[1]).toMatchStackFrame(["REPLServer.self.eval", [], "repl.js", 110, 21]);
-        expect(stackFrames[2]).toMatchStackFrame(["Interface.<anonymous>", [], "repl.js", 239, 12]);
-        expect(stackFrames[3]).toMatchStackFrame(["Interface.EventEmitter.emit", [], "events.js", 95, 17]);
-        expect(stackFrames[4]).toMatchStackFrame(["emitKey", [], "readline.js", 1095, 12]);
+            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "repl", 1, 2]);
+            expect(stackFrames[1]).toMatchStackFrame(["REPLServer.self.eval", [], "repl.js", 110, 21]);
+            expect(stackFrames[2]).toMatchStackFrame(["Interface.<anonymous>", [], "repl.js", 239, 12]);
+            expect(stackFrames[3]).toMatchStackFrame(["Interface.EventEmitter.emit", [], "events.js", 95, 17]);
+            expect(stackFrames[4]).toMatchStackFrame(["emitKey", [], "readline.js", 1095, 12]);
 
-        const stackFrames2 = parseStacktrace({
-            stack: `ReferenceError: breakDown is not defined
+            const stackFrames2 = parseStacktrace({
+                stack: `ReferenceError: breakDown is not defined
           at null._onTimeout (repl:1:25)
           at Timer.listOnTimeout [as ontimeout] (timers.js:110:15)`,
-        } as unknown as Error);
+            } as unknown as Error);
 
-        expect(stackFrames2).toHaveLength(2);
-        expect(stackFrames2[0]).toMatchStackFrame(["null._onTimeout", [], "repl", 1, 25]);
-        expect(stackFrames2[1]).toMatchStackFrame(["Timer.listOnTimeout [as ontimeout]", [], "timers.js", 110, 15]);
-    });
+            expect(stackFrames2).toHaveLength(2);
+            expect(stackFrames2[0]).toMatchStackFrame(["null._onTimeout", [], "repl", 1, 25]);
+            expect(stackFrames2[1]).toMatchStackFrame(["Timer.listOnTimeout [as ontimeout]", [], "timers.js", 110, 15]);
+        });
 
-    it("should parse TypeError stack", () => {
-        const stackFrames = parseStacktrace(new TypeError("foo"));
+        it("should parse TypeError stack", () => {
+            const stackFrames = parseStacktrace(new TypeError("foo"));
 
-        expect(stackFrames).toHaveLength(10);
-    });
+            expect(stackFrames).toHaveLength(10);
+        });
 
-    it("should parse Custom Error stack", () => {
-        class xxx1Error extends TypeError {}
+        it("should parse Custom Error stack", () => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            class xxx1Error extends TypeError {}
+            // eslint-disable-next-line new-cap
+            const stackFrames = parseStacktrace(new xxx1Error("foo"));
 
-        const stackFrames = parseStacktrace(new xxx1Error("foo"));
+            expect(stackFrames).toHaveLength(10);
+        });
 
-        expect(stackFrames).toHaveLength(10);
-    });
-
-    it("should parse Travis Error", () => {
-        const stackFrames = parseStacktrace({
-            stack: `Error: foo
+        it("should parse Travis Error", () => {
+            const stackFrames = parseStacktrace({
+                stack: `Error: foo
      at extensions.(anonymous function) (a.js:13:11)`,
-        } as unknown as Error);
+            } as unknown as Error);
 
-        expect(stackFrames).toHaveLength(1);
-        expect(stackFrames[0]).toMatchStackFrame(["extensions.(anonymous function)", [], "a.js", 13, 11]);
-    });
+            expect(stackFrames).toHaveLength(1);
+            expect(stackFrames[0]).toMatchStackFrame(["extensions.(anonymous function)", [], "a.js", 13, 11]);
+        });
 
-    it("should parse a eval Error", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,no-eval
-        const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
+        it("should parse a eval Error", () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,no-eval
+            const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
 
-        expect(stackFrames).toHaveLength(10);
-        expect(stackFrames[0]).toMatchStackFrame(["eval", [], `${__dirname}/parse-stacktrace.test.ts`, 605, 45, false, true, undefined, ["eval", [], "<anonymous>", 1, 1, false, true]]);
-    });
+            expect(stackFrames).toHaveLength(10);
+            expect(stackFrames[0]).toMatchStackFrame([
+                "eval",
+                [],
+                `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`,
+                611,
+                45,
+                "eval",
+                ["<anonymous>", [], "<anonymous>", 1, 1, "eval"],
+            ]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 748, 49]);
+        });
 
-    it("should parse regular expression in error stacktrace", () => {
-        process.env.DEBUG = "true";
-        const stackFrames = parseStacktrace({
-            stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
+        it("should parses PhantomJS 1.19 error", () => {
+            const stackFrames = parseStacktrace(capturedErrors.PHANTOMJS_1_19 as unknown as Error);
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "file:///path/to/file.js", 878, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 4283, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 4287, undefined]);
+        });
 
-If you want to write it to the DOM, pass a string instead: %s=\"%s\" or %s={value.toString()}.
+        it("should parse regular expression in error stacktrace", () => {
+            process.env.DEBUG = "true";
+            const stackFrames = parseStacktrace({
+                stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
+
+If you want to write it to the DOM, pass a string instead: %s="%s" or %s={value.toString()}.
 
 If you used to conditionally omit it with %s={condition && value}, pass %s={condition ? value : undefined} instead.%s", "false", "loading", "loading", "false", "loading", "loading", "loading", "
     in button (created by Context.Consumer)
@@ -666,10 +825,85 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                                                                                                                                                                                             in I18nProvider (at I18nLoader.tsx:19)
                                                                                                                                                                                                 in I18nLoader (at AppProviders.tsx:23)
                                                                                                                                                                                                     in AppProviders (at App.tsx:28)
-                                                                                                                                                                                                        in App (at src/index.tsx:30)") at console.error (http://localhost:3340/__cypress/runner/cypress_runner.js:140661:26)
+                                                                                                                                                                                                        in App (at src/index.tsx:30) at console.error (http://localhost:3340/__cypress/runner/cypress_runner.js:140661:26)
 `,
-        } as unknown as Error);
+            } as unknown as Error);
 
-        console.log(stackFrames);
+            expect(stackFrames).toHaveLength(38);
+            expect(stackFrames[0]).toMatchStackFrame(["StyledButton", [], "overrideOptional.tsx", 16, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["Overridable(StyledButton)", [], "Button.tsx", 108, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["StyledButton", [], "Button.tsx", 51, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["ButtonWithArrow", [], "overrideOptional.tsx", 16, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["ButtonPrimary", [], "overrideOptional.tsx", 16, undefined]);
+            expect(stackFrames[5]).toMatchStackFrame(["Overridden(Styled(Overridable(Button)))", [], "Submit.tsx", 7, undefined]);
+            expect(stackFrames[6]).toMatchStackFrame(["Submit", [], "AddToCartForm.tsx", 98, undefined]);
+            expect(stackFrames[7]).toMatchStackFrame(["Form", [], "AddToCartForm.tsx", 97, undefined]);
+            expect(stackFrames[36]).toMatchStackFrame(["AppProviders", [], "App.tsx", 28, undefined]);
+            expect(stackFrames[37]).toMatchStackFrame(["App", [], "src/index.tsx", 30, undefined]);
+        });
+    });
+
+    describe("opera", () => {
+        // Release 15/10/2014
+        it("should parse Opera 25 Error stacks", () => {
+            const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
+
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", [], "http://path/to/file.js", 47, 22]);
+            expect(stackFrames[1]).toMatchStackFrame(["foo", [], "http://path/to/file.js", 52, 15]);
+            expect(stackFrames[2]).toMatchStackFrame(["bar", [], "http://path/to/file.js", 108, 168]);
+        });
+    });
+
+    describe("webkit/safari", () => {
+        it("should match stack trace #1", () => {
+            const stackFrames = parseStacktrace({
+                stack:
+                    "AssertionError@http://localhost:8000/node_modules/chai/chai.js:9449:22\n" +
+                    "http://localhost:8000/node_modules/chai/chai.js:239:31\n" +
+                    "assertEqual@http://localhost:8000/node_modules/chai/chai.js:1387:18\n" +
+                    "methodWrapper@http://localhost:8000/node_modules/chai/chai.js:7824:30\n" +
+                    "[native code]\n" +
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    "http://localhost:8000/mytest.test.js?wtr-session-id=05c3d9b6-ea4b-467b-ac23-de275675ee27:13:46\n",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(6);
+            expect(stackFrames[0]).toMatchStackFrame(["AssertionError", [], "http://localhost:8000/node_modules/chai/chai.js", 9449, 22]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", [], "http://localhost:8000/node_modules/chai/chai.js", 239, 31]);
+            expect(stackFrames[2]).toMatchStackFrame(["assertEqual", [], "http://localhost:8000/node_modules/chai/chai.js", 1387, 18]);
+            expect(stackFrames[3]).toMatchStackFrame(["methodWrapper", [], "http://localhost:8000/node_modules/chai/chai.js", 7824, 30]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[5]).toMatchStackFrame([
+                "<unknown>",
+                [],
+                // eslint-disable-next-line no-secrets/no-secrets
+                "http://localhost:8000/mytest.test.js?wtr-session-id=05c3d9b6-ea4b-467b-ac23-de275675ee27",
+                13,
+                46,
+            ]);
+        });
+
+        it("should match stack trace of module execution", () => {
+            const stackFrames = parseStacktrace({
+                stack:
+                    "module code@http://localhost:8000/my-test.js:1:16\n" +
+                    "evaluate@[native code]\n" +
+                    "moduleEvaluation@[native code]\n" +
+                    "moduleEvaluation@[native code]\n" +
+                    "[native code]\n" +
+                    "promiseReactionJobWithoutPromise@[native code]\n" +
+                    "promiseReactionJob@[native code]",
+            } as unknown as Error);
+
+            expect(stackFrames).toHaveLength(7);
+            expect(stackFrames[0]).toMatchStackFrame(["module code", [], "http://localhost:8000/my-test.js", 1, 16]);
+            expect(stackFrames[1]).toMatchStackFrame(["evaluate", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[2]).toMatchStackFrame(["moduleEvaluation", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[3]).toMatchStackFrame(["moduleEvaluation", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[4]).toMatchStackFrame(["<unknown>", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[5]).toMatchStackFrame(["promiseReactionJobWithoutPromise", [], "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[6]).toMatchStackFrame(["promiseReactionJob", [], "[native code]", undefined, undefined, "native"]);
+        });
     });
 });

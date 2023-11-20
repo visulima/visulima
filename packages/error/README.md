@@ -84,9 +84,14 @@ console.log(frame);
 
 ## Stacktrace
 
-> Stacktrace parsing only supports stack strings newer than Node.js v18.0.0.
->
 > Browser older than 6 years are not supported.
+
+Currently supported browsers/platforms:
+
+- Firefox
+- Chrome
+- Edge
+- Node / Node V8
 
 ```ts
 import { parseStack } from "@visulima/error";

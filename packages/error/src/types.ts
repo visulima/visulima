@@ -46,18 +46,24 @@ export type CodeFrameOptions = {
     linesBelow?: number;
 };
 
+export type TraceType = "eval" | "internal" | "native" | undefined;
+
 export interface Trace extends Partial<SourceCode> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args: any[];
     column?: number | undefined;
     evalOrigin?: Trace | undefined;
     file: string | undefined;
-    isEval: boolean;
-    isInternal?: boolean | undefined;
-    isNative: boolean;
     line?: number | undefined;
     methodName: string | undefined;
+    raw: string;
+    sourceOrigin?: {
+        column?: number | undefined;
+        file?: string | undefined;
+        line?: number | undefined;
+    } | undefined;
     sourcemap?: TraceMap | undefined;
+    type?: TraceType;
 }
 
 export interface SourceCode {
