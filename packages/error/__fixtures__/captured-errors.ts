@@ -9,6 +9,14 @@ export default {
             "    at bar (http://path/to/file.js:108:168)",
     },
 
+    CHROME_BRACES_URL: {
+        message: "bad",
+        name: "Error",
+        stack: `Error: bad
+          at something (http://localhost:5000/(some)/(thing)/index.html:20:16)
+          at more (http://localhost:5000/(some)/(thing)/index.html:25:7)`,
+    },
+
     CHROME_15: {
         arguments: ["undef"],
         message: "Object #<Object> has no method 'undef'",
@@ -26,7 +34,18 @@ export default {
         stack:
             "Error: Default error\n" +
             "    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n" +
-            "    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)",
+            "    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)\n" +
+            "    at I.e.fn.(anonymous function) [as index] (http://localhost:8080/file.js:10:3651)",
+    },
+
+    CHROME73_NATIVE_CODE_EXCEPTION: {
+        message: "test",
+        name: "Error",
+        stack: `Error: test
+            at fooIterator (http://localhost:5000/test:20:17)
+            at Array.map (<anonymous>)
+            at foo (http://localhost:5000/test:19:19)
+            at http://localhost:5000/test:24:7`,
     },
 
     CHROME_46: {
@@ -78,6 +97,28 @@ export default {
         columnNumber: 9,
     },
 
+    FIREFOX_66_NATIVE_CODE_EXCEPTION: {
+        message: "test",
+        name: "Error",
+        stack: `fooIterator@http://localhost:5000/test:20:17
+            foo@http://localhost:5000/test:19:19
+            @http://localhost:5000/test:24:7`,
+    },
+
+    FIREFOX_66_EVAL_EXCEPTION: {
+        message: "aha",
+        name: "Error",
+        stack: `aha@http://localhost:5000/:19:13
+            callAnotherThing@http://localhost:5000/:20:15
+            callback@http://localhost:5000/:25:7
+            test/<@http://localhost:5000/:34:7
+            test@http://localhost:5000/:33:23
+            @http://localhost:5000/ line 39 > eval:1:1
+            aha@http://localhost:5000/:39:5
+            testMethod@http://localhost:5000/:44:7
+            @http://localhost:5000/:50:19`,
+    },
+
     IE_11: {
         message: "Unable to get property 'undef' of undefined or null reference",
         name: "TypeError",
@@ -101,6 +142,32 @@ export default {
             "  at eval code (eval code:4:18)\n" +
             "  at speak (http://localhost:8080/file.js:25:17)\n" +
             "  at Global code (http://localhost:8080/file.js:32:9)",
+    },
+
+    EDGE_44_NATIVE_CODE_EXCEPTION: {
+        message: "test",
+        name: "Error",
+        stack: `Error: test
+            at fooIterator (http://localhost:5000/test:20:11)
+            at Array.prototype.map (native code)
+            at foo (http://localhost:5000/test:19:9)
+            at Global code (http://localhost:5000/test:24:7)`,
+    },
+
+    EDGE_44_EVAL_EXCEPTION: {
+        message: "aha",
+        name: "Error",
+        stack: `Error: bad
+            at aha (http://localhost:5000/:19:7)
+            at callAnotherThing (http://localhost:5000/:18:6)
+            at callback (http://localhost:5000/:25:7)
+            at Anonymous function (http://localhost:5000/:34:7)
+            at Array.prototype.map (native code)
+            at test (http://localhost:5000/:33:5)
+            at eval code (eval code:1:1)
+            at aha (http://localhost:5000/:39:5)
+            at Foo.prototype.testMethod (http://localhost:5000/:44:7)
+            at Anonymous function (http://localhost:5000/:50:8)`,
     },
 
     NODE_WITH_SPACES: {
@@ -185,6 +252,22 @@ export default {
             "at index.js:23\n",
     },
 
+    CHROME_73_EVAL_EXCEPTION: {
+        message: "bad",
+        name: "Error",
+        stack: `Error: bad
+            at Object.aha (http://localhost:5000/:19:13)
+            at callAnotherThing (http://localhost:5000/:20:16)
+            at Object.callback (http://localhost:5000/:25:7)
+            at http://localhost:5000/:34:17
+            at Array.map (<anonymous>)
+            at test (http://localhost:5000/:33:23)
+            at eval (eval at aha (http://localhost:5000/:37:5), <anonymous>:1:1)
+            at aha (http://localhost:5000/:39:5)
+            at Foo.testMethod (http://localhost:5000/:44:7)
+            at http://localhost:5000/:50:19`,
+    },
+
     CHROME_76: {
         message: "BEEP BEEP",
         name: "Error",
@@ -204,6 +287,81 @@ export default {
             "   at TESTTESTTEST.proxiedMethod(webpack:///./~/react-proxy/modules/createPrototypeProxy.js?:44:30)\n" +
             // { devtool: source-map }:
             "   at Module../pages/index.js (C:\\root\\server\\development\\pages\\index.js:182:7)",
+    },
+
+    CHROME_ELECTRON_RENDERER: {
+        message: "Cannot read property 'error' of undefined",
+        name: "TypeError",
+        stack: `TypeError: Cannot read property 'error' of undefined
+            at TESTTESTTEST.someMethod (C:\\Users\\user\\path\\to\\file.js:295:108)`,
+    },
+
+    FIREFOX_3: {
+        fileName: "http://127.0.0.1:8000/js/stacktrace.js",
+        lineNumber: 44,
+        message: "this.undef is not a function",
+        name: "TypeError",
+        stack:
+            "()@http://127.0.0.1:8000/js/stacktrace.js:44\n" +
+            "(null)@http://127.0.0.1:8000/js/stacktrace.js:31\n" +
+            "printStackTrace()@http://127.0.0.1:8000/js/stacktrace.js:18\n" +
+            "bar(1)@http://127.0.0.1:8000/js/file.js:13\n" +
+            "bar(2)@http://127.0.0.1:8000/js/file.js:16\n" +
+            "foo()@http://127.0.0.1:8000/js/file.js:20\n" +
+            "@http://127.0.0.1:8000/js/file.js:24\n" +
+            "",
+    },
+
+    FIREFOX_7: {
+        fileName: "file:///G:/js/stacktrace.js",
+        lineNumber: 44,
+        stack:
+            "()@file:///G:/js/stacktrace.js:44\n" +
+            "(null)@file:///G:/js/stacktrace.js:31\n" +
+            "printStackTrace()@file:///G:/js/stacktrace.js:18\n" +
+            "bar(1)@file:///G:/js/file.js:13\n" +
+            "bar(2)@file:///G:/js/file.js:16\n" +
+            "foo()@file:///G:/js/file.js:20\n" +
+            "@file:///G:/js/file.js:24\n" +
+            "",
+    },
+
+    FIREFOX_14: {
+        message: "x is null",
+        stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:1\n" + "",
+        fileName: "http://path/to/file.js",
+        lineNumber: 48,
+    },
+
+    FIREFOX_31: {
+        message: "Default error",
+        name: "Error",
+        stack: "foo@http://path/to/file.js:41:13\n" + "bar@http://path/to/file.js:1:1\n" + "",
+        fileName: "http://path/to/file.js",
+        lineNumber: 41,
+        columnNumber: 12,
+    },
+
+    FIREFOX_43_NESTED_EVAL: {
+        columnNumber: 30,
+        fileName: "http://localhost:8080/file.js line 25 > eval line 2 > eval",
+        lineNumber: 1,
+        message: "message string",
+        stack:
+            "baz@http://localhost:8080/file.js line 26 > eval line 2 > eval:1:30\n" +
+            "foo@http://localhost:8080/file.js line 26 > eval:2:96\n" +
+            "@http://localhost:8080/file.js line 26 > eval:4:18\n" +
+            "speak@http://localhost:8080/file.js:26:17\n" +
+            "@http://localhost:8080/file.js:33:9",
+    },
+
+    FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN: {
+        message: "Dummy error",
+        name: "Error",
+        stack: 'obj["@fn"]@Scratchpad/1:10:29\n' + "@Scratchpad/1:11:1\n" + "",
+        fileName: "Scratchpad/1",
+        lineNumber: 10,
+        columnNumber: 29,
     },
 
     FIREFOX_43_EVAL: {
@@ -273,6 +431,13 @@ export default {
         number: -2146823279,
     },
 
+    CHROMIUM_EMBEDDED_FRAMEWORK_CUSTOM_SCHEME: {
+        message: "message string",
+        name: "Error",
+        stack: `Error: message string
+            at examplescheme://examplehost/cd351f7250857e22ceaa.worker.js:70179:15`,
+    },
+
     CHROME_48_BLOB: {
         message: "Error: test",
         name: "Error",
@@ -297,6 +462,15 @@ export default {
             "at eval (eval at speak (http://localhost:8080/file.js:21:17), <anonymous>:4:18)\n" +
             "at Object.speak (http://localhost:8080/file.js:21:17)\n" +
             "at http://localhost:8080/file.js:31:13\n",
+    },
+
+    CHROME_109_ASYNC_URL: {
+        message: "bad",
+        name: "Error",
+        stack: `Error: bad
+          at callAnotherThing (http://localhost:5000/:20:16)
+          at Object.callback (async http://localhost:5000/:25:7)
+          at test (http://localhost:5000/:33:23)`,
     },
 
     PHANTOMJS_1_19: {
@@ -385,5 +559,121 @@ export default {
             "value@42.js:1:2565\n" +
             "value@42.js:1:794\n" +
             "value@[native code]",
+    },
+
+    REACT_NATIVE_V8_EXCEPTION: {
+        message: "Manually triggered crash to test Sentry reporting",
+        name: "Error",
+        stack: `Error: Manually triggered crash to test Sentry reporting
+          at Object.onPress(index.android.bundle:2342:3773)
+          at s.touchableHandlePress(index.android.bundle:214:2048)
+          at s._performSideEffectsForTransition(index.android.bundle:198:9608)
+          at s._receiveSignal(index.android.bundle:198:8309)
+          at s.touchableHandleResponderRelease(index.android.bundle:198:5615)
+          at Object.y(index.android.bundle:93:571)
+          at P(index.android.bundle:93:714)`,
+    },
+
+    REACT_NATIVE_EXPO_EXCEPTION: {
+        message: "Test Error Expo",
+        name: "Error",
+        stack: `onPress@/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3:595:658
+          value@/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3:221:7656
+          onResponderRelease@/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3:221:5666
+          p@/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3:96:385
+          forEach@[native code]`,
+    },
+
+    REACT_INVARIANT_VIOLATION_EXCEPTION: {
+        message:
+            "Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=object%20with%20keys%20%7B%7D&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",
+        name: "Invariant Violation",
+        stack: `Invariant Violation: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=object%20with%20keys%20%7B%7D&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+            at http://localhost:5000/static/js/foo.chunk.js:1:21738
+            at a (http://localhost:5000/static/js/foo.chunk.js:1:21841)
+            at ho (http://localhost:5000/static/js/foo.chunk.js:1:68735)
+            at f (http://localhost:5000/:1:980)`,
+    },
+
+    REACT_PRODUCTION_ERROR: {
+        message:
+            "Minified React error #200; visit https://reactjs.org/docs/error-decoder.html?invariant=200 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        name: "Error",
+        stack: `Error: Minified React error #200; visit https://reactjs.org/docs/error-decoder.html?invariant=200 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+          at http://localhost:5000/static/js/foo.chunk.js:1:21738
+          at a (http://localhost:5000/static/js/foo.chunk.js:1:21841)
+          at ho (http://localhost:5000/static/js/foo.chunk.js:1:68735)
+          at f (http://localhost:5000/:1:980)`,
+    },
+
+    SAFARI_6: {
+        message: "'null' is not an object (evaluating 'x.undef')",
+        stack: "@http://path/to/file.js:48\n" + "dumpException3@http://path/to/file.js:52\n" + "onclick@http://path/to/file.js:82\n" + "[native code]",
+        line: 48,
+        sourceURL: "http://path/to/file.js",
+    },
+
+    SAFARI_7: {
+        message: "'null' is not an object (evaluating 'x.undef')",
+        name: "TypeError",
+        stack: "http://path/to/file.js:48:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:107",
+        line: 47,
+        sourceURL: "http://path/to/file.js",
+    },
+
+    SAFARI_8: {
+        message: "null is not an object (evaluating 'x.undef')",
+        name: "TypeError",
+        stack: "http://path/to/file.js:47:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:23",
+        line: 47,
+        column: 22,
+        sourceURL: "http://path/to/file.js",
+    },
+
+    SAFARI_8_EVAL: {
+        message: "Can't find variable: getExceptionProps",
+        name: "ReferenceError",
+        stack: "eval code\n" + "eval@[native code]\n" + "foo@http://path/to/file.js:58:21\n" + "bar@http://path/to/file.js:109:91",
+        line: 1,
+        column: 18,
+    },
+
+    SAFARI_9_NESTED_EVAL: {
+        column: 39,
+        line: 1,
+        message: "message string",
+        stack:
+            "baz\n" +
+            "foo\n" +
+            "eval code\n" +
+            "eval@[native code]\n" +
+            "speak@http://localhost:8080/file.js:26:21\n" +
+            "global code@http://localhost:8080/file.js:33:18",
+    },
+
+    SAFARI_12_NATIVE_CODE_EXCEPTION: {
+        message: "test",
+        name: "Error",
+        stack: `fooIterator@http://localhost:5000/test:20:26
+            map@[native code]
+            foo@http://localhost:5000/test:19:22
+            global code@http://localhost:5000/test:24:10`,
+    },
+
+    SAFARI12_EVAL_EXCEPTION: {
+        message: "aha",
+        name: "Error",
+        stack: `aha@http://localhost:5000/:19:22
+            aha@[native code]
+            callAnotherThing@http://localhost:5000/:20:16
+            callback@http://localhost:5000/:25:23
+            http://localhost:5000/:34:25
+            map@[native code]
+            test@http://localhost:5000/:33:26
+            eval code
+            eval@[native code]
+            aha@http://localhost:5000/:39:9
+            testMethod@http://localhost:5000/:44:10
+            http://localhost:5000/:50:29`,
     },
 };

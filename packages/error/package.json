@@ -14,7 +14,8 @@
         "stack-trace",
         "trace",
         "source-map",
-        "parser"
+        "parser",
+        "v8"
     ],
     "homepage": "https://www.visulima.com/docs/package/error",
     "repository": {

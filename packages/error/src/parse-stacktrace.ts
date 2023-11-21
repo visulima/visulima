@@ -1,9 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
-
 import type { TraceMap } from "@jridgewell/trace-mapping";
 
 import loadSourceMap from "./load-source-map";
-import type { SourceCode, Trace, TraceType } from "./types";
+import type { Trace, TraceType } from "./types";
 
 const debugLog = (message: string, ...arguments_: unknown[]): void => {
     if (process.env["DEBUG"] && String(process.env["DEBUG"]) === "true") {
@@ -13,30 +11,27 @@ const debugLog = (message: string, ...arguments_: unknown[]): void => {
 };
 
 const UNKNOWN_FUNCTION = "<unknown>";
-const MAX_CODE_LINES = 6;
 
 // at <SomeFramework>
-const CHROME_IE_NATIVE_NO_LINE = /^at\s(<.*>)$/;
 // at <SomeFramework>:123:39
-const CHROME_IE_NATIVE = /^\s*at\s(<.*>):(\d+):(\d+)$/;
-const CHROME_IE_DETECTOR = /\s*at\s.+/;
+// -----------------
 // at about:blank:1:7
 // at index.js:23
 // >= Chrome 99
 // at /projects/foo.test.js:689:1 <- /projects/foo.test.js:10:1
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-misleading-capturing-group,regexp/no-super-linear-backtracking
-const CHROME_BLANK = /\s*at\s(.*):(\d+):?(\d+)?$/;
+// -----------------
 // at bar (<anonymous>:1:19 <- <anonymous>:2:3)
-const CHROME_IE_REGEX =
+// -----------------
+// Chromium based browsers: Chrome, Brave, new Opera, new Edge
+const CHROMIUM_REGEX =
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
-    /^\s*at\s(.*?)\s?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-zA-Z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/;
+    /^\s*at (?:(.+?\)(?: \[.+\])?|.*?) ?\((?:address at )?)?(?:async )?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 // eslint-disable-next-line security/detect-unsafe-regex
-const CHROME_EVAL_REGEX = /\((\S*):(\d+):(\d+)\)|\((\S*):?(\d+)?\)(,\s)?(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
-const CHROME_NESTED_EVAL_REGEX = /\sat\s(\S+)\s\((.*)\)\)?,?\s?(<.*>):(\d+):(\d+)\)?/;
+const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // foo.bar.js:123:39
 // foo.bar.js:123:39 <- original.js:123:34
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
-const CHROME_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
+const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
 
 // >= Chrome 88
 // spy() at Component.Foo [as constructor] (original.js:123:34)
@@ -48,7 +43,7 @@ const CHROME_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
 // in AppProviders (at App.tsx:28)
 // at Module.load (internal/modules/cjs/loader.js:641:32)
 // eslint-disable-next-line security/detect-unsafe-regex
-const NODE_REGEX = /^\s*(at|in)\s(?:([^\\/]+(?:\s\[as\s\S+\])?)\s\(?)?\((.*?):(\d+)(?::(\d+))?\)?\s*$/;
+const NODE_REGEX = /\s*(at|in)\s(?:([^\\/]+(?:\s\[as\s\S+\])?)\s\(?)?\((.*?):(\d+)(?::(\d+))?\)?\s*$/;
 const NODE_NESTED_REGEX = /in\s(.*)\s\(at\s(.+)\)\sat/;
 
 // eslint-disable-next-line security/detect-unsafe-regex
@@ -59,43 +54,46 @@ const FIREFOX_WEBKIT_REGEX = /(\S[^\s[]*\[.*\]|.*?)@(.*):(\d+):(\d+)/;
 const WEBKIT_ADDRESS_UNNAMED_REGEX = /^(http(s)?:\/\/.*):(\d+):(\d+)$/;
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-super-linear-backtracking
 const REACT_ANDROID_NATIVE_REGEX = /^(?:.*@)?(.*):(\d+):(\d+)$/;
+// eslint-disable-next-line security/detect-unsafe-regex
+const GECKO_EVAL_REGEX = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
-const readFileContext = (path: string | undefined): string => {
-    if (!path) {
-        return "";
-    }
+// Used to sanitize webpack (error: *) wrapped stack errors
+const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (existsSync(path)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        return readFileSync(path, "utf8");
-    }
+/**
+ * Safari web extensions, starting version unknown, can produce "frames-only" stacktraces.
+ * What it means, is that instead of format like:
+ *
+ * Error: wat
+ *   at function@url:row:col
+ *   at function@url:row:col
+ *   at function@url:row:col
+ *
+ * it produces something like:
+ *
+ *   function@url:row:col
+ *   function@url:row:col
+ *   function@url:row:col
+ *
+ * Because of that, it won't be captured by `chrome` RegExp and will fall into `Gecko` branch.
+ * This function is extracted so that we can use it in both places without duplicating the logic.
+ * Unfortunately "just" changing RegExp is too complicated now and making it pass all tests
+ * and fix this case seems like an impossible, or at least way too time-consuming task.
+ */
+const extractSafariExtensionDetails = (function_: string, url: string): [string, string] => {
+    const isSafariExtension = function_.includes("safari-extension");
+    const isSafariWebExtension = function_.includes("safari-web-extension");
 
-    return "";
-};
-
-const getSourceCode = (path: string | undefined, line: number): SourceCode | undefined => {
-    const context = readFileContext(path);
-
-    if (!context) {
-        return undefined;
-    }
-
-    const linesOfCode: string[] = context.split("\n");
-
-    const code: string = linesOfCode[lineNumber - 1] as string;
-    const preCode: string[] = linesOfCode.slice(lineNumber - MAX_CODE_LINES, lineNumber - 1);
-    const postCode: string[] = linesOfCode.slice(lineNumber, lineNumber + MAX_CODE_LINES);
-
-    return {
-        code,
-        postCode,
-        preCode,
-    };
+    return isSafariExtension || isSafariWebExtension
+        ? [
+              function_.includes("@") ? (function_.split("@")[0] as string) : UNKNOWN_FUNCTION,
+              isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
+          ]
+        : [function_, url];
 };
 
 const parseMapped = (trace: Trace, maybeMapped: string) => {
-    const match = CHROME_MAPPED.exec(maybeMapped);
+    const match = CHROMIUM_MAPPED.exec(maybeMapped);
 
     if (match) {
         // eslint-disable-next-line no-param-reassign,prefer-destructuring
@@ -104,17 +102,6 @@ const parseMapped = (trace: Trace, maybeMapped: string) => {
         trace.line = +(<string>match[2]);
         // eslint-disable-next-line no-param-reassign
         trace.column = +(<string>match[3]);
-
-        const sourceOrigin = {
-            column: match[7] ? +match[7] : undefined,
-            file: match[5],
-            line: match[6] ? +match[6] : undefined,
-        };
-
-        if (sourceOrigin.file) {
-            // eslint-disable-next-line no-param-reassign
-            trace.sourceOrigin = sourceOrigin;
-        }
     }
 };
 
@@ -127,7 +114,6 @@ const parseNode = (line: string): Trace | undefined => {
         const split = (nestedNode[2] as string).split(":");
 
         return {
-            args: [],
             column: split[2] ? +split[2] : undefined,
             file: split[0],
             line: split[1] ? +split[1] : undefined,
@@ -144,7 +130,6 @@ const parseNode = (line: string): Trace | undefined => {
         debugLog(`parse node error stack line: "${line}"`, `found: ${JSON.stringify(node)}`);
 
         const trace = {
-            args: [],
             column: node[5] ? +node[5] : undefined,
             file: node[3] ? node[3].replace(/at\s/, "") : undefined,
             line: node[4] ? +node[4] : undefined,
@@ -162,150 +147,60 @@ const parseNode = (line: string): Trace | undefined => {
     return undefined;
 };
 
-const parseNestedEval = (line: string): Trace | undefined => {
-    let parts: RegExpExecArray | null = CHROME_NESTED_EVAL_REGEX.exec(line);
-
-    if (!parts) {
-        const subMatch = CHROME_EVAL_REGEX.exec(line as string);
-
-        if (subMatch) {
-            parts = [] as unknown as RegExpExecArray;
-
-            parts[1] = "eval"; // methodName
-            parts[3] = <string>subMatch[1]; // url
-            parts[4] = <string>subMatch[2]; // line
-            parts[5] = <string>subMatch[3]; // column
-        }
-    }
-
-    debugLog(`parse chrome nested eval error stack line: "${line}"`, parts === null ? "not found" : `found: ${JSON.stringify(parts)}`);
-
-    if (!parts) {
-        return undefined;
-    }
-
-    return {
-        args: [],
-        column: parts[5] ? +parts[5] : undefined,
-        evalOrigin: parts[2] ? parseNestedEval(parts[2]) : undefined,
-        file: parts[3],
-        line: parts[4] ? +parts[4] : undefined,
-        methodName: parts[1],
-        raw: line,
-        type: "eval",
-    };
-};
-
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const parseChromeIe = (line: string): Trace | undefined => {
-    if (CHROME_IE_DETECTOR.test(line)) {
-        const nativeNoLine = CHROME_IE_NATIVE_NO_LINE.exec(line);
+const parseChromium = (line: string): Trace | undefined => {
+    const parts = CHROMIUM_REGEX.exec(line) as (string | undefined)[] | null;
 
-        if (nativeNoLine) {
-            debugLog(`parse chrome native no line error stack line: "${line}"`, `found: ${JSON.stringify(nativeNoLine)}`);
+    if (parts) {
+        debugLog(`parse chrome error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
-            return {
-                args: [],
-                column: undefined,
-                file: nativeNoLine[1],
-                line: undefined,
-                methodName: UNKNOWN_FUNCTION,
-                raw: line,
-                type: "native",
-            };
-        }
+        const isNative = parts[2] && parts[2].startsWith("native"); // start of line
+        const isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
 
-        const native = CHROME_IE_NATIVE.exec(line);
+        let evalOrigin: Trace | undefined;
 
-        if (native) {
-            debugLog(`parse chrome native error stack line: "${line}"`, `found: ${JSON.stringify(native)}`);
+        if (isEval) {
+            const subMatch = CHROMIUM_EVAL_REGEX.exec(line);
 
-            return {
-                args: [],
-                column: native[3] ? +native[3] : undefined,
-                file: native[1],
-                line: native[2] ? +native[2] : undefined,
-                methodName: UNKNOWN_FUNCTION,
-                raw: line,
-                type: "native",
-            };
-        }
+            if (subMatch) {
+                // can be index.js:123:39 or index.js:123 or index.js
+                const split = /(\S+):(\d+):(\d+)|(\S+):(\d+)$/.exec(subMatch[1] as string);
 
-        const parts = CHROME_IE_REGEX.exec(line);
+                if (split) {
+                    // throw out eval line/column and use top-most line/column number
+                    parts[2] = split[4] ?? split[1]; // url
+                    parts[3] = split[5] ?? split[2]; // line
+                    // eslint-disable-next-line prefer-destructuring
+                    parts[4] = split[3]; // column
+                }
 
-        if (parts) {
-            debugLog(`parse chrome error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
-
-            const isNative = parts[2] && parts[2].startsWith("native"); // start of line
-            const isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
-
-            let evalOrigin: Trace | undefined;
-
-            if (isEval) {
-                const isNestedEval = parts[2] && parts[2].startsWith("eval at"); // start of line
-
-                const subMatch = CHROME_EVAL_REGEX.exec(line);
-
-                debugLog(`parse chrome eval error stack line: "${line}"`, subMatch === null ? "not found" : `found: ${JSON.stringify(subMatch)}`);
-
-                if (subMatch && (subMatch[7] || subMatch[4]) && (subMatch[9] || subMatch[2] || subMatch[8])) {
+                if (subMatch[2]) {
                     evalOrigin = {
-                        args: [],
-                        column: subMatch[9] ? +subMatch[9] : undefined,
-                        file: subMatch[7] ?? subMatch[4],
-                        line: subMatch[8] ? +subMatch[8] : subMatch[2] ? +subMatch[2] : undefined,
+                        column: subMatch[4] ? +subMatch[4] : undefined,
+                        file: subMatch[2],
+                        line: subMatch[3] ? +subMatch[3] : undefined,
                         methodName: "eval",
                         raw: line,
                         type: "eval",
-                    } as Trace;
-                } else if (isNestedEval) {
-                    evalOrigin = parseNestedEval(line);
-                }
-
-                if (subMatch) {
-                    // throw out eval line/column and use top-most line/column number
-                    parts[2] = subMatch[1] ?? (subMatch[4] as string); // url
-                    parts[3] = <string>subMatch[2]; // line
-                    parts[4] = <string>subMatch[3]; // column
+                    };
                 }
             }
-
-            const trace = {
-                args: isNative ? [parts[2]] : [],
-                column: parts[4] ? +parts[4] : undefined,
-                evalOrigin,
-                file: isNative ? undefined : parts[2],
-                line: parts[3] ? +parts[3] : undefined,
-                // Normalize IE's 'Anonymous function'
-                methodName: parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
-                raw: line,
-                type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
-            };
-
-            parseMapped(trace, `${parts[2]}:${parts[3]}:${parts[4]}`);
-
-            return trace;
         }
 
-        const blank = CHROME_BLANK.exec(line);
+        const trace = {
+            column: parts[4] ? +parts[4] : undefined,
+            evalOrigin,
+            file: parts[2],
+            line: parts[3] ? +parts[3] : undefined,
+            // Normalize IE's 'Anonymous function'
+            methodName: parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
+            raw: line,
+            type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
+        };
 
-        if (blank) {
-            debugLog(`parse chrome blank error stack line: "${line}"`, `found: ${JSON.stringify(blank)}`);
+        parseMapped(trace, `${parts[2]}:${parts[3]}:${parts[4]}`);
 
-            const trace = {
-                args: [],
-                column: blank[3] ? +blank[3] : undefined,
-                file: blank[1],
-                line: blank[2] ? +blank[2] : undefined,
-                methodName: UNKNOWN_FUNCTION,
-                raw: line,
-                type: undefined,
-            };
-
-            parseMapped(trace, `${blank[1]}:${blank[2]}:${blank[3]}`);
-
-            return trace;
-        }
+        return trace;
     }
 
     return undefined;
@@ -315,17 +210,37 @@ const parseFirefoxWebkit = (line: string): Trace | undefined => {
     const parts = FIREFOX_WEBKIT_REGEX.exec(line);
 
     if (parts) {
-        debugLog(`parse firefox webkit error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+        debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+
+        const isEval = parts[2]?.includes(" > eval");
+        const subMatch = parts[2] ? GECKO_EVAL_REGEX.exec(parts[2]) : null;
+
+        let evalOrigin: Trace | undefined;
+
+        if (isEval && subMatch !== null) {
+            // throw out eval line/column and use top-most line number
+            parts[2] = <string>subMatch[1];
+            parts[3] = <string>subMatch[2];
+
+            evalOrigin = {
+                column: undefined,
+                file: parts[2],
+                line: +parts[3],
+                methodName: "eval",
+                raw: line,
+                type: "eval",
+            };
+        }
 
         return {
-            args: [],
-            column: parts[4] ? +parts[4] : undefined,
+            column: !isEval && parts[4] ? +parts[4] : undefined, // no column when eval
+            evalOrigin,
             file: parts[2],
             line: parts[3] ? +parts[3] : undefined,
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
-            type: parts[0] ? undefined : "native",
+            type: parts[0] ? undefined : isEval ? "eval" : "native",
         };
     }
 
@@ -335,7 +250,6 @@ const parseFirefoxWebkit = (line: string): Trace | undefined => {
         debugLog(`parse webkit address unnamed error stack line: "${line}"`, `found: ${JSON.stringify(webkitParts)}`);
 
         return {
-            args: [],
             column: webkitParts[4] ? +webkitParts[4] : undefined,
             file: webkitParts[1],
             line: webkitParts[3] ? +webkitParts[3] : undefined,
@@ -355,7 +269,6 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
         debugLog(`parse react android native error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         return {
-            args: [],
             column: parts[3] ? +parts[3] : undefined,
             file: parts[1],
             line: parts[2] ? +parts[2] : undefined,
@@ -371,7 +284,6 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
         debugLog(`parse native error stack line: "${line}"`, `found: ${JSON.stringify(native)}`);
 
         return {
-            args: [],
             column: undefined,
             file: native[3],
             line: undefined,
@@ -387,7 +299,6 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
         debugLog(`parse at error stack line: "${line}"`, `found: ${JSON.stringify(atParts)}`);
 
         return {
-            args: [],
             column: undefined,
             file: undefined,
             line: undefined,
@@ -400,13 +311,104 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
     return undefined;
 };
 
-const parse = (error: Error, options: Partial<{ sourcemap: boolean }> = {}): Trace[] => {
+const parseOpera = (e: Error): Trace => {
     // @ts-expect-error missing stacktrace property
-    const lines = (error.stacktrace ?? error.stack ?? "")
+    if (!e.stacktrace || (e.message.includes("\n") && e.message.split("\n").length > e.stacktrace.split("\n").length)) return parseOpera9(e);
+    if (!e.stack) return parseOpera10(e);
+    return parseOpera11(e);
+};
+
+const parseOpera9 = (e: Error) => {
+    const lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
+    const lines = e.message.split("\n");
+    const result: StackFrame[] = [];
+
+    for (let index = 2, length_ = lines.length; index < length_; index += 2) {
+        const match = lineRE.exec(lines[index]);
+        if (match) {
+            result.push({
+                fileName: match[2],
+                lineNumber: +match[1],
+                source: lines[index],
+            });
+        }
+    }
+
+    return result;
+};
+
+const parseOpera10 = (e: Error) => {
+    const lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
+    // @ts-expect-error missing stack property
+    const lines = e.stacktrace.split("\n");
+    const result: StackFrame[] = [];
+
+    for (let index = 0, length_ = lines.length; index < length_; index += 2) {
+        const match = lineRE.exec(lines[index]);
+        if (match) {
+            result.push({
+                fileName: match[2],
+                functionName: match[3] || undefined,
+                lineNumber: match[1] ? +match[1] : undefined,
+                source: lines[index],
+            });
+        }
+    }
+
+    return result;
+};
+
+// Opera 10.65+ Error.stack very similar to FF/Safari
+const parseOpera11 = (error: Error) => {
+    // @ts-expect-error missing stack property
+    const filtered = error.stack.split("\n").filter((line) => !!line.match(FIREFOX_SAFARI_STACK_REGEXP) && !line.startsWith("Error created at"));
+
+    return filtered.map<StackFrame>((line) => {
+        const tokens = line.split("@");
+        const locationParts = extractLocation(tokens.pop()!);
+        const functionCall = tokens.shift() || "";
+        const functionName = functionCall.replace(/<anonymous function(: (\w+))?>/, "$2").replaceAll(/\([^)]*\)/g, "") || undefined;
+
+        let argumentsRaw;
+
+        if (/\(([^)]*)\)/.test(functionCall)) {
+            argumentsRaw = functionCall.replace(/^[^(]+\(([^)]*)\)$/, "$1");
+        }
+
+        const arguments_ = argumentsRaw === undefined || argumentsRaw === "[arguments not available]" ? undefined : argumentsRaw.split(",");
+
+        return {
+            args: arguments_,
+            columnNumber: locationParts[2] ? +locationParts[2] : undefined,
+            fileName: locationParts[0],
+            functionName,
+            lineNumber: locationParts[1] ? +locationParts[1] : undefined,
+            source: line,
+        };
+    });
+};
+
+const parse = (error: Error, options: Partial<{ frameLimit: number; sourcemap: boolean }> = {}): Trace[] => {
+    const { frameLimit = 50, sourcemap = false } = options;
+
+    // @ts-expect-error missing stacktrace property
+    let lines = (error.stacktrace ?? error.stack ?? "")
         .split("\n")
-        .filter(Boolean)
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        .map((line: string): string => line.replace(/^\s+|\s+$/g, ""));
+        .map((line: string): string => {
+            // https://github.com/getsentry/sentry-javascript/issues/5459
+            // Remove webpack (error: *) wrappers
+            const cleanedLine = WEBPACK_ERROR_REGEXP.test(line) ? line.replace(WEBPACK_ERROR_REGEXP, "$1") : line;
+
+            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            return cleanedLine.replace(/^\s+|\s+$/g, "");
+        })
+        // https://github.com/getsentry/sentry-javascript/issues/7813
+        // Skip Error: lines
+        .filter((line: string): boolean => !/\S*Error: /.test(line));
+
+    if (lines.length > frameLimit) {
+        lines = lines.slice(0, frameLimit);
+    }
 
     // eslint-disable-next-line unicorn/no-array-reduce,@typescript-eslint/no-unsafe-return
     return lines.reduce((stack: Trace[], line: string): Trace[] => {
@@ -414,8 +416,16 @@ const parse = (error: Error, options: Partial<{ sourcemap: boolean }> = {}): Tra
             return stack;
         }
 
+        // Ignore lines over 1kb as they are unlikely to be stack frames.
+        // Many of the regular expressions use backtracking which results in run time that increases exponentially with
+        // input size. Huge strings can result in hangs/Denial of Service:
+        // https://github.com/getsentry/sentry-javascript/issues/2286
+        if (line.length > 1024) {
+            return stack;
+        }
+
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const parseResult = parseChromeIe(line) || parseFirefoxWebkit(line) || parseNode(line) || parseReactAndroidNative(line);
+        const parseResult = parseChromium(line) || parseFirefoxWebkit(line) || parseNode(line) || parseReactAndroidNative(line);
 
         if (parseResult) {
             stack.push(parseResult);

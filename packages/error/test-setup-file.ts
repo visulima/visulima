@@ -3,8 +3,7 @@ import { expect } from "vitest";
 
 import type { Trace } from "./src";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ExpectedStackFrame = [string?, any[]?, string?, number?, number?, string?, ExpectedStackFrame?];
+type ExpectedStackFrame = [string?, string?, number?, number?, string?, Trace?];
 
 interface CustomMatchers<R = unknown> {
     toMatchStackFrame: (expected: ExpectedStackFrame) => R;
@@ -16,46 +15,15 @@ declare module "vitest" {
     type AsymmetricMatchersContaining = CustomMatchers;
 }
 
-const validateArrays = (
-    expected: unknown[],
-    received: unknown[],
-):
-    | {
-          message: () => string;
-          pass: boolean;
-      }
-    | undefined => {
-    if (expected.length !== received.length) {
-        return {
-            message: () => `received args and expected args do not have the same length`,
-            pass: false,
-        };
-    }
-
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const [index, element] of expected.entries()) {
-        // eslint-disable-next-line security/detect-object-injection
-        if (element !== received[index]) {
-            return {
-                // eslint-disable-next-line security/detect-object-injection
-                message: () => `Element ${JSON.stringify(element)} at index ${index} does not match ${JSON.stringify(received[index])}`,
-                pass: false,
-            };
-        }
-    }
-
-    return undefined;
-};
-
 const toMatchStackFrame: (
     received: Trace,
-    [function_, arguments_, file, lineNumber, columnNumber, type, evalOrigin]: ExpectedStackFrame,
+    [function_, file, lineNumber, columnNumber, type, evalOrigin]: ExpectedStackFrame,
 ) => {
     message: () => string;
     pass: boolean;
 } = (
     received,
-    [function_, arguments_ = [], file, lineNumber, columnNumber, type, evalOrigin],
+    [function_, file, lineNumber, columnNumber, type, evalOrigin],
 ): {
     message: () => string;
     pass: boolean;
@@ -67,19 +35,15 @@ const toMatchStackFrame: (
         received.column === columnNumber &&
         received.type === type;
 
-    const validatedArguments = validateArrays(
-        [...arguments_].sort((a, b) => a - b),
-        [...received.args].sort((a, b) => a - b),
-    );
-
-    if (validatedArguments) {
-        return validatedArguments;
-    }
-
-    if (evalOrigin) {
-        const { pass: evalPass } = toMatchStackFrame(received.evalOrigin, evalOrigin);
-
-        pass = evalPass;
+    if ((received.evalOrigin !== undefined && evalOrigin === undefined) || (received.evalOrigin === undefined && evalOrigin !== undefined)) {
+        pass = false;
+    } else if (received.evalOrigin !== undefined && evalOrigin !== undefined) {
+        pass = pass &&
+            received.evalOrigin.methodName === evalOrigin.methodName &&
+            received.evalOrigin.file === evalOrigin.file &&
+            received.evalOrigin.line === evalOrigin.line &&
+            received.evalOrigin.column === evalOrigin.column &&
+            received.evalOrigin.type === evalOrigin.type;
     }
 
     if (pass) {
@@ -92,18 +56,8 @@ const toMatchStackFrame: (
     return {
         message: () =>
             `expected ${JSON.stringify(received)} to match stack frame ${JSON.stringify({
-                args: arguments_,
                 column: columnNumber,
-                evalOrigin: evalOrigin
-                    ? {
-                          args: evalOrigin[1],
-                          column: evalOrigin[4],
-                          file: evalOrigin[2],
-                          line: evalOrigin[3],
-                          methodName: evalOrigin[0],
-                          type: evalOrigin[5],
-                      }
-                    : undefined,
+                evalOrigin,
                 file,
                 line: lineNumber,
                 methodName: function_,

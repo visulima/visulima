@@ -48,26 +48,13 @@ export type CodeFrameOptions = {
 
 export type TraceType = "eval" | "internal" | "native" | undefined;
 
-export interface Trace extends Partial<SourceCode> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args: any[];
-    column?: number | undefined;
-    evalOrigin?: Trace | undefined;
+export interface Trace {
+    column: number | undefined;
     file: string | undefined;
-    line?: number | undefined;
+    evalOrigin?: Trace | undefined;
+    line: number | undefined;
     methodName: string | undefined;
     raw: string;
-    sourceOrigin?: {
-        column?: number | undefined;
-        file?: string | undefined;
-        line?: number | undefined;
-    } | undefined;
-    sourcemap?: TraceMap | undefined;
+    sourceMap?: TraceMap | undefined;
     type?: TraceType;
-}
-
-export interface SourceCode {
-    code: string;
-    postCode: string[];
-    preCode: string[];
 }

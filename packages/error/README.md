@@ -90,8 +90,10 @@ Currently supported browsers/platforms:
 
 - Firefox
 - Chrome
+- Webkit / Safari
 - Edge
 - Node / Node V8
+- Opera
 
 ```ts
 import { parseStack } from "@visulima/error";
@@ -146,6 +148,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
 - [ololog](https://github.com/xpl/ololog): another logger with a similar motivation but only support console.log as its sole transport.
 - [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
+- [marvinhagemeister/errorstacks](https://github.com/marvinhagemeister/errorstacks) Tiny library to parse error stack traces
+- [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
 
 ## License
 
