@@ -93,7 +93,7 @@ Currently supported browsers/platforms:
 - Webkit / Safari
 - Edge
 - Node / Node V8
-- Opera
+- Opera (Chromium based)
 
 ```ts
 import { parseStack } from "@visulima/error";

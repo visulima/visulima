@@ -80,16 +80,16 @@ const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
  * Unfortunately "just" changing RegExp is too complicated now and making it pass all tests
  * and fix this case seems like an impossible, or at least way too time-consuming task.
  */
-const extractSafariExtensionDetails = (function_: string, url: string): [string, string] => {
-    const isSafariExtension = function_.includes("safari-extension");
-    const isSafariWebExtension = function_.includes("safari-web-extension");
+const extractSafariExtensionDetails = (methodName: string, url: string): [string, string] => {
+    const isSafariExtension = methodName.includes("safari-extension");
+    const isSafariWebExtension = methodName.includes("safari-web-extension");
 
     return isSafariExtension || isSafariWebExtension
         ? [
-              function_.includes("@") ? (function_.split("@")[0] as string) : UNKNOWN_FUNCTION,
+              methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
               isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
           ]
-        : [function_, url];
+        : [methodName, url];
 };
 
 const parseMapped = (trace: Trace, maybeMapped: string) => {
@@ -187,18 +187,24 @@ const parseChromium = (line: string): Trace | undefined => {
             }
         }
 
+        const [methodName, file] = extractSafariExtensionDetails(
+            // Normalize IE's 'Anonymous function'
+            parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
+            parts[2] as string,
+        );
+
         const trace = {
             column: parts[4] ? +parts[4] : undefined,
             evalOrigin,
-            file: parts[2],
+            file,
             line: parts[3] ? +parts[3] : undefined,
             // Normalize IE's 'Anonymous function'
-            methodName: parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
+            methodName,
             raw: line,
             type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
         };
 
-        parseMapped(trace, `${parts[2]}:${parts[3]}:${parts[4]}`);
+        parseMapped(trace, `${file}:${parts[3]}:${parts[4]}`);
 
         return trace;
     }
@@ -309,83 +315,6 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
     }
 
     return undefined;
-};
-
-const parseOpera = (e: Error): Trace => {
-    // @ts-expect-error missing stacktrace property
-    if (!e.stacktrace || (e.message.includes("\n") && e.message.split("\n").length > e.stacktrace.split("\n").length)) return parseOpera9(e);
-    if (!e.stack) return parseOpera10(e);
-    return parseOpera11(e);
-};
-
-const parseOpera9 = (e: Error) => {
-    const lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
-    const lines = e.message.split("\n");
-    const result: StackFrame[] = [];
-
-    for (let index = 2, length_ = lines.length; index < length_; index += 2) {
-        const match = lineRE.exec(lines[index]);
-        if (match) {
-            result.push({
-                fileName: match[2],
-                lineNumber: +match[1],
-                source: lines[index],
-            });
-        }
-    }
-
-    return result;
-};
-
-const parseOpera10 = (e: Error) => {
-    const lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
-    // @ts-expect-error missing stack property
-    const lines = e.stacktrace.split("\n");
-    const result: StackFrame[] = [];
-
-    for (let index = 0, length_ = lines.length; index < length_; index += 2) {
-        const match = lineRE.exec(lines[index]);
-        if (match) {
-            result.push({
-                fileName: match[2],
-                functionName: match[3] || undefined,
-                lineNumber: match[1] ? +match[1] : undefined,
-                source: lines[index],
-            });
-        }
-    }
-
-    return result;
-};
-
-// Opera 10.65+ Error.stack very similar to FF/Safari
-const parseOpera11 = (error: Error) => {
-    // @ts-expect-error missing stack property
-    const filtered = error.stack.split("\n").filter((line) => !!line.match(FIREFOX_SAFARI_STACK_REGEXP) && !line.startsWith("Error created at"));
-
-    return filtered.map<StackFrame>((line) => {
-        const tokens = line.split("@");
-        const locationParts = extractLocation(tokens.pop()!);
-        const functionCall = tokens.shift() || "";
-        const functionName = functionCall.replace(/<anonymous function(: (\w+))?>/, "$2").replaceAll(/\([^)]*\)/g, "") || undefined;
-
-        let argumentsRaw;
-
-        if (/\(([^)]*)\)/.test(functionCall)) {
-            argumentsRaw = functionCall.replace(/^[^(]+\(([^)]*)\)$/, "$1");
-        }
-
-        const arguments_ = argumentsRaw === undefined || argumentsRaw === "[arguments not available]" ? undefined : argumentsRaw.split(",");
-
-        return {
-            args: arguments_,
-            columnNumber: locationParts[2] ? +locationParts[2] : undefined,
-            fileName: locationParts[0],
-            functionName,
-            lineNumber: locationParts[1] ? +locationParts[1] : undefined,
-            source: line,
-        };
-    });
 };
 
 const parse = (error: Error, options: Partial<{ frameLimit: number; sourcemap: boolean }> = {}): Trace[] => {

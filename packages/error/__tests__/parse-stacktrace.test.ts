@@ -1039,7 +1039,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame(["Spect.get", "C:\\project files\\spect\\src\\index.js", 161, 26]);
             expect(stackFrames[1]).toMatchStackFrame(["Object.get", "C:\\project files\\spect\\src\\index.js", 43, 36]);
-            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", undefined, undefined, "native"]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", undefined, undefined]);
             expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", "C:\\project files\\spect\\src\\index.js", 165, 33]);
             expect(stackFrames[4]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", "internal/process/task_queues.js", 52, 5]);
             expect(stackFrames[5]).toMatchStackFrame(["<unknown>", "C:\\project files\\spect\\node_modules\\esm\\esm.js", 1, 34_535]);
@@ -1116,6 +1116,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parse Custom Error stack", () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             class xxx1Error extends TypeError {}
+
             // eslint-disable-next-line new-cap
             const stackFrames = parseStacktrace(new xxx1Error("foo"));
 
@@ -1242,46 +1243,48 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             expect(stackFrames[0]).toMatchStackFrame(["Object.<anonymous>", "/projects/preact/test-utils/test/shared/act.test.js", 50, 20]);
             expect(stackFrames[1]).toMatchStackFrame(["Object.get", "/projects/preact/debug/src/debug.js", 271, 13]);
         });
+
+        it("should parse SecurityError", () => {
+            const SECURITY_ERROR = {
+                message: 'Blocked a frame with origin "https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.',
+                name: "SecurityError",
+                stack:
+                    'SecurityError: Blocked a frame with origin "https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.\n' +
+                    '   at Error: Blocked a frame with origin "(https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.)\n' +
+                    "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:368:76)\n" +
+                    "   at castFn(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:409:17)\n" +
+                    "   at Replayer.applyEventsSynchronously(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:325:13)\n" +
+                    "   at <object>.actions.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js:132:17)\n" +
+                    "   at <anonymous>(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2595)\n" +
+                    "   at Array.forEach(<anonymous>)\n" +
+                    "   at l(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2551)\n" +
+                    "   at c.send(../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js:15:2741)\n" +
+                    "   at Replayer.play(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:220:26)\n" +
+                    "   at Replayer.pause(../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js:235:18)\n" +
+                    "   at playTimer.current(./app/components/replays/replayContext.tsx:397:62)\n" +
+                    "   at sentryWrapped(../node_modules/@sentry/browser/esm/helpers.js:90:17)",
+            };
+
+            const stackFrames = parseStacktrace(SECURITY_ERROR as unknown as Error);
+
+            expect(stackFrames).toHaveLength(12);
+            expect(stackFrames[0]).toMatchStackFrame(["castFn", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 368, 76]);
+            expect(stackFrames[1]).toMatchStackFrame(["castFn", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 409, 17]);
+            expect(stackFrames[2]).toMatchStackFrame(["Replayer.applyEventsSynchronously", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 325, 13]);
+            expect(stackFrames[3]).toMatchStackFrame(["<object>.actions.play", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js", 132, 17]);
+            expect(stackFrames[4]).toMatchStackFrame(["<anonymous>", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2595]);
+            expect(stackFrames[5]).toMatchStackFrame(["Array.forEach", "<anonymous>", undefined, undefined]);
+            expect(stackFrames[6]).toMatchStackFrame(["l", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2551]);
+            expect(stackFrames[7]).toMatchStackFrame(["c.send", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2741]);
+            expect(stackFrames[8]).toMatchStackFrame(["Replayer.play", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 220, 26]);
+            expect(stackFrames[9]).toMatchStackFrame(["Replayer.pause", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 235, 18]);
+            expect(stackFrames[10]).toMatchStackFrame(["playTimer.current", "./app/components/replays/replayContext.tsx", 397, 62]);
+            expect(stackFrames[11]).toMatchStackFrame(["sentryWrapped", "../node_modules/@sentry/browser/esm/helpers.js", 90, 17]);
+        });
     });
 
     describe("opera", () => {
-        it("should parse Opera 10 error", () => {
-            const stackFrames = parseStacktrace(capturedErrors.OPERA_10 as unknown as Error);
-
-            expect(stackFrames).toHaveLength(7);
-            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 15, undefined]);
-            expect(stackFrames[1]).toMatchStackFrame(["foo", "http://path/to/file.js", 11, undefined]);
-            expect(stackFrames[2]).toMatchStackFrame(["bar", "http://path/to/file.js", 7, undefined]);
-            expect(stackFrames[3]).toMatchStackFrame(["bar", "http://path/to/file.js", 4, undefined]);
-            expect(stackFrames[4]).toMatchStackFrame(["printStackTrace", "http://path/to/file.js", 18, undefined]);
-            expect(stackFrames[5]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 27, undefined]);
-            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 42, undefined]);
-        });
-
-        // TODO: Improve anonymous function name.
-        it("should parse Opera 11 error", () => {
-            const stackFrames = parseStacktrace(capturedErrors.OPERA_11 as unknown as Error);
-
-            expect(stackFrames).toHaveLength(7);
-            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 15, 3]);
-            expect(stackFrames[1]).toMatchStackFrame(["foo", "http://path/to/file.js", 11, 4]);
-            expect(stackFrames[2]).toMatchStackFrame(["bar", "http://path/to/file.js", 7, 4]);
-            expect(stackFrames[3]).toMatchStackFrame(["bar", "http://path/to/file.js", 4, 44]);
-            expect(stackFrames[4]).toMatchStackFrame(["printStackTrace", "http://path/to/file.js", 18, 4]);
-            expect(stackFrames[5]).toMatchStackFrame(["run", "http://path/to/file.js", 27, 8]);
-            expect(stackFrames[6]).toMatchStackFrame(["createException", "http://path/to/file.js", 42, 12]);
-        });
-
-        // TODO: Improve anonymous function name.
-        it("should parse Opera 12 error", () => {
-            const stackFrames = parseStacktrace(capturedErrors.OPERA_12 as unknown as Error);
-
-            expect(stackFrames).toHaveLength(3);
-            expect(stackFrames[0]).toMatchStackFrame(["<anonymous function>", "http://localhost:8000/ExceptionLab.html", 1, 0]);
-            expect(stackFrames[1]).toMatchStackFrame(["dumpException3", "http://localhost:8000/ExceptionLab.html", 46, 8]);
-            expect(stackFrames[2]).toMatchStackFrame(["<anonymous function>", "http://localhost:8000/ExceptionLab.html", 48, 12]);
-        });
-
+        // Opera v15 was released in 2013 and was based on Chromium.
         // Release 15/10/2014
         it("should parse Opera 25 Error stacks", () => {
             const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
@@ -1372,12 +1375,11 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parses Safari 8 eval error", () => {
-            process.env.DEBUG = true;
             // TODO: Take into account the line and column properties on the error object and use them for the first stack trace.
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
-            expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", undefined, undefined]);
+            expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", undefined, undefined, "native"]);
             expect(stackFrames[1]).toMatchStackFrame(["foo", "http://path/to/file.js", 58, 21]);
             expect(stackFrames[2]).toMatchStackFrame(["bar", "http://path/to/file.js", 109, 91]);
         });
@@ -1488,18 +1490,18 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
                 expect(stackFrames).toHaveLength(3);
                 expect(stackFrames[0]).toMatchStackFrame([
-                    "isClaimed",
+                    "p_",
                     // eslint-disable-next-line no-secrets/no-secrets
-                    "safari-web-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js",
-                    2,
-                    929_865,
+                    "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
+                    29,
+                    33314,
                 ]);
                 expect(stackFrames[1]).toMatchStackFrame([
                     "<unknown>",
                     // eslint-disable-next-line no-secrets/no-secrets
-                    "safari-web-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js",
-                    2,
-                    1_588_410,
+                    "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
+                    29,
+                    56027,
                 ]);
             });
         });
