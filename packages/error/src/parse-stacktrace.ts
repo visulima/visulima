@@ -240,7 +240,7 @@ const parseFirefoxWebkit = (line: string): Trace | undefined => {
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
-            type: parts[0] ? undefined : isEval ? "eval" : "native",
+            type: isEval ? "eval" : parts[0] ? undefined : "native",
         };
     }
 

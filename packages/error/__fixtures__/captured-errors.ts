@@ -1,4 +1,68 @@
 export default {
+    OPERA_10: {
+        name: "foo",
+        message: "Statement on line 42: Type mismatch (usually non-object value supplied where object required)",
+        "opera#sourceloc": 42,
+        stacktrace:
+            "  Line 42 of linked script http://path/to/file.js\n" +
+            "                this.undef();\n" +
+            "  Line 27 of linked script http://path/to/file.js\n" +
+            "            ex = ex || this.createException();\n" +
+            "  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n" +
+            "        var p = new printStackTrace.implementation(), result = p.run(ex);\n" +
+            "  Line 4 of inline#1 script in http://path/to/file.js: In function bar\n" +
+            "             printTrace(printStackTrace());\n" +
+            "  Line 7 of inline#1 script in http://path/to/file.js: In function bar\n" +
+            "           bar(n - 1);\n" +
+            "  Line 11 of inline#1 script in http://path/to/file.js: In function foo\n" +
+            "           bar(2);\n" +
+            "  Line 15 of inline#1 script in http://path/to/file.js\n" +
+            "         foo();\n" +
+            "",
+    },
+
+    OPERA_11: {
+        name: "foo",
+        message: "'this.undef' is not a function",
+        stack:
+            "<anonymous function: run>([arguments not available])@http://path/to/file.js:27\n" +
+            "bar([arguments not available])@http://domain.com:1234/path/to/file.js:18\n" +
+            "foo([arguments not available])@http://domain.com:1234/path/to/file.js:11\n" +
+            "<anonymous function>@http://path/to/file.js:15\n" +
+            "Error created at <anonymous function>@http://path/to/file.js:15",
+        stacktrace:
+            "Error thrown at line 42, column 12 in <anonymous function: createException>() in http://path/to/file.js:\n" +
+            "    this.undef();\n" +
+            "called from line 27, column 8 in <anonymous function: run>(ex) in http://path/to/file.js:\n" +
+            "    ex = ex || this.createException();\n" +
+            "called from line 18, column 4 in printStackTrace(options) in http://path/to/file.js:\n" +
+            "    var p = new printStackTrace.implementation(), result = p.run(ex);\n" +
+            "called from line 4, column 5 in bar(n) in http://path/to/file.js:\n" +
+            "    printTrace(printStackTrace());\n" +
+            "called from line 7, column 4 in bar(n) in http://path/to/file.js:\n" +
+            "    bar(n - 1);\n" +
+            "called from line 11, column 4 in foo() in http://path/to/file.js:\n" +
+            "    bar(2);\n" +
+            "called from line 15, column 3 in http://path/to/file.js:\n" +
+            "    foo();",
+    },
+
+    OPERA_12: {
+        name: "foo",
+        message: "Cannot convert 'x' to object",
+        stack:
+            "<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:48\n" +
+            "dumpException3([arguments not available])@http://localhost:8000/ExceptionLab.html:46\n" +
+            "<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:1",
+        stacktrace:
+            "Error thrown at line 48, column 12 in <anonymous function>(x) in http://localhost:8000/ExceptionLab.html:\n" +
+            "    x.undef();\n" +
+            "called from line 46, column 8 in dumpException3() in http://localhost:8000/ExceptionLab.html:\n" +
+            "    dumpException((function(x) {\n" +
+            "called from line 1, column 0 in <anonymous function>(event) in http://localhost:8000/ExceptionLab.html:\n" +
+            "    dumpException3();",
+    },
+
     OPERA_25: {
         message: "Cannot read property 'undef' of null",
         name: "TypeError",
@@ -336,7 +400,7 @@ export default {
     FIREFOX_31: {
         message: "Default error",
         name: "Error",
-        stack: "foo@http://path/to/file.js:41:13\n" + "bar@http://path/to/file.js:1:1\n" + "",
+        stack: "foo@http://path/to/file.js:41:13\n" + "bar@http://path/to/file.js:1:1\n" + ".plugin/e.fn[c]/<@http://path/to/file.js:1:1\n" + "",
         fileName: "http://path/to/file.js",
         lineNumber: 41,
         columnNumber: 12,
@@ -362,19 +426,6 @@ export default {
         fileName: "Scratchpad/1",
         lineNumber: 10,
         columnNumber: 29,
-    },
-
-    FIREFOX_43_EVAL: {
-        columnNumber: 30,
-        fileName: "http://localhost:8080/file.js line 25 > eval line 2 > eval",
-        lineNumber: 1,
-        message: "message string",
-        stack:
-            "baz@http://localhost:8080/file.js line 26 > eval line 2 > eval:1:30\n" +
-            "foo@http://localhost:8080/file.js line 26 > eval:2:96\n" +
-            "@http://localhost:8080/file.js line 26 > eval:4:18\n" +
-            "speak@http://localhost:8080/file.js:26:17\n" +
-            "@http://localhost:8080/file.js:33:9",
     },
 
     // Internal errors sometimes thrown by Firefox
@@ -490,6 +541,38 @@ export default {
             "at child(/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/shared/stack/reconciler/ReactReconciler.js:68:25)\n" +
             "at children(/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/shared/stack/reconciler/ReactMultiChild.js:264:10)\n" +
             "at this(/home/username/sample-workspace/sampleapp.collect.react/node_modules/react-native/Libraries/Renderer/src/renderers/native/ReactNativeBaseComponent.js:74:41)\n",
+    },
+
+    ANDROID_REACT_NATIVE_HERMES: {
+        message: "Error: lets throw!",
+        name: "Error",
+        stack:
+            "at onPress (address at index.android.bundle:1:452701)\n" +
+            "at anonymous (address at index.android.bundle:1:224280)\n" +
+            "at _performSideEffectsForTransition (address at index.android.bundle:1:230843)\n" +
+            "at _receiveSignal (native)\n" +
+            "at touchableHandleResponderRelease (native)\n" +
+            "at onResponderRelease (native)\n" +
+            "at apply (native)\n" +
+            "at b (address at index.android.bundle:1:74037)\n" +
+            "at apply (native)\n" +
+            "at k (address at index.android.bundle:1:74094)\n" +
+            "at apply (native)\n" +
+            "at C (address at index.android.bundle:1:74126)\n" +
+            "at N (address at index.android.bundle:1:74267)\n" +
+            "at A (address at index.android.bundle:1:74709)\n" +
+            "at forEach (native)\n" +
+            "at z (address at index.android.bundle:1:74642)\n" +
+            "at anonymous (address at index.android.bundle:1:77747)\n" +
+            "at _e (address at index.android.bundle:1:127755)\n" +
+            "at Ne (address at index.android.bundle:1:77238)\n" +
+            "at Ue (address at index.android.bundle:1:77571)\n" +
+            "at receiveTouches (address at index.android.bundle:1:122512)\n" +
+            "at apply (native)\n" +
+            "at value (address at index.android.bundle:1:33176)\n" +
+            "at anonymous (address at index.android.bundle:1:31603)\n" +
+            "at value (address at index.android.bundle:1:32776)\n" +
+            "at value (address at index.android.bundle:1:31561)",
     },
 
     ANDROID_REACT_NATIVE_PROD: {
@@ -651,6 +734,38 @@ export default {
             "global code@http://localhost:8080/file.js:33:18",
     },
 
+    SAFARI_EXTENSION_EXCEPTION: {
+        message: "wat",
+        name: "Error",
+        stack: `Error: wat
+      at ClipperError@safari-extension:(//3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/commons.js:223036:10)
+      at safari-extension:(//3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/topee-content.js:3313:26)`,
+    },
+
+    SAFARI_EXTENSION_EXCEPTION_2: {
+        message: `undefined is not an object (evaluating 'e.groups.includes')`,
+        name: `TypeError`,
+        stack: `isClaimed@safari-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js:2:929865
+        safari-extension://com.grammarly.safari.extension.ext2-W8F64X92K3/ee7759dd/Grammarly.js:2:1588410
+        promiseReactionJob@[native code]`,
+    },
+
+    SAFARI_EXTENSION_EXCEPTION_3: {
+        message: `undefined is not an object (evaluating 'e.groups.includes')`,
+        name: `TypeError`,
+        stack: `p_@safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js:29:33314
+      safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js:29:56027
+      promiseReactionJob@[native code]`,
+    },
+
+    SAFARI_WEB_EXTENSION_EXCEPTION: {
+        message: "wat",
+        name: "Error",
+        stack: `Error: wat
+      at ClipperError@safari-web-extension:(//3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/commons.js:223036:10)
+      at safari-web-extension:(//3284871F-A480-4FFC-8BC4-3F362C752446/2665fee0/topee-content.js:3313:26)`,
+    },
+
     SAFARI_12_NATIVE_CODE_EXCEPTION: {
         message: "test",
         name: "Error",
@@ -660,7 +775,7 @@ export default {
             global code@http://localhost:5000/test:24:10`,
     },
 
-    SAFARI12_EVAL_EXCEPTION: {
+    SAFARI_12_EVAL_EXCEPTION: {
         message: "aha",
         name: "Error",
         stack: `aha@http://localhost:5000/:19:22
