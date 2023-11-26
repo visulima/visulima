@@ -5,6 +5,7 @@ import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
+// eslint-disable-next-line regexp/no-unused-capturing-group,regexp/no-super-linear-backtracking
 const SOURCEMAP_REGEX = /\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/;
 
 const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
@@ -17,7 +18,7 @@ const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | u
     // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = lines.length - 1; index >= 0 && !sourceMapUrl; index--) {
         // eslint-disable-next-line security/detect-object-injection
-        sourceMapUrl = SOURCEMAP_REGEX.exec((lines[index] as string));
+        sourceMapUrl = SOURCEMAP_REGEX.exec(lines[index] as string);
     }
 
     if (!sourceMapUrl) {

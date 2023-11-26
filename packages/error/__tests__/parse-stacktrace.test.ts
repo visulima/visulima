@@ -330,17 +330,16 @@ describe("parse-stacktrace", () => {
 
             const stackFrames = parseStacktrace(EXCEPTION as unknown as Error);
 
-            expect(stackFrames).toHaveLength(5);
+            expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame([
                 "<unknown>",
-                "https://s1.sentry-cdn.com/_static/dist/sentry/chunks/app_bootstrap_initializeLocale_tsx.abcdefg.js",
+                "/_static/dist/sentry/chunks/app_bootstrap_initializeLocale_tsx.abcdefg.js",
                 undefined,
                 undefined,
             ]);
-            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "/_static/dist/sentry/chunks/app_bootstrap_initializeLocale_tsx.abcdefg.js", 27, 18]);
-            expect(stackFrames[2]).toMatchStackFrame(["key", "webpack/runtime/jsonp chunk loading", 27, 18]);
-            expect(stackFrames[3]).toMatchStackFrame(["<unknown>", "webpack/runtime/jsonp chunk", 6, 25]);
-            expect(stackFrames[4]).toMatchStackFrame(["Array.reduce", "<anonymous>", undefined, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["key", "webpack/runtime/jsonp chunk loading", 27, 18]);
+            expect(stackFrames[2]).toMatchStackFrame(["?", "webpack/runtime/ensure chunk", 6, 25]);
+            expect(stackFrames[3]).toMatchStackFrame(["Array.reduce", "<anonymous>", undefined, undefined]);
         });
 
         it("handles braces in urls", () => {
@@ -376,35 +375,35 @@ describe("parse-stacktrace", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_3 as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
-            expect(stackFrames[0]).toMatchStackFrame(["<unkown>", "http://127.0.0.1:8000/js/file.js", 24, null]);
-            expect(stackFrames[1]).toMatchStackFrame(["foo", "http://127.0.0.1:8000/js/file.js", 20, null]);
-            expect(stackFrames[2]).toMatchStackFrame(["bar", "http://127.0.0.1:8000/js/file.js", 16, null]);
-            expect(stackFrames[3]).toMatchStackFrame(["bar", "http://127.0.0.1:8000/js/file.js", 13, null]);
-            expect(stackFrames[4]).toMatchStackFrame(["printStackTrace", "http://127.0.0.1:8000/js/stacktrace.js", 18, null]);
-            expect(stackFrames[5]).toMatchStackFrame(["<unkown>", "http://127.0.0.1:8000/js/stacktrace.js", 31, null]);
-            expect(stackFrames[6]).toMatchStackFrame(["<unkown>", "http://127.0.0.1:8000/js/stacktrace.js", 44, null]);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://127.0.0.1:8000/js/stacktrace.js", 44, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "http://127.0.0.1:8000/js/stacktrace.js", 31, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["printStackTrace", "http://127.0.0.1:8000/js/stacktrace.js", 18, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["bar", "http://127.0.0.1:8000/js/file.js", 13, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["bar", "http://127.0.0.1:8000/js/file.js", 16, undefined]);
+            expect(stackFrames[5]).toMatchStackFrame(["foo", "http://127.0.0.1:8000/js/file.js", 20, undefined]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "http://127.0.0.1:8000/js/file.js", 24, undefined]);
         });
 
         it("should parse Firefox 7 error", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_7 as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
-            expect(stackFrames[0]).toMatchStackFrame(["<unkown>", "file:///G:/js/file.js", 24, null]);
-            expect(stackFrames[1]).toMatchStackFrame(["foo", "file:///G:/js/file.js", 20, null]);
-            expect(stackFrames[2]).toMatchStackFrame(["bar", "file:///G:/js/file.js", 16, null]);
-            expect(stackFrames[3]).toMatchStackFrame(["bar", "file:///G:/js/file.js", 13, null]);
-            expect(stackFrames[4]).toMatchStackFrame(["printStackTrace", "file:///G:/js/stacktrace.js", 18, null]);
-            expect(stackFrames[5]).toMatchStackFrame(["<unkown>", "file:///G:/js/stacktrace.js", 31, null]);
-            expect(stackFrames[6]).toMatchStackFrame(["<unkown>", "file:///G:/js/stacktrace.js", 44, null]);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "file:///G:/js/stacktrace.js", 44, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "file:///G:/js/stacktrace.js", 31, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["printStackTrace", "file:///G:/js/stacktrace.js", 18, undefined]);
+            expect(stackFrames[3]).toMatchStackFrame(["bar", "file:///G:/js/file.js", 13, undefined]);
+            expect(stackFrames[4]).toMatchStackFrame(["bar", "file:///G:/js/file.js", 16, undefined]);
+            expect(stackFrames[5]).toMatchStackFrame(["foo", "file:///G:/js/file.js", 20, undefined]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "file:///G:/js/file.js", 24, undefined]);
         });
 
         it("should parse Firefox 14 error", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_14 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
-            expect(stackFrames[0]).toMatchStackFrame(["<unkown>", "http://path/to/file.js", 48, null]);
-            expect(stackFrames[1]).toMatchStackFrame(["dumpException3", "http://path/to/file.js", 52, null]);
-            expect(stackFrames[2]).toMatchStackFrame(["onclick", "http://path/to/file.js", 1, null]);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 48, undefined]);
+            expect(stackFrames[1]).toMatchStackFrame(["dumpException3", "http://path/to/file.js", 52, undefined]);
+            expect(stackFrames[2]).toMatchStackFrame(["onclick", "http://path/to/file.js", 1, undefined]);
         });
 
         it("should parse Firefox 31 Error.stack", () => {
@@ -426,8 +425,9 @@ describe("parse-stacktrace", () => {
                 undefined,
                 "eval",
                 {
+                    column: 30,
                     file: "http://localhost:8080/file.js",
-                    line: 26,
+                    line: 1,
                     methodName: "eval",
                     type: "eval",
                 },
@@ -439,8 +439,9 @@ describe("parse-stacktrace", () => {
                 undefined,
                 "eval",
                 {
+                    column: 96,
                     file: "http://localhost:8080/file.js",
-                    line: 26,
+                    line: 2,
                     methodName: "eval",
                     type: "eval",
                 },
@@ -452,8 +453,9 @@ describe("parse-stacktrace", () => {
                 undefined,
                 "eval",
                 {
+                    column: 18,
                     file: "http://localhost:8080/file.js",
-                    line: 26,
+                    line: 4,
                     methodName: "eval",
                     type: "eval",
                 },
@@ -474,10 +476,10 @@ describe("parse-stacktrace", () => {
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_44_NS_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
-            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "file:///path/to/index.html", 23, 1]);
-            expect(stackFrames[1]).toMatchStackFrame(["bar", "http://path/to/file.js", 20, 3]);
-            expect(stackFrames[2]).toMatchStackFrame(["App.prototype.foo", "http://path/to/file.js", 15, 2]);
-            expect(stackFrames[3]).toMatchStackFrame(["[2]</Bar.prototype._baz/</<", "http://path/to/file.js", 703, 28]);
+            expect(stackFrames[0]).toMatchStackFrame(["[2]</Bar.prototype._baz/</<", "http://path/to/file.js", 703, 28]);
+            expect(stackFrames[1]).toMatchStackFrame(["App.prototype.foo", "file:///path/to/file.js", 15, 2]);
+            expect(stackFrames[2]).toMatchStackFrame(["bar", "file:///path/to/file.js", 20, 3]);
+            expect(stackFrames[3]).toMatchStackFrame(["<unknown>", "file:///path/to/index.html", 23, 1]);
         });
 
         it("should parses Firefox errors with resource: URLs", () => {
@@ -528,10 +530,17 @@ describe("parse-stacktrace", () => {
             expect(stackFrames[2]).toMatchStackFrame(["callback", "http://localhost:5000/", 25, 7]);
             expect(stackFrames[3]).toMatchStackFrame(["test/<", "http://localhost:5000/", 34, 7]);
             expect(stackFrames[4]).toMatchStackFrame(["test", "http://localhost:5000/", 33, 23]);
-            expect(stackFrames[8]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 39, undefined, "eval", {}]);
-            expect(stackFrames[5]).toMatchStackFrame(["aha", "http://localhost:5000/", 39, 5]);
-            expect(stackFrames[6]).toMatchStackFrame(["testMethod", "http://localhost:5000/", 44, 7]);
-            expect(stackFrames[7]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 50, 19]);
+            expect(stackFrames[5]).toMatchStackFrame([
+                "<unknown>",
+                "http://localhost:5000/",
+                39,
+                undefined,
+                "eval",
+                { column: 1, file: "http://localhost:5000/", line: 1, methodName: "eval", type: "eval" },
+            ]);
+            expect(stackFrames[6]).toMatchStackFrame(["aha", "http://localhost:5000/", 39, 5]);
+            expect(stackFrames[7]).toMatchStackFrame(["testMethod", "http://localhost:5000/", 44, 7]);
+            expect(stackFrames[8]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 50, 19]);
         });
 
         it("should match debugger stack trace", () => {
@@ -726,10 +735,10 @@ describe("parse-stacktrace", () => {
             expect(stackFrames[3]).toMatchStackFrame([
                 "Layout",
                 "webpack:///../react-hot-loader/~/react-proxy/modules/createClassProxy.js?",
-                undefined,
-                undefined,
-                undefined,
-                ["eval", "<anonymous>", 4, 17, "eval"],
+                4,
+                17,
+                "eval",
+                { column: 17, file: "<anonymous>", line: 4, methodName: "eval", type: "eval" },
             ]);
             expect(stackFrames[4]).toMatchStackFrame([
                 "ReactCompositeComponentMixin.mountComponent",
@@ -763,12 +772,13 @@ describe("parse-stacktrace", () => {
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["foo", "<anonymous>", 1, 33]);
             expect(stackFrames[1]).toMatchStackFrame(["bar", "<anonymous>", 1, 19]);
-            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", 1, 13, "native"]);
+            expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", 1, 13]);
         });
 
         it("should parse webpack-internal", () => {
-            const stackFrames = parseStacktrace({
-                stack: `
+            const stackFrames = parseStacktrace(
+                {
+                    stack: `
 react-dom.development.js:67 Warning: Each child in a list should have a unique "key" prop. See https://reactjs.org/link/warning-keys for more information.
     at div
     at Grid (webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js:235:35)
@@ -824,10 +834,14 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
     at RootWrappedWithOverlayAndProvider
     at App (webpack-internal:///./.cache/app.js:209:68)
 `,
-            } as unknown as Error);
+                } as unknown as Error,
+                {
+                    frameLimit: 55,
+                },
+            );
 
             expect(stackFrames).toHaveLength(53);
-            expect(stackFrames[0]).toMatchStackFrame(["div", undefined, undefined, undefined]);
+            expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "div", undefined, undefined]);
             expect(stackFrames[1]).toMatchStackFrame(["Grid", "webpack-internal:///./node_modules/@material-ui/core/esm/Grid/Grid.js", 235, 35]);
             expect(stackFrames[2]).toMatchStackFrame([
                 "WithStyles",
@@ -835,7 +849,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 61,
                 31,
             ]);
-            expect(stackFrames[3]).toMatchStackFrame(["div", undefined, undefined, undefined]);
             expect(stackFrames[42]).toMatchStackFrame(["eval", "webpack-internal:///./src/components/Search/SearchContext.js", 46, 25, "eval"]);
             expect(stackFrames[52]).toMatchStackFrame(["App", "webpack-internal:///./.cache/app.js", 209, 68]);
         });
@@ -862,6 +875,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames[0]).toMatchStackFrame([
                 "onPress",
+                // eslint-disable-next-line no-secrets/no-secrets
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 595,
                 658,
@@ -869,6 +883,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames[1]).toMatchStackFrame([
                 "value",
+                // eslint-disable-next-line no-secrets/no-secrets
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 221,
                 7656,
@@ -876,6 +891,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames[2]).toMatchStackFrame([
                 "onResponderRelease",
+                // eslint-disable-next-line no-secrets/no-secrets
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 221,
                 5666,
@@ -883,6 +899,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames[3]).toMatchStackFrame([
                 "p",
+                // eslint-disable-next-line no-secrets/no-secrets
                 "/data/user/0/com.sentrytest/files/.expo-internal/bundle-613EDD44F3305B9D75D4679663900F2BCDDDC326F247CA3202A3A4219FD412D3",
                 96,
                 385,
@@ -933,10 +950,14 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses React Native errors on Android Production", () => {
-            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error, {
+                frameLimit: 55,
+            });
 
             expect(stackFrames).toHaveLength(37);
             expect(stackFrames[0]).toMatchStackFrame(["value", "index.android.bundle", 12, 1917, undefined]);
+            expect(stackFrames[33]).toMatchStackFrame(["<unknown>", "index.android.bundle", 29, 955, undefined]);
+            expect(stackFrames[34]).toMatchStackFrame(["value", "index.android.bundle", 29, 2417, undefined]);
             expect(stackFrames[35]).toMatchStackFrame(["value", "index.android.bundle", 29, 927, undefined]);
             expect(stackFrames[36]).toMatchStackFrame(["<unknown>", "[native code]", undefined, undefined, "native"]);
         });
@@ -1076,7 +1097,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["new <anonymous>", "http://www.example.com/test.js", 2, 1]);
-            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "<anonymous>", 1, 2, "native"]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", "<anonymous>", 1, 2]);
         });
 
         it("should parses node.js errors", () => {
@@ -1141,12 +1162,12 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
                 `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`,
-                611,
-                45,
+                1152,
+                49,
                 "eval",
-                ["<anonymous>", "<anonymous>", 1, 1, "eval"],
+                { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
             ]);
-            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 771, 49]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 1152, 49]);
         });
 
         it("should parses PhantomJS 1.19 error", () => {
@@ -1159,8 +1180,9 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse regular expression in error stacktrace", () => {
-            const stackFrames = parseStacktrace({
-                stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
+            const stackFrames = parseStacktrace(
+                {
+                    stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
 
 If you want to write it to the DOM, pass a string instead: %s="%s" or %s={value.toString()}.
 
@@ -1216,7 +1238,11 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                                                                                                                                                                                                     in AppProviders (at App.tsx:28)
                                                                                                                                                                                                         in App (at src/index.tsx:30) at console.error (http://localhost:3340/__cypress/runner/cypress_runner.js:140661:26)
 `,
-            } as unknown as Error);
+                } as unknown as Error,
+                {
+                    frameLimit: 55,
+                },
+            );
 
             expect(stackFrames).toHaveLength(38);
             expect(stackFrames[0]).toMatchStackFrame(["StyledButton", "overrideOptional.tsx", 16, undefined]);
@@ -1270,14 +1296,34 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             expect(stackFrames).toHaveLength(12);
             expect(stackFrames[0]).toMatchStackFrame(["castFn", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 368, 76]);
             expect(stackFrames[1]).toMatchStackFrame(["castFn", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 409, 17]);
-            expect(stackFrames[2]).toMatchStackFrame(["Replayer.applyEventsSynchronously", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 325, 13]);
-            expect(stackFrames[3]).toMatchStackFrame(["<object>.actions.play", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js", 132, 17]);
+            expect(stackFrames[2]).toMatchStackFrame([
+                "Replayer.applyEventsSynchronously",
+                "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js",
+                325,
+                13,
+            ]);
+            expect(stackFrames[3]).toMatchStackFrame([
+                "<object>.actions.play",
+                "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/machine.js",
+                132,
+                17,
+            ]);
             expect(stackFrames[4]).toMatchStackFrame(["<anonymous>", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2595]);
             expect(stackFrames[5]).toMatchStackFrame(["Array.forEach", "<anonymous>", undefined, undefined]);
             expect(stackFrames[6]).toMatchStackFrame(["l", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2551]);
             expect(stackFrames[7]).toMatchStackFrame(["c.send", "../node_modules/@sentry-internal/rrweb/es/rrweb/ext/@xstate/fsm/es/index.js", 15, 2741]);
-            expect(stackFrames[8]).toMatchStackFrame(["Replayer.play", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 220, 26]);
-            expect(stackFrames[9]).toMatchStackFrame(["Replayer.pause", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 235, 18]);
+            expect(stackFrames[8]).toMatchStackFrame([
+                "Replayer.play",
+                "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js",
+                220,
+                26,
+            ]);
+            expect(stackFrames[9]).toMatchStackFrame([
+                "Replayer.pause",
+                "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js",
+                235,
+                18,
+            ]);
             expect(stackFrames[10]).toMatchStackFrame(["playTimer.current", "./app/components/replays/replayContext.tsx", 397, 62]);
             expect(stackFrames[11]).toMatchStackFrame(["sentryWrapped", "../node_modules/@sentry/browser/esm/helpers.js", 90, 17]);
         });
@@ -1375,11 +1421,10 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parses Safari 8 eval error", () => {
-            // TODO: Take into account the line and column properties on the error object and use them for the first stack trace.
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
-            expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", 1, 18, "native"]);
             expect(stackFrames[1]).toMatchStackFrame(["foo", "http://path/to/file.js", 58, 21]);
             expect(stackFrames[2]).toMatchStackFrame(["bar", "http://path/to/file.js", 109, 91]);
         });
@@ -1387,13 +1432,10 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse nested eval() from Safari 9", () => {
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_9_NESTED_EVAL as unknown as Error);
 
-            expect(stackFrames).toHaveLength(6);
-            expect(stackFrames[0]).toMatchStackFrame(["baz", undefined, undefined, undefined]);
-            expect(stackFrames[1]).toMatchStackFrame(["foo", undefined, undefined, undefined]);
-            expect(stackFrames[2]).toMatchStackFrame(["eval code", undefined, undefined, undefined]);
-            expect(stackFrames[3]).toMatchStackFrame(["eval", "[native code]", undefined, undefined]);
-            expect(stackFrames[4]).toMatchStackFrame(["speak", "http://localhost:8080/file.js", 26, 21]);
-            expect(stackFrames[5]).toMatchStackFrame(["global code", "http://localhost:8080/file.js", 33, 18]);
+            expect(stackFrames).toHaveLength(3);
+            expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[1]).toMatchStackFrame(["speak", "http://localhost:8080/file.js", 26, 21]);
+            expect(stackFrames[2]).toMatchStackFrame(["global code", "http://localhost:8080/file.js", 33, 18]);
         });
 
         it("should parse exceptions with native code frames in Safari 12", () => {
@@ -1409,7 +1451,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse exceptions with eval frames in Safari 12", () => {
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_EVAL_EXCEPTION as unknown as Error);
 
-            expect(stackFrames).toHaveLength(12);
+            expect(stackFrames).toHaveLength(11);
             expect(stackFrames[0]).toMatchStackFrame(["aha", "http://localhost:5000/", 19, 22]);
             expect(stackFrames[1]).toMatchStackFrame(["aha", "[native code]", undefined, undefined, "native"]);
             expect(stackFrames[2]).toMatchStackFrame(["callAnotherThing", "http://localhost:5000/", 20, 16]);
@@ -1417,11 +1459,10 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             expect(stackFrames[4]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 34, 25]);
             expect(stackFrames[5]).toMatchStackFrame(["map", "[native code]", undefined, undefined, "native"]);
             expect(stackFrames[6]).toMatchStackFrame(["test", "http://localhost:5000/", 33, 26]);
-            expect(stackFrames[7]).toMatchStackFrame(["eval", undefined, undefined, undefined, "eval"]);
-            expect(stackFrames[8]).toMatchStackFrame(["eval", "[native code]", undefined, undefined, "native"]);
-            expect(stackFrames[9]).toMatchStackFrame(["aha", "http://localhost:5000/", 39, 9]);
-            expect(stackFrames[10]).toMatchStackFrame(["testMethod", "http://localhost:5000/", 44, 10]);
-            expect(stackFrames[11]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 50, 29]);
+            expect(stackFrames[7]).toMatchStackFrame(["eval", "[native code]", undefined, undefined, "native"]);
+            expect(stackFrames[8]).toMatchStackFrame(["aha", "http://localhost:5000/", 39, 9]);
+            expect(stackFrames[9]).toMatchStackFrame(["testMethod", "http://localhost:5000/", 44, 10]);
+            expect(stackFrames[10]).toMatchStackFrame(["<unknown>", "http://localhost:5000/", 50, 29]);
         });
 
         describe("safari extensions", () => {
@@ -1494,14 +1535,14 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                     // eslint-disable-next-line no-secrets/no-secrets
                     "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
                     29,
-                    33314,
+                    33_314,
                 ]);
                 expect(stackFrames[1]).toMatchStackFrame([
                     "<unknown>",
                     // eslint-disable-next-line no-secrets/no-secrets
                     "safari-web-extension://46434E60-F5BD-48A4-80C8-A422C5D16897/scripts/content-script.js",
                     29,
-                    56027,
+                    56_027,
                 ]);
             });
         });

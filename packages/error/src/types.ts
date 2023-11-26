@@ -1,5 +1,3 @@
-import type { TraceMap } from "@jridgewell/trace-mapping";
-
 export interface ErrorProperties {
     hint?: string;
     location?: ErrorLocation;
@@ -50,11 +48,10 @@ export type TraceType = "eval" | "internal" | "native" | undefined;
 
 export interface Trace {
     column: number | undefined;
-    file: string | undefined;
     evalOrigin?: Trace | undefined;
+    file: string | undefined;
     line: number | undefined;
     methodName: string | undefined;
     raw: string;
-    sourceMap?: TraceMap | undefined;
-    type?: TraceType;
+    type?: TraceType | undefined;
 }

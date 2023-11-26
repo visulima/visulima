@@ -378,7 +378,7 @@ export default {
             "@file:///path/to/index.html:23:1\n" + // inside <script> tag
             "",
         fileName: "http://path/to/file.js",
-        columnNumber: 0,
+        columnNumber: 28,
         lineNumber: 703,
         result: 2147500037,
     },
@@ -636,7 +636,7 @@ export default {
         message: "'null' is not an object (evaluating 'x.undef')",
         name: "TypeError",
         stack: "http://path/to/file.js:48:22\n" + "foo@http://path/to/file.js:52:15\n" + "bar@http://path/to/file.js:108:107",
-        line: 47,
+        line: 48,
         sourceURL: "http://path/to/file.js",
     },
 
