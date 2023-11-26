@@ -1162,12 +1162,12 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
                 `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`,
-                1152,
+                1159,
                 49,
                 "eval",
                 { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
             ]);
-            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 1152, 49]);
+            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 1159, 49]);
         });
 
         it("should parses PhantomJS 1.19 error", () => {
