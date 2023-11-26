@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import loadSourceMap from "../src/load-source-map";
 
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtures__", "source-maps");
+
 describe("util/load-source-map", () => {
     it("should give back undefined as result if no sourcemap is referenced", () => {
         const result = loadSourceMap(join(FIXTURES_DIR, "noSourcemap.js"));
@@ -27,7 +28,7 @@ describe("util/load-source-map", () => {
         const result = loadSourceMap(join(FIXTURES_DIR, "lib", "example.js"));
 
         const generated = { column: 13, line: 30 };
-        const expected = { column: 9, line: 15, name: "setState", source: join(FIXTURES_DIR, "src/example.js") };
+        const expected = { column: 9, line: 15, name: "setState", source: join(FIXTURES_DIR, "src", "example.js") };
 
         expect(originalPositionFor(result, generated), "should have correct source mapping").toStrictEqual(expected);
     });
@@ -35,7 +36,9 @@ describe("util/load-source-map", () => {
     it("should call back with error on external, missing sourcemap", () => {
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path.replace("missingSourcemap.js", "missing.js.map")}'`);
+        expect(() => loadSourceMap(path)).toThrow(
+            `Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path.replace("missingSourcemap.js", "missing.js.map")}'`,
+        );
     });
 
     it("should call back with error on external, invalid sourcemap", () => {

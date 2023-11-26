@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 import capturedErrors from "../__fixtures__/captured-errors";
 import { parseStacktrace } from "../src";
 
+const isWin = process.platform === "win32";
+
 describe("parse-stacktrace", () => {
     describe("chromium", () => {
         it("should parse Chrome error with no location", () => {
@@ -1161,13 +1163,18 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
-                `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`,
-                1159,
+                `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+                1161,
                 49,
                 "eval",
                 { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
             ]);
-            expect(stackFrames[1]).toMatchStackFrame(["<unknown>", `${dirname(fileURLToPath(import.meta.url))}/parse-stacktrace.test.ts`, 1159, 49]);
+            expect(stackFrames[1]).toMatchStackFrame([
+                "<unknown>",
+                `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+                1161,
+                49,
+            ]);
         });
 
         it("should parses PhantomJS 1.19 error", () => {
