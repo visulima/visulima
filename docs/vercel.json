@@ -1,11 +1,12 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-    "installCommand": "pnpm install",
+    "installCommand": "pnpm install --frozen-lockfile",
     "trailingSlash": false,
     "env": {
-        "NEXT_TELEMETRY_DISABLED": "1",
+        "NEXT_TELEMETRY_DISABLED": "true",
         "NO_LOGS": "true",
-        "ENABLE_EXPERIMENTAL_COREPACK": "1"
+        "ENABLE_EXPERIMENTAL_COREPACK": "true",
+        "VERCEL_DEEP_CLONE": "true"
     },
     "rewrites": [{ "source": "/docs", "destination": "/docs/introduction" }],
     "buildCommand": "pnpm -w run build:docs",
