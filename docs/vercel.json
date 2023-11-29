@@ -8,7 +8,8 @@
         "ENABLE_EXPERIMENTAL_COREPACK": "true",
         "VERCEL_DEEP_CLONE": "true"
     },
+    "framework": "nextjs",
     "rewrites": [{ "source": "/docs", "destination": "/docs/introduction" }],
     "buildCommand": "pnpm -w run build:docs",
-    "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1"
+    "ignoreCommand": "node ./scripts/vercel-ignore-command.js"
 }

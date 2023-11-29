@@ -1,9 +1,9 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "buildCommand": "pnpm run -w build:storybook",
-    "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1",
+    "ignoreCommand": "node ./scripts/vercel-ignore-command.js",
     "devCommand": "pnpm run dev:storybook",
-    "installCommand": "pnpm install",
+    "installCommand": "pnpm install --frozen-lockfile",
     "framework": null,
     "outputDirectory": "./"
 }
