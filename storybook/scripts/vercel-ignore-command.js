@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-unused-modules
-import { execSync } from "node:child_process";
-import { env, exit } from "node:process";
+const { execSync } = require("node:child_process");
+const { env, exit } = require("node:process");
 
 const getChangedFiles = (extension = "") => {
     const extensionFilter = extension ? ` -- '***.${extension}'` : "";
