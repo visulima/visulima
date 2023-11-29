@@ -68,7 +68,6 @@ const command = async () => {
         maxDepth: 20,
         skip: ["**/.git/**", "**/node_modules/**", "**/__fixtures__/**", "**/__tests__/**", "**/__stories__/**"],
     })) {
-        console.log(result);
         if (result.isFile && result.path.includes("/__docs__/")) {
             // eslint-disable-next-line no-console
             console.log("Found", result.path);
