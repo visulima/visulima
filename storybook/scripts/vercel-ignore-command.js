@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unused-modules
 const { execSync } = require("node:child_process");
 const { env, exit } = require("node:process");
 
