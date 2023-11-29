@@ -66,7 +66,7 @@ const command = async () => {
         includeDirs: true,
         includeFiles: true,
         maxDepth: 20,
-        skip: ["../**/.git/**", "../**/node_modules/**", "**/.git/**", "**/node_modules/**"],
+        skip: ["**/.git/**", "**/node_modules/**", "**/__fixtures__/**", "**/__tests__/**", "**/__stories__/**"],
     })) {
         if (result.isFile && result.path.includes("/__docs__/")) {
             // eslint-disable-next-line no-console
