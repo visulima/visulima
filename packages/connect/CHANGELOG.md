@@ -1,3 +1,16 @@
+## @visulima/connect [2.1.10](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.9...@visulima/connect@2.1.10) (2023-11-30)
+
+
+### Bug Fixes
+
+* updated dep versions ([ed70375](https://github.com/visulima/visulima/commit/ed7037584477dbda4a8a6405a1104876e8a6c703))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.10
+
 ## @visulima/connect [2.1.9](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.8...@visulima/connect@2.1.9) (2023-11-30)
 
 
