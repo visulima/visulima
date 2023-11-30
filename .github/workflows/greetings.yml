@@ -23,5 +23,5 @@ jobs:
             - uses: "actions/first-interaction@1dbfe1ba5525b8257e1f259b09745bee346d62d8" # v1.2.0
               with:
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  issue-message: "Awesome! Thank you for taking the time to create your first issue! Please review the [guidelines](https://narrowspark.com/docs/current/contributing)"
-                  pr-message: "Great! Thank you for taking the time to create your first pull request! Please review the [guidelines](https://narrowspark.com/docs/current/contributing)"
+                  issue-message: "Awesome! Thank you for taking the time to create your first issue! Please review the [guidelines](https://visulima.com/docs/contributing)"
+                  pr-message: "Great! Thank you for taking the time to create your first pull request! Please review the [guidelines](https://visulima.com/docs/contributing)"

@@ -1,14 +1,21 @@
 {
     "name": "@visulima/error",
     "version": "1.0.2",
-    "description": "Error with more than just a message.",
+    "description": "Error with more than just a message, stacktrace parsing and sourcemap loading.",
     "keywords": [
         "visulima",
         "anolilab",
         "error",
         "exception",
         "code-frame",
-        "codeframe"
+        "codeframe",
+        "stack",
+        "stacktrace",
+        "stack-trace",
+        "trace",
+        "source-map",
+        "parser",
+        "v8"
     ],
     "homepage": "https://www.visulima.com/docs/package/error",
     "repository": {
@@ -40,9 +47,26 @@
                 "default": "./dist/index.js"
             }
         },
+        "./error": {
+            "import": {
+                "types": "./dist/error.d.ts",
+                "default": "./dist/error.js"
+            }
+        },
+        "./sourcemap": {
+            "import": {
+                "types": "./dist/sourcemap.d.ts",
+                "default": "./dist/sourcemap.js"
+            }
+        },
+        "./stacktrace": {
+            "import": {
+                "types": "./dist/stacktrace.d.ts",
+                "default": "./dist/stacktrace.js"
+            }
+        },
         "./package.json": "./package.json"
     },
-    "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
         "dist",
@@ -65,11 +89,14 @@
         "test": "vitest run",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@jridgewell/trace-mapping": "^0.3.20"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
-        "@babel/core": "^7.23.3",
+        "@babel/core": "^7.23.5",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.0",
         "@eslint-types/jsdoc": "^46.9.0",
@@ -79,7 +106,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
-        "@visulima/nextra-theme-docs": "4.0.9",
+        "@visulima/nextra-theme-docs": "4.0.8",
         "@vitest/coverage-v8": "^0.34.6",
         "chalk": "^5.3.0",
         "cross-env": "^7.0.3",
@@ -116,5 +143,11 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    }
+    },
+    "sources": [
+        "src/index.ts",
+        "src/error.ts",
+        "src/stacktrace.ts",
+        "src/sourcemap.ts"
+    ]
 }
