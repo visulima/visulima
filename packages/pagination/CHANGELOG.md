@@ -1,3 +1,10 @@
+## @visulima/pagination [3.0.9](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.8...@visulima/pagination@3.0.9) (2023-11-30)
+
+
+### Bug Fixes
+
+* **deps:** updated package deps ([b4f4ede](https://github.com/visulima/visulima/commit/b4f4eded7bbded62b341ade0017ab357336f3af2))
+
 ## @visulima/pagination [3.0.8](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.7...@visulima/pagination@3.0.8) (2023-11-07)
 
 
