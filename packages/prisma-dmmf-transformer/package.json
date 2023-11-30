@@ -83,7 +83,7 @@
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
         "@babel/core": "^7.23.3",
-        "@prisma/client": "4.16.2",
+        "@prisma/client": "5.6.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.6",
@@ -100,7 +100,7 @@
         "eslint-plugin-vitest": "^0.3.10",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "prettier": "3.1.0",
-        "prisma": "4.16.2",
+        "prisma": "5.6.0",
         "rimraf": "5.0.5",
         "semantic-release": "22.0.8",
         "sort-package-json": "^2.6.0",
@@ -109,8 +109,8 @@
         "vitest": "0.34.6"
     },
     "peerDependencies": {
-        "@prisma/client": "3.* || 4.*",
-        "prisma": "3.* || 4.*"
+        "@prisma/client": "3.* || 4.* || 5.*",
+        "prisma": "3.* || 4.* || 5.*"
     },
     "engines": {
         "node": ">=18.* <=21.*"
