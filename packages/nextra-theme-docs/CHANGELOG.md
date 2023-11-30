@@ -1,3 +1,17 @@
+## @visulima/nextra-theme-docs [4.0.9](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.8...@visulima/nextra-theme-docs@4.0.9) (2023-11-30)
+
+
+### Bug Fixes
+
+* added new ignore command scripts ([#258](https://github.com/visulima/visulima/issues/258)) ([9fc2ce4](https://github.com/visulima/visulima/commit/9fc2ce45d257068c8bf8dea58f2fa4752a58af1e))
+* **deps:** updated package deps ([b4f4ede](https://github.com/visulima/visulima/commit/b4f4eded7bbded62b341ade0017ab357336f3af2))
+* update packages deps ([51113c8](https://github.com/visulima/visulima/commit/51113c88f608c517ebecee8f63086636722d2de2))
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency next to >=13.1.6 ([#260](https://github.com/visulima/visulima/issues/260)) ([88e3b4f](https://github.com/visulima/visulima/commit/88e3b4f17a6c703f4c3fc13eb8c5cf4fd8e610f1))
+
 ## @visulima/nextra-theme-docs [4.0.8](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.7...@visulima/nextra-theme-docs@4.0.8) (2023-11-07)
 
 
