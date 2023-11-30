@@ -121,7 +121,7 @@
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
-        "@babel/core": "^7.23.3",
+        "@babel/core": "^7.23.5",
         "@pnpm/exe": "^8.11.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@total-typescript/ts-reset": "^0.5.1",

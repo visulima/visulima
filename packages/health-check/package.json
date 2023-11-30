@@ -84,7 +84,7 @@
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
-        "@babel/core": "^7.23.3",
+        "@babel/core": "^7.23.5",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@types/node": "18.18.8",
         "@vitest/coverage-v8": "^0.34.6",
