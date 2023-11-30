@@ -157,7 +157,7 @@
         "@testing-library/react": "^14.1.2",
         "@tsconfig/node18": "^18.2.2",
         "@tsconfig/strictest": "^2.0.2",
-        "@types/node": "^20.8.10",
+        "@types/node": "^20.9.4",
         "browserslist-config-anolilab": "^5.0.13",
         "commitizen": "^4.3.0",
         "core-js": "^3.33.3",
