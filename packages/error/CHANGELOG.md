@@ -1,3 +1,16 @@
+## @visulima/error [1.0.2](https://github.com/visulima/visulima/compare/@visulima/error@1.0.1...@visulima/error@1.0.2) (2023-11-30)
+
+
+### Bug Fixes
+
+* **deps:** updated package deps ([b4f4ede](https://github.com/visulima/visulima/commit/b4f4eded7bbded62b341ade0017ab357336f3af2))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.9
+
 ## @visulima/error [1.0.1](https://github.com/visulima/visulima/compare/@visulima/error@1.0.0...@visulima/error@1.0.1) (2023-11-07)
 
 
