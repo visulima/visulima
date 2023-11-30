@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima error</h3>
   <p>
-  Error with more than just a message.
+  Error with more than just a message, stacktrace parsing and sourcemap loading.
   </p>
 </div>
 
@@ -82,6 +82,65 @@ console.log(frame);
 //     |                ^
 ```
 
+## Stacktrace
+
+> Browser older than 6 years are not supported.
+
+Currently supported browsers/platforms:
+
+-   Firefox
+-   Chrome
+-   Webkit / Safari
+-   Edge
+-   Node / Node V8
+-   Opera (Chromium based)
+
+```ts
+import { parseStack } from "@visulima/error";
+
+const error = new Error("My error message");
+
+const stack = parseStack(error);
+
+console.log(stack);
+
+// [
+//     {
+//         column: 16,
+//         file: "file:///Users/danielbannert/Projects/visulima/packages/error/src/index.ts",
+//         line: 2,
+//         methodName: "Object.<anonymous>",
+//         raw: "    at Object.<anonymous> (/visulima/packages/error/src/index.ts:2:16)",
+//         type: undefined, // optional property, can be undefined, "eval", "native", or "internal"
+//         evalOrigin: undefined, // optional property only available if the stacktrace contains eval
+//     },
+//     ...and so on
+// ];
+```
+
+## Source Map
+
+```ts
+import { loadSourceMap, originalPositionFor, sourceContentFor } from "@visulima/error";
+
+const sourceMap = loadSourceMap("your_path/src/index.js"); // returns a TraceMap
+
+const traced = originalPositionFor(sourceMap, { column: 13, line: 30 });
+
+console.log(traced);
+
+// {
+//     column: 9,
+//     line: 15,
+//     name: "setState",
+//     source: "your_path/src/index.js"
+// }
+
+console.log(sourceContentFor(sourceMap, traced.source)); // 'content for your_path/src/index.js'
+```
+
+For more information about the TraceMap see [@jridgewell/trace-mapping](https://github.com/jridgewell/trace-mapping)
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
@@ -97,6 +156,26 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## About
+
+### Related Projects
+
+-   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
+-   [callsite-record](https://github.com/inikulin/callsite-record): create a fancy log entries for errors and function call sites.
+-   [callsites](https://github.com/sindresorhus/callsites): get callsites from the V8 stack trace API.
+-   [explain-error](https://github.com/dominictarr/explain-error): wrap an error with additional explanation.
+-   [error-wrapper](https://github.com/spudly/error-wrapper): merges the stack of another error to its own.
+-   [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
+-   [trace](https://github.com/AndreasMadsen/trace): create super long stack traces.
+-   [clarify](https://github.com/AndreasMadsen/clarify): remove node related stack trace noise.
+-   [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
+-   [pretty-error](https://github.com/AriaMinaei/pretty-error): make the call stacks clear.
+-   [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
+-   [ololog](https://github.com/xpl/ololog): another logger with a similar motivation but only support console.log as its sole transport.
+-   [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
+-   [marvinhagemeister/errorstacks](https://github.com/marvinhagemeister/errorstacks) Tiny library to parse error stack traces
+-   [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
 
 ## License
 

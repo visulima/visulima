@@ -3,6 +3,6 @@
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/error/src",
     "projectType": "library",
-    "tags": ["error", "type:package"],
+    "tags": ["error", "type:package", "flame"],
     "implicitDependencies": []
 }
