@@ -1,3 +1,11 @@
+## @visulima/deep-clone [1.0.6](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.5...@visulima/deep-clone@1.0.6) (2023-11-30)
+
+
+### Bug Fixes
+
+* **deps:** updated package deps ([b4f4ede](https://github.com/visulima/visulima/commit/b4f4eded7bbded62b341ade0017ab357336f3af2))
+* update packages deps ([51113c8](https://github.com/visulima/visulima/commit/51113c88f608c517ebecee8f63086636722d2de2))
+
 ## @visulima/deep-clone [1.0.5](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.4...@visulima/deep-clone@1.0.5) (2023-11-07)
 
 
