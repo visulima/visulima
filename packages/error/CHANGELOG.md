@@ -1,3 +1,10 @@
+## @visulima/error [1.1.0](https://github.com/visulima/visulima/compare/@visulima/error@1.0.2...@visulima/error@1.1.0) (2023-11-30)
+
+
+### Features
+
+* added a stacktrace parser and a sourcemap loader ([#250](https://github.com/visulima/visulima/issues/250)) ([4543e44](https://github.com/visulima/visulima/commit/4543e44becc85a54cdbe7701e2c3e6601b282985))
+
 ## @visulima/error [1.0.2](https://github.com/visulima/visulima/compare/@visulima/error@1.0.1...@visulima/error@1.0.2) (2023-11-30)
 
 
