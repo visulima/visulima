@@ -118,7 +118,7 @@
         "@types/cli-progress": "^3.11.5",
         "@types/http-errors": "^2.0.4",
         "@types/lodash.mergewith": "^4.6.9",
-        "@types/node": "18.18.12",
+        "@types/node": "18.18.8",
         "@types/webpack": "^5.28.5",
         "@vitest/coverage-v8": "^0.34.6",
         "cli-progress": "^3.12.0",
