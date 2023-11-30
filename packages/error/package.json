@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Error with more than just a message.",
     "keywords": [
         "visulima",
@@ -79,7 +79,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
-        "@visulima/nextra-theme-docs": "4.0.8",
+        "@visulima/nextra-theme-docs": "4.0.9",
         "@vitest/coverage-v8": "^0.34.6",
         "chalk": "^5.3.0",
         "cross-env": "^7.0.3",
