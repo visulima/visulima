@@ -1,3 +1,10 @@
+## @visulima/package [1.2.6](https://github.com/visulima/visulima/compare/@visulima/package@1.2.5...@visulima/package@1.2.6) (2023-11-30)
+
+
+### Bug Fixes
+
+* updated dep versions ([ed70375](https://github.com/visulima/visulima/commit/ed7037584477dbda4a8a6405a1104876e8a6c703))
+
 ## @visulima/package [1.2.5](https://github.com/visulima/visulima/compare/@visulima/package@1.2.4...@visulima/package@1.2.5) (2023-11-30)
 
 
