@@ -1,3 +1,10 @@
+## @visulima/deep-clone [1.0.7](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.6...@visulima/deep-clone@1.0.7) (2023-11-30)
+
+
+### Bug Fixes
+
+* updated dep versions ([ed70375](https://github.com/visulima/visulima/commit/ed7037584477dbda4a8a6405a1104876e8a6c703))
+
 ## @visulima/deep-clone [1.0.6](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.5...@visulima/deep-clone@1.0.6) (2023-11-30)
 
 
