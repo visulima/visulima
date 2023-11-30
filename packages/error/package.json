@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Error with more than just a message, stacktrace parsing and sourcemap loading.",
     "keywords": [
         "visulima",
@@ -96,7 +96,7 @@
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
-        "@babel/core": "^7.23.3",
+        "@babel/core": "^7.23.5",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.0",
         "@eslint-types/jsdoc": "^46.9.0",
