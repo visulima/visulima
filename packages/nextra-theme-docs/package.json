@@ -119,7 +119,7 @@
         "@babel/core": "^7.23.3",
         "@mdx-js/react": "^3.0.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
-        "@secretlint/secretlint-rule-preset-recommend": "^7.2.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.0.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.10",
         "@testing-library/react": "^14.1.2",
