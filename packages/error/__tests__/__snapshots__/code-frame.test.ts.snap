@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`code-frame > should colorize the error line 1`] = `
+" [90m  6 |[39m     'We tried looking for using inside the \\"users\\" table',
+ [90m  7 |[39m     'The search was performed using the where (email = user.email) and (is_active = true)'
+[31m[1m❯[22m[39m[90m  8 |[39m    ]
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m  9 |[39m
+ [90m 10 |[39m     throw error
+ [90m 11 |[39m }"
+`;

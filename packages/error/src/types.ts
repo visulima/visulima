@@ -38,10 +38,29 @@ export interface ErrorWithMetadata<Type = NonNullable<unknown> & string> {
     type?: Type | "VisulimaError";
 }
 
+export type CodeFrameLocation = {
+    column?: number;
+    line: number;
+};
+
+export type CodeFrameNodeLocation = {
+    end?: CodeFrameLocation;
+    start: CodeFrameLocation;
+};
+
+export type ColorizeMethod = (value: string) => string;
+
 export type CodeFrameOptions = {
-    focusLineColor?: (value: string) => string;
+    color?: Partial<{
+        gutter: ColorizeMethod;
+        marker: ColorizeMethod;
+        message: ColorizeMethod;
+    }>;
+    message?: string;
     linesAbove?: number;
     linesBelow?: number;
+    showLineNumbers?: boolean;
+    showGutter?: boolean;
 };
 
 export type TraceType = "eval" | "internal" | "native" | undefined;

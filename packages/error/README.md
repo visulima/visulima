@@ -74,7 +74,7 @@ import { codeFrame } from "@visulima/error";
 const source = "const x = 10;\nconst error = x.y;\n";
 const loc = { column: 16, line: 2 };
 
-const frame = codeFrame(source, loc);
+const frame = codeFrame(source, { start: loc });
 
 console.log(frame);
 //   1 | const x = 10;
