@@ -47,6 +47,12 @@
                 "default": "./dist/index.js"
             }
         },
+        "./code-frame": {
+            "import": {
+                "types": "./dist/code-frame.d.ts",
+                "default": "./dist/code-frame.js"
+            }
+        },
         "./error": {
             "import": {
                 "types": "./dist/error.d.ts",
@@ -146,6 +152,7 @@
     },
     "sources": [
         "src/index.ts",
+        "src/code-frame/index.ts",
         "src/error.ts",
         "src/stacktrace.ts",
         "src/sourcemap.ts"
