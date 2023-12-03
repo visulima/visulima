@@ -9,13 +9,13 @@ const server = createServer((request, response) => {
     response.write = function (chunk, encoding, callback) {
         let html = chunk;
         // Hack to have a live reload
-        // refresh the page every 3 seconds
-        html = html.replace("</head>", "<script>setTimeout(function(){\nwindow.location.reload(1);\n}, 3000);</script></head>");
+        // refresh the page every 5 seconds
+        //html = html.replace("</head>", "<script>setTimeout(function(){\nwindow.location.reload(1);\n}, 5000);</script></head>");
 
         return orginalWrite.call(this, html, encoding, callback);
     };
 
-    httpDisplayer(new Error("Test"), request, response);
+    httpDisplayer(new Error("This is a error message"), request, response);
 });
 
 server.listen(port, () => {
