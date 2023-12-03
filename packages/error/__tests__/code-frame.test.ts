@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * This is a copy of the codeFrameColumns tests from Babel
  * @see https://github.com/babel/babel/blob/85e649203b61b7c908eb04c05511a0d35f893e8e/packages/babel-code-frame/test/index.js#L316-L565
@@ -8,11 +9,10 @@
  * Copyright (c) 2014-present Sebastian McKenzie and other contributors
  */
 
-import chalk from "chalk";
 import { describe, expect, it, vi } from "vitest";
 
-import process from "../src/util/process";
 import { codeFrame } from "../src/code-frame";
+import process from "../src/util/process";
 
 const POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? ">" : "❯";
 
@@ -86,58 +86,67 @@ ${POINTER}  8 |    ]
             { start: loc },
             {
                 color: {
-                    gutter: chalk.grey,
-                    marker: chalk.red.bold,
-                    message: chalk.red.bold,
+                    gutter: (v) => `gutter-${v}`,
+                    marker: (v) => `marker-${v}`,
+                    message: (v) => `message-${v}`,
                 },
+                message: "foo",
             },
         );
 
-        expect(result).toMatchSnapshot();
+        expect(result).toBe(` gutter-  6 |     'We tried looking for using inside the "users" table',
+ gutter-  7 |     'The search was performed using the where (email = user.email) and (is_active = true)'
+marker-${POINTER}gutter-  8 |    ]
+ gutter-    |     marker-^ message-foo
+ gutter-  9 |
+ gutter- 10 |     throw error
+ gutter- 11 | }`);
     });
 
-    it("should show no lines above", function () {
+    it("should show no lines above", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0 })).toEqual(
+        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0 })).toStrictEqual(
             [`${POINTER} 2 |   constructor() {`, "  3 |     console.log(arguments);", "  4 |   }", "  5 | };"].join("\n"),
         );
     });
 
-    it("should show no lines below", function () {
+    it("should show no lines below", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesBelow: 0 })).toEqual(["  1 | class Foo {", `${POINTER} 2 |   constructor() {`].join("\n"));
+        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesBelow: 0 })).toStrictEqual(
+            ["  1 | class Foo {", `${POINTER} 2 |   constructor() {`].join("\n"),
+        );
     });
 
-    it("should show single line", function () {
+    it("should show single line", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0, linesBelow: 0 })).toEqual([`${POINTER} 2 |   constructor() {`].join("\n"));
+        expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0, linesBelow: 0 })).toStrictEqual([`${POINTER} 2 |   constructor() {`].join("\n"));
     });
 
-    it("should mark multiple columns across lines", function () {
+    it("should mark multiple columns across lines", () => {
         const rawLines = ["class Foo {", "  constructor() {", "  }", "};"].join("\n");
 
         expect(
             codeFrame(rawLines, {
-                start: { line: 2, column: 17 },
-                end: { line: 3, column: 3 },
+                end: { column: 3, line: 3 },
+                start: { column: 17, line: 2 },
             }),
-        ).toEqual(
+        ).toStrictEqual(
             ["  1 | class Foo {", `${POINTER} 2 |   constructor() {`, "    |                 ^", `${POINTER} 3 |   }`, "    | ^^^", "  4 | };"].join("\n"),
         );
     });
 
-    it("should mark multiple columns across multiple lines", function () {
+    it("should mark multiple columns across multiple lines", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
             codeFrame(rawLines, {
-                start: { line: 2, column: 17 },
-                end: { line: 4, column: 3 },
+                end: { column: 3, line: 4 },
+                start: { column: 17, line: 2 },
             }),
-        ).toEqual(
+        ).toStrictEqual(
             [
                 "  1 | class Foo {",
                 `${POINTER} 2 |   constructor() {`,
@@ -151,31 +160,31 @@ ${POINTER}  8 |    ]
         );
     });
 
-    it("should mark across multiple lines without columns", function () {
+    it("should mark across multiple lines without columns", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 2 }, end: { line: 4 } })).toEqual(
+        expect(codeFrame(rawLines, { end: { line: 4 }, start: { line: 2 } })).toStrictEqual(
             ["  1 | class Foo {", `${POINTER} 2 |   constructor() {`, `${POINTER} 3 |     console.log(arguments);`, `${POINTER} 4 |   }`, "  5 | };"].join(
                 "\n",
             ),
         );
     });
 
-    it("should show message", function () {
+    it("should show message", () => {
         const rawLines = ["class Foo {", "  constructor()", "};"].join("\n");
 
         expect(
             codeFrame(
                 rawLines,
-                { start: { line: 2, column: 16 } },
+                { start: { column: 16, line: 2 } },
                 {
                     message: "Missing {",
                 },
             ),
-        ).toEqual(["  1 | class Foo {", `${POINTER} 2 |   constructor()`, "    |                ^ Missing {", "  3 | };"].join("\n"));
+        ).toStrictEqual(["  1 | class Foo {", `${POINTER} 2 |   constructor()`, "    |                ^ Missing {", "  3 | };"].join("\n"));
     });
 
-    it("should show message without column", function () {
+    it("should show message without column", () => {
         const rawLines = ["class Foo {", "  constructor()", "};"].join("\n");
 
         expect(
@@ -186,24 +195,24 @@ ${POINTER}  8 |    ]
                     message: "Missing {",
                 },
             ),
-        ).toEqual(["  Missing {", "  1 | class Foo {", `${POINTER} 2 |   constructor()`, "  3 | };"].join("\n"));
+        ).toStrictEqual(["  Missing {", "  1 | class Foo {", `${POINTER} 2 |   constructor()`, "  3 | };"].join("\n"));
     });
 
-    it("should show message with multiple lines", function () {
+    it("should show message with multiple lines", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
             codeFrame(
                 rawLines,
                 {
-                    start: { line: 2, column: 17 },
-                    end: { line: 4, column: 3 },
+                    end: { column: 3, line: 4 },
+                    start: { column: 17, line: 2 },
                 },
                 {
                     message: "something about the constructor body",
                 },
             ),
-        ).toEqual(
+        ).toStrictEqual(
             [
                 "  1 | class Foo {",
                 `${POINTER} 2 |   constructor() {`,
@@ -217,18 +226,18 @@ ${POINTER}  8 |    ]
         );
     });
 
-    it("should show message with multiple lines without columns", function () {
+    it("should show message with multiple lines without columns", () => {
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
             codeFrame(
                 rawLines,
-                { start: { line: 2 }, end: { line: 4 } },
+                { end: { line: 4 }, start: { line: 2 } },
                 {
                     message: "something about the constructor body",
                 },
             ),
-        ).toEqual(
+        ).toStrictEqual(
             [
                 "  something about the constructor body",
                 "  1 | class Foo {",
@@ -240,7 +249,7 @@ ${POINTER}  8 |    ]
         );
     });
 
-    it("should maximum context lines and padding", function () {
+    it("should maximum context lines and padding", () => {
         const rawLines = [
             "/**",
             " * Sums two numbers.",
@@ -255,7 +264,7 @@ ${POINTER}  8 |    ]
             "}",
         ].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 7, column: 2 } })).toEqual(
+        expect(codeFrame(rawLines, { start: { column: 2, line: 7 } })).toStrictEqual(
             [
                 "   5 |  * @param b Number",
                 "   6 |  * @returns Number",
@@ -268,7 +277,7 @@ ${POINTER}  8 |    ]
         );
     });
 
-    it("should no unnecessary padding due to one-off errors", function () {
+    it("should no unnecessary padding due to one-off errors", () => {
         const rawLines = [
             "/**",
             " * Sums two numbers.",
@@ -283,7 +292,7 @@ ${POINTER}  8 |    ]
             "}",
         ].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 6, column: 2 } })).toEqual(
+        expect(codeFrame(rawLines, { start: { column: 2, line: 6 } })).toStrictEqual(
             [
                 "  4 |  * @param a Number",
                 "  5 |  * @param b Number",
@@ -310,7 +319,7 @@ ${POINTER} 2 |     const error = x.y;
     it("should handle tabs", () => {
         const rawLines = ["\tclass Foo {", "\t  \t\t    constructor\t(\t)", "\t};"].join("\n");
 
-        expect(codeFrame(rawLines, { start: { line: 2, column: 25 } })).toEqual(
+        expect(codeFrame(rawLines, { start: { column: 25, line: 2 } })).toStrictEqual(
             ["  1 |     class Foo {", `${POINTER} 2 |                   constructor    (    )`, "    |                         ^", "  3 |     };"].join("\n"),
         );
     });
@@ -318,18 +327,18 @@ ${POINTER} 2 |     const error = x.y;
     it("should correctly marks lines containing tab characters", () => {
         expect(
             codeFrame(" * @name        Foo#a", {
-                start: { line: 1, column: 17 },
-                end: { line: 1, column: 19 },
+                end: { column: 19, line: 1 },
+                start: { column: 17, line: 1 },
             }),
-        ).toEqual(`${POINTER} 1 |  * @name        Foo#a
+        ).toBe(`${POINTER} 1 |  * @name        Foo#a
     |                 ^^`);
 
         expect(
             codeFrame(" * @name\t\tFoo#a", {
-                start: { line: 1, column: 17 },
-                end: { line: 1, column: 19 },
+                end: { column: 19, line: 1 },
+                start: { column: 17, line: 1 },
             }),
-        ).toEqual(`${POINTER} 1 |  * @name        Foo#a
+        ).toBe(`${POINTER} 1 |  * @name        Foo#a
     |                 ^^`);
     });
 });
