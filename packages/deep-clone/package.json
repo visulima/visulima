@@ -107,7 +107,7 @@
         "clone-deep": "^4.0.1",
         "cross-env": "^7.0.3",
         "deep-copy": "^1.4.2",
-        "eslint": "^8.54.0",
+        "eslint": "^8.55.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-mdx": "^2.2.0",
@@ -129,7 +129,7 @@
         "sort-package-json": "^2.6.0",
         "standard": "^17.1.0",
         "tsup": "^8.0.1",
-        "type-fest": "^4.8.2",
+        "type-fest": "^4.8.3",
         "typescript": "^5.3.2",
         "vitest": "^0.34.6"
     },
