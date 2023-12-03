@@ -56,11 +56,11 @@ export type CodeFrameOptions = {
         marker: ColorizeMethod;
         message: ColorizeMethod;
     }>;
-    message?: string;
     linesAbove?: number;
     linesBelow?: number;
-    showLineNumbers?: boolean;
+    message?: string;
     showGutter?: boolean;
+    showLineNumbers?: boolean;
 };
 
 export type TraceType = "eval" | "internal" | "native" | undefined;
