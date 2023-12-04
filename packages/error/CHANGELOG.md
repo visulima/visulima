@@ -1,3 +1,20 @@
+## @visulima/error [2.0.0](https://github.com/visulima/visulima/compare/@visulima/error@1.1.1...@visulima/error@2.0.0) (2023-12-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed positionAt, changed public interface of code-frame
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* changed public interface of code-frame, added multiline marker ([d9d60c0](https://github.com/visulima/visulima/commit/d9d60c06029f7564bc956a027d040331eddd0443))
+
+
+### Bug Fixes
+
+* fixed wrong export ([b3689cd](https://github.com/visulima/visulima/commit/b3689cd5f5479cf934d8d892ff7071feedd3b9ae))
+
 ## @visulima/error [1.1.1](https://github.com/visulima/visulima/compare/@visulima/error@1.1.0...@visulima/error@1.1.1) (2023-11-30)
 
 
