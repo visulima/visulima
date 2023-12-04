@@ -1,5 +1,5 @@
 // https://runtime-keys.proposal.wintercg.org/
-export type RuntimeName = "workerd" | "deno" | "lagon" | "netlify" | "node" | "bun" | "edge-light" | "fastly";
+export type RuntimeName = "bun" | "deno" | "edge-light" | "fastly" | "lagon" | "netlify" | "node" | "workerd";
 
 const runtimeChecks: [boolean, RuntimeName][] = [
     [!!globalThis.Netlify, "netlify"],
@@ -9,8 +9,8 @@ const runtimeChecks: [boolean, RuntimeName][] = [
     [!!globalThis.Deno, "deno"],
     // https://nodejs.org/api/process.html#processrelease
     [!!globalThis.__lagon__, "lagon"],
-    [globalThis.process?.release?.name === "node", "node"],
-    [!!globalThis.Bun || !!globalThis.process?.versions?.bun, "bun"],
+    [globalThis.process.release.name === "node", "node"],
+    [!!globalThis.Bun || !!globalThis.process.versions.bun, "bun"],
     [!!globalThis.fastly, "fastly"],
 ];
 
