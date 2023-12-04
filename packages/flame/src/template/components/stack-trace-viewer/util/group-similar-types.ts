@@ -4,12 +4,12 @@ const groupSimilarTypes = (list: Item[]): (Item | Item[])[] => {
     const result: any[] = [];
     let currentGroup: Item[] = [];
 
-    for (let i = 0; i < list.length; i++) {
+    for (let index = 0; index < list.length; index++) {
         // Add the current item to the group
-        currentGroup.push(list[i] as Item);
+        currentGroup.push(list[index] as Item);
 
         // Check if the next item is different or if we are at the end of the list
-        if (i === list.length - 1 || (list[i] as Item).type !== (list[i + 1] as Item).type) {
+        if (index === list.length - 1 || (list[index] as Item).type !== (list[index + 1] as Item).type) {
             if (currentGroup.length > 1) {
                 // If the group has more than one item, add it as a sub-array
                 result.push(currentGroup);

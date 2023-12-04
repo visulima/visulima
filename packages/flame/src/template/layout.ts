@@ -1,19 +1,19 @@
 const layout = ({
-    title,
-    description,
     content,
     css,
-    script,
+    description,
     error,
+    script,
+    title,
 }: {
-    title: string;
-    description: string;
-    css: string;
-    script: string;
     content: string;
+    css: string;
+    description: string;
     error: Error,
+    script: string;
+    title: string;
 }): string => `<!--
-${error?.stack ? error.stack?.replace(/\n/g, "\n\t") : error.toString()}
+${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -91,7 +91,7 @@ ${error?.stack ? error.stack?.replace(/\n/g, "\n\t") : error.toString()}
 </body>
 </html>
 <!--
-${error?.stack ? error.stack?.replace(/\n/g, "\n\t") : error.toString()}
+${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
 -->
 `;
 

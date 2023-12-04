@@ -1,7 +1,5 @@
-const exceptionSelector = () => {
-    return `<div>
+const exceptionSelector = () => `<div>
 
 </div>`
-}
 
 export default exceptionSelector;

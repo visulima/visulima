@@ -1,32 +1,41 @@
 import { codeFrame, parseStacktrace } from "@visulima/error";
 import { getHighlighterCore } from "shikiji/core";
-import { getWasmInlined } from "shikiji/wasm";
 import nord from "shikiji/themes/nord.mjs";
-import foldVerticalIcon from "lucide-static/icons/fold-vertical.svg";
-import unfoldVerticalIcon from "lucide-static/icons/unfold-vertical.svg";
+import { getWasmInlined } from "shikiji/wasm";
 
-import process from "../../../util/process";
+import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
+import process from "../../../util/process";
 import type { GroupType, Item } from "./types";
-import groupSimilarTypes from "./util/group-similar-types";
 import getType from "./util/get-type";
+import groupSimilarTypes from "./util/group-similar-types";
 
 const stackTraceViewer = async (error: Error): Promise<string> => {
     const shiki = await getHighlighterCore({
+        langs: [
+            import("shikiji/langs/javascript.mjs"),
+            import("shikiji/langs/typescript.mjs"),
+            import("shikiji/langs/jsx.mjs"),
+            import("shikiji/langs/tsx.mjs"),
+            import("shikiji/langs/json.mjs"),
+            import("shikiji/langs/jsonc.mjs"),
+            import("shikiji/langs/json5.mjs"),
+            import("shikiji/langs/xml.mjs"),
+            import("shikiji/langs/sql.mjs"),
+        ],
+        loadWasm: getWasmInlined,
         themes: [
             // instead of strings, you need to pass the imported module
             nord,
             // or a dynamic import if you want to do chunk splitting
             import("shikiji/themes/github-light.mjs"),
         ],
-        langs: [import("shikiji/langs/javascript.mjs"), import("shikiji/langs/typescript.mjs")],
-        loadWasm: getWasmInlined,
     });
 
     const traces = parseStacktrace(error);
 
-    let tabs: { html: string; type: GroupType }[] = [];
-    let sourceCode: string[] = [];
+    const tabs: { html: string; type: GroupType }[] = [];
+    const sourceCode: string[] = [];
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for await (const [index, trace] of traces.entries()) {
@@ -37,26 +46,26 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
             ? codeFrame(
                   source,
                   {
-                      line: trace.line,
-                      column: trace.column,
+                      start: {
+                          column: trace.column,
+                          line: trace.line,
+                      },
                   },
                   {
-                      linesAbove: 10,
+                      linesAbove: 9,
                       linesBelow: 10,
-                  },
-                  {
                       showGutter: false,
                   },
               )
             : defaultSource;
 
         const code = shiki.codeToHtml(sourceCodeFrame, {
-            lang: "javascript",
+            lang: findLanguageBasedOnExtension(trace.file || ""),
             theme: "nord",
         });
 
-        let filePath = `${trace.file}:${trace.line}:${trace.column}`;
-        const relativeFilePath = filePath.replace(process?.cwd?.() || "", "").replace("file:///", "");
+        const filePath = `${trace.file}:${trace.line}:${trace.column}`;
+        const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
 
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${index}" data-hs-tab="#source-code-tabs-${index}" aria-controls="source-code-tabs-${index}" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
@@ -73,8 +82,12 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
         sourceCode.push(`<div id="source-code-tabs-${index}" class="${
             index === 0 ? "block" : "hidden"
         }" role="tabpanel" aria-labelledby="source-code-tabs-item-${index}">
-<div class="pt-4 pb-10 text-sm text-right text-[#D8DEE9] dark:text-gray-400"><button id="source-code-open-in-editor" type="button">${relativeFilePath}</button></div>
-${code}
+<div class="pt-10 pb-8 mb-6 text-sm text-right text-[#D8DEE9] dark:text-gray-400 border-b border-gray-600">
+    <div class="px-6">
+        <button id="source-code-open-in-editor" type="button">${relativeFilePath}</button>
+    </div>
+</div>
+<div class="p-6">${code}</div>
 </div>`);
     }
 
@@ -82,10 +95,21 @@ ${code}
     <main id="stack-trace-viewer" class="flex flex-row">
         <div class="w-4/12 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <div class="border-b border-gray-100 p-6">
-                <button type="button" class="py-2 px-2 w-full inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
-                  <span class="flex flex-row gap-4">${unfoldVerticalIcon} Expand node_modules frames</span>
-                  <span class="hidden">${foldVerticalIcon} Collapse node_modules frames</span>
-                </button>
+                <span class="block text-xs mb-2 text-gray-500 dark:text-gray-400">Show or Hide collapsed frames</span>
+                <div class="flex flex-row items-center">
+                ${groupSimilarTypes(tabs)
+                    .map((tab: Item | Item[]) => {
+                        if (Array.isArray(tab)) {
+                            return `<div class="flex items-center">
+                            <input type="checkbox" id="hs-small-switch" class="relative w-[35px] h-[21px] bg-gray-100 border-transparent text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-600 before:inline-block before:w-4 before:h-4 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200">
+                            <label for="hs-small-switch" class="text-sm text-gray-500 ms-3 dark:text-gray-400">${(tab[0] as Item).type}</label>
+                        </div>`;
+                        }
+
+                        return "";
+                    })
+                    .join("")}
+                </div>
             </div>
             <nav class="flex flex-col" aria-label="Tabs" role="tablist">
                 ${groupSimilarTypes(tabs)
@@ -109,7 +133,7 @@ ${tab.length} ${(tab[0] as Item).type === "internal" ? "internal" : "node_module
                     .join("")}
             </nav>
         </div>
-        <div class="w-8/12 bg-[#2e3440ff] rounded-tr-lg rounded-br-lg overflow-hidden p-6">${sourceCode.join("")}</div>
+        <div class="w-8/12 bg-[#2e3440ff] rounded-tr-lg rounded-br-lg overflow-hidden">${sourceCode.join("")}</div>
     </main>
 </section>`;
 };

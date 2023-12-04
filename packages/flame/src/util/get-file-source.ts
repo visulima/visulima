@@ -1,4 +1,5 @@
-import { Readable } from "stream";
+import type { Readable } from "node:stream";
+
 import { getUri } from "get-uri";
 
 const cache = new Map<string, string>();
@@ -31,8 +32,8 @@ const getFileSource = async (file: string): Promise<string | undefined> => {
         cache.set(file, source);
 
         return source;
-    } catch (e) {
-        console.log(e)
+    } catch (error) {
+        console.log(error)
         return undefined;
     }
 };
