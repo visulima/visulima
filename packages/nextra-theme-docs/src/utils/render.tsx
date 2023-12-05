@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from "react";
 
-export const renderComponent = function <T>(ComponentOrNode: FC<T> | ReactNode | ((properties: T) => string), properties?: T): ReactNode {
+// prettier-ignore
+export const renderComponent = function<T>(ComponentOrNode: FC<T> | ReactNode | ((properties: T) => string), properties?: T): ReactNode {
     if (!ComponentOrNode) {
         return null;
     }
@@ -14,7 +15,8 @@ export const renderComponent = function <T>(ComponentOrNode: FC<T> | ReactNode |
     return <ComponentOrNode {...properties} />;
 };
 
-export const renderString = function <T>(
+// prettier-ignore
+export const renderString = function<T>(
     stringOrFunction?: string | ((properties: T) => string),
     // @ts-expect-error TS2322: Type '{}' is not assignable to type 'T'.
     properties: T = {},
