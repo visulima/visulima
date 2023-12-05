@@ -31,7 +31,7 @@
         "@visulima/readdir": "workspace:*",
         "clsx": "^2.0.0",
         "fathom-client": "^3.6.0",
-        "framer-motion": "^10.16.12",
+        "framer-motion": "^10.16.14",
         "fs-extra": "^11.2.0",
         "lucide-react": "^0.294.0",
         "next": "13.4.19",
@@ -45,7 +45,7 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
-        "@arthurgeron/eslint-plugin-react-usememo": "^2.1.4",
+        "@arthurgeron/eslint-plugin-react-usememo": "^2.2.1",
         "@axe-core/react": "^4.8.1",
         "@babel/core": "^7.23.5",
         "@babel/eslint-parser": "^7.23.3",
@@ -58,7 +58,7 @@
         "@testing-library/react": "^14.1.2",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.8",
-        "@types/react": "18.2.41",
+        "@types/react": "18.2.42",
         "@types/react-dom": "18.2.17",
         "cross-env": "^7.0.3",
         "eslint": "^8.55.0",
@@ -76,15 +76,15 @@
         "eslint-plugin-vitest-globals": "^1.4.0",
         "eslint-plugin-zod": "^1.4.0",
         "postcss": "^8.4.32",
-        "postcss-cli": "^10.1.0",
+        "postcss-cli": "^11.0.0",
         "postcss-import": "^15.1.0",
         "postcss-lightningcss": "1.0.0",
         "prettier": "^3.1.0",
         "sort-package-json": "^2.6.0",
         "symlink-dir": "^5.2.0",
-        "tailwindcss": "^3.3.5",
+        "tailwindcss": "^3.3.6",
         "typescript": "5.3.2",
-        "vitest": "^0.34.6"
+        "vitest": "^1.0.1"
     },
     "anolilab": {
         "eslint-config": {
