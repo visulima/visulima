@@ -55,20 +55,20 @@
         },
         "./error": {
             "import": {
-                "types": "./dist/error.d.ts",
-                "default": "./dist/error.js"
+                "types": "./dist/error/index.d.ts",
+                "default": "./dist/error/index.js"
             }
         },
         "./sourcemap": {
             "import": {
-                "types": "./dist/sourcemap.d.ts",
-                "default": "./dist/sourcemap.js"
+                "types": "./dist/sourcemap/index.d.ts",
+                "default": "./dist/sourcemap/index.js"
             }
         },
         "./stacktrace": {
             "import": {
-                "types": "./dist/stacktrace.d.ts",
-                "default": "./dist/stacktrace.js"
+                "types": "./dist/stacktrace/index.d.ts",
+                "default": "./dist/stacktrace/index.js"
             }
         },
         "./package.json": "./package.json"
@@ -152,8 +152,8 @@
     "sources": [
         "src/index.ts",
         "src/code-frame/index.ts",
-        "src/error.ts",
-        "src/stacktrace.ts",
-        "src/sourcemap.ts"
+        "src/error/index.ts",
+        "src/sourcemap/index.ts",
+        "src/stacktrace/index.ts"
     ]
 }

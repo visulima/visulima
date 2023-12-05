@@ -8,10 +8,10 @@
  * Copyright (c) 2014-present Sebastian McKenzie and other contributors
  */
 
-import type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "../types";
 import normalizeLF from "../util/normalize-lf";
 import process from "../util/process";
 import getMarkerLines from "./get-marker-lines";
+import type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "./types";
 
 const POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? ">" : "❯";
 
@@ -100,4 +100,4 @@ export const codeFrame = (
     return frame;
 };
 
-export type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "../types";
+export type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "./types";

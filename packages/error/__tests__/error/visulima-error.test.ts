@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { VisulimaError } from "../src";
+import { VisulimaError } from "../../src/error/visulima-error";
 
 class MyError extends VisulimaError {}
 
-describe("error", () => {
+describe("visulima-error", () => {
     it("should be a instance of the thrown error", () => {
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;

@@ -1,4 +1,4 @@
-import type { ErrorLocation, ErrorProperties } from "./types";
+import type { ErrorHint, ErrorLocation, ErrorProperties } from "./types";
 
 export const isVisulimaError = (error: unknown): error is VisulimaError => error instanceof Error && (error as VisulimaError).type === "VisulimaError";
 
@@ -10,7 +10,7 @@ export class VisulimaError extends Error {
     /**
      * A message that explains to the user how they can fix the error.
      */
-    public hint: string[] | string | undefined;
+    public hint: ErrorHint | undefined;
 
     public type = "VisulimaError";
 
@@ -47,7 +47,7 @@ export class VisulimaError extends Error {
         this.message = message;
     }
 
-    public setHint(hint: string[] | string): void {
+    public setHint(hint: ErrorHint): void {
         this.hint = hint;
     }
 }
