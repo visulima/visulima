@@ -3,17 +3,17 @@ const layout = ({
     css,
     description,
     error,
-    script,
+    scripts,
     title,
 }: {
     content: string;
     css: string;
     description: string;
-    error: Error,
-    script: string;
+    error: Error;
+    scripts: string[];
     title: string;
 }): string => `<!--
-${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
+${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -23,11 +23,27 @@ ${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="${description}">
     <style>${css}</style>
-    <script>${script}</script>
+    <script>
+        function afterTransition (el, callback) {
+            const handleEvent = () => {
+                callback();
+
+                el.removeEventListener("transitionend", handleEvent, true);
+            };
+
+            if (window.getComputedStyle(el, null).getPropertyValue("transition") !== "all 0s ease 0s") {
+                el.addEventListener("transitionend", handleEvent, true);
+            } else {
+                callback();
+            }
+        }
+    </script>
+    ${scripts.map((script) => `<script>${script}</script>`).join("\n")}
     <script>
       (function() {
         window.addEventListener('load', () => {
           const $clipboards = document.querySelectorAll('.js-clipboard');
+
           $clipboards.forEach((el) => {
             const isToggleTooltip = HSStaticMethods.getClassProperty(el, '--is-toggle-tooltip') === 'false' ? false : true;
             const clipboard = new ClipboardJS(el, {
@@ -91,7 +107,7 @@ ${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
 </body>
 </html>
 <!--
-${error.stack ? error.stack.replaceAll('\n', "\n\t") : error.toString()}
+${error.stack ? error.stack.replaceAll("\n", "\n\t") : error.toString()}
 -->
 `;
 

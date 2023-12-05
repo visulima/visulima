@@ -15,11 +15,15 @@ const server = createServer(async (request, response) => {
         return originalWrite.call(this, html, encoding, callback);
     };
 
-    const error = new Error("This is a error message");
+    const error = new Error("This is a error message", {
+        cause: new Error("This is a cause message")
+    });
 
-    error.hint = "This is a hint message";
+    //error.hint = "This is a hint message";
 
-    (await httpDisplayer(error, []))(request, response);
+    (await httpDisplayer(error, [
+        // openAiFinder()
+    ]))(request, response);
 });
 
 server.listen(port, () => {

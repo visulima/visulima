@@ -15,7 +15,10 @@ const errorCard = async ({
     runtimeName: RuntimeName | undefined;
     solutionFinders: SolutionFinder[];
     version: string | undefined;
-}): Promise<string> => {
+}): Promise<{
+    html: string;
+    script: string;
+}> => {
     let runtime = `${runtimeName?.toUpperCase()} ${version ?? ""}`;
 
     if (runtime.includes("NODE")) {
@@ -27,7 +30,10 @@ const errorCard = async ({
         )}${(externalLinkIcon as string).replace("lucide-external-link", "lucide-external-link h-4 w-4 ml-1")}</a>`;
     }
 
-    return `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
+    const { html: solutionsHtml, script: solutionsScript } = await solutions(error, solutionFinders);
+
+    return {
+        html: `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
     <div class="xl:flex items-stretch">
         <main id="error-card" class="z-10 flex-grow min-w-0">
         <div class="px-6 pt-6 flex flex-row">
@@ -42,11 +48,13 @@ const errorCard = async ({
         <div class="px-6 pt-2 pb-6 text-lg font-semibold text-gray-600 dark:text-gray-400">
             ${error.message}
         </div>
-        ${await solutions(error, solutionFinders)}
+        ${solutionsHtml}
         </main>
     </div>
 </section>
-    `;
+    `,
+        script: solutionsScript,
+    };
 };
 
 export default errorCard;
