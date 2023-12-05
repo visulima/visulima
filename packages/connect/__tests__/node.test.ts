@@ -50,7 +50,7 @@ describe("createRouter", () => {
         expect(returned, "returned itself").toStrictEqual(context);
     });
 
-    describe("use()", async () => {
+    describe("use()", () => {
         it("defaults to / if base is not provided", async () => {
             const context = new NodeRouter();
 
@@ -59,7 +59,6 @@ describe("createRouter", () => {
 
             context.use(noop);
 
-            expect(useSpy).toHaveBeenCalled();
             expect(useSpy).toHaveBeenCalledWith("/", noop);
         });
 
@@ -71,7 +70,6 @@ describe("createRouter", () => {
 
             context.use("/test", noop, noop);
 
-            expect(useSpy).toHaveBeenCalled();
             expect(useSpy).toHaveBeenCalledWith("/test", noop, noop);
         });
 
@@ -84,7 +82,6 @@ describe("createRouter", () => {
 
             context.use("/test", context2, context2);
 
-            expect(useSpy).toHaveBeenCalled();
             // @ts-expect-error: private field
             expect(useSpy).toHaveBeenCalledWith("/test", context2.router, context2.router);
         });
