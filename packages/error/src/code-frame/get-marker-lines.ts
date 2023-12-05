@@ -11,7 +11,7 @@
 /**
  * Extract what lines should be marked and highlighted.
  */
-import type { CodeFrameLocation, CodeFrameNodeLocation } from "../types";
+import type { CodeFrameLocation, CodeFrameNodeLocation } from "./types";
 
 type MarkerLines = Record<number, true | [number | undefined, number | undefined]>;
 

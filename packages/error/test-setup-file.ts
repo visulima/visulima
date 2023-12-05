@@ -38,7 +38,8 @@ const toMatchStackFrame: (
     if ((received.evalOrigin !== undefined && evalOrigin === undefined) || (received.evalOrigin === undefined && evalOrigin !== undefined)) {
         pass = false;
     } else if (received.evalOrigin !== undefined && evalOrigin !== undefined) {
-        pass = pass &&
+        pass =
+            pass &&
             received.evalOrigin.methodName === evalOrigin.methodName &&
             received.evalOrigin.file === evalOrigin.file &&
             received.evalOrigin.line === evalOrigin.line &&

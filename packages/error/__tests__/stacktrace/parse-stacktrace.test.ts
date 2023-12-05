@@ -3,8 +3,8 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import capturedErrors from "../__fixtures__/captured-errors";
-import { parseStacktrace } from "../src";
+import capturedErrors from "../../__fixtures__/captured-errors";
+import parseStacktrace from "../../src/stacktrace/parse-stacktrace";
 
 const isWin = process.platform === "win32";
 

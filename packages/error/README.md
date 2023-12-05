@@ -66,7 +66,36 @@ error.hint = "My error hint";
 throw error;
 ```
 
-### Pretty code frame
+### Get all causes in a error
+
+```ts
+import { getErrorCauses } from "@visulima/error";
+
+const error = new Error("My error message");
+const error2 = new Error("Nested Error");
+
+error.cause = error2;
+
+// The getErrorCauses function will return an array of all causes in the error in the order they occurred.
+const causes = getErrorCauses(error);
+
+console.log(causes);
+
+// [
+//     {
+//         message: "My error message",
+//         name: "Error",
+//         stack: "Error: My error message\n    at Object.<anonymous> (/visulima/packages/error/src/index.ts:2:16)",
+//     },
+//     {
+//         message: "Nested Error",
+//         name: "Error",
+//         stack: "Error: Nested Error\n    at Object.<anonymous> (/visulima/packages/error/src/index.ts:3:16)",
+//     },
+// ];
+```
+
+## Pretty Code Frame
 
 ```ts
 import { codeFrame } from "@visulima/error";
