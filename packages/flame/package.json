@@ -91,15 +91,12 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@preline/collapse": "^2.0.1",
-        "@preline/select": "^2.0.1",
-        "@preline/tabs": "^2.0.1",
         "@visulima/error": "workspace:*",
         "clipboard": "^2.0.11",
+        "find-cache-dir": "^5.0.0",
         "get-uri": "^6.0.2",
         "marked": "^11.0.0",
         "open-editor": "^4.1.1",
-        "preline": "^2.0.0",
         "sanitize-html": "^2.11.0",
         "shikiji": "^0.7.5"
     },
@@ -115,6 +112,7 @@
         "@eslint-types/unicorn": "^49.0.0",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@tailwindcss/forms": "^0.5.7",
+        "@tailwindcss/typography": "^0.5.10",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
@@ -131,7 +129,6 @@
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.3.10",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "find-cache-dir": "^5.0.0",
         "lucide-static": "^0.294.0",
         "openai": "4.20.1",
         "postcss": "^8.4.31",
@@ -139,6 +136,7 @@
         "postcss-focus-visible": "^9.0.0",
         "postcss-import": "^15.1.0",
         "postcss-lightningcss": "1.0.0",
+        "preline": "^2.0.2",
         "prettier": "^3.1.0",
         "rimraf": "^5.0.5",
         "semantic-release": "^22.0.8",
@@ -149,7 +147,6 @@
         "vitest": "^0.34.6"
     },
     "peerDependencies": {
-        "find-cache-dir": "^5.0.0",
         "openai": "4.20.1"
     },
     "peerDependenciesMeta": {
