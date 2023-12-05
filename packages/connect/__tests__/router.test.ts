@@ -855,14 +855,18 @@ describe("router", () => {
         await expect(Router.exec(fns, rreq, rres), "~~> returns the final value").resolves.toBe("final");
     });
 
-    describe("find() - returns middleOnly", async () => {
+    describe("find() - returns middleOnly", () => {
         const context = new Router();
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const function_ = () => {};
 
+        // eslint-disable-next-line vitest/require-hook
         context.add("", "/this/will/not/match", function_);
+        // eslint-disable-next-line vitest/require-hook
         context.add("POST", "/bar", function_);
+        // eslint-disable-next-line vitest/require-hook
         context.use("/", function_);
+        // eslint-disable-next-line vitest/require-hook
         context.use("/foo", function_);
 
         it("should be true if only middles found", async () => {

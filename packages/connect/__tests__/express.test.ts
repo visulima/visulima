@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { ExpressRequestHandler } from "../src";
 import { expressWrapper, NodeRouter } from "../src";
 
-describe("expressWrapper", async () => {
+describe("expressWrapper", () => {
     const request = { url: "/" } as IncomingMessage;
     const response = {} as ServerResponse;
 
