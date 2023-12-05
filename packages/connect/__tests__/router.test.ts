@@ -855,7 +855,7 @@ describe("router", () => {
         await expect(Router.exec(fns, rreq, rres), "~~> returns the final value").resolves.toBe("final");
     });
 
-    it("find() - returns middleOnly", async () => {
+    describe("find() - returns middleOnly", async () => {
         const context = new Router();
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const function_ = () => {};
