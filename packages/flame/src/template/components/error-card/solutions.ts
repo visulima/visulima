@@ -2,6 +2,8 @@ import type { VisulimaError, Trace } from "@visulima/error/error";
 import { parseStacktrace } from "@visulima/error/stacktrace";
 import { parse } from "marked";
 import sanitizeHtml from "sanitize-html";
+import closeIcon from "lucide-static/icons/x.svg";
+import infoIcon from "lucide-static/icons/info.svg";
 
 import errorHintFinder from "../../../solution/error-hint-finder";
 import type { Solution, SolutionError, SolutionFinder } from "../../../types";
@@ -9,7 +11,10 @@ import debugLog from "../../../util/debug-log";
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
 
-const solutions = async (error: Error | SolutionError | VisulimaError, solutionFinders: SolutionFinder[]): Promise<string> => {
+const solutions = async (error: Error | SolutionError | VisulimaError, solutionFinders: SolutionFinder[]): Promise<{
+    html: string;
+    script: string;
+}> => {
     let hint: Solution | undefined;
 
     solutionFinders.push(errorHintFinder);
@@ -23,7 +28,7 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
             break;
         }
 
-        const { handle: solutionHandler, name } = handler;
+        const {handle: solutionHandler, name} = handler;
 
         debugLog(`Running solution finder: ${name}`);
 
@@ -40,22 +45,62 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
     }
 
     if (!hint) {
-        return "";
+        return {
+            html: "",
+            script: "",
+        };
     }
 
-    return `
-    <div class="px-6 pb-6">
-        <div class="bg-green-300 dark:bg-gray-700/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="text-lg font-semibold text-gray-900 dark:text-white">${
-                    hint.header ? `${sanitizeHtml(await parse(hint.header))}` : "A possible solution to this error"
-                }</div>
-                <div class="mt-2 max-w-xl text-sm font-medium">
-                    ${sanitizeHtml(await parse(hint.body))}
-                </div>
-            </div>
+    return {
+        html: `<div id="flame-solution-wrapper" class="px-6 pb-6 relative w-full transition-all">
+    <button id="flame-solution-button" type="button" class="bg-green-300 rounded-lg p-2 absolute top-2 right-9 z-10">
+        ${(closeIcon as string).replace("lucide-x", "lucide-x h-5 w-5")}
+        ${(infoIcon as string).replace("lucide-info", "lucide-info h-5 w-5 hidden")}
+    </button>
+    <div id="flame-solution-content" class="bg-green-300 rounded-lg shadow-2xl shadow-gray-500/20 overflow-hidden transition-[height] duration-300">
+        <div class="hs-collapse p-6 prose prose-sm prose-ul:list-none prose-hr:my-6 prose-hr:border-green-400 max-w-full relative">
+            ${hint.header ? `${sanitizeHtml(await parse(hint.header))}` : "<h2>A possible solution to this error</h2>"}
+            ${sanitizeHtml(await parse(hint.body))}
         </div>
-    </div>`;
+    </div>
+</div>`,
+        script: `window.addEventListener('load', () => {
+        const wrapper = document.querySelector('#flame-solution-wrapper');
+        const button = document.querySelector('#flame-solution-button');
+        const content = document.querySelector('#flame-solution-content');
+
+        content.style.height = content.scrollHeight + "px";
+
+        button.addEventListener('click', () => {
+            if (!content.classList.contains('hidden')) {
+                content.style.height = content.scrollHeight + "px";
+
+                setTimeout(() => {
+                    content.style.height = 0;
+
+                    wrapper.style.paddingBottom = '4rem';
+                });
+
+                afterTransition(content, () => {
+                    content.classList.add('hidden');
+                    content.style.height = 0;
+                });
+            } else {
+                content.classList.remove('hidden');
+                content.style.height = '0';
+
+                setTimeout(() => {
+                    content.style.height = content.scrollHeight + "px";
+                    wrapper.style.paddingBottom = '';
+                });
+            }
+
+            button.querySelector('.lucide-x').classList.toggle('hidden');
+            button.querySelector('.lucide-info').classList.toggle('hidden');
+        });
+});`,
+    }
+
 };
 
 export default solutions;

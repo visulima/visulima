@@ -20,22 +20,18 @@ const template = async (
     options: Partial<{ editor: Editor; openInBrowserUrl?: string; theme: Theme }> = {},
 ): Promise<string> => {
     let html = "";
-    let script = "";
-
-    script += clipboardJs;
-    script += prelineJs;
-
     const { html: headerBarHtml, script: headerBarScript } = headerBar(options);
 
     html += headerBarHtml;
-    script += headerBarScript;
 
-    html += await errorCard({
+    const { html: errorCardHtml, script: errorCardScript } = await errorCard({
         error,
         runtimeName,
         solutionFinders,
         version: process.version,
     });
+
+    html += errorCardHtml;
     html += await stackTraceViewer(error);
     html += rawStackTrace(error.stack);
 
@@ -44,7 +40,7 @@ const template = async (
         css: inlineCss.trim(),
         description: "Error",
         error,
-        script: script.trim(),
+        scripts: [prelineJs, clipboardJs, headerBarScript, errorCardScript],
         title: "Error",
     });
 };

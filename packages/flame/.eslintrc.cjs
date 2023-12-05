@@ -31,6 +31,17 @@ module.exports = defineConfig({
             rules: {},
         },
         {
+            files: ["*.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
+            settings: {
+                tailwindcss: {
+                    config: "./tailwind.config.cjs",
+                    whitelist: [],
+                },
+            },
+        },
+        {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
