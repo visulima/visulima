@@ -87,7 +87,7 @@
         "@babel/core": "^7.23.5",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@types/node": "18.18.8",
-        "@vitest/coverage-v8": "^0.34.6",
+        "@vitest/coverage-v8": "^1.0.1",
         "cross-env": "^7.0.3",
         "cross-fetch": "^4.0.0",
         "eslint": "^8.55.0",
@@ -101,11 +101,11 @@
         "node-mocks-http": "^1.13.0",
         "prettier": "^3.1.0",
         "rimraf": "^5.0.5",
-        "semantic-release": "^22.0.8",
+        "semantic-release": "^22.0.9",
         "sort-package-json": "^2.6.0",
         "tsup": "^8.0.1",
         "typescript": "^5.3.2",
-        "vitest": "^0.34.6"
+        "vitest": "^1.0.1"
     },
     "optionalDependencies": {
         "next": "^13.5.6"

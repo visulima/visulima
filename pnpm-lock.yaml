@@ -32,13 +32,13 @@ importers:
         version: 5.0.2(@commitlint/cli@18.4.3)(typescript@5.2.2)
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/lint-staged-config':
         specifier: ^2.1.6
         version: 2.1.6(eslint@8.55.0)(husky@8.0.3)(lint-staged@15.2.0)(prettier@3.1.0)(secretlint@8.0.0)(vite@4.4.7)
       '@anolilab/multi-semantic-release':
-        specifier: ^1.0.2
-        version: 1.0.2(semantic-release@22.0.8)(typescript@5.2.2)
+        specifier: ^1.0.3
+        version: 1.0.3(semantic-release@22.0.9)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
@@ -46,8 +46,8 @@ importers:
         specifier: ^8.0.15
         version: 8.0.15(textlint@13.4.1)
       '@arthurgeron/eslint-plugin-react-usememo':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.2.1
+        version: 2.2.1
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -124,8 +124,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(typescript@5.2.2)
       core-js:
-        specifier: ^3.33.3
-        version: 3.33.3
+        specifier: ^3.34.0
+        version: 3.34.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -167,7 +167,7 @@ importers:
         version: 0.6.15(eslint@8.55.0)(typescript@5.2.2)
       eslint-plugin-tailwindcss:
         specifier: ^3.13.0
-        version: 3.13.0(tailwindcss@3.3.5)
+        version: 3.13.0(tailwindcss@3.3.6)
       eslint-plugin-testing-library:
         specifier: ^6.2.0
         version: 6.2.0(eslint@8.55.0)(typescript@5.2.2)
@@ -220,8 +220,8 @@ importers:
         specifier: 8.0.0
         version: 8.0.0
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -229,8 +229,8 @@ importers:
         specifier: 7.6.3
         version: 7.6.3
       tailwindcss:
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.3.6
+        version: 3.3.6
       textlint:
         specifier: ^13.4.1
         version: 13.4.1
@@ -271,8 +271,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       framer-motion:
-        specifier: ^10.16.12
-        version: 10.16.12(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^10.16.14
+        version: 10.16.14(react-dom@18.2.0)(react@18.2.0)
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
@@ -303,13 +303,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@arthurgeron/eslint-plugin-react-usememo':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.2.1
+        version: 2.2.1
       '@axe-core/react':
         specifier: ^4.8.1
         version: 4.8.1
@@ -333,7 +333,7 @@ importers:
         version: 0.0.0-insiders.565cd3e(postcss@8.4.32)
       '@tailwindcss/typography':
         specifier: ^0.5.10
-        version: 0.5.10(tailwindcss@3.3.5)
+        version: 0.5.10(tailwindcss@3.3.6)
       '@testing-library/dom':
         specifier: ^9.3.3
         version: 9.3.3
@@ -347,8 +347,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@types/react':
-        specifier: 18.2.41
-        version: 18.2.41
+        specifier: 18.2.42
+        version: 18.2.42
       '@types/react-dom':
         specifier: 18.2.17
         version: 18.2.17
@@ -390,7 +390,7 @@ importers:
         version: 0.1.1(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -401,8 +401,8 @@ importers:
         specifier: ^8.4.32
         version: 8.4.32
       postcss-cli:
-        specifier: ^10.1.0
-        version: 10.1.0(postcss@8.4.32)
+        specifier: ^11.0.0
+        version: 11.0.0(postcss@8.4.32)
       postcss-import:
         specifier: ^15.1.0
         version: 15.1.0(postcss@8.4.32)
@@ -419,14 +419,14 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0
       tailwindcss:
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.3.6
+        version: 3.3.6
       typescript:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   examples/api-platform/express:
     dependencies:
@@ -1067,29 +1067,29 @@ importers:
         version: 3.0.4
       redoc:
         specifier: ^2.1.3
-        version: 2.1.3(core-js@3.33.3)(mobx@6.12.0)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.1.1)
+        version: 2.1.3(core-js@3.34.0)(mobx@6.12.0)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.1.1)
       swagger-ui-dist:
         specifier: ^4.19.1
         version: 4.19.1
       swagger-ui-react:
         specifier: ^4.19.1
-        version: 4.19.1(@types/react-dom@18.2.17)(@types/react@18.2.41)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.19.1(@types/react-dom@18.2.17)(@types/react@18.2.42)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0)
       webpack:
         specifier: ^5.89.0
         version: 5.89.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@arthurgeron/eslint-plugin-react-usememo':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.2.1
+        version: 2.2.1
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1142,8 +1142,8 @@ importers:
         specifier: ^6.9.10
         version: 6.9.10
       '@types/react':
-        specifier: ^18.2.41
-        version: 18.2.41
+        specifier: ^18.2.42
+        version: 18.2.42
       '@types/react-dom':
         specifier: ^18.2.17
         version: 18.2.17
@@ -1154,11 +1154,11 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       core-js:
-        specifier: ^3.33.3
-        version: 3.33.3
+        specifier: ^3.34.0
+        version: 3.34.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1197,7 +1197,7 @@ importers:
         version: 0.1.1(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1232,8 +1232,8 @@ importers:
         specifier: 8.0.0
         version: 8.0.0
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1250,8 +1250,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -1273,17 +1273,17 @@ importers:
         version: 2.0.0
       regexparam:
         specifier: ^2.0.1
-        version: 2.0.1
+        version: 2.0.2
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1300,8 +1300,8 @@ importers:
         specifier: 4.0.10
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1322,7 +1322,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1345,8 +1345,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1357,8 +1357,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -1383,13 +1383,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1412,8 +1412,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1443,7 +1443,7 @@ importers:
         version: 0.1.1(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1466,8 +1466,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1478,8 +1478,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/crud/next: {}
 
@@ -1487,13 +1487,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@mfederczuk/deeptools':
         specifier: 2.1.0-indev01
         version: 2.1.0-indev01
@@ -1513,8 +1513,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       clone-deep:
         specifier: ^4.0.1
         version: 4.0.1
@@ -1541,7 +1541,7 @@ importers:
         version: 0.2.17
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1579,8 +1579,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1597,8 +1597,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/error:
     dependencies:
@@ -1608,13 +1608,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1649,8 +1649,8 @@ importers:
         specifier: 4.0.10
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1668,7 +1668,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1679,8 +1679,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1691,8 +1691,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.5)
 
   packages/health-check:
     dependencies:
@@ -1712,13 +1712,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1729,8 +1729,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1754,7 +1754,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1768,8 +1768,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1780,8 +1780,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/jsdoc-open-api:
     dependencies:
@@ -1816,13 +1816,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1845,8 +1845,8 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1867,7 +1867,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1881,8 +1881,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1893,8 +1893,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/jsdoc-open-api/cli: {}
 
@@ -1966,21 +1966,21 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       tailwind-merge:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.1.0
+        version: 2.1.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@arthurgeron/eslint-plugin-react-usememo':
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.2.1
+        version: 2.2.1
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -1998,7 +1998,7 @@ importers:
         version: 0.0.0-insiders.565cd3e(postcss@8.4.32)
       '@tailwindcss/typography':
         specifier: ^0.5.10
-        version: 0.5.10(tailwindcss@3.3.5)
+        version: 0.5.10(tailwindcss@3.3.6)
       '@testing-library/react':
         specifier: ^14.1.2
         version: 14.1.2(react-dom@18.2.0)(react@18.2.0)
@@ -2024,17 +2024,17 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@types/react':
-        specifier: ^18.2.41
-        version: 18.2.41
+        specifier: ^18.2.42
+        version: 18.2.42
       '@types/react-dom':
         specifier: ^18.2.17
         version: 18.2.17
       '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.2.0(vite@4.4.7)
+        specifier: ^4.2.1
+        version: 4.2.1(vite@4.4.7)
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -2079,7 +2079,7 @@ importers:
         version: 0.1.1(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2102,8 +2102,8 @@ importers:
         specifier: ^8.4.32
         version: 8.4.32
       postcss-cli:
-        specifier: ^10.1.0
-        version: 10.1.0(postcss@8.4.32)
+        specifier: ^11.0.0
+        version: 11.0.0(postcss@8.4.32)
       postcss-focus-visible:
         specifier: ^9.0.0
         version: 9.0.0(postcss@8.4.32)
@@ -2129,14 +2129,14 @@ importers:
         specifier: ^7.8.1
         version: 7.8.1
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
       tailwindcss:
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.3.6
+        version: 3.3.6
       tailwindcss-hyphens:
         specifier: ^0.1.0
         version: 0.1.0
@@ -2147,8 +2147,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -2177,13 +2177,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -2200,8 +2200,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cnpm:
         specifier: ^9.2.0
         version: 9.2.0
@@ -2228,7 +2228,7 @@ importers:
         version: 0.2.17
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2245,8 +2245,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -2257,8 +2257,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
       which-pm-runs:
         specifier: 'file:'
         version: file:packages/package
@@ -2274,13 +2274,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -2297,8 +2297,8 @@ importers:
         specifier: ^6.9.10
         version: 6.9.10
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2319,7 +2319,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2333,8 +2333,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -2345,8 +2345,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/prisma-dmmf-transformer:
     dependencies:
@@ -2359,13 +2359,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -2385,8 +2385,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@vitest/coverage-v8':
-        specifier: 0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: 1.0.1
+        version: 1.0.1(vitest@1.0.1)
       ajv:
         specifier: 8.12.0
         version: 8.12.0
@@ -2413,7 +2413,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2427,8 +2427,8 @@ importers:
         specifier: 5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: 22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: 22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -2439,8 +2439,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: 0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: 1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
   packages/readdir:
     dependencies:
@@ -2450,13 +2450,13 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.2
-        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2)
       '@anolilab/prettier-config':
         specifier: ^5.0.13
         version: 5.0.13(prettier@3.1.0)
       '@anolilab/semantic-release-preset':
         specifier: ^8.0.2
-        version: 8.0.2(semantic-release@22.0.8)
+        version: 8.0.2(semantic-release@22.0.9)
       '@babel/core':
         specifier: ^7.23.5
         version: 7.23.5
@@ -2470,8 +2470,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.34.6)
+        specifier: ^1.0.1
+        version: 1.0.1(vitest@1.0.1)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2492,7 +2492,7 @@ importers:
         version: 2.2.0(eslint@8.55.0)
       eslint-plugin-vitest:
         specifier: ^0.3.10
-        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6)
+        version: 0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1)
       eslint-plugin-vitest-globals:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2503,8 +2503,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       semantic-release:
-        specifier: ^22.0.8
-        version: 22.0.8(typescript@5.2.2)
+        specifier: ^22.0.9
+        version: 22.0.9(typescript@5.2.2)
       sort-package-json:
         specifier: ^2.6.0
         version: 2.6.0
@@ -2515,8 +2515,8 @@ importers:
         specifier: ^5.1.6
         version: 5.2.2
       vitest:
-        specifier: ^0.34.6
-        version: 0.34.6(jsdom@23.0.1)
+        specifier: ^1.0.1
+        version: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
 
 packages:
 
@@ -2554,7 +2554,7 @@ packages:
       - typescript
     dev: true
 
-  /@anolilab/eslint-config@15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.1.4)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2):
+  /@anolilab/eslint-config@15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.2.2):
     resolution: {integrity: sha512-H6y0N3COdLnxu6vrHoNZwMLsWXQA9KmlU4gCaJ6d8C8Bu1pfSKMSuR3ra9MBsgDMDV3OQ+DY3uNP1P4OV4eeaA==}
     engines: {node: '>=18.* <=21.*'}
     hasBin: true
@@ -2651,7 +2651,7 @@ packages:
         optional: true
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
-      '@arthurgeron/eslint-plugin-react-usememo': 2.1.4
+      '@arthurgeron/eslint-plugin-react-usememo': 2.2.1
       '@babel/core': 7.23.5
       '@babel/eslint-parser': 7.23.3(@babel/core@7.23.5)(eslint@8.55.0)
       '@babel/plugin-syntax-import-assertions': 7.23.3(@babel/core@7.23.5)
@@ -2694,7 +2694,7 @@ packages:
       eslint-plugin-sonarjs: 0.22.0(eslint@8.55.0)
       eslint-plugin-ssr-friendly: 1.3.0(eslint@8.55.0)
       eslint-plugin-storybook: 0.6.15(eslint@8.55.0)(typescript@5.2.2)
-      eslint-plugin-tailwindcss: 3.13.0(tailwindcss@3.3.5)
+      eslint-plugin-tailwindcss: 3.13.0(tailwindcss@3.3.6)
       eslint-plugin-testing-library: 6.2.0(eslint@8.55.0)(typescript@5.2.2)
       eslint-plugin-toml: 0.6.0(eslint@8.55.0)
       eslint-plugin-tsdoc: 0.2.17
@@ -2757,8 +2757,8 @@ packages:
       vite: 4.4.7(@types/node@20.10.1)
     dev: true
 
-  /@anolilab/multi-semantic-release@1.0.2(semantic-release@22.0.8)(typescript@5.2.2):
-    resolution: {integrity: sha512-DLqV9r8BnzmMRIwFdpo0jsMAwgk1Q3fyL+2T0a78jeuX1fDiO7vDbDcFKcNfTLaVmrBJ+qatENlVfMte1oh+Dw==}
+  /@anolilab/multi-semantic-release@1.0.3(semantic-release@22.0.9)(typescript@5.2.2):
+    resolution: {integrity: sha512-NUU07bbFe9ForrPWineN5huCQg28I/SfkBcTny9MrVgV1q98t7mtDhSBB9Blu48++S+GS6wFFNYrZ9IEyUzg3A==}
     engines: {node: '>=18 || >=20.6.1'}
     hasBin: true
     peerDependencies:
@@ -2766,7 +2766,7 @@ packages:
     dependencies:
       '@semrel-extra/topo': 1.14.0
       blork: 9.3.0
-      cosmiconfig: 8.3.6(typescript@5.2.2)
+      cosmiconfig: 9.0.0(typescript@5.2.2)
       debug: 4.3.4
       detect-indent: 7.0.1
       detect-newline: 4.0.1
@@ -2774,7 +2774,7 @@ packages:
       git-log-parser: 1.2.0
       lodash-es: 4.17.21
       resolve-from: 5.0.0
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
       semver: 7.5.4
       signale: 1.4.0
       stream-buffers: 3.0.2
@@ -2803,7 +2803,7 @@ packages:
       prettier: 3.1.0
     dev: true
 
-  /@anolilab/semantic-release-preset@8.0.2(semantic-release@22.0.8):
+  /@anolilab/semantic-release-preset@8.0.2(semantic-release@22.0.9):
     resolution: {integrity: sha512-2BgiQm7DaXrFA0ErEWepoFTZ1mH/dZTU5y7smPDaUOYcBkrL5cRJeSqW8Cd5vyc8m8EUTUqmlgHvxDK8/HZDgw==}
     engines: {node: ^18.17 || >=20.6.1}
     requiresBuild: true
@@ -2811,15 +2811,15 @@ packages:
       semantic-release: '>=22'
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
-      '@semantic-release/changelog': 6.0.3(semantic-release@22.0.8)
-      '@semantic-release/commit-analyzer': 11.0.0(semantic-release@22.0.8)
-      '@semantic-release/exec': 6.0.3(semantic-release@22.0.8)
-      '@semantic-release/git': 10.0.1(semantic-release@22.0.8)
-      '@semantic-release/github': 9.2.1(semantic-release@22.0.8)
-      '@semantic-release/npm': 11.0.0(semantic-release@22.0.8)
-      '@semantic-release/release-notes-generator': 12.0.0(semantic-release@22.0.8)
+      '@semantic-release/changelog': 6.0.3(semantic-release@22.0.9)
+      '@semantic-release/commit-analyzer': 11.0.0(semantic-release@22.0.9)
+      '@semantic-release/exec': 6.0.3(semantic-release@22.0.9)
+      '@semantic-release/git': 10.0.1(semantic-release@22.0.9)
+      '@semantic-release/github': 9.2.1(semantic-release@22.0.9)
+      '@semantic-release/npm': 11.0.0(semantic-release@22.0.9)
+      '@semantic-release/release-notes-generator': 12.0.0(semantic-release@22.0.9)
       conventional-changelog-conventionalcommits: 7.0.2
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2896,9 +2896,10 @@ packages:
       openapi-types: 12.1.3
     dev: false
 
-  /@arthurgeron/eslint-plugin-react-usememo@2.1.4:
-    resolution: {integrity: sha512-bICny8xEAVnYrA//TEkTR6gPo5z0CQbuljQvTi45FRfSVY3IbSd5m/oAmzLkOfuxh+V09h/fvdawDXGLRyZkzA==}
+  /@arthurgeron/eslint-plugin-react-usememo@2.2.1:
+    resolution: {integrity: sha512-XMYGogzqQYR7PC4F4ve+loBTrvsE7AHnhiBjUTBMW5hbFecbg6ReTQwj36WsV4vRXNnDRD3vfwkO4fH8WHcOog==}
     dependencies:
+      minimatch: 9.0.3
       uuid: 9.0.1
     dev: true
 
@@ -5066,6 +5067,13 @@ packages:
     dependencies:
       regenerator-runtime: 0.14.0
 
+  /@babel/runtime@7.23.5:
+    resolution: {integrity: sha512-NdUTHcPe4C99WxPub+K9l9tK5/lV4UXIoaHSYgzco9BCyjKAAwzdBI+wWtYqHt7LJdbo74ZjRPJgzVweq1sz0w==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.14.0
+    dev: false
+
   /@babel/template@7.22.15:
     resolution: {integrity: sha512-QPErUVm4uyJa60rkI73qneDacvdvzxshT3kksGqlGWYdOTIUOwJ7RDUL8sGqslY1uXWSL6xMFKEXDS3ox2uF0w==}
     engines: {node: '>=6.9.0'}
@@ -6651,7 +6659,7 @@ packages:
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.7
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
       react: 18.2.0
 
   /@mfederczuk/deeptools@2.1.0-indev01:
@@ -8807,7 +8815,7 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     dev: true
 
-  /@semantic-release/changelog@6.0.3(semantic-release@22.0.8):
+  /@semantic-release/changelog@6.0.3(semantic-release@22.0.9):
     resolution: {integrity: sha512-dZuR5qByyfe3Y03TpmCvAxCyTnp7r5XwtHRf/8vD9EAn4ZWbavUX8adMtXYzE86EVh0gyLA7lm5yW4IV30XUag==}
     engines: {node: '>=14.17'}
     peerDependencies:
@@ -8817,10 +8825,10 @@ packages:
       aggregate-error: 3.1.0
       fs-extra: 11.2.0
       lodash: 4.17.21
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     dev: true
 
-  /@semantic-release/commit-analyzer@11.0.0(semantic-release@22.0.8):
+  /@semantic-release/commit-analyzer@11.0.0(semantic-release@22.0.9):
     resolution: {integrity: sha512-uEXyf4Z0AWJuxI9TbSQP5kkIYqus1/E1NcmE7pIv6d6/m/5EJcNWAGR4FOo34vrV26FhEaRVkxFfYzp/M7BKIg==}
     engines: {node: ^18.17 || >=20.6.1}
     peerDependencies:
@@ -8833,7 +8841,7 @@ packages:
       import-from: 4.0.0
       lodash-es: 4.17.21
       micromatch: 4.0.5
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8848,7 +8856,7 @@ packages:
     engines: {node: '>=18'}
     dev: true
 
-  /@semantic-release/exec@6.0.3(semantic-release@22.0.8):
+  /@semantic-release/exec@6.0.3(semantic-release@22.0.9):
     resolution: {integrity: sha512-bxAq8vLOw76aV89vxxICecEa8jfaWwYITw6X74zzlO0mc/Bgieqx9kBRz9z96pHectiTAtsCwsQcUyLYWnp3VQ==}
     engines: {node: '>=14.17'}
     peerDependencies:
@@ -8860,12 +8868,12 @@ packages:
       execa: 5.1.1
       lodash: 4.17.21
       parse-json: 5.2.0
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@semantic-release/git@10.0.1(semantic-release@22.0.8):
+  /@semantic-release/git@10.0.1(semantic-release@22.0.9):
     resolution: {integrity: sha512-eWrx5KguUcU2wUPaO6sfvZI0wPafUKAMNC18aXY4EnNcrZL86dEmpNVnC9uMpGZkmZJ9EfCVJBQx4pV4EMGT1w==}
     engines: {node: '>=14.17'}
     peerDependencies:
@@ -8879,12 +8887,12 @@ packages:
       lodash: 4.17.21
       micromatch: 4.0.5
       p-reduce: 2.1.0
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@semantic-release/github@9.2.1(semantic-release@22.0.8):
+  /@semantic-release/github@9.2.1(semantic-release@22.0.9):
     resolution: {integrity: sha512-fEn9uOe6jwWR6ro2Wh6YNBCBuZ5lRi8Myz+1j3KDTSt8OuUGlpVM4lFac/0bDrql2NOKrIEAMGCfWb9WMIdzIg==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -8905,13 +8913,13 @@ packages:
       lodash-es: 4.17.21
       mime: 3.0.0
       p-filter: 3.0.0
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
       url-join: 5.0.0
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@semantic-release/npm@11.0.0(semantic-release@22.0.8):
+  /@semantic-release/npm@11.0.0(semantic-release@22.0.9):
     resolution: {integrity: sha512-ozNCiPUp14Xp2rgeY7j96yFTEhDncLSWOJr0IAUr888+ax6fH5xgYkNVv08vpkV8C5GIXBgnGd9coRiOCD6oqQ==}
     engines: {node: ^18.17 || >=20}
     peerDependencies:
@@ -8928,12 +8936,12 @@ packages:
       rc: 1.2.8
       read-pkg: 8.1.0
       registry-auth-token: 5.0.2
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
       semver: 7.5.4
       tempy: 3.1.0
     dev: true
 
-  /@semantic-release/release-notes-generator@12.0.0(semantic-release@22.0.8):
+  /@semantic-release/release-notes-generator@12.0.0(semantic-release@22.0.9):
     resolution: {integrity: sha512-m7Ds8ComP1KJgA2Lke2xMwE1TOOU40U7AzP4lT8hJ2tUAeicziPz/1GeDFmRkTOkMFlfHvE6kuvMkvU+mIzIDQ==}
     engines: {node: ^18.17 || >=20.6.1}
     peerDependencies:
@@ -8949,7 +8957,7 @@ packages:
       into-stream: 7.0.0
       lodash-es: 4.17.21
       read-pkg-up: 10.1.0
-      semantic-release: 22.0.8(typescript@5.2.2)
+      semantic-release: 22.0.9(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8957,7 +8965,7 @@ packages:
   /@semrel-extra/topo@1.14.0:
     resolution: {integrity: sha512-i4nMOxEva7HFfTIg0ao6Gjvdep6ux9/7tdQ4Mb/JrOj6vBJxSzYPJYZ85aB9eD3jMSWy4lkaclHsMslV5VMmIQ==}
     dependencies:
-      fast-glob: 3.3.1
+      fast-glob: 3.3.2
       js-yaml: 4.1.0
       toposource: 1.1.4
     dev: true
@@ -10593,7 +10601,7 @@ packages:
       postcss-nested: 5.0.6(postcss@8.4.32)
     dev: true
 
-  /@tailwindcss/typography@0.5.10(tailwindcss@3.3.5):
+  /@tailwindcss/typography@0.5.10(tailwindcss@3.3.6):
     resolution: {integrity: sha512-Pe8BuPJQJd3FfRnm6H0ulKIGoMEQS+Vq01R6M5aCrFB/ccR/shT+0kXLjouGC1gFLm9hopTFN+DMP0pfwRWzPw==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
@@ -10602,7 +10610,7 @@ packages:
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.3.5
+      tailwindcss: 3.3.6
     dev: true
 
   /@testing-library/dom@9.3.3:
@@ -11213,16 +11221,6 @@ packages:
     resolution: {integrity: sha512-U5tlMYa0U/2eFTmJgKcPWQOEICP173sJDa6OjHbj5Tv+NVaYcrq2xmdWpNXOwWYGwJu+jER/pfTLdoQ31q8PzA==}
     dev: true
 
-  /@types/chai-subset@1.3.3:
-    resolution: {integrity: sha512-frBecisrNGz+F4T6bcc+NLeolfiojh5FxW2klu669+8BARtyQv2C/GkNW6FUodVe4BroGMP/wER/YDGc7rEllw==}
-    dependencies:
-      '@types/chai': 4.3.5
-    dev: true
-
-  /@types/chai@4.3.5:
-    resolution: {integrity: sha512-mEo1sAde+UCE6b2hxn332f1g1E8WfYRu6p5SvTKr2ZKC1f7gFJXk4h5PyGP9Dt6gCaG8y8XhwnXWC6Iy2cmBng==}
-    dev: true
-
   /@types/cli-progress@3.11.5:
     resolution: {integrity: sha512-D4PbNRbviKyppS5ivBGyFO29POlySLmA2HyUFE4p5QGazAMM3CwkKWcvTl8gvElSuxRh6FPKL8XmidX873ou4g==}
     dependencies:
@@ -11428,7 +11426,7 @@ packages:
   /@types/hoist-non-react-statics@3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
       hoist-non-react-statics: 3.3.2
     dev: false
 
@@ -11671,12 +11669,12 @@ packages:
   /@types/react-dom@18.2.13:
     resolution: {integrity: sha512-eJIUv7rPP+EC45uNYp/ThhSpE16k22VJUknt5OLoH9tbXoi8bMhwLf5xRuWMywamNbWzhrSmU7IBJfPup1+3fw==}
     dependencies:
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
 
   /@types/react-dom@18.2.17:
     resolution: {integrity: sha512-rvrT/M7Df5eykWFxn6MYt5Pem/Dbyc1N8Y0S9Mrkw2WFCRiqUgw9P7ul2NpwsXCSM1DVdENzdG9J5SreqfAIWg==}
     dependencies:
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
 
   /@types/react@18.2.28:
     resolution: {integrity: sha512-ad4aa/RaaJS3hyGz0BGegdnSRXQBkd1CCYDCdNjBPg90UUpLgo+WlJqb9fMYUxtehmzF3PJaTWqRZjko6BRzBg==}
@@ -11685,8 +11683,8 @@ packages:
       '@types/scheduler': 0.16.3
       csstype: 3.1.2
 
-  /@types/react@18.2.41:
-    resolution: {integrity: sha512-CwOGr/PiLiNBxEBqpJ7fO3kocP/2SSuC9fpH5K7tusrg4xPSRT/193rzolYwQnTN02We/ATXKnb6GqA5w4fRxw==}
+  /@types/react@18.2.42:
+    resolution: {integrity: sha512-c1zEr96MjakLYus/wPnuWDo1/zErfdU9rNsIGmE+NV71nx88FG9Ttgo5dqorXTu/LImX2f63WBP986gJkMPNbA==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.3
@@ -11737,7 +11735,7 @@ packages:
   /@types/swagger-ui-react@4.18.2:
     resolution: {integrity: sha512-uLiHyNGFdgQINNSq3hgca+TNnNMS7/X59M02EbmDfARgvh7KcB6wU+FVfkVY13qE4Zk9opKvjGqygwjjP7+u6w==}
     dependencies:
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
     dev: true
 
   /@types/through@0.0.30:
@@ -12292,8 +12290,8 @@ packages:
       - supports-color
     dev: true
 
-  /@vitejs/plugin-react@4.2.0(vite@4.4.7):
-    resolution: {integrity: sha512-+MHTH/e6H12kRp5HUkzOGqPMksezRMmW+TNzlh/QXfI8rRf6l2Z2yH/v12no1UvTwhZgEDMuQ7g7rrfMseU6FQ==}
+  /@vitejs/plugin-react@4.2.1(vite@4.4.7):
+    resolution: {integrity: sha512-oojO9IDc4nCUUi8qIR11KoQm0XFFLIwsRBwHRR4d/88IWghn1y6ckz/bJ8GHDCsYEJee8mDzqtJxh15/cisJNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: 4.4.7
@@ -12308,63 +12306,65 @@ packages:
       - supports-color
     dev: true
 
-  /@vitest/coverage-v8@0.34.6(vitest@0.34.6):
-    resolution: {integrity: sha512-fivy/OK2d/EsJFoEoxHFEnNGTg+MmdZBAVK9Ka4qhXR2K3J0DS08vcGVwzDtXSuUMabLv4KtPcpSKkcMXFDViw==}
+  /@vitest/coverage-v8@1.0.1(vitest@1.0.1):
+    resolution: {integrity: sha512-Z4a7ig4VjUCT/P+LRB3IZrBRXb9xWRUM8rSBH9cKgfrU1Oe01/K2WJKtGshOnQwXZoSfQtwCGpbnHmB/qJwjcw==}
     peerDependencies:
-      vitest: '>=0.32.0 <1'
+      vitest: ^1.0.0
     dependencies:
       '@ampproject/remapping': 2.2.1
       '@bcoe/v8-coverage': 0.2.3
-      istanbul-lib-coverage: 3.2.0
+      debug: 4.3.4
+      istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.6
-      magic-string: 0.30.3
+      magic-string: 0.30.5
+      magicast: 0.3.2
       picocolors: 1.0.0
-      std-env: 3.4.3
+      std-env: 3.6.0
       test-exclude: 6.0.0
-      v8-to-istanbul: 9.1.0
-      vitest: 0.34.6(jsdom@23.0.1)
+      v8-to-istanbul: 9.2.0
+      vitest: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@vitest/expect@0.34.6:
-    resolution: {integrity: sha512-QUzKpUQRc1qC7qdGo7rMK3AkETI7w18gTCUrsNnyjjJKYiuUB9+TQK3QnR1unhCnWRC0AbKv2omLGQDF/mIjOw==}
+  /@vitest/expect@1.0.1:
+    resolution: {integrity: sha512-3cdrb/eKD/0tygDX75YscuHEHMUJ70u3UoLSq2eqhWks57AyzvsDQbyn53IhZ0tBN7gA8Jj2VhXiOV2lef7thw==}
     dependencies:
-      '@vitest/spy': 0.34.6
-      '@vitest/utils': 0.34.6
+      '@vitest/spy': 1.0.1
+      '@vitest/utils': 1.0.1
       chai: 4.3.10
     dev: true
 
-  /@vitest/runner@0.34.6:
-    resolution: {integrity: sha512-1CUQgtJSLF47NnhN+F9X2ycxUP0kLHQ/JWvNHbeBfwW8CzEGgeskzNnHDyv1ieKTltuR6sdIHV+nmR6kPxQqzQ==}
+  /@vitest/runner@1.0.1:
+    resolution: {integrity: sha512-/+z0vhJ0MfRPT3AyTvAK6m57rzlew/ct8B2a4LMv7NhpPaiI2QLGyOBMB3lcioWdJHjRuLi9aYppfOv0B5aRQA==}
     dependencies:
-      '@vitest/utils': 0.34.6
-      p-limit: 4.0.0
+      '@vitest/utils': 1.0.1
+      p-limit: 5.0.0
       pathe: 1.1.1
     dev: true
 
-  /@vitest/snapshot@0.34.6:
-    resolution: {integrity: sha512-B3OZqYn6k4VaN011D+ve+AA4whM4QkcwcrwaKwAbyyvS/NB1hCWjFIBQxAQQSQir9/RtyAAGuq+4RJmbn2dH4w==}
+  /@vitest/snapshot@1.0.1:
+    resolution: {integrity: sha512-wIPtPDGSxEZ+DpNMc94AsybX6LV6uN6sosf5TojyP1m2QbKwiRuLV/5RSsjt1oWViHsTj8mlcwrQQ1zHGO0fMw==}
     dependencies:
-      magic-string: 0.30.3
+      magic-string: 0.30.5
       pathe: 1.1.1
-      pretty-format: 29.6.3
+      pretty-format: 29.7.0
     dev: true
 
-  /@vitest/spy@0.34.6:
-    resolution: {integrity: sha512-xaCvneSaeBw/cz8ySmF7ZwGvL0lBjfvqc1LpQ/vcdHEvpLn3Ff1vAvjw+CoGn0802l++5L/pxb7whwcWAw+DUQ==}
+  /@vitest/spy@1.0.1:
+    resolution: {integrity: sha512-yXwm1uKhBVr/5MhVeSmtNqK+0q2RXIchJt8kokEKdrWLtkPeDgdbZ6SjR1VQGZuNdWL6sSBnLayIyVvcS0qLfA==}
     dependencies:
-      tinyspy: 2.1.1
+      tinyspy: 2.2.0
     dev: true
 
-  /@vitest/utils@0.34.6:
-    resolution: {integrity: sha512-IG5aDD8S6zlvloDsnzHw0Ut5xczlF+kv2BOTo+iXfPr54Yhi5qbVOgGB1hZaVq4iJ4C/MZ2J0y15IlsV/ZcI0A==}
+  /@vitest/utils@1.0.1:
+    resolution: {integrity: sha512-MGPCHkzXbbAyscrhwGzh8uP1HPrTYLWaj1WTDtWSGrpe2yJWLRN9mF9ooKawr6NMOg9vTBtg2JqWLfuLC7Dknw==}
     dependencies:
       diff-sequences: 29.6.3
-      loupe: 2.3.6
-      pretty-format: 29.6.3
+      loupe: 2.3.7
+      pretty-format: 29.7.0
     dev: true
 
   /@vue/compiler-core@3.3.4:
@@ -12656,8 +12656,8 @@ packages:
     engines: {node: '>=0.4.0'}
     dev: true
 
-  /acorn-walk@8.2.0:
-    resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==}
+  /acorn-walk@8.3.0:
+    resolution: {integrity: sha512-FS7hV565M5l1R08MXqo8odwMTB02C2UqzB17RVgu9EyuYFBqJZ3/ZY97sQD5FewVu1UyDFc1yztUDrAwT0EypA==}
     engines: {node: '>=0.4.0'}
     dev: true
 
@@ -14678,8 +14678,8 @@ packages:
     requiresBuild: true
     dev: false
 
-  /core-js@3.33.3:
-    resolution: {integrity: sha512-lo0kOocUlLKmm6kv/FswQL8zbkH7mVsLJ/FULClOhv8WRVmKLVcs6XPNQAzstfeJTCHMyButEwG+z1kHxHoDZw==}
+  /core-js@3.34.0:
+    resolution: {integrity: sha512-aDdvlDder8QmY91H88GzNi9EtQi2TjvQhpCX6B1v/dAZHU1AuLgHvRh54RiOerpEhEW46Tkf+vgAViB/CWC0ag==}
     requiresBuild: true
 
   /core-util-is@1.0.3:
@@ -14741,6 +14741,22 @@ packages:
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
+      typescript: 5.2.2
+    dev: true
+
+  /cosmiconfig@9.0.0(typescript@5.2.2):
+    resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      typescript: ^5.1.6
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      env-paths: 2.2.1
+      import-fresh: 3.3.0
+      js-yaml: 4.1.0
+      parse-json: 5.2.0
       typescript: 5.2.2
     dev: true
 
@@ -16965,7 +16981,7 @@ packages:
       - typescript
     dev: true
 
-  /eslint-plugin-tailwindcss@3.13.0(tailwindcss@3.3.5):
+  /eslint-plugin-tailwindcss@3.13.0(tailwindcss@3.3.6):
     resolution: {integrity: sha512-Fcep4KDRLWaK3KmkQbdyKHG0P4GdXFmXdDaweTIPcgOP60OOuWFbh1++dufRT28Q4zpKTKaHwTsXPJ4O/EjU2Q==}
     engines: {node: '>=12.13.0'}
     peerDependencies:
@@ -16973,7 +16989,7 @@ packages:
     dependencies:
       fast-glob: 3.3.1
       postcss: 8.4.32
-      tailwindcss: 3.3.5
+      tailwindcss: 3.3.6
     dev: true
 
   /eslint-plugin-testing-library@6.2.0(eslint@8.55.0)(typescript@5.2.2):
@@ -17047,7 +17063,7 @@ packages:
     resolution: {integrity: sha512-WE+YlK9X9s4vf5EaYRU0Scw7WItDZStm+PapFSYlg2ABNtaQ4zIG7wEqpoUB3SlfM+SgkhgmzR0TeJOO5k3/Nw==}
     dev: true
 
-  /eslint-plugin-vitest@0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@0.34.6):
+  /eslint-plugin-vitest@0.3.10(eslint@8.55.0)(typescript@5.2.2)(vitest@1.0.1):
     resolution: {integrity: sha512-08lj4rdhZHYyHk+Py2nJ7SlE6arP8GNfGXl9jVqhe9s5JoZIGiBpIkLGX+VNBiB6vXTn56H6Ant7Koc6XzRjtQ==}
     engines: {node: 14.x || >= 16}
     peerDependencies:
@@ -17062,7 +17078,7 @@ packages:
     dependencies:
       '@typescript-eslint/utils': 6.12.0(eslint@8.55.0)(typescript@5.2.2)
       eslint: 8.55.0
-      vitest: 0.34.6(jsdom@23.0.1)
+      vitest: 1.0.1(@types/node@18.18.8)(jsdom@23.0.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -18085,8 +18101,8 @@ packages:
     resolution: {integrity: sha512-by7U5W8dkIzcvDofUcO42yl9JbnHTEDBrzu3pt5fKT+Z4Oy85I21K80EYJYdjQGC2qum4Vo55Ag57iiIK4FYuA==}
     dev: false
 
-  /framer-motion@10.16.12(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-w7Yzx0OzQ5Uh6uNkxaX+4TuAPuOKz3haSbjmHpdrqDpGuCJCpq6YP9Dy7JJWdZ6mJjndrg3Ao3vUwDajKNikCA==}
+  /framer-motion@10.16.14(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-poovsXtR7doXRfjqVjUai82Zl2z5yMUFKtYWHnQK+xsDVPhHVUJEU+Kr2kqEnUV4gry+LcRdrDzcMI7OdJlDMg==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
@@ -20102,6 +20118,11 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /istanbul-lib-coverage@3.2.2:
+    resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
+    engines: {node: '>=8'}
+    dev: true
+
   /istanbul-lib-hook@3.0.0:
     resolution: {integrity: sha512-Pt/uge1Q9s+5VAZ+pCo16TYMWPBIl+oaNIjgLQxcX0itS6ueeaA+pEfThZpH8WxhFgCiEb8sAJY6MdUKgiIWaQ==}
     engines: {node: '>=8'}
@@ -20140,7 +20161,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       '@babel/core': 7.23.5
-      '@babel/parser': 7.23.4
+      '@babel/parser': 7.23.5
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.0
       semver: 7.5.4
@@ -21531,9 +21552,12 @@ packages:
     engines: {node: '>=6.11.5'}
     requiresBuild: true
 
-  /local-pkg@0.4.3:
-    resolution: {integrity: sha512-SFppqq5p42fe2qcZQqqEOiVRXl+WCP1MdT6k7BDEW1j++sp5fIY+/fdRQitvKgB5BrBcmrs5m/L0v2FrU5MY1g==}
+  /local-pkg@0.5.0:
+    resolution: {integrity: sha512-ok6z3qlYyCDS4ZEU27HaU6x/xZa9Whf8jD4ptH5UZTQYZVYeb9bnZ3ojVhiJNLiXK1Hfc0GNbLXcmZ5plLDDBg==}
     engines: {node: '>=14'}
+    dependencies:
+      mlly: 1.4.2
+      pkg-types: 1.0.3
     dev: true
 
   /locate-path@2.0.0:
@@ -21755,6 +21779,13 @@ packages:
 
   /loupe@2.3.6:
     resolution: {integrity: sha512-RaPMZKiMy8/JruncMU5Bt6na1eftNoo++R4Y+N2FrxkDVTrGvcyzFTsaGif4QTeKESheMGegbhw6iUAq+5A8zA==}
+    deprecated: Please upgrade to 2.3.7 which fixes GHSA-4q6p-r6v2-jvc5
+    dependencies:
+      get-func-name: 2.0.2
+    dev: true
+
+  /loupe@2.3.7:
+    resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
     dependencies:
       get-func-name: 2.0.2
     dev: true
@@ -21842,6 +21873,21 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
+    dev: true
+
+  /magic-string@0.30.5:
+    resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: true
+
+  /magicast@0.3.2:
+    resolution: {integrity: sha512-Fjwkl6a0syt9TFN0JSYpOybxiMCkYNEeOTnOTNRbjphirLakznZXAqrXgj/7GG3D1dvETONNwrBfinvAbpunDg==}
+    dependencies:
+      '@babel/parser': 7.23.5
+      '@babel/types': 7.23.5
+      source-map-js: 1.0.2
     dev: true
 
   /make-dir@2.1.0:
@@ -23071,8 +23117,8 @@ packages:
     hasBin: true
     dev: true
 
-  /mlly@1.4.1:
-    resolution: {integrity: sha512-SCDs78Q2o09jiZiE2WziwVBEqXQ02XkGdUy45cbJf+BpYRIjArXRJ1Wbowxkb+NaM9DWvS3UC9GiO/6eqvQ/pg==}
+  /mlly@1.4.2:
+    resolution: {integrity: sha512-i/Ykufi2t1EZ6NaPLdfnZk2AX8cs0d+mTzVKuPfqPKPatxLApaBoxJQ9x1/uckXtrS/U5oisPMDkNs0yQTaBRg==}
     dependencies:
       acorn: 8.10.0
       pathe: 1.1.1
@@ -24846,6 +24892,13 @@ packages:
     dependencies:
       yocto-queue: 1.0.0
 
+  /p-limit@5.0.0:
+    resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      yocto-queue: 1.0.0
+    dev: true
+
   /p-locate@2.0.0:
     resolution: {integrity: sha512-nQja7m7gSKuewoVRen45CtVfODR3crN3goVQ0DDZ9N3yHxgpkuBhZqsaiotSQRrADUrne346peY7kT3TSACykg==}
     engines: {node: '>=4'}
@@ -25484,7 +25537,7 @@ packages:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
     dependencies:
       jsonc-parser: 3.2.0
-      mlly: 1.4.1
+      mlly: 1.4.2
       pathe: 1.1.1
     dev: true
 
@@ -25543,9 +25596,9 @@ packages:
     dependencies:
       '@babel/runtime': 7.22.11
 
-  /postcss-cli@10.1.0(postcss@8.4.32):
-    resolution: {integrity: sha512-Zu7PLORkE9YwNdvOeOVKPmWghprOtjFQU3srMUGbdz3pHJiFh7yZ4geiZFMkjMfB0mtTFR3h8RemR62rPkbOPA==}
-    engines: {node: '>=14'}
+  /postcss-cli@11.0.0(postcss@8.4.32):
+    resolution: {integrity: sha512-xMITAI7M0u1yolVcXJ9XTZiO9aO49mcoKQy6pCDFdMh9kGqhzLVpWxeD/32M/QBmkhcGypZFFOLNLmIW4Pg4RA==}
+    engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
       postcss: '>=8.4.31'
@@ -25554,17 +25607,17 @@ packages:
       dependency-graph: 0.11.0
       fs-extra: 11.2.0
       get-stdin: 9.0.0
-      globby: 13.2.2
+      globby: 14.0.0
       picocolors: 1.0.0
       postcss: 8.4.32
-      postcss-load-config: 4.0.1(postcss@8.4.32)
+      postcss-load-config: 5.0.2(postcss@8.4.32)
       postcss-reporter: 7.0.5(postcss@8.4.32)
       pretty-hrtime: 1.0.3
       read-cache: 1.0.0
       slash: 5.1.0
       yargs: 17.7.2
     transitivePeerDependencies:
-      - ts-node
+      - jiti
     dev: true
 
   /postcss-focus-visible@9.0.0(postcss@8.4.32):
@@ -25634,6 +25687,23 @@ packages:
         optional: true
     dependencies:
       lilconfig: 2.1.0
+      postcss: 8.4.32
+      yaml: 2.3.4
+    dev: true
+
+  /postcss-load-config@5.0.2(postcss@8.4.32):
+    resolution: {integrity: sha512-Q8QR3FYbqOKa0bnC1UQ2bFq9/ulHX5Bi34muzitMr8aDtUelO5xKeJEYC/5smE0jNE9zdB/NBnOwXKexELbRlw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      jiti: '>=1.21.0'
+      postcss: '>=8.4.31'
+    peerDependenciesMeta:
+      jiti:
+        optional: true
+      postcss:
+        optional: true
+    dependencies:
+      lilconfig: 3.0.0
       postcss: 8.4.32
       yaml: 2.3.4
     dev: true
@@ -26313,7 +26383,7 @@ packages:
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
 
-  /react-redux@8.1.2(@types/react-dom@18.2.17)(@types/react@18.2.41)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
+  /react-redux@8.1.2(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1):
     resolution: {integrity: sha512-xJKYI189VwfsFc4CJvHqHlDrzyFTY/3vZACbE+rr/zQ34Xx1wQfB4OTOSeOSNrF6BDVe8OOdxIrAnMGXA3ggfw==}
     peerDependencies:
       '@types/react': ^16.8 || ^17.0 || ^18.0
@@ -26336,7 +26406,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.22.11
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 18.2.41
+      '@types/react': 18.2.42
       '@types/react-dom': 18.2.17
       '@types/use-sync-external-store': 0.0.3
       hoist-non-react-statics: 3.3.2
@@ -26698,7 +26768,7 @@ packages:
       - react-native
     dev: false
 
-  /redoc@2.1.3(core-js@3.33.3)(mobx@6.12.0)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.1.1):
+  /redoc@2.1.3(core-js@3.34.0)(mobx@6.12.0)(react-dom@18.2.0)(react@18.2.0)(styled-components@6.1.1):
     resolution: {integrity: sha512-d7F9qLLxaiFW4GC03VkwlX9wuRIpx9aiIIf3o6mzMnqPfhxrn2IRKGndrkJeVdItgCfmg9jXZiFEowm60f1meQ==}
     engines: {node: '>=6.9', npm: '>=3.0.0'}
     requiresBuild: true
@@ -26711,7 +26781,7 @@ packages:
     dependencies:
       '@redocly/openapi-core': 1.0.2(encoding@0.1.13)
       classnames: 2.3.2
-      core-js: 3.33.3
+      core-js: 3.34.0
       decko: 1.2.0
       dompurify: 2.4.7
       eventemitter3: 4.0.7
@@ -26843,8 +26913,8 @@ packages:
       define-properties: 1.2.0
       functions-have-names: 1.2.3
 
-  /regexparam@2.0.1:
-    resolution: {integrity: sha512-zRgSaYemnNYxUv+/5SeoHI0eJIgTL/A2pUtXUPLHQxUldagouJ9p+K6IbIZ/JiQuCEv2E2B1O11SjVQy3aMCkw==}
+  /regexparam@2.0.2:
+    resolution: {integrity: sha512-A1PeDEYMrkLrfyOwv2jwihXbo9qxdGD3atBYQA9JJgreAx8/7rC6IUkWOw2NQlOxLp2wL0ifQbh1HuidDfYA6w==}
     engines: {node: '>=8'}
     dev: false
 
@@ -27588,18 +27658,18 @@ packages:
       txt-ast-traverse: 1.2.1
     dev: true
 
-  /semantic-release@22.0.8(typescript@5.2.2):
-    resolution: {integrity: sha512-55rb31jygqIYsGU/rY+gXXm2fnxBIWo9azOjxbqKsPnq7p70zwZ5v+xnD7TxJC+zvS3sy1eHLGXYWCaX3WI76A==}
+  /semantic-release@22.0.9(typescript@5.2.2):
+    resolution: {integrity: sha512-4uDzd0r57oqExHsVad4LS86CagqEblCsWBZ3cZSxsWex4nkfLX0L+e5ImBDjeuzot1Ad8K3eE+Cm2OLJE7TsvQ==}
     engines: {node: ^18.17 || >=20.6.1}
     hasBin: true
     dependencies:
-      '@semantic-release/commit-analyzer': 11.0.0(semantic-release@22.0.8)
+      '@semantic-release/commit-analyzer': 11.0.0(semantic-release@22.0.9)
       '@semantic-release/error': 4.0.0
-      '@semantic-release/github': 9.2.1(semantic-release@22.0.8)
-      '@semantic-release/npm': 11.0.0(semantic-release@22.0.8)
-      '@semantic-release/release-notes-generator': 12.0.0(semantic-release@22.0.8)
+      '@semantic-release/github': 9.2.1(semantic-release@22.0.9)
+      '@semantic-release/npm': 11.0.0(semantic-release@22.0.9)
+      '@semantic-release/release-notes-generator': 12.0.0(semantic-release@22.0.9)
       aggregate-error: 5.0.0
-      cosmiconfig: 8.3.6(typescript@5.2.2)
+      cosmiconfig: 9.0.0(typescript@5.2.2)
       debug: 4.3.4
       env-ci: 10.0.0
       execa: 8.0.1
@@ -28252,8 +28322,8 @@ packages:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
 
-  /std-env@3.4.3:
-    resolution: {integrity: sha512-f9aPhy8fYBuMN+sNfakZV18U39PbalgjXG3lLB9WkaYTxijru61wb57V9wxxNthXM5Sd88ETBWi29qLAsHO52Q==}
+  /std-env@3.6.0:
+    resolution: {integrity: sha512-aFZ19IgVmhdB2uX599ve2kE6BIE3YMnQ6Gp6BURhW/oIzpXGKr878TQfAQZn1+i0Flcc/UKUy1gOlcfaUBCryg==}
     dev: true
 
   /stdin-discarder@0.1.0:
@@ -28785,7 +28855,7 @@ packages:
     dev: false
     optional: true
 
-  /swagger-ui-react@4.19.1(@types/react-dom@18.2.17)(@types/react@18.2.41)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
+  /swagger-ui-react@4.19.1(@types/react-dom@18.2.17)(@types/react@18.2.42)(debug@4.3.4)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-km83cp5ZlmCfROOq6QD1E7bM9f0RsvNrM2C1756UqZ6rRM0J3ex3ySyWa5+mcJRltn0eUB5NahqW8c6I4qwC6A==}
     requiresBuild: true
     peerDependencies:
@@ -28815,7 +28885,7 @@ packages:
       react-immutable-proptypes: 2.2.0(immutable@3.8.2)
       react-immutable-pure-component: 2.2.2(immutable@3.8.2)(react-dom@18.2.0)(react@18.2.0)
       react-inspector: 6.0.2(react@18.2.0)
-      react-redux: 8.1.2(@types/react-dom@18.2.17)(@types/react@18.2.41)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
+      react-redux: 8.1.2(@types/react-dom@18.2.17)(@types/react@18.2.42)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
       react-syntax-highlighter: 15.5.0(react@18.2.0)
       redux: 4.2.1
       redux-immutable: 4.0.0(immutable@3.8.2)
@@ -28943,10 +29013,10 @@ packages:
       strip-ansi: 6.0.1
     dev: true
 
-  /tailwind-merge@2.0.0:
-    resolution: {integrity: sha512-WO8qghn9yhsldLSg80au+3/gY9E4hFxIvQ3qOmlpXnqpDKoMruKfi/56BbbMg6fHTQJ9QD3cc79PoWqlaQE4rw==}
+  /tailwind-merge@2.1.0:
+    resolution: {integrity: sha512-l11VvI4nSwW7MtLSLYT4ldidDEUwQAMWuSHk7l4zcXZDgnCRa0V3OdCwFfM7DCzakVXMNRwAeje9maFFXT71dQ==}
     dependencies:
-      '@babel/runtime': 7.23.2
+      '@babel/runtime': 7.23.5
     dev: false
 
   /tailwindcss-hyphens@0.1.0:
@@ -28984,8 +29054,8 @@ packages:
       - ts-node
     dev: true
 
-  /tailwindcss@3.3.5:
-    resolution: {integrity: sha512-5SEZU4J7pxZgSkv7FP1zY8i2TIAOooNZ1e/OGtxIEv6GltpoiXUqWvLy89+a10qYTB1N5Ifkuw9lqQkN9sscvA==}
+  /tailwindcss@3.3.6:
+    resolution: {integrity: sha512-AKjF7qbbLvLaPieoKeTjG1+FyNZT6KaJMJPFeQyLfIp7l82ggH1fbHJSsYIvnbTFQOlkh+gBYpyby5GT1LIdLw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
@@ -28994,7 +29064,7 @@ packages:
       chokidar: 3.5.3
       didyoumean: 1.2.2
       dlv: 1.1.3
-      fast-glob: 3.3.1
+      fast-glob: 3.3.2
       glob-parent: 6.0.2
       is-glob: 4.0.3
       jiti: 1.19.3
@@ -29009,7 +29079,7 @@ packages:
       postcss-load-config: 4.0.1(postcss@8.4.32)
       postcss-nested: 6.0.1(postcss@8.4.32)
       postcss-selector-parser: 6.0.13
-      resolve: 1.22.6
+      resolve: 1.22.8
       sucrase: 3.34.0
     transitivePeerDependencies:
       - ts-node
@@ -29441,17 +29511,17 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: true
 
-  /tinybench@2.5.0:
-    resolution: {integrity: sha512-kRwSG8Zx4tjF9ZiyH4bhaebu+EDz1BOx9hOigYHlUW4xxI/wKIUQUqo018UlU4ar6ATPBsaMrdbKZ+tmPdohFA==}
+  /tinybench@2.5.1:
+    resolution: {integrity: sha512-65NKvSuAVDP/n4CqH+a9w2kTlLReS9vhsAP06MWx+/89nMinJyB2icyl58RIcqCmIggpojIGeuJGhjU1aGMBSg==}
     dev: true
 
-  /tinypool@0.7.0:
-    resolution: {integrity: sha512-zSYNUlYSMhJ6Zdou4cJwo/p7w5nmAH17GRfU/ui3ctvjXFErXXkruT4MWW6poDeXgCaIBlGLrfU6TbTXxyGMww==}
+  /tinypool@0.8.1:
+    resolution: {integrity: sha512-zBTCK0cCgRROxvs9c0CGK838sPkeokNGdQVUUwHAbynHFlmyJYj825f/oRs528HaIJ97lo0pLIlDUzwN+IorWg==}
     engines: {node: '>=14.0.0'}
     dev: true
 
-  /tinyspy@2.1.1:
-    resolution: {integrity: sha512-XPJL2uSzcOyBMky6OFrusqWlzfFrXtE0hPuMgW8A2HmaqrPo4ZQHRN/V0QXN3FSjKxpsbRrFc5LI7KOwBsT1/w==}
+  /tinyspy@2.2.0:
+    resolution: {integrity: sha512-d2eda04AN/cPOR89F7Xv5bK/jrQEhmcLFe6HFldoeO9AJtps+fqEnh486vnT/8y4bw38pSyxDcTCAq+Ks2aJTg==}
     engines: {node: '>=14.0.0'}
     dev: true
 
@@ -30616,6 +30686,15 @@ packages:
       convert-source-map: 1.9.0
     dev: true
 
+  /v8-to-istanbul@9.2.0:
+    resolution: {integrity: sha512-/EH/sDgxU2eGxajKdwLCDmQ4FWq+kpi3uCmBGpw1xJtnAxEjlD8j8PEiGWpCIMIs3ciNAgH0d3TTJiUkYzyZjA==}
+    engines: {node: '>=10.12.0'}
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.20
+      '@types/istanbul-lib-coverage': 2.0.4
+      convert-source-map: 2.0.0
+    dev: true
+
   /v8flags@4.0.1:
     resolution: {integrity: sha512-fcRLaS4H/hrZk9hYwbdRM35D0U8IYMfEClhXxCivOojl+yTRAZH3Zy2sSy6qVCiGbV9YAtPssP6jaChqC9vPCg==}
     engines: {node: '>= 10.13.0'}
@@ -30765,17 +30844,16 @@ packages:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
-  /vite-node@0.34.6(@types/node@20.10.1):
-    resolution: {integrity: sha512-nlBMJ9x6n7/Amaz6F3zJ97EBwR2FkzhBRxF5e+jE6LA3yi6Wtc2lyTij1OnDMIr34v5g/tVQtsVAzhT0jc5ygA==}
-    engines: {node: '>=v14.18.0'}
+  /vite-node@1.0.1(@types/node@18.18.5):
+    resolution: {integrity: sha512-Y2Jnz4cr2azsOMMYuVPrQkp3KMnS/0WV8ezZjCy4hU7O5mUHCAVOnFmoEvs1nvix/4mYm74Len8bYRWZJMNP6g==}
+    engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      mlly: 1.4.1
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.7(@types/node@20.10.1)
+      vite: 4.4.7(@types/node@18.18.5)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -30785,6 +30863,99 @@ packages:
       - sugarss
       - supports-color
       - terser
+    dev: true
+
+  /vite-node@1.0.1(@types/node@18.18.8):
+    resolution: {integrity: sha512-Y2Jnz4cr2azsOMMYuVPrQkp3KMnS/0WV8ezZjCy4hU7O5mUHCAVOnFmoEvs1nvix/4mYm74Len8bYRWZJMNP6g==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.4
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      vite: 4.4.7(@types/node@18.18.8)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vite@4.4.7(@types/node@18.18.5):
+    resolution: {integrity: sha512-6pYf9QJ1mHylfVh39HpuSfMPojPSKVxZvnclX1K1FyZ1PXDOcLBibdq5t1qxJSnL63ca8Wf4zts6mD8u8oc9Fw==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.18.5
+      esbuild: 0.18.20
+      postcss: 8.4.32
+      rollup: 3.28.1
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
+  /vite@4.4.7(@types/node@18.18.8):
+    resolution: {integrity: sha512-6pYf9QJ1mHylfVh39HpuSfMPojPSKVxZvnclX1K1FyZ1PXDOcLBibdq5t1qxJSnL63ca8Wf4zts6mD8u8oc9Fw==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.18.8
+      esbuild: 0.18.20
+      postcss: 8.4.32
+      rollup: 3.28.1
+    optionalDependencies:
+      fsevents: 2.3.3
     dev: true
 
   /vite@4.4.7(@types/node@20.10.1):
@@ -30823,21 +30994,21 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@0.34.6(jsdom@23.0.1):
-    resolution: {integrity: sha512-+5CALsOvbNKnS+ZHMXtuUC7nL8/7F1F2DnHGjSsszX8zCjWSSviphCb/NuS9Nzf4Q03KyyDRBAXhF/8lffME4Q==}
-    engines: {node: '>=v14.18.0'}
+  /vitest@1.0.1(@types/node@18.18.5):
+    resolution: {integrity: sha512-MHsOj079S28hDsvdDvyD1pRj4dcS51EC5Vbe0xvOYX+WryP8soiK2dm8oULi+oA/8Xa/h6GoJEMTmcmBy5YM+Q==}
+    engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
+      '@vitest/browser': ^1.0.0
+      '@vitest/ui': ^1.0.0
       happy-dom: '*'
       jsdom: '*'
-      playwright: '*'
-      safaridriver: '*'
-      webdriverio: '*'
     peerDependenciesMeta:
       '@edge-runtime/vm':
+        optional: true
+      '@types/node':
         optional: true
       '@vitest/browser':
         optional: true
@@ -30847,37 +31018,86 @@ packages:
         optional: true
       jsdom:
         optional: true
-      playwright:
-        optional: true
-      safaridriver:
-        optional: true
-      webdriverio:
-        optional: true
     dependencies:
-      '@types/chai': 4.3.5
-      '@types/chai-subset': 1.3.3
-      '@types/node': 20.10.1
-      '@vitest/expect': 0.34.6
-      '@vitest/runner': 0.34.6
-      '@vitest/snapshot': 0.34.6
-      '@vitest/spy': 0.34.6
-      '@vitest/utils': 0.34.6
-      acorn: 8.10.0
-      acorn-walk: 8.2.0
+      '@types/node': 18.18.5
+      '@vitest/expect': 1.0.1
+      '@vitest/runner': 1.0.1
+      '@vitest/snapshot': 1.0.1
+      '@vitest/spy': 1.0.1
+      '@vitest/utils': 1.0.1
+      acorn-walk: 8.3.0
       cac: 6.7.14
       chai: 4.3.10
       debug: 4.3.4
-      jsdom: 23.0.1
-      local-pkg: 0.4.3
-      magic-string: 0.30.3
+      execa: 8.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
       pathe: 1.1.1
       picocolors: 1.0.0
-      std-env: 3.4.3
+      std-env: 3.6.0
       strip-literal: 1.3.0
-      tinybench: 2.5.0
-      tinypool: 0.7.0
-      vite: 4.4.7(@types/node@20.10.1)
-      vite-node: 0.34.6(@types/node@20.10.1)
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 4.4.7(@types/node@18.18.5)
+      vite-node: 1.0.1(@types/node@18.18.5)
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vitest@1.0.1(@types/node@18.18.8)(jsdom@23.0.1):
+    resolution: {integrity: sha512-MHsOj079S28hDsvdDvyD1pRj4dcS51EC5Vbe0xvOYX+WryP8soiK2dm8oULi+oA/8Xa/h6GoJEMTmcmBy5YM+Q==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
+      '@vitest/browser': ^1.0.0
+      '@vitest/ui': ^1.0.0
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/node': 18.18.8
+      '@vitest/expect': 1.0.1
+      '@vitest/runner': 1.0.1
+      '@vitest/snapshot': 1.0.1
+      '@vitest/spy': 1.0.1
+      '@vitest/utils': 1.0.1
+      acorn-walk: 8.3.0
+      cac: 6.7.14
+      chai: 4.3.10
+      debug: 4.3.4
+      execa: 8.0.1
+      jsdom: 23.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      strip-literal: 1.3.0
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 4.4.7(@types/node@18.18.8)
+      vite-node: 1.0.1(@types/node@18.18.8)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
