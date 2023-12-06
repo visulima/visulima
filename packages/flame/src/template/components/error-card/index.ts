@@ -33,7 +33,7 @@ const errorCard = async ({
     const { html: solutionsHtml, script: solutionsScript } = await solutions(error, solutionFinders);
 
     return {
-        html: `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
+        html: `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20 mb-6">
     <div class="xl:flex items-stretch">
         <main id="error-card" class="z-10 flex-grow min-w-0">
         <div class="px-6 pt-6 flex flex-row">
