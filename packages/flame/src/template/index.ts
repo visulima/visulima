@@ -30,7 +30,7 @@ const template = async (
 
     html += headerBarHtml;
 
-    const { html: errorCardHtml, script: errorCardScript } = await errorCard({
+    const { html: errorCardHtml, scripts: errorCardScripts } = await errorCard({
         error: mainCause,
         runtimeName,
         solutionFinders,
@@ -47,7 +47,7 @@ const template = async (
         css: inlineCss.trim(),
         description: "Error",
         error: mainCause,
-        scripts: [prelineJs, clipboardJs, headerBarScript, errorCardScript],
+        scripts: [prelineJs, clipboardJs, headerBarScript, ...errorCardScripts],
         title: "Error",
     });
 };
