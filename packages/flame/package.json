@@ -79,7 +79,6 @@
         "build": "rimraf dist && cross-env NODE_ENV=development tsup",
         "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
-        "coverage": "vitest run --coverage",
         "dev": "cross-env NODE_ENV=development tsup --watch --onSuccess 'node ./example/index.js'",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
@@ -88,7 +87,11 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit --project tsconfig.json",
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest",
+        "types": "tsup --dts-only",
+        "types:check": "tsc --noEmit"
     },
     "dependencies": {
         "@visulima/error": "workspace:*",
