@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [2.0.11](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.10...@visulima/prisma-dmmf-transformer@2.0.11) (2023-12-06)
+
+
+### Bug Fixes
+
+* removed @prisma/internals from dependencies because it was no needed ([e996bb3](https://github.com/visulima/visulima/commit/e996bb3622f1a61aa217b343f7ee4da96896252f))
+
 ## @visulima/prisma-dmmf-transformer [2.0.10](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.9...@visulima/prisma-dmmf-transformer@2.0.10) (2023-11-30)
 
 
