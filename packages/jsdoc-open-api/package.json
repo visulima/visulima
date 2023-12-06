@@ -90,7 +90,6 @@
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
-        "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
@@ -99,6 +98,8 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
     "dependencies": {
@@ -121,6 +122,7 @@
         "@types/node": "18.18.8",
         "@types/webpack": "^5.28.5",
         "@vitest/coverage-v8": "^1.0.1",
+        "@vitest/ui": "^1.0.1",
         "cli-progress": "^3.12.0",
         "commander": "^11.1.0",
         "cross-env": "^7.0.3",
