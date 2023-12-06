@@ -1,3 +1,21 @@
+## @visulima/error [3.0.0](https://github.com/visulima/visulima/compare/@visulima/error@2.0.0...@visulima/error@3.0.0) (2023-12-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed ErrorWithMetadata, fixed wrong Trace on error namespace
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* added new getErrorCauses helper ([e94d9ee](https://github.com/visulima/visulima/commit/e94d9ee34d6fa0f93d853a227e9b31bab4aacdab))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.11
+
 ## @visulima/error [2.0.0](https://github.com/visulima/visulima/compare/@visulima/error@1.1.1...@visulima/error@2.0.0) (2023-12-04)
 
 
