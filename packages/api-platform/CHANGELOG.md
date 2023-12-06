@@ -1,3 +1,11 @@
+## @visulima/api-platform [2.0.14](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.13...@visulima/api-platform@2.0.14) (2023-12-06)
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 2.1.11
+
 ## @visulima/api-platform [2.0.13](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.12...@visulima/api-platform@2.0.13) (2023-11-30)
 
 
