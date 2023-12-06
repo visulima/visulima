@@ -1,3 +1,10 @@
+## @visulima/error [3.0.1](https://github.com/visulima/visulima/compare/@visulima/error@3.0.0...@visulima/error@3.0.1) (2023-12-06)
+
+
+### Bug Fixes
+
+* fixed possible deep nesting of error cause in getErrorCauses ([350ddba](https://github.com/visulima/visulima/commit/350ddbaf2b8120a0815f1673fc1582ca7946847d))
+
 ## @visulima/error [3.0.0](https://github.com/visulima/visulima/compare/@visulima/error@2.0.0...@visulima/error@3.0.0) (2023-12-06)
 
 
