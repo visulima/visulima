@@ -9,8 +9,11 @@ import process from "../../../util/process";
 import type { GroupType, Item } from "./types";
 import getType from "./util/get-type";
 import groupSimilarTypes from "./util/group-similar-types";
+import revisionHash from "../../../util/revision-hash";
 
 const stackTraceViewer = async (error: Error): Promise<string> => {
+    const uniqueKey = revisionHash(error.name + error.message + error.stack);
+
     const shiki = await getHighlighterCore({
         langs: [
             import("shikiji/langs/javascript.mjs"),
@@ -48,7 +51,7 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
                   {
                       start: {
                           column: trace.column,
-                          line: trace.line,
+                          line: trace.line as number,
                       },
                   },
                   {
@@ -68,7 +71,7 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
         const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
 
         tabs.push({
-            html: `<button type="button" id="source-code-tabs-item-${index}" data-hs-tab="#source-code-tabs-${index}" aria-controls="source-code-tabs-${index}" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
+            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-hs-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 inline-flex items-center gap-x-2 border-b border-gray-100 last:border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-gray-400 dark:hover:text-blue-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 p-6 ${
                 index === 0 ? "active" : ""
             }" role="tab">
     <div class="flex flex-col w-full text-left">
@@ -79,9 +82,9 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
             type: trace.file ? getType(trace.file) : undefined,
         });
 
-        sourceCode.push(`<div id="source-code-tabs-${index}" class="${
+        sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
             index === 0 ? "block" : "hidden"
-        }" role="tabpanel" aria-labelledby="source-code-tabs-item-${index}">
+        }" role="tabpanel" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}">
 <div class="pt-10 pb-8 mb-6 text-sm text-right text-[#D8DEE9] dark:text-gray-400 border-b border-gray-600">
     <div class="px-6">
         <button id="source-code-open-in-editor" type="button">${relativeFilePath}</button>
@@ -115,13 +118,13 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
                 ${groupSimilarTypes(tabs)
                     .map((tab) => {
                         if (Array.isArray(tab)) {
-                            return `<button type="button" class="hs-collapse-toggle py-3 px-6 border-b border-gray-100 inline-flex items-center gap-x-2 text-sm disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" id="hs-${
+                            return `<button type="button" class="hs-collapse-toggle py-3 px-6 border-b border-gray-100 inline-flex items-center gap-x-2 text-sm disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" id="hs-${uniqueKey}-${
                                 (tab[0] as Item).type
-                            }" data-hs-collapse="#hs-${(tab[0] as Item).type}-heading">
+                            }" data-hs-collapse="#hs-${uniqueKey}-${(tab[0] as Item).type}-heading">
 ${tab.length} ${(tab[0] as Item).type === "internal" ? "internal" : "node_modules"} frames
     <svg class="hs-collapse-open:rotate-180 flex-shrink-0 w-4 h-4 " xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
 </button>
-<div id="hs-${(tab[0] as Item).type}-heading" class="hs-collapse hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-${
+<div id="hs-${uniqueKey}-${(tab[0] as Item).type}-heading" class="hs-collapse hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-${uniqueKey}-${
                                 (tab[0] as Item).type
                             }">
   <div class="flex flex-col">${tab.map((item) => item.html).join("")}</div>

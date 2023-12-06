@@ -69,8 +69,6 @@ const solutions = async (error: Error | SolutionError | VisulimaError, solutionF
         const button = document.querySelector('#flame-solution-button');
         const content = document.querySelector('#flame-solution-content');
 
-        content.style.height = content.scrollHeight + "px";
-
         button.addEventListener('click', () => {
             if (!content.classList.contains('hidden')) {
                 content.style.height = content.scrollHeight + "px";
