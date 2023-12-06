@@ -46,7 +46,7 @@
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.2.1",
-        "@axe-core/react": "^4.8.1",
+        "@axe-core/react": "^4.8.2",
         "@babel/core": "^7.23.5",
         "@babel/eslint-parser": "^7.23.3",
         "@babel/plugin-syntax-import-assertions": "^7.23.3",
