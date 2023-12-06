@@ -22,7 +22,9 @@
         "reporting",
         "stacktrace",
         "diagnostic",
-        "source-code-preview"
+        "source-code-preview",
+        "cli",
+        "console"
     ],
     "homepage": "https://www.visulima.com/docs/package/flame",
     "repository": {
@@ -95,15 +97,15 @@
     },
     "dependencies": {
         "@visulima/error": "workspace:*",
-        "clipboard": "^2.0.11",
-        "find-cache-dir": "^5.0.0",
-        "get-uri": "^6.0.2",
-        "marked": "^11.0.0",
-        "open-editor": "^4.1.1",
-        "sanitize-html": "^2.11.0",
-        "shikiji": "^0.7.5"
+        "get-uri": "^6.0.2"
     },
     "devDependencies": {
+        "find-cache-dir": "^5.0.0",
+        "marked": "^11.0.0",
+        "sanitize-html": "^2.11.0",
+        "shikiji": "^0.7.5",
+        "open-editor": "^4.1.1",
+        "clipboard": "^2.0.11",
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
@@ -150,13 +152,34 @@
         "vitest": "^0.34.6"
     },
     "peerDependencies": {
-        "openai": "4.20.1"
+        "find-cache-dir": "^5.0.0",
+        "openai": "4.20.1",
+        "marked": "^11.0.0",
+        "clipboard": "^2.0.11",
+        "sanitize-html": "^2.11.0",
+        "shikiji": "^0.7.5",
+        "open-editor": "^4.1.1"
     },
     "peerDependenciesMeta": {
         "find-cache-dir": {
             "optional": true
         },
         "openai": {
+            "optional": true
+        },
+        "marked": {
+            "optional": true
+        },
+        "clipboard": {
+            "optional": true
+        },
+        "open-editor": {
+            "optional": true
+        },
+        "sanitize-html": {
+            "optional": true
+        },
+        "shikiji": {
             "optional": true
         }
     },

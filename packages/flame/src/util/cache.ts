@@ -1,10 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { createHash } from "node:crypto";
+import revisionHash from "./revision-hash";
 
 const mapCache = new Map<string, string>();
-
-const revisionHash = (data: string) => createHash("md5").update(data).digest("hex").slice(0, 10);
 
 const ensurePath = (filename: string) => {
     const filepath = dirname(filename);

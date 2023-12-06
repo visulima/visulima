@@ -7,7 +7,6 @@ import openAiPrompt from "./open-ai-prompt";
 import openAiSolutionResponse from "./open-ai-solution-response";
 import cache from "../../util/cache";
 import debugLog from "../../util/debug-log";
-import * as console from "console";
 
 const findCache = findCacheDirectory({ name: "visulima-flame" });
 
@@ -51,7 +50,8 @@ const OpenAiFinder: (
                     temperature: options.temperature ?? 0,
                 })
                 .catch((error) => {
-                    console.log(error);
+                    // eslint-disable-next-line no-console
+                    console.error(error);
 
                     return DEFAULT_ERROR_MESSAGE;
                 });
