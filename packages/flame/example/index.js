@@ -16,7 +16,11 @@ const server = createServer(async (request, response) => {
     };
 
     const error = new Error("This is a error message", {
-        cause: new Error("This is a cause message")
+        cause: new Error("This is a cause message", {
+            cause: new Error("This is a nested cause message", {
+                cause: ["This is a nested cause string message", new Error("This is a nested cause message")]
+            })
+        })
     });
 
     //error.hint = "This is a hint message";

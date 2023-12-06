@@ -91,7 +91,7 @@ const stackTraceViewer = async (error: Error): Promise<string> => {
 </div>`);
     }
 
-    return `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20 mt-6">
+    return `<section class="container bg-white dark:shadow-none dark:bg-gray-800/50 dark:bg-gradient-to-bl from-gray-700/50 via-transparent dark:ring-1 dark:ring-inset dark:ring-white/5 rounded-lg shadow-2xl shadow-gray-500/20">
     <main id="stack-trace-viewer" class="flex flex-row">
         <div class="w-4/12 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <div class="border-b border-gray-100 p-6">
