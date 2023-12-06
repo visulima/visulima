@@ -1,3 +1,22 @@
+## @visulima/nextra-theme-docs [4.0.11](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.10...@visulima/nextra-theme-docs@4.0.11) (2023-12-06)
+
+
+### Bug Fixes
+
+* updated tailwind-merge and dev deps ([63e7779](https://github.com/visulima/visulima/commit/63e777910ce29c2fed19a2e7c4b82edb12d255dc))
+
+
+### Styles
+
+* fixed found eslint and prettier errors ([ed65aec](https://github.com/visulima/visulima/commit/ed65aecc285df88dd90fc5b8294c27365a911076))
+* fixed found prettier error ([b3234c2](https://github.com/visulima/visulima/commit/b3234c2c11e24acd5e24dc9c1685257a156dbfff))
+
+
+### Miscellaneous Chores
+
+* changed all vitest.config.ts files, to ignore fixtures folder ([fa9c25a](https://github.com/visulima/visulima/commit/fa9c25ac827972b9e9038c91fd2d84c3a70aa03f))
+* updated dev deps ([a3e6124](https://github.com/visulima/visulima/commit/a3e6124a75b0fa314f61d17c52d896a5119bcb70))
+
 ## @visulima/nextra-theme-docs [4.0.10](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.9...@visulima/nextra-theme-docs@4.0.10) (2023-11-30)
 
 
