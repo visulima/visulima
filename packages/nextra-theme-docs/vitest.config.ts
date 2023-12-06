@@ -1,12 +1,15 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { defineConfig, configDefaults } from "vitest/config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [react()],
     test: {
-        environment: "jsdom",
+        coverage: {
+            provider: "v8",
+            exclude: [...configDefaults.coverage.exclude, "**/__fixtures__/**"],
+        },
+        environment: "node",
+        exclude: [...configDefaults.exclude, "**/__fixtures__/**"],
     },
 });

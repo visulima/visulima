@@ -64,7 +64,6 @@
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
-        "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
@@ -73,6 +72,8 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
     "dependencies": {
@@ -88,6 +89,7 @@
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@types/node": "18.18.8",
         "@vitest/coverage-v8": "^1.0.1",
+        "@vitest/ui": "^1.0.1",
         "cross-env": "^7.0.3",
         "cross-fetch": "^4.0.0",
         "eslint": "^8.55.0",
