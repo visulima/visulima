@@ -1,3 +1,11 @@
+## @visulima/api-platform [2.0.15](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.14...@visulima/api-platform@2.0.15) (2023-12-06)
+
+
+
+### Dependencies
+
+* **@visulima/crud:** upgraded to 2.0.11
+
 ## @visulima/api-platform [2.0.14](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.13...@visulima/api-platform@2.0.14) (2023-12-06)
 
 
