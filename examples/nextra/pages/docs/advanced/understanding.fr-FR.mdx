@@ -67,11 +67,11 @@ function Stock() {
     // Nous retournons un squelette ici.
     if (isLoading) return <div className="skeleton" />;
 
-    // Sinon, nous affichons les données et un spin qui indique une revalidation en arrière-plan.
+    // Sinon, nous affichons les données et un spinner qui indique une revalidation en arrière-plan.
     return (
         <>
             <div>${data}</div>
-            {isValidating ? <div className="spin" /> : null}
+            {isValidating ? <div className="spinner" /> : null}
         </>
     );
 }
