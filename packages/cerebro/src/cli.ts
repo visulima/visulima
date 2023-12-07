@@ -2,7 +2,7 @@ import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
-import { env, isCI, isTest } from "std-env";
+import { env } from "node:process";
 
 import type {
     Cli as ICli,
@@ -28,6 +28,12 @@ import listMissingArguments from "./utils/list-missing-arguments";
 import mergeArguments from "./utils/merge-arguments";
 import parseRawCommand from "./utils/parse-raw-command";
 import registerExceptionHandler from "./utils/register-exception-handler";
+
+/** Detect if `CI` environment variable is set */
+const isCI = env?.["CI"] !== "false";
+
+/** Detect if `NODE_ENV` environment variable is `test` */
+const isTest = env?.["NODE_ENV"] === "test" || env?.["TEST"] !== "false";
 
 class Cli implements ICli {
     private readonly logger: ILogger;
@@ -153,7 +159,7 @@ class Cli implements ICli {
     public addCommand(command: ICommand): this {
         // add the command to the runtime (if it isn't already there)
         if (this.commands.has(command.name)) {
-            this.logger.warning(`Ignored command with name "${command.name}, it was found in the command list."`);
+            throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
             this.commands.set(command.name, command);
 
@@ -168,7 +174,7 @@ class Cli implements ICli {
                     this.logger.debug("adding alias", alias);
 
                     if (this.commands.has(alias)) {
-                        this.logger.warning(`Ignoring command alias "${alias}, command with the same name was found."`);
+                        throw new Error(`Ignoring command alias "${alias}, command with the same name was found."`);
                     } else {
                         this.commands.set(alias, command);
                     }

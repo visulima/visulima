@@ -10,7 +10,6 @@ export type { Cli } from "./@types/cli";
 export type { Command } from "./@types/command";
 export type { Extension } from "./@types/extension";
 export type { ConfigType, Logger } from "./@types/logger";
-export type { CerebroError, StringOrBuffer, System } from "./@types/system";
 export type { Toolbox } from "./@types/toolbox";
 
 /**

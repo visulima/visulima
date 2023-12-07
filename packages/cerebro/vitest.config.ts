@@ -1,17 +1,16 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from "vitest/config";
+import { defineConfig, configDefaults } from "vitest/config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
     test: {
-        environment: "node",
-        dir: "./__tests__",
-        server: {
-            deps: {
-                inline: ["vitest-console"],
-            },
+        coverage: {
+            provider: "v8",
+            exclude: [...configDefaults.coverage.exclude, "**/__fixtures__/**"],
         },
+        environment: "node",
+        exclude: [...configDefaults.exclude, "**/__fixtures__/**"],
         setupFiles: "./test-setup-file.ts",
     },
 });

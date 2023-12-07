@@ -3,29 +3,19 @@
   <p>
   Cerebro is a delightful toolkit for building Node-based command-line interfaces (CLIs) built on top of
 
-[@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js),
 [boxen](https://github.com/sindresorhus/boxen),
 [chalk](https://github.com/chalk/chalk),
 [chalk-template](https://github.com/chalk/chalk-template),
-[cli-progress](https://github.com/npkgz/cli-progress),
 [cli-table3](https://github.com/cli-table/cli-table3),
-[cli-truncate](https://github.com/sindresorhus/cli-truncate),
 [command-line-args](https://github.com/75lb/command-line-args),
-[cross-spawn](https://github.com/moxystudio/node-cross-spawn),
-[execa](https://github.com/sindresorhus/execa),
 [fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein),
 [hard-rejection](https://github.com/sindresorhus/hard-rejection),
-[ora](https://github.com/sindresorhus/ora),
-[semver](https://github.com/npm/node-semver),
-[std-env](https://github.com/unjs/std-env),
-[string-width](https://github.com/sindresorhus/string-width),
-[strip-ansi](https://github.com/chalk/strip-ansi),
-[supports-hyperlinks](https://github.com/jamestalmage/supports-hyperlinks),
-[term-size](https://github.com/sindresorhus/term-size),
-[terminal-link](https://github.com/sindresorhus/terminal-link),
-[which](https://github.com/npm/node-which) and
-[wordwrap](https://github.com/substack/node-wordwrap)
+[strip-ansi](https://github.com/chalk/strip-ansi) and
+[term-size](https://github.com/sindresorhus/term-size)
 
+<br />
+
+I would recommend reading this [guide](https://clig.dev/) on how to make user-friendly command-line tools.
   </p>
 </div>
 
@@ -110,6 +100,17 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## About
+
+### Related Projects
+
+- [oclif](https://oclif.io) - The Open CLI Framework
+- [gluegun](https://infinitered.github.io/gluegun/#/)
+- [meow](https://www.npmjs.com/package/meow) - CLI app helper
+- [commander](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
+- [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
+
 
 ## License
 
