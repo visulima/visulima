@@ -1,8 +1,8 @@
 import type { Cli as ICli, Command as ICommand, Logger as ILogger, Toolbox as IToolbox } from "../@types";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
-import chalkFormat from "../utils/chalk-format";
-import commandLineUsage from "../utils/command-line-usage";
+import chalkFormat from "../util/chalk-format";
+import commandLineUsage from "../util/command-line-usage";
 
 const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>) => {
     logger.debug("no command given, printing general help...");
@@ -63,7 +63,7 @@ const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {
-        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options });
+        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options.filter((option) => !option.hidden) });
     }
 
     usageGroups.push({ header: "{inverse.yellow  Global Options }", optionList: defaultOptions });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import semverGt from "../../../src/semver-gt";
+import semverGt from "../../../src/util/semver-gt";
 
-describe("utils/semver-gt", () => {
+describe("util/semver-gt", () => {
     it("should return true if the first version is greater than the second", () => {
         expect(semverGt('1.2.3', '1.2.2')).toBeTruthy();
     });

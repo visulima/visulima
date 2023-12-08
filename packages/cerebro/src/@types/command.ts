@@ -6,9 +6,10 @@ import type { Toolbox as IToolbox } from "./toolbox";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
 
-export type OptionDefinition<T> = Omit<BaseOptionDefinition, "type|defaultValue"> & {
+export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|defaultValue"> & {
     /** An initial value for the option. */
     defaultValue?: T | undefined;
+
     /** A string describing the option. */
     description?: string | undefined;
 
@@ -20,17 +21,29 @@ export type OptionDefinition<T> = Omit<BaseOptionDefinition, "type|defaultValue"
      * are `String`, `Number` and `Boolean` but you can use a custom function.
      */
     type?: TypeConstructor<T> | undefined;
+
     /** A string to replace the default type string (e.g. <string>). It's often more useful to set a more descriptive type label, like <ms>, <files>, <command>, etc.. */
     typeLabel?: string | undefined;
+
+    /** Option is hidden from help */
+    hidden?: boolean;
+
+    /**
+     * A string or array of strings indicating the conflicting option(s).
+     * Note: The default value for an option does not cause a conflict.
+     */
+    conflicts?: string | string[];
 };
 
+export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<T = any, TContext extends IToolbox = IToolbox> {
+export interface Command<TContext extends IToolbox = IToolbox> {
     /** Potential other names for this command */
     alias?: string[] | string;
 
     /** Positional argument */
-    argument?: Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
+    argument?: ArgumentDefinition;
 
     /** The command path, an array that describes how to get to this command */
     commandPath?: string[];
@@ -50,7 +63,7 @@ export interface Command<T = any, TContext extends IToolbox = IToolbox> {
     /** The name of your command */
     name: string;
 
-    options?: OptionDefinition<T>[];
+    options?: OptionDefinition[];
 
     usage?: Content[];
 }

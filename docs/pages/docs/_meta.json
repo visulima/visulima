@@ -9,7 +9,7 @@
     "getting-started": {
         "title": "Getting Started"
     },
-    "-- Packages": {
+    "package": {
         "type": "separator",
         "title": "Packages"
     }

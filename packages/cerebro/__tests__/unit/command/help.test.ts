@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { Command as ICommand, Toolbox as IToolbox } from "../../../src/@types";
 import HelpCommand from "../../../src/command/help";
-import commandLineUsage from "../../../src/utils/command-line-usage";
+import commandLineUsage from "../../../src/util/command-line-usage";
 
-vi.mock("../../../src/utils/command-line-usage");
+vi.mock("../../../src/util/command-line-usage");
 vi.mock("../default-options", () => {
     return {
         default: [

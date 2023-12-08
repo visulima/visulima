@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { describe, expect, it } from "vitest";
 
-import chalkFormat from "../../../src/utils/chalk-format";
+import chalkFormat from "../../../src/util/chalk-format";
 
-describe("chalkFormat", () => {
+describe("util/chalk-format", () => {
     it("should return simple string", () => {
         const value = "Something";
         const result = chalkFormat(value);

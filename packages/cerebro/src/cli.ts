@@ -21,13 +21,13 @@ import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
 import logger from "./toolbox/logger-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
-import checkNodeVersion from "./utils/check-node-version";
-import commandLineCommands from "./utils/command-line-commands";
-import findAlternatives from "./utils/levenstein";
-import listMissingArguments from "./utils/list-missing-arguments";
-import mergeArguments from "./utils/merge-arguments";
-import parseRawCommand from "./utils/parse-raw-command";
-import registerExceptionHandler from "./utils/register-exception-handler";
+import checkNodeVersion from "./util/check-node-version";
+import commandLineCommands from "./util/command-line-commands";
+import findAlternatives from "./util/levenstein";
+import listMissingArguments from "./util/list-missing-arguments";
+import mergeArguments from "./util/merge-arguments";
+import parseRawCommand from "./util/parse-raw-command";
+import registerExceptionHandler from "./util/register-exception-handler";
 
 /** Detect if `CI` environment variable is set */
 const isCI = env?.["CI"] !== "false";
@@ -161,6 +161,44 @@ class Cli implements ICli {
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
+            if (Array.isArray(command.options)) {
+                const groupedDuplicatedOption = command.options.reduce<{ [key: string]: OptionDefinition<any>[] }>((acc, obj) => {
+                    const key = `${obj.name}-${obj.alias}`;
+
+                    if (!acc[key]) {
+                        acc[key] = [];
+                    }
+
+                    (acc[key] as OptionDefinition<any>[]).push(obj);
+
+                    return acc;
+                }, {});
+                const duplicatedOptions = Object.values(groupedDuplicatedOption).filter((obj) => obj.length > 1);
+
+                let errorMessages = "";
+
+                duplicatedOptions.forEach((options) => {
+                    const matchingOption = options[0] as OptionDefinition<any>;
+                    const duplicate = options[1] as OptionDefinition<any>;
+
+                    let flag = "alias";
+
+                    if (matchingOption.name === duplicate.name) {
+                        flag = "name";
+                    } else if (matchingOption.name === duplicate.name && matchingOption.alias === duplicate.alias) {
+                        flag = "name and alias";
+                    }
+
+                    errorMessages += `Cannot add option ${flag} "${JSON.stringify(duplicate)}" to command "${
+                        command.name
+                    }" due to conflicting option ${JSON.stringify(matchingOption)}\n`;
+                });
+
+                if (errorMessages.length > 0) {
+                    throw new Error(errorMessages);
+                }
+            }
+
             this.commands.set(command.name, command);
 
             if (command.alias !== undefined) {

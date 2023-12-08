@@ -57,18 +57,12 @@ describe("emptyToolbox", () => {
         toolbox.argument = ["argName", "argValue"];
         toolbox.runtime = runtime;
 
-        vi.spyOn(toolbox, "print");
-        vi.spyOn(toolbox, "prompts");
-        vi.spyOn(toolbox, "system");
         vi.spyOn(toolbox, "logger");
 
         expect(toolbox.argv).toStrictEqual(["arg1", "arg2"]);
         expect(toolbox.options).toStrictEqual({ option1: "value1" });
         expect(toolbox.argument).toStrictEqual(["argName", "argValue"]);
         expect(toolbox.runtime).toStrictEqual(runtime);
-        expect(toolbox.print).toBeDefined();
-        expect(toolbox.prompts).toBeDefined();
-        expect(toolbox.system).toBeDefined();
         expect(toolbox.logger).toBeDefined();
     });
 

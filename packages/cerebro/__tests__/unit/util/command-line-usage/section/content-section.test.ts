@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { Content as IContent } from "../../../../src/@types/command-line-usage";
-import ContentSection from "../../../../src/utils/command-line-usage/section/content-section";
+import type { Content as IContent } from "../../../../../src/@types/command-line-usage";
+import ContentSection from "../../../../../src/util/command-line-usage/section/content-section";
 
 describe("line-usage/content-section", () => {
     it("should render header only, no content", () => {

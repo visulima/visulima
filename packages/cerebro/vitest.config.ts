@@ -7,10 +7,9 @@ export default defineConfig({
     test: {
         coverage: {
             provider: "v8",
-            exclude: [...configDefaults.coverage.exclude, "**/__fixtures__/**"],
+            exclude: [...configDefaults.coverage.exclude, "**/__fixtures__/**", "**/@types/**"],
         },
         environment: "node",
         exclude: [...configDefaults.exclude, "**/__fixtures__/**"],
-        setupFiles: "./test-setup-file.ts",
     },
 });

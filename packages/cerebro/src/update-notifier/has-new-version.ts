@@ -1,4 +1,4 @@
-import semverGt from "../semver-gt";
+import semverGt from "../util/semver-gt";
 import { getLastUpdate, saveLastUpdate } from "./cache";
 import getDistributionVersion from "./get-dist-version";
 
