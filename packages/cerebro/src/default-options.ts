@@ -2,12 +2,6 @@ import type { OptionDefinition } from "./@types/command";
 
 const defaultOptions: OptionDefinition[] = [
     {
-        description: "Display only the specified group",
-        group: "global",
-        name: "group",
-        type: String,
-    },
-    {
         description: "Turn on verbose output",
         group: "global",
         name: "verbose",

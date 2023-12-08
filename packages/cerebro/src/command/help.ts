@@ -3,9 +3,37 @@ import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
 import chalkFormat from "../util/chalk-format";
 import commandLineUsage from "../util/command-line-usage";
+import type { OptionDefinition } from "../@types/command";
 
-const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>) => {
+const EMPTY_GROUP_KEY = "__Other";
+
+const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
+
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
+
+    let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
+
+    if (groupOption) {
+        filteredCommands = filteredCommands.filter((command) => command.group === groupOption);
+    }
+
+    // eslint-disable-next-line unicorn/no-array-reduce
+    const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
+        const group = command.group ?? EMPTY_GROUP_KEY;
+
+        // eslint-disable-next-line security/detect-object-injection
+        if (!accumulator[group]) {
+            // eslint-disable-next-line security/detect-object-injection
+            accumulator[group] = [];
+        }
+
+        // eslint-disable-next-line security/detect-object-injection
+        (accumulator[group] as ICommand[]).push(command);
+
+        return accumulator;
+    }, {});
 
     logger.log(
         commandLineUsage([
@@ -13,10 +41,10 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
                 content: `{cyan ${runtime.getCliName()}} {green <command>} [positional arguments] {yellow [options]}`,
                 header: "{inverse.cyan  Usage }",
             },
-            {
-                content: [...new Set(commands.values())]
-                    .filter((command) => !command.hidden)
-                    .map((command) => {
+            ...Object.keys(groupedCommands).map((key) => {
+                return {
+                    // eslint-disable-next-line security/detect-object-injection
+                    content: (groupedCommands[key] as ICommand[]).map((command) => {
                         let aliases = "";
 
                         if (typeof command.alias === "string") {
@@ -31,7 +59,15 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
 
                         return [`{green ${command.name}} ${aliases}`, command.description ?? ""];
                     }),
-                header: "{inverse.green  Available Commands }",
+                    header:
+                        key === EMPTY_GROUP_KEY || groupOption
+                            ? `{inverse.green  Available${groupOption ? ` ${upperFirstChar(groupOption)}` : ""} Commands }`
+                            : ` {inverse.green  ${upperFirstChar(key)} }`,
+                };
+            }),
+            {
+                header: "{inverse.yellow  Command Options }",
+                optionList: ((commands.get("help") as ICommand).options as OptionDefinition[]).filter((option) => !option.hidden),
             },
             { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
             {
@@ -96,13 +132,11 @@ class HelpCommand implements ICommand {
 
     public options = [
         {
-            defaultOption: true,
-            description: "The command to display help for",
-            name: "command",
+            description: "Display only the specified group",
+            name: "group",
+            type: String,
         },
     ];
-
-    public usage = [];
 
     private readonly commands: Map<string, ICommand>;
 
@@ -111,7 +145,7 @@ class HelpCommand implements ICommand {
     }
 
     public execute(toolbox: IToolbox): void {
-        const { commandName, logger, runtime } = toolbox;
+        const { commandName, logger, options, runtime } = toolbox;
 
         const { footer, header } = runtime.getCommandSection();
 
@@ -120,7 +154,8 @@ class HelpCommand implements ICommand {
         }
 
         if (commandName === "help") {
-            printGeneralHelp(logger, runtime, this.commands);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unnecessary-condition
+            printGeneralHelp(logger, runtime, this.commands, options?.["group"]);
         } else {
             printCommandHelp(logger, runtime, this.commands, commandName);
         }

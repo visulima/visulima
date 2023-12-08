@@ -58,6 +58,9 @@ export interface Command<TContext extends IToolbox = IToolbox> {
     execute: ((toolbox: TContext) => Promise<void>) | ((toolbox: TContext) => void);
     /** The path to the file name for this command. */
     file?: string;
+    /** Group commands together under a heading */
+    group?: string;
+
     /** Should your command be shown in the listings  */
     hidden?: boolean;
 

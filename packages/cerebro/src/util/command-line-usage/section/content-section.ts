@@ -23,7 +23,7 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
         "top-mid": "",
         "top-right": "",
     },
-    colWidths: [40, 40],
+    colWidths: [40, 60],
     style: { border: [], compact: true, head: [], "padding-left": 2, "padding-right": 1 },
     wordWrap: true,
 };

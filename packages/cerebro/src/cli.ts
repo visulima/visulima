@@ -532,7 +532,7 @@ class Cli implements ICli {
         }
     }
 
-    // eslint-disable-next-line consistent-return,sonarjs/cognitive-complexity,unicorn/prevent-abbreviations
+    // eslint-disable-next-line sonarjs/cognitive-complexity,unicorn/prevent-abbreviations,class-methods-use-this
     private validateCommandOptions<T>(arguments_: OptionDefinition<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
         const missingOptions = listMissingArguments(arguments_, commandArgs);
 
@@ -569,21 +569,24 @@ class Cli implements ICli {
             });
 
             if (errors.length > 0) {
+                // eslint-disable-next-line unicorn/error-message
                 throw new Error(errors.join("\n"));
             }
         }
     }
 
-    private validateCommandArgsForConflicts<T>(arguments_: OptionDefinition<T>[], commandArgs: IToolbox["options"], command: ICommand): void {
+    // eslint-disable-next-line class-methods-use-this
+    private validateCommandArgsForConflicts<T>(arguments_: OptionDefinition<T>[], commandArguments: IToolbox["options"], command: ICommand): void {
         const conflicts = arguments_.filter((argument) => argument.conflicts !== undefined);
 
         if (conflicts.length > 0) {
             const conflict = conflicts.find((argument) => {
                 if (Array.isArray(argument.conflicts)) {
-                    return argument.conflicts.some((conflict_) => commandArgs[conflict_] !== undefined);
+                    // eslint-disable-next-line security/detect-object-injection
+                    return argument.conflicts.some((c) => commandArguments[c] !== undefined);
                 }
 
-                return commandArgs[argument.conflicts as string] !== undefined;
+                return commandArguments[argument.conflicts as string] !== undefined;
             });
 
             if (conflict) {
