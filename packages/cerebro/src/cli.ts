@@ -395,6 +395,8 @@ class Cli implements ICli {
         toolbox.argv = this.argv;
         toolbox.options = { ..._all, ...extraOptions };
 
+        this.validateCommandArgsForConflicts(arguments_, toolbox.options as IToolbox["options"], command);
+
         this.logger.debug("command options parsed from options:");
         this.logger.debug(JSON.stringify(toolbox.options, null, 2));
         this.logger.debug("command argument parsed from argument:");
@@ -535,16 +537,15 @@ class Cli implements ICli {
         const missingOptions = listMissingArguments(arguments_, commandArgs);
 
         if (missingOptions.length > 0) {
-            this.logger.error(
+            throw new Error(
                 `You called the command "${command.name}" without the required options: ${missingOptions.map((argument) => argument.name).join(", ")}`,
             );
-
-            // eslint-disable-next-line unicorn/no-process-exit
-            return isTest ? undefined : process.exit(1);
         }
 
         // eslint-disable-next-line no-underscore-dangle
         if (commandArgs._unknown && commandArgs._unknown.length > 0) {
+            const errors: string[] = [];
+
             // eslint-disable-next-line no-underscore-dangle
             commandArgs._unknown.forEach((unknownOption) => {
                 const isOption = unknownOption.startsWith("--");
@@ -564,11 +565,34 @@ class Cli implements ICli {
                     }
                 }
 
-                this.logger.error(error);
+                errors.push(error);
             });
 
-            // eslint-disable-next-line unicorn/no-process-exit
-            return isTest ? undefined : process.exit(1);
+            if (errors.length > 0) {
+                throw new Error(errors.join("\n"));
+            }
+        }
+    }
+
+    private validateCommandArgsForConflicts<T>(arguments_: OptionDefinition<T>[], commandArgs: IToolbox["options"], command: ICommand): void {
+        const conflicts = arguments_.filter((argument) => argument.conflicts !== undefined);
+
+        if (conflicts.length > 0) {
+            const conflict = conflicts.find((argument) => {
+                if (Array.isArray(argument.conflicts)) {
+                    return argument.conflicts.some((conflict_) => commandArgs[conflict_] !== undefined);
+                }
+
+                return commandArgs[argument.conflicts as string] !== undefined;
+            });
+
+            if (conflict) {
+                throw new Error(
+                    `You called the command "${command.name}" with conflicting options: ${conflict.name} and ${
+                        typeof conflict.conflicts === "string" ? conflict.conflicts : conflict.conflicts?.join(", ")
+                    }`,
+                );
+            }
         }
     }
 }

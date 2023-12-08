@@ -1,9 +1,9 @@
 import Cli from "@visulima/cerebro";
 
-import colorsCommand from "./commands/colors.js";
+import optionsConflicts from "./commands/options-conflicts.js";
 
 const cli = new Cli("cerebro");
 
-cli.addCommand(colorsCommand);
+optionsConflicts(cli);
 
 await cli.run();
