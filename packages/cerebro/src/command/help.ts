@@ -1,9 +1,9 @@
 import type { Cli as ICli, Command as ICommand, Logger as ILogger, Toolbox as IToolbox } from "../@types";
+import type { OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
 import chalkFormat from "../util/chalk-format";
 import commandLineUsage from "../util/command-line-usage";
-import type { OptionDefinition } from "../@types/command";
 
 const EMPTY_GROUP_KEY = "__Other";
 

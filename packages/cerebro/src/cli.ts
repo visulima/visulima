@@ -36,6 +36,8 @@ const isCI = env["CI"] !== "false";
 /** Detect if `NODE_ENV` environment variable is `test` */
 const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
 
+const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
+
 class Cli implements ICli {
     private readonly logger: ILogger;
 
@@ -163,6 +165,8 @@ class Cli implements ICli {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
             this.validateDoubleOptions(command);
+
+            this.addNegatableOption(command);
 
             this.commands.set(command.name, command);
 
@@ -361,23 +365,7 @@ class Cli implements ICli {
         toolbox.runtime = this as ICli;
 
         // allow extensions to attach themselves to the toolbox
-        const callback = async (extension: IExtension) => {
-            if (typeof extension.execute !== "function") {
-                this.logger.warning(`Skipped ${extension.name} because execute is not a function.`);
-
-                return null;
-            }
-
-            await extension.execute(toolbox as IToolbox);
-
-            return null;
-        };
-
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const extension of this.extensions) {
-            // eslint-disable-next-line no-await-in-loop
-            await callback(extension);
-        }
+        await this.registerExtensions(toolbox as IToolbox);
 
         await this.updateNotifier(toolbox as IToolbox);
 
@@ -394,6 +382,8 @@ class Cli implements ICli {
         toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
         toolbox.argv = this.argv;
         toolbox.options = { ..._all, ...extraOptions };
+
+        this.mapNegatableOptions(toolbox as IToolbox);
 
         this.validateCommandArgsForConflicts(arguments_, toolbox.options as IToolbox["options"], command);
 
@@ -597,6 +587,60 @@ class Cli implements ICli {
                 );
             }
         }
+    }
+
+    private addNegatableOption(command: ICommand): void {
+        if (Array.isArray(command.options)) {
+            command.options.forEach((option) => {
+                if (option.name.startsWith("no-") && !(command.options as OptionDefinition[]).some((o) => o.name === option.name.replace("no-", ""))) {
+                    if (option.type !== Boolean) {
+                        this.logger.debug(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
+
+                        return;
+                    }
+
+                    const negatedOption = {
+                        ...option,
+                        defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
+                        name: `${option.name.replace("no-", "")}`,
+                    };
+
+                    (command.options as OptionDefinition[]).push(negatedOption);
+                }
+            });
+        }
+    }
+
+    private async registerExtensions(toolbox: IToolbox): Promise<void> {
+        const callback = async (extension: IExtension) => {
+            if (typeof extension.execute !== "function") {
+                this.logger.warning(`Skipped ${extension.name} because execute is not a function.`);
+
+                return null;
+            }
+
+            await extension.execute(toolbox as IToolbox);
+
+            return null;
+        };
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const extension of this.extensions) {
+            // eslint-disable-next-line no-await-in-loop
+            await callback(extension);
+        }
+    }
+
+    // combining negatable options with their non-negated counterparts
+    // eslint-disable-next-line class-methods-use-this
+    private mapNegatableOptions(toolbox: IToolbox): void {
+        Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
+            if (/^no\w+/.test(key)) {
+                const nonNegatedKey = lowerFirstChar(key.replace("no", ""));
+                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+                (toolbox.options as IOptions["options"])[nonNegatedKey] = !value;
+            }
+        });
     }
 }
 
