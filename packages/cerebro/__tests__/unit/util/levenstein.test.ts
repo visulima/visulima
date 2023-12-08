@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import findAlternatives from "../../../src/util/levenstein";
 
@@ -9,7 +9,7 @@ describe("util/levenstein", () => {
 
         const result = findAlternatives(string, array);
 
-        expect(result).toEqual(["commnd", "comman"]);
+        expect(result).toStrictEqual(["commnd", "comman"]);
     });
 
     it("should find a string which includes the given string", () => {
@@ -18,7 +18,7 @@ describe("util/levenstein", () => {
 
         const result = findAlternatives(string, array);
 
-        expect(result).toEqual(["mycommand"]);
+        expect(result).toStrictEqual(["mycommand"]);
     });
 
     it("should return an empty array if no strings are similar", () => {
@@ -27,6 +27,6 @@ describe("util/levenstein", () => {
 
         const result = findAlternatives(string, array);
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
     });
 });

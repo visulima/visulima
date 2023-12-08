@@ -1,35 +1,35 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { OptionDefinition } from "../../../src/@types/command";
 import mergeArguments from "../../../src/util/merge-arguments";
 
 describe("util/merge-arguments", () => {
     it("should return single argument list it was the only one provided", () => {
-        const singleArgumentList: OptionDefinition = { name: "test", type: String, required: true };
+        const singleArgumentList: OptionDefinition = { name: "test", required: true, type: String };
 
         const result = mergeArguments([singleArgumentList]);
 
-        expect(result).toEqual([{ name: "test", type: String, required: true }]);
+        expect(result).toStrictEqual([{ name: "test", required: true, type: String }]);
     });
 
     it("should merge multiple argument lists without duplicates", () => {
-        const firstArgumentList: OptionDefinition = { name: "test", type: String, required: true };
-        const secondArgumentList: OptionDefinition = { name: "arg", type: Number, required: false };
+        const firstArgumentList: OptionDefinition = { name: "test", required: true, type: String };
+        const secondArgumentList: OptionDefinition = { name: "arg", required: false, type: Number };
 
         const result = mergeArguments([firstArgumentList, secondArgumentList]);
 
-        expect(result).toEqual([
-            { name: "test", type: String, required: true },
-            { name: "arg", type: Number, required: false },
+        expect(result).toStrictEqual([
+            { name: "test", required: true, type: String },
+            { name: "arg", required: false, type: Number },
         ]);
     });
 
     it("should merge multiple argument lists and overwrites duplicates", () => {
-        const firstArgumentList: OptionDefinition = { name: "test", type: String, required: true };
-        const secondArgumentList: OptionDefinition = { name: "test", type: Number, required: false };
+        const firstArgumentList: OptionDefinition = { name: "test", required: true, type: String };
+        const secondArgumentList: OptionDefinition = { name: "test", required: false, type: Number };
 
         const result = mergeArguments([firstArgumentList, secondArgumentList]);
 
-        expect(result).toEqual([{ name: "test", type: Number, required: false }]);
+        expect(result).toStrictEqual([{ name: "test", required: false, type: Number }]);
     });
 });

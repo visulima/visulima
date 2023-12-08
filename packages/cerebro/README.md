@@ -16,6 +16,7 @@
 <br />
 
 I would recommend reading this [guide](https://clig.dev/) on how to make user-friendly command-line tools.
+
   </p>
 </div>
 
@@ -105,12 +106,11 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ### Related Projects
 
-- [oclif](https://oclif.io) - The Open CLI Framework
-- [gluegun](https://infinitered.github.io/gluegun/#/)
-- [meow](https://www.npmjs.com/package/meow) - CLI app helper
-- [commander](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
-- [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
-
+-   [oclif](https://oclif.io) - The Open CLI Framework
+-   [gluegun](https://infinitered.github.io/gluegun/#/)
+-   [meow](https://www.npmjs.com/package/meow) - CLI app helper
+-   [commander](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
+-   [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
 
 ## License
 

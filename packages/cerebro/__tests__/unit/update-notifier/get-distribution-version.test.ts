@@ -11,7 +11,6 @@ const registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags";
 vi.mock("https", async () => {
     const actual = await vi.importActual("https");
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
         // @ts-expect-error - Mock
         ...actual,

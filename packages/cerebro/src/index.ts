@@ -7,7 +7,7 @@ declare namespace NodeJS {
 }
 
 export type { Cli } from "./@types/cli";
-export type { Command } from "./@types/command";
+export type { ArgumentDefinition, Command, OptionDefinition } from "./@types/command";
 export type { Extension } from "./@types/extension";
 export type { ConfigType, Logger } from "./@types/logger";
 export type { Toolbox } from "./@types/toolbox";

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import commandLineCommands from "../../../src/util/command-line-commands";
 
@@ -9,21 +9,21 @@ describe("util/command-line-commands", () => {
         let clc = commandLineCommands(commands, ["eat", "--food", "peas"]);
 
         expect(clc.command).toBe("eat");
-        expect(clc.argv).toEqual(["--food", "peas"]);
+        expect(clc.argv).toStrictEqual(["--food", "peas"]);
 
         clc = commandLineCommands(commands, ["sleep", "--hours", "2"]);
 
         expect(clc.command).toBe("sleep");
-        expect(clc.argv).toEqual(["--hours", "2"]);
+        expect(clc.argv).toStrictEqual(["--hours", "2"]);
     });
 
     it("should throw a error if no commands defined", () => {
         expect(() => {
             commandLineCommands([], ["eat"]);
-        }).toThrow();
+        }).toThrow("Command not recognised: eat");
         expect(() => {
             commandLineCommands([], []);
-        }).toThrow();
+        }).toThrow("Command not recognised: null");
     });
 
     it("should not throw if null as command is specified", () => {
@@ -32,12 +32,12 @@ describe("util/command-line-commands", () => {
         let clc;
 
         clc = commandLineCommands(commands, []);
-        expect(clc.command).toBe(null);
-        expect(clc.argv).toEqual([]);
+        expect(clc.command).toBeNull();
+        expect(clc.argv).toStrictEqual([]);
 
         clc = commandLineCommands(commands, ["--flag"]);
-        expect(clc.command).toBe(null);
-        expect(clc.argv).toEqual(["--flag"]);
+        expect(clc.command).toBeNull();
+        expect(clc.argv).toStrictEqual(["--flag"]);
     });
 
     it("invalid command", () => {
@@ -47,6 +47,8 @@ describe("util/command-line-commands", () => {
         error.command = "cheese";
         error.name = "INVALID_COMMAND";
 
-        expect(() => { commandLineCommands(commands, ["cheese", "--food", "peas"]); }).toThrow(error);
+        expect(() => {
+            commandLineCommands(commands, ["cheese", "--food", "peas"]);
+        }).toThrow(error);
     });
 });

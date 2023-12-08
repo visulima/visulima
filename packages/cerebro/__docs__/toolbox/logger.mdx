@@ -7,7 +7,7 @@ You can access these tools on the cerebro toolbox.
 This clears the console window.
 
 ```js
-toolbox.logger.clear()
+toolbox.logger.clear();
 ```
 
 ## critical
@@ -15,7 +15,7 @@ toolbox.logger.clear()
 Prints a critical message.
 
 ```js
-toolbox.logger.critical("Your system does not have Yarn installed.")
+toolbox.logger.critical("Your system does not have Yarn installed.");
 ```
 
 ## error
@@ -24,10 +24,11 @@ Prints an error message. Use this when something goes Pants-On-Head wrong. What 
 Well, if your next line of code isn't `process.exit(0)`, then it was probably a warning.
 
 ```js
-toolbox.logger.error('Out of disk space.')
+toolbox.logger.error("Out of disk space.");
 ```
 
 ## danger
+
 @todo write doc
 
 ## success
@@ -35,7 +36,7 @@ toolbox.logger.error('Out of disk space.')
 Print a "something good just happened" message.
 
 ```js
-toolbox.logger.success('We did it!')
+toolbox.logger.success("We did it!");
 ```
 
 ## warning
@@ -43,7 +44,7 @@ toolbox.logger.success('We did it!')
 Prints a warning message. Use this when you feel a disturbance in the force.
 
 ```js
-toolbox.logger.warning("Your system does not have Yarn installed. It's awesome.")
+toolbox.logger.warning("Your system does not have Yarn installed. It's awesome.");
 ```
 
 ## info
@@ -51,7 +52,7 @@ toolbox.logger.warning("Your system does not have Yarn installed. It's awesome."
 Prints an informational message. Use this as your goto.
 
 ```js
-toolbox.logger.info('Hello. I am a chatty plugin.')
+toolbox.logger.info("Hello. I am a chatty plugin.");
 ```
 
 ## debug
@@ -59,7 +60,7 @@ toolbox.logger.info('Hello. I am a chatty plugin.')
 Only used for debugging your plugins. You can pass this function a string or an object.
 
 ```js
-toolbox.logger.debug(someObject, 'download status')
+toolbox.logger.debug(someObject, "download status");
 ```
 
 The `message` parameter is object you would like to see.
@@ -70,20 +71,25 @@ you're losing track of which one is which.
 The `showIcon` shows an icon before the message and label.
 
 ## log
+
 @todo write doc
 
 ## status
+
 @todo write doc
 
 ## notice
+
 @todo write doc
 
 ## note
+
 @todo write doc
 
-
 ## line
+
 @todo write doc
 
 ## center
+
 @todo write doc

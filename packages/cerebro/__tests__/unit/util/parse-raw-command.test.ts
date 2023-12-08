@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import parseRawCommand from "../../../src/util/parse-raw-command";
 
@@ -8,12 +8,12 @@ describe("util/parse-raw-command", () => {
 
         const result = parseRawCommand(commandString);
 
-        expect(result).toEqual(["command", "argument1", "argument2"]);
+        expect(result).toStrictEqual(["command", "argument1", "argument2"]);
     });
 
     it("should trim command arguments from process.argv", () => {
         // temporarily mock process.argv
-        const backupArgv = process.argv.slice();
+        const backupArgv = [...process.argv];
         process.argv = ["node", "script.js", "command", "argument1", "argument2"];
 
         const result = parseRawCommand(process.argv);
@@ -21,7 +21,7 @@ describe("util/parse-raw-command", () => {
         // restore original process.argv
         process.argv = backupArgv;
 
-        expect(result).toEqual(["command", "argument1", "argument2"]);
+        expect(result).toStrictEqual(["command", "argument1", "argument2"]);
     });
 
     it("should return the command array unchanged if it does not match process.argv", () => {
@@ -29,6 +29,6 @@ describe("util/parse-raw-command", () => {
 
         const result = parseRawCommand(commandArray);
 
-        expect(result).toEqual(commandArray);
+        expect(result).toStrictEqual(commandArray);
     });
 });

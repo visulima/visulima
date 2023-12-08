@@ -6,12 +6,22 @@ import type { Toolbox as IToolbox } from "./toolbox";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|defaultValue"> & {
+    /**
+     * A string or array of strings indicating the conflicting option(s).
+     * Note: The default value for an option does not cause a conflict.
+     */
+    conflicts?: string[] | string;
+
     /** An initial value for the option. */
     defaultValue?: T | undefined;
 
     /** A string describing the option. */
     description?: string | undefined;
+
+    /** Option is hidden from help */
+    hidden?: boolean;
 
     /** Specifies whether the variable is required. */
     required?: boolean;
@@ -24,20 +34,11 @@ export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|default
 
     /** A string to replace the default type string (e.g. <string>). It's often more useful to set a more descriptive type label, like <ms>, <files>, <command>, etc.. */
     typeLabel?: string | undefined;
-
-    /** Option is hidden from help */
-    hidden?: boolean;
-
-    /**
-     * A string or array of strings indicating the conflicting option(s).
-     * Note: The default value for an option does not cause a conflict.
-     */
-    conflicts?: string | string[];
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Command<TContext extends IToolbox = IToolbox> {
     /** Potential other names for this command */
     alias?: string[] | string;

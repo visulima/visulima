@@ -9,16 +9,15 @@ export async function run(argv?: string[]): Promise<void> {
     // create a CLI runtime
     const cerebro = new Cli("cerebro", { argv: argv ?? process.argv, packageName: "@visulima/cerebro", packageVersion: "0.0.0" });
 
-    cerebro
-        .addCommand({
-            execute: async (toolbox: IToolbox) => {
-                const { logger, runtime } = toolbox;
-                logger.info(`cerebro version ${runtime.getPackageVersion()}`);
-                logger.info(``);
-                logger.info(`  Type cerebro --help for more info`);
-            },
-            name: "test",
-        });
+    cerebro.addCommand({
+        execute: async (toolbox: IToolbox) => {
+            const { logger, runtime } = toolbox;
+            logger.info(`cerebro version ${runtime.getPackageVersion()}`);
+            logger.info(``);
+            logger.info(`  Type cerebro --help for more info`);
+        },
+        name: "test",
+    });
 
     // and execute it
     await cerebro.run();

@@ -1,5 +1,6 @@
-import chalk from "chalk";
 import { env } from "node:process";
+
+import chalk from "chalk";
 import stripAnsi from "strip-ansi";
 import terminalSize from "term-size";
 

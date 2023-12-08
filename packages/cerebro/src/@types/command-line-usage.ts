@@ -28,8 +28,8 @@ export interface OptionList {
     /** If specified, the -- prefix will be omitted from the option name. */
     isArgument?: boolean;
     /** An array of option definition objects. */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    optionList?: OptionDefinition<any>[];
+
+    optionList?: OptionDefinition[];
     /** If true, the option alias will be displayed after the name, i.e. --verbose, -v instead of -v, --verbose). */
     reverseNameOrder?: boolean;
     /** An options object suitable for passing into table. */

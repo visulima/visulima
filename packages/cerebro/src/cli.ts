@@ -1,8 +1,9 @@
+import { env } from "node:process";
+
 import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
-import { env } from "node:process";
 
 import type {
     Cli as ICli,
@@ -30,10 +31,10 @@ import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
 
 /** Detect if `CI` environment variable is set */
-const isCI = env?.["CI"] !== "false";
+const isCI = env["CI"] !== "false";
 
 /** Detect if `NODE_ENV` environment variable is `test` */
-const isTest = env?.["NODE_ENV"] === "test" || env?.["TEST"] !== "false";
+const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
 
 class Cli implements ICli {
     private readonly logger: ILogger;
@@ -161,43 +162,7 @@ class Cli implements ICli {
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
-            if (Array.isArray(command.options)) {
-                const groupedDuplicatedOption = command.options.reduce<{ [key: string]: OptionDefinition<any>[] }>((acc, obj) => {
-                    const key = `${obj.name}-${obj.alias}`;
-
-                    if (!acc[key]) {
-                        acc[key] = [];
-                    }
-
-                    (acc[key] as OptionDefinition<any>[]).push(obj);
-
-                    return acc;
-                }, {});
-                const duplicatedOptions = Object.values(groupedDuplicatedOption).filter((obj) => obj.length > 1);
-
-                let errorMessages = "";
-
-                duplicatedOptions.forEach((options) => {
-                    const matchingOption = options[0] as OptionDefinition<any>;
-                    const duplicate = options[1] as OptionDefinition<any>;
-
-                    let flag = "alias";
-
-                    if (matchingOption.name === duplicate.name) {
-                        flag = "name";
-                    } else if (matchingOption.name === duplicate.name && matchingOption.alias === duplicate.alias) {
-                        flag = "name and alias";
-                    }
-
-                    errorMessages += `Cannot add option ${flag} "${JSON.stringify(duplicate)}" to command "${
-                        command.name
-                    }" due to conflicting option ${JSON.stringify(matchingOption)}\n`;
-                });
-
-                if (errorMessages.length > 0) {
-                    throw new Error(errorMessages);
-                }
-            }
+            this.validateDoubleOptions(command);
 
             this.commands.set(command.name, command);
 
@@ -439,6 +404,53 @@ class Cli implements ICli {
 
         // eslint-disable-next-line unicorn/no-process-exit
         return isTest ? undefined : process.exit(0);
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private validateDoubleOptions(command: ICommand): void {
+        if (Array.isArray(command.options)) {
+            // eslint-disable-next-line unicorn/no-array-reduce
+            const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition[]>>((accumulator, object) => {
+                const key = `${object.name}-${object.alias}`;
+
+                // eslint-disable-next-line security/detect-object-injection
+                if (!accumulator[key]) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    accumulator[key] = [];
+                }
+
+                // eslint-disable-next-line security/detect-object-injection
+                (accumulator[key] as OptionDefinition[]).push(object);
+
+                return accumulator;
+            }, {});
+            const duplicatedOptions = Object.values(groupedDuplicatedOption).filter((object) => object.length > 1);
+
+            let errorMessages = "";
+
+            duplicatedOptions.forEach((options) => {
+                const matchingOption = options[0] as OptionDefinition;
+                const duplicate = options[1] as OptionDefinition;
+
+                let flag = "alias";
+
+                if (matchingOption.name === duplicate.name) {
+                    flag = "name";
+
+                    if (matchingOption.alias === duplicate.alias) {
+                        flag += " and alias";
+                    }
+                }
+
+                errorMessages += `Cannot add option ${flag} "${JSON.stringify(duplicate)}" to command "${
+                    command.name
+                }" due to conflicting option ${JSON.stringify(matchingOption)}\n`;
+            });
+
+            if (errorMessages.length > 0) {
+                throw new Error(errorMessages);
+            }
+        }
     }
 
     /**

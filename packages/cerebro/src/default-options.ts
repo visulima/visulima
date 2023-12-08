@@ -1,7 +1,6 @@
 import type { OptionDefinition } from "./@types/command";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const defaultOptions: OptionDefinition<any>[] = [
+const defaultOptions: OptionDefinition[] = [
     {
         description: "turn on verbose output",
         group: "global",

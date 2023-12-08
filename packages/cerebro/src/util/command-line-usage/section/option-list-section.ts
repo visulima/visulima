@@ -65,8 +65,8 @@ class OptionListSection extends BaseSection {
         this.lines.push("");
     }
 
-    // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
-    private getOptionNames(definition: IArguments<any>, reverseNameOrder: boolean, isArgument: boolean): string {
+    // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity
+    private getOptionNames(definition: IArguments, reverseNameOrder: boolean, isArgument: boolean): string {
         if (!definition.name) {
             throw new TypeError("Invalid option definition, name is required.");
         }

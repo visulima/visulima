@@ -18,7 +18,6 @@ describe("util/chalk-format", () => {
         expect(result).toStrictEqual(value);
     });
 
-
     it("should return value in red color", () => {
         const value = "{red Something}";
         const result = chalkFormat(value);
