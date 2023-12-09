@@ -4,6 +4,8 @@ import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
+// eslint-disable-next-line no-restricted-imports
+import camelCase from "lodash.camelcase";
 
 import type {
     Cli as ICli,
@@ -58,9 +60,6 @@ class Cli implements ICli {
     private defaultCommand: string;
 
     private updateNotifierOptions: UpdateNotifierOptions | undefined;
-
-    // If true, options with hypenated names (e.g. move-to) will be returned in camel-case (e.g. moveTo).
-    private transformToCamelCase = true;
 
     private commandSection: ICommandSection;
 
@@ -139,15 +138,6 @@ class Cli implements ICli {
     }
 
     /**
-     * Disable the transformation of the options to camel case.
-     */
-    public disableCamelCase(): this {
-        this.transformToCamelCase = false;
-
-        return this;
-    }
-
-    /**
      * Set a default command, to display a different command if cli is call without command.
      */
     public setDefaultCommand(commandName: string): this {
@@ -167,6 +157,11 @@ class Cli implements ICli {
             this.validateDoubleOptions(command);
 
             this.addNegatableOption(command);
+
+            command.options?.forEach((option) => {
+                // eslint-disable-next-line no-underscore-dangle,no-param-reassign
+                option.__camelCaseName__ = camelCase(option.name);
+            });
 
             this.commands.set(command.name, command);
 
@@ -351,7 +346,7 @@ class Cli implements ICli {
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const commandArgs = commandLineArgs(arguments_, {
             argv: commandArguments,
-            camelCase: this.transformToCamelCase,
+            camelCase: true,
             partial: true,
             stopAtFirstUnknown: true,
         });
@@ -383,7 +378,8 @@ class Cli implements ICli {
         toolbox.argv = this.argv;
         toolbox.options = { ..._all, ...extraOptions };
 
-        this.mapNegatableOptions(toolbox as IToolbox);
+        this.mapNegatableOptions(toolbox as IToolbox, command);
+        this.mapImpliesOptions(toolbox as IToolbox, command);
 
         this.validateCommandArgsForConflicts(arguments_, toolbox.options as IToolbox["options"], command);
 
@@ -632,13 +628,54 @@ class Cli implements ICli {
     }
 
     // combining negatable options with their non-negated counterparts
-    // eslint-disable-next-line class-methods-use-this
-    private mapNegatableOptions(toolbox: IToolbox): void {
+
+    private mapNegatableOptions(toolbox: IToolbox, command: ICommand): void {
         Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
             if (/^no\w+/.test(key)) {
-                const nonNegatedKey = lowerFirstChar(key.replace("no", ""));
+                const nonNegatedKey: string = lowerFirstChar(key.replace("no", ""));
+
+                this.logger.debug(`mapping negated option "${key}" to "${nonNegatedKey}"`);
+
                 // eslint-disable-next-line security/detect-object-injection,no-param-reassign
                 (toolbox.options as IOptions["options"])[nonNegatedKey] = !value;
+
+                command.options?.forEach((option) => {
+                    if (option.name === nonNegatedKey) {
+                        // eslint-disable-next-line no-underscore-dangle,no-param-reassign
+                        option.__negated__ = true;
+                    }
+                });
+            }
+        });
+    }
+
+    // Apply any implied option values, if option is undefined or default value.
+    // eslint-disable-next-line class-methods-use-this
+    private mapImpliesOptions(toolbox: IToolbox, command: ICommand): void {
+        Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {
+            const option = command.options?.find(
+                // eslint-disable-next-line no-underscore-dangle
+                (o) => o.__camelCaseName__ === optionKey && o.__negated__ === undefined && o.implies !== undefined,
+            );
+
+            if (option?.implies) {
+                const implies = option.implies as Record<string, unknown>;
+
+                Object.entries(implies).forEach(([key, value]) => {
+                    // eslint-disable-next-line security/detect-object-injection
+                    if (toolbox.options[key] === undefined) {
+                        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                        toolbox.options[key] = value;
+                    } else {
+                        const impliedOption = command.options?.find((cOption) => cOption.name === key);
+
+                        // eslint-disable-next-line security/detect-object-injection
+                        if (impliedOption?.defaultValue === undefined || toolbox.options[key] === impliedOption.defaultValue) {
+                            // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                            toolbox.options[key] = value;
+                        }
+                    }
+                });
             }
         });
     }

@@ -95,10 +95,12 @@
         "fastest-levenshtein": "^1.0.16",
         "find-cache-dir": "^5.0.0",
         "hard-rejection": "^2.1.0",
+        "lodash.camelcase": "^4.3.0",
         "strip-ansi": "^7.1.0",
         "term-size": "^3.0.2"
     },
     "devDependencies": {
+        "@types/lodash.camelcase": "^4.3.9",
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",

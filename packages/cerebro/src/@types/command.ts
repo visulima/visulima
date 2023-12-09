@@ -8,9 +8,18 @@ type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|defaultValue"> & {
+    // @internal
+
+    __camelCaseName__?: string;
+    // @internal
+
+    __negated__?: true;
+
     /**
      * A string or array of strings indicating the conflicting option(s).
      * Note: The default value for an option does not cause a conflict.
+     *
+     * @TODO Upgrade this type to read given options keys
      */
     conflicts?: string[] | string;
 
@@ -22,6 +31,10 @@ export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|default
 
     /** Option is hidden from help */
     hidden?: boolean;
+
+    // @TODO Upgrade this type to read given options keys and values
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    implies?: Record<string, any>;
 
     /** Specifies whether the variable is required. */
     required?: boolean;
