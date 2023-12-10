@@ -7,48 +7,52 @@ import type { Toolbox as IToolbox } from "./toolbox";
 type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
+type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
-export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDefinition, "type|defaultValue"> & {
-    // @internal
-    __camelCaseName__?: string;
+export type OptionDefinition<T> = MultiplePropertyOptions<T> &
+    Omit<BaseOptionDefinition, "type|defaultValue"> & {
+        // @internal
+        __camelCaseName__?: string;
 
-    // @internal
-    __negated__?: true;
+        // @internal
+        __negated__?: true;
 
-    /**
-     * A string or array of strings indicating the conflicting option(s).
-     * Note: The default value for an option does not cause a conflict.
-     *
-     * @TODO Upgrade this type to read given options keys
-     */
-    conflicts?: string[] | string;
+        /**
+         * A string or array of strings indicating the conflicting option(s).
+         * Note: The default value for an option does not cause a conflict.
+         *
+         * @TODO Upgrade this type to read given options keys
+         */
+        conflicts?: string[] | string;
 
-    /** An initial value for the option. */
-    defaultValue?: T | undefined;
+        /** An initial value for the option. */
+        defaultValue?: T | undefined;
 
-    /** A string describing the option. */
-    description?: string | undefined;
+        /** A string describing the option. */
+        description?: string | undefined;
 
-    /** Option is hidden from help */
-    hidden?: boolean;
+        /** Option is hidden from help */
+        hidden?: boolean;
 
-    // @TODO Upgrade this type to read given options keys and values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    implies?: Record<string, any>;
+        // @TODO Upgrade this type to read given options keys and values
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        implies?: Record<string, any>;
 
-    /** Specifies whether the variable is required. */
-    required?: boolean;
+        /** Specifies whether the variable is required. */
+        required?: boolean;
 
-    /**
-     * A setter function (you receive the output from this) enabling you to be specific about the type and value received. Typical values
-     * are `String`, `Number` and `Boolean` but you can use a custom function.
-     */
-    type?: TypeConstructor<T> | undefined;
+        /**
+         * A setter function (you receive the output from this) enabling you to be specific about the type and value received. Typical values
+         * are `String`, `Number` and `Boolean` but you can use a custom function.
+         */
+        type?: TypeConstructor<T> | undefined;
 
-    /** A string to replace the default type string (e.g. <string>). It's often more useful to set a more descriptive type label, like <ms>, <files>, <command>, etc.. */
-    typeLabel?: string | undefined;
-};
+        /** A string to replace the default type string (e.g. <string>). It's often more useful to set a more descriptive type label, like <ms>, <files>, <command>, etc.. */
+        typeLabel?: string | undefined;
+    };
+
+export type PossibleOptionDefinition<T> =
+    OptionDefinition<boolean[]> | OptionDefinition<boolean> | OptionDefinition<number[]> | OptionDefinition<number> | OptionDefinition<string[]> | OptionDefinition<string> | OptionDefinition<T>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
@@ -83,7 +87,13 @@ export interface Command<O = any, TContext extends IToolbox = IToolbox> {
     name: string;
 
     options?: (
-        OptionDefinition<boolean[]> | OptionDefinition<boolean> | OptionDefinition<number[]> | OptionDefinition<number> | OptionDefinition<O> | OptionDefinition<string[]> | OptionDefinition<string>
+        | OptionDefinition<boolean[]>
+        | OptionDefinition<boolean>
+        | OptionDefinition<number[]>
+        | OptionDefinition<number>
+        | OptionDefinition<O>
+        | OptionDefinition<string[]>
+        | OptionDefinition<string>
     )[];
 
     usage?: Content[];

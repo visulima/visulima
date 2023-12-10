@@ -6,7 +6,7 @@ import listMissingArguments from "../../../src/util/list-missing-arguments";
 
 describe("util/list-missing-arguments", () => {
     it("should return missing argument if it was not provided", () => {
-        const commandLineConfig: OptionDefinition[] = [{ name: "test", required: true, type: String }];
+        const commandLineConfig: OptionDefinition<string>[] = [{ name: "test", required: true, type: String }];
         const parsedArguments: CommandLineOptions = {};
 
         const result = listMissingArguments(commandLineConfig, parsedArguments);
@@ -15,7 +15,7 @@ describe("util/list-missing-arguments", () => {
     });
 
     it("should return empty array if required argument is provided", () => {
-        const commandLineConfig: OptionDefinition[] = [{ name: "test", required: true, type: String }];
+        const commandLineConfig: OptionDefinition<string>[] = [{ name: "test", required: true, type: String }];
         const parsedArguments: CommandLineOptions = {
             test: "value",
         };
@@ -26,7 +26,7 @@ describe("util/list-missing-arguments", () => {
     });
 
     it("should set false for missing boolean argument and do not return it as missing", () => {
-        const commandLineConfig: OptionDefinition[] = [{ name: "test", required: true, type: Boolean }];
+        const commandLineConfig: OptionDefinition<boolean>[] = [{ name: "test", required: true, type: Boolean }];
         const parsedArguments: CommandLineOptions = {};
 
         const result = listMissingArguments(commandLineConfig, parsedArguments);

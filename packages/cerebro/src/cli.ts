@@ -16,7 +16,7 @@ import type {
     Options as IOptions,
     Toolbox as IToolbox,
 } from "./@types";
-import type { OptionDefinition } from "./@types/command";
+import type {OptionDefinition, PossibleOptionDefinition} from "./@types/command";
 import HelpCommand from "./command/help";
 import VersionCommand from "./command/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
@@ -152,12 +152,13 @@ class Cli implements ICli {
     /**
      * Add an arbitrary command to the CLI.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public addCommand<OT = any>(command: ICommand<OT>): this {
         // add the command to the runtime (if it isn't already there)
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
-            command.options?.map((option: OptionDefinition<OT>) => mapOptionTypeLabel<OT>(option));
+            command.options?.map((option) => mapOptionTypeLabel<OT>(option));
 
             this.validateDoubleOptions<OT>(command);
             this.addNegatableOption<OT>(command);
@@ -360,7 +361,8 @@ class Cli implements ICli {
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const commandArgs = { ...parsedArgs, _all: { ...parsedArgs["_all"], ...booleanValues } } as typeof parsedArgs;
 
-        this.validateCommandOptions(arguments_, commandArgs, command);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.validateCommandOptions<any>(arguments_, commandArgs, command);
 
         // prepare the execute toolbox
         const toolbox = new EmptyToolbox(command.name, command);
@@ -417,7 +419,7 @@ class Cli implements ICli {
                 }
 
                 // eslint-disable-next-line security/detect-object-injection
-                (accumulator[key] as OptionDefinition<OT>[]).push(object);
+                (accumulator[key] as OptionDefinition<OT>[]).push(object as OptionDefinition<OT>);
 
                 return accumulator;
             }, {});
@@ -528,7 +530,7 @@ class Cli implements ICli {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,unicorn/prevent-abbreviations,class-methods-use-this
-    private validateCommandOptions<T>(arguments_: OptionDefinition<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
+    private validateCommandOptions<T>(arguments_: PossibleOptionDefinition<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
         const missingOptions = listMissingArguments(arguments_, commandArgs);
 
         if (missingOptions.length > 0) {
@@ -571,7 +573,7 @@ class Cli implements ICli {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private validateCommandArgsForConflicts<T>(arguments_: OptionDefinition<T>[], commandArguments: IToolbox["options"], command: ICommand): void {
+    private validateCommandArgsForConflicts<T>(arguments_: PossibleOptionDefinition<T>[], commandArguments: IToolbox["options"], command: ICommand): void {
         const conflicts = arguments_.filter((argument) => argument.conflicts !== undefined);
 
         if (conflicts.length > 0) {
@@ -637,7 +639,7 @@ class Cli implements ICli {
     }
 
     // combining negatable options with their non-negated counterparts
-     
+
     private mapNegatableOptions(toolbox: IToolbox, command: ICommand): void {
         Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
             if (/^no\w+/.test(key)) {

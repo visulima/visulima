@@ -5,7 +5,7 @@ import mergeArguments from "../../../src/util/merge-arguments";
 
 describe("util/merge-arguments", () => {
     it("should return single argument list it was the only one provided", () => {
-        const singleArgumentList: OptionDefinition = { name: "test", required: true, type: String };
+        const singleArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
 
         const result = mergeArguments([singleArgumentList]);
 
@@ -13,8 +13,8 @@ describe("util/merge-arguments", () => {
     });
 
     it("should merge multiple argument lists without duplicates", () => {
-        const firstArgumentList: OptionDefinition = { name: "test", required: true, type: String };
-        const secondArgumentList: OptionDefinition = { name: "arg", required: false, type: Number };
+        const firstArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
+        const secondArgumentList: OptionDefinition<number> = { name: "arg", required: false, type: Number };
 
         const result = mergeArguments([firstArgumentList, secondArgumentList]);
 
@@ -25,8 +25,8 @@ describe("util/merge-arguments", () => {
     });
 
     it("should merge multiple argument lists and overwrites duplicates", () => {
-        const firstArgumentList: OptionDefinition = { name: "test", required: true, type: String };
-        const secondArgumentList: OptionDefinition = { name: "test", required: false, type: Number };
+        const firstArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
+        const secondArgumentList: OptionDefinition<number> = { name: "test", required: false, type: Number };
 
         const result = mergeArguments([firstArgumentList, secondArgumentList]);
 
