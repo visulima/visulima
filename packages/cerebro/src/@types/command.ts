@@ -7,12 +7,13 @@ import type { Toolbox as IToolbox } from "./toolbox";
 type TypeConstructor<T> = (value: any) => T extends (infer R)[] ? R | undefined : T | undefined;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|defaultValue"> & {
-    // @internal
+export type MultiplePropertyOptions<T> = any[] extends T ? { lazyMultiple: true } | { multiple: true } : unknown;
 
+export type OptionDefinition<T> = MultiplePropertyOptions<T> & Omit<BaseOptionDefinition, "type|defaultValue"> & {
+    // @internal
     __camelCaseName__?: string;
-    // @internal
 
+    // @internal
     __negated__?: true;
 
     /**
@@ -52,7 +53,8 @@ export type OptionDefinition<T = any> = Omit<BaseOptionDefinition, "type|default
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 
-export interface Command<TContext extends IToolbox = IToolbox> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface Command<O = any, TContext extends IToolbox = IToolbox> {
     /** Potential other names for this command */
     alias?: string[] | string;
 
@@ -80,7 +82,9 @@ export interface Command<TContext extends IToolbox = IToolbox> {
     /** The name of your command */
     name: string;
 
-    options?: OptionDefinition[];
+    options?: (
+        OptionDefinition<boolean[]> | OptionDefinition<boolean> | OptionDefinition<number[]> | OptionDefinition<number> | OptionDefinition<O> | OptionDefinition<string[]> | OptionDefinition<string>
+    )[];
 
     usage?: Content[];
 }

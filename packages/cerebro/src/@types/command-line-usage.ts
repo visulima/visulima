@@ -1,6 +1,6 @@
 import type { TableConstructorOptions } from "cli-table3";
 
-import type { OptionDefinition } from "./command";
+import type { ArgumentDefinition, OptionDefinition } from "./command";
 
 /** A Content section comprises a header and one or more lines of content. */
 export interface Content {
@@ -19,7 +19,8 @@ export interface Content {
 }
 
 /** A OptionList section adds a table displaying details of the available options. */
-export interface OptionList {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface OptionList<T = any> {
     /** If specified, only options from this particular group will be printed.  */
     group?: string[] | string;
     header?: string | undefined;
@@ -29,7 +30,7 @@ export interface OptionList {
     isArgument?: boolean;
     /** An array of option definition objects. */
 
-    optionList?: OptionDefinition[];
+    optionList?: (ArgumentDefinition | OptionDefinition<T>)[];
     /** If true, the option alias will be displayed after the name, i.e. --verbose, -v instead of -v, --verbose). */
     reverseNameOrder?: boolean;
     /** An options object suitable for passing into table. */

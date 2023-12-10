@@ -1,6 +1,6 @@
 import CliTable3 from "cli-table3";
 
-import type { OptionDefinition as IArguments } from "../../../@types/command";
+import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../@types/command";
 import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
 import chalkFormat from "../../chalk-format";
 import BaseSection from "./base-section";
@@ -65,8 +65,8 @@ class OptionListSection extends BaseSection {
         this.lines.push("");
     }
 
-    // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity
-    private getOptionNames(definition: IArguments, reverseNameOrder: boolean, isArgument: boolean): string {
+    // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
+    private getOptionNames(definition: ArgumentDefinition | IOptionDefinition<any>, reverseNameOrder: boolean, isArgument: boolean): string {
         if (!definition.name) {
             throw new TypeError("Invalid option definition, name is required.");
         }
@@ -75,11 +75,7 @@ class OptionListSection extends BaseSection {
 
         const multiple = definition.multiple || definition.lazyMultiple ? "[]" : "";
 
-        if (type) {
-            type = type === "boolean" ? "" : `{underline ${type}${multiple}}`;
-        }
-
-        type = chalkFormat(definition.typeLabel ?? type);
+        type = chalkFormat(definition.typeLabel ?? `{underline ${type}${multiple}}`);
 
         let result: string;
 

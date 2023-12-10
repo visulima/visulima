@@ -25,6 +25,9 @@ import EmptyToolbox from "./empty-toolbox";
 import logger from "./toolbox/logger-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
 import checkNodeVersion from "./util/check-node-version";
+import getBooleanValues from "./util/command-line-args/get-boolean-values";
+import mapOptionTypeLabel from "./util/command-line-args/map-option-type-label";
+import removeBooleanValues from "./util/command-line-args/remove-boolean-values";
 import commandLineCommands from "./util/command-line-commands";
 import findAlternatives from "./util/levenstein";
 import listMissingArguments from "./util/list-missing-arguments";
@@ -96,7 +99,7 @@ class Cli implements ICli {
         this.cliName = cliName;
         this.packageVersion = packageVersion;
         this.packageName = packageName;
-        this.argv = argv;
+        this.argv = parseRawCommand(argv);
         this.cwd = cwd;
         this.defaultCommand = "help";
         this.commandSection = {
@@ -149,14 +152,15 @@ class Cli implements ICli {
     /**
      * Add an arbitrary command to the CLI.
      */
-    public addCommand(command: ICommand): this {
+    public addCommand<OT = any>(command: ICommand<OT>): this {
         // add the command to the runtime (if it isn't already there)
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
-            this.validateDoubleOptions(command);
+            command.options?.map((option: OptionDefinition<OT>) => mapOptionTypeLabel<OT>(option));
 
-            this.addNegatableOption(command);
+            this.validateDoubleOptions<OT>(command);
+            this.addNegatableOption<OT>(command);
 
             command.options?.forEach((option) => {
                 // eslint-disable-next-line no-underscore-dangle,no-param-reassign
@@ -275,7 +279,7 @@ class Cli implements ICli {
         this.logger.debug(`process.argv: ${process.argv.join(" ")}`);
 
         try {
-            parsedArguments = commandLineCommands([null, ...commandNames], parseRawCommand(this.argv));
+            parsedArguments = commandLineCommands([null, ...commandNames], this.argv);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // CLI needs a valid command name to do anything. If the given
@@ -344,12 +348,17 @@ class Cli implements ICli {
         }
 
         // eslint-disable-next-line unicorn/prevent-abbreviations
-        const commandArgs = commandLineArgs(arguments_, {
-            argv: commandArguments,
+        const parsedArgs = commandLineArgs(arguments_, {
+            argv: removeBooleanValues(commandArguments, command.options ?? []),
             camelCase: true,
             partial: true,
             stopAtFirstUnknown: true,
         });
+
+        const booleanValues = getBooleanValues(commandArguments, command.options ?? []);
+
+        // eslint-disable-next-line unicorn/prevent-abbreviations
+        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs["_all"], ...booleanValues } } as typeof parsedArgs;
 
         this.validateCommandOptions(arguments_, commandArgs, command);
 
@@ -395,10 +404,10 @@ class Cli implements ICli {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private validateDoubleOptions(command: ICommand): void {
+    private validateDoubleOptions<OT>(command: ICommand): void {
         if (Array.isArray(command.options)) {
             // eslint-disable-next-line unicorn/no-array-reduce
-            const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition[]>>((accumulator, object) => {
+            const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition<OT>[]>>((accumulator, object) => {
                 const key = `${object.name}-${object.alias}`;
 
                 // eslint-disable-next-line security/detect-object-injection
@@ -408,7 +417,7 @@ class Cli implements ICli {
                 }
 
                 // eslint-disable-next-line security/detect-object-injection
-                (accumulator[key] as OptionDefinition[]).push(object);
+                (accumulator[key] as OptionDefinition<OT>[]).push(object);
 
                 return accumulator;
             }, {});
@@ -417,8 +426,8 @@ class Cli implements ICli {
             let errorMessages = "";
 
             duplicatedOptions.forEach((options) => {
-                const matchingOption = options[0] as OptionDefinition;
-                const duplicate = options[1] as OptionDefinition;
+                const matchingOption = options[0] as OptionDefinition<OT>;
+                const duplicate = options[1] as OptionDefinition<OT>;
 
                 let flag = "alias";
 
@@ -585,10 +594,10 @@ class Cli implements ICli {
         }
     }
 
-    private addNegatableOption(command: ICommand): void {
+    private addNegatableOption<OT>(command: ICommand): void {
         if (Array.isArray(command.options)) {
             command.options.forEach((option) => {
-                if (option.name.startsWith("no-") && !(command.options as OptionDefinition[]).some((o) => o.name === option.name.replace("no-", ""))) {
+                if (option.name.startsWith("no-") && !(command.options as OptionDefinition<OT>[]).some((o) => o.name === option.name.replace("no-", ""))) {
                     if (option.type !== Boolean) {
                         this.logger.debug(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
 
@@ -599,9 +608,9 @@ class Cli implements ICli {
                         ...option,
                         defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
                         name: `${option.name.replace("no-", "")}`,
-                    };
+                    } as OptionDefinition<OT>;
 
-                    (command.options as OptionDefinition[]).push(negatedOption);
+                    (command.options as OptionDefinition<OT>[]).push(negatedOption);
                 }
             });
         }
@@ -628,7 +637,7 @@ class Cli implements ICli {
     }
 
     // combining negatable options with their non-negated counterparts
-
+     
     private mapNegatableOptions(toolbox: IToolbox, command: ICommand): void {
         Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
             if (/^no\w+/.test(key)) {

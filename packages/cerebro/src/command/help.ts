@@ -67,7 +67,8 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
             }),
             {
                 header: "{inverse.yellow  Command Options }",
-                optionList: ((commands.get("help") as ICommand).options as OptionDefinition[]).filter((option) => !option.hidden),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                optionList: ((commands.get("help") as ICommand).options as OptionDefinition<any>[]).filter((option) => !option.hidden),
             },
             { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
             {
@@ -99,7 +100,8 @@ const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {
-        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options.filter((option) => !option.hidden) });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options.filter((option) => !option.hidden) as OptionDefinition<any>[] });
     }
 
     usageGroups.push({ header: "{inverse.yellow  Global Options }", optionList: defaultOptions });
@@ -135,7 +137,7 @@ class HelpCommand implements ICommand {
             description: "Display only the specified group",
             name: "group",
             type: String,
-        },
+        } as OptionDefinition<string>,
     ];
 
     private readonly commands: Map<string, ICommand>;
