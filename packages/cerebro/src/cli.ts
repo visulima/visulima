@@ -1,4 +1,4 @@
-import { env } from "node:process";
+import * as process from "node:process";
 
 import boxen from "boxen";
 import chalk from "chalk";
@@ -16,7 +16,7 @@ import type {
     Options as IOptions,
     Toolbox as IToolbox,
 } from "./@types";
-import type {OptionDefinition, PossibleOptionDefinition} from "./@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
 import HelpCommand from "./command/help";
 import VersionCommand from "./command/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
@@ -36,10 +36,10 @@ import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
 
 /** Detect if `CI` environment variable is set */
-const isCI = env["CI"] !== "false";
+const isCI = "CI" in process.env && ("GITHUB_ACTIONS" in process.env || "GITLAB_CI" in process.env || "CIRCLECI" in process.env);
 
 /** Detect if `NODE_ENV` environment variable is `test` */
-const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
+const isTest = process.env["NODE_ENV"] === "test" || process.env["TEST"] !== "false";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
@@ -83,44 +83,45 @@ class Cli implements ICli {
             packageVersion?: string;
         } = {},
     ) {
-        this.logger = logger;
-
-        checkNodeVersion();
-        registerExceptionHandler(this.logger);
-
-        env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
-
         const { argv, cwd, packageName, packageVersion } = {
             argv: process.argv,
             cwd: process.cwd(),
             ...options,
         };
 
-        this.cliName = cliName;
-        this.packageVersion = packageVersion;
-        this.packageName = packageName;
         this.argv = parseRawCommand(argv);
-        this.cwd = cwd;
-        this.defaultCommand = "help";
-        this.commandSection = {
-            header: `${this.cliName}${this.packageVersion ? ` v${this.packageVersion}` : ""}`,
-        };
 
         // If the "--quiet"/"-q" flag is ever present, set our global logging
         // to quiet mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
+            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
         }
 
         // If the "--verbose"/"-v" flag is ever present, set our global logging
         // to verbose mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
+            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
         } else if (this.argv.includes("--very-verbose") || this.argv.includes("-vv")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
-        } else if (this.argv.includes("--debug") || this.argv.includes("-vvv")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
+            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
+        } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in process.env) {
+            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
         }
+
+        this.logger = logger;
+
+        checkNodeVersion();
+        registerExceptionHandler(this.logger);
+
+        process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
+
+        this.cliName = cliName;
+        this.packageVersion = packageVersion;
+        this.packageName = packageName;
+        this.cwd = cwd;
+        this.defaultCommand = "help";
+        this.commandSection = {
+            header: `${this.cliName}${this.packageVersion ? ` v${this.packageVersion}` : ""}`,
+        };
 
         this.commands = new Map<string, ICommand>();
 
@@ -236,7 +237,7 @@ class Cli implements ICli {
 
         this.updateNotifierOptions = {
             alwaysRun: false,
-            debug: env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
+            debug: process.env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
             distTag: "latest",
             pkg: {
                 name: this.packageName,
@@ -504,7 +505,8 @@ class Cli implements ICli {
     private async updateNotifier({ logger }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
-            (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
+            (!(process.env["NO_UPDATE_NOTIFIER"] || process.env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) &&
+                this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger
             logger.log("Checking for updates...");
