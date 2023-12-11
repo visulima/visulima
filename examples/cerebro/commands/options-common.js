@@ -1,7 +1,7 @@
 // Try the following:
-//    node options-common.js -p
-//    node options-common.js -d -s -p vegetarian
-//    node options-common.js --pizza-type=cheese
+//    node cli.js options-common -p
+//    node cli.js options-common -d -s -p vegetarian
+//    node cli.js options-common --pizza-type=cheese
 const optionsCommon = (cli) => {
     cli.addCommand({
         name: "options-common",

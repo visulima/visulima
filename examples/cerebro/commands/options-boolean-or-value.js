@@ -1,7 +1,7 @@
 // Try the following:
-//    node options-boolean-or-value
-//    node options-boolean-or-value --cheese
-//    node options-boolean-or-value --cheese mozzarella
+//    node cli.js options-boolean-or-value
+//    node cli.js options-boolean-or-value --cheese
+//    node cli.js options-boolean-or-value --cheese mozzarella
 const optionsBooleanOrValue = (cli) => {
     cli.addCommand({
         name: "options-boolean-or-value",

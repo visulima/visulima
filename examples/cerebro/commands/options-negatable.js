@@ -1,8 +1,8 @@
 // Try the following:
-//    node options-negatable.js
-//    node options-negatable.js --sauce
-//    node options-negatable.js --cheese=blue
-//    node options-negatable.js --no-sauce --no-cheese
+//    node cli.js options-negatable
+//    node cli.js options-negatable --sauce
+//    node cli.js options-negatable --cheese=blue
+//    node cli.js options-negatable --no-sauce --no-cheese
 const optionsNegatable = (cli) => {
     cli.addCommand({
         name: "options-negatable",

@@ -1,6 +1,6 @@
 // Try the following:
-//    node options-required.js
-//    node options-required.js --cheese blue
+//    node cli.js options-required
+//    node cli.js options-required --cheese blue
 const optionsRequired = (cli) => {
     cli.addCommand({
         name: "options-required",

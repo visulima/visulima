@@ -1,9 +1,9 @@
 // Try the following:
-//    node options-implies.js
-//    node options-implies.js --quiet
-//    node options-implies.js --log-level=warning --quiet
-//    node options-implies.js --cheese=cheddar
-//    node options-implies.js --no-cheese
+//    node cli.js options-implies
+//    node cli.js options-implies --quiet
+//    node cli.js options-implies --log-level=warning --quiet
+//    node cli.js options-implies --cheese=cheddar
+//    node cli.js options-implies --no-cheese
 const optionsImplies = (cli) => {
     cli.addCommand({
         name: "options-implies",
