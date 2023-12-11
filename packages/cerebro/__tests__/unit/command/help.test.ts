@@ -1,9 +1,10 @@
-import type { Mock } from "vitest";
+import { beforeEach, Mock } from "vitest";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Command as ICommand, Toolbox as IToolbox } from "../../../src/@types";
 import HelpCommand from "../../../src/command/help";
 import commandLineUsage from "../../../src/util/command-line-usage";
+import globalOptions from "../../../src/default-options";
 
 vi.mock("../../../src/util/command-line-usage");
 vi.mock("../default-options", () => {
@@ -25,18 +26,6 @@ const runtimeMock = {
     getCommandSection: vi.fn().mockReturnValue({ footer: "Test footer", header: "Test header" }),
 };
 
-const commandsMap = new Map<string, ICommand>([
-    [
-        "test",
-        {
-            description: "A test command",
-            execute: () => {},
-            name: "test",
-            options: [{ description: "Enable verbose output", name: "verbose" }],
-        },
-    ],
-]);
-
 const headerSection = {
     content: "{cyan testcli} {green <command>} [positional arguments] {yellow [options]}",
     header: "{inverse.cyan  Usage }",
@@ -49,50 +38,26 @@ const footerSection = {
 
 const globalOptionsOptionsList = {
     header: "{inverse.yellow  Global Options }",
-    optionList: [
-        {
-            description: "turn on verbose output",
-            group: "global",
-            name: "verbose",
-            type: Boolean,
-        },
-        {
-            description: "turn on very-verbose output",
-            group: "global",
-            name: "very-verbose",
-            type: Boolean,
-        },
-        {
-            description: "turn on debugging output",
-            group: "global",
-            name: "debug",
-            type: Boolean,
-        },
-        {
-            alias: "h",
-            description: "print out helpful usage information",
-            group: "global",
-            name: "help",
-            type: Boolean,
-        },
-        {
-            alias: "q",
-            description: "silence output",
-            group: "global",
-            name: "quiet",
-            type: Boolean,
-        },
-        {
-            alias: "V",
-            description: "print version info",
-            group: "global",
-            name: "version",
-            type: Boolean,
-        },
-    ],
+    optionList: globalOptions,
 };
 
 describe("command/help", () => {
+    const commandsMap = new Map<string, ICommand>([]);
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        commandsMap.clear();
+
+        commandsMap.set("test", {
+            description: "A test command",
+            group: "test",
+            execute: () => {},
+            name: "test",
+            options: [{ description: "Enable verbose output", name: "verbose" }],
+        });
+    });
+
     it("should print general help", () => {
         const helpCommand = new HelpCommand(commandsMap);
         const toolboxMock = {
@@ -102,16 +67,9 @@ describe("command/help", () => {
         };
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
+
         expect(loggerMock.log).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
-            headerSection,
-            {
-                content: [["{green test} ", "A test command"]],
-                header: "{inverse.green  Available Commands }",
-            },
-            globalOptionsOptionsList,
-            footerSection,
-        ]);
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
     });
 
@@ -124,6 +82,7 @@ describe("command/help", () => {
         };
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
+
         expect(loggerMock.log).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toHaveBeenCalledWith([
             {
@@ -215,17 +174,7 @@ describe("command/help", () => {
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
         expect(loggerMock.log).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
-            {
-                content: "{cyan testcli} {green commandWithAlias}",
-                header: "{inverse.cyan  Usage }",
-            },
-            {
-                content: ["cwa", "aliasForCommand"],
-                header: "Alias(es)",
-            },
-            globalOptionsOptionsList,
-        ]);
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
     });
 
@@ -274,15 +223,41 @@ describe("command/help", () => {
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
         expect(loggerMock.log).toHaveBeenCalledWith("Test header");
-        expect(commandLineUsage).toHaveBeenCalledWith([
-            headerSection,
-            {
-                content: [],
-                header: "{inverse.green  Available Commands }",
+        expect(commandLineUsage).toMatchSnapshot();
+        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+    });
+
+    it("should display group of commands if the group option is passed", () => {
+        commandsMap.set("test2", {
+            description: "A test2 command",
+            group: "test",
+            execute: () => {},
+            name: "test2",
+            options: [{ description: "Enable verbose output", name: "verbose" }],
+        });
+
+        commandsMap.set("no-group-test", {
+            description: "A test command",
+            execute: () => {},
+            name: "no-group-test",
+            options: [{ description: "Enable verbose output", name: "verbose" }],
+        });
+
+        const helpCommand = new HelpCommand(commandsMap);
+
+        const toolboxMock = {
+            commandName: "help",
+            logger: loggerMock,
+            runtime: runtimeMock,
+            options: {
+                group: "test",
             },
-            globalOptionsOptionsList,
-            footerSection,
-        ]);
+        };
+
+        helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(commandLineUsage).toMatchSnapshot();
         expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
     });
 });

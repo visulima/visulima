@@ -65,17 +65,17 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
                             : ` {inverse.green  ${upperFirstChar(key)} }`,
                 };
             }),
-            {
+            commands.has("help") ? {
                 header: "{inverse.yellow  Command Options }",
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                optionList: ((commands.get("help") as ICommand).options as OptionDefinition<any>[]).filter((option) => !option.hidden),
-            },
+                optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+            } : undefined,
             { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
             {
                 content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
                 raw: true,
             },
-        ]),
+        ].filter(Boolean)),
     );
 };
 
