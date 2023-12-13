@@ -1,11 +1,3 @@
-type FormatterFunction = (argument: any) => string;
-type FormatterMap = Record<number, FormatterFunction>;
-
-interface Options {
-    formatters?: Record<string, FormatterFunction>;
-    stringify?: (o: any) => string;
-}
-
 const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
@@ -195,3 +187,11 @@ export const build = (options: Options = {}) => {
 
     return (f: any, arguments_: any[], options?: Omit<Options, "formatters">) => format(f, arguments_, { ...options, formatters });
 };
+
+export type FormatterFunction = (argument: any) => string;
+export type FormatterMap = Record<number, FormatterFunction>;
+
+export interface Options {
+    formatters?: Record<string, FormatterFunction>;
+    stringify?: (o: any) => string;
+}
