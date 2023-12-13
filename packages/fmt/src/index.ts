@@ -115,21 +115,24 @@ export const format = (fmt: NonNullable<Record<string, any> | string>, arguments
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    const type = typeof arguments_[a as keyof typeof arguments_];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    const temporaryArgument = arguments_[a as keyof typeof arguments_];
+                    const type = typeof temporaryArgument;
 
                     if (type === "string") {
-                        result += `'${arguments_[a as keyof typeof arguments_]}'`;
-                        lastPosition = index + 2;
-                        break;
-                    }
-                    if (type === "function") {
-                        // eslint-disable-next-line @typescript-eslint/ban-types
-                        result += (arguments_[a as keyof typeof arguments_] as Function).name || "<anonymous>";
+                        result += `'${temporaryArgument}'`;
                         lastPosition = index + 2;
                         break;
                     }
 
-                    result += stringify(arguments_[a as keyof typeof arguments_]);
+                    if (type === "function") {
+                        // eslint-disable-next-line @typescript-eslint/ban-types
+                        result += (temporaryArgument as Function).name ? `[Function: ${(temporaryArgument as Function).name}]` : "[Function: <anonymous>]";
+                        lastPosition = index + 2;
+                        break;
+                    }
+
+                    result += stringify(temporaryArgument);
                     lastPosition = index + 2;
 
                     index++;

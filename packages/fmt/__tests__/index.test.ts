@@ -27,6 +27,8 @@ describe("fmt", () => {
         ["%s%s", ["foo", "bar", "baz"], "foobar"],
         ["foo %s", ["foo"], "foo foo"],
         ["%%s%s", ["foo"], "%sfoo"],
+        ["%%%s%%", ["hi"], "%hi%"],
+        ["%%%s%%%%", ["hi"], "%hi%%"],
     ])("should format %s", (f, a, expected) => {
         expect(format(f, a)).toBe(expected);
     });
@@ -71,14 +73,14 @@ describe("fmt", () => {
         ["%j", [42], "42"],
         ["%j", [undefined], "%j"],
         ["%j", [null], "null"],
-        // ['%j', ['42'], '"42"');
+        ["%j", ["42"], "'42'"],
         ["%j", [{ s: '"quoted"' }], '{"s":"\\"quoted\\""}'],
         ["foo %j", [{ foo: "foo" }], 'foo {"foo":"foo"}'],
         ["foo %j %j", [{ foo: "foo" }], 'foo {"foo":"foo"} %j'],
-        ["foo %j", ["foo"], "foo 'foo'"], // TODO: isn't this wrong?
-        ["foo %j", [function foo() {}], "foo foo"],
+        ["foo %j", ["foo"], "foo 'foo'"],
+        ["foo %j", [function foo() {}], "foo [Function: foo]"], // util.format returns "foo undefined" here
         // eslint-disable-next-line func-names
-        ["foo %j", [function () {}], "foo <anonymous>"],
+        ["foo %j", [function () {}], "foo [Function: <anonymous>]"],
         ["foo %j", [{ foo: "foo" }, "not-printed"], 'foo {"foo":"foo"}'],
     ])("should format %s", (f, a, expected) => {
         expect(format(f, a)).toBe(expected);
