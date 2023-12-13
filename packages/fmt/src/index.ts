@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
@@ -6,81 +7,99 @@ const tryStringify = (o: any): string => {
     }
 };
 
-const CHAR_PERCENT = "%".charCodeAt(0);
-const CHAR_s = "s".charCodeAt(0);
-const CHAR_d = "d".charCodeAt(0);
-const CHAR_f = "f".charCodeAt(0);
-const CHAR_i = "i".charCodeAt(0);
-const CHAR_O = "O".charCodeAt(0);
-const CHAR_o = "o".charCodeAt(0);
-const CHAR_j = "j".charCodeAt(0);
+const CHAR_PERCENT = "%".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const CHAR_s = "s".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const CHAR_d = "d".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const CHAR_f = "f".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention,unicorn/prevent-abbreviations
+const CHAR_i = "i".codePointAt(0);
+const CHAR_O = "O".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const CHAR_o = "o".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention,unicorn/prevent-abbreviations
+const CHAR_j = "j".codePointAt(0);
 
-export const format = (f: object | string | null, arguments_: any[] = [], options: Options = {}): any => {
-    const stringify = options?.stringify || tryStringify;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
+export const format = (fmt: NonNullable<Record<string, any> | string>, arguments_: any[] = [], options: Options = {}): string => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if ((typeof fmt !== "string" && typeof fmt !== "object") || fmt === null) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        throw new TypeError(`fmt must be a string or object, got ${fmt === null ? "null" : typeof fmt}`);
+    }
+
+    const stringify = options.stringify ?? tryStringify;
     const offset = 1;
 
-    if (typeof f === "object" && f !== null) {
-        const length_ = arguments_.length + offset;
+    if (typeof fmt === "object") {
+        const argumentsLength = arguments_.length + offset;
 
-        if (length_ === 1) {
-            return f;
+        if (argumentsLength === 1) {
+            return "{}";
         }
 
-        const objects = new Array(length_);
+        const objects = Array.from({ length: argumentsLength });
 
-        objects[0] = stringify(f);
+        objects[0] = stringify(fmt);
 
-        for (let index = 1; index < length_; index++) {
+        for (let index = 1; index < argumentsLength; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             objects[index] = stringify(arguments_[index - offset]);
         }
 
         return objects.join(" ");
     }
 
-    if (typeof f !== "string" || arguments_.length === 0) {
-        return f;
+    if (arguments_.length === 0) {
+        return fmt;
     }
 
-    let string_ = "";
+    let result = "";
     let a = 1 - offset;
-    let lastPos = -1;
+    let lastPosition = -1;
 
-    const flen = (f && f.length) || 0;
+    for (let index = 0; index < fmt.length; ) {
+        if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
+            lastPosition = lastPosition > -1 ? lastPosition : 0;
 
-    for (let index = 0; index < flen; ) {
-        if (f.charCodeAt(index) === CHAR_PERCENT && index + 1 < flen) {
-            lastPos = lastPos > -1 ? lastPos : 0;
+            const c = fmt.codePointAt(index + 1);
 
-            const c = f.charCodeAt(index + 1);
+            if (c === undefined) {
+                ++a;
+                break;
+            }
 
+            // eslint-disable-next-line default-case
             switch (c) {
                 case CHAR_d:
                 case CHAR_f: {
-                    if (a >= arguments_.length || arguments_[a] == null) {
+                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == null) {
                         break;
                     }
 
-                    if (lastPos < index) {
-                        string_ += f.slice(lastPos, index);
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
                     }
 
-                    string_ += Number(arguments_[a]).toString();
-                    lastPos = index + 2;
+                    result += Number(arguments_[a as keyof typeof arguments_]).toString();
+                    lastPosition = index + 2;
 
                     index++;
                     break;
                 }
                 case CHAR_i: {
-                    if (a >= arguments_.length || arguments_[a] == null) {
+                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == null) {
                         break;
                     }
 
-                    if (lastPos < index) {
-                        string_ += f.slice(lastPos, index);
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
                     }
 
-                    string_ += Math.floor(Number(arguments_[a])).toString();
-                    lastPos = index + 2;
+                    result += Math.floor(Number(arguments_[a as keyof typeof arguments_])).toString();
+                    lastPosition = index + 2;
 
                     index++;
                     break;
@@ -88,29 +107,30 @@ export const format = (f: object | string | null, arguments_: any[] = [], option
                 case CHAR_O:
                 case CHAR_o:
                 case CHAR_j: {
-                    if (a >= arguments_.length || arguments_[a] === undefined) {
+                    if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] === undefined) {
                         break;
                     }
 
-                    if (lastPos < index) {
-                        string_ += f.slice(lastPos, index);
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
                     }
 
-                    const type = typeof arguments_[a];
+                    const type = typeof arguments_[a as keyof typeof arguments_];
 
                     if (type === "string") {
-                        string_ += `'${arguments_[a]}'`;
-                        lastPos = index + 2;
+                        result += `'${arguments_[a as keyof typeof arguments_]}'`;
+                        lastPosition = index + 2;
                         break;
                     }
                     if (type === "function") {
-                        string_ += arguments_[a].name || "<anonymous>";
-                        lastPos = index + 2;
+                        // eslint-disable-next-line @typescript-eslint/ban-types
+                        result += (arguments_[a as keyof typeof arguments_] as Function).name || "<anonymous>";
+                        lastPosition = index + 2;
                         break;
                     }
 
-                    string_ += stringify(arguments_[a]);
-                    lastPos = index + 2;
+                    result += stringify(arguments_[a as keyof typeof arguments_]);
+                    lastPosition = index + 2;
 
                     index++;
                     break;
@@ -120,23 +140,26 @@ export const format = (f: object | string | null, arguments_: any[] = [], option
                         break;
                     }
 
-                    if (lastPos < index) {
-                        string_ += f.slice(lastPos, index);
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
                     }
 
-                    string_ += typeof arguments_[a] === "object" ? stringify(arguments_[a]) : String(arguments_[a]);
-                    lastPos = index + 2;
+                    result +=
+                        typeof arguments_[a as keyof typeof arguments_] === "object"
+                            ? stringify(arguments_[a as keyof typeof arguments_])
+                            : String(arguments_[a as keyof typeof arguments_]);
+                    lastPosition = index + 2;
 
                     index++;
                     break;
                 }
                 case CHAR_PERCENT: {
-                    if (lastPos < index) {
-                        string_ += f.slice(lastPos, index);
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
                     }
 
-                    string_ += "%";
-                    lastPos = index + 2;
+                    result += "%";
+                    lastPosition = index + 2;
 
                     index++;
                     a--;
@@ -144,9 +167,11 @@ export const format = (f: object | string | null, arguments_: any[] = [], option
                 }
             }
 
-            if (typeof options?.formatters?.[c] === "function") {
-                string_ += (options.formatters[c] as FormatterFunction)(arguments_[a]);
-                lastPos = index + 2;
+            // eslint-disable-next-line security/detect-object-injection
+            if (typeof options.formatters?.[c] === "function") {
+                // eslint-disable-next-line security/detect-object-injection
+                result += (options.formatters[c] as FormatterFunction)(arguments_[a as keyof typeof arguments_]);
+                lastPosition = index + 2;
             }
 
             ++a;
@@ -155,43 +180,59 @@ export const format = (f: object | string | null, arguments_: any[] = [], option
         ++index;
     }
 
-    if (lastPos === -1) {
-        return f;
+    if (lastPosition === -1) {
+        return fmt;
     }
 
-    if (lastPos < flen) {
-        string_ += f.slice(lastPos);
+    if (lastPosition < fmt.length) {
+        result += fmt.slice(lastPosition);
     }
 
-    return string_;
+    return result;
 };
 
-export const build = (options: Options = {}) => {
+export const build = (
+    options: Options = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): ((f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string) => {
     const formatters: FormatterMap = {};
 
     if (typeof options.formatters === "object") {
-        Object.entries(options.formatters).forEach(([key, formatterFunc]) => {
+        Object.entries(options.formatters).forEach(([key, formatterFunction]) => {
+            if (key.length === 0) {
+                throw new Error(`Formatter %${key} has no characters`);
+            }
+
             if (key.length > 1) {
                 throw new Error(`Formatter %${key} has more than one character`);
             }
 
-            if (typeof formatterFunc !== "function") {
+            if (typeof formatterFunction !== "function") {
                 throw new TypeError(`Formatter for %${key} is not a function`);
             }
 
-            const c = key.charCodeAt(0);
+            const c = key.codePointAt(0);
 
-            formatters[c] = formatterFunc;
+            if (c === undefined) {
+                throw new Error(`${key}.codePointAt(0) failed to return a value, please report this issue`);
+            }
+
+            // eslint-disable-next-line security/detect-object-injection
+            formatters[c] = formatterFunction;
         });
     }
 
-    return (f: any, arguments_: any[], options?: Omit<Options, "formatters">) => format(f, arguments_, { ...options, formatters });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (f: NonNullable<Record<string, any> | string>, arguments_: any[] = [], formatOptions: Omit<Options, "formatters"> = {}) =>
+        format(f, arguments_, { ...formatOptions, formatters });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FormatterFunction = (argument: any) => string;
 export type FormatterMap = Record<number, FormatterFunction>;
 
 export interface Options {
     formatters?: Record<string, FormatterFunction>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stringify?: (o: any) => string;
 }

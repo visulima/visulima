@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima fmt (util.format)</h3>
   <p>
-  Util.format-like string formatting utility.
+  Util.format-like unescaped string formatting utility based on <a href="https://github.com/pinojs/quick-format-unescaped">quick-format-unescaped</a>.
   </p>
 </div>
 
@@ -44,9 +44,65 @@ pnpm add @visulima/fmt
 ```typescript
 import { format } from "@visulima/fmt";
 
-const formatted = format('hello %s %j %d', ['world', [{obj: true}, 4, {another: 'obj'}]])
+const formatted = format("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
 
-console.log(formatted) // hello world [{"obj":true},4,{"another":"obj"}] NaN
+console.log(formatted); // hello world [{"obj":true},4,{"another":"obj"}] NaN
+```
+
+### format(fmt, parameters, [options])
+
+#### fmt
+
+A `printf`-like format string. Example: `'hello %s %j %d'`
+
+#### parameters
+
+Array of values to be inserted into the `format` string. Example: `['world', {obj:true}]`
+
+#### options.stringify
+
+Passing an options object as the third parameter with a `stringify` will mean
+any objects will be passed to the supplied function instead of an the
+internal `tryStringify` function. This can be useful when using augmented
+capability serializers such as [`fast-safe-stringify`](http://github.com/davidmarkclements/fast-safe-stringify) or [`fast-redact`](http://github.com/davidmarkclements/fast-redact).
+
+> uses `JSON.stringify` instead of `util.inspect`, this means functions _will not be serialized_.
+
+### build
+
+With the `build` function you can generate a `format` function that is optimized for your use case.
+
+```typescript
+import { build } from "@visulima/fmt";
+
+const format = build({
+    formatters: {
+        // Pass in whatever % interpolator you want, as long as it's a single character;
+        // in this case, it's `t`.
+        // The formatter should be a function that takes in a value and returns the formatted value.
+        t: (time) => new Date(time).toLocaleString(),
+    },
+});
+
+const formatted = format("hello %s at %t", ["world", Date.now()]);
+
+console.log(formatted); // hello world at 1/1/1970, 1:00:00 AM
+```
+
+### Benchmark
+
+```sh
+   ✓ format simple (3) 4209ms
+     name                              hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · util.format             2,443,716.24  0.0003  0.8279  0.0004  0.0004  0.0007  0.0008  0.0013  ±0.35%  1221859   fastest
+   · @visulima/fmt           2,425,903.43  0.0004  0.1525  0.0004  0.0004  0.0005  0.0006  0.0008  ±0.25%  1212952
+   · quick-format-unescaped  1,770,792.34  0.0005  0.3075  0.0006  0.0006  0.0006  0.0006  0.0009  ±0.30%   885397   slowest
+
+   ✓ format tail object (3) 4922ms
+     name                              hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · util.format             1,005,974.84  0.0009  0.1501  0.0010  0.0010  0.0013  0.0018  0.0022  ±0.28%   502988   slowest
+   · @visulima/fmt           3,082,590.54  0.0003  0.1489  0.0003  0.0003  0.0004  0.0005  0.0006  ±0.30%  1541296   fastest
+   · quick-format-unescaped  2,164,780.43  0.0004  0.1654  0.0005  0.0005  0.0005  0.0006  0.0008  ±0.25%  1082391
 ```
 
 ## Supported Node.js Versions
@@ -62,6 +118,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
+-   [quick-format-unescaped](https://github.com/pinojs/quick-format-unescaped)
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 

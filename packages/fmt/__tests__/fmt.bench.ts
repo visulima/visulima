@@ -15,7 +15,6 @@ describe("format simple", () => {
     });
 
     bench("quick-format-unescaped", () => {
-        // @ts-expect-error - default export
         quickFormat.default("%s %j %d", ["a", [{ a: { x: 1 } }, 1]]);
     });
 });
@@ -29,8 +28,7 @@ describe("format tail object", () => {
         fmt("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
     });
 
-    bench("quickFormat", () => {
-        // @ts-expect-error - default export
+    bench("quick-format-unescaped", () => {
         quickFormat.default("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
     });
 });
