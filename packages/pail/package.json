@@ -1,0 +1,148 @@
+{
+    "name": "@visulima/pail",
+    "version": "0.0.0",
+    "description": "Find a file or directory by walking up parent directories.",
+    "keywords": [
+        "visulima",
+        "anolilab",
+        "pino",
+        "winston",
+        "log",
+        "cli",
+        "logger",
+        "logging",
+        "hackable",
+        "colorful",
+        "console",
+        "color",
+        "colorize",
+        "node",
+        "node-logger",
+        "browser",
+        "browser-logger",
+        "pail"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/pail",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/pail"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de",
+        "url": "https://danielbannert.com"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "browser": "./dist/index-browser.js",
+            "require": {
+                "types": "./dist/index-server.d.ts",
+                "default": "./dist/index-server.js"
+            },
+            "import": {
+                "types": "./dist/index-server.d.mts",
+                "default": "./dist/index-server.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index-server.js",
+    "module": "dist/index-server.mjs",
+    "browser": "dist/index-browser.mjs",
+    "types": "dist/index-server.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.js --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "chalk": "^5.3.0",
+        "dayjs": "^1.11.10"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.2",
+        "@anolilab/prettier-config": "^5.0.13",
+        "@anolilab/semantic-release-preset": "^8.0.2",
+        "@babel/core": "^7.23.5",
+        "@rushstack/eslint-plugin-security": "^0.7.1",
+        "@types/micromatch": "^4.0.6",
+        "@types/node": "18.18.8",
+        "@types/quick-format-unescaped": "^4.0.3",
+        "@vitest/coverage-v8": "^1.0.2",
+        "@vitest/ui": "^1.0.2",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.55.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.0",
+        "eslint-plugin-mdx": "^2.2.0",
+        "eslint-plugin-vitest": "^0.3.10",
+        "eslint-plugin-vitest-globals": "^1.4.0",
+        "prettier": "^3.1.0",
+        "quick-format-unescaped": "^4.0.4",
+        "rimraf": "^5.0.5",
+        "safe-stable-stringify": "^2.4.3",
+        "semantic-release": "^22.0.10",
+        "sort-package-json": "^2.6.0",
+        "string-length": "^6.0.0",
+        "strip-ansi": "^7.1.0",
+        "terminal-size": "^4.0.0",
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3",
+        "vitest": "^1.0.2",
+        "wrap-ansi": "^9.0.0"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    },
+    "sources": [
+        "src/index-server.ts",
+        "src/index-browser.ts"
+    ]
+}
