@@ -1,0 +1,124 @@
+{
+    "name": "@visulima/fmt",
+    "version": "0.0.0",
+    "description": "Util.format-like string formatting utility.",
+    "keywords": [
+        "visulima",
+        "anolilab",
+        "fmt",
+        "util",
+        "util.format",
+        "format",
+        "string",
+        "formatting",
+        "string-format",
+        "quick-format-unescaped"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/fmt",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/fmt"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.js --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:bench": "vitest bench",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.2",
+        "@anolilab/prettier-config": "^5.0.13",
+        "@anolilab/semantic-release-preset": "^8.0.2",
+        "@babel/core": "^7.23.5",
+        "@rushstack/eslint-plugin-security": "^0.7.1",
+        "@types/node": "18.18.8",
+        "@vitest/coverage-v8": "^1.0.2",
+        "@vitest/ui": "^1.0.2",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.55.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.0",
+        "eslint-plugin-mdx": "^2.2.0",
+        "eslint-plugin-vitest": "^0.3.10",
+        "eslint-plugin-vitest-globals": "^1.4.0",
+        "prettier": "^3.1.0",
+        "quick-format-unescaped": "^4.0.4",
+        "rimraf": "^5.0.5",
+        "semantic-release": "^22.0.10",
+        "sort-package-json": "^2.6.0",
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3",
+        "vitest": "^1.0.2"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    }
+}

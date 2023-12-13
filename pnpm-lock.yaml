@@ -1706,6 +1706,81 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(@types/node@18.18.5)(@vitest/ui@1.0.2)
 
+  packages/fmt:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.2
+        version: 15.0.2(@arthurgeron/eslint-plugin-react-usememo@2.2.1)(@babel/core@7.23.5)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.0)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.13.0)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.55.0)(typescript@5.3.3)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.13
+        version: 5.0.13(prettier@3.1.0)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.2
+        version: 8.0.2(semantic-release@22.0.10)
+      '@babel/core':
+        specifier: ^7.23.5
+        version: 7.23.5
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.7.1
+        version: 0.7.1(eslint@8.55.0)(typescript@5.3.3)
+      '@types/node':
+        specifier: 18.18.8
+        version: 18.18.8
+      '@vitest/coverage-v8':
+        specifier: ^1.0.2
+        version: 1.0.2(vitest@1.0.2)
+      '@vitest/ui':
+        specifier: ^1.0.2
+        version: 1.0.2(vitest@1.0.2)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      eslint:
+        specifier: ^8.55.0
+        version: 8.55.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.55.0)(typescript@5.3.3)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.55.0)(typescript@5.3.3)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.0
+        version: /eslint-plugin-i@2.29.0(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.55.0)
+      eslint-plugin-mdx:
+        specifier: ^2.2.0
+        version: 2.2.0(eslint@8.55.0)
+      eslint-plugin-vitest:
+        specifier: ^0.3.10
+        version: 0.3.10(eslint@8.55.0)(typescript@5.3.3)(vitest@1.0.2)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.4.0
+        version: 1.4.0
+      prettier:
+        specifier: ^3.1.0
+        version: 3.1.0
+      quick-format-unescaped:
+        specifier: ^4.0.4
+        version: 4.0.4
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      semantic-release:
+        specifier: ^22.0.10
+        version: 22.0.10(typescript@5.3.3)
+      sort-package-json:
+        specifier: ^2.6.0
+        version: 2.6.0
+      tsup:
+        specifier: ^8.0.1
+        version: 8.0.1(postcss@8.4.32)(typescript@5.3.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vitest:
+        specifier: ^1.0.2
+        version: 1.0.2(@types/node@18.18.8)(@vitest/ui@1.0.2)(jsdom@23.0.1)
+
   packages/health-check:
     dependencies:
       cacheable-lookup:
@@ -6751,7 +6826,7 @@ packages:
     resolution: {integrity: sha512-2D6y7fNvFmsLmRt6UCOFJPvFoPMJGT0Uh1Wg0RaigUp7kdQPs6yYn8Dmx6GZkOH/NW0yMTwRz/p0SRMMRo50vA==}
     peerDependencies:
       typescript: ^5.3.3
-      vite: 4.4.7
+      vite: ^3.0.0 || ^4.0.0 || ^5.0.0
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -13956,7 +14031,7 @@ packages:
     resolution: {integrity: sha512-1B4iFd8xJ235PAprvRbs7zaEvmepOrN7dQ5UWjsXoDnlRP1vriGUwmcYw+KeQGKtz+YkgMo7bglf/q/l2VhoxQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
-      dayjs: 1.11.9
+      dayjs: 1.11.10
     dev: true
 
   /ci-info@2.0.0:
@@ -15110,8 +15185,8 @@ packages:
       '@babel/runtime': 7.22.11
     dev: true
 
-  /dayjs@1.11.9:
-    resolution: {integrity: sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==}
+  /dayjs@1.11.10:
+    resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
 
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -22151,7 +22226,7 @@ packages:
       d3: 7.8.5
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.10
-      dayjs: 1.11.9
+      dayjs: 1.11.10
       dompurify: 3.0.5
       elkjs: 0.8.2
       khroma: 2.0.0
