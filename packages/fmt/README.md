@@ -89,7 +89,23 @@ const formatted = format("hello %s at %t", ["world", Date.now()]);
 console.log(formatted); // hello world at 1/1/1970, 1:00:00 AM
 ```
 
-### Benchmark
+## Format Specifiers
+
+Format specifiers are dependent on the type of data-elements that are to be added to the string.
+The most commonly used format specifiers supported are:
+
+| Specifier | Description                                                                                                                              |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| %s        | Converts all values except for `BigInt`, `-0` and `Object` to a string.                                                                  |
+| %d        | Used to convert any value to `Number` of any type other than `BigInt` and `Symbol`.                                                      |
+| %i        | Used for all values except `BigInt` and `Symbol`.                                                                                        |
+| %f        | Used to convert a value to type `Float`. It does not support conversion of values of type `Symbol`.                                      |
+| %j        | Used to add JSON data. If a circular reference is present, the string ‘[Circular]’ is added instead.                                     |
+| %o        | Adds the string representation of an object. Note that it does not contain non-enumerable characteristics of the object.                 |
+| %O        | Adds the string representation of an object. Note that it will contain all characteristics of the object, including non-enumerable ones. |
+| %%        | Used to add the % sign.                                                                                                                  |
+
+## Benchmark
 
 ```sh
    ✓ format simple (3) 4209ms

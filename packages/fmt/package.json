@@ -11,6 +11,7 @@
         "format",
         "string",
         "formatting",
+        "string-format",
         "quick-format-unescaped"
     ],
     "homepage": "https://www.visulima.com/docs/package/fmt",
@@ -76,7 +77,6 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "quick-format-unescaped": "^4.0.4",
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
@@ -94,6 +94,7 @@
         "eslint-plugin-vitest": "^0.3.10",
         "eslint-plugin-vitest-globals": "^1.4.0",
         "prettier": "^3.1.0",
+        "quick-format-unescaped": "^4.0.4",
         "rimraf": "^5.0.5",
         "semantic-release": "^22.0.10",
         "sort-package-json": "^2.6.0",
