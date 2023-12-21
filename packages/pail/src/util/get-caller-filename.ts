@@ -1,18 +1,27 @@
-import { basename } from "node:path";
-
 type CallSite = NodeJS.CallSite;
 
 type CallSiteWithFileName = { fileName: string | undefined; lineNumber: number | null };
 
-const getCallerFilename = (): string => {
+const getCallerFilename = (): {
+    fileName: string | undefined;
+    lineNumber: number | undefined;
+} => {
     const eStack = Error.prepareStackTrace;
 
     try {
-        Error.prepareStackTrace = (_error, stack) => stack;
+        let result: CallSite[] = [];
 
-        const stack = new Error().stack as unknown as CallSite[];
+        Error.prepareStackTrace = (_error, stack) => {
+            const callSitesWithoutCurrent = stack.slice(1);
 
-        const callers = stack.map(
+            result = callSitesWithoutCurrent;
+
+            return callSitesWithoutCurrent;
+        };
+
+        new Error().stack;
+
+        const callers = result.map(
             (x) =>
                 ({
                     fileName: x.getFileName(),
@@ -20,13 +29,19 @@ const getCallerFilename = (): string => {
                 }) as CallSiteWithFileName,
         );
 
-        const firstExternalFilePath = callers.find((x) => x.fileName !== (callers[0] as CallSiteWithFileName).fileName);
+        const firstExternalFilePath = callers.at(-2);
 
         if (firstExternalFilePath) {
-            return `${basename(firstExternalFilePath.fileName as string)} - Line: ${firstExternalFilePath.lineNumber}`;
+            return {
+                fileName: firstExternalFilePath.fileName,
+                lineNumber: firstExternalFilePath.lineNumber ?? undefined,
+            };
         }
 
-        return "anonymous";
+        return {
+            fileName: "anonymous",
+            lineNumber: undefined,
+        };
     } finally {
         Error.prepareStackTrace = eStack;
     }

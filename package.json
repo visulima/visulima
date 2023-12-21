@@ -12,6 +12,7 @@
         "bench:colorize": "pnpm --filter \"colorize\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
+        "bench:pail": "pnpm --filter \"pail\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
         "build:docs": "nx run-many --target=build:prod --parallel --projects=tag:type:nextra && pnpm run docs:copy && pnpm --filter \"docs\" run build",
         "build:packages": "nx run-many --target=build --parallel --projects=tag:type:package",

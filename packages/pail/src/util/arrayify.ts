@@ -1,5 +1,5 @@
-const arrayify = <T>(x: T[] | T): T[] => {
-    if (typeof x === "undefined") {
+const arrayify = <T>(x: T | T[]): T[] => {
+    if (x === undefined) {
         return [] as any[];
     }
 
