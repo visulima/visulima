@@ -1,37 +1,32 @@
-import { clearLine, cursorTo, moveCursor } from "node:readline";
-import { Writable as WritableStream } from "node:stream";
-import format from "quick-format-unescaped";
-
-import dayjs from "dayjs";
-import chalk from "chalk";
-import stripAnsi from "strip-ansi";
+import type { FormatterFunction } from "@visulima/fmt";
+import { build } from "@visulima/fmt";
 import stringLength from "string-length";
-import terminalSize from "terminal-size";
-import wrapAnsi from "wrap-ansi";
+import type { stringify } from "safe-stable-stringify";
+import { configure as stringifyConfigure } from "safe-stable-stringify";
 
 import defaultTypes from "./logger-types";
 import type {
-    AdditionalFormatObject,
     ConstructorOptions,
     DefaultLoggerTypes,
     DefaultLogLevels,
     DefaultLogTypes,
-    DisplayOptions,
     LoggerConfiguration,
     LoggerFunction,
-    LoggerTypesConf as LoggerTypesConfig,
-    ScopeFormatter,
-    Secrets,
-    StylesOptions,
+    LoggerTypesConfig,
+    Meta,
+    Processor,
+    Reporter,
+    Serializer,
+    StreamAwareReporter,
     TimeEndResult,
+    LoggerTypesAwareReporter, SerializerAwareReporter,
 } from "./types";
-import padEnd from "./util/pad-end";
-import mergeTypes from "./util/merge-types";
 import arrayify from "./util/arrayify";
 import getLongestLabel from "./util/get-longest-label";
-import getCallerFilename from "./util/get-caller-filename";
-
-type WriteStream = NodeJS.WriteStream;
+import mergeTypes from "./util/merge-types";
+import padEnd from "./util/pad-end";
+import getType from "./util/get-type";
+import errorWithCauseSerializer from "./serializer/error/error-with-cause-serializer";
 
 const defaultLogLevels = {
     debug: 0,
@@ -41,22 +36,27 @@ const defaultLogLevels = {
     warn: 3,
 };
 
-const { green, grey, red, underline, yellow } = chalk;
-
-let isPreviousLogInteractive = false;
-
-const defaultScopeFormatter = (scopes: string[]): string => `[${scopes.join("::")}]`;
-
-const barsScopeFormatter = (scopes: string[]): string => scopes.map((scope) => `[${scope}]`).join(" ");
+const EMPTY_META = {
+    badge: undefined,
+    error: undefined,
+    context: undefined,
+    file: undefined,
+    label: undefined,
+    message: undefined,
+    prefix: undefined,
+    scope: undefined,
+    suffix: undefined,
+    repeated: undefined,
+};
 
 class PailImpl<T extends string = never, L extends string = never> {
-    static barsScopeFormatter: ScopeFormatter = barsScopeFormatter;
-
-    private readonly _interactive: boolean;
-
-    private readonly _display: DisplayOptions;
-
-    private readonly _styles: StylesOptions;
+    private readonly _lastLog: {
+        count?: number;
+        object?: Meta<L>;
+        serialized?: string;
+        time?: Date;
+        timeout?: ReturnType<typeof setTimeout>;
+    };
 
     private readonly _customTypes: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
 
@@ -66,372 +66,342 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     private _disabled: boolean;
 
-    private _scopeName: string[] | string;
-
-    // eslint-disable-next-line @typescript-eslint/prefer-readonly
-    protected timers: Map<string, number>;
-
-    // eslint-disable-next-line @typescript-eslint/prefer-readonly
-    protected seqTimers: string[];
+    private _scopeName: string[];
 
     private readonly _types: DefaultLoggerTypes<L> & Record<T, Partial<LoggerConfiguration<L>>>;
 
-    private readonly _stream: WritableStream | WritableStream[];
-
     private readonly _longestLabel: string;
 
-    private _secrets: Secrets;
-
-    private readonly _scopeFormatter: ScopeFormatter;
+    private readonly _processors: Set<Processor<L>>;
 
     private readonly _generalLogLevel: DefaultLogLevels | L;
 
-    private readonly _dateFormat: string;
-    private readonly _timestampFormat: string;
-    private readonly _dayjs: typeof dayjs;
+    private readonly _stringFormat: any;
 
-    public constructor(options: ConstructorOptions<T, L> = {}) {
-        this._interactive = options.interactive ?? false;
+    private readonly _reporters: Set<Reporter<L>>;
 
-        this._display = {
-            badge: true,
-            date: false,
-            filename: false,
-            label: true,
-            scope: true,
-            timestamp: false,
-            ...options.display,
-        };
-        this._styles = {
-            underline: {
-                label: true,
-                message: false,
-                prefix: false,
-                suffix: false,
-                ...options.styles?.underline,
+    private readonly _serializers: Map<string, Serializer>;
+
+    private readonly _throttle: number;
+
+    private readonly _throttleMin: number;
+
+    private readonly _stdout: NodeJS.WriteStream | undefined;
+
+    private readonly _stderr: NodeJS.WriteStream | undefined;
+
+    private readonly _fmtFormatters: Record<string, FormatterFunction>;
+
+    private readonly _stringify: typeof stringify;
+
+    protected timers: Map<string, number>;
+
+    protected seqTimers: string[];
+
+    public constructor(options: ConstructorOptions<T, L>) {
+        this._stdout = options.stdout;
+        this._stderr = options.stderr;
+
+        this._throttle = options.throttle ?? 1000;
+        this._throttleMin = options.throttleMin ?? 5;
+
+        this._fmtFormatters = options.fmt?.formatters ?? {};
+        this._serializers = new Map([errorWithCauseSerializer, ...(options.serializers ?? [])].map((serializer) => [serializer.name, serializer]));
+
+        this._stringify = stringifyConfigure({
+            strict: true,
+        });
+
+        this._stringFormat = build({
+            formatters: options.fmt?.formatters ?? {},
+            stringify: (value: any) => {
+                for (const [_, serializer] of this._serializers) {
+                    if (serializer.isApplicable(value)) {
+                        return serializer.serialize(value);
+                    }
+                }
+
+                return this._stringify(value);
             },
-            uppercase: {
-                label: false,
-                ...options.styles?.uppercase,
-            },
-            ...options.styles,
-        };
+        });
 
         this._customTypes = (options.types ?? {}) as LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+        this._types = mergeTypes<L, T>(defaultTypes, this._customTypes);
+        this._longestLabel = getLongestLabel<L, T>(this._types);
+
         this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<DefaultLogLevels, number>> & Record<L, number>;
         this._logLevels = { ...defaultLogLevels, ...this._customLogLevels };
+        this._generalLogLevel = this._normalizeLogLevel(options.logLevel);
+
+        this._reporters = new Set(
+            options.reporters?.map((reporter) => {
+                if ((reporter as StreamAwareReporter<L>).setStdout && this._stdout) {
+                    (reporter as StreamAwareReporter<L>).setStdout(this._stdout);
+                }
+
+                if ((reporter as StreamAwareReporter<L>).setStderr && this._stderr) {
+                    (reporter as StreamAwareReporter<L>).setStderr(this._stderr);
+                }
+
+                if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+                    (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this._types);
+                }
+
+                if ((reporter as SerializerAwareReporter<L>).setSerializers) {
+                    (reporter as SerializerAwareReporter<L>).setSerializers(this._serializers);
+                }
+
+                return reporter as Reporter<L>;
+            }),
+        );
+        this._processors = new Set(options.processors ?? []);
+
         this._disabled = options.disabled ?? false;
-        this._scopeName = options.scope ?? "";
-        this._scopeFormatter = options.scopeFormatter ?? defaultScopeFormatter;
+
+        this._scopeName = arrayify(options.scope).filter(Boolean) as string[];
+
         this.timers = new Map();
         this.seqTimers = [];
-        this._types = mergeTypes<L, T>(defaultTypes, this._customTypes);
-        this._stream = options.stream ?? process.stderr;
-        this._longestLabel = getLongestLabel<L, T>(this._types);
-        this._secrets = options.secrets ?? [];
-        this._generalLogLevel = this._validateLogLevel(options.logLevel);
-
-        this._dayjs = options.dayjs ?? dayjs;
-        this._dateFormat = options.dateFormat ?? "YYYY-MM-DD";
-        this._timestampFormat = options.timestampFormat ?? "HH:mm:ss";
 
         Object.keys(this._types).forEach((type) => {
-            // @ts-expect-error
-            this[type] = this._logger.bind(this, type);
+            // @ts-expect-error - dynamic property
+            this[type] = this._logger.bind(this, type, false);
         });
+
+        // @ts-expect-error - dynamic property
+        this.raw = this._logger.bind(this, "log", true);
+
+        // Track of last log
+        this._lastLog = {};
     }
 
-    public get scopePath(): string[] {
-        return arrayify(this._scopeName).filter((x) => x.length > 0);
+    public wrapAll() {
+        this.wrapConsole();
+        this.wrapStd();
     }
 
-    public get currentOptions(): Omit<Required<ConstructorOptions<T, L>>, "scope"> {
-        return {
-            display: this._display,
-            styles: this._styles,
-            disabled: this._disabled,
-            interactive: this._interactive,
-            logLevel: this._generalLogLevel,
-            logLevels: this._customLogLevels,
-            scopeFormatter: this._scopeFormatter,
-            secrets: this._secrets,
-            stream: this._stream,
-            types: this._customTypes,
-            dateFormat: this._dateFormat,
-            timestampFormat: this._timestampFormat,
-            dayjs: this._dayjs,
+    public restoreAll() {
+        this.restoreConsole();
+        this.restoreStd();
+    }
+
+    public wrapConsole() {
+        for (const type in this._types) {
+            // Backup original value
+            if (!(console as any)[`__${type}`]) {
+                (console as any)[`__${type}`] = (console as any)[type];
+            }
+            // Override
+            // @TODO: Fix typings
+            // @ts-expect-error - dynamic property
+            (console as any)[type] = (this as unknown as PailImpl<T, L>)[type as keyof PailImpl<T, L>].raw;
+        }
+    }
+
+    public restoreConsole() {
+        for (const type in this._types) {
+            // Restore if backup is available
+            if ((console as any)[`__${type}`]) {
+                (console as any)[type] = (console as any)[`__${type}`];
+                delete (console as any)[`__${type}`];
+            }
+        }
+    }
+
+    public wrapStd() {
+        this._wrapStream(this._stdout, "log");
+        this._wrapStream(this._stderr, "log");
+    }
+
+    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: DefaultLogLevels | L) {
+        if (!stream) {
+            return;
+        }
+
+        // Backup original value
+        if (!(stream as any).__write) {
+            (stream as any).__write = stream.write;
+        }
+
+        // Override
+        (stream as any).write = (data: any) => {
+            // @TODO: Fix typings
+            // @ts-expect-error - dynamic property
+            (this as unknown as PailImpl)[type].raw(String(data).trim());
         };
     }
 
-    private _timeSpan(then: number): number {
-        return Date.now() - then;
+    public restoreStd() {
+        this._restoreStream(this._stdout);
+        this._restoreStream(this._stderr);
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    private _validateLogLevel(level: DefaultLogLevels | L | undefined): DefaultLogLevels | L {
+    private _restoreStream(stream?: NodeJS.WriteStream) {
+        if (!stream) {
+            return;
+        }
+
+        if ((stream as any).__write) {
+            stream.write = (stream as any).__write;
+
+            delete (stream as any).__write;
+        }
+    }
+
+    private _normalizeLogLevel(level: DefaultLogLevels | L | undefined): DefaultLogLevels | L {
         return level && Object.keys(this._logLevels).includes(level) ? level : "debug";
     }
 
-    private _filterSecrets(message: string): string {
-        const { _secrets } = this;
-
-        if (_secrets.length === 0) {
-            return message;
-        }
-
-        let safeMessage = message;
-
-        _secrets.forEach((secret) => {
-            safeMessage = safeMessage.replaceAll(new RegExp(String(secret), "g"), "[secure]");
-        });
-
-        return safeMessage;
-    }
-
-    private _formatStream(stream: WritableStream | WritableStream[]): WritableStream[] {
-        return arrayify(stream);
-    }
-
-    private _formatDate(): string {
-        const date_ = new Date();
-
-        return `[${this._dayjs(date_).format(this._dateFormat)}]`;
-    }
-
-    private _formatFilename(): string {
-        return `[${getCallerFilename()}]`;
-    }
-
-    private _formatScopeName(): string {
-        return this._scopeFormatter(this.scopePath);
-    }
-
-    private _formatTimestamp(): string {
-        const date_ = new Date();
-
-        return `[${this._dayjs(date_).format(this._timestampFormat)}]`;
-    }
-
     private _formatMessage(string_: any[] | string): string {
-        return format(...arrayify(string_));
+        return this._stringFormat(...arrayify(string_));
     }
 
-    private _meta(): string[] {
-        const meta = [];
+    private _buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
+        let meta = { ...EMPTY_META } as Meta<L>;
 
-        if (this._display.date) {
-            const formattedDate = this._formatDate();
+        meta.type = {
+            level: type.logLevel as DefaultLogLevels | L,
+            name: typeName,
+        };
 
-            meta.push(formattedDate);
+        meta.scope = this._scopeName;
+        meta.date = new Date();
+
+        if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
+            if (getType(arguments_[0]) === "Error") {
+                meta.error = arguments_[0];
+            } else {
+                const [{ context, message, prefix, suffix }] = arguments_;
+
+                if (context) {
+                    meta.context = context;
+                }
+
+                if (prefix) {
+                    meta.prefix = prefix;
+                }
+
+                if (suffix) {
+                    meta.suffix = suffix;
+                }
+
+                if (message) {
+                    meta.message = this._formatMessage(message);
+                }
+            }
+        } else {
+            meta.message = this._formatMessage(arguments_);
         }
 
-        if (this._display.timestamp) {
-            const formattedTimestamp = this._formatTimestamp();
-
-            meta.push(formattedTimestamp);
+        if (type.badge) {
+            meta.badge = padEnd(type.badge, type.badge.length + 1);
         }
 
-        if (this._display.filename) {
-            const formattedFilename = this._formatFilename();
-
-            meta.push(formattedFilename);
+        if (type.label) {
+            meta.label = type.label;
         }
 
-        if (this.scopePath.length > 0 && this._display.scope) {
-            const formattedScope = this._formatScopeName();
-
-            meta.push(formattedScope);
-        }
-
-        if (meta.length > 0) {
-            meta.push("›");
-
-            return meta.map((item) => grey(item));
+        // Apply global processors
+        for (const processor of this._processors) {
+            meta = { ...processor(meta) };
         }
 
         return meta;
     }
 
-    private _hasAdditional({ prefix, suffix }: AdditionalFormatObject, arguments_: any[]): string {
-        return suffix ?? prefix ? "" : this._formatMessage(arguments_);
-    }
-
-    private _buildPail(type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): string {
-        const { columns } = terminalSize();
-        let size = columns;
-
-        if (typeof this._styles.messageLength === "number") {
-            size = this._styles.messageLength;
+    private _logger(type: T, raw = false, ...messageObject: any[]) {
+        if (this._disabled) {
+            return;
         }
 
-        let message_;
-        let additional: AdditionalFormatObject = {};
+        const logLevel = this._normalizeLogLevel(this._types[type].logLevel);
 
-        if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
-            if (arguments_[0] instanceof Error) {
-                [message_] = arguments_;
-            } else {
-                const [{ message, prefix, suffix }] = arguments_;
+        if ((this._logLevels[logLevel] as number) >= (this._logLevels[this._generalLogLevel] as number)) {
+            const meta = this._buildMeta(type, this._types[type], ...messageObject);
 
-                additional = { prefix, suffix };
+            /**
+             * @param newLog false if the throttle expired and we don't want to log a duplicate
+             */
+            const resolveLog = (newLog = false) => {
+                const repeated = (this._lastLog.count || 0) - this._throttleMin;
 
-                message_ = message ? this._formatMessage(message) : this._hasAdditional(additional, arguments_);
-            }
-        } else {
-            message_ = this._formatMessage(arguments_);
-        }
+                if (this._lastLog.object && repeated > 0) {
+                    const lastMeta = { ...this._lastLog.object };
 
-        const messages = this._meta();
+                    if (repeated > 1) {
+                        lastMeta.repeated = repeated;
+                    }
 
-        if (additional.prefix) {
-            if (this._styles?.underline.prefix) {
-                messages.push(underline(additional.prefix));
-            } else {
-                messages.push(additional.prefix);
-            }
-        }
+                    this._report(lastMeta);
 
-        const colorize = type.color ? chalk[type.color] : chalk.white;
-
-        if (this._display.badge && type.badge) {
-            const badge = padEnd(type.badge, type.badge.length + 1);
-
-            messages.push(colorize(badge));
-        }
-
-        if (this._display.label && type.label) {
-            const label = this._styles?.uppercase.label ? type.label.toUpperCase() : type.label;
-            const longestLabelLength = stringLength(this._longestLabel) + 1;
-            const labelLength = stringLength(label);
-
-            if (this._styles?.underline.label) {
-                messages.push(colorize(`${underline(label)}${" ".repeat(longestLabelLength - labelLength)}`));
-            } else {
-                messages.push(colorize(`${label}${" ".repeat(longestLabelLength - labelLength)}`));
-            }
-        }
-
-        const charLength = stringLength(messages.join(" "));
-        const suffix: string[] = [];
-
-        let suffixCharLength = 0;
-
-        if (additional.suffix) {
-            if (this._styles?.underline.suffix) {
-                suffix.push(chalk.grey(underline(additional.suffix)));
-            } else {
-                suffix.push(chalk.grey(additional.suffix));
-            }
-
-            suffixCharLength += stringLength(additional.suffix);
-        }
-
-        size -= charLength + messages.length + suffixCharLength + suffix.length;
-
-        if (message_ instanceof Error && message_.stack) {
-            const [name, ...rest] = message_.stack.split("\n");
-
-            if (this._styles?.underline.message) {
-                messages.push(underline(name));
-            } else {
-                messages.push(name as string);
-            }
-
-            messages.push(grey(rest.map((l) => l.replace(/^/, "\n")).join("")));
-        } else {
-            if (this._styles?.underline.message) {
-                messages.push(underline(message_));
-            } else {
-                messages.push(message_);
-            }
-        }
-
-        const wrappedMessages = messages
-            .map((message) => {
-                const wrappedMessage = wrapAnsi(message, size, {
-                    hard: false,
-                    trim: false,
-                    wordWrap: true,
-                });
-
-                if (wrappedMessage.includes("\n")) {
-                    const [firstLine, ...rest] = wrappedMessage.split("\n");
-
-                    return `${firstLine}\n${rest.map((l) => `${" ".repeat(charLength + 1)}${l}`).join("\n")}`;
+                    this._lastLog.count = 1;
                 }
 
-                return wrappedMessage;
-            })
-            .join(" ");
+                // Log
+                if (newLog) {
+                    this._lastLog.object = meta;
 
-        if (suffix.length > 0) {
-            return wrappedMessages + " " + suffix.join(" ");
-        }
+                    this._report(meta);
+                }
+            };
 
-        return wrappedMessages;
-    }
+            clearTimeout(this._lastLog.timeout);
 
-    private _write(stream: WritableStream | WriteStream, message: string) {
-        const isTTY: boolean = (stream as WriteStream).isTTY ?? false;
+            const diffTime = this._lastLog.time && meta.date ? new Date(meta.date).getTime() - this._lastLog.time.getTime() : 0;
 
-        if (this._interactive && isTTY && isPreviousLogInteractive) {
-            moveCursor(stream, 0, -1);
-            clearLine(stream, 0);
-            cursorTo(stream, 0);
-        }
+            this._lastLog.time = new Date(meta.date);
 
-        if (stream instanceof WritableStream) {
-            if (isTTY) {
-                stream.write(`${message}\n`);
-            } else {
-                stream.write(`${stripAnsi(message)}\n`);
+            if (diffTime < this._throttle) {
+                try {
+                    const serializedLog = this._stringify([
+                        meta.label,
+                        meta.scope,
+                        meta.type,
+                        meta.message,
+                        meta.context,
+                        meta.badge,
+                        meta.prefix,
+                        meta.suffix,
+                    ]);
+                    const isSameLog = this._lastLog.serialized === serializedLog;
+
+                    this._lastLog.serialized = serializedLog;
+
+                    if (isSameLog) {
+                        this._lastLog.count = (this._lastLog.count || 0) + 1;
+
+                        if (this._lastLog.count > this._throttleMin) {
+                            // Auto-resolve when throttle is timed out
+                            this._lastLog.timeout = setTimeout(resolveLog, this._throttle);
+
+                            return; // SPAM!
+                        }
+                    }
+                } catch {
+                    // Circular References
+                }
             }
-        } else if (isTTY) {
-            stream.write(`${message}\n`);
-        } else {
-            stream.write(`${stripAnsi(message)}\n`);
-        }
 
-        isPreviousLogInteractive = this._interactive;
-    }
-
-    private _log(message: string, streams: WritableStream | WritableStream[] = this._stream, logLevel: string) {
-        if (this.isEnabled() && (this._logLevels[logLevel] as number) >= (this._logLevels[this._generalLogLevel] as number)) {
-            this._formatStream(streams).forEach((stream) => {
-                this._write(stream, message);
-            });
+            resolveLog(true);
         }
     }
 
-    private _logger(type: T, ...messageObject: any[]) {
-        const { logLevel, stream } = this._types[type];
-        const message = this._buildPail(this._types[type], ...messageObject);
-
-        this._log(this._filterSecrets(message), stream, this._validateLogLevel(logLevel));
-    }
-
-    public addSecrets(secrets: Secrets): void {
-        if (!Array.isArray(secrets)) {
-            throw new TypeError("Argument must be an array.");
+    private _report(meta: Meta<L>): void {
+        for (const reporter of this._reporters) {
+            reporter.log(meta);
         }
-
-        this._secrets.push(...secrets);
     }
 
-    public clearSecrets(): void {
-        this._secrets = [];
-    }
-
-  /**
-   * Disables logging
-   */
+    /**
+     * Disables logging
+     */
     public disable(): void {
         this._disabled = true;
     }
 
-  /**
-   * Enables logging
-   */
+    /**
+     * Enables logging
+     */
     public enable(): void {
         this._disabled = false;
     }
@@ -442,7 +412,22 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     public clone<N extends string = T, R extends PailType<N> = PailType<N>>(options: ConstructorOptions<N>): R {
         const PailConstructor = PailImpl as unknown as new (options: ConstructorOptions<N>) => R;
-        const newInstance = new PailConstructor({ ...this.currentOptions, ...options } as ConstructorOptions<N>);
+        const newInstance = new PailConstructor({
+            disabled: this._disabled,
+            fmt: {
+                formatters: this._fmtFormatters,
+            },
+            logLevel: this._generalLogLevel,
+            logLevels: this._customLogLevels,
+            processors: [...this._processors.values()],
+            serializers: [...this._serializers.values()],
+            stderr: this._stderr,
+            stdout: this._stdout,
+            throttle: this._throttle,
+            throttleMin: this._throttleMin,
+            types: this._customTypes,
+            ...options,
+        } as ConstructorOptions<N>);
 
         newInstance.timers = new Map(this.timers.entries());
         newInstance.seqTimers = [...this.seqTimers];
@@ -456,18 +441,19 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         return this.clone({
-            scope: name,
+            reporters: [...this._reporters],
+            scope: name.flat(),
         });
     }
 
     public child<R extends PailType<T> = PailType<T>>(name: string): R {
-        const newScope = this.scopePath.concat(name);
+        const newScope = new Set([...this._scopeName, name]);
 
         return this.scope<R>(...newScope);
     }
 
     public unscope(): void {
-        this._scopeName = "";
+        this._scopeName = [];
     }
 
     public time(label?: string): string {
@@ -478,21 +464,23 @@ class PailImpl<T extends string = never, L extends string = never> {
 
         this.timers.set(label, Date.now());
 
-        const messages = this._meta();
+        const meta = { ...EMPTY_META } as Meta<L>;
+
+        meta.scope = this._scopeName;
+        meta.date = new Date();
 
         if (this._types.start.badge) {
-            messages.push(green(padEnd(this._types.start.badge, 2)));
+            // green
+            meta.badge = padEnd(this._types.start.badge, 2);
         }
 
-        if (this._styles?.underline.label) {
-            messages.push(green(padEnd(underline(label), underline(this._longestLabel).length + 1)));
-        } else {
-            messages.push(green(padEnd(label, this._longestLabel.length + 1)));
-        }
+        // green
+        meta.label = `${label}${" ".repeat(this._longestLabel.length - stringLength(label))}`;
 
-        messages.push("Initialized timer...");
+        meta.message = "Initialized timer...";
 
-        this._log(messages.join(" "), this._stream, "timer");
+        // @TODO
+        // this._log(messages.join(" "), this._stream, "timer");
 
         return label;
     }
@@ -503,25 +491,28 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         if (label && this.timers.has(label)) {
-            const span = this._timeSpan(this.timers.get(label)!);
+            const span = Date.now() - this.timers.get(label)!;
+
             this.timers.delete(label);
 
-            const messages = this._meta();
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
 
             if (this._types.pause.badge) {
-                messages.push(red(padEnd(this._types.pause.badge, 2)));
+                // red
+                meta.badge = padEnd(this._types.pause.badge, 2);
             }
 
-            if (this._styles?.underline.label) {
-                messages.push(red(padEnd(underline(label), underline(this._longestLabel).length + 1)));
-            } else {
-                messages.push(red(padEnd(label, this._longestLabel.length + 1)));
-            }
+            // red
+            meta.label = padEnd(label, this._longestLabel.length + 1);
 
-            messages.push("Timer run for:");
-            messages.push(yellow(span < 1000 ? `${span}ms` : `${(span / 1000).toFixed(2)}s`));
+            meta.message = "Timer run for:\n";
+            // yellow
+            meta.message += span < 1000 ? `${span}ms` : `${(span / 1000).toFixed(2)}s`;
 
-            this._log(messages.join(" "), this._stream, "timer");
+            // this._log(messages.join(" "), this._stream, "timer");
 
             return { label, span };
         }

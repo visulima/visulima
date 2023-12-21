@@ -32,6 +32,12 @@ module.exports = {
             rules: {},
         },
         {
+            files: ["*.ts"],
+            rules: {
+                "no-underscore-dangle": "off",
+            },
+        },
+        {
             files: ["*.mdx"],
             rules: {
                 "jsx-a11y/anchor-has-content": "off",
