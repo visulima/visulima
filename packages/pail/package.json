@@ -3,38 +3,42 @@
     "version": "0.0.0",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
-        "visulima",
         "anolilab",
-        "pino",
+        "browser",
+        "browser-logger",
+        "callsite",
+        "callsites",
+        "cli",
+        "color",
+        "colorful",
+        "colorize",
+        "consola",
+        "console",
         "debug",
-        "winston",
+        "filter",
+        "hackable",
+        "handling exceptions",
+        "json",
+        "json",
+        "log level",
         "log",
         "log4j",
         "log4js",
         "log4ts",
-        "log level",
-        "json",
-        "print",
-        "logging",
-        "cli",
         "logger",
-        "hackable",
-        "colorful",
-        "console",
-        "color",
-        "colorize",
-        "callsites",
-        "callsite",
+        "logging",
         "node",
         "node-logger",
-        "browser",
-        "browser-logger",
-        "show error",
-        "handling exceptions",
-        "pretty log",
-        "pretty json",
+        "pail",
+        "pino",
         "pretty-error",
-        "pail"
+        "pretty-log",
+        "print",
+        "redact",
+        "show error",
+        "timer",
+        "visulima",
+        "winston"
     ],
     "homepage": "https://www.visulima.com/docs/package/pail",
     "repository": {
@@ -70,6 +74,16 @@
                 "types": "./dist/index.browser.d.ts",
                 "import": "./dist/index.browser.mjs",
                 "require": "./dist/index.browser.cjs"
+            }
+        },
+        "./reporter/json-file": {
+            "require": {
+                "types": "./dist/reporter/file/json-file-reporter.d.ts",
+                "default": "./dist/reporter/file/json-file-reporter.js"
+            },
+            "import": {
+                "types": "./dist/reporter/file/json-file-reporter.d.mts",
+                "default": "./dist/reporter/file/json-file-reporter.mjs"
             }
         },
         "./reporter/json": {
@@ -126,7 +140,8 @@
     "dependencies": {
         "chalk": "^5.3.0",
         "chalk-template": "^1.1.0",
-        "safe-stable-stringify": "^2.4.3"
+        "safe-stable-stringify": "^2.4.3",
+        "rotating-file-stream": "^3.1.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.2",
@@ -151,7 +166,6 @@
         "eslint-plugin-mdx": "^2.2.0",
         "eslint-plugin-vitest": "^0.3.10",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "fast-redact": "^3.3.0",
         "figures": "^6.0.1",
         "pino": "^8.17.1",
         "prettier": "^3.1.0",
@@ -197,6 +211,7 @@
         "src/reporter/pretty/pretty.browser.ts",
         "src/reporter/pretty/pretty.server.ts",
         "src/reporter/json/json.browser.ts",
-        "src/reporter/json/json.server.ts"
+        "src/reporter/json/json.server.ts",
+        "src/reporter/file/json-file-reporter.ts"
     ]
 }

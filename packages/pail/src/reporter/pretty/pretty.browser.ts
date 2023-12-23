@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-import type { DefaultLogLevels, Meta } from "../../types";
+import type { Meta, Rfc5424LogLevels } from "../../types";
 import writeConsoleLogBasedOnLevel from "../../util/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
@@ -11,7 +11,8 @@ class BrowserPrettyReporter<T extends string = never, L extends string = never> 
     }
 
     protected override _formatMessage(data: Meta<L>): string {
-        let { badge, date, file, label, prefix, scope, suffix } = data;
+        const { badge, date, file, label, scope, suffix } = data;
+        let { prefix } = data;
 
         if (prefix) {
             prefix = this._styles.underline.prefix ? chalk.underline(prefix) : prefix;
@@ -20,14 +21,16 @@ class BrowserPrettyReporter<T extends string = never, L extends string = never> 
         return `${date} ${file?.name} ${scope} > ${prefix} ${badge} ${label} ${suffix}`;
     }
 
-    protected override _log(message: string, logLevel: DefaultLogLevels | L): void {
+    // eslint-disable-next-line class-methods-use-this
+    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
         const consoleLogFunction = writeConsoleLogBasedOnLevel(logLevel);
 
         consoleLogFunction(message);
     }
 
+    // eslint-disable-next-line class-methods-use-this
     protected override _formatError(error: Error): string {
-        return error.stack || error.message;
+        return error.stack ?? error.message;
     }
 }
 

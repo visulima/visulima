@@ -2,11 +2,15 @@ import { sep } from "node:path";
 
 import type { ColorName } from "chalk";
 import chalk from "chalk";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import stringLength from "string-length";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
-import type { DefaultLogLevels, Meta, Serializer, StreamAwareReporter } from "../../types";
+import type { SerializedError } from "../../serializer/error/error-proto";
+import type { Meta, Rfc5424LogLevels, Serializer, StreamAwareReporter } from "../../types";
 import getLongestLabel from "../../util/get-longest-label";
 import writeStream from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
@@ -28,14 +32,15 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         });
     }
 
-    public setStdout(stdout: NodeJS.WriteStream) {
+    public setStdout(stdout: NodeJS.WriteStream): void {
         this._stdout = stdout;
     }
 
-    public setStderr(stderr: NodeJS.WriteStream) {
+    public setStderr(stderr: NodeJS.WriteStream): void {
         this._stderr = stderr;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected override _formatMessage(data: Meta<L>): string {
         const { columns } = terminalSize();
 
@@ -45,13 +50,13 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
             size = this._styles.messageLength;
         }
 
-        const { badge, date, repeated, error, file, label, message, prefix, scope, suffix, type } = data;
+        const { badge, date, error, file, label, message, prefix, repeated, scope, suffix, type } = data;
 
         const colorize = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
             ? chalk[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as ColorName]
             : chalk.white;
 
-        let items = [];
+        let items: string[] = [];
 
         if (date) {
             items.push(chalk.grey(this._styles.dateFormatter(new Date(date))));
@@ -118,27 +123,14 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         if (suffix) {
-            items.push("\n");
-            items.push(chalk.grey(this._styles.underline.suffix ? chalk.underline(suffix) : suffix));
+            items.push("\n", chalk.grey(this._styles.underline.suffix ? chalk.underline(suffix) : suffix));
         }
 
         return `${items.join("")}\n`;
     }
 
-    protected override _log(message: string, logLevel: DefaultLogLevels | L) {
+    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
         writeStream(`${message}\n`, ["error", "warn"].includes(logLevel) ? this._stderr ?? process.stderr : this._stdout ?? process.stdout);
-    }
-
-    private _formatLabel(label: string): string {
-        let formattedLabel = this._styles.uppercase.label ? label.toUpperCase() : label;
-
-        formattedLabel = this._styles.underline.label ? chalk.underline(formattedLabel) : formattedLabel;
-
-        if (this._styles.bold.label) {
-            formattedLabel = chalk.bold(formattedLabel);
-        }
-
-        return formattedLabel;
     }
 
     protected override _formatError(error: Error, size: number): string {
@@ -147,13 +139,14 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         const errorSerializer = this._serializers.get("error") as Serializer;
-        const { message, name, stack } = errorSerializer.serialize(error);
+        const { message, name, stack } = errorSerializer.serialize<SerializedError>(error);
 
         const items: string[] = [];
         const cwd = process.cwd() + sep;
 
-        items.push(chalk.red(name), "\n");
         items.push(
+            chalk.red(name),
+            "\n",
             wrapAnsi(message, size - 3, {
                 hard: true,
                 trim: true,
@@ -167,13 +160,25 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
                 .splice(1)
                 .map((line: string) => line.trim().replace("file://", "").replace(cwd, ""));
 
-            items.push("\n");
             items.push(
+                "\n",
                 lines.map((line: string) => `  ${line.replace(/^at +/, (m) => chalk.gray(m)).replace(/\((.+)\)/, (_, m) => `(${chalk.cyan(m)})`)}`).join("\n"),
             );
         }
 
         return items.join("");
+    }
+
+    private _formatLabel(label: string): string {
+        let formattedLabel = this._styles.uppercase.label ? label.toUpperCase() : label;
+
+        formattedLabel = this._styles.underline.label ? chalk.underline(formattedLabel) : formattedLabel;
+
+        if (this._styles.bold.label) {
+            formattedLabel = chalk.bold(formattedLabel);
+        }
+
+        return formattedLabel;
     }
 }
 

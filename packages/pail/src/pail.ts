@@ -1,55 +1,54 @@
 import type { FormatterFunction } from "@visulima/fmt";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { build } from "@visulima/fmt";
-import stringLength from "string-length";
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import stringLength from "string-length";
 
-import defaultTypes from "./logger-types";
+import { LOG_LEVELS, LOG_TYPES } from "./constants";
+import errorWithCauseSerializer from "./serializer/error/error-with-cause-serializer";
 import type {
     ConstructorOptions,
     DefaultLoggerTypes,
-    DefaultLogLevels,
     DefaultLogTypes,
     LoggerConfiguration,
     LoggerFunction,
+    LoggerTypesAwareReporter,
     LoggerTypesConfig,
     Meta,
     Processor,
     Reporter,
+    Rfc5424LogLevels,
     Serializer,
+    SerializerAwareReporter,
     StreamAwareReporter,
+    StringifyAwareReporter,
     TimeEndResult,
-    LoggerTypesAwareReporter, SerializerAwareReporter,
 } from "./types";
 import arrayify from "./util/arrayify";
 import getLongestLabel from "./util/get-longest-label";
+import getType from "./util/get-type";
 import mergeTypes from "./util/merge-types";
 import padEnd from "./util/pad-end";
-import getType from "./util/get-type";
-import errorWithCauseSerializer from "./serializer/error/error-with-cause-serializer";
-
-const defaultLogLevels = {
-    debug: 0,
-    error: 4,
-    info: 1,
-    timer: 2,
-    warn: 3,
-};
 
 const EMPTY_META = {
     badge: undefined,
-    error: undefined,
     context: undefined,
-    file: undefined,
+    error: undefined,
     label: undefined,
     message: undefined,
     prefix: undefined,
+    repeated: undefined,
     scope: undefined,
     suffix: undefined,
-    repeated: undefined,
 };
 
 class PailImpl<T extends string = never, L extends string = never> {
+    protected timers: Map<string, number>;
+
+    protected seqTimers: string[];
+
     private readonly _lastLog: {
         count?: number;
         object?: Meta<L>;
@@ -60,7 +59,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     private readonly _customTypes: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
 
-    private readonly _customLogLevels: Partial<Record<DefaultLogLevels, number>> & Record<L, number>;
+    private readonly _customLogLevels: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
 
     private readonly _logLevels: Record<string, number>;
 
@@ -74,8 +73,10 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     private readonly _processors: Set<Processor<L>>;
 
-    private readonly _generalLogLevel: DefaultLogLevels | L;
+    private readonly _generalLogLevel: L | Rfc5424LogLevels;
 
+    // TODO: Fix type in fmt
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly _stringFormat: any;
 
     private readonly _reporters: Set<Reporter<L>>;
@@ -94,10 +95,6 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     private readonly _stringify: typeof stringify;
 
-    protected timers: Map<string, number>;
-
-    protected seqTimers: string[];
-
     public constructor(options: ConstructorOptions<T, L>) {
         this._stdout = options.stdout;
         this._stderr = options.stderr;
@@ -114,7 +111,9 @@ class PailImpl<T extends string = never, L extends string = never> {
 
         this._stringFormat = build({
             formatters: options.fmt?.formatters ?? {},
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             stringify: (value: any) => {
+                // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,@typescript-eslint/naming-convention,@typescript-eslint/no-unused-vars
                 for (const [_, serializer] of this._serializers) {
                     if (serializer.isApplicable(value)) {
                         return serializer.serialize(value);
@@ -126,29 +125,38 @@ class PailImpl<T extends string = never, L extends string = never> {
         });
 
         this._customTypes = (options.types ?? {}) as LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
-        this._types = mergeTypes<L, T>(defaultTypes, this._customTypes);
+        this._types = mergeTypes<L, T>(LOG_TYPES, this._customTypes);
         this._longestLabel = getLongestLabel<L, T>(this._types);
 
-        this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<DefaultLogLevels, number>> & Record<L, number>;
-        this._logLevels = { ...defaultLogLevels, ...this._customLogLevels };
+        this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
+        this._logLevels = { ...LOG_LEVELS, ...this._customLogLevels };
         this._generalLogLevel = this._normalizeLogLevel(options.logLevel);
 
         this._reporters = new Set(
             options.reporters?.map((reporter) => {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if ((reporter as StreamAwareReporter<L>).setStdout && this._stdout) {
                     (reporter as StreamAwareReporter<L>).setStdout(this._stdout);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if ((reporter as StreamAwareReporter<L>).setStderr && this._stderr) {
                     (reporter as StreamAwareReporter<L>).setStderr(this._stderr);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
                     (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this._types);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if ((reporter as SerializerAwareReporter<L>).setSerializers) {
                     (reporter as SerializerAwareReporter<L>).setSerializers(this._serializers);
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if ((reporter as StringifyAwareReporter<L>).setStringify) {
+                    (reporter as StringifyAwareReporter<L>).setStringify(this._stringify);
                 }
 
                 return reporter as Reporter<L>;
@@ -175,17 +183,18 @@ class PailImpl<T extends string = never, L extends string = never> {
         this._lastLog = {};
     }
 
-    public wrapAll() {
+    public wrapAll(): void {
         this.wrapConsole();
         this.wrapStd();
     }
 
-    public restoreAll() {
+    public restoreAll(): void {
         this.restoreConsole();
         this.restoreStd();
     }
 
-    public wrapConsole() {
+    public wrapConsole(): void {
+        // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Backup original value
             if (!(console as any)[`__${type}`]) {
@@ -198,11 +207,13 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
     }
 
-    public restoreConsole() {
+    public restoreConsole(): void {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Restore if backup is available
             if ((console as any)[`__${type}`]) {
                 (console as any)[type] = (console as any)[`__${type}`];
+
                 delete (console as any)[`__${type}`];
             }
         }
@@ -213,7 +224,156 @@ class PailImpl<T extends string = never, L extends string = never> {
         this._wrapStream(this._stderr, "log");
     }
 
-    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: DefaultLogLevels | L) {
+    public restoreStd() {
+        this._restoreStream(this._stdout);
+        this._restoreStream(this._stderr);
+    }
+
+    public wrapException(): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        process.on("uncaughtException", (error: any) => {
+            this.error(error);
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        process.on("unhandledRejection", (error: any) => {
+            this.error(error);
+        });
+    }
+
+    /**
+     * Disables logging
+     */
+    public disable(): void {
+        this._disabled = true;
+    }
+
+    /**
+     * Enables logging
+     */
+    public enable(): void {
+        this._disabled = false;
+    }
+
+    public isEnabled(): boolean {
+        return !this._disabled;
+    }
+
+    public clone<N extends string = T, R extends PailType<N> = PailType<N>>(cloneOptions: ConstructorOptions<N>): R {
+        const PailConstructor = PailImpl as unknown as new (options: ConstructorOptions<N>) => R;
+
+        const newInstance = new PailConstructor({
+            disabled: this._disabled,
+            fmt: {
+                formatters: this._fmtFormatters,
+            },
+            logLevel: this._generalLogLevel,
+            logLevels: this._customLogLevels,
+            processors: [...this._processors],
+            serializers: [...this._serializers.values()],
+            stderr: this._stderr,
+            stdout: this._stdout,
+            throttle: this._throttle,
+            throttleMin: this._throttleMin,
+            types: this._customTypes,
+            ...cloneOptions,
+        } as ConstructorOptions<N>);
+
+        newInstance.timers = new Map(this.timers.entries());
+        newInstance.seqTimers = [...this.seqTimers];
+
+        return newInstance;
+    }
+
+    public scope<R extends PailType<T> = PailType<T>>(...name: string[]): R {
+        if (name.length === 0) {
+            throw new Error("No scope name was defined.");
+        }
+
+        return this.clone({
+            reporters: [...this._reporters],
+            scope: name.flat(),
+        });
+    }
+
+    public child<R extends PailType<T> = PailType<T>>(name: string): R {
+        const newScope = new Set([...this._scopeName, name]);
+
+        return this.scope<R>(...newScope);
+    }
+
+    public unscope(): void {
+        this._scopeName = [];
+    }
+
+    public time(label?: string): string {
+        if (!label) {
+            // eslint-disable-next-line no-param-reassign
+            label = `timer_${this.timers.size}`;
+
+            this.seqTimers.push(label);
+        }
+
+        this.timers.set(label, Date.now());
+
+        const meta = { ...EMPTY_META } as Meta<L>;
+
+        meta.scope = this._scopeName;
+        meta.date = new Date();
+
+        if (this._types.start.badge) {
+            // green
+            meta.badge = padEnd(this._types.start.badge, 2);
+        }
+
+        // green
+        meta.label = `${label}${" ".repeat(this._longestLabel.length - stringLength(label))}`;
+
+        meta.message = "Initialized timer...";
+
+        // @TODO
+        // this._log(messages.join(" "), this._stream, "timer");
+
+        return label;
+    }
+
+    public timeEnd(label?: string): TimeEndResult | undefined {
+        if (!label && this.seqTimers.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            label = this.seqTimers.pop();
+        }
+
+        if (label && this.timers.has(label)) {
+            const span = Date.now() - this.timers.get(label)!;
+
+            this.timers.delete(label);
+
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            if (this._types.stop.badge) {
+                // red
+                meta.badge = padEnd(this._types.stop.badge, 2);
+            }
+
+            // red
+            meta.label = padEnd(label, this._longestLabel.length + 1);
+
+            meta.message = "Timer run for:\n";
+            // yellow
+            meta.message += span < 1000 ? `${span}ms` : `${(span / 1000).toFixed(2)}s`;
+
+            // this._log(messages.join(" "), this._stream, "timer");
+
+            return { label, span };
+        }
+
+        return undefined;
+    }
+
+    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: DefaultLoggerTypes<L>) {
         if (!stream) {
             return;
         }
@@ -224,19 +384,15 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         // Override
-        (stream as any).write = (data: any) => {
+        (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
             (this as unknown as PailImpl)[type].raw(String(data).trim());
         };
     }
 
-    public restoreStd() {
-        this._restoreStream(this._stdout);
-        this._restoreStream(this._stderr);
-    }
-
-    private _restoreStream(stream?: NodeJS.WriteStream) {
+    // eslint-disable-next-line class-methods-use-this
+    private _restoreStream(stream?: NodeJS.WriteStream): void {
         if (!stream) {
             return;
         }
@@ -248,19 +404,21 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
     }
 
-    private _normalizeLogLevel(level: DefaultLogLevels | L | undefined): DefaultLogLevels | L {
+    private _normalizeLogLevel(level: L | Rfc5424LogLevels | undefined): L | Rfc5424LogLevels {
         return level && Object.keys(this._logLevels).includes(level) ? level : "debug";
     }
 
-    private _formatMessage(string_: any[] | string): string {
-        return this._stringFormat(...arrayify(string_));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private _formatMessage(string_: any[]): string {
+        return this._stringFormat(...string_) as string;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
     private _buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
         let meta = { ...EMPTY_META } as Meta<L>;
 
         meta.type = {
-            level: type.logLevel as DefaultLogLevels | L,
+            level: type.logLevel as L | Rfc5424LogLevels,
             name: typeName,
         };
 
@@ -269,9 +427,15 @@ class PailImpl<T extends string = never, L extends string = never> {
 
         if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
             if (getType(arguments_[0]) === "Error") {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,prefer-destructuring
                 meta.error = arguments_[0];
             } else {
-                const [{ context, message, prefix, suffix }] = arguments_;
+                const { context, message, prefix, suffix } = arguments_[0] as {
+                    context?: Record<string, unknown>;
+                    message?: string;
+                    prefix?: string;
+                    suffix?: string;
+                };
 
                 if (context) {
                     meta.context = context;
@@ -286,7 +450,7 @@ class PailImpl<T extends string = never, L extends string = never> {
                 }
 
                 if (message) {
-                    meta.message = this._formatMessage(message);
+                    meta.message = this._formatMessage([message]);
                 }
             }
         } else {
@@ -302,6 +466,7 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         // Apply global processors
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const processor of this._processors) {
             meta = { ...processor(meta) };
         }
@@ -309,7 +474,8 @@ class PailImpl<T extends string = never, L extends string = never> {
         return meta;
     }
 
-    private _logger(type: T, raw = false, ...messageObject: any[]) {
+    // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
+    private _logger(type: T, raw = false, ...messageObject: any[]): void {
         if (this._disabled) {
             return;
         }
@@ -387,137 +553,10 @@ class PailImpl<T extends string = never, L extends string = never> {
     }
 
     private _report(meta: Meta<L>): void {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const reporter of this._reporters) {
             reporter.log(meta);
         }
-    }
-
-    /**
-     * Disables logging
-     */
-    public disable(): void {
-        this._disabled = true;
-    }
-
-    /**
-     * Enables logging
-     */
-    public enable(): void {
-        this._disabled = false;
-    }
-
-    public isEnabled(): boolean {
-        return !this._disabled;
-    }
-
-    public clone<N extends string = T, R extends PailType<N> = PailType<N>>(options: ConstructorOptions<N>): R {
-        const PailConstructor = PailImpl as unknown as new (options: ConstructorOptions<N>) => R;
-        const newInstance = new PailConstructor({
-            disabled: this._disabled,
-            fmt: {
-                formatters: this._fmtFormatters,
-            },
-            logLevel: this._generalLogLevel,
-            logLevels: this._customLogLevels,
-            processors: [...this._processors.values()],
-            serializers: [...this._serializers.values()],
-            stderr: this._stderr,
-            stdout: this._stdout,
-            throttle: this._throttle,
-            throttleMin: this._throttleMin,
-            types: this._customTypes,
-            ...options,
-        } as ConstructorOptions<N>);
-
-        newInstance.timers = new Map(this.timers.entries());
-        newInstance.seqTimers = [...this.seqTimers];
-
-        return newInstance;
-    }
-
-    public scope<R extends PailType<T> = PailType<T>>(...name: string[]): R {
-        if (name.length === 0) {
-            throw new Error("No scope name was defined.");
-        }
-
-        return this.clone({
-            reporters: [...this._reporters],
-            scope: name.flat(),
-        });
-    }
-
-    public child<R extends PailType<T> = PailType<T>>(name: string): R {
-        const newScope = new Set([...this._scopeName, name]);
-
-        return this.scope<R>(...newScope);
-    }
-
-    public unscope(): void {
-        this._scopeName = [];
-    }
-
-    public time(label?: string): string {
-        if (!label) {
-            label = `timer_${this.timers.size}`;
-            this.seqTimers.push(label);
-        }
-
-        this.timers.set(label, Date.now());
-
-        const meta = { ...EMPTY_META } as Meta<L>;
-
-        meta.scope = this._scopeName;
-        meta.date = new Date();
-
-        if (this._types.start.badge) {
-            // green
-            meta.badge = padEnd(this._types.start.badge, 2);
-        }
-
-        // green
-        meta.label = `${label}${" ".repeat(this._longestLabel.length - stringLength(label))}`;
-
-        meta.message = "Initialized timer...";
-
-        // @TODO
-        // this._log(messages.join(" "), this._stream, "timer");
-
-        return label;
-    }
-
-    public timeEnd(label?: string): TimeEndResult | undefined {
-        if (!label && this.seqTimers.length > 0) {
-            label = this.seqTimers.pop();
-        }
-
-        if (label && this.timers.has(label)) {
-            const span = Date.now() - this.timers.get(label)!;
-
-            this.timers.delete(label);
-
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this._scopeName;
-            meta.date = new Date();
-
-            if (this._types.pause.badge) {
-                // red
-                meta.badge = padEnd(this._types.pause.badge, 2);
-            }
-
-            // red
-            meta.label = padEnd(label, this._longestLabel.length + 1);
-
-            meta.message = "Timer run for:\n";
-            // yellow
-            meta.message += span < 1000 ? `${span}ms` : `${(span / 1000).toFixed(2)}s`;
-
-            // this._log(messages.join(" "), this._stream, "timer");
-
-            return { label, span };
-        }
-
-        return undefined;
     }
 }
 

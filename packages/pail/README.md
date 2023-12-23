@@ -3,13 +3,12 @@
   <p>
   Highly configurable Logger for Node.js and Browser, built on top of
 
-  [@visulima/fmt](https://github.com/visulima/visulima/tree/main/packages/fmt),
-  [string-length](),
-  [sisteransi](),
-  [figures](),
-  [strip-ansi](),
-  [terminal-size]() and
-  [wrap-ansi]()
+[@visulima/fmt](https://github.com/visulima/visulima/tree/main/packages/fmt),
+[string-length](),
+[strip-ansi](),
+[terminal-size]() and
+[wrap-ansi]()
+
   </p>
 </div>
 
@@ -35,28 +34,27 @@
 
 ## Why Pail?
 
-- Easy to use
-- Hackable to the core
-- Integrated timers
-- Custom pluggable processors
-- Custom pluggable reporters
-- TypeScript support
-- Interactive and regular modes
-- Secrets & sensitive information filtering
-- Filename, date and timestamp support
-- Scoped loggers and timers
-- Scaled logging levels mechanism
-- String interpolation support
-- Object and error interpolation
-- Stack trace and pretty errors
-- Simple and minimal syntax
-- Spam prevention by throttling logs
-- Browser support
-- Redirect console and stdout/stderr to pail and easily restore redirect.
-- `Pretty` or `JSON` output
-- CJS & ESM with tree shaking support
-- Supports circular structures
-- Fast and powerful
+-   Easy to use
+-   Hackable to the core
+-   Integrated timers
+-   Custom pluggable processors, reporters and serializers
+-   TypeScript support
+-   Interactive and regular modes
+-   Secrets & sensitive information filtering (soon)
+-   Filename, date and timestamp support
+-   Scoped loggers and timers
+-   Scaled logging levels mechanism
+-   String interpolation support
+-   Object and error interpolation
+-   Stack trace and pretty errors
+-   Simple and minimal syntax
+-   Spam prevention by throttling logs
+-   Browser support
+-   Redirect console and stdout/stderr to pail and easily restore redirect.
+-   `Pretty` or `JSON` output
+-   CJS & ESM with tree shaking support
+-   Supports circular structures
+-   Fast and powerful
 
 ## Install
 
@@ -72,57 +70,68 @@ yarn add @visulima/pail
 pnpm add @visulima/pail
 ```
 
+## Concepts
+
+> Most importantly, `pail` adheres to the log levels defined in [RFC 5424][rfc-5424].
+> This means that you can use the log levels to filter out messages that are not important to you.
+
+### Log Levels
+
+Pail supports the logging levels described by [RFC 5424][rfc-5424].
+
+- `DEBUG`: Detailed debug information.
+
+- `INFO`: Interesting events. Examples: User logs in, SQL logs.
+
+- `NOTICE`: Normal but significant events.
+
+- `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+
+- `ERROR`: Runtime errors that do not require immediate action but should typically be logged and monitored.
+
+- `CRITICAL`: Critical conditions. Example: Application component unavailable, unexpected exception.
+
+- `ALERT`: Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
+
+- `EMERGENCY`: Emergency: system is unusable.
+
+### Reporters
+
+Reporters are responsible for writing the log messages to the console or a file. `pail` comes with a few built-in reporters:
+
+| Browser (console.{function}) | Server (stdout or stderr) |
+| ---------------------------- | ------------------------- |
+| `JsonReporter`               | `JsonReporter`            |
+| `PrettyReporter`             | `PrettyReporter`          |
+| x                            | `FileReporter`            |
+
+### Processors
+
+Processors are responsible for processing the log message (Meta Object) before it's written to the console or a file.
+This usually means that they add some metadata to the record's `context` property.
+
+A processor can be added to a logger directly (and is subsequently applied to log records before they reach any handler).
+
+`pail` comes with a few built-in processors:
+
+- `CallerProcessor` - adds the caller information to the log message
+    - The Meta Object is extended with a file name, line number and column number
+- `RedactProcessor` - redacts sensitive information from the log message (Soon)
+
+### Serializers
+
+Serializers are responsible for serializing the log message (Meta Object) before it's written to the console or a file.
+
+`pail` comes with a few built-in serializers:
+
+- `errorWithCauseSerializer` - serializes the error with cause object to a std error object that can be serialized.
+
 ## Usage
 
 ```typescript
-import { walk } from "@visulima/pail";
+import { pail } from "@visulima/pail";
 
-const filesAndFolders: string[] = [];
-
-for await (const index of walk(`${__dirname}/fixtures`, {})) {
-    filesAndFolders.push(index.path);
-}
-
-console.log(filesAndFolders);
-```
-
-These helpers can be used to find specific files in all Next.js `['src', 'app', 'integrations']` folders.
-
-This example will find all files in the sub-folder `commands` and add it to the build process.
-
-```typescript
-import type { NextConfig } from "next";
-import { collect } from "@visulima/pail";
-
-const config: NextConfig = {
-    webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-        if (isServer) {
-            return {
-                ...config,
-                entry() {
-                    return config.entry().then(async (entry) => {
-                        const allCommands = await collect("commands", __dirname, {
-                            includeDirs: false,
-                        });
-                        const commands: { [key: string]: string } = {};
-
-                        allCommands.forEach((commandPath) => {
-                            commands[commandPath.replace(/\.[^./]+$/, "").slice(1)] = `.${commandPath}`;
-                        });
-
-                        return {
-                            ...entry,
-                            ...commands,
-                        };
-                    });
-                },
-            };
-        }
-
-        return config;
-    },
-};
-module.exports = config;
+pail.info("Hello World");
 ```
 
 ## Supported Node.js Versions
@@ -151,3 +160,4 @@ The visulima pail is open-sourced software licensed under the [MIT][license-url]
 [license-url]: LICENSE.md "license"
 [npm-image]: https://img.shields.io/npm/v/@visulima/pail/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/pail/v/latest "npm"
+[rfc-5424]: https://datatracker.ietf.org/doc/html/rfc5424#page-36

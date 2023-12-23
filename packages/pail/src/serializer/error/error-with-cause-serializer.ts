@@ -1,7 +1,7 @@
+import type { Serializer } from "../../types";
+import getType from "../../util/get-type";
 import type { SerializedError } from "./error-proto";
 import { ErrorProto, seen } from "./error-proto";
-import getType from "../../util/get-type";
-import type { Serializer } from "../../types";
 
 const errorWithCauseSerializer = (error: any): SerializedError => {
     error[seen] = undefined; // tag to prevent re-looking at this
@@ -43,9 +43,9 @@ const errorWithCauseSerializer = (error: any): SerializedError => {
 };
 
 const serializer: Serializer = {
+    isApplicable: (value: any) => getType(value) === "Error",
     name: "error",
     serialize: errorWithCauseSerializer,
-    isApplicable: (value: any) => getType(value) === "Error",
 };
 
 export default serializer;
