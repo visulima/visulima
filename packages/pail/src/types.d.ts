@@ -1,62 +1,47 @@
 import type { FormatterFunction } from "@visulima/fmt";
 import type { ColorName } from "chalk";
 
+/**
+ *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
+ */
 declare global {
     namespace VisulimaPail {
-        interface MetaOverrides<L> {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/no-unused-vars
+        interface CustomMeta<L> {}
     }
 }
 
-export interface Meta<L> extends VisulimaPail.MetaOverrides<L> {
+export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    context: Record<string, any> | undefined;
     date: Date | string;
     error: Error | undefined;
-    context: Record<string, any> | undefined;
-    file:
-        | {
-              line: number | undefined;
-              name: string | undefined;
-          }
-        | undefined;
     label: string | undefined;
     message: string | undefined;
     prefix: string | undefined;
+    repeated?: number | undefined;
     scope: string[] | undefined;
     suffix: string | undefined;
     type: {
-        level: L | DefaultLogLevels;
+        level: L | Rfc5424LogLevels;
         name: string;
     };
-    repeated?: number | undefined;
 }
 
-export type DefaultLogTypes =
-    | "alert"
-    | "await"
-    | "complete"
-    | "debug"
-    | "error"
-    | "fatal"
-    | "info"
-    | "log"
-    | "note"
-    | "pause"
-    | "pending"
-    | "start"
-    | "success"
-    | "wait"
-    | "warn"
-    | "watch";
+export type DefaultLogTypes = Omit<Rfc5424LogLevels, "informational"> &
+    ("await" | "complete" | "info" | "log" | "pending" | "start" | "stop" | "success" | "wait" | "watch");
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LoggerFunction = (...message: any[]) => void;
 
-export type DefaultLogLevels = "debug" | "error" | "info" | "log" | "timer" | "warn";
+export type Rfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "warning";
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
-    color: ColorName | "";
+    color?: ColorName | undefined;
     label: string;
-    logLevel: DefaultLogLevels | L;
+    logLevel: L | Rfc5424LogLevels;
 }
 
 export type LoggerTypesConfig<T extends string, L extends string = never> = Record<T, Partial<LoggerConfiguration<L>>>;
@@ -79,12 +64,18 @@ export interface SerializerAwareReporter<L extends string = never> extends Repor
     setSerializers: (serializers: Map<string, Serializer>) => void;
 }
 
+export interface StringifyAwareReporter<L extends string = never> extends Reporter<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+
 export type Processor<L extends string = never> = (value: Meta<L>) => Meta<L>;
 
 export type Serializer = {
-    name: string;
-    serialize: (value: any) => any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isApplicable: (value: any) => boolean;
+    name: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    serialize: <T>(value: any) => T;
 };
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
@@ -92,12 +83,12 @@ export interface ConstructorOptions<T extends string = never, L extends string =
     fmt?: {
         formatters?: Record<string, FormatterFunction>;
     };
-    logLevel?: DefaultLogLevels | L;
-    logLevels?: Partial<Record<DefaultLogLevels, number>> & Record<L, number>;
+    logLevel?: L | Rfc5424LogLevels;
+    logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
     processors?: Processor<L>[];
     reporters?: Reporter<L>[];
-    serializers?: Serializer[];
     scope?: string[] | string;
+    serializers?: Serializer[];
     stderr?: NodeJS.WriteStream;
     stdout?: NodeJS.WriteStream;
     throttle?: number;
@@ -106,12 +97,6 @@ export interface ConstructorOptions<T extends string = never, L extends string =
     // see https://github.com/microsoft/TypeScript/pull/29317 (not merged as for 31 march 2021)
     // so we can't distinguish logger configuration between default log types and passed one
     types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
-}
-
-export interface AdditionalFormatObject {
-    context?: Record<string, any>;
-    prefix?: string;
-    suffix?: string;
 }
 
 export interface TimeEndResult {

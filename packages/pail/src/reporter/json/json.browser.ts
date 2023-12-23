@@ -1,14 +1,14 @@
-import type { DefaultLogLevels } from "../../types";
+import type { Rfc5424LogLevels } from "../../types";
 import writeConsoleLogBasedOnLevel from "../../util/write-console-log";
-import type { Options } from "./abstract-json-reporter";
-import { AbstractJsonReporter } from "./abstract-json-reporter";
+import AbstractJsonReporter from "./abstract-json-reporter";
 
 class BrowserJsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
-    public constructor(options: Options = {}) {
-        super(options);
+    public constructor() {
+        super();
     }
 
-    protected override _log(message: string, logLevel: DefaultLogLevels | L): void {
+    // eslint-disable-next-line class-methods-use-this
+    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
         const consoleLogFunction = writeConsoleLogBasedOnLevel(logLevel);
 
         consoleLogFunction(message);

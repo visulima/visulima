@@ -9,6 +9,11 @@ const errorProto = Object.create(
             value: undefined,
             writable: true,
         },
+        cause: {
+            enumerable: true,
+            value: undefined,
+            writable: true,
+        },
         message: {
             enumerable: true,
             value: undefined,
@@ -21,19 +26,14 @@ const errorProto = Object.create(
         },
         raw: {
             enumerable: false,
-            get () {
+            get() {
                 return this[rawSymbol];
             },
-            set (value) {
+            set(value) {
                 this[rawSymbol] = value;
             },
         },
         stack: {
-            enumerable: true,
-            value: undefined,
-            writable: true,
-        },
-        cause: {
             enumerable: true,
             value: undefined,
             writable: true,
@@ -48,4 +48,4 @@ Object.defineProperty(errorProto, rawSymbol, {
 
 export const ErrorProto = errorProto;
 
-export type SerializedError = AggregateError & { [key: string]: any, raw: any } | Error & { [key: string]: any, raw: any };
+export type SerializedError = (AggregateError & { [key: string]: any; raw: any }) | (Error & { [key: string]: any; raw: any });

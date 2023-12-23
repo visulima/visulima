@@ -1,12 +1,13 @@
 type CallSite = NodeJS.CallSite;
 
-type CallSiteWithFileName = { fileName: string | undefined; lineNumber: number | null };
+type CallSiteWithFileName = { columnNumber: number | null; fileName: string | undefined; lineNumber: number | null };
 
 const getCallerFilename = (): {
+    columnNumber?: number | undefined;
     fileName: string | undefined;
     lineNumber: number | undefined;
 } => {
-    const eStack = Error.prepareStackTrace;
+    const errorStack = Error.prepareStackTrace;
 
     try {
         let result: CallSite[] = [];
@@ -19,11 +20,13 @@ const getCallerFilename = (): {
             return callSitesWithoutCurrent;
         };
 
+        // eslint-disable-next-line unicorn/error-message
         new Error().stack;
 
         const callers = result.map(
             (x) =>
                 ({
+                    columnNumber: x.getColumnNumber(),
                     fileName: x.getFileName(),
                     lineNumber: x.getLineNumber(),
                 }) as CallSiteWithFileName,
@@ -33,6 +36,7 @@ const getCallerFilename = (): {
 
         if (firstExternalFilePath) {
             return {
+                columnNumber: firstExternalFilePath.columnNumber ?? undefined,
                 fileName: firstExternalFilePath.fileName,
                 lineNumber: firstExternalFilePath.lineNumber ?? undefined,
             };
@@ -43,7 +47,7 @@ const getCallerFilename = (): {
             lineNumber: undefined,
         };
     } finally {
-        Error.prepareStackTrace = eStack;
+        Error.prepareStackTrace = errorStack;
     }
 };
 
