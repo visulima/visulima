@@ -1,128 +1,146 @@
-import { describe, expect,it } from "vitest";
+// eslint-disable-next-line max-classes-per-file
+import { describe, expect, it } from "vitest";
 
+import type { SerializedError } from "../../../src/serializer/error/error-proto";
 import errorWithCauseSerializer from "../../../src/serializer/error/error-with-cause-serializer";
 
+const { isApplicable, name, serialize } = errorWithCauseSerializer;
+
 describe("error with cause serializer", () => {
-    it("serializes Error objects", () => {
-        const serialized = errorWithCauseSerializer(new Error("foo"));
+    it("should should have correct name", () => {
+        expect(name).toBe("error");
+    });
+
+    it.each([
+        [new Error("foo"), true],
+        [new TypeError("foo"), true],
+        [new SyntaxError("foo"), true],
+        ["foo", false],
+    ])("should not be applicable to %p", (value, expected) => {
+        expect(isApplicable(value)).toStrictEqual(expected);
+    });
+
+    it("should serializes Error objects", () => {
+        const serialized = serialize<SerializedError>(new Error("foo"));
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
-    it("serializes Error objects with extra properties", () => {
-        const error = new Error("foo");
+    it("should serializes Error objects with extra properties", () => {
+        const error = new Error("foo") as Error & { statusCode: number };
         error.statusCode = 500;
 
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
         expect(serialized.statusCode).toBe(500);
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
     it('serializes Error objects with subclass "name"', () => {
         class MyError extends Error {}
 
         const error = new MyError("foo");
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("MyError");
     });
 
-    it("serializes nested errors", () => {
-        const error = new Error("foo");
+    it("should serializes nested errors", () => {
+        const error = new Error("foo") as Error & { inner: Error };
         error.inner = new Error("bar");
 
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
         expect(serialized.inner.name).toBe("Error");
         expect(serialized.inner.message).toBe("bar");
-        expect(serialized.inner.stack).toBe(/Error: bar/);
-        expect(serialized.inner.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.inner.stack).toContain("Error: bar");
+        expect(serialized.inner.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
-    it("serializes error causes", () => {
+    it("should serializes error causes", () => {
         const innerError = new Error("inner");
-        const middleError = new Error("middle");
+        const middleError = new Error("middle") as Error & { cause: Error };
         middleError.cause = innerError;
 
-        const outerError = new Error("outer");
+        const outerError = new Error("outer") as Error & { cause: Error };
         outerError.cause = middleError;
 
-        const serialized = errorWithCauseSerializer(outerError);
+        const serialized = serialize<SerializedError>(outerError);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("outer");
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
 
         expect(serialized.cause.name).toBe("Error");
         expect(serialized.cause.message).toBe("middle");
-        expect(serialized.cause.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.cause.stack).toContain("error-with-cause-serializer.test.ts:");
 
         expect(serialized.cause.cause.name).toBe("Error");
         expect(serialized.cause.cause.message).toBe("inner");
-        expect(serialized.cause.cause.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.cause.cause.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
-    it("keeps non-error cause", () => {
-        const error = new Error("foo");
+    it("should keeps non-error cause", () => {
+        const error = new Error("foo") as Error & { cause: string };
         error.cause = "abc";
 
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
         expect(serialized.cause).toBe("abc");
     });
 
-    it("prevents infinite recursion", () => {
-        const error = new Error("foo");
+    it("should prevents infinite recursion", () => {
+        const error = new Error("foo") as Error & { inner: Error };
         error.inner = error;
 
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
         expect(serialized.inner).toBeUndefined();
     });
 
-    it("cleans up infinite recursion tracking", () => {
-        const error = new Error("foo");
-        const bar = new Error("bar");
+    it("should cleans up infinite recursion tracking", () => {
+        const error = new Error("foo") as Error & { inner: Error };
+        const bar = new Error("bar") as Error & { inner: Error };
         error.inner = bar;
         bar.inner = error;
 
-        errorWithCauseSerializer(error);
-        const serialized = errorWithCauseSerializer(error);
+        serialize(error);
+        const serialized = serialize<SerializedError>(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
-        expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+        expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
         expect(serialized.inner).toBeDefined();
         expect(serialized.inner.name).toBe("Error");
         expect(serialized.inner.message).toBe("bar");
-        expect(serialized.inner.stack).toBe(/Error: bar/);
+        expect(serialized.inner.stack).toContain("Error: bar");
         expect(serialized.inner.inner).toBeUndefined();
     });
 
-    it("err.raw is available", () => {
+    it("should err.raw is available", () => {
         const error = new Error("foo");
-        const serialized = errorWithCauseSerializer(error);
+        const serialized = serialize<SerializedError>(error);
+
         expect(serialized.raw).toBe(error);
     });
 
-    it("redefined err.constructor doesnt crash serializer", () => {
+    it("should redefined err.constructor doesnt crash serializer", () => {
         const check = (a: Error, name: string): void => {
             expect(a.name).toBe(name);
             expect(a.message).toBe("foo");
-        }
+        };
 
         const error1 = TypeError("foo");
         error1.constructor = "10";
@@ -141,42 +159,33 @@ describe("error with cause serializer", () => {
         const error5 = new MyError("foo");
         error5.constructor = undefined;
 
-        check(errorWithCauseSerializer(error1), "TypeError");
-        check(errorWithCauseSerializer(error2), "TypeError");
-        check(errorWithCauseSerializer(error3), "Error");
-        check(errorWithCauseSerializer(error4), "Error");
+        check(serialize(error1), "TypeError");
+        check(serialize(error2), "TypeError");
+        check(serialize(error3), "Error");
+        check(serialize(error4), "Error");
         // We do not expect 'MyError' because err5.constructor has been blown away.
         // `err5.name` is 'Error' from the base class protoname.
-        check(errorWithCauseSerializer(error5), "Error");
-    });
-
-    it("pass through anything that does not look like an Error", () => {
-        const check = (a: any): void => {
-            expect(errorWithCauseSerializer(a), a);
-        }
-
-        check("foo");
-        check({ hello: "world" });
-        check([1, 2]);
+        check(serialize(error5), "Error");
     });
 
     it.skipIf(!global.AggregateError)("serializes aggregate errors", () => {
         const foo = new Error("foo");
         const bar = new Error("bar");
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const aggregate of [
-            new AggregateError([foo, bar], "aggregated message"),  
-            { errors: [foo, bar], message: "aggregated message", stack: "err-with-cause.test.js:" },
+            new AggregateError([foo, bar], "aggregated message"),
+            { errors: [foo, bar], message: "aggregated message", stack: "error-with-cause-serializer.test.ts:" },
         ]) {
-            const serialized = errorWithCauseSerializer(aggregate);
+            const serialized = serialize<SerializedError>(aggregate);
 
             expect(serialized.message).toBe("aggregated message");
             expect(serialized.aggregateErrors).toHaveLength(2);
             expect(serialized.aggregateErrors[0].message).toBe("foo");
             expect(serialized.aggregateErrors[1].message).toBe("bar");
-            expect(serialized.aggregateErrors[0].stack).toBe(/^Error: foo/);
-            expect(serialized.aggregateErrors[1].stack).toBe(/^Error: bar/);
-            expect(serialized.stack).toBe(/err-with-cause\.test\.js:/);
+            expect(serialized.aggregateErrors[0].stack).toContain("Error: foo");
+            expect(serialized.aggregateErrors[1].stack).toContain("Error: bar");
+            expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
         }
     });
 });

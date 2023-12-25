@@ -1,9 +1,9 @@
 const arrayify = <T>(x: T | T[]): T[] => {
     if (x === undefined) {
-        return [] as any[];
+        return [] as T[];
     }
 
-    return Array.isArray(x) ? x : [x];
+    return Array.isArray(x) ? x : [x] as T[];
 };
 
 export default arrayify;

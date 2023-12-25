@@ -563,7 +563,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 export type PailType<T extends string = never, L extends string = never> = PailImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>) => PailType<T, L>);
+    (new<T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>) => PailType<T, L>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailType<T, L>;
 

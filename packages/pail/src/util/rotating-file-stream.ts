@@ -1,7 +1,6 @@
 import type { Writable } from "node:stream";
 
 import type { Options as RfsOptions } from "rotating-file-stream";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { createStream as createRfsStream } from "rotating-file-stream";
 
 import SafeStreamHandler from "./safe-stream-handler";

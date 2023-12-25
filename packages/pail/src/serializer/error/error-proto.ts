@@ -1,4 +1,9 @@
+
+
+// eslint-disable-next-line import/exports-last
 export const seen = Symbol("circular-reference-tag");
+
+// eslint-disable-next-line import/exports-last
 export const rawSymbol = Symbol("raw-error-ref");
 
 const errorProto = Object.create(
@@ -27,9 +32,11 @@ const errorProto = Object.create(
         raw: {
             enumerable: false,
             get() {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access,security/detect-object-injection
                 return this[rawSymbol];
             },
             set(value) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,security/detect-object-injection
                 this[rawSymbol] = value;
             },
         },
@@ -39,7 +46,7 @@ const errorProto = Object.create(
             writable: true,
         },
     },
-);
+) as SerializedError;
 
 Object.defineProperty(errorProto, rawSymbol, {
     value: {},
@@ -48,4 +55,5 @@ Object.defineProperty(errorProto, rawSymbol, {
 
 export const ErrorProto = errorProto;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SerializedError = (AggregateError & { [key: string]: any; raw: any }) | (Error & { [key: string]: any; raw: any });
