@@ -3,7 +3,7 @@ type CallSite = NodeJS.CallSite;
 type CallSiteWithFileName = { columnNumber: number | null; fileName: string | undefined; lineNumber: number | null };
 
 const getCallerFilename = (): {
-    columnNumber?: number | undefined;
+    columnNumber?: number;
     fileName: string | undefined;
     lineNumber: number | undefined;
 } => {
@@ -20,17 +20,18 @@ const getCallerFilename = (): {
             return callSitesWithoutCurrent;
         };
 
-        // eslint-disable-next-line unicorn/error-message
+        // eslint-disable-next-line unicorn/error-message,@typescript-eslint/no-unused-expressions
         new Error().stack;
 
-        const callers = result.map(
-            (x) =>
-                ({
-                    columnNumber: x.getColumnNumber(),
-                    fileName: x.getFileName(),
-                    lineNumber: x.getLineNumber(),
-                }) as CallSiteWithFileName,
-        );
+        // eslint-disable-next-line unicorn/no-array-reduce
+        const callers = result.reduce<CallSiteWithFileName[]>((accumulator, x) => {
+            accumulator.push({
+                columnNumber: x.getColumnNumber(),
+                fileName: x.getFileName(),
+                lineNumber: x.getLineNumber(),
+            });
+            return accumulator;
+        }, []);
 
         const firstExternalFilePath = callers.at(-2);
 

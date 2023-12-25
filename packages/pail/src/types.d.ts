@@ -75,7 +75,7 @@ export type Serializer = {
     isApplicable: (value: any) => boolean;
     name: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serialize: <T>(value: any) => T;
+    serialize: (value: any) => any;
 };
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
