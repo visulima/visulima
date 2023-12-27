@@ -21,7 +21,7 @@ describe("error with cause serializer", () => {
     });
 
     it("should serializes Error objects", () => {
-        const serialized = serialize<SerializedError>(new Error("foo"));
+        const serialized = serialize(new Error("foo"));
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -32,7 +32,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { statusCode: number };
         error.statusCode = 500;
 
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -44,7 +44,7 @@ describe("error with cause serializer", () => {
         class MyError extends Error {}
 
         const error = new MyError("foo");
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.name).toBe("MyError");
     });
@@ -53,15 +53,17 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = new Error("bar");
 
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
+
+        const serializedInner = serialized.inner as SerializedError;
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
         expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
-        expect(serialized.inner.name).toBe("Error");
-        expect(serialized.inner.message).toBe("bar");
-        expect(serialized.inner.stack).toContain("Error: bar");
-        expect(serialized.inner.stack).toContain("error-with-cause-serializer.test.ts:");
+        expect(serializedInner.name).toBe("Error");
+        expect(serializedInner.message).toBe("bar");
+        expect(serializedInner.stack).toContain("Error: bar");
+        expect(serializedInner.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
     it("should serializes error causes", () => {
@@ -72,26 +74,30 @@ describe("error with cause serializer", () => {
         const outerError = new Error("outer") as Error & { cause: Error };
         outerError.cause = middleError;
 
-        const serialized = serialize<SerializedError>(outerError);
+        const serialized = serialize(outerError);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("outer");
         expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
 
-        expect(serialized.cause.name).toBe("Error");
-        expect(serialized.cause.message).toBe("middle");
-        expect(serialized.cause.stack).toContain("error-with-cause-serializer.test.ts:");
+        const serializedCause = serialized.cause as SerializedError;
 
-        expect(serialized.cause.cause.name).toBe("Error");
-        expect(serialized.cause.cause.message).toBe("inner");
-        expect(serialized.cause.cause.stack).toContain("error-with-cause-serializer.test.ts:");
+        expect(serializedCause.name).toBe("Error");
+        expect(serializedCause.message).toBe("middle");
+        expect(serializedCause.stack).toContain("error-with-cause-serializer.test.ts:");
+
+        const serializedCauseCause = (serialized.cause as SerializedError).cause as SerializedError;
+
+        expect(serializedCauseCause.name).toBe("Error");
+        expect(serializedCauseCause.message).toBe("inner");
+        expect(serializedCauseCause.stack).toContain("error-with-cause-serializer.test.ts:");
     });
 
     it("should keeps non-error cause", () => {
         const error = new Error("foo") as Error & { cause: string };
         error.cause = "abc";
 
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -102,7 +108,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = error;
 
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -117,21 +123,25 @@ describe("error with cause serializer", () => {
         bar.inner = error;
 
         serialize(error);
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
         expect(serialized.stack).toContain("error-with-cause-serializer.test.ts:");
+
         expect(serialized.inner).toBeDefined();
-        expect(serialized.inner.name).toBe("Error");
-        expect(serialized.inner.message).toBe("bar");
-        expect(serialized.inner.stack).toContain("Error: bar");
-        expect(serialized.inner.inner).toBeUndefined();
+
+        const serializedInner = serialized.inner as SerializedError;
+
+        expect(serializedInner.name).toBe("Error");
+        expect(serializedInner.message).toBe("bar");
+        expect(serializedInner.stack).toContain("Error: bar");
+        expect(serializedInner.inner).toBeUndefined();
     });
 
     it("should err.raw is available", () => {
         const error = new Error("foo");
-        const serialized = serialize<SerializedError>(error);
+        const serialized = serialize(error);
 
         expect(serialized.raw).toBe(error);
     });
@@ -177,7 +187,7 @@ describe("error with cause serializer", () => {
             new AggregateError([foo, bar], "aggregated message"),
             { errors: [foo, bar], message: "aggregated message", stack: "error-with-cause-serializer.test.ts:" },
         ]) {
-            const serialized = serialize<SerializedError>(aggregate);
+            const serialized = serialize(aggregate);
 
             expect(serialized.message).toBe("aggregated message");
             expect(serialized.aggregateErrors).toHaveLength(2);

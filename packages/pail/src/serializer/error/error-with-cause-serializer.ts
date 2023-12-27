@@ -8,7 +8,23 @@ type CauseError = Error & {
     cause: any;
 };
 
-const errorWithCauseSerializer = (error: AggregateError | Error): SerializedError => {
+type Options = {
+    readonly maxDepth?: number;
+    readonly useToJSON?: boolean;
+};
+
+/**
+ * Serialize an `Error` object into a plain object.
+ *
+ * - Non-error values are passed through.
+ * - Custom properties are preserved.
+ * - Buffer properties are replaced with `[object Buffer]`.
+ * - Circular references are handled.
+ * - If the input object has a `.toJSON()` method, then it's called instead of serializing the object's properties.
+ * - It's up to `.toJSON()` implementation to handle circular references and enumerability of the properties.
+ */
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
     // eslint-disable-next-line no-param-reassign
     error[seen] = undefined; // tag to prevent re-looking at this
 
@@ -19,12 +35,13 @@ const errorWithCauseSerializer = (error: AggregateError | Error): SerializedErro
     protoError.stack = error.stack;
 
     if (Array.isArray((error as AggregateError).errors)) {
-        protoError["aggregateErrors"] = (error as AggregateError).errors.map((error_: AggregateError | Error) => errorWithCauseSerializer(error_));
+        protoError.aggregateErrors = (error as AggregateError).errors.map((error_: AggregateError | Error) => errorWithCauseSerializer(error_, options));
     }
 
     // Handle aggregate errors
     if (getType((error as CauseError).cause) === "Error" && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen)) {
-        protoError["cause"] = errorWithCauseSerializer((error as CauseError).cause);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        protoError.cause = errorWithCauseSerializer((error as CauseError).cause, options);
     }
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -36,11 +53,19 @@ const errorWithCauseSerializer = (error: AggregateError | Error): SerializedErro
             if (getType(value) === "Error") {
                 if (!Object.prototype.hasOwnProperty.call(value, seen)) {
                     // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unsafe-argument
-                    protoError[key] = errorWithCauseSerializer(value);
+                    protoError[key] = errorWithCauseSerializer(value, options);
                 }
+            } else if (typeof value === "function") {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
+                protoError[key] = `[Function: ${value.name || "anonymous"}]`;
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,security/detect-object-injection
-                protoError[key] = value;
+                // Gracefully handle non-configurable errors like `DOMException`.
+                try {
+                    // eslint-disable-next-line security/detect-object-injection
+                    protoError[key] = value;
+                } catch {
+                    /* empty */
+                }
             }
         }
     }
@@ -53,10 +78,14 @@ const errorWithCauseSerializer = (error: AggregateError | Error): SerializedErro
     return protoError;
 };
 
-const serializer: Serializer = {
+const serializer: Serializer<SerializedError, Options> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isApplicable: (value: any) => getType(value) === "Error",
     name: "error",
+    options: {
+        maxDepth: Number.POSITIVE_INFINITY,
+        useToJSON: true,
+    },
     serialize: errorWithCauseSerializer,
 };
 
