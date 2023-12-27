@@ -1,4 +1,4 @@
-
+import type { UnknownRecord } from "type-fest";
 
 // eslint-disable-next-line import/exports-last
 export const seen = Symbol("circular-reference-tag");
@@ -15,6 +15,11 @@ const errorProto = Object.create(
             writable: true,
         },
         cause: {
+            enumerable: true,
+            value: undefined,
+            writable: true,
+        },
+        code: {
             enumerable: true,
             value: undefined,
             writable: true,
@@ -55,5 +60,12 @@ Object.defineProperty(errorProto, rawSymbol, {
 
 export const ErrorProto = errorProto;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SerializedError = (AggregateError & { [key: string]: any; raw: any }) | (Error & { [key: string]: any; raw: any });
+export type SerializedError<ErrorType = Error> = UnknownRecord & {
+    aggregateErrors?: SerializedError<ErrorType>[];
+    cause?: unknown;
+    code?: string;
+    message?: string;
+    name?: string;
+    raw?: ErrorType;
+    stack?: string;
+};

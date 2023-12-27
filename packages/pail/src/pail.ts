@@ -44,7 +44,7 @@ const EMPTY_META = {
     suffix: undefined,
 };
 
-class PailImpl<T extends string = never, L extends string = never> {
+class PailImpl<T extends string = never, L extends string = never> implements Record<DefaultLogTypes, LoggerFunction> {
     protected timers: Map<string, number>;
 
     protected seqTimers: string[];
@@ -173,6 +173,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 
         Object.keys(this._types).forEach((type) => {
             // @ts-expect-error - dynamic property
+            // eslint-disable-next-line security/detect-object-injection
             this[type] = this._logger.bind(this, type, false);
         });
 
@@ -197,12 +198,15 @@ class PailImpl<T extends string = never, L extends string = never> {
         // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Backup original value
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
             if (!(console as any)[`__${type}`]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
                 (console as any)[`__${type}`] = (console as any)[type];
             }
             // Override
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
             (console as any)[type] = (this as unknown as PailImpl<T, L>)[type as keyof PailImpl<T, L>].raw;
         }
     }
@@ -211,9 +215,12 @@ class PailImpl<T extends string = never, L extends string = never> {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Restore if backup is available
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
             if ((console as any)[`__${type}`]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
                 (console as any)[type] = (console as any)[`__${type}`];
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
                 delete (console as any)[`__${type}`];
             }
         }
@@ -379,14 +386,18 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         // Backup original value
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
         if (!(stream as any).__write) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/unbound-method
             (stream as any).__write = stream.write;
         }
 
         // Override
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
         (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             (this as unknown as PailImpl)[type].raw(String(data).trim());
         };
     }
@@ -397,9 +408,12 @@ class PailImpl<T extends string = never, L extends string = never> {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
         if ((stream as any).__write) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/no-unsafe-assignment
             stream.write = (stream as any).__write;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
             delete (stream as any).__write;
         }
     }
@@ -410,6 +424,8 @@ class PailImpl<T extends string = never, L extends string = never> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _formatMessage(string_: any[]): string {
+        // @TODO: fix this after types are fixed on fmt
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         return this._stringFormat(...string_) as string;
     }
 
@@ -429,10 +445,10 @@ class PailImpl<T extends string = never, L extends string = never> {
             if (getType(arguments_[0]) === "Error") {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,prefer-destructuring
                 meta.error = arguments_[0];
-            } else {
+            } else if ("message" in arguments_[0]) {
                 const { context, message, prefix, suffix } = arguments_[0] as {
                     context?: Record<string, unknown>;
-                    message?: string;
+                    message: string;
                     prefix?: string;
                     suffix?: string;
                 };
@@ -449,9 +465,9 @@ class PailImpl<T extends string = never, L extends string = never> {
                     meta.suffix = suffix;
                 }
 
-                if (message) {
-                    meta.message = this._formatMessage([message]);
-                }
+                meta.message = this._formatMessage([message]);
+            } else {
+                meta.message = this._stringify(arguments_[0]);
             }
         } else {
             meta.message = this._formatMessage(arguments_);
@@ -482,13 +498,16 @@ class PailImpl<T extends string = never, L extends string = never> {
 
         const logLevel = this._normalizeLogLevel(this._types[type].logLevel);
 
+        // eslint-disable-next-line security/detect-object-injection
         if ((this._logLevels[logLevel] as number) >= (this._logLevels[this._generalLogLevel] as number)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const meta = this._buildMeta(type, this._types[type], ...messageObject);
 
             /**
              * @param newLog false if the throttle expired and we don't want to log a duplicate
              */
             const resolveLog = (newLog = false) => {
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 const repeated = (this._lastLog.count || 0) - this._throttleMin;
 
                 if (this._lastLog.object && repeated > 0) {
@@ -563,7 +582,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 export type PailType<T extends string = never, L extends string = never> = PailImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new<T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>) => PailType<T, L>);
+    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailType<T, L>;
 

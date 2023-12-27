@@ -1,5 +1,6 @@
 import type { FormatterFunction } from "@visulima/fmt";
 import type { ColorName } from "chalk";
+import type { Primitive, UnknownRecord } from "type-fest";
 
 /**
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
@@ -29,8 +30,8 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     };
 }
 
-export type DefaultLogTypes = Omit<Rfc5424LogLevels, "informational"> &
-    ("await" | "complete" | "info" | "log" | "pending" | "start" | "stop" | "success" | "wait" | "watch");
+export type DefaultLogTypes =
+    "alert" | "await" | "complete" | "critical" | "debug" | "emergency" | "error" | "info" | "log" | "notice" | "pending" | "start" | "stop" | "success" | "wait" | "warning" | "watch";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LoggerFunction = (...message: any[]) => void;
@@ -70,12 +71,13 @@ export interface StringifyAwareReporter<L extends string = never> extends Report
 
 export type Processor<L extends string = never> = (value: Meta<L>) => Meta<L>;
 
-export type Serializer = {
+export type Serializer<Type = Primitive, Options = UnknownRecord> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isApplicable: (value: any) => boolean;
     name: string;
+    options?: Options;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serialize: (value: any) => any;
+    serialize: (value: any, options?: Options) => Type;
 };
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {

@@ -140,10 +140,11 @@
     "dependencies": {
         "chalk": "^5.3.0",
         "chalk-template": "^1.1.0",
-        "safe-stable-stringify": "^2.4.3",
-        "rotating-file-stream": "^3.1.1"
+        "safe-stable-stringify": "^2.4.3"
     },
     "devDependencies": {
+        "rotating-file-stream": "^3.1.1",
+        "type-fest": "^4.8.3",
         "@anolilab/eslint-config": "^15.0.2",
         "@anolilab/prettier-config": "^5.0.13",
         "@anolilab/semantic-release-preset": "^8.0.2",
@@ -183,6 +184,14 @@
         "vitest": "^1.0.2",
         "winston": "^3.11.0",
         "wrap-ansi": "^9.0.0"
+    },
+    "peerDependencies": {
+        "rotating-file-stream": "^3.1.1"
+    },
+    "peerDependenciesMeta": {
+        "rotating-file-stream": {
+            "optional": true
+        }
     },
     "engines": {
         "node": ">=18.* <=21.*"

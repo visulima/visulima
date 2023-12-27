@@ -18,6 +18,7 @@ describe("getType", () => {
         [new TypeError(), "Error"],
         // eslint-disable-next-line unicorn/error-message
         [new EvalError(), "Error"],
+        [Uint8Array.from([1, 2, 3]), "Uint8Array"],
     ])("should return the correct type %s", (value: any, type: string) => {
         const result = getType(value);
 

@@ -1,4 +1,6 @@
 import { join } from "path";
+import Stream from "node:stream";
+import { Buffer } from "node:buffer";
 
 import { pail, createPail, callerProcessor } from "@visulima/pail";
 import JsonReporter from "@visulima/pail/reporter/json";
@@ -67,6 +69,11 @@ jsonLogger.info({
     message: "Hello Json!",
     suffix: "suffix",
     prefix: "prefix",
+    context: {
+        test: new ArrayBuffer(1),
+        stream: new Stream.Stream(),
+        buffer: Buffer.alloc(1)
+    }
 });
 
 jsonLogger.error(
@@ -75,3 +82,16 @@ jsonLogger.error(
     }),
 );
 jsonLogger.warn(new TypeError("Hello Json!"));
+
+class TestFunctionCall {
+    getParams() {
+        return Array.from(arguments)
+    }
+    count(arg1, arg2) {
+        let methodName = 'count'
+        return {method: methodName, args: this.getParams.apply(this, arguments)}
+    }
+}
+let test = new TestFunctionCall()
+
+pail.info(test.count('a', 'b'));

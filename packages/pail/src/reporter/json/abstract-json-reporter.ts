@@ -18,6 +18,14 @@ abstract class AbstractJsonReporter<L extends string = never> implements Stringi
             rest.label = rest.label.trim();
         }
 
+        if (rest.file) {
+            rest.file = `${rest.file.name}:${rest.file.line}${rest.file.column ? `:${rest.file.column}` : ""}`;
+        }
+
+        if (rest.scope?.length === 0) {
+            delete rest.scope;
+        }
+
         this._log(
             (this._stringify as typeof stringify)(rest) as string,
             type.level,
