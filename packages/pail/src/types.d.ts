@@ -1,5 +1,5 @@
-import type { ColorName } from "chalk";
-import type { Primitive, UnknownRecord } from "type-fest";
+import type { ColorName }                              from "chalk";
+import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 /**
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
@@ -18,7 +18,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     date: Date | string;
     error: Error | undefined;
     label: string | undefined;
-    message: Primitive | unknown[] | undefined;
+    message: Primitive | UnknownArray | UnknownRecord;
     prefix: string | undefined;
     repeated?: number | undefined;
     scope: string[] | undefined;

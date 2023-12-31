@@ -1,7 +1,8 @@
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
-import stringLength from "string-length";
-import type { Primitive } from "type-fest";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import stringLength                                    from "string-length";
+import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
 import { InteractiveManager } from "./interactive/interactive-manager";
@@ -470,7 +471,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 
                 meta.message = message;
             } else {
-                meta.message = this.#stringify(arguments_[0]);
+                meta.message = arguments_[0] as Primitive | UnknownArray | UnknownRecord;
             }
         } else {
             meta.message = arguments_;
@@ -496,6 +497,29 @@ class PailImpl<T extends string = never, L extends string = never> {
         }
 
         return meta;
+    }
+
+    /**
+     * This is a simple, *insecure* hash that's short, fast.
+     * For algorithmic use, where security isn't needed, it's way simpler than sha1 (and all its deps)
+     * or similar, and with a short, clean (base 36 alphanumeric) result.
+     *
+     * @param {string} string_
+     * @returns {string}
+     * @private
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private _simpleHash(string_: string): string {
+        let hash = 0;
+
+        // eslint-disable-next-line no-loops/no-loops,no-plusplus
+        for (let index = 0; index < string_.length; index++) {
+            // eslint-disable-next-line no-bitwise
+            hash = Math.trunc((hash << 5) - hash + (string_.codePointAt(index) as number));
+        }
+
+        // eslint-disable-next-line no-bitwise
+        return (hash >>> 0).toString(36);
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
@@ -547,16 +571,7 @@ class PailImpl<T extends string = never, L extends string = never> {
 
             if (diffTime < this.#throttle) {
                 try {
-                    const serializedLog = this.#stringify([
-                        meta.label,
-                        meta.scope,
-                        meta.type,
-                        meta.message,
-                        meta.context,
-                        meta.badge,
-                        meta.prefix,
-                        meta.suffix,
-                    ]);
+                    const serializedLog = this._simpleHash([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix].join(""));
                     const isSameLog = this.#lastLog.serialized === serializedLog;
 
                     this.#lastLog.serialized = serializedLog;
