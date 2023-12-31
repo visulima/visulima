@@ -4,8 +4,8 @@ import type { Meta } from "../../types";
 import type { Options as FileReporterOptions } from "./abstract-file-reporter";
 import { AbstractFileReporter } from "./abstract-file-reporter";
 
-class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
-    private _stringify: typeof stringify | undefined;
+export class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
+    #stringify: typeof stringify | undefined;
 
     public constructor(options: FileReporterOptions) {
         super({
@@ -19,7 +19,7 @@ class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L>
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public setStringify(function_: any): void {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this._stringify = function_;
+        this.#stringify = function_;
     }
 
     protected _formatMessage(meta: Meta<L>): string {
@@ -29,8 +29,13 @@ class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L>
             rest.label = rest.label.trim();
         }
 
-        return (this._stringify as typeof stringify)(rest) as string;
+        if (rest.file) {
+            // This is a hack to make the file property a string
+            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
+                rest.file.column ? `:${rest.file.column}` : ""
+            }`;
+        }
+
+        return (this.#stringify as typeof stringify)(rest) as string;
     }
 }
-
-export default JsonFileReporter;

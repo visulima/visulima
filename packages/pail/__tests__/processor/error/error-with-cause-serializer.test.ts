@@ -1,25 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
 import { describe, expect, it } from "vitest";
 
-import type { SerializedError } from "../../../src/serializer/error/error-proto";
-import errorWithCauseSerializer from "../../../src/serializer/error/error-with-cause-serializer";
-
-const { isApplicable, name, serialize } = errorWithCauseSerializer;
+import type { SerializedError } from "../../../src/processor/error/error-proto";
+import { errorWithCauseSerializer as serialize } from "../../../src/processor/error/error-with-cause-serializer";
 
 describe("error with cause serializer", () => {
-    it("should should have correct name", () => {
-        expect(name).toBe("error");
-    });
-
-    it.each([
-        [new Error("foo"), true],
-        [new TypeError("foo"), true],
-        [new SyntaxError("foo"), true],
-        ["foo", false],
-    ])("should not be applicable to %p", (value, expected) => {
-        expect(isApplicable(value)).toStrictEqual(expected);
-    });
-
     it("should serializes Error objects", () => {
         const serialized = serialize(new Error("foo"));
 
@@ -147,12 +132,14 @@ describe("error with cause serializer", () => {
     });
 
     it("should redefined err.constructor doesnt crash serializer", () => {
+         
         const check = (a: Error, name: string): void => {
             expect(a.name).toBe(name);
             expect(a.message).toBe("foo");
         };
 
         const error1 = TypeError("foo");
+        // @ts-expect-error -- testing invalid assignment
         error1.constructor = "10";
 
         const error2 = TypeError("foo");
@@ -162,6 +149,7 @@ describe("error with cause serializer", () => {
         error3.constructor = null;
 
         const error4 = new Error("foo");
+        // @ts-expect-error -- testing invalid assignment
         error4.constructor = 10;
 
         class MyError extends Error {}
@@ -184,6 +172,7 @@ describe("error with cause serializer", () => {
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const aggregate of [
+            // @ts-expect-error -- Web API
             new AggregateError([foo, bar], "aggregated message"),
             { errors: [foo, bar], message: "aggregated message", stack: "error-with-cause-serializer.test.ts:" },
         ]) {

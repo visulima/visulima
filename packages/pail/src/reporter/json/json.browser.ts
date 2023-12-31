@@ -1,8 +1,8 @@
 import type { Rfc5424LogLevels } from "../../types";
-import writeConsoleLogBasedOnLevel from "../../util/write-console-log";
-import AbstractJsonReporter from "./abstract-json-reporter";
+import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
+import { AbstractJsonReporter } from "./abstract-json-reporter";
 
-class BrowserJsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
+export class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
     public constructor() {
         super();
     }
@@ -14,5 +14,3 @@ class BrowserJsonReporter<L extends string = never> extends AbstractJsonReporter
         consoleLogFunction(message);
     }
 }
-
-export default BrowserJsonReporter;

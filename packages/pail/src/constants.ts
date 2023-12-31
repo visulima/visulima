@@ -1,10 +1,35 @@
 import type { DefaultLoggerTypes } from "./types";
 
-const rfc5424LogTypes: DefaultLoggerTypes = {
+/**
+ * Log Levels
+ * The log levels pail uses are those defined in the syslog protocol @see https://datatracker.ietf.org/doc/html/rfc5424#page-36, which are:
+ */
+export const RFC_5424_LOG_LEVELS = {
+    alert: 7, // Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
+    critical: 6, // Critical conditions. Example: Application component unavailable, unexpected exception.
+    debug: 1, // Detailed debug information.
+    emergency: 8, // Emergency: system is unusable.
+    error: 5, // Runtime errors that do not require immediate action but should typically be logged and monitored.
+    informational: 2, // Interesting events. Examples: User logs in, SQL logs.
+    notice: 3, // Normal but significant events.
+    warning: 4, // Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+};
+
+export const LOG_TYPES: DefaultLoggerTypes = {
     alert: {
         color: "red",
         label: "alert",
         logLevel: "alert",
+    },
+    await: {
+        color: "blue",
+        label: "awaiting",
+        logLevel: "informational",
+    },
+    complete: {
+        color: "cyan",
+        label: "complete",
+        logLevel: "informational",
     },
     critical: {
         color: "red",
@@ -31,48 +56,14 @@ const rfc5424LogTypes: DefaultLoggerTypes = {
         label: "info",
         logLevel: "informational",
     },
-    note: {
-        color: "blue",
-        label: "note",
-        logLevel: "notice",
-    },
-    warn: {
-        color: "yellow",
-        label: "warning",
-        logLevel: "warning",
-    },
-};
-
-/**
- * Log Levels
- * The log levels pail uses are those defined in the syslog protocol @see https://datatracker.ietf.org/doc/html/rfc5424#page-36, which are:
- */
-export const LOG_LEVELS = {
-    alert: 1, // action must be taken immediately
-    critical: 2, // critical conditions
-    debug: 7, //  debug-level messages
-    emergency: 0, // system is unusable
-    error: 3, // error conditions
-    informational: 6, // informational messages
-    notice: 5, // normal but significant condition
-    warning: 4, // warning conditions
-};
-
-export const LOG_TYPES: DefaultLoggerTypes = {
-    ...rfc5424LogTypes,
-    await: {
-        color: "blue",
-        label: "awaiting",
-        logLevel: "informational",
-    },
-    complete: {
-        color: "cyan",
-        label: "complete",
-        logLevel: "informational",
-    },
     log: {
         label: "",
         logLevel: "informational",
+    },
+    notice: {
+        color: "blue",
+        label: "notice",
+        logLevel: "notice",
     },
     pending: {
         color: "magenta",
@@ -94,10 +85,20 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         label: "success",
         logLevel: "informational",
     },
+    trace: {
+        color: "gray",
+        label: "trace",
+        logLevel: "debug",
+    },
     wait: {
         color: "blue",
         label: "waiting",
         logLevel: "informational",
+    },
+    warn: {
+        color: "yellow",
+        label: "warning",
+        logLevel: "warning",
     },
     watch: {
         color: "yellow",

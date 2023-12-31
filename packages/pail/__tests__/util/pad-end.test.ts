@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import padEnd from "../../src/util/pad-end";
+import { padEnd } from "../../src/util/pad-end";
 
 describe("padEnd", () => {
     it("should return the same string when its length is equal to the target length", () => {

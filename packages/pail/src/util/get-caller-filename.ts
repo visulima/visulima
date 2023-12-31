@@ -2,7 +2,7 @@ type CallSite = NodeJS.CallSite;
 
 type CallSiteWithFileName = { columnNumber: number | null; fileName: string | undefined; lineNumber: number | null };
 
-const getCallerFilename = (): {
+export const getCallerFilename = (): {
     columnNumber?: number;
     fileName: string | undefined;
     lineNumber: number | undefined;
@@ -51,5 +51,3 @@ const getCallerFilename = (): {
         Error.prepareStackTrace = errorStack;
     }
 };
-
-export default getCallerFilename;

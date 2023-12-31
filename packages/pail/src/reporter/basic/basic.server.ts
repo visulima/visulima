@@ -1,13 +1,13 @@
 import process from "node:process";
 
 import type { Rfc5424LogLevels, StreamAwareReporter } from "../../types";
-import writeStream from "../../util/write-stream";
-import AbstractBasicReporter from "./abstract-basic-reporter";
+import { writeStream } from "../../util/write-stream";
+import { AbstractBasicReporter } from "./abstract-basic-reporter";
 
-class BasicReporter<L extends string = never> extends AbstractBasicReporter<L> implements StreamAwareReporter<L> {
-    private _stdout: NodeJS.WriteStream | undefined;
+export class BasicReporter<L extends string = never> extends AbstractBasicReporter<L> implements StreamAwareReporter<L> {
+    #stdout: NodeJS.WriteStream | undefined;
 
-    private _stderr: NodeJS.WriteStream | undefined;
+    #stderr: NodeJS.WriteStream | undefined;
 
     public constructor() {
         super();
@@ -15,18 +15,17 @@ class BasicReporter<L extends string = never> extends AbstractBasicReporter<L> i
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public setStdout(stdout: NodeJS.WriteStream) {
-        this._stdout = stdout;
+        this.#stdout = stdout;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public setStderr(stderr: NodeJS.WriteStream) {
-        this._stderr = stderr;
+        this.#stderr = stderr;
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    protected override _log(message: string, logLevel: L | Rfc5424LogLevels) {
-        writeStream(`${message}\n`, ["error", "warn"].includes(logLevel) ? this._stderr ?? process.stderr : this._stdout ?? process.stdout);
+    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
+        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+
+        writeStream(`${message}\n`, stream);
     }
 }
-
-export default BasicReporter;

@@ -2,24 +2,27 @@ import { sep } from "node:path";
 
 import type { ColorName } from "chalk";
 import chalk from "chalk";
-// eslint-disable-next-line import/no-extraneous-dependencies
+import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
-import type { SerializedError } from "../../serializer/error/error-proto";
-import type { Meta, Rfc5424LogLevels, Serializer, StreamAwareReporter } from "../../types";
-import getLongestLabel from "../../util/get-longest-label";
-import writeStream from "../../util/write-stream";
+import type { Meta, Rfc5424LogLevels, StreamAwareReporter, StringifyAwareReporter } from "../../types";
+import { getLongestLabel } from "../../util/get-longest-label";
+import { getType } from "../../util/get-type";
+import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements StreamAwareReporter<L> {
-    private _stdout: NodeJS.WriteStream | undefined;
+export class PrettyReporter<T extends string = never, L extends string = never>
+    extends AbstractPrettyReporter<T, L>
+    implements StreamAwareReporter<L>, StringifyAwareReporter<L>
+{
+    #stdout: NodeJS.WriteStream | undefined;
 
-    private _stderr: NodeJS.WriteStream | undefined;
+    #stderr: NodeJS.WriteStream | undefined;
+
+    #stringify: typeof stringify | undefined;
 
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
@@ -32,12 +35,18 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+    public setStringify(function_: any): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.#stringify = function_;
+    }
+
     public setStdout(stdout: NodeJS.WriteStream): void {
-        this._stdout = stdout;
+        this.#stdout = stdout;
     }
 
     public setStderr(stderr: NodeJS.WriteStream): void {
-        this._stderr = stderr;
+        this.#stderr = stderr;
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -50,7 +59,7 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
             size = this._styles.messageLength;
         }
 
-        const { badge, date, error, file, label, message, prefix, repeated, scope, suffix, type } = data;
+        const { badge, context, date, error, file, label, message, prefix, repeated, scope, suffix, type } = data;
 
         const colorize = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
             ? chalk[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as ColorName]
@@ -111,14 +120,22 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         if (message) {
+            const formattedMessage: string | undefined = getType(message) === "String" ? (message as string) : (this.#stringify as typeof stringify)(message);
+
             items.push(
-                wrapAnsi(message, size - 3, {
+                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
                     hard: true,
                     trim: true,
                     wordWrap: true,
                 }),
             );
-        } else if (error) {
+
+            if (context) {
+                items.push("\n", chalk.grey((this.#stringify as typeof stringify)(context)));
+            }
+        }
+
+        if (error) {
             items.push(this._formatError(error, size));
         }
 
@@ -130,16 +147,14 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
     }
 
     protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
-        writeStream(`${message}\n`, ["error", "warn"].includes(logLevel) ? this._stderr ?? process.stderr : this._stdout ?? process.stdout);
+        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+
+        writeStream(`${message}\n`, stream);
     }
 
+    // eslint-disable-next-line class-methods-use-this
     protected override _formatError(error: Error, size: number): string {
-        if (!this._serializers.has("error")) {
-            return "Error object could not be serialized, please add the error serializer to pail.";
-        }
-
-        const errorSerializer = this._serializers.get("error") as Serializer;
-        const { message, name, stack } = errorSerializer.serialize<SerializedError>(error);
+        const { message, name, stack } = error;
 
         const items: string[] = [];
         const cwd = process.cwd() + sep;
@@ -181,5 +196,3 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         return formattedLabel;
     }
 }
-
-export default PrettyReporter;

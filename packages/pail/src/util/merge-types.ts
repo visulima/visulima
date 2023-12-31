@@ -1,6 +1,6 @@
 import type { DefaultLoggerTypes, LoggerConfiguration, LoggerTypesConfig } from "../types";
 
-const mergeTypes = <L extends string, T extends string>(
+export const mergeTypes = <L extends string, T extends string>(
     standard: DefaultLoggerTypes<L>,
     custom: LoggerTypesConfig<T, L>,
 ): DefaultLoggerTypes<L> & Record<T, Partial<LoggerConfiguration<L>>> => {
@@ -13,5 +13,3 @@ const mergeTypes = <L extends string, T extends string>(
 
     return types;
 };
-
-export default mergeTypes;

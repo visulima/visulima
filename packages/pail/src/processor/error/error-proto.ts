@@ -64,8 +64,8 @@ export type SerializedError<ErrorType = Error> = UnknownRecord & {
     aggregateErrors?: SerializedError<ErrorType>[];
     cause?: unknown;
     code?: string;
-    message?: string;
-    name?: string;
+    message: string;
+    name: string;
     raw?: ErrorType;
     stack?: string;
 };

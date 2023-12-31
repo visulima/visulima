@@ -1,4 +1,3 @@
-import type { FormatterFunction } from "@visulima/fmt";
 import type { ColorName } from "chalk";
 import type { Primitive, UnknownRecord } from "type-fest";
 
@@ -19,7 +18,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     date: Date | string;
     error: Error | undefined;
     label: string | undefined;
-    message: string | undefined;
+    message: Primitive | unknown[] | undefined;
     prefix: string | undefined;
     repeated?: number | undefined;
     scope: string[] | undefined;
@@ -30,13 +29,30 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     };
 }
 
+export type Rfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "warning";
+
 export type DefaultLogTypes =
-    "alert" | "await" | "complete" | "critical" | "debug" | "emergency" | "error" | "info" | "log" | "notice" | "pending" | "start" | "stop" | "success" | "wait" | "warning" | "watch";
+    | "alert"
+    | "await"
+    | "complete"
+    | "critical"
+    | "debug"
+    | "emergency"
+    | "error"
+    | "info"
+    | "log"
+    | "notice"
+    | "pending"
+    | "start"
+    | "stop"
+    | "success"
+    | "trace"
+    | "wait"
+    | "warn"
+    | "watch";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LoggerFunction = (...message: any[]) => void;
-
-export type Rfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "warning";
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
@@ -61,17 +77,19 @@ export interface LoggerTypesAwareReporter<T extends string = never, L extends st
     setLoggerTypes: (types: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>) => void;
 }
 
-export interface SerializerAwareReporter<L extends string = never> extends Reporter<L> {
-    setSerializers: (serializers: Map<string, Serializer>) => void;
-}
-
 export interface StringifyAwareReporter<L extends string = never> extends Reporter<L> {
     setStringify: (stringify: typeof JSON.stringify) => void;
 }
 
-export type Processor<L extends string = never> = (value: Meta<L>) => Meta<L>;
+export interface Processor<L extends string = never> {
+    process: (meta: Meta<L>) => Meta<L>;
+}
 
-export type Serializer<Type = Primitive, Options = UnknownRecord> = {
+export interface StringifyAwareProcessor<L extends string = never> extends Processor<L> {
+    setStringify: (stringify: typeof JSON.stringify) => void;
+}
+
+export type Serializer<Type = string, Options = UnknownRecord> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isApplicable: (value: any) => boolean;
     name: string;
@@ -82,15 +100,12 @@ export type Serializer<Type = Primitive, Options = UnknownRecord> = {
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
     disabled?: boolean;
-    fmt?: {
-        formatters?: Record<string, FormatterFunction>;
-    };
+    interactive?: boolean;
     logLevel?: L | Rfc5424LogLevels;
     logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
     processors?: Processor<L>[];
     reporters?: Reporter<L>[];
     scope?: string[] | string;
-    serializers?: Serializer[];
     stderr?: NodeJS.WriteStream;
     stdout?: NodeJS.WriteStream;
     throttle?: number;
