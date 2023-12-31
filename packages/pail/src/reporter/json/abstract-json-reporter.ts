@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 
 import type { Meta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
 
-abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
+export abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
     protected _stringify: typeof stringify | undefined;
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
@@ -19,20 +19,18 @@ abstract class AbstractJsonReporter<L extends string = never> implements Stringi
         }
 
         if (rest.file) {
-            rest.file = `${rest.file.name}:${rest.file.line}${rest.file.column ? `:${rest.file.column}` : ""}`;
+            // This is a hack to make the file property a string
+            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
+                rest.file.column ? `:${rest.file.column}` : ""
+            }`;
         }
 
         if (rest.scope?.length === 0) {
             delete rest.scope;
         }
 
-        this._log(
-            (this._stringify as typeof stringify)(rest) as string,
-            type.level,
-        );
+        this._log((this._stringify as typeof stringify)(rest) as string, type.level);
     }
 
     protected abstract _log(message: string, logLevel: L | Rfc5424LogLevels): void;
 }
-
-export default AbstractJsonReporter;

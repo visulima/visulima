@@ -86,6 +86,17 @@
                 "default": "./dist/reporter/file/json-file-reporter.mjs"
             }
         },
+        "./reporter/basic": {
+            "browser": "./dist/reporter/basic/basic.browser.js",
+            "require": {
+                "types": "./dist/reporter/basic/basic.server.d.ts",
+                "default": "./dist/reporter/basic/basic.server.js"
+            },
+            "import": {
+                "types": "./dist/reporter/basic/basic.server.d.mts",
+                "default": "./dist/reporter/basic/basic.server.mjs"
+            }
+        },
         "./reporter/json": {
             "browser": "./dist/reporter/json/json.browser.js",
             "require": {
@@ -106,6 +117,28 @@
             "import": {
                 "types": "./dist/reporter/pretty/pretty.server.d.mts",
                 "default": "./dist/reporter/pretty/pretty.server.mjs"
+            }
+        },
+        "./reporter": {
+            "browser": "./dist/reporter.browser.js",
+            "require": {
+                "types": "./dist/reporter.server.d.ts",
+                "default": "./dist/reporter.server.js"
+            },
+            "import": {
+                "types": "./dist/reporter.server.d.mts",
+                "default": "./dist/reporter.server.mjs"
+            }
+        },
+        "./processor": {
+            "browser": "./dist/processor.browser.js",
+            "require": {
+                "types": "./dist/processor.server.d.ts",
+                "default": "./dist/processor.server.js"
+            },
+            "import": {
+                "types": "./dist/processor.server.d.mts",
+                "default": "./dist/processor.server.mjs"
             }
         },
         "./package.json": "./package.json"
@@ -140,7 +173,12 @@
     "dependencies": {
         "chalk": "^5.3.0",
         "chalk-template": "^1.1.0",
-        "safe-stable-stringify": "^2.4.3"
+        "@visulima/fmt": "^1.0.0",
+        "string-length": "^6.0.0",
+        "ansi-escapes": "^6.2.0",
+        "terminal-size": "^4.0.0",
+        "safe-stable-stringify": "^2.4.3",
+        "wrap-ansi": "^9.0.0"
     },
     "devDependencies": {
         "rotating-file-stream": "^3.1.1",
@@ -151,9 +189,7 @@
         "@babel/core": "^7.23.5",
         "@rushstack/eslint-plugin-security": "^0.7.1",
         "@total-typescript/ts-reset": "^0.5.1",
-        "@types/micromatch": "^4.0.6",
         "@types/node": "18.18.8",
-        "@visulima/fmt": "^1.0.0",
         "@vitest/coverage-v8": "^1.0.2",
         "@vitest/ui": "^1.0.2",
         "bunyan": "^1.8.15",
@@ -172,18 +208,12 @@
         "prettier": "^3.1.0",
         "rimraf": "^5.0.5",
         "semantic-release": "^22.0.10",
-        "sisteransi": "^1.0.5",
         "sort-package-json": "^2.6.0",
-        "stdout-update": "^4.0.0",
-        "string-length": "^6.0.0",
-        "strip-ansi": "^7.1.0",
-        "terminal-size": "^4.0.0",
         "tslog": "^4.9.2",
         "tsup": "^8.0.1",
         "typescript": "^5.3.3",
         "vitest": "^1.0.2",
-        "winston": "^3.11.0",
-        "wrap-ansi": "^9.0.0"
+        "winston": "^3.11.0"
     },
     "peerDependencies": {
         "rotating-file-stream": "^3.1.1"
@@ -216,9 +246,15 @@
         "src/pail.ts",
         "src/index.browser.ts",
         "src/index.server.ts",
+        "src/processor.browser.ts",
+        "src/processor.server.ts",
+        "src/reporter.browser.ts",
+        "src/reporter.server.ts",
         "src/serializer/index.ts",
         "src/reporter/pretty/pretty.browser.ts",
         "src/reporter/pretty/pretty.server.ts",
+        "src/reporter/basic/basic.browser.ts",
+        "src/reporter/basic/basic.server.ts",
         "src/reporter/json/json.browser.ts",
         "src/reporter/json/json.server.ts",
         "src/reporter/file/json-file-reporter.ts"

@@ -1,7 +1,7 @@
 import type { Rfc5424LogLevels } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const writeConsoleLogBasedOnLevel = <L>(level: L | Rfc5424LogLevels): ((...data: any[]) => void) => {
+export const writeConsoleLogBasedOnLevel = <L>(level: L | Rfc5424LogLevels): ((...data: any[]) => void) => {
     if (level === "error") {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access,no-console
         return (console as any).__error ?? console.error;
@@ -15,5 +15,3 @@ const writeConsoleLogBasedOnLevel = <L>(level: L | Rfc5424LogLevels): ((...data:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access,no-console
     return (console as any).__log ?? console.log;
 };
-
-export default writeConsoleLogBasedOnLevel;

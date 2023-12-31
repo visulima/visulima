@@ -10,8 +10,7 @@ export type {
     Reporter,
     Rfc5424LogLevels,
     Serializer,
-    SerializerAwareReporter,
     StreamAwareReporter,
     TimeEndResult,
 } from "./types";
-export { default as getType } from "./util/get-type";
+export { getType } from "./util/get-type";

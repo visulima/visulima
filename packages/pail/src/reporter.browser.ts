@@ -1,2 +1,3 @@
-export { default as JsonReporter } from "./reporter/json/json.browser";
-export { default as PrettyReporter } from "./reporter/pretty/pretty.browser";
+export { BasicReporter } from "./reporter/basic/basic.browser";
+export { JsonReporter } from "./reporter/json/json.browser";
+export { PrettyReporter } from "./reporter/pretty/pretty.browser";

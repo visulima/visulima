@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { DefaultLoggerTypes, LoggerTypesConfig } from "../../src/types";
-import mergeTypes from "../../src/util/merge-types";
+import { mergeTypes } from "../../src/util/merge-types";
 
 describe("mergeTypes", () => {
     it("should merge two types correctly when given standard and custom types", () => {
-        const standard: DefaultLoggerTypes = {
+        const standard: Partial<DefaultLoggerTypes> = {
             error: {
                 badge: "ERROR",
                 color: "red",
@@ -16,7 +16,7 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
         };
 
@@ -29,7 +29,7 @@ describe("mergeTypes", () => {
             },
         };
 
-        const result = mergeTypes(standard, custom);
+        const result = mergeTypes(standard as DefaultLoggerTypes, custom);
 
         expect(result).toStrictEqual({
             error: {
@@ -42,7 +42,7 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
             warning: {
                 badge: "WARNING",
@@ -55,7 +55,7 @@ describe("mergeTypes", () => {
 
     it("should handle empty strings as type names when given standard and custom types", () => {
         // Arrange
-        const standard: DefaultLoggerTypes = {
+        const standard: Partial<DefaultLoggerTypes> = {
             error: {
                 badge: "ERROR",
                 color: "red",
@@ -66,7 +66,7 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
         };
 
@@ -79,7 +79,7 @@ describe("mergeTypes", () => {
             },
         };
 
-        const result = mergeTypes(standard, custom);
+        const result = mergeTypes(standard as DefaultLoggerTypes, custom);
 
         expect(result).toStrictEqual({
             "": {
@@ -98,14 +98,14 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
         });
     });
 
     // Should handle empty badge strings
     it("should handle empty badge strings when given standard and custom types", () => {
-        const standard: DefaultLoggerTypes = {
+        const standard: Partial<DefaultLoggerTypes> = {
             error: {
                 badge: "ERROR",
                 color: "red",
@@ -116,7 +116,7 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
         };
 
@@ -129,7 +129,7 @@ describe("mergeTypes", () => {
             },
         };
 
-        const result = mergeTypes(standard, custom);
+        const result = mergeTypes(standard as DefaultLoggerTypes, custom);
 
         expect(result).toStrictEqual({
             error: {
@@ -142,7 +142,7 @@ describe("mergeTypes", () => {
                 badge: "INFO",
                 color: "blue",
                 label: "Info",
-                logLevel: "info",
+                logLevel: "informational",
             },
             warning: {
                 badge: "",

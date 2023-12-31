@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import callerProcessor from "../../src/processor/caller-processor";
+import { CallerProcessor } from "../../src/processor/caller-processor";
 
 const defaultMeta = {
     badge: undefined,
@@ -19,11 +19,16 @@ const defaultMeta = {
 
 describe("callerProcessor", () => {
     it("should add file information to meta object when file information is not present", () => {
-        const result = callerProcessor<string>({ ...defaultMeta });
+        const processor = new CallerProcessor<string>();
+
+        const result = processor.process({ ...defaultMeta });
 
         expect(result.file).toStrictEqual({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             column: expect.any(Number),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             line: expect.any(Number),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             name: expect.any(String),
         });
     });

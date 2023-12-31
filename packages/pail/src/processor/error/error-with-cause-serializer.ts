@@ -1,5 +1,4 @@
-import type { Serializer } from "../../types";
-import getType from "../../util/get-type";
+import { getType } from "../../util/get-type";
 import type { SerializedError } from "./error-proto";
 import { ErrorProto, seen } from "./error-proto";
 
@@ -24,8 +23,8 @@ type Options = {
  * - It's up to `.toJSON()` implementation to handle circular references and enumerability of the properties.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
-    // eslint-disable-next-line no-param-reassign
+export const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
+    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
     error[seen] = undefined; // tag to prevent re-looking at this
 
     const protoError = Object.create(ErrorProto) as SerializedError;
@@ -46,6 +45,7 @@ const errorWithCauseSerializer = (error: AggregateError | Error, options: Option
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const key in error) {
+        // eslint-disable-next-line security/detect-object-injection
         if (protoError[key] === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,security/detect-object-injection
             const value = error[key];
@@ -70,23 +70,10 @@ const errorWithCauseSerializer = (error: AggregateError | Error, options: Option
         }
     }
 
-    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+    // eslint-disable-next-line no-param-reassign,security/detect-object-injection,@typescript-eslint/no-dynamic-delete
     delete error[seen]; // clean up tag in case err is serialized again later
 
     protoError.raw = error;
 
     return protoError;
 };
-
-const serializer: Serializer<SerializedError, Options> = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    isApplicable: (value: any) => getType(value) === "Error",
-    name: "error",
-    options: {
-        maxDepth: Number.POSITIVE_INFINITY,
-        useToJSON: true,
-    },
-    serialize: errorWithCauseSerializer,
-};
-
-export default serializer;

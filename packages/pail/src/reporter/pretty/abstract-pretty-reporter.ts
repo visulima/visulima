@@ -1,22 +1,12 @@
 import { LOG_TYPES } from "../../constants";
-import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, Meta, Rfc5424LogLevels, Serializer, SerializerAwareReporter } from "../../types";
+import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, Meta, Rfc5424LogLevels } from "../../types";
 
-export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never>
-    implements SerializerAwareReporter<L>, LoggerTypesAwareReporter<T, L>
-{
+export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L> {
     protected readonly _styles: PrettyStyleOptions;
 
     protected _loggerTypes: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
 
-    protected _serializers: Map<string, Serializer>;
-
-    protected constructor(
-        options: Partial<
-            PrettyStyleOptions & {
-                serializers?: Serializer[];
-            }
-        >,
-    ) {
+    protected constructor(options: Partial<PrettyStyleOptions>) {
         this._styles = {
             bold: {
                 label: false,
@@ -35,7 +25,6 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
         } as PrettyStyleOptions;
 
         this._loggerTypes = LOG_TYPES as LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
-        this._serializers = new Map((options.serializers ?? []).map((serializer) => [serializer.name, serializer]));
     }
 
     public setLoggerTypes(types: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>): void {
@@ -44,18 +33,6 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
 
     public log(meta: Meta<L>): void {
         this._log(this._formatMessage(meta as Meta<L>), meta.type.level);
-    }
-
-    public setSerializers(serializers: Map<string, Serializer>): void {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const serializer of serializers.values()) {
-            if (this._serializers.has(serializer.name)) {
-                // eslint-disable-next-line no-console
-                console.debug(`Serializer ${serializer.name} already exists, skipping`);
-            } else {
-                this._serializers.set(serializer.name, serializer);
-            }
-        }
     }
 
     protected abstract _formatMessage(data: Meta<L>): string;

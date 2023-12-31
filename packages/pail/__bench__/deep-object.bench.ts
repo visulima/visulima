@@ -11,8 +11,8 @@ import bunyan from "bunyan";
 import pkg from "../package.json";
 import { createPail as createServerPail } from "../src/index.server";
 import { createPail as createBrowserPail } from "../src/index.browser";
-import ServerJsonReporter from "../src/reporter/json/json.server";
-import BrowserJsonReporter from "../src/reporter/json/json.browser";
+import { JsonReporter as ServerJsonReporter } from "../src/reporter/json/json.server";
+import { JsonReporter as BrowserJsonReporter } from "../src/reporter/json/json.browser";
 
 const deep = Object.assign({}, pkg, { level: 'info' })
 const wsDevNull = fs.createWriteStream("/dev/null");

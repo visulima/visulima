@@ -1,5 +1,5 @@
-import type { Meta } from "../types";
-import getCallerFilename from "../util/get-caller-filename";
+import type { Meta, Processor } from "../types";
+import { getCallerFilename } from "../util/get-caller-filename";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -17,17 +17,18 @@ declare global {
     }
 }
 
-const callerProcessor = <L>(meta: Meta<L>): Meta<L> => {
-    const { columnNumber, fileName, lineNumber } = getCallerFilename();
+export class CallerProcessor<L extends string = never> implements Processor<L> {
+    // eslint-disable-next-line class-methods-use-this
+    public process(meta: Meta<L>): Meta<L> {
+        const { columnNumber, fileName, lineNumber } = getCallerFilename();
 
-    // eslint-disable-next-line no-param-reassign
-    meta.file = {
-        column: columnNumber,
-        line: lineNumber,
-        name: fileName,
-    };
+        // eslint-disable-next-line no-param-reassign
+        meta.file = {
+            column: columnNumber,
+            line: lineNumber,
+            name: fileName,
+        };
 
-    return meta;
-};
-
-export default callerProcessor;
+        return meta;
+    }
+}
