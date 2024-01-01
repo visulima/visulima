@@ -1,4 +1,4 @@
-import type { ColorName }                              from "chalk";
+import type { ColorName } from "chalk";
 import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 /**
@@ -64,8 +64,10 @@ export interface LoggerConfiguration<L extends string = never> {
 export type LoggerTypesConfig<T extends string, L extends string = never> = Record<T, Partial<LoggerConfiguration<L>>>;
 export type DefaultLoggerTypes<L extends string = never> = Record<DefaultLogTypes, LoggerConfiguration<L>>;
 
+export type ReadonlyMeta<L extends string = never> = Readonly<Meta<L>>;
+
 export interface Reporter<L extends string = never> {
-    log: (meta: Meta<L>) => void;
+    log: (meta: ReadonlyMeta<L>) => void;
 }
 
 export interface StreamAwareReporter<L extends string = never> extends Reporter<L> {
@@ -100,20 +102,23 @@ export type Serializer<Type = string, Options = UnknownRecord> = {
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
     disabled?: boolean;
-    interactive?: boolean;
     logLevel?: L | Rfc5424LogLevels;
     logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
     processors?: Processor<L>[];
     reporters?: Reporter<L>[];
     scope?: string[] | string;
-    stderr?: NodeJS.WriteStream;
-    stdout?: NodeJS.WriteStream;
     throttle?: number;
     throttleMin?: number;
     // we can't negate DefaultLogTypes from string
     // see https://github.com/microsoft/TypeScript/pull/29317 (not merged as for 31 march 2021)
     // so we can't distinguish logger configuration between default log types and passed one
     types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+}
+
+export interface ServerConstructorOptions<T extends string = never, L extends string = never> extends ConstructorOptions<T, L> {
+    interactive?: boolean;
+    stderr?: NodeJS.WriteStream;
+    stdout?: NodeJS.WriteStream;
 }
 
 export interface TimeEndResult {

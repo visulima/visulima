@@ -46,11 +46,9 @@ export class SafeStreamHandler {
         });
         this._stream.on("drain", () => {
             this._ready = true;
-
         });
         this._stream.on("finish", () => {
             this._ready = true;
-
         });
         this._ready = this._stream.write(message, () => {});
     }

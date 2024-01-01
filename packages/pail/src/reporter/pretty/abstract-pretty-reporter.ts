@@ -1,5 +1,5 @@
 import { LOG_TYPES } from "../../constants";
-import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, Meta, Rfc5424LogLevels } from "../../types";
+import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, Rfc5424LogLevels } from "../../types";
 
 export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L> {
     protected readonly _styles: PrettyStyleOptions;
@@ -31,11 +31,11 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
         this._loggerTypes = types;
     }
 
-    public log(meta: Meta<L>): void {
-        this._log(this._formatMessage(meta as Meta<L>), meta.type.level);
+    public log(meta: ReadonlyMeta<L>): void {
+        this._log(this._formatMessage(meta as ReadonlyMeta<L>), meta.type.level);
     }
 
-    protected abstract _formatMessage(data: Meta<L>): string;
+    protected abstract _formatMessage(data: ReadonlyMeta<L>): string;
 
     protected abstract _log(message: string, logLevel: L | Rfc5424LogLevels): void;
 

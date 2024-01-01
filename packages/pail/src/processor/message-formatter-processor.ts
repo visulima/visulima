@@ -49,7 +49,7 @@ export class MessageFormatterProcessor<L extends string = never> implements Stri
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (getType(meta.message) === "Array" && (meta.message as [string, unknown[]]).length > 0) {
-            const message = (meta.message as [string, unknown[]]);
+            const message = meta.message as [string, unknown[]];
 
             if (getType(message[0]) === "String") {
                 // eslint-disable-next-line no-param-reassign
