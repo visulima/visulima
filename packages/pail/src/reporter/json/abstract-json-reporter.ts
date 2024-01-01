@@ -1,6 +1,6 @@
 import type { stringify } from "safe-stable-stringify";
 
-import type { Meta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
+import type { ReadonlyMeta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
 
 export abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
     protected _stringify: typeof stringify | undefined;
@@ -11,7 +11,7 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
         this._stringify = function_;
     }
 
-    public log(meta: Meta<L>): void {
+    public log(meta: ReadonlyMeta<L>): void {
         const { type, ...rest } = meta;
 
         if (rest.label) {
@@ -20,7 +20,7 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
 
         if (rest.file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
+            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
                 rest.file.column ? `:${rest.file.column}` : ""
             }`;
         }

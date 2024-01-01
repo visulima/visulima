@@ -1,6 +1,6 @@
 import type { stringify } from "safe-stable-stringify";
 
-import type { Meta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
+import type { ReadonlyMeta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
 
 export abstract class AbstractBasicReporter<L extends string = never> implements StringifyAwareReporter<L> {
     protected _stringify: typeof stringify | undefined;
@@ -12,7 +12,7 @@ export abstract class AbstractBasicReporter<L extends string = never> implements
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public log(meta: Meta<L>): void {
+    public log(meta: ReadonlyMeta<L>): void {
         const { type, ...rest } = meta;
 
         if (rest.label) {

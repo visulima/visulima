@@ -1,4 +1,3 @@
- 
 import terminalSize from "terminal-size";
 import wrapAnsi from "wrap-ansi";
 

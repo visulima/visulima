@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-import type { Meta, Rfc5424LogLevels } from "../../types";
+import type { ReadonlyMeta, Rfc5424LogLevels } from "../../types";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
@@ -10,7 +10,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         super(options);
     }
 
-    protected override _formatMessage(data: Meta<L>): string {
+    protected override _formatMessage(data: ReadonlyMeta<L>): string {
         const { badge, date, file, label, scope, suffix } = data;
         let { prefix } = data;
 

@@ -3,5 +3,5 @@ export const arrayify = <T>(x: T | T[]): T[] => {
         return [] as T[];
     }
 
-    return Array.isArray(x) ? x : [x] as T[];
+    return Array.isArray(x) ? x : ([x] as T[]);
 };

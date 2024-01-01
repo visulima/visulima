@@ -7,7 +7,7 @@ import stringLength from "string-length";
 import terminalSize from "terminal-size";
 import wrapAnsi from "wrap-ansi";
 
-import type { Meta, Rfc5424LogLevels, StreamAwareReporter, StringifyAwareReporter } from "../../types";
+import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter, StringifyAwareReporter } from "../../types";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { getType } from "../../util/get-type";
 import { writeStream } from "../../util/write-stream";
@@ -50,7 +50,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected override _formatMessage(data: Meta<L>): string {
+    protected override _formatMessage(data: ReadonlyMeta<L>): string {
         const { columns } = terminalSize();
 
         let size = columns;
