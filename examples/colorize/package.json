@@ -1,0 +1,13 @@
+{
+    "name": "pail_colorize",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node cli.js"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "ansis": "^2.0.3"
+    }
+}
