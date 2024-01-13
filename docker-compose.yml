@@ -2,19 +2,19 @@ version: "3.7"
 
 services:
     db:
-        image: "postgres:16.1-alpine"
+        image: "postgres:16.1-alpine@sha256:884718395ee967fc70374563f3b4d72f0c61f48f81868decb9fa452915fe070e"
         volumes:
             - "data:/var/lib/postgresql/data"
         ports:
             - "5432:5432"
 
     redis:
-        image: "redis:7.2.3-alpine"
+        image: "redis:7.2.3-alpine@sha256:090276da2603db19b154602c374f505d94c10ea57e9749fc3e68e955284bf0fd"
         ports:
             - "6379:6379"
 
     mailhog:
-        image: "mailhog/mailhog:v1.0.1"
+        image: "mailhog/mailhog:v1.0.1@sha256:8d76a3d4ffa32a3661311944007a415332c4bb855657f4f6c57996405c009bea"
         ports:
             - "1025:1025"
             - "8025:8025"
