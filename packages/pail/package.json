@@ -71,85 +71,85 @@
         ".": {
             "node": {
                 "types": "./dist/index.server.d.ts",
-                "import": "./dist/index.server.mjs",
-                "require": "./lib/index.server.cjs"
+                "import": "./dist/index.server.js",
+                "require": "./lib/index.server.js"
             },
             "default": {
-                "types": "./dist/index.browser.d.ts",
-                "import": "./dist/index.browser.mjs",
+                "types": "./dist/index.browser.d.cts",
+                "import": "./dist/index.browser.cjs",
                 "require": "./dist/index.browser.cjs"
             }
         },
         "./reporter/json-file": {
             "require": {
-                "types": "./dist/reporter/file/json-file-reporter.d.ts",
-                "default": "./dist/reporter/file/json-file-reporter.js"
+                "types": "./dist/reporter/file/json-file-reporter.d.cts",
+                "default": "./dist/reporter/file/json-file-reporter.cjs"
             },
             "import": {
-                "types": "./dist/reporter/file/json-file-reporter.d.mts",
-                "default": "./dist/reporter/file/json-file-reporter.mjs"
+                "types": "./dist/reporter/file/json-file-reporter.d.ts",
+                "default": "./dist/reporter/file/json-file-reporter.js"
             }
         },
         "./reporter/basic": {
             "browser": "./dist/reporter/basic/basic.browser.js",
             "require": {
-                "types": "./dist/reporter/basic/basic.server.d.ts",
-                "default": "./dist/reporter/basic/basic.server.js"
+                "types": "./dist/reporter/basic/basic.server.d.cts",
+                "default": "./dist/reporter/basic/basic.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter/basic/basic.server.d.mts",
-                "default": "./dist/reporter/basic/basic.server.mjs"
+                "types": "./dist/reporter/basic/basic.server.d.ts",
+                "default": "./dist/reporter/basic/basic.server.js"
             }
         },
         "./reporter/json": {
             "browser": "./dist/reporter/json/json.browser.js",
             "require": {
-                "types": "./dist/reporter/json/json.server.d.ts",
-                "default": "./dist/reporter/json/json.server.js"
+                "types": "./dist/reporter/json/json.server.d.cts",
+                "default": "./dist/reporter/json/json.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter/json/json.server.d.mts",
-                "default": "./dist/reporter/json/json.server.mjs"
+                "types": "./dist/reporter/json/json.server.d.ts",
+                "default": "./dist/reporter/json/json.server.js"
             }
         },
         "./reporter/pretty": {
             "browser": "./dist/reporter/pretty/pretty.browser.js",
             "require": {
-                "types": "./dist/reporter/pretty/pretty.server.d.ts",
-                "default": "./dist/reporter/pretty/pretty.server.js"
+                "types": "./dist/reporter/pretty/pretty.server.d.cts",
+                "default": "./dist/reporter/pretty/pretty.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter/pretty/pretty.server.d.mts",
-                "default": "./dist/reporter/pretty/pretty.server.mjs"
+                "types": "./dist/reporter/pretty/pretty.server.d.ts",
+                "default": "./dist/reporter/pretty/pretty.server.js"
             }
         },
         "./reporter": {
             "browser": "./dist/reporter.browser.js",
             "require": {
-                "types": "./dist/reporter.server.d.ts",
-                "default": "./dist/reporter.server.js"
+                "types": "./dist/reporter.server.d.cts",
+                "default": "./dist/reporter.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter.server.d.mts",
-                "default": "./dist/reporter.server.mjs"
+                "types": "./dist/reporter.server.d.ts",
+                "default": "./dist/reporter.server.js"
             }
         },
         "./processor": {
             "browser": "./dist/processor.browser.js",
             "require": {
-                "types": "./dist/processor.server.d.ts",
-                "default": "./dist/processor.server.js"
+                "types": "./dist/processor.server.d.cts",
+                "default": "./dist/processor.server.cjs"
             },
             "import": {
-                "types": "./dist/processor.server.d.mts",
-                "default": "./dist/processor.server.mjs"
+                "types": "./dist/processor.server.d.ts",
+                "default": "./dist/processor.server.js"
             }
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.server.js",
-    "module": "dist/index.server.mjs",
-    "browser": "dist/index.browser.mjs",
+    "main": "dist/index.server.cjs",
+    "module": "dist/index.server.js",
+    "browser": "dist/index.browser.js",
     "types": "dist/index.server.d.ts",
     "files": [
         "dist/**",

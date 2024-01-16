@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import colorize from "@visulima/colorize";
 
 import type { ReadonlyMeta, Rfc5424LogLevels } from "../../types";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
@@ -15,7 +15,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         let { prefix } = data;
 
         if (prefix) {
-            prefix = this._styles.underline.prefix ? chalk.underline(prefix) : prefix;
+            prefix = this._styles.underline.prefix ? colorize.underline(prefix) : prefix;
         }
 
         return `${date.toString()} ${file?.name} ${scope?.join("|")} > ${prefix} ${badge} ${label} ${suffix}`;
