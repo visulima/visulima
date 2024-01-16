@@ -18,7 +18,7 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
             rest.label = rest.label.trim();
         }
 
-        if (rest.file) {
+        if (rest?.file) {
             // This is a hack to make the file property a string
             (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
                 rest.file.column ? `:${rest.file.column}` : ""

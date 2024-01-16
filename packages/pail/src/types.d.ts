@@ -1,4 +1,4 @@
-import type { ColorName } from "chalk";
+import type { AnsiColors } from "@visulima/colorize";
 import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 /**
@@ -56,7 +56,7 @@ export type LoggerFunction = (...message: any[]) => void;
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
-    color?: ColorName | undefined;
+    color?: AnsiColors | undefined;
     label: string;
     logLevel: L | Rfc5424LogLevels;
 }

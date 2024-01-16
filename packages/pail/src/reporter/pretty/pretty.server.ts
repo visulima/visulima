@@ -1,7 +1,7 @@
 import { sep } from "node:path";
 
-import type { ColorName } from "chalk";
-import chalk from "chalk";
+import type { AnsiColors } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
@@ -61,18 +61,18 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
         const { badge, context, date, error, file, label, message, prefix, repeated, scope, suffix, type } = data;
 
-        const colorize = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
-            ? chalk[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as ColorName]
-            : chalk.white;
+        const colorized = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
+            ? colorize[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as AnsiColors]
+            : colorize.white;
 
         let items: string[] = [];
 
         if (date) {
-            items.push(chalk.grey(this._styles.dateFormatter(new Date(date))));
+            items.push(colorize.grey(this._styles.dateFormatter(new Date(date))));
         }
 
         if (badge) {
-            items.push(colorize(badge));
+            items.push(colorized(badge));
         }
 
         const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
@@ -83,21 +83,21 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             items.push(colorize(this._formatLabel(label)));
 
             if (repeated) {
-                items.push(chalk.bgGray.white(`[${repeated}x]`));
+                items.push(colorize.bgGray.white(`[${repeated}x]`));
             }
 
-            items.push((replacement.length > 0 ? " " : "") + chalk.grey(replacement));
+            items.push((replacement.length > 0 ? " " : "") + colorize.grey(replacement));
         } else {
             // plus 2 for the space and the dot
-            items.push(chalk.grey(".".repeat(longestLabel.length + 2)));
+            items.push(colorize.grey(".".repeat(longestLabel.length + 2)));
         }
 
         if (scope && scope.length > 0) {
-            items.push(chalk.grey(`[${scope.join(" | ")}]`));
+            items.push(colorize.grey(`[${scope.join(" | ")}]`));
         }
 
         if (prefix) {
-            items.push(chalk.grey(`${scope && scope.length > 0 ? ". " : ""}[${this._styles.underline.prefix ? chalk.underline(prefix) : prefix}]`));
+            items.push(colorize.grey(`${scope && scope.length > 0 ? ". " : ""}[${this._styles.underline.prefix ? colorize.underline(prefix) : prefix}]`));
         }
 
         if (items.length > 0) {
@@ -110,9 +110,9 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             const fileMessage = `${file.name}${file.line ? `:${file.line}` : ""}`;
             const fileMessageSize = stringLength(fileMessage);
 
-            items.push(chalk.grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
+            items.push(colorize.grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
         } else {
-            items.push(chalk.grey(".".repeat(size - titleSize - 1)));
+            items.push(colorize.grey(".".repeat(size - titleSize - 1)));
         }
 
         if (items.length > 0) {
@@ -131,7 +131,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             );
 
             if (context) {
-                items.push("\n", chalk.grey((this.#stringify as typeof stringify)(context)));
+                items.push("\n", colorize.grey((this.#stringify as typeof stringify)(context)));
             }
         }
 
@@ -140,7 +140,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         }
 
         if (suffix) {
-            items.push("\n", chalk.grey(this._styles.underline.suffix ? chalk.underline(suffix) : suffix));
+            items.push("\n", colorize.grey(this._styles.underline.suffix ? colorize.underline(suffix) : suffix));
         }
 
         return `${items.join("")}\n`;
@@ -160,7 +160,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         const cwd = process.cwd() + sep;
 
         items.push(
-            chalk.red(name),
+            colorize.red(name),
             "\n",
             wrapAnsi(message, size - 3, {
                 hard: true,
@@ -177,7 +177,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
             items.push(
                 "\n",
-                lines.map((line: string) => `  ${line.replace(/^at +/, (m) => chalk.gray(m)).replace(/\((.+)\)/, (_, m) => `(${chalk.cyan(m)})`)}`).join("\n"),
+                lines.map((line: string) => `  ${line.replace(/^at +/, (m) => colorize.gray(m)).replace(/\((.+)\)/, (_, m) => `(${colorize.cyan(m)})`)}`).join("\n"),
             );
         }
 
@@ -187,10 +187,10 @@ export class PrettyReporter<T extends string = never, L extends string = never>
     private _formatLabel(label: string): string {
         let formattedLabel = this._styles.uppercase.label ? label.toUpperCase() : label;
 
-        formattedLabel = this._styles.underline.label ? chalk.underline(formattedLabel) : formattedLabel;
+        formattedLabel = this._styles.underline.label ? colorize.underline(formattedLabel) : formattedLabel;
 
         if (this._styles.bold.label) {
-            formattedLabel = chalk.bold(formattedLabel);
+            formattedLabel = colorize.bold(formattedLabel);
         }
 
         return formattedLabel;
