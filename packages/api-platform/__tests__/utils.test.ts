@@ -8,6 +8,8 @@ import { jsonResponse, parseBody, parseQuery, toHeaderCase } from "../src/utils"
 describe("utils", () => {
     describe("toHeaderCase", () => {
         it("should convert a string to header case", () => {
+            expect.assertions(4);
+
             expect(toHeaderCase("Hello World")).toBe("Hello-World");
             expect(toHeaderCase("hello world")).toBe("Hello-World");
             expect(toHeaderCase("Hello, World!")).toBe("Hello-World");
@@ -15,15 +17,21 @@ describe("utils", () => {
         });
 
         it("should handle empty strings", () => {
+            expect.assertions(1);
+
             expect(toHeaderCase("")).toBe("");
         });
 
         it("should handle single-word strings", () => {
+            expect.assertions(2);
+
             expect(toHeaderCase("hello")).toBe("Hello");
             expect(toHeaderCase("HELLO")).toBe("Hello");
         });
 
         it("should handle strings with multiple spaces", () => {
+            expect.assertions(2);
+
             expect(toHeaderCase("Hello   World")).toBe("Hello-World");
             expect(toHeaderCase("Hello  \t  World")).toBe("Hello-World");
         });
@@ -31,6 +39,8 @@ describe("utils", () => {
 
     describe("jsonResponse", () => {
         it("sets statusCode of response to specified status value", async () => {
+            expect.assertions(1);
+
             const response = createResponse();
             const status = 200;
             const data = { message: "Success" };
@@ -41,6 +51,8 @@ describe("utils", () => {
         });
 
         it("sets Content-Type header of response to application/json", async () => {
+            expect.assertions(1);
+
             const response = createResponse();
             const status = 200;
             const data = { message: "Success" };
@@ -51,6 +63,8 @@ describe("utils", () => {
         });
 
         it("calls end method of response with stringified data when data is provided", async () => {
+            expect.assertions(1);
+
             const response = createResponse();
             const status = 200;
             const data = { message: "Success" };
@@ -62,6 +76,8 @@ describe("utils", () => {
         });
 
         it("calls end method of response with empty string when data is not provided", async () => {
+            expect.assertions(1);
+
             const response = createResponse();
             const status = 200;
 
@@ -74,6 +90,8 @@ describe("utils", () => {
 
     describe("parseBody", () => {
         it("returns request.body when it is provided", async () => {
+            expect.assertions(1);
+
             const request = createRequest({ body: { message: "Hello" } });
             const expected = { message: "Hello" };
             const actual = await parseBody(request);
@@ -83,6 +101,8 @@ describe("utils", () => {
     });
 
     it("returns object parsed from request body when request.body is not provided", async () => {
+        expect.assertions(1);
+
         const request = {
             // prettier-ignore
             * [Symbol.asyncIterator]() {
@@ -98,6 +118,8 @@ describe("utils", () => {
     });
 
     it("returns null when request body is an empty string", async () => {
+        expect.assertions(1);
+
         const request = {
             // prettier-ignore
             * [Symbol.asyncIterator]() {
@@ -112,6 +134,8 @@ describe("utils", () => {
     });
 
     it("throws error when request body is invalid JSON", async () => {
+        expect.assertions(1);
+
         const request = {
             // prettier-ignore
             * [Symbol.asyncIterator]() {
@@ -133,6 +157,8 @@ describe("utils", () => {
 
     describe("parseQuery", () => {
         it("returns request.query when it is provided", async () => {
+            expect.assertions(1);
+
             const request = { headers: { host: "example.com" }, query: { message: "Hello" } };
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
@@ -141,6 +167,8 @@ describe("utils", () => {
         });
 
         it("returns query string object parsed from request.url when request.query is not provided", async () => {
+            expect.assertions(1);
+
             const request = { headers: { host: "example.com/" }, query: null, url: "/?message=Hello" };
             const expected = { message: "Hello" };
             const actual = parseQuery(request as unknown as IncomingMessage);
@@ -150,6 +178,8 @@ describe("utils", () => {
         });
 
         it("returns empty object when request.url is not provided and request.query is not provided", async () => {
+            expect.assertions(1);
+
             const request = { headers: { host: "example.com" }, query: null, url: null };
             const expected = {};
             const actual = parseQuery(request as unknown as IncomingMessage);

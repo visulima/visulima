@@ -48,6 +48,8 @@ describe("expressWrapper", () => {
     });
 
     it("next(err)", async () => {
+        expect.assertions(1);
+
         const error = new Error("💥");
         const context = new NodeRouter();
 

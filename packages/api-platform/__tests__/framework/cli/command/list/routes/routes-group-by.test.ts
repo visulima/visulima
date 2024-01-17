@@ -5,12 +5,16 @@ import type { Route } from "../../../../../../src/framework/cli/command/list/rou
 
 describe("routes-group-by", () => {
     it("routesGroupBy returns a Map", () => {
+        expect.assertions(1);
+
         const result = routesGroupBy([], (item) => item.tags[0] || "unsorted");
 
         expect(result).toBeInstanceOf(Map);
     });
 
     it("routesGroupBy groups routes by provided key", () => {
+        expect.assertions(2);
+
         const routes: Route[] = [
             {
                 file: "__fixtures__/pages/api/[customerId].js",
@@ -64,6 +68,8 @@ describe("routes-group-by", () => {
     });
 
     it("routesGroupBy handles list of routes with single element", () => {
+        expect.assertions(1);
+
         const routes = [
             {
                 file: "__fixtures__/pages/api/[customerId].js",
@@ -86,6 +92,8 @@ describe("routes-group-by", () => {
     });
 
     it("routesGroupBy throws error when keyGetter is not a function", () => {
+        expect.assertions(1);
+
         const routes = [
             {
                 file: "__fixtures__/pages/api/[customerId].js",

@@ -52,7 +52,7 @@ const Body: FC<{
 
     const gitTimestampElement =
         mounted && date ? (
-            <div className="mb-8 mt-12 block text-xs text-gray-500 ltr:text-right rtl:text-left dark:text-gray-400">
+            <div className="mb-8 mt-12 block text-xs text-gray-500 dark:text-gray-400 ltr:text-right rtl:text-left">
                 {renderComponent(config.gitTimestamp, { locale, timestamp: date })}
             </div>
         ) : (

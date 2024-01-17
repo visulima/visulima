@@ -32,6 +32,8 @@ const testRoute = (rr: Route<any>, { route, ...match }: Partial<Route<any> & { r
 
 describe("router", () => {
     it("internals", async () => {
+        expect.assertions(4);
+
         const context = new Router<AnyHandler>();
 
         expect(context).instanceOf(Router, "creates new `Router` instance");
@@ -43,6 +45,8 @@ describe("router", () => {
     });
 
     it("add()", async () => {
+        expect.assertions(9);
+
         const context = new Router<AnyHandler>();
 
         const out = context.add("GET", "/foo/:hello", noop);
@@ -83,6 +87,8 @@ describe("router", () => {
     });
 
     it("add() - multiple", async () => {
+        expect.assertions(6);
+
         const context = new Router<AnyHandler>();
 
         context.add("PATCH", "/foo/:hello", noop, noop);
@@ -111,6 +117,8 @@ describe("router", () => {
     });
 
     it("use()", async () => {
+        expect.assertions(10);
+
         const context = new Router<AnyHandler>();
 
         const out = context.use("/foo/:hello", noop);
@@ -152,6 +160,8 @@ describe("router", () => {
     });
 
     it("all()", async () => {
+        expect.assertions(21);
+
         // eslint-disable-next-line no-plusplus,@typescript-eslint/naming-convention,no-underscore-dangle
         const function_: AnyHandler = (request: any) => request.chain++;
         const context = new Router<AnyHandler>().add("", "/greet/:name", function_);
@@ -265,6 +275,8 @@ describe("router", () => {
     });
 
     it("find() - no match", async () => {
+        expect.assertions(3);
+
         const context = new Router<AnyHandler>();
         const out = context.find("DELETE", "/nothing");
 
@@ -274,6 +286,8 @@ describe("router", () => {
     });
 
     it("find() - multiple", async () => {
+        expect.assertions(1);
+
         expect.assertions(18);
 
         let isRoot = true;
@@ -369,6 +383,7 @@ describe("router", () => {
 
     it("find() - order", async () => {
         expect.assertions(5);
+
         const context = new Router<AnyHandler>()
             .add("", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
@@ -395,6 +410,8 @@ describe("router", () => {
     });
 
     it("find() w/ all()", async () => {
+        expect.assertions(18);
+
         const find = (x: Router<AnyHandler>, y: string) => x.find("GET", y);
 
         const context1 = new Router<AnyHandler>().add("", "api", noop);
@@ -441,6 +458,8 @@ describe("router", () => {
     });
 
     it("find() w/ use()", async () => {
+        expect.assertions(18);
+
         const find = (x: Router<AnyHandler>, y: string) => x.find("GET", y);
 
         const context1 = new Router<AnyHandler>().use("api", noop);
@@ -485,6 +504,7 @@ describe("router", () => {
 
     it("find() - regex w/ named groups", async () => {
         expect.assertions(9);
+
         const context = new Router<AnyHandler>();
 
         context.add(
@@ -586,11 +606,15 @@ describe("router", () => {
      */
 
     it("constructor() with base", async () => {
+        expect.assertions(2);
+
         expect(new Router().base, "assign base to / by default").toBe("/");
         expect(new Router("/foo").base, "assign base to provided value").toBe("/foo");
     });
 
     it("constructor() with routes", async () => {
+        expect.assertions(2);
+
         expect(new Router().routes, "assign to empty route array by default").toStrictEqual([]);
 
         const routes: Route<Nextable<FunctionLike>>[] | undefined = [];
@@ -599,6 +623,8 @@ describe("router", () => {
     });
 
     it("clone()", async () => {
+        expect.assertions(3);
+
         const context = new Router();
         context.routes = [noop, noop] as any[];
 
@@ -630,6 +656,8 @@ describe("router", () => {
     });
 
     it("use() - mount router", async () => {
+        expect.assertions(5);
+
         const subContext = new Router();
 
         testRoute(new Router().use("/foo", subContext, noop).routes[0] as Route<any>, {
@@ -670,6 +698,8 @@ describe("router", () => {
     });
 
     it("find() - w/ router with correct match", async () => {
+        expect.assertions(8);
+
         const noop1 = async () => {};
 
         const noop2 = async () => {};
@@ -741,6 +771,8 @@ describe("router", () => {
     });
 
     it("find() - w/ router nested multiple level", async () => {
+        expect.assertions(3);
+
         const noop1 = async () => {};
 
         const noop2 = async () => {};
@@ -870,10 +902,14 @@ describe("router", () => {
         context.use("/foo", function_);
 
         it("should be true if only middles found", async () => {
+            expect.assertions(1);
+
             expect(context.find("GET", "/bar").middleOnly).toBeTruthy();
         });
 
         it("should be false if at least one non-middle found", async () => {
+            expect.assertions(1);
+
             expect(context.find("POST", "/bar").middleOnly).toBeFalsy();
         });
     });

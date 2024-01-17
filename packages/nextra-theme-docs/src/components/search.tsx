@@ -260,12 +260,12 @@ const Search: FC<SearchProperties> = ({
                 >
                     {error ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-red-500">
-                            <InformationCircleIcon className="h-5 w-5" />
+                            <InformationCircleIcon className="size-5" />
                             {renderString(config.search.error, { locale })}
                         </span>
                     ) : loading ? (
                         <span className="flex select-none justify-center gap-2 p-8 text-center text-sm text-gray-400">
-                            <SpinnerIcon className="h-5 w-5 animate-spin" />
+                            <SpinnerIcon className="size-5 animate-spin" />
                             {renderString(config.search.loading, { locale })}
                         </span>
                     ) : results.length > 0 ? (

@@ -65,7 +65,7 @@ const Pre = ({
                             title="Toggle word wrap"
                             type="button"
                         >
-                            <WordWrapIcon className="pointer-events-none h-4 w-4" />
+                            <WordWrapIcon className="pointer-events-none size-4" />
                         </Button>
                         {hasCopyCode && (
                             /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
@@ -78,7 +78,7 @@ const Pre = ({
                     className={cn(["opacity-0 transition-opacity [div:hover>&]:opacity-100 focus-within:opacity-100", "flex gap-1 absolute m-2 right-0 z-10"])}
                 >
                     <Button className="lg:hidden" onClick={toggleWordWrap} tabIndex={-1} title="Toggle word wrap">
-                        <WordWrapIcon className="pointer-events-none h-4 w-4" />
+                        <WordWrapIcon className="pointer-events-none size-4" />
                     </Button>
                     {/* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */}
                     {hasCopyCode && <CopyToClipboard getValue={() => reference.current?.querySelector("code")?.textContent ?? ""} tabIndex={-1} />}
