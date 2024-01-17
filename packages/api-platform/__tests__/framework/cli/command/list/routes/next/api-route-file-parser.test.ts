@@ -1,22 +1,24 @@
-import path from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import apiRouteFileParser from "../../../../../../../src/framework/cli/command/list/routes/next/api-route-file-parser";
 
-const cwdPath = path.resolve(__dirname, "../../../../../../../", "__fixtures__");
-const apiRoutesPath = path.resolve(cwdPath, "pages/api");
+const cwdPath = resolve(__dirname, "../../../../../../../", "__fixtures__");
+const apiRoutesPath = resolve(cwdPath, "pages/api");
 
 const isWin = process.platform === "win32";
 
 describe("api-route-file-parser", () => {
     it("parse all files in pages/api", () => {
+        expect.assertions(1);
+
         const parsedApiRouteFiles = [
-            path.join(apiRoutesPath, "[customerId].js"),
-            path.join(apiRoutesPath, "corsheader.ts"),
-            path.join(apiRoutesPath, "defaultroute.ts"),
-            path.join(apiRoutesPath, "hello.ts"),
-            path.join(apiRoutesPath, "jsdefaultroute.js"),
+            join(apiRoutesPath, "[customerId].js"),
+            join(apiRoutesPath, "corsheader.ts"),
+            join(apiRoutesPath, "defaultroute.ts"),
+            join(apiRoutesPath, "hello.ts"),
+            join(apiRoutesPath, "jsdefaultroute.js"),
         ].map((rpath) => apiRouteFileParser(rpath, cwdPath));
 
         expect(parsedApiRouteFiles).toStrictEqual([

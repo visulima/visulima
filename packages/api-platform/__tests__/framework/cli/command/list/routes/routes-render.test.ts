@@ -5,6 +5,8 @@ import routesRender from "../../../../../../src/framework/cli/command/list/route
 
 describe("list printer", () => {
     it("print get route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -19,6 +21,8 @@ describe("list printer", () => {
     });
 
     it("print get|head route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -32,6 +36,8 @@ describe("list printer", () => {
     });
 
     it("print head route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -45,6 +51,8 @@ describe("list printer", () => {
     });
 
     it("print post route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -58,6 +66,8 @@ describe("list printer", () => {
     });
 
     it("print patch route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -71,6 +81,8 @@ describe("list printer", () => {
     });
 
     it("print put route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -84,6 +96,8 @@ describe("list printer", () => {
     });
 
     it("print delete route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -97,6 +111,8 @@ describe("list printer", () => {
     });
 
     it("print options route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",
@@ -110,6 +126,8 @@ describe("list printer", () => {
     });
 
     it("print all method route", () => {
+        expect.assertions(1);
+
         const view = routesRender([
             {
                 file: "__fixtures__/pages/api/corsheader.ts",

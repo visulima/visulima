@@ -20,6 +20,8 @@ const badFunction = () => {
 
 describe("edge", () => {
     it("internals", () => {
+        expect.assertions(12);
+
         const context = new EdgeRouter();
 
         expect(context).instanceof(EdgeRouter, "creates new `EdgeRouter` instance");
@@ -34,11 +36,14 @@ describe("edge", () => {
     });
 
     it("createEdgeRouter() returns an instance", async () => {
+        expect.assertions(1);
+
         expect(createEdgeRouter()).instanceOf(EdgeRouter);
     });
 
     it("add()", async () => {
         expect.assertions(2);
+
         const context = new EdgeRouter();
         // @ts-expect-error: private property
         vi.spyOn(context.router, "add").mockImplementation((...values) => {
@@ -52,6 +57,8 @@ describe("edge", () => {
 
     describe("use()", () => {
         it("defaults to / if base is not provided", async () => {
+            expect.assertions(1);
+
             const context = new EdgeRouter();
 
             // @ts-expect-error: private field
@@ -63,6 +70,8 @@ describe("edge", () => {
         });
 
         it("call this.router.use() with fn", async () => {
+            expect.assertions(1);
+
             const context = new EdgeRouter();
 
             // @ts-expect-error: private field
@@ -74,6 +83,8 @@ describe("edge", () => {
         });
 
         it("call this.router.use() with fn.router", async () => {
+            expect.assertions(1);
+
             const context = new EdgeRouter();
             const context2 = new EdgeRouter();
 
@@ -88,13 +99,14 @@ describe("edge", () => {
     });
 
     it("clone()", () => {
+        expect.assertions(3);
+
         const context = new EdgeRouter();
         // @ts-expect-error: private property
         context.router.routes = [noop, noop] as any[];
 
         expect(context.clone(), "is a NodeRouter instance").instanceOf(EdgeRouter);
         expect(context, "not the same identity").not.toStrictEqual(context.clone());
-
         expect(
             // @ts-expect-error: private property
             context.router.routes,
@@ -140,6 +152,8 @@ describe("edge", () => {
     });
 
     it("run() - propagates error", async () => {
+        expect.assertions(3);
+
         const request = { method: "GET", url: "http://localhost/" } as Request;
         const event = {};
         const error = new Error("💥");
@@ -180,6 +194,8 @@ describe("edge", () => {
     });
 
     it("run() - returns if no fns", async () => {
+        expect.assertions(1);
+
         const request = { method: "GET", url: testUrl } as Request;
         const event = {};
         const context = createEdgeRouter();
@@ -192,11 +208,14 @@ describe("edge", () => {
     });
 
     it("handler() - basic", async () => {
+        expect.assertions(1);
+
         expect(createEdgeRouter().handler(), "returns a function").toBeTypeOf("function");
     });
 
     it("handler() - handles incoming and returns value (sync)", async () => {
         expect.assertions(4);
+
         const response = new Response("");
         const request = { method: "GET", url: "http://localhost/" } as Request;
 
@@ -231,6 +250,7 @@ describe("edge", () => {
 
     it("handler() - handles incoming and returns value (async)", async () => {
         expect.assertions(4);
+
         const response = new Response("");
         const request = { method: "GET", url: "http://localhost/" } as Request;
 
@@ -267,7 +287,8 @@ describe("edge", () => {
     });
 
     it("handler() - calls onError if error thrown (sync)", async () => {
-        expect.assertions(3 * 3);
+        expect.assertions(9);
+
         const error = new Error("💥");
         const consoleSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
 
@@ -326,7 +347,8 @@ describe("edge", () => {
     });
 
     it("handler() - calls onError if error thrown (async)", async () => {
-        expect.assertions(2 * 3);
+        expect.assertions(6);
+
         const error = new Error("💥");
         const consoleSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
 
@@ -380,6 +402,7 @@ describe("edge", () => {
 
     it("handler() - calls onNoMatch if no fns matched", async () => {
         expect.assertions(2);
+
         const request = { method: "GET", url: testUrl } as Request;
         const response: Response = await createEdgeRouter().get("/foo").post("/foo/bar").handler()(request, {});
 
@@ -399,6 +422,7 @@ describe("edge", () => {
 
     it("handler() - calls onNoMatch if no fns matched (HEAD)", async () => {
         expect.assertions(2);
+
         const request = { method: "HEAD", url: testUrl } as Request;
         const response: Response = await createEdgeRouter().get("/foo").post("/foo/bar").handler()(request, {});
 
@@ -432,12 +456,15 @@ describe("edge", () => {
     });
 
     it("prepareRequest() - attach params", async () => {
+        expect.assertions(3);
+
         const request = {} as Request & { params?: Record<string, string> };
 
         const context2 = createEdgeRouter().get("/hello/:name");
         // @ts-expect-error: internal
 
         context2.prepareRequest(request, context2.router.find("GET", "/hello/world"));
+
         expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 
         const requestWithParameters = {
@@ -449,6 +476,7 @@ describe("edge", () => {
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
+
         expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
 
         const requestWithParameters2 = {
@@ -460,10 +488,13 @@ describe("edge", () => {
             // @ts-expect-error: internal
             context2.router.find("GET", "/hello/world"),
         );
+
         expect(requestWithParameters2.params, "params are merged (existing takes precedence)").toStrictEqual({ name: "sunshine" });
     });
 
     it("getPathname() - returns pathname correctly", async () => {
+        expect.assertions(3);
+
         expect(getPathname({ url: "http://google.com/foo/bar" } as Request)).toBe("/foo/bar");
         expect(getPathname({ url: "http://google.com/foo/bar?q=quz" } as Request)).toBe("/foo/bar");
         expect(

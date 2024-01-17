@@ -33,6 +33,8 @@ describe("express-path-parser", () => {
     });
 
     it("runs the example code", () => {
+        expect.assertions(1);
+
         app.get("/resources/users/:id", middleware({ notes: "These are some notes", operationId: "getUserById" }), successResponse);
 
         // The middleware MUST be placed on a final route layer (app.get, router.post, app.patch, router.route, ect...)
@@ -73,6 +75,8 @@ describe("express-path-parser", () => {
     });
 
     it("a route", () => {
+        expect.assertions(3);
+
         app.get("/test/the/endpoint", successResponse);
 
         const parsed = expressPathParser(app);
@@ -84,6 +88,8 @@ describe("express-path-parser", () => {
     });
 
     it("a path parameter", () => {
+        expect.assertions(3);
+
         app.delete("/test/:id/endpoint", successResponse);
 
         const parsed = expressPathParser(app);
@@ -95,6 +101,8 @@ describe("express-path-parser", () => {
     });
 
     it("a optional path parameter", () => {
+        expect.assertions(3);
+
         app.patch("/test/:id?/endpoint", successResponse);
 
         const parsed = expressPathParser(app);
@@ -106,6 +114,8 @@ describe("express-path-parser", () => {
     });
 
     it("multiple path parameters", () => {
+        expect.assertions(6);
+
         app.post("/test/:name/:id/:day", successResponse);
         app.get("/test/:id?/:test?/:cid?", successResponse);
 
@@ -133,6 +143,8 @@ describe("express-path-parser", () => {
     });
 
     it("regex path parameters", () => {
+        expect.assertions(3);
+
         app.post(/\/abc|\/xyz/u, successResponse);
 
         const parsed = expressPathParser(app);
@@ -144,6 +156,8 @@ describe("express-path-parser", () => {
     });
 
     it("array of path parameters", () => {
+        expect.assertions(3);
+
         app.get(["/abcd", "/xyza", /\/lmn|\/pqr/u], successResponse);
 
         const parsed = expressPathParser(app);
@@ -155,6 +169,8 @@ describe("express-path-parser", () => {
     });
 
     it("paths with *,? and +", () => {
+        expect.assertions(9);
+
         app.get("/abc?d", successResponse);
         app.get("/ab*cd", successResponse);
         app.get("/a(bc)?d", successResponse);
@@ -181,6 +197,8 @@ describe("express-path-parser", () => {
     });
 
     it("route pattern", () => {
+        expect.assertions(3);
+
         app.route("/test")
             .all((_request, _response, next) => next())
             .get(successResponse);
@@ -194,6 +212,8 @@ describe("express-path-parser", () => {
     });
 
     it("path with middleware", () => {
+        expect.assertions(3);
+
         app.use((_request, _response, next) => next());
         app.get("/test", (_request, _response, next) => next(), successResponse);
 
@@ -206,6 +226,8 @@ describe("express-path-parser", () => {
     });
 
     it("an openApiPath middleware path doc extraction", () => {
+        expect.assertions(4);
+
         app.get("/test", middleware({ operationId: "test", operationObject }), successResponse);
 
         const parsed = expressPathParser(app);
@@ -218,12 +240,16 @@ describe("express-path-parser", () => {
     });
 
     it("to handled multiple metadata middlewares on a route", () => {
+        expect.assertions(1);
+
         app.get("/test", middleware({ operationId: "test", operationObject }), middleware({ operationId: "test", operationObject }), successResponse);
 
         expect(() => (expressPathParser(app)[0] as RouteMetaData).metadata).toThrow("Only one metadata middleware is allowed per route");
     });
 
     it("doesnt pick up middleware on use routes", () => {
+        expect.assertions(1);
+
         app.use(middleware({ operationId: "test", operationObject }));
         app.get("/test", middleware({ operationId: "test", operationObject }), successResponse);
 
@@ -231,6 +257,8 @@ describe("express-path-parser", () => {
     });
 
     it("sub-routes", () => {
+        expect.assertions(3);
+
         subrouter.get("/endpoint", successResponse);
         router.use("/sub-route", subrouter);
         app.use("/test", router);
@@ -244,6 +272,8 @@ describe("express-path-parser", () => {
     });
 
     it("sub-routes with openApiMiddleware", () => {
+        expect.assertions(4);
+
         subrouter.get("/endpoint", middleware({ location: "route", operationId: "test", operationObject }), successResponse);
         router.use("/sub-route", subrouter);
         app.use("/test", router);
@@ -258,6 +288,8 @@ describe("express-path-parser", () => {
     });
 
     it("nested sub-routes with a path parameters Router", () => {
+        expect.assertions(9);
+
         const router2 = Router();
         const subrouter2 = Router();
 
@@ -304,6 +336,8 @@ describe("express-path-parser", () => {
     });
 
     it("single slash nested routes", () => {
+        expect.assertions(1);
+
         app.use("/", router);
         router.use("/", subrouter);
         subrouter.get("/user", successResponse);

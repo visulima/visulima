@@ -63,7 +63,7 @@ const CopyToClipboard = ({
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...properties}
         >
-            <IconToUse className="nextra-copy-icon pointer-events-none h-4 w-4" />
+            <IconToUse className="nextra-copy-icon pointer-events-none size-4" />
         </Component>
     );
 };

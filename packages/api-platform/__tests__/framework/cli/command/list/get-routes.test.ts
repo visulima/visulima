@@ -32,6 +32,8 @@ describe("getRoutes", () => {
         });
 
         it("express Routes", async () => {
+            expect.assertions(1);
+
             const actualRoutesMap = await getRoutes(app, "express", false);
 
             expect(actualRoutesMap).toMatchSnapshot();
@@ -62,6 +64,8 @@ describe("getRoutes", () => {
         });
 
         it("koa Routes", async () => {
+            expect.assertions(1);
+
             const actualRoutesMap = await getRoutes(app, "koa", false);
 
             expect(actualRoutesMap).toMatchSnapshot();
@@ -115,6 +119,8 @@ describe("getRoutes", () => {
         });
 
         it("hapi Routes", async () => {
+            expect.assertions(1);
+
             const actualRoutesMap = await getRoutes(app, "hapi", false);
 
             expect(actualRoutesMap).toMatchSnapshot();
@@ -138,6 +144,8 @@ describe("getRoutes", () => {
         });
 
         it("fastify Routes", async () => {
+            expect.assertions(1);
+
             const actualRoutesMap = await getRoutes(app, "fastify", false);
 
             expect(actualRoutesMap).toMatchSnapshot();
