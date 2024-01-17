@@ -98,12 +98,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const reporter of options.reporters ?? []) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+             
             if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
                 (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this._types);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+             
             if ((reporter as StringifyAwareReporter<L>).setStringify) {
                 (reporter as StringifyAwareReporter<L>).setStringify(this._stringify);
             }
@@ -115,7 +115,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const processor of options.processors ?? []) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+             
             if ((processor as StringifyAwareProcessor<L>).setStringify) {
                 (processor as StringifyAwareProcessor<L>).setStringify(this._stringify);
             }
