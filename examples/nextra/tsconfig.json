@@ -16,14 +16,14 @@
         "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
-            "@components/*": ["./components/*"],
+            "@components/*": ["./components/*"]
         },
         "plugins": [
             {
                 "name": "next",
-            },
-        ],
+            }
+        ]
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules"],
+    "exclude": ["node_modules"]
 }
