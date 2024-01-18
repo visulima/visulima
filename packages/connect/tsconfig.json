@@ -4,6 +4,6 @@
     "extends": "../../tsconfig.base.json",
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
-        "moduleResolution": "bundler"
-    }
+        "moduleResolution": "bundler",
+    },
 }
