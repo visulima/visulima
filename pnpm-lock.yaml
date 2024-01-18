@@ -1208,8 +1208,8 @@ importers:
         specifier: ^6.12.0
         version: 6.12.0
       next-test-api-route-handler:
-        specifier: ^4.0.2
-        version: 4.0.2(next@13.5.6)
+        specifier: ^4.0.3
+        version: 4.0.3(next@13.5.6)
       node-mocks-http:
         specifier: ^1.14.1
         version: 1.14.1
@@ -1457,8 +1457,8 @@ importers:
         specifier: ^12.0.0 || ^13.0.0
         version: 13.4.15(@babel/core@7.23.7)(react-dom@18.2.0)(react@18.2.0)
       next-test-api-route-handler:
-        specifier: ^4.0.2
-        version: 4.0.2(next@13.4.15)
+        specifier: ^4.0.3
+        version: 4.0.3(next@13.4.15)
       node-mocks-http:
         specifier: ^1.14.1
         version: 1.14.1
@@ -23644,8 +23644,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /next-test-api-route-handler@4.0.2(next@13.4.15):
-    resolution: {integrity: sha512-Hykych3/qdYPkW4LqnrfyAj9D3cpE7Dod5a7EXhx5nCyKumgJDPt8vNyzTTLP1nV8FwL9tPu1qBywb6HVzZOvw==}
+  /next-test-api-route-handler@4.0.3(next@13.4.15):
+    resolution: {integrity: sha512-rfvU7bmaQ36aV99OkOOfQ3EKQDNEZfbhT3HHZim4xmcioBr65ufs2QlhkB+remJyuLVktko5btcO6rG4R81Z7A==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
       msw: '>=2'
@@ -23660,8 +23660,8 @@ packages:
       next: 13.4.15(@babel/core@7.23.7)(react-dom@18.2.0)(react@18.2.0)
     dev: true
 
-  /next-test-api-route-handler@4.0.2(next@13.5.6):
-    resolution: {integrity: sha512-Hykych3/qdYPkW4LqnrfyAj9D3cpE7Dod5a7EXhx5nCyKumgJDPt8vNyzTTLP1nV8FwL9tPu1qBywb6HVzZOvw==}
+  /next-test-api-route-handler@4.0.3(next@13.5.6):
+    resolution: {integrity: sha512-rfvU7bmaQ36aV99OkOOfQ3EKQDNEZfbhT3HHZim4xmcioBr65ufs2QlhkB+remJyuLVktko5btcO6rG4R81Z7A==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
       msw: '>=2'
