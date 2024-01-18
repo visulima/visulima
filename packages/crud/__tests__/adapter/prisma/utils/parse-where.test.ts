@@ -6,6 +6,8 @@ import parsePrismaWhere from "../../../../src/adapter/prisma/utils/parse-where";
 
 describe("prisma parse where", () => {
     it("should mirror basic primitives", () => {
+        expect.assertions(1);
+
         const baseQuery = {
             id: 1,
             username: "foobar",
@@ -15,6 +17,8 @@ describe("prisma parse where", () => {
     });
 
     it("should handle a date value", () => {
+        expect.assertions(1);
+
         const now = new Date().toISOString();
         const baseQuery = {
             createdAt: now,
@@ -26,6 +30,8 @@ describe("prisma parse where", () => {
     });
 
     it("should handle operators", () => {
+        expect.assertions(1);
+
         const baseQuery: WhereField = {
             id: {
                 $neq: 1,
@@ -46,6 +52,8 @@ describe("prisma parse where", () => {
     });
 
     it("should mirror $isnull value to null", () => {
+        expect.assertions(1);
+
         const baseQuery: WhereField = {
             username: "$isnull",
         };
@@ -56,6 +64,8 @@ describe("prisma parse where", () => {
     });
 
     it("should parse $and", () => {
+        expect.assertions(2);
+
         let baseQuery: WhereField = {
             $and: {
                 id: 1,
@@ -65,17 +75,14 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                AND: {
-                    id: 1,
-                    username: {
-                        contains: "foo",
-                    },
+        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>({
+            AND: {
+                id: 1,
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
 
         baseQuery = {
             $and: {
@@ -86,28 +93,27 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                AND: {
-                    posts: {
-                        some: {
-                            author: {
-                                some: {
-                                    id: 1,
-                                },
+        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>({
+            AND: {
+                posts: {
+                    some: {
+                        author: {
+                            some: {
+                                id: 1,
                             },
                         },
                     },
-                    username: {
-                        contains: "foo",
-                    },
+                },
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
     });
 
     it("should parse $or", () => {
+        expect.assertions(2);
+
         let baseQuery: WhereField = {
             $or: {
                 id: 1,
@@ -117,17 +123,14 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                OR: {
-                    id: 1,
-                    username: {
-                        contains: "foo",
-                    },
+        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>({
+            OR: {
+                id: 1,
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
 
         baseQuery = {
             $or: {
@@ -138,28 +141,27 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                OR: {
-                    posts: {
-                        some: {
-                            author: {
-                                some: {
-                                    id: 1,
-                                },
+        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>({
+            OR: {
+                posts: {
+                    some: {
+                        author: {
+                            some: {
+                                id: 1,
                             },
                         },
                     },
-                    username: {
-                        contains: "foo",
-                    },
+                },
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
     });
 
     it("should parse $not", () => {
+        expect.assertions(2);
+
         let baseQuery: WhereField = {
             $not: {
                 id: 1,
@@ -169,17 +171,14 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                NOT: {
-                    id: 1,
-                    username: {
-                        contains: "foo",
-                    },
+        expect(parsePrismaWhere(baseQuery, [])).toStrictEqual<PrismaWhereField>({
+            NOT: {
+                id: 1,
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
 
         baseQuery = {
             $not: {
@@ -190,28 +189,27 @@ describe("prisma parse where", () => {
             },
         };
 
-        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>(
-            // @ts-expect-error
-            {
-                NOT: {
-                    posts: {
-                        some: {
-                            author: {
-                                some: {
-                                    id: 1,
-                                },
+        expect(parsePrismaWhere(baseQuery, ["posts.author"])).toStrictEqual<PrismaWhereField>({
+            NOT: {
+                posts: {
+                    some: {
+                        author: {
+                            some: {
+                                id: 1,
                             },
                         },
                     },
-                    username: {
-                        contains: "foo",
-                    },
+                },
+                username: {
+                    contains: "foo",
                 },
             },
-        );
+        });
     });
 
     it("should handle simple relations", () => {
+        expect.assertions(1);
+
         const baseQuery: WhereField = {
             "posts.content": {
                 $cont: "Hello",
@@ -230,6 +228,8 @@ describe("prisma parse where", () => {
     });
 
     it("should handle nested relations", () => {
+        expect.assertions(1);
+
         const baseQuery: WhereField = {
             "posts.author.id": 1,
             "posts.content": {

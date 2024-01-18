@@ -26,6 +26,8 @@ const getEventChecker = async () => {
 
 describe("healthCheck", () => {
     it("get health checks report", async () => {
+        expect.assertions(1);
+
         const healthCheck = new HealthCheck();
 
         healthCheck.addChecker("event-loop", async () => {
@@ -57,6 +59,8 @@ describe("healthCheck", () => {
     });
 
     it("handle exceptions raised within the checker", async () => {
+        expect.assertions(1);
+
         const healthCheck = new HealthCheck();
 
         healthCheck.addChecker("event-loop", async () => {
@@ -84,6 +88,8 @@ describe("healthCheck", () => {
     });
 
     it("set healthy to false when any of the checker fails", async () => {
+        expect.assertions(1);
+
         const healthCheck = new HealthCheck();
 
         healthCheck.addChecker("database", getDatabaseChecker);
@@ -120,6 +126,8 @@ describe("healthCheck", () => {
     });
 
     it("should show a list of all services", async () => {
+        expect.assertions(1);
+
         const healthCheck = new HealthCheck();
 
         healthCheck.addChecker("database", getDatabaseChecker);
@@ -130,6 +138,8 @@ describe("healthCheck", () => {
     });
 
     it("should return a boolean if the service is live", async () => {
+        expect.assertions(2);
+
         const healthCheck = new HealthCheck();
 
         healthCheck.addChecker("database", async () => {

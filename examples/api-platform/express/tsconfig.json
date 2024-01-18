@@ -9,6 +9,6 @@
         "strict": false,
         "skipLibCheck": true,
         "rootDir": "./",
-        "outDir": "./dist"
-    }
+        "outDir": "./dist",
+    },
 }

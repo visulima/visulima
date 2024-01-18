@@ -35,6 +35,8 @@ describe("monorepo", () => {
             const strategy = scenario.includes("-") ? scenario.split("-")[0] : scenario;
 
             it.each(packages)(`from subdirectory ${scenario}/packages/%s`, async (package_) => {
+                expect.assertions(2);
+
                 const root = join(cwd, scenario);
                 const result = await findMonorepoRoot(join(root, "packages", package_));
 
@@ -43,6 +45,8 @@ describe("monorepo", () => {
             });
 
             it(`from .`, async () => {
+                expect.assertions(2);
+
                 const root = join(cwd, scenario);
                 const result = await findMonorepoRoot(root);
 
@@ -51,6 +55,8 @@ describe("monorepo", () => {
             });
 
             it(`from non-package root subdirectory '${scenario}/packages/package-a/scripts'`, async () => {
+                expect.assertions(2);
+
                 const root = join(cwd, scenario);
                 const result = await findMonorepoRoot(join(root, "packages", "package-a", "scripts"));
 
@@ -59,6 +65,8 @@ describe("monorepo", () => {
             });
 
             it(`from non-package root from subdirectory '${scenario}/scripts'`, async () => {
+                expect.assertions(2);
+
                 const root = join(cwd, scenario);
 
                 const result = await findMonorepoRoot(join(root, "scripts"));
@@ -69,6 +77,8 @@ describe("monorepo", () => {
         });
 
         it(`should throw error when no match is found`, async () => {
+            expect.assertions(1);
+
             const root = join(cwd, "noMatch");
 
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
@@ -76,6 +86,8 @@ describe("monorepo", () => {
         });
 
         it("should throw error when package.json is broken", async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect,vitest/require-to-throw-message
             expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow();
         });

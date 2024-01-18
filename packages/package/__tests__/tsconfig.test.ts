@@ -31,18 +31,24 @@ vi.mock("get-tsconfig", async (importOriginal) => {
 describe("tsconfig", () => {
     describe("findTSConfig", () => {
         it("should find the tsconfig.json file", async () => {
+            expect.assertions(1);
+
             const tsConfig = await findTSConfig(cwd);
 
             expect(tsConfig.config).toBeDefined();
         });
 
         it("should throw an error when the tsconfig.json file is not found", async () => {
+            expect.assertions(1);
+
             await expect(async () => await findTSConfig(join(cwd, "noMatch"))).rejects.toThrow("Could not find a tsconfig.json or jsconfig.json file.");
         });
     });
 
     describe("writeTSConfig", () => {
         it("should write a tsconfig.json file", async () => {
+            expect.assertions(1);
+
             await writeTSConfig(
                 {
                     compilerOptions: {},

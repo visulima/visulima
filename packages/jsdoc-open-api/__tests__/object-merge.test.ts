@@ -4,6 +4,8 @@ import objectMerge from "../src/util/object-merge";
 
 describe("objectMerge", () => {
     it("merges path into empty path object", () => {
+        expect.assertions(1);
+
         const a = {
             paths: {},
         };
@@ -20,6 +22,8 @@ describe("objectMerge", () => {
     });
 
     it("merges path into undefined", () => {
+        expect.assertions(1);
+
         const a = {};
         const b = {
             paths: { path1: { description: "this is a test", name: "test" } },
@@ -34,6 +38,8 @@ describe("objectMerge", () => {
     });
 
     it("merges path and component into nothing", () => {
+        expect.assertions(1);
+
         const a = {};
         const b = {
             components: { schemas: { fun: { name: "fun" }, fun2: { name: "fun2" } } },
@@ -50,6 +56,8 @@ describe("objectMerge", () => {
     });
 
     it("merges path without overriding other path", () => {
+        expect.assertions(1);
+
         const a = {
             paths: { path1: { description: "this is a test", name: "test" } },
         };
@@ -69,6 +77,8 @@ describe("objectMerge", () => {
     });
 
     it("merges 2 deep", () => {
+        expect.assertions(1);
+
         const a = {
             a: {
                 b: {
@@ -102,6 +112,8 @@ describe("objectMerge", () => {
     });
 
     it("overrides 3 deep", () => {
+        expect.assertions(1);
+
         const a = {
             a: {
                 b: {
@@ -140,6 +152,8 @@ describe("objectMerge", () => {
     });
 
     it("overrides 4 deep", () => {
+        expect.assertions(1);
+
         const a = {
             a: {
                 b: {

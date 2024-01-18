@@ -5,6 +5,8 @@ import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "
 
 describe("swagger", () => {
     it("should return the correct values for the pagination schema object", () => {
+        expect.assertions(1);
+
         const name = "Test";
         const items: OpenAPIV3.SchemaObject = {
             items: {
@@ -37,6 +39,8 @@ describe("swagger", () => {
     });
 
     it("should return the correct object for the pagination component object", () => {
+        expect.assertions(1);
+
         expect(createPaginationMetaSchemaObject()).toStrictEqual({
             PaginationData: {
                 properties: {
@@ -91,6 +95,8 @@ describe("swagger", () => {
     });
 
     it("should return the correct object for the pagination component object with different name", () => {
+        expect.assertions(1);
+
         const name = "Test";
 
         expect(createPaginationMetaSchemaObject(name)).toStrictEqual({
