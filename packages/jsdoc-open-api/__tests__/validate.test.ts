@@ -4,6 +4,8 @@ import validate from "../src/validate";
 
 describe("validate", () => {
     it("should validate a valid spec and return no errors", async () => {
+        expect.assertions(1);
+
         const spec = {
             info: {
                 contact: {
@@ -26,6 +28,8 @@ describe("validate", () => {
     });
 
     it("should throw an error if unrecognized format is detected", async () => {
+        expect.assertions(1);
+
         const spec = {
             customProperty: "value", // A property with unrecognized format
             info: {

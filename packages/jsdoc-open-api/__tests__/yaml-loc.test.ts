@@ -4,6 +4,8 @@ import yamlLoc from "../src/util/yaml-loc";
 
 describe("yamlLoc", () => {
     it("handles simplest case", () => {
+        expect.assertions(1);
+
         const yaml = `
     simple:
       example: "hi"
@@ -14,6 +16,8 @@ describe("yamlLoc", () => {
     });
 
     it("strips newlines", () => {
+        expect.assertions(1);
+
         const yaml = `
     simple1:
       example: "hi"
@@ -27,6 +31,8 @@ describe("yamlLoc", () => {
     });
 
     it("strips comments", () => {
+        expect.assertions(1);
+
         const yaml = `
     # a comment
     simple1:
@@ -42,6 +48,8 @@ describe("yamlLoc", () => {
     });
 
     it("strips indented comments", () => {
+        expect.assertions(1);
+
         const yaml = `
     simple:
       #a comment
@@ -53,6 +61,8 @@ describe("yamlLoc", () => {
     });
 
     it("doesn't strip inline comments", () => {
+        expect.assertions(1);
+
         const yaml = `
     simple: # a comment
       example: "hi"
@@ -63,6 +73,8 @@ describe("yamlLoc", () => {
     });
 
     it("doesn't strip components string", () => {
+        expect.assertions(1);
+
         const yaml = `
     simple:
       example: "#/components/one/hi"

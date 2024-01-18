@@ -4,6 +4,8 @@ import nodeEnvironmentCheck from "../../src/checks/node-environment-check";
 
 describe("node-environment-check", () => {
     it("should return healthy when the node env is set", async () => {
+        expect.assertions(1);
+
         const result = await nodeEnvironmentCheck()();
 
         expect(result).toStrictEqual({
@@ -20,6 +22,8 @@ describe("node-environment-check", () => {
     });
 
     it("should return healthy when the node env is set to production", async () => {
+        expect.assertions(1);
+
         const oldEnvironment = process.env["NODE_ENV"];
 
         process.env["NODE_ENV"] = "production";
@@ -42,6 +46,8 @@ describe("node-environment-check", () => {
     });
 
     it("should return unhealthy when the node env is set to production", async () => {
+        expect.assertions(1);
+
         const result = await nodeEnvironmentCheck("production")();
 
         expect(result).toStrictEqual({
@@ -56,6 +62,8 @@ describe("node-environment-check", () => {
     });
 
     it("should return unhealthy when the node env is not set", async () => {
+        expect.assertions(1);
+
         const oldEnvironment = process.env["NODE_ENV"];
 
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete

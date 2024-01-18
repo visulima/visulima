@@ -8,13 +8,13 @@
         "jsx": "react-jsx",
         "paths": {
             // fixes incorrect types for flexsearch https://github.com/nextapps-de/flexsearch/issues/392#issuecomment-1552286514
-            "flexsearch": ["./node_modules/@types/flexsearch"]
+            "flexsearch": ["./node_modules/@types/flexsearch"],
         },
-        "moduleResolution": "bundler"
+        "moduleResolution": "bundler",
     },
     "plugins": [
         {
-            "name": "next"
-        }
-    ]
+            "name": "next",
+        },
+    ],
 }

@@ -31,6 +31,8 @@ delete process.env.npm_config_user_agent;
 describe("package-manager", () => {
     describe("getPackageManagerVersion", () => {
         it("should return the package manager version", () => {
+            expect.assertions(2);
+
             expect(getPackageManagerVersion("npm")).toBe("7.0.15");
             expect(getPackageManagerVersion("yarn")).toBe("1.22.10");
         });
@@ -38,11 +40,15 @@ describe("package-manager", () => {
 
     describe("whichPackageManagerRuns", () => {
         it("detects yarn", () => {
+            expect.assertions(1);
+
             expect(async () => await execa("yarn", [], { cwd: join(whichPMFixturePath, "yarn") })).not.toThrow();
         });
 
         // eslint-disable-next-line vitest/no-done-callback
         it("should detect bun", async (context) => {
+            expect.assertions(1);
+
             // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
             if (platform() === "win32" || package_.devDependencies.bun === undefined) {
                 // eslint-disable-next-line no-console
@@ -54,14 +60,20 @@ describe("package-manager", () => {
         });
 
         it("should detect npm", () => {
+            expect.assertions(1);
+
             expect(async () => await execa("npm", ["install"], { cwd: join(whichPMFixturePath, "npm") })).not.toThrow();
         });
 
         it("should detect pnpm", () => {
+            expect.assertions(1);
+
             expect(async () => await execa("pnpm", ["install"], { cwd: join(whichPMFixturePath, "pnpm") })).not.toThrow();
         });
 
         it("should detect cnpm", () => {
+            expect.assertions(1);
+
             expect(async () => await execa("cnpm", ["install"], { cwd: join(whichPMFixturePath, "cnpm") })).not.toThrow();
         });
     });

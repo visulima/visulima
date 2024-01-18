@@ -6,6 +6,8 @@ class MyError extends VisulimaError {}
 
 describe("visulima-error", () => {
     it("should be a instance of the thrown error", () => {
+        expect.assertions(1);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -19,6 +21,8 @@ describe("visulima-error", () => {
     });
 
     it("should have name prop", () => {
+        expect.assertions(1);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -32,6 +36,8 @@ describe("visulima-error", () => {
     });
 
     it("should have constructor.name as give error name", () => {
+        expect.assertions(1);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -45,6 +51,8 @@ describe("visulima-error", () => {
     });
 
     it("should have name and message prop", () => {
+        expect.assertions(2);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -59,6 +67,8 @@ describe("visulima-error", () => {
     });
 
     it("should have name, hint and message prop", () => {
+        expect.assertions(3);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -74,6 +84,8 @@ describe("visulima-error", () => {
     });
 
     it("should have name, hint, title and message prop", () => {
+        expect.assertions(4);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 
@@ -90,6 +102,8 @@ describe("visulima-error", () => {
     });
 
     it("should have name, hint, title, loc and message prop", () => {
+        expect.assertions(5);
+
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         let error_: Error;
 

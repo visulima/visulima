@@ -5,6 +5,8 @@ import parsePrismaRecursiveField from "../../../../src/adapter/prisma/utils/pars
 
 describe("prisma parse recursive", () => {
     it("should parse select to prisma select", () => {
+        expect.assertions(1);
+
         expect(
             parsePrismaRecursiveField(
                 {
@@ -40,6 +42,8 @@ describe("prisma parse recursive", () => {
     });
 
     it("should parse include to prisma include", () => {
+        expect.assertions(1);
+
         expect(
             parsePrismaRecursiveField(
                 {
