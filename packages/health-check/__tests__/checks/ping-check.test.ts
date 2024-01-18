@@ -8,14 +8,14 @@ const consoleMessage = "Skipping DNS check in CI environment, please validate th
 
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
-        expect.assertions(1);
-
         // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         if (process.env["CI"]) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
         }
+
+        expect.assertions(1);
 
         const result = await pingCheck("www.github.com")();
 
@@ -33,14 +33,14 @@ describe("pingCheck", () => {
     }, 10_000);
 
     it("should return unhealthy when the host is reachable", async () => {
-        expect.assertions(1);
-
         // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         if (process.env["CI"]) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
         }
+
+        expect.assertions(1);
 
         const result = await pingCheck("https://example.com1")();
 
