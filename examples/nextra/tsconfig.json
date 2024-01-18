@@ -20,7 +20,7 @@
         },
         "plugins": [
             {
-                "name": "next",
+                "name": "next"
             }
         ]
     },
