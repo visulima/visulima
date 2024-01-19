@@ -1,3 +1,10 @@
+## @visulima/package [1.2.7](https://github.com/visulima/visulima/compare/@visulima/package@1.2.6...@visulima/package@1.2.7) (2024-01-19)
+
+
+### Bug Fixes
+
+* updated all deps, updated test based on eslint errors ([909f8f3](https://github.com/visulima/visulima/commit/909f8f384804d7ef140354ab44f867532dbc9847))
+
 ## @visulima/package [1.2.6](https://github.com/visulima/visulima/compare/@visulima/package@1.2.5...@visulima/package@1.2.6) (2023-11-30)
 
 
