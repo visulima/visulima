@@ -1,3 +1,24 @@
+## @visulima/nextra-theme-docs [4.0.12](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.11...@visulima/nextra-theme-docs@4.0.12) (2024-01-19)
+
+
+### Bug Fixes
+
+* fixed flexsearch ([d3408c8](https://github.com/visulima/visulima/commit/d3408c8b92f4173b2d4b79dbca899eb2190ee13d))
+* updated all deps, updated test based on eslint errors ([909f8f3](https://github.com/visulima/visulima/commit/909f8f384804d7ef140354ab44f867532dbc9847))
+
+
+### Styles
+
+* fixed eslint errors ([f9fcff4](https://github.com/visulima/visulima/commit/f9fcff4b7d0a43068d6bdd34be0f96be2e030620))
+
+
+### Miscellaneous Chores
+
+* fixed ping test ([395910a](https://github.com/visulima/visulima/commit/395910a7ea79ef6d3d6b635afd48a11d4f6d1f3b))
+* update all tests ([c0453fc](https://github.com/visulima/visulima/commit/c0453fc1dc4beccf2533546a83ae3b62822ea570))
+* updated dev deps ([8a902da](https://github.com/visulima/visulima/commit/8a902da6706d45149b962741ec6f60685cef4bdd))
+* updated dev deps ([213c230](https://github.com/visulima/visulima/commit/213c230a9aacb9375d2426df84cdfc0165f2bb60))
+
 ## @visulima/nextra-theme-docs [4.0.11](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.10...@visulima/nextra-theme-docs@4.0.11) (2023-12-06)
 
 
