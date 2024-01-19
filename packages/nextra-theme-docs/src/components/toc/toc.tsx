@@ -67,7 +67,7 @@ const Toc: FC<TOCProperties> = ({ activeId = undefined, headings, isPage = false
                                 </span>
                                 {isPage && (
                                     <span className="h-4 shrink-0 grow-0">
-                                        <ArrowRightIcon className="block h-4 w-4" />
+                                        <ArrowRightIcon className="block size-4" />
                                     </span>
                                 )}
                             </a>

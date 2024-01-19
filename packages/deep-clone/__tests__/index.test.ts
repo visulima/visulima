@@ -35,6 +35,8 @@ const assertRegExp = (copy: RegExp, input: RegExp) => {
 
 describe("deepClone", () => {
     it("should throw TypeError when trying to copy WeakMap objects", () => {
+        expect.assertions(3);
+
         expect(() => {
             const entries = [
                 [new Object(), "foo"],
@@ -60,6 +62,8 @@ describe("deepClone", () => {
     });
 
     it("should throw TypeError when trying to copy WeakSet objects", () => {
+        expect.assertions(3);
+
         expect(() => {
             const values = [new Object(), new Object()];
 
@@ -83,6 +87,8 @@ describe("deepClone", () => {
     });
 
     it("should throw TypeError when trying to copy SharedArrayBuffer objects", () => {
+        expect.assertions(2);
+
         expect(() => {
             deepClone(new SharedArrayBuffer(64));
         }).toThrow(TypeError);
@@ -95,6 +101,8 @@ describe("deepClone", () => {
     });
 
     it("should throw TypeError when trying to copy DataView objects", () => {
+        expect.assertions(2);
+
         expect(() => {
             deepClone(new DataView(new ArrayBuffer(64)));
         }).toThrow(TypeError);
@@ -107,6 +115,8 @@ describe("deepClone", () => {
     });
 
     it("should throw TypeError when trying to copy Promise objects", async () => {
+        expect.assertions(2);
+
         try {
             // eslint-disable-next-line compat/compat
             const promise = new Promise((resolve) => {
@@ -129,14 +139,20 @@ describe("deepClone", () => {
     });
 
     it("default – does not copy proto properties", async () => {
+        expect.assertions(1);
+
         expect(deepClone(Object.create({ a: 1 })).a, "value not copied").toBeUndefined();
     });
 
     it("proto option – copies enumerable proto properties", async () => {
+        expect.assertions(1);
+
         expect(deepClone(Object.create({ a: 1 }), { proto: true }).a, "value copied").toBe(1);
     });
 
     it("circles option - circular object", async () => {
+        expect.assertions(5);
+
         const o = { circular: undefined, nest: { a: 1, b: 2 } };
         o.circular = o;
 
@@ -151,6 +167,8 @@ describe("deepClone", () => {
     });
 
     it("circles option – deep circular object", async () => {
+        expect.assertions(5);
+
         const o = { nest: { a: 1, b: 2, circular: undefined } };
         o.nest.circular = o;
 
@@ -165,14 +183,20 @@ describe("deepClone", () => {
     });
 
     it("circles option alone – does not copy proto properties", async () => {
+        expect.assertions(1);
+
         expect(deepClone(Object.create({ a: 1 }), { circles: true }).a, "value not copied").toBeUndefined();
     });
 
     it("circles and proto option – copies enumerable proto properties", async () => {
+        expect.assertions(1);
+
         expect(deepClone(Object.create({ a: 1 }), { circles: true, proto: true }).a, "value copied").toBe(1);
     });
 
     it("circles and proto option - circular object", async () => {
+        expect.assertions(5);
+
         const o = { circular: undefined, nest: { a: 1, b: 2 } };
         o.circular = o;
 
@@ -187,6 +211,8 @@ describe("deepClone", () => {
     });
 
     it("circles and proto option – deep circular object", async () => {
+        expect.assertions(5);
+
         const o = { nest: { a: 1, b: 2, circular: undefined } };
         o.nest.circular = o;
 
@@ -201,6 +227,8 @@ describe("deepClone", () => {
     });
 
     it("circles and proto option – deep circular array", async () => {
+        expect.assertions(5);
+
         const o = { nest: [1, 2] };
 
         // @ts-expect-error - circular reference
@@ -222,6 +250,8 @@ describe("deepClone", () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         [(data) => deepClone(data, { circles: true, proto: true }), "circles and proto option"],
     ])(`should work with classes, when proto option is enabled`, (clone) => {
+        expect.assertions(25);
+
         class Foo {
             public constructor(
                 // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
@@ -296,6 +326,8 @@ describe("deepClone", () => {
         [(data) => deepClone(data, { circles: true, proto: true }), "circles and proto option"],
     ])("should", (clone, label) => {
         it(`${label} – number`, async () => {
+            expect.assertions(17);
+
             expect(clone(64)).toBe(64);
             expect(clone(123_456_789)).toBe(123_456_789);
             expect(clone(-77)).toBe(-77);
@@ -320,6 +352,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – string`, async () => {
+            expect.assertions(6);
+
             expect(clone("foobar")).toBe("foobar");
             expect(clone("yee haw, pardner'")).toBe("yee haw, pardner'");
             expect(clone("")).toBe("");
@@ -332,6 +366,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – BigInt`, async () => {
+            expect.assertions(4);
+
             expect(clone(BigInt("13579"))).toBe(BigInt("13579"));
             expect(clone(BigInt("99999999999999999999999999999999"))).toBe(BigInt("99999999999999999999999999999999"));
             expect(clone(BigInt("-864297531"))).toBe(BigInt("-864297531"));
@@ -339,6 +375,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with symbols (same symbol instance, not just same description)`, () => {
+            expect.assertions(8);
+
             const fooSymInput = Symbol("foo");
             const fooSymCopy = clone(fooSymInput);
 
@@ -370,6 +408,8 @@ describe("deepClone", () => {
 
         // eslint-disable-next-line vitest/expect-expect
         it(`${label} – RegExp`, async () => {
+            expect.assertions(60);
+
             const fooInput = /(pee)+ (poo)+/;
             assertRegExp(clone(fooInput), fooInput);
 
@@ -384,6 +424,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – RegExp with extra functions`, async () => {
+            expect.assertions(17);
+
             const key = "i don't know man i'm running out of random strings";
 
             const yeeInput = /foobar/;
@@ -402,6 +444,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – JSDOM`, async () => {
+            expect.assertions(1);
+
             const source = new JSDOM(`<p>Hello world</p>`).window.document;
 
             const copy: typeof JSDOM = clone<typeof JSDOM>(source);
@@ -410,19 +454,27 @@ describe("deepClone", () => {
         });
 
         it(`${label} – boolean`, async () => {
+            expect.assertions(2);
+
             expect(clone(true), "same value").toBeTruthy();
             expect(clone(false), "same value").toBeFalsy();
         });
 
         it(`${label} – undefined`, async () => {
+            expect.assertions(1);
+
             expect(clone(undefined), "same value").toBeUndefined();
         });
 
         it(`${label} – null`, async () => {
+            expect.assertions(1);
+
             expect(clone(null), "same value").toBeNull();
         });
 
         it(`${label} – function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
             const function_ = () => {};
 
@@ -430,6 +482,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – async function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
             const function_ = async () => {};
 
@@ -437,6 +491,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – generator function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle,@typescript-eslint/no-empty-function
             const function_ = function* () {};
 
@@ -444,6 +500,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – date`, async () => {
+            expect.assertions(2);
+
             const date = new Date();
 
             expect(+clone(date), "same value").toBe(+date);
@@ -451,6 +509,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – shallow object`, async () => {
+            expect.assertions(2);
+
             const o = { a: 1, b: 2 };
 
             expect(clone(o), "same values").toStrictEqual(o);
@@ -458,6 +518,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – shallow array`, async () => {
+            expect.assertions(2);
+
             const o = [1, 2, [], BigInt("123456789"), undefined];
 
             expect(clone(o), "same values").toStrictEqual(o);
@@ -465,6 +527,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – deep object`, async () => {
+            expect.assertions(3);
+
             const o = { nest: { a: 1, b: 2 } };
 
             expect(clone(o), "same values").toStrictEqual(o);
@@ -473,6 +537,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – deep array`, async () => {
+            expect.assertions(9);
+
             const o = [{ a: 1, b: 2 }, [3], [[], BigInt("123456789"), undefined], new Object()];
 
             // eslint-disable-next-line vitest/prefer-strict-equal
@@ -489,18 +555,26 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested number`, async () => {
+            expect.assertions(1);
+
             expect(clone({ a: 1 }).a, "same value").toBe(1);
         });
 
         it(`${label} – nested string`, async () => {
+            expect.assertions(1);
+
             expect(clone({ s: "str" }).s, "same value").toBe("str");
         });
 
         it(`${label} – nested boolean`, async () => {
+            expect.assertions(1);
+
             expect(clone({ b: true }).b, "same value").toBeTruthy();
         });
 
         it(`${label} – nested function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
             const function_ = () => {};
 
@@ -508,6 +582,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested async function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
             const function_ = async () => {};
 
@@ -515,6 +591,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested generator function`, async () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle,@typescript-eslint/no-empty-function
             const function_ = function* () {};
 
@@ -522,6 +600,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested date`, async () => {
+            expect.assertions(2);
+
             const date = new Date();
 
             expect(+clone({ d: date }).d, "same value").toBe(+date);
@@ -529,6 +609,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested date in array`, async () => {
+            expect.assertions(4);
+
             const date = new Date();
 
             expect(+clone({ d: [date] }).d[0], "same value").toBe(+date);
@@ -539,10 +621,14 @@ describe("deepClone", () => {
         });
 
         it(`${label} – nested null`, async () => {
+            expect.assertions(1);
+
             expect(clone({ n: null }).n, "same value").toBeNull();
         });
 
         it(`${label} – arguments`, async () => {
+            expect.assertions(4);
+
             // eslint-disable-next-line func-style,@typescript-eslint/naming-convention,no-underscore-dangle
             function function_(...arguments_) {
                 expect(clone(arguments_), "same values").toStrictEqual(arguments_);
@@ -558,6 +644,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} -copies buffers from object correctly`, async () => {
+            expect.assertions(3);
+
             const input = Date.now().toString(36);
             const inputBuffer = Buffer.from(input);
             const clonedBuffer = clone({ a: inputBuffer }).a;
@@ -569,6 +657,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} -copies buffers from arrays correctly`, async () => {
+            expect.assertions(3);
+
             const input = Date.now().toString(36);
             const inputBuffer = Buffer.from(input);
             const [clonedBuffer] = clone([inputBuffer]);
@@ -580,6 +670,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} -copies TypedArrays from object correctly`, async () => {
+            expect.assertions(4);
+
             const [input1, input2] = [rnd(10), rnd(10)];
             const buffer = new ArrayBuffer(8);
             const int32View = new Int32Array(buffer);
@@ -597,6 +689,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} -copies TypedArrays from array correctly`, async () => {
+            expect.assertions(4);
+
             const [input1, input2] = [rnd(10), rnd(10)];
             const buffer = new ArrayBuffer(16);
             const int32View = new Int32Array(buffer);
@@ -612,7 +706,9 @@ describe("deepClone", () => {
             expect(cloned[1], "cloned value content is correct").toBe(input2);
         });
 
-        it(`${label} -copies complex TypedArrays`, async () => {
+        it(`${label} - copies complex TypedArrays`, async () => {
+            expect.assertions(9);
+
             const [input1, input2, input3] = [rnd(10), rnd(10), rnd(10)];
             const buffer = new ArrayBuffer(4);
             const view1 = new Int8Array(buffer, 0, 2);
@@ -637,6 +733,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Int8Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Int8Array([-128, -64, 0, 63, 127]);
             const fooCopy = clone(fooInput);
 
@@ -650,6 +748,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Uint8Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Uint8Array([0, 63, 127, 255]);
             const fooCopy = clone(fooInput);
 
@@ -663,6 +763,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Uint8ClampedArray objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Uint8Array([0, 63, 127, 255]);
             const fooCopy = clone(fooInput);
 
@@ -676,6 +778,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Int16Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Int16Array([-0x80_00, -0x40_00, 0, 0x3f_ff, 0x7f_ff]);
             const fooCopy = clone(fooInput);
 
@@ -689,6 +793,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Uint16Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Uint16Array([0, 0x3f_ff, 0x7f_ff, 0xff_ff]);
             const fooCopy = clone(fooInput);
 
@@ -702,6 +808,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Int32Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Int32Array([-0x80_00_00_00, -0x40_00_00_00, 0, 0x3f_ff_ff_ff, 0x7f_ff_ff_ff]);
             const fooCopy = clone(fooInput);
 
@@ -715,6 +823,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - should work with Uint32Array objects`, () => {
+            expect.assertions(9);
+
             const fooInput = new Uint32Array([0, 0x3f_ff_ff_ff, 0x7f_ff_ff_ff, 0xff_ff_ff_ff]);
             const fooCopy = clone(fooInput);
 
@@ -728,6 +838,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - maps`, async () => {
+            expect.assertions(2);
+
             const map = new Map([["a", 1]]);
 
             expect([...clone(map)], "same value").toStrictEqual([["a", 1]]);
@@ -735,6 +847,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - sets`, async () => {
+            expect.assertions(2);
+
             const set = new Set([1]);
 
             expect([...clone(set)], "same value").toStrictEqual([1]);
@@ -742,6 +856,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - nested maps`, async () => {
+            expect.assertions(2);
+
             const data = { m: new Map([["a", 1]]) };
 
             expect([...clone(data).m], "same value").toStrictEqual([["a", 1]]);
@@ -749,6 +865,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - nested sets`, async () => {
+            expect.assertions(2);
+
             const data = { s: new Set([1]) };
 
             expect([...clone(data).s], "same value").toStrictEqual([1]);
@@ -756,6 +874,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - generic <Error> object`, () => {
+            expect.assertions(7);
+
             const err1 = new Error("beep");
             const err2 = clone(err1);
 
@@ -766,6 +886,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <TypeError>`, () => {
+            expect.assertions(7);
+
             const err1 = new TypeError("invalid type");
             const err2 = clone(err1);
 
@@ -775,6 +897,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <RangeError>`, () => {
+            expect.assertions(7);
+
             const err1 = new RangeError("out-of-range");
             const err2 = clone(err1);
 
@@ -784,6 +908,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <SyntaxError>`, () => {
+            expect.assertions(7);
+
             const err1 = new SyntaxError("bad syntax");
             const err2 = clone(err1);
 
@@ -793,6 +919,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <ReferenceError>`, () => {
+            expect.assertions(7);
+
             const err1 = new ReferenceError("undefined variable");
             const err2 = clone(err1);
 
@@ -802,6 +930,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <EvalError>`, () => {
+            expect.assertions(7);
+
             const err1 = new EvalError("eval err1");
             const err2 = clone(err1);
 
@@ -811,6 +941,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - <URIError>`, () => {
+            expect.assertions(7);
+
             const err1 = new URIError("bad URI");
             const err2 = clone(err1);
 
@@ -819,7 +951,9 @@ describe("deepClone", () => {
             assertErrorValues(err2, err1);
         });
 
-        it.skip(`${label} - environments missing a "stack" trace`, () => {
+        it.todo(`${label} - environments missing a "stack" trace`, () => {
+            expect.assertions(9);
+
             const createError = (msg: string) => {
                 const err = new Error(msg);
 
@@ -840,6 +974,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - "code" property (Node.js)`, () => {
+            expect.assertions(1);
+
             const err1 = new Error("beep") as any;
             err1.code = 43;
 
@@ -848,6 +984,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - "errno" property (Node.js)`, () => {
+            expect.assertions(1);
+
             const err1 = new Error("beep") as any;
             err1.errno = "EACCES";
 
@@ -857,6 +995,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - "syscall" property (Node.js)`, () => {
+            expect.assertions(1);
+
             const err1 = new Error("beep") as any;
             err1.syscall = "boop";
 
@@ -866,6 +1006,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - additional (enumerable) properties`, () => {
+            expect.assertions(6);
+
             // Data descriptor...
             const err1 = new Error("errrr") as any;
             err1.beep = "boop";
@@ -911,6 +1053,8 @@ describe("deepClone", () => {
         });
 
         it(`${label} - custom errors (proto)`, () => {
+            expect.assertions(8);
+
             // @ts-expect-error - TS doesn't like this
             const err1 = new CustomerrorProto("custom error");
             const err2 = clone(err1);
@@ -922,6 +1066,8 @@ describe("deepClone", () => {
         });
 
         it("custom errors (subclass; ES2015)", () => {
+            expect.assertions(8);
+
             const CustomError2 = customerrorSubclass();
 
             const err1 = new CustomError2("custom error");

@@ -4,6 +4,8 @@ import commentsToOpenApi from "../../src/swagger-jsdoc/comments-to-open-api";
 
 describe("commentsToOpenApi", () => {
     it("simple openapi", () => {
+        expect.assertions(1);
+
         const fileContents = `
 /**
  * @openapi
@@ -80,6 +82,8 @@ describe("commentsToOpenApi", () => {
     });
 
     it("simple asyncapi", () => {
+        expect.assertions(1);
+
         const fileContents = `
 /**
  * @asyncapi
@@ -179,6 +183,8 @@ describe("commentsToOpenApi", () => {
     });
 
     it("openapi with Square Bracket", () => {
+        expect.assertions(1);
+
         // eslint-disable-next-line no-secrets/no-secrets
         const fileContents = `
     /**
@@ -277,6 +283,8 @@ describe("commentsToOpenApi", () => {
     });
 
     it("openapi with formData", () => {
+        expect.assertions(1);
+
         const fileContents = `
 /**
  * @swagger

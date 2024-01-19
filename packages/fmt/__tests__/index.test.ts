@@ -30,6 +30,8 @@ describe("fmt", () => {
         ["%%%s%%", ["hi"], "%hi%"],
         ["%%%s%%%%", ["hi"], "%hi%%"],
     ])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
         expect(format(f, a)).toBe(expected);
     });
 
@@ -51,10 +53,14 @@ describe("fmt", () => {
         ["%d%%%d", [11, 22], "11%22"],
         ["%d%%%s", [11, 22], "11%22"],
     ])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
         expect(format(f, a)).toBe(expected);
     });
 
     it.each([["%f", [42.99], "42.99"]])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
         expect(format(f, a)).toBe(expected);
     });
 
@@ -66,6 +72,8 @@ describe("fmt", () => {
         ["%i %i", ["42"], "42 %i"],
         ["%i %i", ["42.99"], "42 %i"],
     ])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
         expect(format(f, a)).toBe(expected);
     });
 
@@ -83,10 +91,14 @@ describe("fmt", () => {
         ["foo %j", [function () {}], "foo [Function: <anonymous>]"],
         ["foo %j", [{ foo: "foo" }, "not-printed"], 'foo {"foo":"foo"}'],
     ])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
         expect(format(f, a)).toBe(expected);
     });
 
     it("should format %j with stringify", () => {
+        expect.assertions(1);
+
         expect(
             format("foo %j", [{ foo: "foo" }], {
                 stringify() {
@@ -97,20 +109,28 @@ describe("fmt", () => {
     });
 
     it("should format %O", () => {
+        expect.assertions(2);
+
         expect(format("foo %o", [{ foo: "foo" }])).toBe('foo {"foo":"foo"}');
         expect(format("foo %O", [{ foo: "foo" }])).toBe('foo {"foo":"foo"}');
     });
 
     it("should format empty args", () => {
+        expect.assertions(2);
+
         expect(format("", [])).toBe("");
         expect(format("%s", [])).toBe("%s");
     });
 
     it("should format empty string", () => {
+        expect.assertions(1);
+
         expect(format("", ["a"])).toBe("");
     });
 
     it("should format object", () => {
+        expect.assertions(2);
+
         const emptyObject = {};
 
         expect(format(emptyObject, [])).toBe("{}");
@@ -118,6 +138,8 @@ describe("fmt", () => {
     });
 
     it("should format ES6 Symbol", () => {
+        expect.assertions(4);
+
         const symbol = Symbol("foo");
 
         expect(format("foo", [symbol])).toBe("foo");
@@ -129,6 +151,8 @@ describe("fmt", () => {
     });
 
     it("should handle circular references", () => {
+        expect.assertions(2);
+
         const circularObject = {};
         // @ts-expect-error - circular reference
         circularObject.foo = circularObject;
@@ -138,6 +162,8 @@ describe("fmt", () => {
     });
 
     it("should handle multiple", () => {
+        expect.assertions(27);
+
         expect(format("%%", ["foo"])).toBe("%");
         expect(format("foo %%", ["foo"])).toBe("foo %");
         expect(format("foo %% %s", ["bar"])).toBe("foo % bar");
@@ -171,12 +197,16 @@ describe("fmt", () => {
     });
 
     it("should throw a error if the fmt is not object or string", () => {
+        expect.assertions(2);
+
         // @ts-expect-error - invalid fmt
         expect(() => format(1)).toThrow("fmt must be a string or object, got number");
         expect(() => format(null)).toThrow("fmt must be a string or object, got null");
     });
 
     it("should be possible to build a custom formatter", () => {
+        expect.assertions(3);
+
         expect(() => build({ formatters: { haha: () => "Jonathan" } })).toThrow("Formatter %haha has more than one character");
         // @ts-expect-error - invalid formatter
         expect(() => build({ formatters: { t: "Jonathan" } })).toThrow("Formatter for %t is not a function");

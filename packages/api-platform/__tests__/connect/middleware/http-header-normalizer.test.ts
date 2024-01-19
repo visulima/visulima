@@ -7,6 +7,8 @@ const normalizeHeaderKey = (key: string) => key.toUpperCase();
 
 describe("httpHeaderNormalizer", () => {
     it("should normalize (lowercase) all the headers and create a copy in rawHeaders", async () => {
+        expect.assertions(2);
+
         const headers = {
             DNS: "d",
             FOO: "bar",
@@ -41,6 +43,8 @@ describe("httpHeaderNormalizer", () => {
     });
 
     it("should normalize (canonical) all the headers and create a copy in rawHeaders", async () => {
+        expect.assertions(2);
+
         const headers = {
             DNS: "d",
             FOO: "bar",
@@ -75,6 +79,8 @@ describe("httpHeaderNormalizer", () => {
     });
 
     it("can use custom normalization function", async () => {
+        expect.assertions(2);
+
         const headers = {
             DNS: "d",
             FOO: "bar",
@@ -113,6 +119,8 @@ describe("httpHeaderNormalizer", () => {
     // multiValueHeaders
 
     it("should normalize (lowercase) all the headers and create a copy in rawMultiValueHeaders", async () => {
+        expect.assertions(2);
+
         const headers = {
             cOOkie: ["123456", "654321"],
         };
@@ -135,6 +143,8 @@ describe("httpHeaderNormalizer", () => {
     });
 
     it("should normalize (canonical) all the headers and create a copy in rawMultiValueHeaders", async () => {
+        expect.assertions(2);
+
         const headers = {
             cOOkie: ["123456", "654321"],
         };
@@ -157,6 +167,8 @@ describe("httpHeaderNormalizer", () => {
     });
 
     it("can use custom normalization function on multiValueHeaders", async () => {
+        expect.assertions(2);
+
         const headers = {
             cOOkie: ["123456", "654321"],
         };

@@ -6,12 +6,16 @@ import getErrorCauses from "../../src/error/get-error-causes";
 
 describe("get-error-causes", () => {
     it("should return empty array if no cause", () => {
+        expect.assertions(1);
+
         const error = new Error("test");
 
         expect(getErrorCauses(error)).toStrictEqual([error]);
     });
 
     it("should return array with causes", () => {
+        expect.assertions(1);
+
         const error = new Error("test");
         const error2 = new Error("test2");
         const error3 = new Error("test3");
@@ -24,6 +28,8 @@ describe("get-error-causes", () => {
     });
 
     it("should ignore deep nesting", () => {
+        expect.assertions(2);
+
         const error = new Error("test");
         const error2 = new Error("test2");
         const error3 = new Error("test3");

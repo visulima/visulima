@@ -4,6 +4,8 @@ import dnsCheck from "../../src/checks/dns-check";
 
 describe("dnsCheck", () => {
     it("should return healthy when the host is resolved", async () => {
+        expect.assertions(1);
+
         const result = await dnsCheck("example.com")();
 
         expect(result).toStrictEqual({
@@ -23,6 +25,8 @@ describe("dnsCheck", () => {
     });
 
     it("should return unhealthy when the host is not resolved", async () => {
+        expect.assertions(1);
+
         const result = await dnsCheck("example.com", ["93.122.1212.45"], { family: 4 })();
 
         expect(result).toStrictEqual({

@@ -6,6 +6,8 @@ import httpCheck from "../../src/checks/http-check";
 
 describe("httpCheck", () => {
     it("should return healthy when the host is reachable", async () => {
+        expect.assertions(1);
+
         const result = await httpCheck("https://example.com")();
 
         expect(result).toStrictEqual({
@@ -26,6 +28,8 @@ describe("httpCheck", () => {
     }, 5000);
 
     it("should return healthy when the host is reachable with post method", async () => {
+        expect.assertions(1);
+
         const result = await httpCheck("https://example.com", {
             expected: { status: 200 },
             fetchOptions: {
@@ -50,6 +54,8 @@ describe("httpCheck", () => {
     }, 5000);
 
     it("should return healthy when the host is reachable with post method and body", async () => {
+        expect.assertions(1);
+
         const result = await httpCheck("https://example.com", {
             expected: { status: 200 },
             fetchOptions: {
@@ -75,6 +81,8 @@ describe("httpCheck", () => {
     }, 5000);
 
     it("should return unhealthy when the status is not the expected one", async () => {
+        expect.assertions(1);
+
         const result = await httpCheck("https://example.com", {
             expected: { status: 404 },
         })();
@@ -95,6 +103,8 @@ describe("httpCheck", () => {
     }, 5000);
 
     it("should return unhealthy when the body is not the expected one", async () => {
+        expect.assertions(1);
+
         const result = await httpCheck("https://example.com", {
             expected: { body: "hello world" },
         })();

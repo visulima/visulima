@@ -7,6 +7,8 @@ import { onError, onNoMatch } from "../../src/connect/handler";
 
 describe("connect/handler", () => {
     it("should call onNoMatch", async () => {
+        expect.assertions(4);
+
         const { req, res } = createMocks({
             method: "POST",
         });
@@ -33,6 +35,8 @@ describe("connect/handler", () => {
     });
 
     it("should call onError", async () => {
+        expect.assertions(2);
+
         const { req, res } = createMocks({
             method: "GET",
         });
@@ -46,6 +50,8 @@ describe("connect/handler", () => {
     });
 
     it("should call onError with accept", async () => {
+        expect.assertions(2);
+
         const { req, res } = createMocks({
             headers: {
                 accept: "application/vnd.api+json",
@@ -62,6 +68,8 @@ describe("connect/handler", () => {
     });
 
     it("should call onError with new added error handler", async () => {
+        expect.assertions(2);
+
         const { req, res } = createMocks({
             headers: {
                 accept: "application/yaml",

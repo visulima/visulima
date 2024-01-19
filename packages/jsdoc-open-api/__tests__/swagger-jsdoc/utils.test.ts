@@ -5,6 +5,8 @@ import { hasEmptyProperty } from "../../src/swagger-jsdoc/utils";
 describe("utilities module", () => {
     describe("hasEmptyProperty", () => {
         it("identifies object with an empty object or array as property", () => {
+            expect.assertions(5);
+
             const invalidA = { foo: {} };
             const invalidB = { foo: [] };
             const validA = { foo: { bar: "baz" } };

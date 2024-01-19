@@ -9,6 +9,8 @@ const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtu
 
 describe("package-json", () => {
     it("should return the content of the found package.json", async () => {
+        expect.assertions(3);
+
         const result = await findPackageJson(fixturePath);
 
         expect(result.packageJson).toBeTypeOf("object");

@@ -6,6 +6,8 @@ import problemErrorHandler from "../../src/error-handler/problem-error-handler";
 
 describe("jsonapi-error-handler", () => {
     it("should render normal error", () => {
+        expect.assertions(2);
+
         const { req, res } = createMocks({
             method: "GET",
         });
@@ -21,6 +23,8 @@ describe("jsonapi-error-handler", () => {
     });
 
     it("should render http-errors", () => {
+        expect.assertions(2);
+
         const { req, res } = createMocks({
             method: "GET",
         });

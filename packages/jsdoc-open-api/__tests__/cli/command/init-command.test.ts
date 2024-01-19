@@ -18,6 +18,8 @@ const isWin = process.platform === "win32";
 
 describe("init command", () => {
     it("should throw an error when the config file already exists", () => {
+        expect.assertions(1);
+
         vi.spyOn(fs, "existsSync").mockReturnValue(true);
         vi.spyOn(console, "log");
 
@@ -26,6 +28,8 @@ describe("init command", () => {
     });
 
     it("should create a new config file with the correct module.exports content", () => {
+        expect.assertions(1);
+
         // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
@@ -76,6 +80,8 @@ describe("init command", () => {
     });
 
     it("should create a new config file with the correct export default content", () => {
+        expect.assertions(3);
+
         // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
@@ -134,6 +140,8 @@ describe("init command", () => {
     });
 
     it("should log a message when the config file is created", () => {
+        expect.assertions(1);
+
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
         const consoleLogMock = vi.spyOn(console, "log");

@@ -6,6 +6,8 @@ import serialize from "../../src/serializers/serialize";
 
 describe("serialize", () => {
     it("should correctly sets the Content-Type header in the response when a serializer is found for the given type in the accept header", () => {
+        expect.assertions(1);
+
         const request = {} as IncomingMessage;
 
         request.headers = { accept: "application/json" };
@@ -43,6 +45,8 @@ describe("serialize", () => {
             expected: '<?xml version="1.0" encoding="UTF-8"?>\n<Undefined>\n  <test>data</test>\n</Undefined>',
         },
     ])("should correctly serializes the data using the correct serializer when a serializer is found for the given type in the accept header", (test) => {
+        expect.assertions(1);
+
         const { accept, data, expected } = test;
 
         const request = {} as IncomingMessage;
@@ -63,6 +67,8 @@ describe("serialize", () => {
     });
 
     it("should returns the original data unmodified when the Content-Type header is already set in the response", () => {
+        expect.assertions(2);
+
         const request = {} as IncomingMessage;
         request.headers = { accept: "application/json" };
 
@@ -92,6 +98,8 @@ describe("serialize", () => {
     });
 
     it("should sets the Content-Type header in the response to options.defaultContentType and serializes the data using the correct serializer when no matching serializer is found for the given types in the accept header", () => {
+        expect.assertions(2);
+
         const request = {} as IncomingMessage;
         request.headers = { accept: "application/text" };
 

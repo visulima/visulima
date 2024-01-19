@@ -50,7 +50,7 @@ const NotFoundPage = (): ReactElement | null => {
                                             </div>
                                         )}
                                     </a>
-                                    <ArrowRightIcon className="my-auto h-8 w-8 pr-2 text-gray-400 transition-all delay-100 duration-200 group-hover:text-gray-700" />
+                                    <ArrowRightIcon className="my-auto size-8 pr-2 text-gray-400 transition-all delay-100 duration-200 group-hover:text-gray-700" />
                                 </div>
                             ))}
                             <hr />

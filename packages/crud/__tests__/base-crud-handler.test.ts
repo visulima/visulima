@@ -22,6 +22,8 @@ const baseMockAdapter: Adapter<any, any> = {
 
 describe("baseHandler", () => {
     it.todo("should handle GET request for reading all resources", async () => {
+        expect.assertions(7);
+
         // Mock the necessary dependencies and create a test instance of the baseHandler function
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
@@ -67,6 +69,8 @@ describe("baseHandler", () => {
 
     // Tests that the handler correctly handles a GET request for reading one resource
     it.todo("should handle GET request for reading one resource", async () => {
+        expect.assertions(7);
+
         // Mock the necessary dependencies and create a test instance of the baseHandler function
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
@@ -110,6 +114,8 @@ describe("baseHandler", () => {
 
     // Tests that the handler correctly handles a POST request for creating a resource
     it.todo("should handle POST request for creating a resource", async () => {
+        expect.assertions(7);
+
         // Mock the necessary dependencies and create a test instance of the baseHandler function
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
@@ -154,6 +160,8 @@ describe("baseHandler", () => {
 
     // Tests that the handler correctly handles a PUT request for updating a resource
     it.todo("should handle PUT request for updating a resource", async () => {
+        expect.assertions(7);
+
         // Mock the necessary dependencies and create a test instance of the baseHandler function
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
@@ -198,6 +206,8 @@ describe("baseHandler", () => {
 
     // Tests that the handler correctly handles a DELETE request for deleting a resource
     it.todo("should handle DELETE request for deleting a resource", async () => {
+        expect.assertions(7);
+
         // Mock the necessary dependencies and create a test instance of the baseHandler function
         const responseExecutor = vi.fn();
         const finalExecutor = vi.fn();
