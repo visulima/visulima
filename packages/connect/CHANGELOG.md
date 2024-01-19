@@ -1,3 +1,16 @@
+## @visulima/connect [2.1.12](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.11...@visulima/connect@2.1.12) (2024-01-19)
+
+
+### Bug Fixes
+
+* updated all deps, updated test based on eslint errors ([909f8f3](https://github.com/visulima/visulima/commit/909f8f384804d7ef140354ab44f867532dbc9847))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.12
+
 ## @visulima/connect [2.1.11](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.10...@visulima/connect@2.1.11) (2023-12-06)
 
 
