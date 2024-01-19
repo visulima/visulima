@@ -12,12 +12,16 @@ const isWin = process.platform === "win32";
 
 describe("util/load-source-map", () => {
     it("should give back undefined as result if no sourcemap is referenced", () => {
+        expect.assertions(1);
+
         const result = loadSourceMap(join(FIXTURES_DIR, "noSourcemap.js"));
 
         expect(result).toBeUndefined();
     });
 
     it("should handle inline sourcemaps", () => {
+        expect.assertions(1);
+
         const result = loadSourceMap(join(FIXTURES_DIR, "lib-inline", "example.js"));
 
         const generated = { column: 13, line: 30 };
@@ -27,6 +31,8 @@ describe("util/load-source-map", () => {
     });
 
     it("should handle external sourcemaps", () => {
+        expect.assertions(1);
+
         const result = loadSourceMap(join(FIXTURES_DIR, "lib", "example.js"));
 
         const generated = { column: 13, line: 30 };
@@ -38,6 +44,8 @@ describe("util/load-source-map", () => {
     });
 
     it("should call back with error on external, missing sourcemap", () => {
+        expect.assertions(1);
+
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(
@@ -46,18 +54,24 @@ describe("util/load-source-map", () => {
     });
 
     it("should call back with error on external, invalid sourcemap", () => {
+        expect.assertions(1);
+
         const path = join(FIXTURES_DIR, "invalidSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${path}":\n`);
     });
 
     it("should call back with error on inline, invalid sourcemap", () => {
+        expect.assertions(1);
+
         const path = join(FIXTURES_DIR, "invalidInlineSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${path}":\n`);
     });
 
     it("should call back with error if source file does not exist", () => {
+        expect.assertions(1);
+
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
         expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path}'`);

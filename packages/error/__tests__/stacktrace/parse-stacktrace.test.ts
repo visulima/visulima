@@ -11,6 +11,8 @@ const isWin = process.platform === "win32";
 describe("parse-stacktrace", () => {
     describe("chromium", () => {
         it("should parse Chrome error with no location", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace({ stack: "Error\n at Array.forEach (native)" } as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
@@ -18,6 +20,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should match debugger stack trace", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace({
                 // eslint-disable-next-line no-useless-concat
                 stack: "Error: fail\n" + "    at foo (<anonymous>:1:33)\n" + "    at bar (<anonymous>:1:19)\n" + "    at <anonymous>:1:13\n",
@@ -30,6 +34,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should patch name with <> characters", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace({
                 // eslint-disable-next-line no-useless-concat
                 stack: "Error\n" + "  at UserContext.<anonymous> (./tests/dom.test.js:23:3 <- ./tests/dom.test.js:435:1307)\n" + "  at <Jasmine>",
@@ -41,6 +47,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse errors with custom schemes", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROMIUM_EMBEDDED_FRAMEWORK_CUSTOM_SCHEME as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
@@ -48,6 +56,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse V8 Error.stack", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_15 as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -58,6 +68,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse V8 Error.stack entries with port numbers", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_36 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -67,6 +79,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse eval() from V8", () => {
+            expect.assertions(9);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(6);
@@ -117,6 +131,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse nested eval() from V8", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -161,6 +177,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse error stacks with constructors", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_46 as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -169,6 +187,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parses Chrome 76 error with async support", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_76 as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -177,6 +197,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parses Chrome error with webpack URLs", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -188,6 +210,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parses Chrome error with blob URLs", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -202,6 +226,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse Chrome 73 with native code frames", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME73_NATIVE_CODE_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -212,6 +238,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with eval frames in Chrome 73", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_73_EVAL_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
@@ -241,6 +269,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse frames with async urls", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_109_ASYNC_URL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -251,6 +281,8 @@ describe("parse-stacktrace", () => {
 
         // Release 2015
         it("should parse nested eval() from Edge", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -262,6 +294,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with native code frames in Edge 44", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.EDGE_44_NATIVE_CODE_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -272,6 +306,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with eval frames in Edge 44", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace(capturedErrors.EDGE_44_EVAL_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
@@ -288,6 +324,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions called within an iframe in Electron Renderer", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_ELECTRON_RENDERER as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
@@ -295,6 +333,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with frames without full paths", () => {
+            expect.assertions(7);
+
             const EXCEPTION = {
                 message: "aha",
                 name: "Error",
@@ -319,6 +359,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse webpack wrapped exceptions", () => {
+            expect.assertions(5);
+
             const EXCEPTION = {
                 message: "aha",
                 name: "ChunkLoadError",
@@ -345,6 +387,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("handles braces in urls", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.CHROME_BRACES_URL as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -353,6 +397,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should drop frames that are over 1kb", () => {
+            expect.assertions(3);
+
             const LONG_STR = "A".repeat(1040);
 
             const LONG_FRAME = {
@@ -374,6 +420,8 @@ describe("parse-stacktrace", () => {
 
     describe("firefox", () => {
         it("should parse Firefox 3 error", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_3 as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -387,6 +435,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse Firefox 7 error", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_7 as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -400,6 +450,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse Firefox 14 error", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_14 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -409,6 +461,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse Firefox 31 Error.stack", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_31 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -417,6 +471,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse nested eval() from Firefox 43", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_NESTED_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -467,6 +523,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse function names containing @ in Firefox 43 Error.stack", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -475,6 +533,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse Firefox 44 ns exceptions", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_44_NS_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -485,6 +545,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parses Firefox errors with resource: URLs", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -495,6 +557,8 @@ describe("parse-stacktrace", () => {
 
         // Release 2018
         it("should parse stack traces with @ in the URL", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -507,6 +571,8 @@ describe("parse-stacktrace", () => {
 
         // Release 2018
         it("should parse stack traces with @ in the URL and the method", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
@@ -515,6 +581,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with native code frames in Firefox 66", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_NATIVE_CODE_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -524,6 +592,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse exceptions with eval frames in Firefox 66", () => {
+            expect.assertions(10);
+
             const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_EVAL_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(9);
@@ -546,6 +616,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should match debugger stack trace", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace({
                 // eslint-disable-next-line no-useless-concat
                 stack: "foo@debugger eval code:1:27\n" + "bar@debugger eval code:1:13\n" + "@debugger eval code:1:13",
@@ -558,6 +630,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should should match stack trace #2", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace({ stack: "@http://localhost:3000/App.jsx?t=1589606689786:33:7" } as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
@@ -565,6 +639,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should should match stack trace #3", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "App@http://localhost:3000/App.jsx?t=1589606715125:31:9\n" +
@@ -581,6 +657,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse errors from about:blank", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace({
                 stack: `@about:blank line 5 > injectedScript:1:7\n@debugger eval code:5:15\n`,
             } as unknown as Error);
@@ -594,6 +672,8 @@ describe("parse-stacktrace", () => {
     describe("ie", () => {
         // Release 2012
         it("should parse IE 10 Error stacks", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.IE_10 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -604,6 +684,8 @@ describe("parse-stacktrace", () => {
 
         // Release 2013
         it("should parse IE 11 Error stacks", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.IE_11 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -613,6 +695,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parses IE 11 eval error", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -624,6 +708,8 @@ describe("parse-stacktrace", () => {
 
     describe("webpack", () => {
         it("should handle webpack error stack", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "at tryRunOrWebpackError (/usr/local/xxxxxxx/cli-reproductions/showwcase-v14-rc0/node_modules/webpack/lib/HookWebpackError.js:88:9)\n" +
@@ -715,6 +801,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should handle webpack eval stacks", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "ReferenceError: chilxdren is not defined\n" +
@@ -766,6 +854,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse source mappings from chrome webpack", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace({
                 // eslint-disable-next-line no-useless-concat
                 stack: "Error: fail\n" + "    at foo (<anonymous>:1:33)\n" + "    at bar (<anonymous>:1:19 <- <anonymous>:2:3)\n" + "    at <anonymous>:1:13\n",
@@ -778,6 +868,8 @@ describe("parse-stacktrace", () => {
         });
 
         it("should parse webpack-internal", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(
                 {
                     stack: `
@@ -858,6 +950,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
     describe("react native", () => {
         it("should parse exceptions for react-native-v8", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_V8_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -871,10 +965,11 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse exceptions for react-native Expo bundles", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_EXPO_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(5);
-
             expect(stackFrames[0]).toMatchStackFrame([
                 "onPress",
                 // eslint-disable-next-line no-secrets/no-secrets
@@ -882,7 +977,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 595,
                 658,
             ]);
-
             expect(stackFrames[1]).toMatchStackFrame([
                 "value",
                 // eslint-disable-next-line no-secrets/no-secrets
@@ -890,7 +984,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 221,
                 7656,
             ]);
-
             expect(stackFrames[2]).toMatchStackFrame([
                 "onResponderRelease",
                 // eslint-disable-next-line no-secrets/no-secrets
@@ -898,7 +991,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 221,
                 5666,
             ]);
-
             expect(stackFrames[3]).toMatchStackFrame([
                 "p",
                 // eslint-disable-next-line no-secrets/no-secrets
@@ -910,6 +1002,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses an error in react native", () => {
+            expect.assertions(12);
+
             const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_2 as unknown as Error);
 
             expect(stackFrames).toHaveLength(11);
@@ -927,6 +1021,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses very simple JavaScriptCore errors", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace({ stack: "global code@stack_traces/test:83:55" } as unknown as Error);
 
             expect(stackFrames).toHaveLength(1);
@@ -934,6 +1030,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses React Native errors on Android", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE as unknown as Error);
 
             expect(stackFrames).toHaveLength(8);
@@ -952,6 +1050,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses React Native errors on Android Production", () => {
+            expect.assertions(6);
+
             const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error, {
                 frameLimit: 55,
             });
@@ -965,6 +1065,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse React Native errors on Android Hermes", () => {
+            expect.assertions(27);
+
             const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_HERMES as unknown as Error);
 
             expect(stackFrames).toHaveLength(26);
@@ -997,6 +1099,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses JavaScriptCore errors", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.IOS_REACT_NATIVE_1 as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -1021,6 +1125,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
     describe("general", () => {
         it("should handle newlines in Error stack messages", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "Error: Problem at this\nlocation. Error code:1234\n" +
@@ -1034,6 +1140,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should handle spaces in Node.js stacks", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_SPACES as unknown as Error);
 
             expect(stackFrames).toHaveLength(8);
@@ -1044,6 +1152,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should handle Node.js stacks with parentheses", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_PARENTHESES as unknown as Error);
 
             expect(stackFrames).toHaveLength(7);
@@ -1057,6 +1167,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses node error with space in path", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
@@ -1073,6 +1185,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses node.js async errors available with version 12", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace(capturedErrors.NODE_12 as unknown as Error);
 
             expect(stackFrames).toHaveLength(2);
@@ -1081,6 +1195,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses node.js errors with <anonymous> calls as well", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
 
             expect(stackFrames).toHaveLength(10);
@@ -1091,6 +1207,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses anonymous sources", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace({
                 stack: `x
           at new <anonymous> (http://www.example.com/test.js:2:1
@@ -1103,6 +1221,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parses node.js errors", () => {
+            expect.assertions(9);
+
             const stackFrames = parseStacktrace({
                 stack: `ReferenceError: test is not defined
           at repl:1:2
@@ -1131,12 +1251,16 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse TypeError stack", () => {
+            expect.assertions(1);
+
             const stackFrames = parseStacktrace(new TypeError("foo"));
 
             expect(stackFrames).toHaveLength(10);
         });
 
         it("should parse Custom Error stack", () => {
+            expect.assertions(1);
+
             // eslint-disable-next-line @typescript-eslint/naming-convention
             class xxx1Error extends TypeError {}
 
@@ -1147,6 +1271,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse Travis Error", () => {
+            expect.assertions(2);
+
             const stackFrames = parseStacktrace({
                 stack: `Error: foo
      at extensions.(anonymous function) (a.js:13:11)`,
@@ -1157,6 +1283,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse a eval Error", () => {
+            expect.assertions(3);
+
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,no-eval
             const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
 
@@ -1165,7 +1293,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 "eval",
                 // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1161,
+                1289,
                 49,
                 "eval",
                 { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
@@ -1174,12 +1302,14 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
                 "<unknown>",
                 // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1161,
+                1289,
                 49,
             ]);
         });
 
         it("should parses PhantomJS 1.19 error", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.PHANTOMJS_1_19 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1189,6 +1319,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         });
 
         it("should parse regular expression in error stacktrace", () => {
+            expect.assertions(11);
+
             const stackFrames = parseStacktrace(
                 {
                     stack: `    error("Warning: Received \`%s\` for a non-boolean attribute \`%s\`.
@@ -1267,6 +1399,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse found in the wild stack trace", () => {
+            expect.assertions(3);
+
             const stackFrames = parseStacktrace({
                 stack: `
             spy() at Object.<anonymous> (/projects/preact/test-utils/test/shared/act.test.js:50:20 <- test-utils/test/shared/act.test.js:1245:18)
@@ -1280,6 +1414,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse SecurityError", () => {
+            expect.assertions(13);
+
             const SECURITY_ERROR = {
                 message: 'Blocked a frame with origin "https://SENTRY_URL.sentry.io" from accessing a cross-origin frame.',
                 name: "SecurityError",
@@ -1342,6 +1478,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         // Opera v15 was released in 2013 and was based on Chromium.
         // Release 15/10/2014
         it("should parse Opera 25 Error stacks", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1353,6 +1491,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
     describe("webkit/safari", () => {
         it("should match stack trace #1", () => {
+            expect.assertions(7);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "AssertionError@http://localhost:8000/node_modules/chai/chai.js:9449:22\n" +
@@ -1380,6 +1520,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should match stack trace of module execution", () => {
+            expect.assertions(8);
+
             const stackFrames = parseStacktrace({
                 stack:
                     "module code@http://localhost:8000/my-test.js:1:16\n" +
@@ -1402,6 +1544,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse Safari 6 Error.stack", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_6 as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -1412,6 +1556,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse Safari 7 Error.stack", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_7 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1421,6 +1567,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse Safari 8 Error.stack", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_8 as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1430,6 +1578,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parses Safari 8 eval error", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1439,6 +1589,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse nested eval() from Safari 9", () => {
+            expect.assertions(4);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_9_NESTED_EVAL as unknown as Error);
 
             expect(stackFrames).toHaveLength(3);
@@ -1448,6 +1600,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse exceptions with native code frames in Safari 12", () => {
+            expect.assertions(5);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_NATIVE_CODE_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(4);
@@ -1458,6 +1612,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         });
 
         it("should parse exceptions with eval frames in Safari 12", () => {
+            expect.assertions(12);
+
             const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_EVAL_EXCEPTION as unknown as Error);
 
             expect(stackFrames).toHaveLength(11);
@@ -1476,6 +1632,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
 
         describe("safari extensions", () => {
             it("should parse exceptions for safari-extension", () => {
+                expect.assertions(3);
+
                 const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION as unknown as Error);
 
                 expect(stackFrames).toHaveLength(2);
@@ -1495,6 +1653,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             });
 
             it("should parse exceptions for safari-extension with frames-only stack", () => {
+                expect.assertions(4);
+
                 const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_2 as unknown as Error);
 
                 expect(stackFrames).toHaveLength(3);
@@ -1516,6 +1676,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             });
 
             it("should parse exceptions for safari-web-extension", () => {
+                expect.assertions(3);
+
                 const stackFrames = parseStacktrace(capturedErrors.SAFARI_WEB_EXTENSION_EXCEPTION as unknown as Error);
 
                 expect(stackFrames).toHaveLength(2);
@@ -1536,6 +1698,8 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             });
 
             it("should parse exceptions for safari-web-extension with frames-only stack", () => {
+                expect.assertions(3);
+
                 const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_3 as unknown as Error);
 
                 expect(stackFrames).toHaveLength(3);

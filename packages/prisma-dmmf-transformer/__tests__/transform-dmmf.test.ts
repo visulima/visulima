@@ -67,6 +67,8 @@ const schema = "http://json-schema.org/draft-07/schema#";
 describe("jSON Schema Generator", () => {
     describe("db postgresql", () => {
         it("returns JSON Schema for given models", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf)).toStrictEqual({
@@ -146,6 +148,8 @@ describe("jSON Schema Generator", () => {
         });
 
         it("keeps relation scalar fields if requested", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { keepRelationScalarFields: "true" })).toStrictEqual({
@@ -232,6 +236,8 @@ describe("jSON Schema Generator", () => {
         });
 
         it("adds required field if requested", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { includeRequiredFields: "true" })).toStrictEqual({
@@ -313,6 +319,8 @@ describe("jSON Schema Generator", () => {
         });
 
         it("adds original type if requested", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(transformDMMF(dmmf, { persistOriginalType: "true" })).toStrictEqual({
@@ -417,6 +425,8 @@ describe("jSON Schema Generator", () => {
         });
 
         it("adds schema id", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
 
             expect(
@@ -509,6 +519,8 @@ describe("jSON Schema Generator", () => {
         });
 
         it("generated schema validates against input", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
             const jsonSchema = transformDMMF(dmmf, {
                 persistOriginalType: "true",
@@ -564,6 +576,8 @@ describe("jSON Schema Generator", () => {
 
     describe("db mongodb", () => {
         it("returns JSON schema for given models", async () => {
+            expect.assertions(1);
+
             const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelMongoDB });
 
             expect(transformDMMF(dmmf)).toStrictEqual({

@@ -4,6 +4,8 @@ import { paginate, Paginator } from "../src";
 
 describe("paginator", () => {
     it("should return the correct values for all public variables", () => {
+        expect.assertions(8);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.total).toBe(100);
@@ -17,12 +19,16 @@ describe("paginator", () => {
     });
 
     it("should return the correct values for all method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.all()).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("should return the correct values inside the meta object", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.getMeta()).toStrictEqual({
@@ -39,6 +45,8 @@ describe("paginator", () => {
     });
 
     it("should return the correct values inside the meta object when using the baseUrl method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").getMeta()).toStrictEqual({
@@ -56,6 +64,8 @@ describe("paginator", () => {
     });
 
     it("should return the correct values inside the meta object when using the queryString method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.queryString({ foo: "bar" }).getMeta()).toStrictEqual({
@@ -72,6 +82,8 @@ describe("paginator", () => {
     });
 
     it("should return the correct values inside the meta object when using the baseUrl and queryString method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").queryString({ foo: "bar" }).getMeta()).toStrictEqual({
@@ -88,6 +100,8 @@ describe("paginator", () => {
     });
 
     it("should return the correct values for the toJSON method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.toJSON()).toStrictEqual({
@@ -107,6 +121,8 @@ describe("paginator", () => {
     });
 
     it("should return a link for the given page when using the baseUrl method", () => {
+        expect.assertions(3);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.getUrl(0)).toBe("/?page=1");
@@ -115,6 +131,8 @@ describe("paginator", () => {
     });
 
     it("should return a link for the given page when using the getUrlsForRange method", () => {
+        expect.assertions(1);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.getUrlsForRange(0, 5)).toStrictEqual([
@@ -128,6 +146,8 @@ describe("paginator", () => {
     });
 
     it("should return a link for the given page when using the baseUrl and queryString method", () => {
+        expect.assertions(3);
+
         const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").getUrl(0)).toBe("/api/v1?page=1");
@@ -136,6 +156,8 @@ describe("paginator", () => {
     });
 
     it("should return a previous link", () => {
+        expect.assertions(2);
+
         const paginator = new Paginator(100, 10, 0, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.getPreviousPageUrl()).toBeNull();
@@ -146,6 +168,8 @@ describe("paginator", () => {
     });
 
     it("should return a next link", () => {
+        expect.assertions(4);
+
         const paginator = new Paginator(11, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
 
         expect(paginator.hasMorePages).toBeTruthy();
@@ -158,6 +182,8 @@ describe("paginator", () => {
     });
 
     it("should return a paginator instance if paginate method is used", () => {
+        expect.assertions(8);
+
         const paginator = paginate(
             1,
             10,

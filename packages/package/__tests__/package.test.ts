@@ -27,6 +27,8 @@ describe("package", () => {
         });
 
         it("should find LockFile", async () => {
+            expect.assertions(1);
+
             findUp.mockResolvedValueOnce("/user/project/package-lock.json");
 
             const result = await findPackageRoot();
@@ -35,6 +37,8 @@ describe("package", () => {
         });
 
         it("should find Git Config", async () => {
+            expect.assertions(1);
+
             // This is used for the lock file lookup
             findUp.mockResolvedValueOnce(undefined);
             findUp.mockResolvedValueOnce("/user/project/.git/config");
@@ -45,6 +49,8 @@ describe("package", () => {
         });
 
         it("should find Package.json", async () => {
+            expect.assertions(1);
+
             // This is used for the lock file lookup
             findUp.mockResolvedValueOnce(undefined);
             // This is used for the git config lookup
@@ -57,6 +63,8 @@ describe("package", () => {
         });
 
         it("throws error when no root directory is found", async () => {
+            expect.assertions(1);
+
             // This is used for the lock file lookup
             findUp.mockResolvedValueOnce(undefined);
             // This is used for the git config lookup

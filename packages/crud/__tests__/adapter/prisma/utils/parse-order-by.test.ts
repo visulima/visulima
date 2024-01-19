@@ -6,6 +6,8 @@ import parsePrismaOrderBy from "../../../../src/adapter/prisma/utils/parse-order
 
 describe("parse prisma orderBy", () => {
     it("should map correctly operators", () => {
+        expect.assertions(1);
+
         const baseQuery: OrderByField = {
             id: "$desc",
             username: "$asc",

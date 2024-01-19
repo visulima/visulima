@@ -5,6 +5,8 @@ import extendSwaggerSpec from "../../src/swagger/extend-swagger-spec";
 
 describe("swagger/extend-swagger-spec", () => {
     it("should extend swagger spec", () => {
+        expect.assertions(1);
+
         const spec = {
             info: {
                 title: "Test",
@@ -76,6 +78,8 @@ describe("swagger/extend-swagger-spec", () => {
     });
 
     it("should extend swagger spec with examples", () => {
+        expect.assertions(1);
+
         const spec = {
             components: {
                 examples: {

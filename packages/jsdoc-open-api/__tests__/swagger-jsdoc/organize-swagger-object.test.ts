@@ -26,6 +26,8 @@ const swaggerObject = {
 
 describe("organize", () => {
     it('should handle "definitions"', () => {
+        expect.assertions(1);
+
         const annotation = {
             definitions: {
                 testDefinition: {
@@ -56,6 +58,8 @@ describe("organize", () => {
     });
 
     it('should handle "parameters"', () => {
+        expect.assertions(1);
+
         const annotation = {
             parameters: {
                 testParameter: {
@@ -84,6 +88,8 @@ describe("organize", () => {
     });
 
     it('should handle "securityDefinitions"', () => {
+        expect.assertions(1);
+
         const annotation = {
             securityDefinitions: {
                 basicAuth: {
@@ -104,6 +110,8 @@ describe("organize", () => {
     });
 
     it('should handle "responses"', () => {
+        expect.assertions(1);
+
         const annotation = {
             responses: {
                 IllegalInput: {
@@ -120,6 +128,8 @@ describe("organize", () => {
     });
 
     it('should handle "security"', () => {
+        expect.assertions(1);
+
         const annotation = {
             security: [
                 {

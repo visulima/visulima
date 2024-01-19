@@ -19,6 +19,8 @@ const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CO
 
 describe("createRouter", () => {
     it("internals", () => {
+        expect.assertions(12);
+
         const context = new NodeRouter();
 
         expect(context).instanceOf(NodeRouter, "creates new `NodeRouter` instance");
@@ -33,6 +35,8 @@ describe("createRouter", () => {
     });
 
     it("createRouter() returns an instance", async () => {
+        expect.assertions(1);
+
         expect(createRouter()).instanceOf(NodeRouter);
     });
 
@@ -52,6 +56,8 @@ describe("createRouter", () => {
 
     describe("use()", () => {
         it("defaults to / if base is not provided", async () => {
+            expect.assertions(1);
+
             const context = new NodeRouter();
 
             // @ts-expect-error: private field
@@ -63,6 +69,8 @@ describe("createRouter", () => {
         });
 
         it("call this.router.use() with fn", async () => {
+            expect.assertions(1);
+
             const context = new NodeRouter();
 
             // @ts-expect-error: private field
@@ -74,6 +82,8 @@ describe("createRouter", () => {
         });
 
         it("call this.router.use() with fn.router", async () => {
+            expect.assertions(1);
+
             const context = new NodeRouter();
             const context2 = new NodeRouter();
 
@@ -88,13 +98,14 @@ describe("createRouter", () => {
     });
 
     it("clone()", () => {
+        expect.assertions(3);
+
         const context = new NodeRouter();
         // @ts-expect-error: private property
         context.router.routes = [noop, noop] as any[];
 
         expect(context.clone()).instanceOf(NodeRouter, "is a NodeRouter instance");
         expect(context, "not the same identity").not.toStrictEqual(context.clone());
-
         expect(
             // @ts-expect-error: private property
             context.router.routes,
@@ -139,6 +150,8 @@ describe("createRouter", () => {
     });
 
     it("run() - propagates error", async () => {
+        expect.assertions(3);
+
         const request = { method: "GET", url: "/" } as IncomingMessage;
         const serverResponse = {} as ServerResponse;
         const error = new Error("💥");
@@ -179,6 +192,8 @@ describe("createRouter", () => {
     });
 
     it("run() - returns if no fns", async () => {
+        expect.assertions(1);
+
         const request = { method: "GET", url: "/foo/bar" } as IncomingMessage;
         const response = {} as ServerResponse;
         const context = createRouter();
@@ -191,6 +206,8 @@ describe("createRouter", () => {
     });
 
     it("handler() - basic", async () => {
+        expect.assertions(1);
+
         expect(createRouter().handler(), "returns a function").toBeTypeOf("function");
     });
 
@@ -255,7 +272,7 @@ describe("createRouter", () => {
     });
 
     it("handler() - calls onError if error thrown (sync)", async () => {
-        expect.assertions(3 * 3);
+        expect.assertions(9);
 
         const error = new Error("💥");
         const consoleSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
@@ -318,7 +335,7 @@ describe("createRouter", () => {
     });
 
     it("handler() - calls onError if error thrown (async)", async () => {
-        expect.assertions(2 * 3);
+        expect.assertions(6);
         const error = new Error("💥");
         const consoleSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
 
@@ -361,6 +378,7 @@ describe("createRouter", () => {
 
     it("handler() - calls custom onError", async () => {
         expect.assertions(1);
+
         await createRouter({
             onError(error) {
                 expect((error as Error).message).toBe("💥");
@@ -416,6 +434,7 @@ describe("createRouter", () => {
 
     it("handler() - calls custom onNoMatch if not found", async () => {
         expect.assertions(1);
+
         await createRouter({
             onNoMatch() {
                 expect(true, "onNoMatch called").toBeTruthy();
@@ -438,6 +457,8 @@ describe("createRouter", () => {
     });
 
     it("prepareRequest() - attach params", async () => {
+        expect.assertions(3);
+
         const request = {} as IncomingMessage;
 
         const context2 = createRouter().get("/hello/:name");
@@ -474,11 +495,15 @@ describe("createRouter", () => {
     });
 
     it("getPathname() - returns pathname correctly", async () => {
+        expect.assertions(2);
+
         expect(getPathname("/foo/bar")).toBe("/foo/bar");
         expect(getPathname("/foo/bar?q=quz")).toBe("/foo/bar");
     });
 
     it("use() - execute handlers without a next function", async () => {
+        expect.assertions(1);
+
         const defaultProps = { global: { yo: "yo" } };
         const withGlobal = () =>
             createRouter().use(async (_request, _response, next) => {

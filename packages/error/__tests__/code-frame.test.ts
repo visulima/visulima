@@ -24,6 +24,8 @@ vi.mock("./utils", () => {
 
 describe("code-frame", () => {
     it("should return an empty string if line or column is undefined", () => {
+        expect.assertions(1);
+
         const source = "const x = 10;\nconst error = x.y;\n";
         const loc = { column: undefined, line: undefined };
         const result = codeFrame(source, { start: loc });
@@ -32,6 +34,8 @@ describe("code-frame", () => {
     });
 
     it("should return the correct code frame for a given location", () => {
+        expect.assertions(1);
+
         const source = "const x = 10;\nconst error = x.y;\n";
         const loc = { column: 16, line: 2 };
         const result = codeFrame(source, { start: loc });
@@ -43,6 +47,8 @@ ${POINTER} 2 | const error = x.y;
     });
 
     it("should handle long result", () => {
+        expect.assertions(1);
+
         const source =
             "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
@@ -58,6 +64,8 @@ ${POINTER}  8 |    ]
     });
 
     it("should be possible to change the visible lines", () => {
+        expect.assertions(1);
+
         const source =
             "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
@@ -78,6 +86,8 @@ ${POINTER}  8 |    ]
     });
 
     it("should colorize the error line", () => {
+        expect.assertions(1);
+
         const source =
             "function getUser () {\n    const error = new Error('Unable to find user', {\n        cause: new Error('foo')\n    })\n    error.help = [\n    'We tried looking for using inside the \"users\" table',\n    'The search was performed using the where (email = user.email) and (is_active = true)'\n   ]\n\n    throw error\n}";
         const loc = { column: 5, line: 8 };
@@ -104,6 +114,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show no lines above", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0 })).toStrictEqual(
@@ -112,6 +124,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show no lines below", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(codeFrame(rawLines, { start: { line: 2 } }, { linesBelow: 0 })).toStrictEqual(
@@ -120,12 +134,16 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show single line", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(codeFrame(rawLines, { start: { line: 2 } }, { linesAbove: 0, linesBelow: 0 })).toStrictEqual([`${POINTER} 2 |   constructor() {`].join("\n"));
     });
 
     it("should mark multiple columns across lines", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "  }", "};"].join("\n");
 
         expect(
@@ -139,6 +157,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should mark multiple columns across multiple lines", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
@@ -161,6 +181,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should mark across multiple lines without columns", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(codeFrame(rawLines, { end: { line: 4 }, start: { line: 2 } })).toStrictEqual(
@@ -171,6 +193,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show message", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor()", "};"].join("\n");
 
         expect(
@@ -185,6 +209,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show message without column", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor()", "};"].join("\n");
 
         expect(
@@ -199,6 +225,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show message with multiple lines", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
@@ -227,6 +255,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should show message with multiple lines without columns", () => {
+        expect.assertions(1);
+
         const rawLines = ["class Foo {", "  constructor() {", "    console.log(arguments);", "  }", "};"].join("\n");
 
         expect(
@@ -250,6 +280,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should maximum context lines and padding", () => {
+        expect.assertions(1);
+
         const rawLines = [
             "/**",
             " * Sums two numbers.",
@@ -278,6 +310,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should no unnecessary padding due to one-off errors", () => {
+        expect.assertions(1);
+
         const rawLines = [
             "/**",
             " * Sums two numbers.",
@@ -306,6 +340,8 @@ marker-${POINTER}gutter-  8 |    ]
     });
 
     it("should handle tabs correctly by replacing them with 4 spaces", () => {
+        expect.assertions(1);
+
         const source = "const x = 10;\n\tconst error = x.y;\n";
         const loc = { column: 20, line: 2 };
         const result = codeFrame(source, { start: loc });
@@ -317,6 +353,8 @@ ${POINTER} 2 |     const error = x.y;
     });
 
     it("should handle tabs", () => {
+        expect.assertions(1);
+
         const rawLines = ["\tclass Foo {", "\t  \t\t    constructor\t(\t)", "\t};"].join("\n");
 
         expect(codeFrame(rawLines, { start: { column: 25, line: 2 } })).toStrictEqual(
@@ -325,6 +363,8 @@ ${POINTER} 2 |     const error = x.y;
     });
 
     it("should correctly marks lines containing tab characters", () => {
+        expect.assertions(2);
+
         expect(
             codeFrame(" * @name        Foo#a", {
                 end: { column: 19, line: 1 },

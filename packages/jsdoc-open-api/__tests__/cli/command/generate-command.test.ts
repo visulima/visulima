@@ -17,6 +17,8 @@ const fixturesDirectory = `${__dirname}/../../../__fixtures__`;
 
 describe("generate command", () => {
     it("throws an error when no config file is found", async () => {
+        expect.assertions(1);
+
         const paths = ["/path/to/dir"];
 
         const options = { config: "/path/to/nonexistent/config.js" };
@@ -25,6 +27,8 @@ describe("generate command", () => {
     });
 
     it("collects the correct files from the given directories", async () => {
+        expect.assertions(2);
+
         const writeFileSyncSpy = vi.spyOn(fs, "writeFileSync");
         const consoleLogMock = vi.spyOn(console, "log");
 

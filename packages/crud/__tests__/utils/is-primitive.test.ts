@@ -4,6 +4,8 @@ import isPrimitive from "../../src/utils/is-primitive";
 
 describe("primitives", () => {
     it("should return true for primitives", () => {
+        expect.assertions(3);
+
         const nbr = 1;
         const stringString = "hello";
         const bool = true;
@@ -14,6 +16,8 @@ describe("primitives", () => {
     });
 
     it("should return false for non primitive types", () => {
+        expect.assertions(3);
+
         const object = {};
         const array: string[] = [];
         const symbol = Symbol(0);

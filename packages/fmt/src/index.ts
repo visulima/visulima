@@ -23,7 +23,7 @@ const CHAR_o = "o".codePointAt(0);
 const CHAR_j = "j".codePointAt(0);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-export const format = (fmt: NonNullable<Record<string, any> | string>, arguments_: any[] = [], options: Options = {}): string => {
+export const format = (fmt: Record<string, any> | string, arguments_: any[] = [], options: Options = {}): string => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if ((typeof fmt !== "string" && typeof fmt !== "object") || fmt === null) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

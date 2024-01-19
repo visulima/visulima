@@ -8,3 +8,6 @@ coverage
 node_modules
 .eslintcache
 .next
+
+**/tsconfig.json
+**/jsconfig.json
