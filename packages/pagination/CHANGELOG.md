@@ -1,3 +1,10 @@
+## @visulima/pagination [3.0.11](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.10...@visulima/pagination@3.0.11) (2024-01-19)
+
+
+### Bug Fixes
+
+* updated all deps, updated test based on eslint errors ([909f8f3](https://github.com/visulima/visulima/commit/909f8f384804d7ef140354ab44f867532dbc9847))
+
 ## @visulima/pagination [3.0.10](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.9...@visulima/pagination@3.0.10) (2023-11-30)
 
 
