@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck - This file is copied from the Nextra repository and is not type safe.
 import cn from "clsx";
-import { Document } from "flexsearch";
+import FlexSearch from "flexsearch";
 import { useRouter } from "next/router";
 import type { SearchData } from "nextra/types";
 import type { ReactElement, ReactNode } from "react";
@@ -12,7 +12,7 @@ import type { SearchResult } from "../types";
 import HighlightMatches from "./highlight-matches";
 import Search from "./search";
 
-type SectionIndex = Document<
+type SectionIndex = FlexSearch.Document<
     {
         content: string;
         display?: string;
@@ -24,7 +24,7 @@ type SectionIndex = Document<
     ["title", "content", "url", "display"]
 >;
 
-type PageIndex = Document<
+type PageIndex = FlexSearch.Document<
     {
         content: string;
         id: number;
@@ -53,7 +53,8 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
     const searchData = (await response.json()) as SearchData;
 
-    const pageIndex: PageIndex = new Document({
+    // eslint-disable-next-line import/no-named-as-default-member
+    const pageIndex: PageIndex = new FlexSearch.Document({
         cache: 100,
         context: {
             bidirectional: true,
@@ -68,7 +69,8 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         tokenize: "full",
     });
 
-    const sectionIndex: SectionIndex = new Document({
+    // eslint-disable-next-line import/no-named-as-default-member
+    const sectionIndex: SectionIndex = new FlexSearch.Document({
         cache: 100,
         context: {
             bidirectional: true,
@@ -147,7 +149,7 @@ const loadIndexes = async (basePath: string, locale: string): Promise<void> => {
     await promise;
 };
 
-const FlexSearch = ({ className = undefined }: { className?: string }): ReactElement => {
+const InternalFlexSearch = ({ className = undefined }: { className?: string }): ReactElement => {
     const { basePath, locale = DEFAULT_LOCALE } = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -323,4 +325,4 @@ const FlexSearch = ({ className = undefined }: { className?: string }): ReactEle
 };
 /* eslint-enable no-underscore-dangle */
 
-export default FlexSearch;
+export default InternalFlexSearch;
