@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ansiRegex from "ansi-regex";
-import type { LiteralUnion } from "type-fest";
 
 import { baseColors, baseStyles, createAnsi256, createBgAnsi256, createBgRgb, createRgb } from "./ansi-codes";
 import type { ColorData, ColorizeType } from "./types";
@@ -86,43 +85,28 @@ const ColorizeImpl = function () {
 
     self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
 
-    self.extend = (colors: Record<string, LiteralUnion<ColorData, string>>): void => {
-        // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
-        for (const name in colors) {
-            const value = colors[name as keyof typeof colors] as LiteralUnion<ColorData, string>;
-
-            let styleCodes = value as ColorData;
-
-            if (Object.prototype.toString.call(value).slice(8, -1) === "String") {
-                styleCodes = createRgb(...hexToRgb(value as string));
-            }
-
-            // eslint-disable-next-line security/detect-object-injection
-            styles[name] = {
-                get() {
-                    const style = createStyle(this, styleCodes as ColorData);
-
-                    Object.defineProperty(this, name, { value: style });
-
-                    return style;
-                },
-            };
-        }
-
-        stylePrototype = Object.defineProperties(() => {}, styles);
-
-        Object.setPrototypeOf(self, stylePrototype);
-    };
-
-    const base = { ...baseColors, ...baseStyles };
-
     // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
-    for (const name in base) {
+    for (const name in baseColors) {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const style = createStyle(this, base[name as keyof typeof base]);
+                const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
+
+                Object.defineProperty(this, name, { value: style });
+
+                return style;
+            },
+        };
+    }
+
+    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    for (const name in baseStyles) {
+        // eslint-disable-next-line security/detect-object-injection
+        styles[name] = {
+            get() {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
 
                 Object.defineProperty(this, name, { value: style });
 
@@ -145,7 +129,6 @@ for (const name in styleMethods) {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
-
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };
