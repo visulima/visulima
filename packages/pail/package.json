@@ -22,7 +22,6 @@
         "hackable",
         "handling exceptions",
         "json",
-        "json",
         "log level",
         "log",
         "log4j",
@@ -43,7 +42,6 @@
         "visulima",
         "winston"
     ],
-    "type": "module",
     "homepage": "https://www.visulima.com/docs/package/pail",
     "repository": {
         "type": "git",
@@ -67,6 +65,7 @@
         "url": "https://danielbannert.com"
     },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
             "node": {
@@ -177,20 +176,19 @@
     "dependencies": {
         "@visulima/colorize": "workspace:*",
         "@visulima/fmt": "^1.0.0",
-        "string-length": "^6.0.0",
         "ansi-escapes": "^6.2.0",
-        "terminal-size": "^4.0.0",
         "safe-stable-stringify": "^2.4.3",
+        "string-length": "^6.0.0",
+        "terminal-size": "^4.0.0",
         "wrap-ansi": "^9.0.0"
     },
     "devDependencies": {
-        "rotating-file-stream": "^3.2.1",
-        "type-fest": "^4.9.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
         "@babel/core": "^7.23.7",
         "@rushstack/eslint-plugin-security": "^0.8.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.1.0",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.8",
         "@vitest/coverage-v8": "^1.2.1",
@@ -210,10 +208,13 @@
         "pino": "^8.17.2",
         "prettier": "^3.2.4",
         "rimraf": "^5.0.5",
+        "rotating-file-stream": "^3.2.1",
+        "secretlint": "8.1.0",
         "semantic-release": "^23.0.0",
         "sort-package-json": "^2.6.0",
         "tslog": "^4.9.2",
         "tsup": "^8.0.1",
+        "type-fest": "^4.9.0",
         "typescript": "^5.3.3",
         "vitest": "^1.2.1",
         "winston": "^3.11.0"
