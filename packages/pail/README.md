@@ -79,21 +79,21 @@ pnpm add @visulima/pail
 
 Pail supports the logging levels described by [RFC 5424][rfc-5424].
 
-- `DEBUG`: Detailed debug information.
+-   `DEBUG`: Detailed debug information.
 
-- `INFO`: Interesting events. Examples: User logs in, SQL logs.
+-   `INFO`: Interesting events. Examples: User logs in, SQL logs.
 
-- `NOTICE`: Normal but significant events.
+-   `NOTICE`: Normal but significant events.
 
-- `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+-   `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
 
-- `ERROR`: Runtime errors that do not require immediate action but should typically be logged and monitored.
+-   `ERROR`: Runtime errors that do not require immediate action but should typically be logged and monitored.
 
-- `CRITICAL`: Critical conditions. Example: Application component unavailable, unexpected exception.
+-   `CRITICAL`: Critical conditions. Example: Application component unavailable, unexpected exception.
 
-- `ALERT`: Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
+-   `ALERT`: Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
 
-- `EMERGENCY`: Emergency: system is unusable.
+-   `EMERGENCY`: Emergency: system is unusable.
 
 ### Reporters
 
@@ -114,9 +114,9 @@ A processor can be added to a logger directly (and is subsequently applied to lo
 
 `pail` comes with a few built-in processors:
 
-- `CallerProcessor` - adds the caller information to the log message
-    - The Meta Object is extended with a file name, line number and column number
-- `RedactProcessor` - redacts sensitive information from the log message (Soon)
+-   `CallerProcessor` - adds the caller information to the log message
+    -   The Meta Object is extended with a file name, line number and column number
+-   `RedactProcessor` - redacts sensitive information from the log message (Soon)
 
 ### Serializers
 
@@ -124,7 +124,7 @@ Serializers are responsible for serializing the log message (Meta Object) before
 
 `pail` comes with a few built-in serializers:
 
-- `errorWithCauseSerializer` - serializes the error with cause object to a std error object that can be serialized.
+-   `errorWithCauseSerializer` - serializes the error with cause object to a std error object that can be serialized.
 
 ## Usage
 

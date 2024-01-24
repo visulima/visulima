@@ -71,72 +71,116 @@ const bunyanNodeStream = bunyan.createLogger({
     ],
 });
 
-const longStr = randomBytes(2000).toString()
+const longStr = randomBytes(2000).toString();
 
 describe("long-string", async () => {
-    bench("pail server", async () => {
-        serverPail.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail server",
+        async () => {
+            serverPail.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pail browser", async () => {
-        browserPail.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail browser",
+        async () => {
+            browserPail.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola basic", async () => {
-        basicConsola.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola basic",
+        async () => {
+            basicConsola.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola server", async () => {
-        serverConsola.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola server",
+        async () => {
+            serverConsola.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola browser", async () => {
-        browserConsola.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola browser",
+        async () => {
+            browserConsola.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("tslog", async () => {
-        tsLog.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "tslog",
+        async () => {
+            tsLog.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("bunyan node stream", async () => {
-        bunyanNodeStream.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "bunyan node stream",
+        async () => {
+            bunyanNodeStream.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("winston node stream", async () => {
-        winstonNodeStream.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "winston node stream",
+        async () => {
+            winstonNodeStream.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino destination", async () => {
-        pinoDestination.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino destination",
+        async () => {
+            pinoDestination.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino node stream", async () => {
-        pinoNodeStream.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino node stream",
+        async () => {
+            pinoNodeStream.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino min length", async () => {
-        pinoMinLength.info(longStr);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino min length",
+        async () => {
+            pinoMinLength.info(longStr);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 });

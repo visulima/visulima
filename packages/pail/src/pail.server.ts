@@ -42,22 +42,18 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const reporter of reporters ?? []) {
-             
             if (this._stdout && (reporter as StreamAwareReporter<L>).setStdout) {
                 (reporter as StreamAwareReporter<L>).setStdout(this._stdout);
             }
 
-             
             if (this._stderr && (reporter as StreamAwareReporter<L>).setStderr) {
                 (reporter as StreamAwareReporter<L>).setStderr(this._stderr);
             }
 
-             
             if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
                 (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this._types);
             }
 
-             
             if ((reporter as StringifyAwareReporter<L>).setStringify) {
                 (reporter as StringifyAwareReporter<L>).setStringify(this._stringify);
             }

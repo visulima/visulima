@@ -14,7 +14,7 @@ import { createPail as createBrowserPail } from "../src/index.browser";
 import { JsonReporter as ServerJsonReporter } from "../src/reporter/json/json.server";
 import { JsonReporter as BrowserJsonReporter } from "../src/reporter/json/json.browser";
 
-const deep = Object.assign({}, pkg, { level: 'info' })
+const deep = Object.assign({}, pkg, { level: "info" });
 const wsDevNull = fs.createWriteStream("/dev/null");
 
 const serverPail = createServerPail({
@@ -67,35 +67,55 @@ const bunyanNodeStream = bunyan.createLogger({
 });
 
 describe("deep object", async () => {
-    bench("pail server", async () => {
-        serverPail.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail server",
+        async () => {
+            serverPail.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pail browser", async () => {
-        browserPail.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail browser",
+        async () => {
+            browserPail.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola basic", async () => {
-        basicConsola.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola basic",
+        async () => {
+            basicConsola.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola server", async () => {
-        serverConsola.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola server",
+        async () => {
+            serverConsola.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola browser", async () => {
-        browserConsola.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola browser",
+        async () => {
+            browserConsola.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
     // bench("tslog", async () => {
     //     tsLog.info(deep);
@@ -103,33 +123,53 @@ describe("deep object", async () => {
     //     iterations: 10000
     // });
 
-    bench("bunyan node stream", async () => {
-        bunyanNodeStream.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "bunyan node stream",
+        async () => {
+            bunyanNodeStream.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("winston node stream", async () => {
-        winstonNodeStream.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "winston node stream",
+        async () => {
+            winstonNodeStream.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino destination", async () => {
-        pinoDestination.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino destination",
+        async () => {
+            pinoDestination.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino node stream", async () => {
-        pinoNodeStream.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino node stream",
+        async () => {
+            pinoNodeStream.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino min length", async () => {
-        pinoMinLength.info(deep);
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino min length",
+        async () => {
+            pinoMinLength.info(deep);
+        },
+        {
+            iterations: 10000,
+        },
+    );
 });

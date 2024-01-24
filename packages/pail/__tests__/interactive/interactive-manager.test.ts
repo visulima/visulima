@@ -1,4 +1,4 @@
-import type { WriteStream as TtyWriteStream} from "node:tty";
+import type { WriteStream as TtyWriteStream } from "node:tty";
 
 import ansiEscapes from "ansi-escapes";
 import terminalSize from "terminal-size";

@@ -44,59 +44,87 @@ const bunyanNodeStream = bunyan.createLogger({
 });
 
 describe("child creation", async () => {
-    bench("pail server", async () => {
-        const child = serverPail.child('property');
+    bench(
+        "pail server",
+        async () => {
+            const child = serverPail.child("property");
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pail browser", async () => {
-        const child = browserPail.child('property');
+    bench(
+        "pail browser",
+        async () => {
+            const child = browserPail.child("property");
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("bunyan node stream", async () => {
-        const child = bunyanNodeStream.child({ a: 'property' });
+    bench(
+        "bunyan node stream",
+        async () => {
+            const child = bunyanNodeStream.child({ a: "property" });
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("winston node stream", async () => {
-        const child = winstonNodeStream.child({ a: 'property' });
+    bench(
+        "winston node stream",
+        async () => {
+            const child = winstonNodeStream.child({ a: "property" });
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino destination", async () => {
-        const child = pinoDestination.child({ a: 'property' });
+    bench(
+        "pino destination",
+        async () => {
+            const child = pinoDestination.child({ a: "property" });
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino node stream", async () => {
-        const child = pinoNodeStream.child({ a: 'property' });
+    bench(
+        "pino node stream",
+        async () => {
+            const child = pinoNodeStream.child({ a: "property" });
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino min length", async () => {
-        const child = pinoMinLength.child({ a: 'property' });
+    bench(
+        "pino min length",
+        async () => {
+            const child = pinoMinLength.child({ a: "property" });
 
-        child.info({ hello: 'world' });
-    }, {
-        iterations: 10000
-    });
+            child.info({ hello: "world" });
+        },
+        {
+            iterations: 10000,
+        },
+    );
 });

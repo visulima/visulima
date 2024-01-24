@@ -71,69 +71,113 @@ const bunyanNodeStream = bunyan.createLogger({
 });
 
 describe("basic", async () => {
-    bench("pail server", async () => {
-        serverPail.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail server",
+        async () => {
+            serverPail.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pail browser", async () => {
-        browserPail.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pail browser",
+        async () => {
+            browserPail.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola basic", async () => {
-        basicConsola.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola basic",
+        async () => {
+            basicConsola.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola server", async () => {
-        serverConsola.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola server",
+        async () => {
+            serverConsola.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("consola browser", async () => {
-        browserConsola.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "consola browser",
+        async () => {
+            browserConsola.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("tslog", async () => {
-        tsLog.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "tslog",
+        async () => {
+            tsLog.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("bunyan node stream", async () => {
-        bunyanNodeStream.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "bunyan node stream",
+        async () => {
+            bunyanNodeStream.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("winston node stream", async () => {
-        winstonNodeStream.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "winston node stream",
+        async () => {
+            winstonNodeStream.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino destination", async () => {
-        pinoDestination.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino destination",
+        async () => {
+            pinoDestination.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino node stream", async () => {
-        pinoNodeStream.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino node stream",
+        async () => {
+            pinoNodeStream.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 
-    bench("pino min length", async () => {
-        pinoMinLength.info("hello world");
-    }, {
-        iterations: 10000
-    });
+    bench(
+        "pino min length",
+        async () => {
+            pinoMinLength.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
 });
