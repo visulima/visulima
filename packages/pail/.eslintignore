@@ -6,6 +6,8 @@ vitest.config.ts
 recipes
 __fixtures__
 __bench__
-.prettierrc.js
+.prettierrc.cjs
+.eslintrc.cjs
+.secretlintrc.cjs
 _meta.*.json
 tsup.config.ts

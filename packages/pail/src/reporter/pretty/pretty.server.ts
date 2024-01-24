@@ -78,12 +78,13 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            const replacement = ".".repeat(longestLabel.length - stringLength(label));
+            const replacement = ".".repeat(longestLabel.length - stringLength(label as string));
 
-            items.push(colorize(this._formatLabel(label)));
+            items.push(colorized(this._formatLabel(label as string)));
 
             if (repeated) {
-                items.push(colorize.bgGray.white(`[${repeated}x]`));
+                // eslint-disable-next-line prefer-template
+                items.push(colorize.bgGray.white("[" + repeated + "x]"));
             }
 
             items.push((replacement.length > 0 ? " " : "") + colorize.grey(replacement));
@@ -92,16 +93,27 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             items.push(colorize.grey(".".repeat(longestLabel.length + 2)));
         }
 
-        if (scope && scope.length > 0) {
-            items.push(colorize.grey(`[${scope.join(" | ")}]`));
+        if (Array.isArray(scope) && scope.length > 0) {
+            // eslint-disable-next-line prefer-template
+            items.push(colorize.grey("[" + scope.join(" | ") + "]"));
         }
 
         if (prefix) {
-            items.push(colorize.grey(`${scope && scope.length > 0 ? ". " : ""}[${this._styles.underline.prefix ? colorize.underline(prefix) : prefix}]`));
+            items.push(
+                colorize.grey(
+                    // eslint-disable-next-line prefer-template
+                    (Array.isArray(scope) && scope.length > 0 ? ". " : "") +
+                        "[" +
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        (this._styles.underline.prefix ? colorize.underline(prefix as string) : prefix) +
+                        "]",
+                ),
+            );
         }
 
         if (items.length > 0) {
-            items = items.map((item) => `${item} `);
+            // eslint-disable-next-line prefer-template
+            items = items.map((item) => item + " ");
         }
 
         const titleSize = stringLength(items.join(" "));
@@ -143,7 +155,8 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             items.push("\n", colorize.grey(this._styles.underline.suffix ? colorize.underline(suffix) : suffix));
         }
 
-        return `${items.join("")}\n`;
+        // eslint-disable-next-line prefer-template
+        return items.join("") + "\n";
     }
 
     protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {

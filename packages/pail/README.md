@@ -4,6 +4,8 @@
   Highly configurable Logger for Node.js and Browser, built on top of
 
 [@visulima/fmt](https://github.com/visulima/visulima/tree/main/packages/fmt),
+[@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
+[@visulima/is-ansi-color-supported](https://github.com/visulima/visulima/tree/main/packages/is-ansi-color-supported),
 [string-length](),
 [strip-ansi](),
 [terminal-size]() and
