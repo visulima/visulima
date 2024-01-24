@@ -132,7 +132,6 @@ describe("error with cause serializer", () => {
     });
 
     it("should redefined err.constructor doesnt crash serializer", () => {
-         
         const check = (a: Error, name: string): void => {
             expect(a.name).toBe(name);
             expect(a.message).toBe("foo");

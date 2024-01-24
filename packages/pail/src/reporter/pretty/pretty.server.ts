@@ -177,7 +177,9 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
             items.push(
                 "\n",
-                lines.map((line: string) => `  ${line.replace(/^at +/, (m) => colorize.gray(m)).replace(/\((.+)\)/, (_, m) => `(${colorize.cyan(m)})`)}`).join("\n"),
+                lines
+                    .map((line: string) => `  ${line.replace(/^at +/, (m) => colorize.gray(m)).replace(/\((.+)\)/, (_, m) => `(${colorize.cyan(m)})`)}`)
+                    .join("\n"),
             );
         }
 
