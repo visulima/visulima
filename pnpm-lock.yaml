@@ -1315,7 +1315,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: workspace:*
+        specifier: 1.0.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -15547,7 +15547,7 @@ packages:
       longest: 2.0.1
       word-wrap: 1.2.5
     optionalDependencies:
-      '@commitlint/load': 18.4.4(@types/node@20.10.1)(typescript@5.3.3)
+      '@commitlint/load': 18.6.0(@types/node@20.10.1)(typescript@5.3.3)
     transitivePeerDependencies:
       - '@types/node'
       - typescript
