@@ -1436,6 +1436,20 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1(@types/node@18.18.8)(@vitest/ui@1.2.1)(jsdom@23.2.0)
 
+  packages/colorize/__fixtures__/cli: {}
+
+  packages/colorize/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/colorize/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/connect:
     dependencies:
       http-errors:
