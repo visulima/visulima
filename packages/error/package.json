@@ -97,25 +97,25 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@jridgewell/trace-mapping": "^0.3.21"
+        "@jridgewell/trace-mapping": "^0.3.22"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.23.7",
+        "@babel/core": "^7.23.9",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.1",
-        "@eslint-types/jsdoc": "^48.0.2",
-        "@eslint-types/typescript-eslint": "^6.18.1",
+        "@eslint-types/jsdoc": "^48.0.4",
+        "@eslint-types/typescript-eslint": "^6.19.1",
         "@eslint-types/unicorn": "^50.0.1",
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
         "@visulima/nextra-theme-docs": "4.0.12",
-        "@vitest/coverage-v8": "^1.2.1",
-        "@vitest/ui": "^1.2.1",
+        "@vitest/coverage-v8": "^1.2.2",
+        "@vitest/ui": "^1.2.2",
         "cross-env": "^7.0.3",
         "eslint": "^8.56.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -129,7 +129,7 @@
         "sort-package-json": "^2.6.0",
         "tsup": "^8.0.1",
         "typescript": "^5.3.3",
-        "vitest": "^1.2.1"
+        "vitest": "^1.2.2"
     },
     "engines": {
         "node": ">=18.* <=21.*"
