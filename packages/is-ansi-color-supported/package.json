@@ -69,8 +69,8 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/is-color-supported.server.js",
-    "module": "dist/is-color-supported.server.mjs",
+    "main": "dist/is-color-supported.server.cjs",
+    "module": "dist/is-color-supported.server.js",
     "browser": "./dist/is-color-supported.browser.js",
     "types": "dist/is-color-supported.server.d.ts",
     "files": [
