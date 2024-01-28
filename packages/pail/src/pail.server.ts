@@ -153,7 +153,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,security/detect-object-injection
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
             (this as unknown as PailServerImpl)[type].log(String(data).trim());
         };
     }
@@ -166,7 +166,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
         if ((stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/no-unsafe-assignment
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
             stream.write = (stream as any).__write;
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign

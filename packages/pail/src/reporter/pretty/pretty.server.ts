@@ -37,7 +37,6 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public setStringify(function_: any): void {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#stringify = function_;
     }
 
