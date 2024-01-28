@@ -85,11 +85,11 @@
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.23.7",
+        "@babel/core": "^7.23.9",
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@types/node": "18.18.8",
-        "@vitest/coverage-v8": "^1.2.1",
-        "@vitest/ui": "^1.2.1",
+        "@vitest/coverage-v8": "^1.2.2",
+        "@vitest/ui": "^1.2.2",
         "cross-env": "^7.0.3",
         "cross-fetch": "^4.0.0",
         "eslint": "^8.56.0",
@@ -107,7 +107,7 @@
         "sort-package-json": "^2.6.0",
         "tsup": "^8.0.1",
         "typescript": "^5.3.3",
-        "vitest": "^1.2.1"
+        "vitest": "^1.2.2"
     },
     "optionalDependencies": {
         "next": "^13.5.6"
