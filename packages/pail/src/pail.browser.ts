@@ -144,13 +144,13 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             // Backup original value
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
             if (!(console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
                 (console as any)[`__${type}`] = (console as any)[type];
             }
             // Override
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
             (console as any)[type] = (this as unknown as PailBrowserImpl<T, L>)[type as keyof PailBrowserImpl<T, L>].log;
         }
     }
@@ -161,7 +161,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             // Restore if backup is available
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
             if ((console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
                 (console as any)[type] = (console as any)[`__${type}`];
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
@@ -175,7 +175,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         process.on("uncaughtException", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
             (this as unknown as PailBrowserImpl<T, L>).error(error);
         });
 
@@ -183,7 +183,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         process.on("unhandledRejection", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
             (this as unknown as PailBrowserImpl<T, L>).error(error);
         });
     }
@@ -333,7 +333,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
             if (getType(arguments_[0]) === "Error") {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,prefer-destructuring
+                // eslint-disable-next-line prefer-destructuring
                 meta.error = arguments_[0];
             } else if ("message" in arguments_[0]) {
                 const { context, message, prefix, suffix } = arguments_[0] as {

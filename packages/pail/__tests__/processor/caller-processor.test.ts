@@ -24,11 +24,10 @@ describe("callerProcessor", () => {
         const result = processor.process({ ...defaultMeta });
 
         expect(result.file).toStrictEqual({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             column: expect.any(Number),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             line: expect.any(Number),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             name: expect.any(String),
         });
     });

@@ -37,11 +37,11 @@ const errorProto = Object.create(
         raw: {
             enumerable: false,
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
                 return this[rawSymbol];
             },
             set(value) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
                 this[rawSymbol] = value;
             },
         },

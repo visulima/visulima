@@ -47,7 +47,7 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
     for (const key in error) {
         // eslint-disable-next-line security/detect-object-injection
         if (protoError[key] === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection
             const value = error[key];
 
             if (getType(value) === "Error") {
