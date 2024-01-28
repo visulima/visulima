@@ -1,0 +1,5 @@
+{
+    "name": "cli-esm",
+    "description": "ESM version",
+    "type": "module"
+}

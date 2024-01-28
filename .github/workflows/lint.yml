@@ -131,6 +131,48 @@ jobs:
             - name: "lint package.json"
               run: "pnpm run lint:packagejson"
 
+    types-lint:
+        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (Typescript types)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895" # v2.6.1
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+              with:
+                  run_install: false
+
+            - name: "Use Node.js 18.x"
+              uses: "actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65" # v4.0.0
+              with:
+                  node-version: "18.x"
+                  cache: "pnpm"
+
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile"
+
+            - name: "Build"
+              run: "pnpm run build:packages"
+
+            - name: "lint package.json"
+              run: "pnpm run lint:types"
+
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
         needs: "files-changed"
