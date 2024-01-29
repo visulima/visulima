@@ -81,7 +81,7 @@ describe("node.JS isColorSupported", () => {
         expect(received).toBe(1);
     });
 
-    it.each(["GITHUB_ACTIONS", "GITEA_ACTIONS"])(`should return 3 if "%s" is in env`, (ci) => {
+    it.each(["GITHUB_ACTIONS", "GITHUB_WORKFLOW", "GITEA_ACTIONS"])(`should return 3 if "%s" is in env`, (ci) => {
         expect.assertions(1);
 
         const received = isColorSupported({

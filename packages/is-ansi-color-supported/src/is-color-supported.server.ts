@@ -122,7 +122,7 @@ export const isColorSupported = (mockThis?: any): ColorSupportLevel => {
     }
 
     if ("CI" in environment) {
-        if ("GITHUB_ACTIONS" in environment || "GITEA_ACTIONS" in environment) {
+        if ("GITHUB_ACTIONS" in environment || "GITHUB_WORKFLOW" in environment || "GITEA_ACTIONS" in environment) {
             return 3;
         }
 
