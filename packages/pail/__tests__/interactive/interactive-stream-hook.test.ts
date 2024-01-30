@@ -12,12 +12,16 @@ const callback = vi.fn();
 
 describe("hook", (): void => {
     it("activate", (): void => {
+        expect.assertions(1);
+
         hook.active();
 
         expect(stream._stack.pop()).toBe(ansiEscapes.cursorHide);
     });
 
     it("write (String)", (): void => {
+        expect.assertions(2);
+
         hook.write("line 1");
         hook.erase(1);
         stream.write("line 2", callback);
@@ -28,6 +32,8 @@ describe("hook", (): void => {
     });
 
     it("write (Buffers)", (): void => {
+        expect.assertions(1);
+
         stream.write("line 4", "utf8", callback);
         stream.write(Buffer.from("line 5", "utf8"), callback);
         stream.write(new Uint8Array(Buffer.from("line 6", "utf8")), callback);
@@ -36,6 +42,8 @@ describe("hook", (): void => {
     });
 
     it("deactivate", (): void => {
+        expect.assertions(1);
+
         hook.inactive(true);
 
         expect(stream._stack).toStrictEqual([

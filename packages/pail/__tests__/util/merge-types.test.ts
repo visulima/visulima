@@ -5,6 +5,8 @@ import { mergeTypes } from "../../src/util/merge-types";
 
 describe("mergeTypes", () => {
     it("should merge two types correctly when given standard and custom types", () => {
+        expect.assertions(1);
+
         const standard: Partial<DefaultLoggerTypes> = {
             error: {
                 badge: "ERROR",
@@ -54,6 +56,8 @@ describe("mergeTypes", () => {
     });
 
     it("should handle empty strings as type names when given standard and custom types", () => {
+        expect.assertions(1);
+
         // Arrange
         const standard: Partial<DefaultLoggerTypes> = {
             error: {
@@ -105,6 +109,8 @@ describe("mergeTypes", () => {
 
     // Should handle empty badge strings
     it("should handle empty badge strings when given standard and custom types", () => {
+        expect.assertions(1);
+
         const standard: Partial<DefaultLoggerTypes> = {
             error: {
                 badge: "ERROR",

@@ -1,7 +1,7 @@
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import stringLength from "string-length";
-import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
+import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
 import type {
@@ -51,7 +51,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         timeout?: ReturnType<typeof setTimeout>;
     };
 
-    protected readonly _customTypes: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+    protected readonly _customTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
     protected readonly _customLogLevels: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
 
@@ -61,13 +61,14 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected _scopeName: string[];
 
-    protected readonly _types: DefaultLoggerTypes<L> & Record<T, Partial<LoggerConfiguration<L>>>;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    protected readonly _types: DefaultLoggerTypes<L> & LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
     protected readonly _longestLabel: string;
 
     protected readonly _processors: Set<Processor<L>>;
 
-    protected readonly _generalLogLevel: L | Rfc5424LogLevels;
+    protected readonly _generalLogLevel: LiteralUnion<Rfc5424LogLevels, L>;
 
     protected _reporters: Set<Reporter<L>>;
 
@@ -76,6 +77,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     protected readonly _throttleMin: number;
 
     protected readonly _stringify: typeof stringify;
+
+    protected groups: string[] | undefined;
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(options: ConstructorOptions<T, L>) {
@@ -86,7 +89,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             strict: true,
         });
 
-        this._customTypes = (options.types ?? {}) as LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+        this._customTypes = (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
         this._types = mergeTypes<L, T>(LOG_TYPES, this._customTypes);
         this._longestLabel = getLongestLabel<L, T>(this._types);
 
@@ -129,9 +132,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,guard-for-in
         for (const type in this._types) {
-            // @ts-expect-error - dynamic property
             // eslint-disable-next-line security/detect-object-injection
-            this[type] = this._logger.bind(this, type);
+            this[type] = this._logger.bind(this, type as T);
         }
 
         // Track of last log
@@ -142,15 +144,15 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Backup original value
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (!(console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
                 (console as any)[`__${type}`] = (console as any)[type];
             }
             // Override
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
             (console as any)[type] = (this as unknown as PailBrowserImpl<T, L>)[type as keyof PailBrowserImpl<T, L>].log;
         }
     }
@@ -159,12 +161,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const type in this._types) {
             // Restore if backup is available
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,security/detect-object-injection
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
                 (console as any)[type] = (console as any)[`__${type}`];
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
                 delete (console as any)[`__${type}`];
             }
         }
@@ -217,7 +219,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             reporters: [...this._reporters],
             throttle: this._throttle,
             throttleMin: this._throttleMin,
-            types: this._customTypes as LoggerTypesConfig<N, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>,
+            types: this._customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
             ...cloneOptions,
         });
 
@@ -315,8 +317,30 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         return undefined;
     }
 
-    private _normalizeLogLevel(level: L | Rfc5424LogLevels | undefined): L | Rfc5424LogLevels {
-        return level && Object.keys(this._logLevels).includes(level) ? level : "debug";
+
+    public group(label?: string): void {
+        if (!Array.isArray(this.groups)) {
+            this.groups = [];
+        }
+
+        this.groups.push(label ?? "console.group");
+    }
+
+    public groupEnd(): void {
+        if (Array.isArray(this.groups)) {
+            this.groups.pop();
+        }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public clear(): void {
+        // eslint-disable-next-line no-console
+        console.clear();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    private _normalizeLogLevel(level: LiteralUnion<Rfc5424LogLevels, L> | undefined): LiteralUnion<Rfc5424LogLevels, L> {
+        return level && Object.keys(this._logLevels).includes(level as string) ? level : "debug";
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
@@ -324,10 +348,11 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         let meta = { ...EMPTY_META } as Meta<L>;
 
         meta.type = {
-            level: type.logLevel as L | Rfc5424LogLevels,
+            level: type.logLevel as LiteralUnion<Rfc5424LogLevels, L>,
             name: typeName,
         };
 
+        meta.groups = this.groups;
         meta.scope = this._scopeName;
         meta.date = new Date();
 
@@ -495,6 +520,7 @@ export type PailBrowserType<T extends string = never, L extends string = never> 
     Record<T, LoggerFunction> &
     (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
+// eslint-disable-next-line import/no-unused-modules
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 
 export const PailBrowser = PailBrowserImpl as unknown as PailBrowserType;

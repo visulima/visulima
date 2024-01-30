@@ -56,7 +56,7 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
                     protoError[key] = errorWithCauseSerializer(value, options);
                 }
             } else if (typeof value === "function") {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
+                // eslint-disable-next-line security/detect-object-injection
                 protoError[key] = `[Function: ${value.name || "anonymous"}]`;
             } else {
                 // Gracefully handle non-configurable errors like `DOMException`.

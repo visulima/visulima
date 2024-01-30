@@ -1,4 +1,5 @@
 import colorize from "@visulima/colorize";
+import type { LiteralUnion } from "type-fest";
 
 import type { ReadonlyMeta, Rfc5424LogLevels } from "../../types";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
@@ -22,7 +23,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
     }
 
     // eslint-disable-next-line class-methods-use-this
-    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
+    protected override _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
         const consoleLogFunction = writeConsoleLogBasedOnLevel(logLevel);
 
         consoleLogFunction(message);

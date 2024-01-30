@@ -21,6 +21,8 @@ describe("getType", () => {
         [Uint8Array.from([1, 2, 3]), "Uint8Array"],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ])("should return the correct type %s", (value: any, type: string) => {
+        expect.assertions(1);
+
         const result = getType(value);
 
         expect(result).toBe(type);

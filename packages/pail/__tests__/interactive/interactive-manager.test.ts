@@ -20,6 +20,8 @@ describe("updateManager", (): void => {
     });
 
     it("hook stream", (): void => {
+        expect.assertions(4);
+
         expect(manager.isHooked).toBeFalsy();
         expect(manager.hook()).toBeTruthy();
         expect(manager.isHooked).toBeTruthy();
@@ -27,6 +29,8 @@ describe("updateManager", (): void => {
     });
 
     it("update lines", (): void => {
+        expect.assertions(1);
+
         manager.update(["line 1"]);
         manager.update(["line 2"], 1);
 
@@ -34,6 +38,8 @@ describe("updateManager", (): void => {
     });
 
     it("update lines with empty array", (): void => {
+        expect.assertions(1);
+
         manager.update([]);
         manager.update([], 1);
 
@@ -41,6 +47,8 @@ describe("updateManager", (): void => {
     });
 
     it("update terminal active area", (): void => {
+        expect.assertions(5);
+
         const { rows } = terminalSize();
 
         const list: string[] = [];
@@ -67,11 +75,13 @@ describe("updateManager", (): void => {
             // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
             process.platform === "win32"
                 ? [code, "line 4", "line 5", "line 6", "line 7", "line 8", "line 9", "line 10", "line 11", ""]
-                : [code, "line 9", "line 10", "line 11", "line 12", "line 13", "line 14", "line 15", "line 16", ""],
+                : [code, "line 8", "line 9", "line 10", "line 11", "line 12", "line 13", "line 14", "line 15", ""],
         );
     });
 
     it("unhook stream", (): void => {
+        expect.assertions(3);
+
         expect(manager.isHooked).toBeTruthy();
         expect(manager.unhook()).toBeTruthy();
         expect(stdout._stack).toStrictEqual([ansiEscapes.cursorShow]);

@@ -1,10 +1,12 @@
+import type { LiteralUnion } from "type-fest";
+
 import { LOG_TYPES } from "../../constants";
 import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, Rfc5424LogLevels } from "../../types";
 
 export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L> {
     protected readonly _styles: PrettyStyleOptions;
 
-    protected _loggerTypes: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+    protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
     protected constructor(options: Partial<PrettyStyleOptions>) {
         this._styles = {
@@ -24,10 +26,10 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
             ...options,
         } as PrettyStyleOptions;
 
-        this._loggerTypes = LOG_TYPES as LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
+        this._loggerTypes = LOG_TYPES as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
     }
 
-    public setLoggerTypes(types: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>): void {
+    public setLoggerTypes(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): void {
         this._loggerTypes = types;
     }
 
@@ -37,9 +39,9 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
 
     protected abstract _formatMessage(data: ReadonlyMeta<L>): string;
 
-    protected abstract _log(message: string, logLevel: L | Rfc5424LogLevels): void;
+    protected abstract _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void;
 
-    protected abstract _formatError(error: Error, size: number): string;
+    protected abstract _formatError(error: Error, size: number, groupSpaces: string): string;
 }
 
 export type PrettyStyleOptions = {

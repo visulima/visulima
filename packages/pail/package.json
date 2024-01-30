@@ -176,13 +176,13 @@
     "dependencies": {
         "@visulima/colorize": "workspace:*",
         "@visulima/fmt": "^1.0.0",
-        "ansi-escapes": "^6.2.0",
         "safe-stable-stringify": "^2.4.3",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
         "wrap-ansi": "^9.0.0"
     },
     "devDependencies": {
+        "ansi-escapes": "^6.2.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
