@@ -6,6 +6,8 @@ import { errorWithCauseSerializer as serialize } from "../../../src/processor/er
 
 describe("error with cause serializer", () => {
     it("should serializes Error objects", () => {
+        expect.assertions(3);
+
         const serialized = serialize(new Error("foo"));
 
         expect(serialized.name).toBe("Error");
@@ -14,6 +16,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should serializes Error objects with extra properties", () => {
+        expect.assertions(4);
+
         const error = new Error("foo") as Error & { statusCode: number };
         error.statusCode = 500;
 
@@ -26,6 +30,8 @@ describe("error with cause serializer", () => {
     });
 
     it('serializes Error objects with subclass "name"', () => {
+        expect.assertions(1);
+
         class MyError extends Error {}
 
         const error = new MyError("foo");
@@ -35,6 +41,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should serializes nested errors", () => {
+        expect.assertions(7);
+
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = new Error("bar");
 
@@ -52,6 +60,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should serializes error causes", () => {
+        expect.assertions(9);
+
         const innerError = new Error("inner");
         const middleError = new Error("middle") as Error & { cause: Error };
         middleError.cause = innerError;
@@ -79,6 +89,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should keeps non-error cause", () => {
+        expect.assertions(3);
+
         const error = new Error("foo") as Error & { cause: string };
         error.cause = "abc";
 
@@ -90,6 +102,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should prevents infinite recursion", () => {
+        expect.assertions(4);
+
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = error;
 
@@ -102,6 +116,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should cleans up infinite recursion tracking", () => {
+        expect.assertions(8);
+
         const error = new Error("foo") as Error & { inner: Error };
         const bar = new Error("bar") as Error & { inner: Error };
         error.inner = bar;
@@ -125,6 +141,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should err.raw is available", () => {
+        expect.assertions(1);
+
         const error = new Error("foo");
         const serialized = serialize(error);
 
@@ -132,6 +150,8 @@ describe("error with cause serializer", () => {
     });
 
     it("should redefined err.constructor doesnt crash serializer", () => {
+        expect.assertions(10);
+
         const check = (a: Error, name: string): void => {
             expect(a.name).toBe(name);
             expect(a.message).toBe("foo");
@@ -166,6 +186,8 @@ describe("error with cause serializer", () => {
     });
 
     it.skipIf(!global.AggregateError)("serializes aggregate errors", () => {
+        expect.assertions(14);
+
         const foo = new Error("foo");
         const bar = new Error("bar");
 

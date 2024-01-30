@@ -19,6 +19,8 @@ const defaultMeta = {
 
 describe("callerProcessor", () => {
     it("should add file information to meta object when file information is not present", () => {
+        expect.assertions(1);
+
         const processor = new CallerProcessor<string>();
 
         const result = processor.process({ ...defaultMeta });

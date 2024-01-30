@@ -1,3 +1,6 @@
+import ansiEscapes from "ansi-escapes"
+import type { LiteralUnion } from "type-fest";
+
 import { InteractiveManager } from "./interactive/interactive-manager";
 import { InteractiveStreamHook } from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
@@ -17,10 +20,13 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 
     protected readonly _stderr: NodeJS.WriteStream | undefined;
 
-    protected readonly _interactiveStdout: InteractiveStreamHook | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    protected readonly _interactiveStdout: InteractiveStreamHook | undefined = undefined;
 
-    protected readonly _interactiveStderr: InteractiveStreamHook | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    protected readonly _interactiveStderr: InteractiveStreamHook | undefined = undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected _interactiveManager: InteractiveManager | undefined;
 
     protected readonly _interactive: boolean;
@@ -76,7 +82,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
             stdout: this._stdout,
             throttle: this._throttle,
             throttleMin: this._throttleMin,
-            types: this._customTypes as LoggerTypesConfig<N, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>,
+            types: this._customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
             ...cloneOptions,
         });
 
@@ -136,24 +142,34 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         this.restoreStd();
     }
 
-    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: DefaultLogTypes | L) {
+    public override clear(): void {
+        if (this._stdout) {
+            this._stdout.write(ansiEscapes.clearTerminal);
+        }
+
+        if (this._stderr) {
+            this._stderr.write(ansiEscapes.clearTerminal);
+        }
+    }
+
+    private _wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>) {
         if (!stream) {
             return;
         }
 
         // Backup original value
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/unbound-method
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign,@typescript-eslint/unbound-method
             (stream as any).__write = stream.write;
         }
 
         // Override
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
         (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection
             (this as unknown as PailServerImpl)[type].log(String(data).trim());
         };
     }
@@ -164,12 +180,12 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
             stream.write = (stream as any).__write;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any,no-param-reassign
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
             delete (stream as any).__write;
         }
     }
@@ -180,6 +196,7 @@ export type PailServerType<T extends string = never, L extends string = never> =
     Record<T, LoggerFunction> &
     (new<TC extends string = never, LC extends string = never>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
 
+// eslint-disable-next-line import/no-unused-modules
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 
 export const PailServer = PailServerImpl as unknown as PailServerType;

@@ -1,5 +1,5 @@
 import type { AnsiColors } from "@visulima/colorize";
-import type { Primitive, UnknownArray, UnknownRecord } from "type-fest";
+import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 /**
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
@@ -17,6 +17,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     context: Record<string, any> | undefined;
     date: Date | string;
     error: Error | undefined;
+    groups: string[] | undefined;
     label: string | undefined;
     message: Primitive | UnknownArray | UnknownRecord;
     prefix: string | undefined;
@@ -102,7 +103,7 @@ export type Serializer<Type = string, Options = UnknownRecord> = {
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
     disabled?: boolean;
-    logLevel?: L | Rfc5424LogLevels;
+    logLevel?: LiteralUnion<Rfc5424LogLevels, L>;
     logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
     processors?: Processor<L>[];
     reporters?: Reporter<L>[];

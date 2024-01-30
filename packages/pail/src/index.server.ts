@@ -21,14 +21,18 @@ const _getDefaultLogLevel = (): Rfc5424LogLevels => {
     return "informational";
 };
 
+// eslint-disable-next-line import/no-unused-modules
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailServerType<T, L> =>
     new PailServer<T, L>({
         logLevel: _getDefaultLogLevel(),
+         
         processors: options?.processors ?? [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
+         
         reporters: options?.reporters ?? [new PrettyReporter()],
         stderr: process.stderr,
         stdout: process.stdout,
         ...options,
     });
 
+// eslint-disable-next-line import/no-unused-modules
 export const pail = createPail();

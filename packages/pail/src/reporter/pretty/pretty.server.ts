@@ -1,10 +1,11 @@
 import { sep } from "node:path";
 
 import type { AnsiColors } from "@visulima/colorize";
-import colorize from "@visulima/colorize";
+import colorize, { bgGrey, bold, cyan, grey, red,underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
+import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
 import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter, StringifyAwareReporter } from "../../types";
@@ -58,16 +59,23 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             size = this._styles.messageLength;
         }
 
-        const { badge, context, date, error, file, label, message, prefix, repeated, scope, suffix, type } = data;
+        const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, type } = data;
 
         const colorized = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
             ? colorize[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as AnsiColors]
-            : colorize.white;
+            : white;
+
+        const groupSpaces: string = groups ? groups.map(() => "   ").join("") : "";
 
         let items: string[] = [];
 
+        if (Array.isArray(groups) && groups.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,prefer-template
+            items.push(groupSpaces + grey("[" + groups.at(-1) + "]") as string);
+        }
+
         if (date) {
-            items.push(colorize.grey(this._styles.dateFormatter(new Date(date))));
+            items.push(grey(this._styles.dateFormatter(new Date(date))));
         }
 
         if (badge) {
@@ -83,28 +91,28 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
             if (repeated) {
                 // eslint-disable-next-line prefer-template
-                items.push(colorize.bgGray.white("[" + repeated + "x]"));
+                items.push(bgGrey.white("[" + repeated + "x]"));
             }
 
-            items.push((replacement.length > 0 ? " " : "") + colorize.grey(replacement));
+            items.push((replacement.length > 0 ? " " : "") + grey(replacement));
         } else {
             // plus 2 for the space and the dot
-            items.push(colorize.grey(".".repeat(longestLabel.length + 2)));
+            items.push(grey(".".repeat(longestLabel.length + 2)));
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
             // eslint-disable-next-line prefer-template
-            items.push(colorize.grey("[" + scope.join(" | ") + "]"));
+            items.push(grey("[" + scope.join(" | ") + "]"));
         }
 
         if (prefix) {
             items.push(
-                colorize.grey(
+                grey(
                     // eslint-disable-next-line prefer-template
                     (Array.isArray(scope) && scope.length > 0 ? ". " : "") +
                         "[" +
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                        (this._styles.underline.prefix ? colorize.underline(prefix as string) : prefix) +
+
+                        (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
                         "]",
                 ),
             );
@@ -121,9 +129,9 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             const fileMessage = `${file.name}${file.line ? `:${file.line}` : ""}`;
             const fileMessageSize = stringLength(fileMessage);
 
-            items.push(colorize.grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
+            items.push(grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
         } else {
-            items.push(colorize.grey(".".repeat(size - titleSize - 1)));
+            items.push(grey(".".repeat(size - titleSize - 1)));
         }
 
         if (items.length > 0) {
@@ -134,6 +142,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             const formattedMessage: string | undefined = getType(message) === "String" ? (message as string) : (this.#stringify as typeof stringify)(message);
 
             items.push(
+                groupSpaces +
                 wrapAnsi(formattedMessage ?? "undefined", size - 3, {
                     hard: true,
                     trim: true,
@@ -142,38 +151,39 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             );
 
             if (context) {
-                items.push("\n", colorize.grey((this.#stringify as typeof stringify)(context)));
+                items.push("\n", groupSpaces + grey((this.#stringify as typeof stringify)(context)));
             }
         }
 
         if (error) {
-            items.push(this._formatError(error, size));
+            items.push(this._formatError(error, size, groupSpaces));
         }
 
         if (suffix) {
-            items.push("\n", colorize.grey(this._styles.underline.suffix ? colorize.underline(suffix) : suffix));
+            items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
         // eslint-disable-next-line prefer-template
         return items.join("") + "\n";
     }
 
-    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
-        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+    protected override _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
+        const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
         writeStream(`${message}\n`, stream);
     }
 
     // eslint-disable-next-line class-methods-use-this
-    protected override _formatError(error: Error, size: number): string {
+    protected override _formatError(error: Error, size: number, groupSpaces: string): string {
         const { message, name, stack } = error;
 
         const items: string[] = [];
         const cwd = process.cwd() + sep;
 
         items.push(
-            colorize.red(name),
+            groupSpaces + red(name),
             "\n",
+            groupSpaces +
             wrapAnsi(message, size - 3, {
                 hard: true,
                 trim: true,
@@ -185,12 +195,12 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             const lines = stack
                 .split("\n")
                 .splice(1)
-                .map((line: string) => line.trim().replace("file://", "").replace(cwd, ""));
+                .map((line: string) => groupSpaces + line.trim().replace("file://", "").replace(cwd, ""));
 
             items.push(
                 "\n",
                 lines
-                    .map((line: string) => `  ${line.replace(/^at +/, (m) => colorize.gray(m)).replace(/\((.+)\)/, (_, m) => `(${colorize.cyan(m)})`)}`)
+                    .map((line: string) => `  ${line.replace(/^at +/, (m) => grey(m)).replace(/\((.+)\)/, (_, m) => `(${cyan(m)})`)}`)
                     .join("\n"),
             );
         }
@@ -201,10 +211,10 @@ export class PrettyReporter<T extends string = never, L extends string = never>
     private _formatLabel(label: string): string {
         let formattedLabel = this._styles.uppercase.label ? label.toUpperCase() : label;
 
-        formattedLabel = this._styles.underline.label ? colorize.underline(formattedLabel) : formattedLabel;
+        formattedLabel = this._styles.underline.label ? underline(formattedLabel) : formattedLabel;
 
         if (this._styles.bold.label) {
-            formattedLabel = colorize.bold(formattedLabel);
+            formattedLabel = bold(formattedLabel);
         }
 
         return formattedLabel;

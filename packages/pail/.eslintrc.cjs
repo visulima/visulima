@@ -26,11 +26,13 @@ module.exports = {
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {
+                "no-underscore-dangle": "off",
                 "import/no-default-export": "error",
                 "import/prefer-default-export": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
             },
         },
         {
@@ -38,9 +40,9 @@ module.exports = {
             rules: {},
         },
         {
-            files: ["*.ts"],
+            files: ["*.test.ts"],
             rules: {
-                "no-underscore-dangle": "off",
+                "import/no-unused-modules": "off",
             },
         },
         {
