@@ -1,3 +1,17 @@
+## @visulima/api-platform [2.0.17](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.16...@visulima/api-platform@2.0.17) (2024-01-31)
+
+
+### Bug Fixes
+
+* update deps ([1b01d6f](https://github.com/visulima/visulima/commit/1b01d6f55435ac2ed67db48e6e2060f786f59e56))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 2.1.13
+* **@visulima/crud:** upgraded to 2.0.13
+
 ## @visulima/api-platform [2.0.16](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.15...@visulima/api-platform@2.0.16) (2024-01-19)
 
 
