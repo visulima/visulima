@@ -123,7 +123,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.1",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.10",
-        "@testing-library/react": "^14.1.2",
+        "@testing-library/react": "^14.2.0",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/flexsearch": "^0.7.6",
         "@types/git-url-parse": "^9.0.3",
