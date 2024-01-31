@@ -1,6 +1,6 @@
 {
     "name": "@visulima/connect",
-    "version": "2.1.12",
+    "version": "2.1.13",
     "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
     "keywords": [
         "javascript",
@@ -90,7 +90,7 @@
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@types/http-errors": "^2.0.4",
         "@types/node": "18.18.8",
-        "@visulima/nextra-theme-docs": "4.0.12",
+        "@visulima/nextra-theme-docs": "4.0.13",
         "@vitest/coverage-v8": "^1.2.2",
         "@vitest/ui": "^1.2.2",
         "cross-env": "^7.0.3",
