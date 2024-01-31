@@ -1,3 +1,16 @@
+## @visulima/error [3.0.3](https://github.com/visulima/visulima/compare/@visulima/error@3.0.2...@visulima/error@3.0.3) (2024-01-31)
+
+
+### Bug Fixes
+
+* update deps ([1b01d6f](https://github.com/visulima/visulima/commit/1b01d6f55435ac2ed67db48e6e2060f786f59e56))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.13
+
 ## @visulima/error [3.0.2](https://github.com/visulima/visulima/compare/@visulima/error@3.0.1...@visulima/error@3.0.2) (2024-01-19)
 
 
