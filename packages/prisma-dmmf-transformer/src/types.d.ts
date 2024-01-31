@@ -1,4 +1,4 @@
-import type { DMMF } from "@prisma/generator-helper";
+import type { DMMF, ReadonlyDeep } from "@prisma/generator-helper";
 import type { JSONSchema7Definition } from "json-schema";
 
 export type PrismaPrimitive = "BigInt" | "Boolean" | "Bytes" | "DateTime" | "Decimal" | "Float" | "Int" | "Json" | "String";
@@ -10,7 +10,7 @@ export interface PropertyMetaData {
 }
 
 export interface ModelMetaData {
-    enums: DMMF.DatamodelEnum[];
+    enums: ReadonlyDeep<DMMF.DatamodelEnum[]>;
 }
 
 export type DefinitionMap = [name: string, definition: JSONSchema7Definition];
