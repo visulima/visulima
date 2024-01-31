@@ -1,3 +1,10 @@
+## @visulima/is-ansi-color-supported [1.1.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@1.0.0...@visulima/is-ansi-color-supported@1.1.0) (2024-01-31)
+
+
+### Features
+
+* added GITHUB_WORKFLOW env to the ansi color check ([080ec5f](https://github.com/visulima/visulima/commit/080ec5f0ad2fc651d41ced92cc7e21401df725ff))
+
 ## @visulima/is-ansi-color-supported 1.0.0 (2024-01-28)
 
 
