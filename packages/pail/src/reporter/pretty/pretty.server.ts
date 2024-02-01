@@ -1,7 +1,7 @@
 import { sep } from "node:path";
 
 import type { AnsiColors } from "@visulima/colorize";
-import colorize, { bgGrey, bold, cyan, grey, red,underline, white } from "@visulima/colorize";
+import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
@@ -70,8 +70,8 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         let items: string[] = [];
 
         if (Array.isArray(groups) && groups.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands,prefer-template
-            items.push(groupSpaces + grey("[" + groups.at(-1) + "]") as string);
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            items.push((groupSpaces + grey("[" + groups.at(-1) + "]")) as string);
         }
 
         if (date) {
@@ -90,7 +90,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             items.push(colorized(this._formatLabel(label as string)));
 
             if (repeated) {
-                // eslint-disable-next-line prefer-template
+
                 items.push(bgGrey.white("[" + repeated + "x]"));
             }
 
@@ -101,35 +101,30 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            // eslint-disable-next-line prefer-template
+
             items.push(grey("[" + scope.join(" | ") + "]"));
         }
 
         if (prefix) {
             items.push(
                 grey(
-                    // eslint-disable-next-line prefer-template
-                    (Array.isArray(scope) && scope.length > 0 ? ". " : "") +
-                        "[" +
 
-                        (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
-                        "]",
+                    (Array.isArray(scope) && scope.length > 0 ? ". " : "") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "]",
                 ),
             );
         }
 
         if (items.length > 0) {
-            // eslint-disable-next-line prefer-template
             items = items.map((item) => item + " ");
         }
 
         const titleSize = stringLength(items.join(" "));
 
         if (file) {
-            const fileMessage = `${file.name}${file.line ? `:${file.line}` : ""}`;
+            const fileMessage = file.name + (file.line ? ":" + file.line : "");
             const fileMessageSize = stringLength(fileMessage);
 
-            items.push(grey(`${".".repeat(size - titleSize - fileMessageSize - 2)} ${fileMessage}`));
+            items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
         } else {
             items.push(grey(".".repeat(size - titleSize - 1)));
         }
@@ -143,11 +138,11 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
             items.push(
                 groupSpaces +
-                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
-                    hard: true,
-                    trim: true,
-                    wordWrap: true,
-                }),
+                    wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                        hard: true,
+                        trim: true,
+                        wordWrap: true,
+                    }),
             );
 
             if (context) {
@@ -163,14 +158,13 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
-        // eslint-disable-next-line prefer-template
         return items.join("") + "\n";
     }
 
     protected override _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
         const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
-        writeStream(`${message}\n`, stream);
+        writeStream(message + "\n", stream);
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -184,11 +178,11 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             groupSpaces + red(name),
             "\n",
             groupSpaces +
-            wrapAnsi(message, size - 3, {
-                hard: true,
-                trim: true,
-                wordWrap: true,
-            }),
+                wrapAnsi(message, size - 3, {
+                    hard: true,
+                    trim: true,
+                    wordWrap: true,
+                }),
         );
 
         if (stack) {
@@ -199,9 +193,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
             items.push(
                 "\n",
-                lines
-                    .map((line: string) => `  ${line.replace(/^at +/, (m) => grey(m)).replace(/\((.+)\)/, (_, m) => `(${cyan(m)})`)}`)
-                    .join("\n"),
+                lines.map((line: string) => "  " + line.replace(/^at +/, (m) => grey(m)).replace(/\((.+)\)/, (_, m) => "(" + cyan(m) + ")")).join("\n"),
             );
         }
 

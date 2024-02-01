@@ -145,9 +145,9 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         for (const type in this._types) {
             // Backup original value
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (!(console as any)[`__${type}`]) {
+            if (!(console as any)["__" + type]) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-                (console as any)[`__${type}`] = (console as any)[type];
+                (console as any)["__" + type] = (console as any)[type];
             }
             // Override
             // @TODO: Fix typings
@@ -162,12 +162,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         for (const type in this._types) {
             // Restore if backup is available
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((console as any)[`__${type}`]) {
+            if ((console as any)["__" + type]) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-                (console as any)[type] = (console as any)[`__${type}`];
+                (console as any)[type] = (console as any)["__" + type];
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
-                delete (console as any)[`__${type}`];
+                delete (console as any)["__" + type];
             }
         }
     }
@@ -252,7 +252,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     public time(label?: string): string {
         if (!label) {
             // eslint-disable-next-line no-param-reassign
-            label = `timer_${this.timers.size}`;
+            label = "timer_" + this.timers.size;
 
             this.seqTimers.push(label);
         }
@@ -270,7 +270,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         }
 
         // green
-        meta.label = `${label}${" ".repeat(this._longestLabel.length - stringLength(label))}`;
+        meta.label = label + " ".repeat(this._longestLabel.length - stringLength(label));
 
         meta.message = "Initialized timer...";
 
@@ -307,7 +307,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
             meta.message = "Timer run for:\n";
             // yellow
-            meta.message += span < 1000 ? `${span}ms` : `${(span / 1000).toFixed(2)}s`;
+            meta.message += span < 1000 ? span + "ms" : (span / 1000).toFixed(2) + "s";
 
             // this._log(messages.join(" "), this._stream, "timer");
 
@@ -316,7 +316,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         return undefined;
     }
-
 
     public group(label?: string): void {
         if (!Array.isArray(this.groups)) {
@@ -520,7 +519,6 @@ export type PailBrowserType<T extends string = never, L extends string = never> 
     Record<T, LoggerFunction> &
     (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
-// eslint-disable-next-line import/no-unused-modules
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 
 export const PailBrowser = PailBrowserImpl as unknown as PailBrowserType;

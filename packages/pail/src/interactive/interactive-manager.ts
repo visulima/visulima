@@ -160,7 +160,7 @@ export class InteractiveManager {
                     hook.erase(actualLength);
                 }
 
-                hook.write(`${output.join("\n")}\n`);
+                hook.write(output.join("\n") + "\n");
 
                 this.#lastLength = outside ? outside + output.length + 1 : output.length;
                 this.#outside = Math.max(this.lastLength - height, this.outside);

@@ -5,17 +5,29 @@ import { MessageFormatterProcessor } from "./processor/message-formatter-process
 import { JsonReporter } from "./reporter/json/json.browser";
 import type { ConstructorOptions } from "./types";
 
-export * from "./shared";
-
-// eslint-disable-next-line import/no-unused-modules
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailBrowserType<T, L> =>
     new PailBrowser<T, L>({
-         
         processors: options?.processors ?? [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
-         
+
         reporters: options?.reporters ?? [new JsonReporter<L>()],
         ...options,
     });
 
-// eslint-disable-next-line import/no-unused-modules
 export const pail = createPail();
+
+export type {
+    ConstructorOptions,
+    DefaultLoggerTypes,
+    DefaultLogTypes,
+    LoggerConfiguration,
+    LoggerFunction,
+    LoggerTypesAwareReporter,
+    LoggerTypesConfig,
+    Processor,
+    Reporter,
+    Rfc5424LogLevels,
+    Serializer,
+    StreamAwareReporter,
+    TimeEndResult,
+} from "./shared";
+export { getType } from "./shared";
