@@ -1,4 +1,5 @@
 import type { stringify } from "safe-stable-stringify";
+import type { LiteralUnion } from "type-fest";
 
 import type { ReadonlyMeta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
 
@@ -19,9 +20,8 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
 
         if (rest?.file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
-                rest.file.column ? `:${rest.file.column}` : ""
-            }`;
+            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file =
+                rest.file.name + ":" + rest.file.line + (rest.file.column ? ":" + rest.file.column : "");
         }
 
         if (rest.scope?.length === 0) {
@@ -31,5 +31,5 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
         this._log((this._stringify as typeof stringify)(rest) as string, type.level);
     }
 
-    protected abstract _log(message: string, logLevel: L | Rfc5424LogLevels): void;
+    protected abstract _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void;
 }

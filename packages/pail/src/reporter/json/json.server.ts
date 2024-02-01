@@ -1,5 +1,7 @@
 import process from "node:process";
 
+import type { LiteralUnion } from "type-fest";
+
 import type { Rfc5424LogLevels, StreamAwareReporter } from "../../types";
 import { writeStream } from "../../util/write-stream";
 import { AbstractJsonReporter } from "./abstract-json-reporter";
@@ -23,9 +25,9 @@ export class JsonReporter<L extends string = never> extends AbstractJsonReporter
         this.#stderr = stderr;
     }
 
-    protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
-        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+    protected override _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
+        const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
-        writeStream(`${message}\n`, stream);
+        writeStream(message + "\n", stream);
     }
 }

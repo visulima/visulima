@@ -33,11 +33,18 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
+                "prefer-template": "off",
             },
         },
         {
             files: ["*.js", "*.jsx"],
             rules: {},
+        },
+        {
+            files: ["*.browser.ts", "*.server.ts"],
+            rules: {
+                "import/no-unused-modules": "off",
+            },
         },
         {
             files: ["*.test.ts"],

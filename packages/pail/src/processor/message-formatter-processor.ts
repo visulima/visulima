@@ -37,7 +37,7 @@ export class MessageFormatterProcessor<L extends string = never> implements Stri
 
                 if (stringified === undefined) {
                     // eslint-disable-next-line no-console
-                    console.warn(`Unable to stringify value of type ${getType(value)}`, value);
+                    console.warn("Unable to stringify value of type " + getType(value), value);
 
                     return "undefined";
                 }

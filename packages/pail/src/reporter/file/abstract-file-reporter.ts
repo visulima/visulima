@@ -18,7 +18,7 @@ export abstract class AbstractFileReporter<L extends string = never> implements 
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        this._stream.write(`${this._formatMessage(meta as ReadonlyMeta<L>)}\n`);
+        this._stream.write(this._formatMessage(meta as ReadonlyMeta<L>) + "\n");
     }
 
     protected abstract _formatMessage(data: ReadonlyMeta<L>): string;

@@ -26,6 +26,6 @@ export class BasicReporter<L extends string = never> extends AbstractBasicReport
     protected override _log(message: string, logLevel: L | Rfc5424LogLevels): void {
         const stream = ["error", "warn"].includes(logLevel) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
-        writeStream(`${message}\n`, stream);
+        writeStream(message + "\n", stream);
     }
 }

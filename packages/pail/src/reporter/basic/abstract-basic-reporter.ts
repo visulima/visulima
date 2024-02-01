@@ -1,4 +1,5 @@
 import type { stringify } from "safe-stable-stringify";
+import type { LiteralUnion } from "type-fest";
 
 import type { ReadonlyMeta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
 
@@ -21,51 +22,51 @@ export abstract class AbstractBasicReporter<L extends string = never> implements
         let logMessage = "";
 
         if (rest.date) {
-            logMessage += `${rest.date.toString()} `;
+            logMessage += rest.date.toString() + " ";
         }
 
         if (rest.badge) {
-            logMessage += `${rest.badge} `;
+            logMessage += rest.badge + " ";
         }
 
         if (rest.label) {
-            logMessage += `${rest.label}: `;
+            logMessage += rest.label + ": ";
         }
 
         if (rest.repeated) {
-            logMessage += ` [${rest.repeated}x]`;
+            logMessage += " [" + rest.repeated + "x]";
         }
 
         if (rest.scope && rest.scope.length > 0) {
-            logMessage += `[${rest.scope.join(" | ")}] `;
+            logMessage += "[" + rest.scope.join(" | ") + "] ";
         }
 
         if (rest.prefix) {
-            logMessage += `${rest.prefix} `;
+            logMessage += rest.prefix + " ";
         }
 
         if (rest.file) {
-            logMessage += `${rest.file.name}:${rest.file.line}${rest.file.column ? `:${rest.file.column}` : ""}`;
+            logMessage += rest.file.name + ":" + rest.file.line + rest.file.column ? ":" + rest.file.column : "";
         }
 
         if (rest.message) {
-            logMessage += `${rest.message as string}`;
+            logMessage += rest.message as string;
 
             if (rest.context) {
-                logMessage += `\n${(this._stringify as typeof stringify)(rest.context)}`;
+                logMessage += "\n" + (this._stringify as typeof stringify)(rest.context);
             }
         }
 
         if (rest.error) {
-            logMessage += `\n${(this._stringify as typeof stringify)(rest.context)}`;
+            logMessage += "\n" + (this._stringify as typeof stringify)(rest.context);
         }
 
         if (rest.suffix) {
-            logMessage += ` ${rest.suffix}`;
+            logMessage += " " + rest.suffix;
         }
 
         this._log(logMessage, type.level);
     }
 
-    protected abstract _log(message: string, logLevel: L | Rfc5424LogLevels): void;
+    protected abstract _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void;
 }

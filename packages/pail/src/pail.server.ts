@@ -1,4 +1,4 @@
-import ansiEscapes from "ansi-escapes"
+import ansiEscapes from "ansi-escapes";
 import type { LiteralUnion } from "type-fest";
 
 import { InteractiveManager } from "./interactive/interactive-manager";
@@ -86,6 +86,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
             ...cloneOptions,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         newInstance.timers = new Map(this.timers.entries());
         newInstance.seqTimers = [...this.seqTimers];
 
@@ -196,7 +197,7 @@ export type PailServerType<T extends string = never, L extends string = never> =
     Record<T, LoggerFunction> &
     (new<TC extends string = never, LC extends string = never>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
 
-// eslint-disable-next-line import/no-unused-modules
+
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 
 export const PailServer = PailServerImpl as unknown as PailServerType;

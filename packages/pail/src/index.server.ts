@@ -5,9 +5,6 @@ import { MessageFormatterProcessor } from "./processor/message-formatter-process
 import { PrettyReporter } from "./reporter/pretty/pretty.server";
 import type { ConstructorOptions, Rfc5424LogLevels } from "./types";
 
-// eslint-disable-next-line import/exports-last
-export * from "./shared";
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _getDefaultLogLevel = (): Rfc5424LogLevels => {
     if (process.env["NODE_ENV"] === "debug" || process.env["DEBUG"] !== undefined) {
@@ -21,18 +18,33 @@ const _getDefaultLogLevel = (): Rfc5424LogLevels => {
     return "informational";
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailServerType<T, L> =>
     new PailServer<T, L>({
         logLevel: _getDefaultLogLevel(),
-         
+
         processors: options?.processors ?? [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
-         
+
         reporters: options?.reporters ?? [new PrettyReporter()],
         stderr: process.stderr,
         stdout: process.stdout,
         ...options,
     });
 
-// eslint-disable-next-line import/no-unused-modules
 export const pail = createPail();
+
+export type {
+    ConstructorOptions,
+    DefaultLoggerTypes,
+    DefaultLogTypes,
+    LoggerConfiguration,
+    LoggerFunction,
+    LoggerTypesAwareReporter,
+    LoggerTypesConfig,
+    Processor,
+    Reporter,
+    Rfc5424LogLevels,
+    Serializer,
+    StreamAwareReporter,
+    TimeEndResult,
+} from "./shared";
+export { getType } from "./shared";

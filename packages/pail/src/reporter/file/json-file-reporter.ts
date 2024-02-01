@@ -30,9 +30,8 @@ export class JsonFileReporter<L extends string = never> extends AbstractFileRepo
 
         if (rest.file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file = `${rest.file.name}:${rest.file.line}${
-                rest.file.column ? `:${rest.file.column}` : ""
-            }`;
+            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file =
+                rest.file.name + ":" + rest.file.line + (rest.file.column ? ":" + rest.file.column : "");
         }
 
         return (this.#stringify as typeof stringify)(rest) as string;

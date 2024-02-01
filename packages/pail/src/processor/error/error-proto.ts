@@ -3,7 +3,7 @@ import type { UnknownRecord } from "type-fest";
 // eslint-disable-next-line import/exports-last
 export const seen = Symbol("circular-reference-tag");
 
-// eslint-disable-next-line import/exports-last
+// eslint-disable-next-line import/exports-last,import/no-unused-modules
 export const rawSymbol = Symbol("raw-error-ref");
 
 const errorProto = Object.create(
