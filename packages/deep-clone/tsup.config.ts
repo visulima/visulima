@@ -1,8 +1,8 @@
 import { createConfig } from "../../tsup.config";
 
 const config = createConfig({
-    format: "esm",
     shims: false,
+    cjsInterop: false,
 });
 
 export default config;

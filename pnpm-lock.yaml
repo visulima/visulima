@@ -1036,7 +1036,7 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 2.1.12
+        specifier: 2.1.13
         version: link:../connect
       '@visulima/jsdoc-open-api':
         specifier: 2.0.12
@@ -1079,7 +1079,7 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.12
+        specifier: 2.0.13
         version: link:../crud
       '@visulima/readdir':
         specifier: 2.0.11
@@ -1315,7 +1315,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 1.0.0
+        specifier: 1.1.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -1481,7 +1481,7 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.12
+        specifier: 4.0.13
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.2.2
@@ -1556,7 +1556,7 @@ importers:
         specifier: 3.0.11
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.12
+        specifier: 2.0.13
         version: link:../prisma-dmmf-transformer
       http-errors:
         specifier: ^2.0.0
@@ -1744,9 +1744,6 @@ importers:
       jsdom:
         specifier: ^24.0.0
         version: 24.0.0
-      jsondiffpatch:
-        specifier: ^0.6.0
-        version: 0.6.0
       lodash.clonedeep:
         specifier: ^4.5.0
         version: 4.5.0
@@ -1839,7 +1836,7 @@ importers:
         specifier: 18.18.5
         version: 18.18.5
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.12
+        specifier: 4.0.13
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.2.2
@@ -11907,10 +11904,6 @@ packages:
     resolution: {integrity: sha512-bV/jQlAJ/nPY3XqSatkGpu+nGzou+uSwrH1cROhn+jBFg47yaNH+blW4C7p9KhopC7QxCv/6M86s37k8dMk0Yg==}
     dev: true
 
-  /@types/diff-match-patch@1.0.36:
-    resolution: {integrity: sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==}
-    dev: true
-
   /@types/doctrine@0.0.3:
     resolution: {integrity: sha512-w5jZ0ee+HaPOaX25X2/2oGR/7rgAQSYII7X7pp0m9KgBfMP7uKfMfTvcpl5Dj+eDBbpxKGiqE+flqDr6XTd2RA==}
     dev: true
@@ -16288,10 +16281,6 @@ packages:
 
   /didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
-    dev: true
-
-  /diff-match-patch@1.0.5:
-    resolution: {integrity: sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==}
     dev: true
 
   /diff-sequences@29.6.3:
@@ -21693,16 +21682,6 @@ packages:
 
   /jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
-
-  /jsondiffpatch@0.6.0:
-    resolution: {integrity: sha512-3QItJOXp2AP1uv7waBkao5nCvhEv+QmJAd38Ybq7wNI74Q+BBmnLn4EDKz6yI9xGAIQoUF87qHt+kc1IVxB4zQ==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    dependencies:
-      '@types/diff-match-patch': 1.0.36
-      chalk: 5.3.0
-      diff-match-patch: 1.0.5
-    dev: true
 
   /jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
