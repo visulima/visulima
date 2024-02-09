@@ -17,7 +17,6 @@ const data = { a: "a", b: "b", c: "c" };
 
 describe("shallow clone", () => {
     bench("@visulima/deep-clone - loose", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = visulimaDeepCopy(data);
 
         if (cloneData === data) {
@@ -26,7 +25,6 @@ describe("shallow clone", () => {
     });
 
     bench("@visulima/deep-clone - strict", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = visulimaDeepCopy(data, { strict: true });
 
         if (cloneData === data) {
