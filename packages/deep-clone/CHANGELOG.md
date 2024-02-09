@@ -1,10 +1,3 @@
-## @visulima/deep-clone [1.1.0](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.8...@visulima/deep-clone@1.1.0) (2024-02-09)
-
-
-### Features
-
-* refactored deep-clone, added new handler option for overwrite our internal cloner, created a loose and a strict version ([c641f2d](https://github.com/visulima/visulima/commit/c641f2dc8d07c7d25fd623a22cc4430a39fdd38d))
-
 ## @visulima/deep-clone [1.0.8](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.7...@visulima/deep-clone@1.0.8) (2024-01-19)
 
 
