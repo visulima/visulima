@@ -62,6 +62,7 @@
     },
     "main": "dist/index.cjs",
     "module": "dist/index.js",
+    "source": "src/index.ts",
     "browser": "./dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -136,6 +137,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "source": "src/index.ts"
+    }
 }
