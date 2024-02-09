@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unused-modules
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 

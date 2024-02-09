@@ -1,28 +1,32 @@
-import type { UnknownRecord } from "type-fest";
+import type { EmptyObject, UnknownRecord } from "type-fest";
 
 import type { State } from "../types";
-import getCleanClone from "../utils/get-clean-clone";
 import copyOwnProperties from "../utils/copy-own-properties";
+import getCleanClone from "../utils/get-clean-clone";
 
-export const copyObjectLoose = <Value extends Record<string, any>>(object: Value, state: State): Value => {
-    const clone = getCleanClone(object);
+export const copyObjectLoose = <Value extends UnknownRecord>(object: Value, state: State): Value => {
+    const clone = getCleanClone(object) as EmptyObject;
 
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const key in object) {
         if (Object.hasOwnProperty.call(object, key)) {
-            clone[key] = state.clone(object[key], state);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+            (clone as any)[key] = state.clone(object[key], state);
         }
     }
 
     const symbols = Object.getOwnPropertySymbols(object);
 
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = 0, { length } = symbols, symbol; index < length; ++index) {
-        symbol = symbols[index];
+        symbol = symbols[index] as symbol;
 
         if (Object.prototype.propertyIsEnumerable.call(object, symbol)) {
-            clone[symbol] = state.clone((object as any)[symbol], state);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+            (clone as any)[symbol] = state.clone((object as any)[symbol], state);
         }
     }
 
@@ -38,7 +42,7 @@ export const copyObjectLoose = <Value extends Record<string, any>>(object: Value
         Object.freeze(clone);
     }
 
-    return clone;
+    return clone as Value;
 };
 
 /**
@@ -46,7 +50,7 @@ export const copyObjectLoose = <Value extends Record<string, any>>(object: Value
  * as any hidden or non-enumerable properties.
  */
 export const copyObjectStrict = <Value extends UnknownRecord>(object: Value, state: State): Value => {
-    const clone = getCleanClone(object);
+    const clone = getCleanClone(object) as EmptyObject;
 
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);
@@ -72,5 +76,5 @@ export const copyObjectStrict = <Value extends UnknownRecord>(object: Value, sta
         Object.freeze(clonedObject);
     }
 
-    return clonedObject;
+    return clonedObject as Value;
 };

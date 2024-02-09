@@ -1,4 +1,5 @@
 import { deepCopy as mfederczukClone } from "@mfederczuk/deeptools";
+import ungapStructuredClone from "@ungap/structured-clone";
 import cloneDeep from "clone-deep";
 import deepCopy from "deep-copy";
 import fastCopy, { copyStrict as fastCopyStrict } from "fast-copy";
@@ -9,7 +10,6 @@ import plainObjectClone from "plain-object-clone";
 import { clone as ramdaClone } from "ramda";
 import rfdc from "rfdc";
 import { bench, describe } from "vitest";
-import ungapStructuredClone from "@ungap/structured-clone";
 
 import data from "../__fixtures__/data.json";
 import { deepClone as visulimaDeepCopy } from "../dist";
@@ -48,6 +48,7 @@ describe("clone", () => {
     });
 
     bench("clone-deep", () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = cloneDeep(data);
 
         if (cloneData === data) {
@@ -80,6 +81,7 @@ describe("clone", () => {
     });
 
     bench("nano-copy", () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = nanoCopy(data);
 
         if (cloneData === data) {
@@ -144,6 +146,7 @@ describe("clone", () => {
     });
 
     bench("@ungap/structured-clone clone", () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = ungapStructuredClone(data);
 
         if (cloneData === data) {

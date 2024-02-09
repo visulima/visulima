@@ -1,13 +1,13 @@
 type InternalHandler<Value> = (value: Value, state: State) => Value;
 
 export interface State {
-  cache: WeakMap<any, unknown>;
-  clone: InternalHandler<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    cache: WeakMap<any, unknown>;
+    clone: InternalHandler<unknown>;
 }
 
 export type Options = {
     handler?: {
-        Arguments: InternalHandler<unknown[]>;
         Array: InternalHandler<unknown[]>;
         ArrayBuffer: InternalHandler<ArrayBuffer>;
         Blob: InternalHandler<Blob>;
@@ -24,8 +24,10 @@ export type Options = {
         Promise: InternalHandler<Promise<unknown>>;
         RegExp: InternalHandler<RegExp>;
         Set: InternalHandler<Set<unknown>>;
-        WeakMap: InternalHandler<WeakMap<object, unknown>>;
-        WeakSet: InternalHandler<WeakSet<object>>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        WeakMap: InternalHandler<WeakMap<any, unknown>>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        WeakSet: InternalHandler<WeakSet<any>>;
     };
     strict?: boolean;
 };
