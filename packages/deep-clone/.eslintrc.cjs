@@ -72,12 +72,14 @@ module.exports = {
             },
         },
         {
-            files: ["__tests__/deep-clone.bench.ts", "__tests__/deep-clone-shallow.bench.ts"],
+            files: ["__bench__/deep-clone.bench.ts", "__bench__/deep-clone-shallow.bench.ts"],
             rules: {
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unused-vars": "off",
                 "no-restricted-imports": "off",
                 "vitest/expect-expect": "off",
+                "import/no-extraneous-dependencies": "off",
+                "import/no-unused-modules": "off",
             },
         },
     ],

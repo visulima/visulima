@@ -2,7 +2,6 @@ dist
 node_modules
 coverage
 __fixtures__
-__tests__
 
 vitest.config.ts
 _meta.*.json
