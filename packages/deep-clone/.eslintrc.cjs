@@ -78,6 +78,8 @@ module.exports = {
                 "@typescript-eslint/no-unused-vars": "off",
                 "no-restricted-imports": "off",
                 "vitest/expect-expect": "off",
+                "import/no-extraneous-dependencies": "off",
+                "import/no-unused-modules": "off",
             },
         },
     ],

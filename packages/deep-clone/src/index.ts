@@ -1,3 +1,5 @@
+import type { UnknownRecord } from "type-fest";
+
 import { copyArrayLoose, copyArrayStrict } from "./handler/copy-array";
 import copyArrayBuffer from "./handler/copy-array-buffer";
 import copyBlob from "./handler/copy-blob";
@@ -61,7 +63,7 @@ interface FakeJSDOM {
  * @returns The deep cloned data with its type as `DeepReadwrite<T>`.
  */
 // eslint-disable-next-line import/prefer-default-export,sonarjs/cognitive-complexity
-export const deepClone = <T = unknown>(originalData: T, options?: Options): DeepReadwrite<T> => {
+export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;
     }
@@ -87,13 +89,12 @@ export const deepClone = <T = unknown>(originalData: T, options?: Options): Deep
             return cloner.Array(value, state);
         }
 
-
         if (typeof value === "object" && value.constructor === Object && (value as FakeJSDOM).nodeType === undefined) {
-            return cloner.Object(value, state);
+            return cloner.Object(value as UnknownRecord, state);
         }
 
         if ((value as FakeJSDOM).nodeType !== undefined && (value as FakeJSDOM).cloneNode !== undefined) {
-            return value.cloneNode(true);
+            return (value as { cloneNode: (check: boolean) => unknown }).cloneNode(true);
         }
 
         if (value instanceof Date) {
@@ -156,17 +157,11 @@ export const deepClone = <T = unknown>(originalData: T, options?: Options): Deep
         }
 
         if (value instanceof Function) {
-
             return cloner.Function(value, state);
         }
 
-
-        if (typeof value.then === "function") {
-            return value;
-        }
-
-        if (typeof value === "object" && value !== null) {
-            return cloner.Object(value, state);
+        if (typeof value === "object") {
+            return cloner.Object(value as UnknownRecord, state);
         }
 
         throw new TypeError(`Type of ${typeof value} cannot be cloned`, value);

@@ -51,6 +51,83 @@ const cloned = deepClone({ a: 1, b: { c: 2 } });
 console.log(cloned); // => {a: 1, b: {c: 2}}
 ```
 
+## API
+
+### deepClone(input, options?)
+
+#### input
+
+Type: `any`
+
+The input value to copy.
+
+#### options
+
+Type: `object`
+
+##### strict
+
+Type: `boolean`<br>
+
+Default: `false`
+
+If `true`, it will copy all properties, including non-enumerable ones and symbols.
+
+##### handlers
+
+Type: `object`
+
+A set of custom handlers for specific type of value. Each handler is a function that takes the original value and returns a new value or throws an error if the value is not supported.
+
+-   Array: InternalHandler<unknown[]>;
+-   ArrayBuffer: InternalHandler<ArrayBuffer>;
+-   Blob: InternalHandler<Blob>;
+-   DataView: InternalHandler<DataView>;
+-   Date: InternalHandler<Date>;
+-   Error: InternalHandler<Error>;
+-   Float32Array: InternalHandler<Float32Array>;
+-   Float64Array: InternalHandler<Float64Array>;
+-   Int8Array: InternalHandler<Int8Array>;
+-   Int16Array: InternalHandler<Int16Array>;
+-   Int32Array: InternalHandler<Int32Array>;
+-   Map: InternalHandler<Map<unknown, unknown>>;
+-   Object: InternalHandler<Record<string, unknown>>;
+-   Promise: InternalHandler<Promise<unknown>>;
+-   RegExp: InternalHandler<RegExp>;
+-   Set: InternalHandler<Set<unknown>>;
+-   WeakMap: InternalHandler<WeakMap<any, unknown>>;
+-   WeakSet: InternalHandler<WeakSet<any>>;
+
+## Utils
+
+### copyOwnProperties(input)
+
+Copy all properties contained on the object.
+
+```typescript
+import { copyOwnProperties } from "@visulima/deep-clone/utils";
+
+const obj = { a: 1, b: 2 };
+
+const copy = copyOwnProperties(obj);
+
+console.log(copy); // => {a: 1, b: 2}
+```
+
+### getCleanClone(input)
+
+Get an empty version of the object with the same prototype it has.
+
+```typescript
+import { getCleanClone } from "@visulima/deep-clone/utils";
+
+const obj = { a: 1, b: 2 };
+
+const clean = getCleanClone(obj);
+
+console.log(clean); // => {}
+```
+
 ## Notes
 
 -   List of **supported** values/types:
