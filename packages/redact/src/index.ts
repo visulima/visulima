@@ -23,6 +23,7 @@ type Options = {
 
 let deepObjectKey: string = "";
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const recursiveFilter = <V, R = V>(input: V, options: Options): R => {
     if (getType(input) === "Array") {
         const copy = [];
