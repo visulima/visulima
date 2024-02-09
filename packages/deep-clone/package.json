@@ -4,37 +4,38 @@
     "description": "Fastest deep clone implementation.",
     "keywords": [
         "anolilab",
-        "deep-clone",
         "clone",
-        "fast-clone",
-        "object",
-        "obj",
-        "properties",
+        "clone-deep",
         "copy",
         "deep",
-        "recursive",
-        "key",
-        "keys",
-        "values",
-        "prop",
-        "deepclone",
+        "deep-clone",
         "deep-copy",
+        "deepclone",
         "deepcopy",
         "fast",
-        "performance",
-        "performant",
+        "fast-clone",
+        "fast-copy",
+        "fast-deep-clone",
+        "fast-deep-copy",
         "fastclone",
         "fastcopy",
-        "fast-deep-clone",
-        "fast-copy",
-        "fast-deep-copy",
-        "clone-deep",
         "fastest-json-copy",
+        "key",
+        "keys",
         "lodash.clonedeep",
         "nano-copy",
+        "obj",
+        "object",
+        "performance",
+        "performant",
         "plain-object-clone",
+        "prop",
+        "properties",
         "ramda",
-        "standard"
+        "recursive",
+        "standard",
+        "values",
+        "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/deep-clone",
     "repository": {
@@ -61,15 +62,29 @@
     "type": "module",
     "exports": {
         ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
             "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
             }
         },
+        "./utils": {
+            "require": {
+                "types": "./dist/utils.d.cts",
+                "default": "./dist/utils.cjs"
+            },
+            "import": {
+                "types": "./dist/utils.d.ts",
+                "default": "./dist/utils.js"
+            }
+        },
         "./package.json": "./package.json"
     },
+    "main": "dist/index.cjs",
     "module": "dist/index.js",
-    "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -118,7 +133,6 @@
         "eslint-plugin-vitest-globals": "^1.4.0",
         "fast-copy": "^3.0.1",
         "jsdom": "^24.0.0",
-        "jsondiffpatch": "^0.6.0",
         "lodash.clonedeep": "^4.5.0",
         "nano-copy": "^0.1.0",
         "nanoclone": "^1.0.2",
@@ -153,5 +167,9 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    }
+    },
+    "sources": [
+        "src/index.ts",
+        "src/utils.ts"
+    ]
 }

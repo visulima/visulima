@@ -55,11 +55,11 @@ console.log(cloned); // => {a: 1, b: {c: 2}}
 
 -   List of **supported** values/types:
 
-    -   `undefined`
-    -   `null`
-    -   `boolean`/`Boolean`
-    -   `string`/`String`
-    -   `number`/`Number`
+    -   `undefined` (original value is returned)
+    -   `null` (original value is returned)
+    -   `boolean`/`Boolean` (original value is returned)
+    -   `string`/`String` (original value is returned)
+    -   `number`/`Number` (original value is returned)
     -   `function`
     -   `Object`
     -   `Date`
@@ -85,6 +85,8 @@ console.log(cloned); // => {a: 1, b: {c: 2}}
     -   `Float32Array`
     -   `Float64Array`
     -   `Buffer` ([Node.js][node-buffer])
+    -   `DataView`
+    -   `Blob`
 
 -   List of **unsupported** values/types:
 
@@ -92,12 +94,10 @@ console.log(cloned); // => {a: 1, b: {c: 2}}
     -   `Symbol`
     -   `WeakMap`
     -   `WeakSet`
-    -   `Blob`
     -   `File`
     -   `FileList`
     -   `ImageData`
     -   `ImageBitmap`
-    -   `DataView`
     -   `Promise`
     -   `SharedArrayBuffer`
 
