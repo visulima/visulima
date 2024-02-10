@@ -32,16 +32,20 @@ jobs:
                   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
               with:
                   types: |
+                      build
+                      chore
+                      ci
+                      deps
+                      docs
                       feat
                       fix
-                      chore
+                      perf
                       refactor
-                      docs
-                      test
-                      ci
-                      build
-                      infra
                       revert
+                      security
+                      style
+                      test
+                      translation
 
             - uses: "marocchino/sticky-pull-request-comment@efaaab3fd41a9c3de579aba759d2552635e590fd" # v2.8.0
               # When the previous steps fails, the workflow would stop. By adding this
