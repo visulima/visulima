@@ -14,7 +14,7 @@ describe("usage `@visulima/colorize` npm package", () => {
         const received = execScriptSync(filename, ["--color"]);
 
         const expected =
-            "{ strip: \u001B[36m[Function (anonymous)]\u001B[39m, Colorize: \u001B[36m[Function: Colorize]\u001B[39m }\n" +
+            "{ strip: [Function (anonymous)], Colorize: [Function: Colorize] }\n" +
             "\u001B[38;5;227m\u001B[7m -= [colorize package] CommonJS =- \u001B[27m\u001B[39m\n" +
             "\u001B[31m\u001B[1m\u001B[4mred.bold.underline('red')\u001B[24m\u001B[22m\u001B[39m\n" +
             "\u001B[31m\u001B[1m\u001B[4mcolorize.red.bold.underline(red)\u001B[24m\u001B[22m\u001B[39m\n" +
@@ -35,7 +35,7 @@ describe("usage `@visulima/colorize` npm package", () => {
         const received = execScriptSync(filename, ["--color"]);
 
         const expected =
-            "{ strip: \u001B[36m[Function (anonymous)]\u001B[39m }\n" +
+            "{ strip: [Function (anonymous)] }\n" +
             "\u001B[38;5;208m\u001B[7m -= [colorize package] ESM =- \u001B[27m\u001B[39m\n" +
             "\u001B[31m\u001B[1m\u001B[4mred.bold.underline('red')\u001B[24m\u001B[22m\u001B[39m\n" +
             "\u001B[31m\u001B[1m\u001B[4mcolorize.red.bold.underline(red)\u001B[24m\u001B[22m\u001B[39m\n" +
