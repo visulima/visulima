@@ -4,8 +4,7 @@ export interface ColorizeType {
      *
      * @param {string | TemplateStringsArray} string
      */
-    (string: number): string;
-    (string: string): string;
+    (string: number | string): string;
     (string: TemplateStringsArray, ...parameters: string[]): string;
 
     /**

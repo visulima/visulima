@@ -1291,7 +1291,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
-                // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
+
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
                 1289,
                 49,
@@ -1300,7 +1300,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             ]);
             expect(stackFrames[1]).toMatchStackFrame([
                 "<unknown>",
-                // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
+
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
                 1289,
                 49,

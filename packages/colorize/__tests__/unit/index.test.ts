@@ -2,7 +2,7 @@ import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-
 import { describe, expect, it } from "vitest";
 
 // eslint-disable-next-line import/no-useless-path-segments
-import colorize, { Colorize, green, red, yellow, bold, hex } from "../../src/index.mts";
+import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.mts";
 import { esc } from "../helpers.js";
 
 describe("style tests", () => {
@@ -324,52 +324,73 @@ describe("colorize ansi-styles", () => {
 
 describe("handling numbers", () => {
     it(`should colorize a number 123`, () => {
-        const num = 123;
-        const received = colorize(num);
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = colorize(number_);
         const expected = "123";
-        expect(esc(received)).toEqual(esc(expected));
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
     it(`should colorize a number with class call colorize.red(123)`, () => {
-        const num = 123;
-        const received = colorize.red(num);
-        const expected = "\x1b[31m123\x1b[39m";
-        expect(esc(received)).toEqual(esc(expected));
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = colorize.red(number_);
+        const expected = "\u001B[31m123\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
     it(`should colorize a number with function call red(123)`, () => {
-        const num = 123;
-        const received = red(num);
-        const expected = "\x1b[31m123\x1b[39m";
-        expect(esc(received)).toEqual(esc(expected));
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = red(number_);
+        const expected = "\u001B[31m123\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
     it(`should bold a number with function call bold(123)`, () => {
-        const num = 123;
-        const received = bold(num);
-        const expected = "\x1b[1m123\x1b[22m";
-        expect(esc(received)).toEqual(esc(expected));
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = bold(number_);
+        const expected = "\u001B[1m123\u001B[22m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
     it(`should colorize a number with function call red.bold(123)`, () => {
-        const num = 123;
-        const received = red.bold(num);
-        const expected = "\x1b[31m\x1b[1m123\x1b[22m\x1b[39m";
-        expect(esc(received)).toEqual(esc(expected));
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = red.bold(number_);
+        const expected = "\u001B[31m\u001B[1m123\u001B[22m\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
     it(`should colorize a number with function call hex('#A00')(123)`, () => {
-        const num = 123;
-        const received = hex("#A00")(num);
-        const expected = "\x1b[38;2;170;0;0m123\x1b[39m";
-        expect(esc(received)).toEqual(esc(expected));
+        expect.assertions(1);
+
+        const number_ = 123;
+        const received = hex("#A00")(number_);
+        const expected = "\u001B[38;2;170;0;0m123\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 
+    // eslint-disable-next-line no-template-curly-in-string
     it("should colorize a number with string template call red`size: ${123}px`", () => {
-        const num = 123;
-        const received = red`size: ${num}px`;
-        const expected = "\x1b[31msize: 123px\x1b[39m";
+        expect.assertions(1);
 
-        expect(esc(received)).toEqual(esc(expected));
+        const number_ = 123;
+        const received = red`size: ${number_}px`;
+        const expected = "\u001B[31msize: 123px\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
     });
 });

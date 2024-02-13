@@ -62,7 +62,7 @@ interface FakeJSDOM {
  * @param options - Optional. The cloning options. Type of this parameter is `Options`.
  * @returns The deep cloned data with its type as `DeepReadwrite<T>`.
  */
-// eslint-disable-next-line import/prefer-default-export,sonarjs/cognitive-complexity
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;

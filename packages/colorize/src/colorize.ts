@@ -18,7 +18,7 @@ const styles: Record<string, object> = {};
 let stylePrototype: object | null = null;
 
 const wrapText = (
-    strings: ArrayLike<string> | ReadonlyArray<string> | string | number | { raw: ArrayLike<string> | ReadonlyArray<string> },
+    strings: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
     values: string[],
     properties: ColorizeProperties,
 ) => {
@@ -28,7 +28,7 @@ const wrapText = (
 
     let string =
         (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == null
-            ? (strings as string) + ""
+            ? `${strings as string}`
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
@@ -73,7 +73,7 @@ const createStyle = (
 
 // eslint-disable-next-line func-names
 const Colorize = function () {
-    const self = (string_: string | number) => string_ + "";
+    const self = (string_: number | string) => `${string_}`;
 
     self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
 

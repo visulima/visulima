@@ -12,7 +12,7 @@ export const copySetLoose = <Value extends Set<unknown>>(set: Value, state: Stat
     });
 
     return clone;
-}
+};
 
 /**
  * Deeply copy the values of the original, as well as any custom properties.

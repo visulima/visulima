@@ -37,7 +37,7 @@ describe("util/load-source-map", () => {
 
         const generated = { column: 13, line: 30 };
         // This isWin check is needed because of the hardcoded path in the sourcemap
-        // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
+
         const expected = { column: 9, line: 15, name: "setState", source: isWin ? "../src/example.js" : join(FIXTURES_DIR, "src", "example.js") };
 
         expect(originalPositionFor(result, generated), "should have correct source mapping").toStrictEqual(expected);
