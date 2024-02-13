@@ -1,7 +1,26 @@
-import ColorizeImpl from "./colorize";
+import ColorizeImpl from "./colorize.browser";
 import type { ColorizeType } from "./types";
 
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
+
+let consoleOverwritten = false;
+
+// Heck the window.console object to add colorized logging
+if (typeof window !== "undefined" && window.console && !consoleOverwritten) {
+    const originalConsole = { ...window.console };
+
+    ["error", "group", "groupCollapsed", "info", "log", "trace", "warn"].forEach((o) => {
+        (window.console as any)[o as keyof Console] = (...args: any[]) => {
+            if (Array.isArray(args[0]) && args[0].length >= 2 && args[0][0].includes("%c")) {
+                (originalConsole as any)[o](...args[0]);
+            } else {
+                (originalConsole as any)[o](...args);
+            }
+        };
+    });
+
+    consoleOverwritten = true;
+}
 
 // eslint-disable-next-line import/no-default-export
 export default colorize as ColorizeType;
@@ -66,7 +85,7 @@ export const {
     yellowBright,
 } = colorize;
 
-export { default as Colorize } from "./colorize";
+export { default as Colorize } from "./colorize.browser";
 
 // eslint-disable-next-line import/no-unused-modules
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

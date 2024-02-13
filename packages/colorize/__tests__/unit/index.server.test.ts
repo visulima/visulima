@@ -1,8 +1,7 @@
 import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-styles";
 import { describe, expect, it } from "vitest";
 
-// eslint-disable-next-line import/no-useless-path-segments
-import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.mts";
+import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.server.mts";
 import { esc } from "../helpers.js";
 
 describe("style tests", () => {
