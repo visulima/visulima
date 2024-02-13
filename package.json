@@ -13,6 +13,7 @@
         "audit": "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
+        "bench:redact": "pnpm --filter \"redact\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
