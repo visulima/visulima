@@ -1,3 +1,10 @@
+## @visulima/deep-clone [2.1.0](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.0.0...@visulima/deep-clone@2.1.0) (2024-02-13)
+
+
+### Features
+
+* exported all deep-clone handler ([bc01ec0](https://github.com/visulima/visulima/commit/bc01ec06130f42644d84730295cac89f04f48c9a))
+
 ## @visulima/deep-clone [2.0.0](https://github.com/visulima/visulima/compare/@visulima/deep-clone@1.0.8...@visulima/deep-clone@2.0.0) (2024-02-10)
 
 
