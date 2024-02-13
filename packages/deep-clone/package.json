@@ -71,6 +71,16 @@
                 "default": "./dist/index.js"
             }
         },
+        "./handler": {
+            "require": {
+                "types": "./dist/handler.d.cts",
+                "default": "./dist/handler.cjs"
+            },
+            "import": {
+                "types": "./dist/handler.d.ts",
+                "default": "./dist/handler.js"
+            }
+        },
         "./utils": {
             "require": {
                 "types": "./dist/utils.d.cts",
@@ -170,6 +180,7 @@
     },
     "sources": [
         "src/index.ts",
+        "src/handler.ts",
         "src/utils.ts"
     ]
 }
