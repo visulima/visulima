@@ -175,3 +175,6 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
 
     return cloned as DeepReadwrite<T>;
 };
+
+// eslint-disable-next-line import/no-unused-modules
+export type { Options, State } from "./types";

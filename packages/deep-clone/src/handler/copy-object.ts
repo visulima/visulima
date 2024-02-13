@@ -4,6 +4,20 @@ import type { State } from "../types";
 import copyOwnProperties from "../utils/copy-own-properties";
 import getCleanClone from "../utils/get-clean-clone";
 
+const copyObjectIsFunctions = <Value extends UnknownRecord>(object: Value, clone: Value): void => {
+    if (!Object.isExtensible(object)) {
+        Object.preventExtensions(clone);
+    }
+
+    if (Object.isSealed(object)) {
+        Object.seal(clone);
+    }
+
+    if (Object.isFrozen(object)) {
+        Object.freeze(clone);
+    }
+};
+
 export const copyObjectLoose = <Value extends UnknownRecord>(object: Value, state: State): Value => {
     const clone = getCleanClone(object) as EmptyObject;
 
@@ -30,17 +44,7 @@ export const copyObjectLoose = <Value extends UnknownRecord>(object: Value, stat
         }
     }
 
-    if (!Object.isExtensible(object)) {
-        Object.preventExtensions(clone);
-    }
-
-    if (Object.isSealed(object)) {
-        Object.seal(clone);
-    }
-
-    if (Object.isFrozen(object)) {
-        Object.freeze(clone);
-    }
+    copyObjectIsFunctions(object, clone as Value);
 
     return clone as Value;
 };
@@ -64,17 +68,7 @@ export const copyObjectStrict = <Value extends UnknownRecord>(object: Value, sta
         Object.setPrototypeOf(clonedObject, objectPrototype);
     }
 
-    if (!Object.isExtensible(object)) {
-        Object.preventExtensions(clonedObject);
-    }
-
-    if (Object.isSealed(object)) {
-        Object.seal(clonedObject);
-    }
-
-    if (Object.isFrozen(object)) {
-        Object.freeze(clonedObject);
-    }
+    copyObjectIsFunctions(object, clone as Value);
 
     return clonedObject as Value;
 };
