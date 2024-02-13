@@ -118,7 +118,7 @@
         "@anolilab/semantic-release-preset": "^8.0.3",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.3.1",
         "@babel/core": "^7.23.9",
-        "@mdx-js/react": "^3.0.0",
+        "@mdx-js/react": "^3.0.1",
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.1",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
