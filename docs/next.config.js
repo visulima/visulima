@@ -1,10 +1,9 @@
 import { remarkCodeHike } from "@code-hike/mdx";
 import nextra from "nextra";
-import theme from "shiki/themes/nord.json" assert { type: "json" };
 
 const withNextra = nextra({
     mdxOptions: {
-        remarkPlugins: [[remarkCodeHike, { lineNumbers: false, showCopyButton: true, skipLanguages: ["mermaid"], theme }]],
+        remarkPlugins: [[remarkCodeHike, { lineNumbers: false, showCopyButton: true, skipLanguages: ["mermaid"], theme: "nord" }]],
     },
     search: {
         codeblocks: true,
