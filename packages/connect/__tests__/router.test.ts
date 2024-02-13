@@ -296,7 +296,6 @@ describe("router", () => {
             .use("/foo", ((request) => {
                 expect(true, '~> ran use("/foo")" route').toBeTruthy(); // x2
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
                     expect(request.params.title, '~~> saw "param.title" value').toBe("bar");
@@ -314,13 +313,11 @@ describe("router", () => {
             .add("GET", "/foo/:title?", ((request) => {
                 expect(true, '~> ran "GET /foo/:title?" route').toBeTruthy(); // x2
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
                     expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 }
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (isRoot) {
                     // eslint-disable-next-line no-plusplus,vitest/no-conditional-expect
                     expect(request.chain++, "~~> ran 3rd").toBe(2);
@@ -543,7 +540,6 @@ describe("router", () => {
             .use("/foo", ((request) => {
                 expect(true, '~> ran use("/foo")" route').toBeTruthy(); // x2
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
                     expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
@@ -562,13 +558,11 @@ describe("router", () => {
             .add("GET", /^\/foo(?:\/(?<title>\w+))?\/?$/u, ((request) => {
                 expect(true, '~> ran "GET /^[/]foo[/](?<title>\\w+)?[/]?$/" route').toBeTruthy(); // x2
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
                     expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 }
 
-                // eslint-disable-next-line vitest/no-conditional-tests,vitest/no-conditional-in-test
                 if (isRoot) {
                     // eslint-disable-next-line no-plusplus,vitest/no-conditional-expect
                     expect(request.chain++, "~~> ran 3rd").toBe(2);

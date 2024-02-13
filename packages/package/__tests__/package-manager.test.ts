@@ -49,7 +49,7 @@ describe("package-manager", () => {
         it("should detect bun", async (context) => {
             expect.assertions(1);
 
-            // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
+            // eslint-disable-next-line vitest/no-conditional-in-test
             if (platform() === "win32" || package_.devDependencies.bun === undefined) {
                 // eslint-disable-next-line no-console
                 console.info("bun is not supported on windows");

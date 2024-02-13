@@ -95,7 +95,6 @@ describe("init command", () => {
 
         initCommand("config.js");
 
-        // eslint-disable-next-line vitest/no-conditional-in-test,vitest/no-conditional-tests
         expect(consoleInfoMock).toHaveBeenCalledWith(`Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
         expect(consoleInfoMock).toHaveBeenCalledWith("Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments
