@@ -1,14 +1,14 @@
 import { sep } from "node:path";
 
-import type { AnsiColors } from "@visulima/colorize";
-import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
+import type { AnsiColors} from "@visulima/colorize";
+import colorize, { bgGrey, bold , cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
-import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter, StringifyAwareReporter } from "../../types";
+import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter } from "../../types";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { getType } from "../../util/get-type";
 import { writeStream } from "../../util/write-stream";
@@ -17,13 +17,11 @@ import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
 export class PrettyReporter<T extends string = never, L extends string = never>
     extends AbstractPrettyReporter<T, L>
-    implements StreamAwareReporter<L>, StringifyAwareReporter<L>
+    implements StreamAwareReporter<L>
 {
     #stdout: NodeJS.WriteStream | undefined;
 
     #stderr: NodeJS.WriteStream | undefined;
-
-    #stringify: typeof stringify | undefined;
 
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
@@ -36,11 +34,6 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    public setStringify(function_: any): void {
-        this.#stringify = function_;
-    }
-
     public setStdout(stdout: NodeJS.WriteStream): void {
         this.#stdout = stdout;
     }
@@ -49,8 +42,12 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         this.#stderr = stderr;
     }
 
+    public log(meta: ReadonlyMeta<L>): void {
+        this._log(this._formatMessage(meta as ReadonlyMeta<L>), meta.type.level);
+    }
+
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected override _formatMessage(data: ReadonlyMeta<L>): string {
+    protected _formatMessage(data: ReadonlyMeta<L>): string {
         const { columns } = terminalSize();
 
         let size = columns;
@@ -134,7 +131,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         }
 
         if (message) {
-            const formattedMessage: string | undefined = getType(message) === "String" ? (message as string) : (this.#stringify as typeof stringify)(message);
+            const formattedMessage: string | undefined = getType(message) === "String" ? (message as string) : (this._stringify as typeof stringify)(message);
 
             items.push(
                 groupSpaces +
@@ -146,7 +143,7 @@ export class PrettyReporter<T extends string = never, L extends string = never>
             );
 
             if (context) {
-                items.push("\n", groupSpaces + grey((this.#stringify as typeof stringify)(context)));
+                items.push("\n", groupSpaces + grey((this._stringify as typeof stringify)(context)));
             }
         }
 
@@ -161,14 +158,14 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         return items.join("") + "\n";
     }
 
-    protected override _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
+    protected _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
         const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
         writeStream(message + "\n", stream);
     }
 
     // eslint-disable-next-line class-methods-use-this
-    protected override _formatError(error: Error, size: number, groupSpaces: string): string {
+    protected _formatError(error: Error, size: number, groupSpaces: string): string {
         const { message, name, stack } = error;
 
         const items: string[] = [];
