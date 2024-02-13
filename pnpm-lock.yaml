@@ -285,9 +285,6 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
-      shiki:
-        specifier: ^1.1.2
-        version: 1.1.2
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -7099,7 +7096,7 @@ packages:
     resolution: {integrity: sha512-2D6y7fNvFmsLmRt6UCOFJPvFoPMJGT0Uh1Wg0RaigUp7kdQPs6yYn8Dmx6GZkOH/NW0yMTwRz/p0SRMMRo50vA==}
     peerDependencies:
       typescript: ^5.3.3
-      vite: 4.4.7
+      vite: ^3.0.0 || ^4.0.0 || ^5.0.0
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -9545,10 +9542,6 @@ packages:
       js-yaml: 4.1.0
       toposource: 1.1.4
     dev: true
-
-  /@shikijs/core@1.1.2:
-    resolution: {integrity: sha512-ERVzNQz88ZkDqUpWeC57Kp+Kmx5RjqeDBR1M8AGWGom4yrkITiTfXCGmjchlDSw12MhDTuPYR4HVFW8uT61RaQ==}
-    dev: false
 
   /@shuding/opentype.js@1.4.0-beta.0:
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
@@ -15554,7 +15547,7 @@ packages:
       longest: 2.0.1
       word-wrap: 1.2.5
     optionalDependencies:
-      '@commitlint/load': 18.6.0(@types/node@20.10.1)(typescript@5.3.3)
+      '@commitlint/load': 18.6.1(@types/node@20.10.1)(typescript@5.3.3)
     transitivePeerDependencies:
       - '@types/node'
       - typescript
@@ -28478,12 +28471,6 @@ packages:
       jsonc-parser: 3.2.0
       vscode-oniguruma: 1.7.0
       vscode-textmate: 8.0.0
-
-  /shiki@1.1.2:
-    resolution: {integrity: sha512-qNzFwTv5uhEDNUIwp7wHjsrffVeLbmOgWnM5mZZhoiz7G2qAUvqVfUzuWfieD45/YAKipzCtdV9SndacKtABow==}
-    dependencies:
-      '@shikijs/core': 1.1.2
-    dev: false
 
   /short-unique-id@4.4.4:
     resolution: {integrity: sha512-oLF1NCmtbiTWl2SqdXZQbo5KM1b7axdp0RgQLq8qCBBLoq+o3A5wmLrNM6bZIh54/a8BJ3l69kTXuxwZ+XCYuw==}

@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Terminal and Console string styling done right.",
     "keywords": [
         "256",
