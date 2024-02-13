@@ -1,3 +1,10 @@
+## @visulima/colorize [1.1.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.0.1...@visulima/colorize@1.1.0) (2024-02-13)
+
+
+### Features
+
+* add supports the argument as number and tests for it ([47cff3e](https://github.com/visulima/visulima/commit/47cff3e579f664cf11230cfcc5315b71bdc9fb2e))
+
 ## @visulima/colorize [1.0.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.0.0...@visulima/colorize@1.0.1) (2024-01-31)
 
 
