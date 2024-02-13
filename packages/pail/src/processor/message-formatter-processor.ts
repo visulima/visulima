@@ -5,7 +5,7 @@ import type { stringify } from "safe-stable-stringify";
 import type { Meta, Serializer, StringifyAwareProcessor } from "../types";
 import { getType } from "../util/get-type";
 
-export class MessageFormatterProcessor<L extends string = never> implements StringifyAwareProcessor<L> {
+export class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
     readonly #serializers: Map<string, Serializer>;
 
     #stringify: typeof stringify | undefined;

@@ -56,7 +56,7 @@
 -   `Pretty` or `JSON` output
 -   CJS & ESM with tree shaking support
 -   Supports circular structures
--   Fast and powerful
+-   Fast and powerful, see the [benchmarks](__bench__/README.md)
 
 ## Install
 

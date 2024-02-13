@@ -70,7 +70,7 @@ const bunyanNodeStream = bunyan.createLogger({
     ],
 });
 
-describe("basic", async () => {
+describe("object", async () => {
     bench(
         "pail server",
         async () => {
