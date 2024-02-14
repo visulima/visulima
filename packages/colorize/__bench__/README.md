@@ -17,17 +17,17 @@ c.red(`${c.bold(`${c.cyan(`${c.yellow("yellow")}cyan`)}`)}red`);
 ```
 
 ```diff
--> @visulima/colorize     3.833.756 ops/sec ± 0.21%
-ansi-colors            1.740.419 ops/sec ± 0.41%
-ansis                  3.670.138 ops/sec ± 0.17%
-cli-color                401.166 ops/sec ± 0.15%
-color-cli                117.956 ops/sec ± 0.17%
-colors-js              1.113.107 ops/sec ± 0.15%
-+ colorette              5.014.698 ops/sec ± 0.88%
-chalk                  2.726.188 ops/sec ± 0.80%
-kleur/colors           2.906.865 ops/sec ± 0.29%
-kleur                  2.888.852 ops/sec ± 0.23%
-picocolors             2.878.073 ops/sec ± 0.45%
+-> @visulima/colorize     3.883.386 ops/sec ± 0.38%
+ansi-colors            1.765.657 ops/sec ± 0.27%
+ansis                  3.372.162 ops/sec ± 4.06%
+cli-color                428.485 ops/sec ± 0.07%
+color-cli                117.771 ops/sec ± 0.51%
+colors-js              1.112.247 ops/sec ± 0.17%
++ colorette              5.030.518 ops/sec ± 0.28%
+chalk                  2.868.150 ops/sec ± 0.32%
+kleur/colors           2.938.692 ops/sec ± 0.22%
+kleur                  2.860.978 ops/sec ± 0.45%
+picocolors             2.862.501 ops/sec ± 0.69%
 ```
 
 ### Base colors
@@ -38,17 +38,18 @@ colors.forEach((color) => c[color]("foo"));
 ```
 
 ```diff
--> @visulima/colorize     7.729.428 ops/sec ± 0.13%
-ansi-colors            1.487.376 ops/sec ± 0.35%
-ansis                  7.404.831 ops/sec ± 0.24%
-chalk                  6.083.427 ops/sec ± 0.67%
-cli-color                237.798 ops/sec ± 0.34%
-color-cli                119.582 ops/sec ± 0.19%
-colorette              1.904.846 ops/sec ± 0.16%
-colors-js                680.538 ops/sec ± 1.23%
-kleur                  7.779.174 ops/sec ± 0.66%
-kleur/colors           2.130.189 ops/sec ± 0.32%
-+ picocolors             9.506.736 ops/sec ± 1.06%
+-> @visulima/colorize     7.779.144 ops/sec ± 0.41%
+ansi-colors            1.547.517 ops/sec ± 0.22%
+ansis                  7.195.309 ops/sec ± 0.10%
+chalk                  6.257.091 ops/sec ± 0.12%
+cli-color                249.958 ops/sec ± 0.08%
+color-cli                121.728 ops/sec ± 0.24%
+colorette              1.950.473 ops/sec ± 0.13%
+colors-js                801.105 ops/sec ± 0.44%
+kleur                  8.120.722 ops/sec ± 0.89%
+kleur/colors           1.870.813 ops/sec ± 0.37%
++ picocolors             9.665.514 ops/sec ± 0.55%
+
 ```
 
 ### Chained styles
@@ -59,17 +60,18 @@ colors.forEach((color) => c[color].bold.underline.italic("foo"));
 ```
 
 ```diff
-+ @visulima/colorize               6.957.206 ops/sec ± 1.22%
-ansi-colors                        159.755 ops/sec ± 0.31%
-ansis                            6.538.496 ops/sec ± 0.22%
-chalk                            1.675.528 ops/sec ± 0.34%
-cli-color                          126.265 ops/sec ± 0.29%
-color-cli                           53.961 ops/sec ± 0.16%
++ @visulima/colorize               7.332.700 ops/sec ± 0.51%
+ansi-colors                        172.756 ops/sec ± 0.29%
+ansis                            6.478.144 ops/sec ± 1.20%
+chalk                            1.903.031 ops/sec ± 0.07%
+cli-color                          130.137 ops/sec ± 0.21%
+color-cli                           56.042 ops/sec ± 0.98%
 colorette (not supported)             FAIL
-colors-js                          137.354 ops/sec ± 0.18%
-kleur                              635.561 ops/sec ± 0.53%
+colors-js                          140.710 ops/sec ± 0.41%
+kleur                              704.839 ops/sec ± 0.29%
 kleur/colors (not supported)          FAIL
 picocolors (not supported)            FAIL
+
 ```
 
 ### Nested calls
@@ -80,17 +82,17 @@ colors.forEach((color) => c[color](c.bold(c.underline(c.italic("foo")))));
 ```
 
 ```diff
--> @visulima/colorize       775.911 ops/sec ± 0.66%
-ansi-colors              340.343 ops/sec ± 0.49%
-ansis                    800.530 ops/sec ± 0.11%
-chalk                    578.272 ops/sec ± 0.15%
-cli-color                 55.327 ops/sec ± 0.14%
-color-cli                 14.721 ops/sec ± 0.21%
-colorette                786.760 ops/sec ± 0.16%
-colors-js                174.011 ops/sec ± 0.21%
-kleur                    894.323 ops/sec ± 0.19%
-kleur/colors             681.712 ops/sec ± 0.18%
-+ picocolors             2.186.576 ops/sec ± 0.15%
+-> @visulima/colorize       776.801 ops/sec ± 0.96%
+ansi-colors              341.336 ops/sec ± 0.45%
+ansis                    754.309 ops/sec ± 1.29%
+chalk                    655.428 ops/sec ± 0.50%
+cli-color                 56.812 ops/sec ± 0.68%
+color-cli                 14.723 ops/sec ± 0.58%
+colorette                777.916 ops/sec ± 0.79%
+colors-js                172.893 ops/sec ± 0.71%
+kleur                    900.249 ops/sec ± 0.16%
+kleur/colors             651.001 ops/sec ± 0.88%
++ picocolors             2.159.267 ops/sec ± 0.68%
 ```
 
 ### Nested styles
@@ -111,17 +113,18 @@ c.red(
 ```
 
 ```diff
--> @visulima/colorize       253.492 ops/sec ± 0.35%
-ansi-colors              152.327 ops/sec ± 0.56%
-ansis                    246.551 ops/sec ± 0.19%
-chalk                    205.815 ops/sec ± 0.27%
-cli-color                 34.267 ops/sec ± 0.17%
-color-cli                 16.627 ops/sec ± 0.16%
-+ colorette                305.319 ops/sec ± 0.26%
-colors.js                 87.139 ops/sec ± 0.10%
-kleur                    267.911 ops/sec ± 0.20%
-kleur/colors             284.389 ops/sec ± 0.46%
-picocolors               296.257 ops/sec ± 0.41%
+-> @visulima/colorize       256.431 ops/sec ± 0.24%
+ansi-colors              153.999 ops/sec ± 0.36%
+ansis                    240.313 ops/sec ± 1.07%
+chalk                    202.621 ops/sec ± 1.04%
+cli-color                 34.107 ops/sec ± 1.10%
+color-cli                 16.467 ops/sec ± 0.32%
++ colorette                307.285 ops/sec ± 0.18%
+colors.js                 81.626 ops/sec ± 0.28%
+kleur                    268.638 ops/sec ± 0.60%
+kleur/colors             284.746 ops/sec ± 0.42%
+picocolors               283.909 ops/sec ± 4.73%
+
 ```
 
 ### Deep nested styles
@@ -139,17 +142,17 @@ c.green(
 ```
 
 ```diff
--> @visulima/colorize     1.166.131 ops/sec ± 0.37%
-ansi-colors              507.814 ops/sec ± 0.37%
-ansis                  1.158.778 ops/sec ± 0.12%
-chalk                    707.794 ops/sec ± 0.15%
-cli-color                185.600 ops/sec ± 0.33%
-color-cli                 46.299 ops/sec ± 0.10%
-+ colorette              1.464.090 ops/sec ± 0.16%
-colors.js                468.172 ops/sec ± 0.19%
-kleur                    674.589 ops/sec ± 0.12%
-kleur/colors             689.403 ops/sec ± 0.16%
-picocolors             1.284.482 ops/sec ± 0.27%
+-> @visulima/colorize     1.147.849 ops/sec ± 3.04%
+ansi-colors              507.422 ops/sec ± 0.17%
+ansis                  1.111.547 ops/sec ± 0.88%
+chalk                    701.494 ops/sec ± 0.32%
+cli-color                192.739 ops/sec ± 0.84%
+color-cli                 46.218 ops/sec ± 0.15%
++ colorette              1.474.752 ops/sec ± 0.18%
+colors.js                464.548 ops/sec ± 0.16%
+kleur                    671.008 ops/sec ± 0.57%
+kleur/colors             691.145 ops/sec ± 0.18%
+picocolors             1.275.781 ops/sec ± 1.26%
 ```
 
 ### New Line
@@ -159,11 +162,11 @@ c.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`);
 ```
 
 ```diff
--> @visulima/colorize     2.829.644 ops/sec ± 0.20%
-ansi-colors            1.805.387 ops/sec ± 0.26%
-ansis                  3.040.513 ops/sec ± 0.21%
-+ chalk                  6.572.364 ops/sec ± 0.40%
-colors.js              1.533.999 ops/sec ± 0.54%
+-> @visulima/colorize     2.797.578 ops/sec ± 0.71%
+ansi-colors            1.787.100 ops/sec ± 0.33%
+ansis                  2.953.726 ops/sec ± 0.49%
++ chalk                  6.462.183 ops/sec ± 1.47%
+colors.js              1.495.718 ops/sec ± 1.15%
 ```
 
 ### RGB colors
@@ -173,9 +176,9 @@ for (let index = 0; index < 256; index++) colorize.rgb(index, 150, 200)("foo");
 ```
 
 ```diff
-@visulima/colorize 40.163 ops/sec ± 1.70%
-ansis 42.614 ops/sec ± 0.41%
-chalk 39.022 ops/sec ± 0.18%
+-> @visulima/colorize        42.320 ops/sec ± 1.65%
++ ansis                     43.358 ops/sec ± 0.57%
+chalk                     39.128 ops/sec ± 0.39%
 ```
 
 ### HEX colors
@@ -187,9 +190,9 @@ c.hex("#FBA")("foo");
 ```
 
 ```diff
--> @visulima/colorize 4.756.591 ops/sec ± 0.41%
-+ ansis 4.958.752 ops/sec ± 0.32%
-chalk 2.924.040 ops/sec ± 0.23%
+-> @visulima/colorize     4.117.180 ops/sec ± 0.70%
++ ansis                  4.617.938 ops/sec ± 0.69%
+chalk                  2.862.404 ops/sec ± 1.70%
 ```
 
 ### Template literals
@@ -199,6 +202,6 @@ red`red ${yellow`yellow ${green`green`} yellow`} red`;
 ```
 
 ```diff
--> @visulima/colorize 1.267.322 ops/sec ± 0.93%
-+ ansis 1.300.249 ops/sec ± 0.21%
+-> @visulima/colorize     1.267.758 ops/sec ± 0.71%
++ ansis                  1.287.445 ops/sec ± 0.27%
 ```
