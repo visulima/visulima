@@ -1,4 +1,8 @@
+import { isColorSupported } from "@visulima/is-ansi-color-supported";
+
+import ServerColorize from "./colorize.server";
 import type { AnsiColors, AnsiStyles, ColorizeType } from "./types";
+import { ansiCodeHexMap } from "./utils";
 
 const baseStyles: Required<Record<AnsiStyles, string>> = {
     bold: "font-weight: bold;",
@@ -61,12 +65,14 @@ const styleMethods: {
     hex: (hex: string) => string;
     rgb: (r: number, g: number, b: number) => string;
 } = {
-    bg: (code: number) => `background-color: rgb(${code}); color: white;`,
-    bgHex: (hex: string) => `background-color: ${hex}; color: white;`,
-    bgRgb: (r: number, g: number, b: number) => `background-color: rgb(${r}, ${g}, ${b}); color: white;`,
-    fg: (code: number) => `color: rgb(${code});`,
-    hex: (hex: string) => `color: ${hex};`,
-    rgb: (r: number, g: number, b: number) => `color: rgb(${r}, ${g}, ${b});`,
+    // eslint-disable-next-line security/detect-object-injection
+    bg: (code: number) => "background-color: " + ansiCodeHexMap[code] + "; color: white;",
+    bgHex: (hex: string) => "background-color: " + hex + "; color: white;",
+    bgRgb: (r: number, g: number, b: number) => "background-color: rgb(" + r + "," + g + "," + b + "); color: white;",
+    // eslint-disable-next-line security/detect-object-injection
+    fg: (code: number) => "color: " + ansiCodeHexMap[code] + ";",
+    hex: (hex: string) => "color:" + hex + ";",
+    rgb: (r: number, g: number, b: number) => "color: rgb(" + r + "," + g + "," + b + ");",
 };
 
 const styles: Record<string, object> = {};
@@ -118,8 +124,8 @@ const createStyle = (
 
         const string =
             (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == null
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string,@typescript-eslint/restrict-plus-operands
-                ? strings + "" as string
+                ? // eslint-disable-next-line @typescript-eslint/no-base-to-string,@typescript-eslint/restrict-plus-operands
+                  ((strings + "") as string)
                 : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
         return ["%c" + string, cssStack];
@@ -134,7 +140,7 @@ const createStyle = (
 };
 
 // eslint-disable-next-line func-names
-const Colorize = function () {
+const WebColorize = function () {
     const self = (string_: number | string) => string_ + "";
 
     self.strip = (value: string): string => value;
@@ -191,6 +197,8 @@ for (const name in styleMethods) {
 
 styles["ansi256"] = styles["fg"] as object;
 styles["bgAnsi256"] = styles["bg"] as object;
+
+const Colorize = isColorSupported() > 0 ? ServerColorize : WebColorize;
 
 // eslint-disable-next-line import/no-default-export,import/no-unused-modules
 export default Colorize;
