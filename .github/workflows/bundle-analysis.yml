@@ -107,7 +107,7 @@ jobs:
               run: "cd examples/nextra && npx -p nextjs-bundle-analysis@0.5.0 report"
 
             - name: "Upload Bundle"
-              uses: "actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32" # v3.1.3
+              uses: "actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3" # v4.3.1
               with:
                   name: "bundle"
                   path: "examples/nextra/.next/analyze/__bundle_analysis.json"
