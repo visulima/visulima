@@ -160,7 +160,7 @@
         "postcss": "^8.4.35",
         "postcss-cli": "^11.0.0",
         "postcss-focus-visible": "^9.0.1",
-        "postcss-import": "^16.0.0",
+        "postcss-import": "^16.0.1",
         "postcss-lightningcss": "1.0.0",
         "prettier": "^3.2.5",
         "react": "^18.2.0",
