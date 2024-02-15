@@ -67,7 +67,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
                   run_install: false
 
@@ -109,7 +109,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
                   run_install: false
 
@@ -151,7 +151,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
                   run_install: false
 
@@ -220,7 +220,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - uses: "pnpm/action-setup@d882d12c64e032187b2edb46d3a0d003b7a43598" # v2.4.0
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
                   run_install: false
 
