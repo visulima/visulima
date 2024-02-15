@@ -1,79 +1,5 @@
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
-
-import ServerColorize from "./colorize.server";
-import type { AnsiColors, AnsiStyles, ColorizeType } from "./types";
-import { ansiCodeHexMap } from "./utils";
-
-const baseStyles: Required<Record<AnsiStyles, string>> = {
-    bold: "font-weight: bold;",
-    dim: "opacity: 0.5;",
-    hidden: "visibility: hidden;",
-    inverse: "background-color: currentColor; color: background-color;",
-    italic: "font-style: italic;",
-    overline: "text-decoration: overline;",
-    reset: "color: inherit",
-    strike: "text-decoration: line-through;",
-    strikethrough: "text-decoration: line-through;",
-    underline: "text-decoration: underline;",
-    visible: "opacity: 0;",
-};
-
-const baseColors: Required<Record<AnsiColors, string>> = {
-    bgBlack: "background-color: black; color: white;",
-    bgBlackBright: "background-color: #666; color: white;",
-    bgBlue: "background-color: blue; color: white;",
-    bgBlueBright: "background-color: #55f; color: white;",
-    bgCyan: "background-color: cyan; color: black;",
-    bgCyanBright: "background-color: #5ff; color: black;",
-    bgGray: "background-color: #666; color: white;", // US spelling alias for bgBlackBright
-    bgGreen: "background-color: green; color: white;",
-    bgGreenBright: "background-color: #5f5; color: white;",
-    bgGrey: "background-color: #666; color: white;", // UK spelling alias for bgBlackBright
-    bgMagenta: "background-color: magenta; color: white;",
-    bgMagentaBright: "background-color: #f5f; color: white;",
-    bgRed: "background-color: red; color: white;",
-    bgRedBright: "background-color: #f55; color: white;",
-    bgWhite: "background-color: white; color: black;",
-    bgWhiteBright: "background-color: #eee; color: black;",
-    bgYellow: "background-color: yellow; color: black;",
-    bgYellowBright: "background-color: #ff5; color: black;",
-    black: "color: black;",
-    blackBright: "color: #666;",
-    blue: "color: blue;",
-    blueBright: "color: #55f;",
-    cyan: "color: cyan;",
-    cyanBright: "color: #5ff;",
-    gray: "color: #666;", // US spelling alias for blackBright
-    green: "color: green;",
-    greenBright: "color: #5f5;",
-    grey: "color: #666;", // UK spelling alias for blackBright
-    magenta: "color: magenta;",
-    magentaBright: "color: #f5f;",
-    red: "color: red;",
-    redBright: "color: #f55;",
-    white: "color: white;",
-    whiteBright: "color: #eee;",
-    yellow: "color: yellow;",
-    yellowBright: "color: #ff5;",
-};
-
-const styleMethods: {
-    bg: (code: number) => string;
-    bgHex: (hex: string) => string;
-    bgRgb: (r: number, g: number, b: number) => string;
-    fg: (code: number) => string;
-    hex: (hex: string) => string;
-    rgb: (r: number, g: number, b: number) => string;
-} = {
-    // eslint-disable-next-line security/detect-object-injection
-    bg: (code: number) => "background-color: " + ansiCodeHexMap[code] + "; color: white;",
-    bgHex: (hex: string) => "background-color: " + hex + "; color: white;",
-    bgRgb: (r: number, g: number, b: number) => "background-color: rgb(" + r + "," + g + "," + b + "); color: white;",
-    // eslint-disable-next-line security/detect-object-injection
-    fg: (code: number) => "color: " + ansiCodeHexMap[code] + ";",
-    hex: (hex: string) => "color:" + hex + ";",
-    rgb: (r: number, g: number, b: number) => "color: rgb(" + r + "," + g + "," + b + ");",
-};
+import { baseColors, baseStyles, styleMethods } from "./css-code";
+import type { ColorizeType } from "./types";
 
 const styles: Record<string, object> = {};
 
@@ -150,7 +76,7 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -165,7 +91,7 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -190,6 +116,7 @@ for (const name in styleMethods) {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };
@@ -198,7 +125,5 @@ for (const name in styleMethods) {
 styles["ansi256"] = styles["fg"] as object;
 styles["bgAnsi256"] = styles["bg"] as object;
 
-const Colorize = isColorSupported() > 0 ? ServerColorize : WebColorize;
-
-// eslint-disable-next-line import/no-default-export,import/no-unused-modules
-export default Colorize;
+// eslint-disable-next-line import/no-default-export
+export default WebColorize;

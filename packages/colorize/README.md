@@ -110,6 +110,60 @@ console.log(green.bold`Success!`);
 console.log(red`The ${blue.underline`file.js`} not found!`);
 ```
 
+### Browser
+
+> **Note:** It has the same API as in Node.js.
+
+> The return value of the browser version is an array of strings, not a string, because the browser console use the `%c` syntax for styling.
+> This is why you need the spread operator `...` to log the colorized string.
+
+```typescript
+// ESM default import
+import colorize from "@visulima/colorize/browser";
+// ESM named import
+import { red, green, blue } from "@visulima/colorize/browser";
+```
+Some examples:
+
+```typescript
+console.log(...colorize.green("Success!"));
+console.log(...green("Success!"));
+
+// template string
+console.log(...blue`Info!`);
+
+// chained syntax
+console.log(...green.bold`Success!`);
+
+// nested syntax
+console.log(...red`The ${blue.underline`file.js`} not found!`);
+```
+
+Workaround/Hack to not use the spread operator `...`.
+
+> Warning: But you will lose the correct file path and line number in the console.
+
+```typescript
+let consoleOverwritten = false;
+
+// Heck the window.console object to add colorized logging
+if (typeof navigator !== "undefined" && typeof window !== "undefined" && !consoleOverwritten) {
+    ["error", "group", "groupCollapsed", "info", "log", "trace", "warn"].forEach((o) => {
+        const originalMethod = (window.console as any)[o as keyof Console];
+
+        (window.console as any)[o as keyof Console] = (...args: any[]) => {
+            if (Array.isArray(args[0]) && args[0].length >= 2 && args[0][0].includes("%c")) {
+                originalMethod(...args[0]);
+            } else {
+                originalMethod(...args);
+            }
+        };
+    });
+
+    consoleOverwritten = true;
+}
+```
+
 ### API
 
 Colors and styles have standard names used by many popular libraries, such
@@ -267,6 +321,10 @@ The pre-defined set of 256 colors.
 
 ![ansi256](__assets__/ansi256.png)
 
+Browser
+
+![ansi256_browser](__assets__/browser.png)
+
 </center>
 
 | Code range | Description                               |
@@ -397,7 +455,7 @@ Please check [@visulima/is-ansi-color-supported](https://github.com/visulima/vis
 
 Since Chrome 69 (every chrome based browser), ANSI escape codes are natively supported in the developer console.
 
-For other browsers (like firefox) we use the console style syntax command `%c` with css.
+For other browsers (like firefox) we use the console style syntax command `%c`.
 
 ## Windows
 

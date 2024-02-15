@@ -28,7 +28,7 @@ const wrapText = (
 
     let string =
         (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == null
-            ? strings + "" as string
+            ? (strings as number | string) + "" as string
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
@@ -39,7 +39,7 @@ const wrapText = (
     }
 
     if (string.includes("\n")) {
-        // eslint-disable-next-line prefer-template,unicorn/prefer-string-replace-all
+        // eslint-disable-next-line unicorn/prefer-string-replace-all
         string = string.replace(/(\r*\n)/g, properties.closeStack + "$1" + properties.openStack);
     }
 

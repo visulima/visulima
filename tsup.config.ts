@@ -53,7 +53,7 @@ function getPackageSources(packageContent: NormalizedPackageJson):
         return [packageContent["source"]];
     }
 
-    if (typeof packageContent["source"] === "object" && packageContent["source"].cjs && packageContent["source"].esm) {
+    if (typeof packageContent["source"] === "object" && (packageContent["source"].cjs || packageContent["source"].esm)) {
         return packageContent["source"];
     }
 
@@ -135,13 +135,15 @@ export const createConfig = (
             }
 
             return sources.map((obj) => {
+                const formatConfig = (config as Options)?.[obj.format];
+
                 return {
                     ...baseConfig,
                     entry: [obj.source],
                     format: obj.format,
                     cjsInterop: true,
-                    ...(config as { cjs: Options }).cjs,
-                    plugins: [fixCjsExports(), ...((config as { cjs: Options }).cjs?.plugins || [])],
+                     ...(formatConfig as Options),
+                    plugins: [...(obj.format === "cjs" ? [fixCjsExports()] : []), ...((formatConfig as Options).plugins || [])],
                 };
             });
         } else {
