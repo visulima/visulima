@@ -126,7 +126,7 @@
         "@pnpm/exe": "^8.15.2",
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@total-typescript/ts-reset": "^0.5.1",
-        "@types/node": "18.19.15",
+        "@types/node": "18.18.14",
         "@vitest/coverage-v8": "^1.2.2",
         "@vitest/ui": "^1.2.2",
         "cnpm": "^9.4.0",
