@@ -89,7 +89,7 @@
         "@babel/core": "^7.23.9",
         "@rushstack/eslint-plugin-security": "^0.8.0",
         "@types/http-errors": "^2.0.4",
-        "@types/node": "18.18.14",
+        "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.13",
         "@vitest/coverage-v8": "^1.2.2",
         "@vitest/ui": "^1.2.2",
