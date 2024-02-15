@@ -387,7 +387,7 @@ describe("handling numbers", () => {
         expect.assertions(1);
 
         const number_ = 123;
-        const received = red`size: ${number_}px`;
+        const received = red`size: ${number_ as unknown as string}px`;
         const expected = "\u001B[31msize: 123px\u001B[39m";
 
         expect(esc(received)).toStrictEqual(esc(expected));

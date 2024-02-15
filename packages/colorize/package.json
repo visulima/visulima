@@ -71,7 +71,7 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.browser.js",
+            "browser": "./dist/index.server.js",
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
@@ -79,6 +79,13 @@
             "import": {
                 "types": "./dist/index.server.d.ts",
                 "default": "./dist/index.server.js"
+            }
+        },
+        "./browser": {
+            "browser": "./dist/index.browser.js",
+            "import": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
             }
         },
         "./package.json": "./package.json"

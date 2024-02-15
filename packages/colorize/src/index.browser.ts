@@ -1,27 +1,7 @@
 import ColorizeImpl from "./colorize.browser";
 import type { ColorizeType } from "./types";
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
 
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
-
-let consoleOverwritten = false;
-
-// Heck the window.console object to add colorized logging
-if (isColorSupported() === 0 && !consoleOverwritten) {
-    const originalConsole = { ...window.console };
-
-    ["error", "group", "groupCollapsed", "info", "log", "trace", "warn"].forEach((o) => {
-        (window.console as any)[o as keyof Console] = (...args: any[]) => {
-            if (Array.isArray(args[0]) && args[0].length >= 2 && args[0][0].includes("%c")) {
-                (originalConsole as any)[o](...args[0]);
-            } else {
-                (originalConsole as any)[o](...args);
-            }
-        };
-    });
-
-    consoleOverwritten = true;
-}
 
 // eslint-disable-next-line import/no-default-export
 export default colorize as ColorizeType;
