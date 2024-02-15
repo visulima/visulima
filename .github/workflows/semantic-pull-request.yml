@@ -21,7 +21,7 @@ jobs:
         name: "Semantic Pull Request"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895" # v2.6.1
+              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
               with:
                   egress-policy: "audit"
 
@@ -47,7 +47,7 @@ jobs:
                       test
                       translation
 
-            - uses: "marocchino/sticky-pull-request-comment@efaaab3fd41a9c3de579aba759d2552635e590fd" # v2.8.0
+            - uses: "marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31" # v2.9.0
               # When the previous steps fails, the workflow would stop. By adding this
               # condition you can continue the execution with the populated error message.
               if: "always() && (steps.lint_pr_title.outputs.error_message != null)"
@@ -66,7 +66,7 @@ jobs:
 
               # Delete a previous comment when the issue has been resolved
             - if: "${{ steps.lint_pr_title.outputs.error_message == null }}"
-              uses: "marocchino/sticky-pull-request-comment@efaaab3fd41a9c3de579aba759d2552635e590fd" # v2.8.0
+              uses: "marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31" # v2.9.0
               with:
                   header: "pr-title-lint-error"
                   message: |
