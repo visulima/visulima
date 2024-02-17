@@ -46,7 +46,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 -   [Strip ANSI codes](#strip) method `colorize.strip()`
 -   [Correct style break](#new-line) at the `end of line` when used `\n` in string
 -   Supports the [environment variables](#cli-vars) `NO_COLOR` `FORCE_COLOR` and flags `--no-color` `--color`
--   Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome)
+-   Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
 -   Expressive API
 -   Doesn't extend `String.prototype`
 -   Up to **x3 faster** than **chalk**, [see benchmarks](#benchmark)
@@ -123,6 +123,7 @@ import colorize from "@visulima/colorize/browser";
 // ESM named import
 import { red, green, blue } from "@visulima/colorize/browser";
 ```
+
 Some examples:
 
 ```typescript

@@ -19,6 +19,7 @@ type ColorizeProperties = { css: string; cssStack: string; props: ColorizeProper
 const createStyle = (
     { props }: { props?: ColorizeProperties },
     css: string,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): { (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string[] | ""; css: string; props: ColorizeProperties } => {
     let cssStack = css;
 
@@ -35,26 +36,46 @@ const createStyle = (
             }
         }
 
-        cssStack = Object.entries(cssObject)
-            .map(([p, v]) => `${p}:${v}`)
-            .join(";");
+        // eslint-disable-next-line unicorn/prefer-string-replace-all
+        cssStack = JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";") + ";";
     }
 
     const style = (
-        strings: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
+        input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
         ...values: string[]
-    ) => {
-        if (!strings) {
-            return "";
+    ): string[] => {
+        if (!input) {
+            return [];
         }
 
-        const string =
-            (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == null
-                ? // eslint-disable-next-line @typescript-eslint/no-base-to-string,@typescript-eslint/restrict-plus-operands
-                  ((strings + "") as string)
-                : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
+        if (typeof input === "string" && input.includes("%c")) {
+            const collectedStyles = input.match(/(?<=,).*;/g);
 
-        return ["%c" + string, cssStack];
+            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            const inputWithoutStyles = input.replace(/,.*;/g, "");
+
+            return ["%c" + inputWithoutStyles, style.css, ...(collectedStyles ?? [])];
+        }
+
+        if (typeof input === "number" || typeof input === "string") {
+            return ["%c" + input, style.css];
+        }
+
+        if ((input as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw !== null && Array.isArray(values) && values.length > 0) {
+            const rawString = String.raw(input as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
+
+            const collectedStyles = rawString.match(/(?<=,).*;/g);
+            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            const inputWithoutStyles = rawString.replace(/,.*;/g, "");
+
+            return ["%c" + inputWithoutStyles, style.css, ...(collectedStyles ?? []).join("").split(",").filter(Boolean)];
+        }
+
+        const [first, ...rest] = input as string[];
+
+        rest.unshift(style.css);
+
+        return [((first + "").includes("%c") ? "" : "%c") + (first + ""), rest.join("")];
     };
 
     Object.setPrototypeOf(style, stylePrototype);

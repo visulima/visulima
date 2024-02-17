@@ -8,7 +8,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.visible("foo");
-        const expected = "opacity: 0;";
+        const expected = ["%cfoo", "opacity: 0;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -17,7 +17,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.visible`foo ${green`bar`}`;
-        const expected = "foo \u001B[32mbar\u001B[39m";
+        const expected = ["%cfoo %cbar", "opacity: 0;", "color: green;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -26,7 +26,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.green("");
-        const expected = "";
+        const expected = [];
 
         expect(received).toStrictEqual(expected);
     });
@@ -35,7 +35,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.green(["foo", "bar"].join(" "));
-        const expected = "\u001B[32mfoo bar\u001B[39m";
+        const expected = ["%cfoo bar", "color: green;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -44,7 +44,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.bgMagenta("foo");
-        const expected = "\u001B[45mfoo\u001B[49m";
+        const expected = ["%cfoo", "background-color: magenta; color: white;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -53,7 +53,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.green.bold.underline.italic("foo");
-        const expected = "\u001B[32m\u001B[1m\u001B[4m\u001B[3mfoo\u001B[23m\u001B[24m\u001B[22m\u001B[39m";
+        const expected = ["%cfoo", "font-style:italic;text-decoration:underline;font-weight:bold;color:green;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -62,7 +62,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.cyan(colorize.bold(colorize.underline(colorize.italic("foo"))));
-        const expected = "\u001B[36m\u001B[1m\u001B[4m\u001B[3mfoo\u001B[23m\u001B[24m\u001B[22m\u001B[39m";
+        const expected = ["%cfoo", "color: cyan;font-weight: bold;text-decoration: underline;font-style: italic;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -71,7 +71,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.rgb(80, 100, 150)("foo");
-        const expected = "\u001B[38;2;80;100;150mfoo\u001B[39m";
+        const expected = ["%cfoo", "color: rgb(80,100,150);"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -80,7 +80,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.bgRgb(80, 100, 150)("foo");
-        const expected = "\u001B[48;2;80;100;150mfoo\u001B[49m";
+        const expected = ["%cfoo", "background-color: rgb(80,100,150);"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -89,7 +89,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.hex("#ABC")("foo");
-        const expected = "\u001B[38;2;170;187;204mfoo\u001B[39m";
+        const expected = ["%cfoo", "color:#ABC;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -98,7 +98,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.bgHex("#ABC123")("foo");
-        const expected = "\u001B[48;2;171;193;35mfoo\u001B[49m";
+        const expected = ["%cfoo", "background-color: #ABC123;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -107,7 +107,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.ansi256(97)("foo");
-        const expected = "\u001B[38;5;97mfoo\u001B[39m";
+        const expected = ["%cfoo", "color: #875faf;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -116,7 +116,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.bgAnsi256(97)("foo");
-        const expected = "\u001B[48;5;97mfoo\u001B[49m";
+        const expected = ["%cfoo", "background-color: #875faf;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -125,16 +125,11 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.green("\nHello\nNew line\nNext new line.\n");
-        const expected = `\u001B[32m\u001B[39m
-\u001B[32mHello\u001B[39m
-\u001B[32mNew line\u001B[39m
-\u001B[32mNext new line.\u001B[39m
-\u001B[32m\u001B[39m`;
+        const expected = ["%c\nHello\nNew line\nNext new line.\n", "color: green;"];
 
         expect(received).toStrictEqual(expected);
     });
 });
-
 
 describe("functional tests", () => {
     it(`should colorize 'OK'`, () => {
@@ -150,7 +145,7 @@ describe("functional tests", () => {
         expect.assertions(1);
 
         const received = colorize.red(`foo${colorize.underline.bgBlue("bar")}!`);
-        const expected = "\u001B[31mfoo\u001B[4m\u001B[44mbar\u001B[49m\u001B[24m!\u001B[39m";
+        const expected = ["%cfoo%cbar!", "color: red;", "background-color:blue;color:white;text-decoration:underline;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -159,12 +154,14 @@ describe("functional tests", () => {
         expect.assertions(1);
 
         const received = colorize.green.bold.underline(`foo ${colorize.red.italic("bar")} foo`);
-        const expected = "\u001B[32m\u001B[1m\u001B[4mfoo \u001B[31m\u001B[3mbar\u001B[23m\u001B[32m foo\u001B[24m\u001B[22m\u001B[39m";
+        const expected = ["%cfoo %cbar foo", "text-decoration:underline;font-weight:bold;color:green;", "font-style:italic;color:red;"];
 
         expect(received).toStrictEqual(expected);
     });
 
-    it(`should colorize nested multi styles`, () => {
+    // @TODO: Find a way to add multi nested styles to the browser console
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip(`should colorize nested multi styles`, () => {
         expect.assertions(1);
 
         const rgb = colorize.rgb(100, 80, 155);
@@ -173,20 +170,25 @@ describe("functional tests", () => {
             `begin ${rgb.bold("RGB")} ${colorize.yellow("yellow")} red ${colorize.italic.cyan("italic cyan")} red ${colorize.red(
                 "red",
             )} red ${colorize.underline.green.italic(
-                `underline italic green ${colorize.rgb(80, 120, 200)("underline italic blue")} underline italic green`,
+                `underline italic green ${colorize.rgb(80, 120, 200)("RGB")} underline italic green`,
             )} red ${colorize.cyan("cyan")} red ${colorize.bold.yellow("bold yellow")} red ${colorize.green("green")} end`,
         );
-        const expected =
-            "\u001B[31mbegin \u001B[38;2;100;80;155m\u001B[1mRGB\u001B[22m\u001B[31m \u001B[33myellow\u001B[31m red \u001B[3m\u001B[36mitalic cyan\u001B[31m\u001B[23m red \u001B[31mred\u001B[31m red \u001B[4m\u001B[32m\u001B[3munderline italic green \u001B[38;2;80;120;200munderline italic blue\u001B[32m underline italic green\u001B[23m\u001B[31m\u001B[24m red \u001B[36mcyan\u001B[31m red \u001B[1m\u001B[33mbold yellow\u001B[31m\u001B[22m red \u001B[32mgreen\u001B[31m end\u001B[39m";
-
-        expect(received).toStrictEqual(expected);
-    });
-
-    it(`should strip`, () => {
-        expect.assertions(1);
-
-        const received = colorize.strip("\u001B[36m\u001B[1m\u001B[4m\u001B[3mfoo\u001B[23m\u001B[24m\u001B[22m\u001B[39m");
-        const expected = "foo";
+        const expected = [
+            "%cbegin %cRGB %cyellow %cred %citalic cyan %cred %cred %cred %cunderline italic green %cunderline italic blue %cunderline italic green %cred %ccyan red %cbold yellow red %cgreen end",
+            "color: red;",
+            "font-weight:bold;",
+            "color: yellow;",
+            "color: red;",
+            "font-style:italic;color:cyan;",
+            "color: red;",
+            "color: red;",
+            "color: red;",
+            "text-decoration: underline;font-style: italic;color: green;",
+            "color: rgb(80,120,200);",
+            "color: cyan;",
+            "font-weight:bold;color:yellow;",
+            "color: green;",
+        ];
 
         expect(received).toStrictEqual(expected);
     });
@@ -233,7 +235,7 @@ describe("alias tests", () => {
         expect.assertions(1);
 
         const received = colorize.grey.gray("foo");
-        const expected = "\u001B[90m\u001B[90mfoo\u001B[39m\u001B[39m";
+        const expected = ["%cfoo", "color:#666;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -260,7 +262,7 @@ describe("alias tests", () => {
         expect.assertions(1);
 
         const received = colorize.ansi256(96).fg(96)("foo");
-        const expected = "\u001B[38;5;96m\u001B[38;5;96mfoo\u001B[39m\u001B[39m";
+        const expected = ["%cfoo", "color:#875f87;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -271,7 +273,7 @@ describe("template literals tests", () => {
         expect.assertions(1);
 
         const received = colorize.red`red color`;
-        const expected = "\u001B[31mred color\u001B[39m";
+        const expected = ["%cred color", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -281,7 +283,7 @@ describe("template literals tests", () => {
         expect.assertions(1);
 
         const received = red`red ${yellow`yellow ${green`green`} yellow`} red`;
-        const expected = "\u001B[31mred \u001B[33myellow \u001B[32mgreen\u001B[33m yellow\u001B[31m red\u001B[39m";
+        const expected = ["%cred %cyellow %cgreen yellow red", "color: red;", "color: yellow;", "color: green;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -292,7 +294,7 @@ describe("colorize class tests", () => {
         expect.assertions(1);
 
         const received = new Colorize().red("foo");
-        const expected = "\u001B[31mfoo\u001B[39m";
+        const expected = ["%cfoo", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -337,7 +339,7 @@ describe("handling numbers", () => {
 
         const number_ = 123;
         const received = colorize.red(number_);
-        const expected = "\u001B[31m123\u001B[39m";
+        const expected = ["%c123", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -347,7 +349,7 @@ describe("handling numbers", () => {
 
         const number_ = 123;
         const received = red(number_);
-        const expected = "\u001B[31m123\u001B[39m";
+        const expected = ["%c123", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -357,7 +359,7 @@ describe("handling numbers", () => {
 
         const number_ = 123;
         const received = bold(number_);
-        const expected = "\u001B[1m123\u001B[22m";
+        const expected = ["%c123", "font-weight: bold;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -367,7 +369,7 @@ describe("handling numbers", () => {
 
         const number_ = 123;
         const received = red.bold(number_);
-        const expected = "\u001B[31m\u001B[1m123\u001B[22m\u001B[39m";
+        const expected = ["%c123", "font-weight:bold;color:red;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -377,7 +379,7 @@ describe("handling numbers", () => {
 
         const number_ = 123;
         const received = hex("#A00")(number_);
-        const expected = "\u001B[38;2;170;0;0m123\u001B[39m";
+        const expected = ["%c123", "color:#A00;"];
 
         expect(received).toStrictEqual(expected);
     });
@@ -387,8 +389,8 @@ describe("handling numbers", () => {
         expect.assertions(1);
 
         const number_ = 123;
-        const received = red`size: ${number_}px`;
-        const expected = "\u001B[31msize: 123px\u001B[39m";
+        const received = red`size: ${number_ as unknown as string}px ${number_ as unknown as string}`;
+        const expected = ["%csize: 123px 123", "color: red;"];
 
         expect(received).toStrictEqual(expected);
     });

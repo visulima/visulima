@@ -14,13 +14,11 @@ import { clamp, hexToRgb } from "./utils";
 const esc: (open: number | string, close: number | string) => ColorData =
     isColorSupported() > 0
         ? (open: number | string, close: number | string): ColorData => {
-
               return { close: "\u001B[" + close + "m", open: "\u001B[" + open + "m" };
           }
         : (): ColorData => {
               return { close: "", open: "" };
           };
-
 
 const createAnsi256 = (code: number | string): ColorData => esc("38;5;" + code, 39);
 
