@@ -14,6 +14,7 @@ export const getServerSideProps = () => {
 };
 
 const Home: NextPage = () => {
+    console.log("test")
     console.log(bgBlue.green("page"));
 
     return (
