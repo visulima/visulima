@@ -142,7 +142,7 @@ export const createConfig = (
                     entry: [obj.source],
                     format: obj.format,
                     cjsInterop: true,
-                     ...(formatConfig as Options),
+                    ...(formatConfig as Options),
                     plugins: [...(obj.format === "cjs" ? [fixCjsExports()] : []), ...((formatConfig as Options).plugins || [])],
                 };
             });
