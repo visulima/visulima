@@ -1,4 +1,4 @@
-import ColorizeImpl from "./colorize";
+import ColorizeImpl from "./colorize.server";
 import type { ColorizeType } from "./types";
 
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
@@ -66,7 +66,7 @@ export const {
     yellowBright,
 } = colorize;
 
-export { default as Colorize } from "./colorize";
+export { default as Colorize } from "./colorize.server";
 
 // eslint-disable-next-line import/no-unused-modules
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

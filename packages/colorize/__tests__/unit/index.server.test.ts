@@ -1,8 +1,7 @@
 import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-styles";
 import { describe, expect, it } from "vitest";
 
-// eslint-disable-next-line import/no-useless-path-segments
-import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.mts";
+import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.server.mts";
 import { esc } from "../helpers.js";
 
 describe("style tests", () => {
@@ -388,7 +387,7 @@ describe("handling numbers", () => {
         expect.assertions(1);
 
         const number_ = 123;
-        const received = red`size: ${number_}px`;
+        const received = red`size: ${number_ as unknown as string}px`;
         const expected = "\u001B[31msize: 123px\u001B[39m";
 
         expect(esc(received)).toStrictEqual(esc(expected));

@@ -14,20 +14,18 @@ import { clamp, hexToRgb } from "./utils";
 const esc: (open: number | string, close: number | string) => ColorData =
     isColorSupported() > 0
         ? (open: number | string, close: number | string): ColorData => {
-              // eslint-disable-next-line prefer-template
               return { close: "\u001B[" + close + "m", open: "\u001B[" + open + "m" };
           }
         : (): ColorData => {
               return { close: "", open: "" };
           };
 
-// eslint-disable-next-line prefer-template
 const createAnsi256 = (code: number | string): ColorData => esc("38;5;" + code, 39);
-// eslint-disable-next-line prefer-template
+
 const createBgAnsi256 = (code: number | string): ColorData => esc("48;5;" + code, 49);
-// eslint-disable-next-line prefer-template
+
 const createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("38;2;" + r + ";" + g + ";" + b, 39);
-// eslint-disable-next-line prefer-template
+
 const createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("48;2;" + r + ";" + g + ";" + b, 49);
 
 export const baseStyles: Required<Record<AnsiStyles, ColorData>> = {

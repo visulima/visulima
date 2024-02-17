@@ -8,7 +8,9 @@
         "ansi",
         "ansi-colors",
         "blue",
+        "browser",
         "chalk",
+        "chrome",
         "cli",
         "color",
         "colorette",
@@ -19,6 +21,7 @@
         "command-line",
         "console",
         "cyan",
+        "firefox",
         "FORCE_COLOR",
         "formatting",
         "green",
@@ -68,21 +71,28 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.js",
+            "browser": "./dist/index.server.js",
             "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
+                "types": "./dist/index.server.d.cts",
+                "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            }
+        },
+        "./browser": {
+            "browser": "./dist/index.browser.js",
+            "import": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
             }
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "dist/index.server.cjs",
+    "module": "dist/index.server.js",
+    "types": "dist/index.server.d.ts",
     "files": [
         "dist/**",
         "README.md",
@@ -171,11 +181,15 @@
     },
     "sources": [
         {
-            "source": "src/index.mts",
+            "source": "src/index.browser.ts",
             "format": "esm"
         },
         {
-            "source": "src/index.cts",
+            "source": "src/index.server.mts",
+            "format": "esm"
+        },
+        {
+            "source": "src/index.server.cts",
             "format": "cjs"
         }
     ]

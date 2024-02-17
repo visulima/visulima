@@ -1,4 +1,4 @@
-import ColorizeImpl from "./colorize";
+import ColorizeImpl from "./colorize.server";
 import type { ColorizeType } from "./types";
 
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
