@@ -105,6 +105,10 @@ export interface ConstructorOptions<T extends string = never, L extends string =
     disabled?: boolean;
     logLevel?: LiteralUnion<Rfc5424LogLevels, L>;
     logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
+    messages?: {
+        timerEnd?: string;
+        timerStart?: string;
+    };
     processors?: Processor<L>[];
     reporters?: Reporter<L>[];
     scope?: string[] | string;

@@ -1,7 +1,7 @@
 import { sep } from "node:path";
 
-import type { AnsiColors} from "@visulima/colorize";
-import colorize, { bgGrey, bold , cyan, grey, red, underline, white } from "@visulima/colorize";
+import type { AnsiColors } from "@visulima/colorize";
+import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
@@ -15,10 +15,7 @@ import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-export class PrettyReporter<T extends string = never, L extends string = never>
-    extends AbstractPrettyReporter<T, L>
-    implements StreamAwareReporter<L>
-{
+export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements StreamAwareReporter<L> {
     #stdout: NodeJS.WriteStream | undefined;
 
     #stderr: NodeJS.WriteStream | undefined;
@@ -68,15 +65,15 @@ export class PrettyReporter<T extends string = never, L extends string = never>
 
         if (Array.isArray(groups) && groups.length > 0) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-            items.push((groupSpaces + grey("[" + groups.at(-1) + "]")) as string);
+            items.push((groupSpaces + grey("[" + groups.at(-1) + "] ")) as string);
         }
 
         if (date) {
-            items.push(grey(this._styles.dateFormatter(new Date(date))));
+            items.push(grey(this._styles.dateFormatter(new Date(date))) + " ");
         }
 
         if (badge) {
-            items.push(colorized(badge));
+            items.push(colorized(badge) + " ");
         }
 
         const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
@@ -84,35 +81,32 @@ export class PrettyReporter<T extends string = never, L extends string = never>
         if (label) {
             const replacement = ".".repeat(longestLabel.length - stringLength(label as string));
 
-            items.push(colorized(this._formatLabel(label as string)));
+            items.push(colorized(this._formatLabel(label as string)) + " ");
 
             if (repeated) {
-
-                items.push(bgGrey.white("[" + repeated + "x]"));
+                items.push(bgGrey.white("[" + repeated + "x]") + " ");
             }
 
-            items.push((replacement.length > 0 ? " " : "") + grey(replacement));
+            items.push(grey(replacement));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-
-            items.push(grey("[" + scope.join(" | ") + "]"));
+            items.push(grey(" [" + scope.join(" | ") + "] "));
         }
 
         if (prefix) {
             items.push(
                 grey(
-
-                    (Array.isArray(scope) && scope.length > 0 ? ". " : "") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "]",
+                    (Array.isArray(scope) && scope.length > 0 ? ". " : " ") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] ",
                 ),
             );
         }
 
         if (items.length > 0) {
-            items = items.map((item) => item + " ");
+            items = items.map((item) => item);
         }
 
         const titleSize = stringLength(items.join(" "));

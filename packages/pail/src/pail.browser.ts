@@ -1,6 +1,5 @@
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
-import stringLength from "string-length";
 import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
@@ -80,6 +79,10 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected groups: string[] | undefined;
 
+    protected readonly _startTimerMessage: string;
+
+    protected readonly _endTimerMessage: string;
+
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(options: ConstructorOptions<T, L>) {
         this._throttle = options.throttle ?? 1000;
@@ -89,6 +92,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             strict: true,
         });
 
+        this._startTimerMessage = options?.messages?.timerStart ?? "Initialized timer...";
+        this._endTimerMessage = options?.messages?.timerEnd ?? "Timer run for:";
         this._customTypes = (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
         this._types = mergeTypes<L, T>(LOG_TYPES, this._customTypes);
         this._longestLabel = getLongestLabel<L, T>(this._types);
@@ -132,6 +137,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,guard-for-in
         for (const type in this._types) {
+            // @ts-expect-error - dynamic property
             // eslint-disable-next-line security/detect-object-injection
             this[type] = this._logger.bind(this, type as T);
         }
@@ -177,7 +183,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         process.on("uncaughtException", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-
             (this as unknown as PailBrowserImpl<T, L>).error(error);
         });
 
@@ -185,7 +190,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         process.on("unhandledRejection", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
-
             (this as unknown as PailBrowserImpl<T, L>).error(error);
         });
     }
@@ -265,21 +269,18 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         meta.date = new Date();
 
         if (this._types.start.badge) {
-            // green
             meta.badge = padEnd(this._types.start.badge, 2);
         }
 
-        // green
-        meta.label = label + " ".repeat(this._longestLabel.length - stringLength(label));
+        meta.prefix = label;
+        meta.message = this._startTimerMessage;
 
-        meta.message = "Initialized timer...";
-
-        // @TODO
-        // this._log(messages.join(" "), this._stream, "timer");
+        this._logger("start", meta);
 
         return label;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public timeEnd(label?: string): TimeEndResult | undefined {
         if (!label && this.seqTimers.length > 0) {
             // eslint-disable-next-line no-param-reassign
@@ -298,18 +299,14 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             meta.date = new Date();
 
             if (this._types.stop.badge) {
-                // red
                 meta.badge = padEnd(this._types.stop.badge, 2);
             }
 
-            // red
-            meta.label = padEnd(label, this._longestLabel.length + 1);
+            meta.prefix = label;
+            meta.message = this._endTimerMessage + " ";
+            meta.message += span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s";
 
-            meta.message = "Timer run for:\n";
-            // yellow
-            meta.message += span < 1000 ? span + "ms" : (span / 1000).toFixed(2) + "s";
-
-            // this._log(messages.join(" "), this._stream, "timer");
+            this._logger("stop", meta);
 
             return { label, span };
         }
@@ -433,7 +430,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
-    private _logger(type: T, ...messageObject: any[]): void {
+    private _logger(type: LiteralUnion<DefaultLogTypes, T>, ...messageObject: any[]): void {
         if (this._disabled) {
             return;
         }
