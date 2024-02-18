@@ -1,3 +1,17 @@
+## @visulima/colorize [1.2.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.1.0...@visulima/colorize@1.2.0) (2024-02-18)
+
+
+### Features
+
+* added css support for the browser ([00bed6a](https://github.com/visulima/visulima/commit/00bed6a4d6ff6a6de8e72c63e19f5b6fb6ce1fa9))
+* added full support for no ansi supported browser ([2c08071](https://github.com/visulima/visulima/commit/2c080719ce5f82d1d3a804d495f456714ce1af81))
+* added full support for no ansi supported browser ([e53065f](https://github.com/visulima/visulima/commit/e53065fd252247e00553980cbea13fd79d2c4ac4))
+
+
+### Bug Fixes
+
+* added 99% of the feature ([d9ebe51](https://github.com/visulima/visulima/commit/d9ebe51d19511f4dc91d4c7743b45d423020be1d))
+
 ## @visulima/colorize [1.1.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.0.1...@visulima/colorize@1.1.0) (2024-02-13)
 
 
