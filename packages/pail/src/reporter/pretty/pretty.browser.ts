@@ -3,6 +3,7 @@ import { getLongestLabel } from "../../util/get-longest-label";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+import colorize from "@visulima/colorize";
 
 export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
@@ -16,21 +17,18 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         });
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    public log(meta: ReadonlyMeta<L>): void {
+    public async log(meta: ReadonlyMeta<L>): Promise<void> {
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
 
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, type } = meta;
 
-        const colorized = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color ?? "color: #fff;";
-        const coloredMessage = [];
-        const css = [];
+        const colorized = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color ?? colorize.white;
+        const items = [];
 
         if (date) {
-            coloredMessage.push("%c" + this._styles.dateFormatter(new Date(date)));
-            css.push("color: #888;");
+            items.push(colorize.grey(this._styles.dateFormatter(new Date(date))) + " ");
         }
 
-        consoleLogFunction(coloredMessage.join(""), ...css);
+        consoleLogFunction(...items);
     }
 }

@@ -13,6 +13,18 @@ console.log("------------------ DEFAULT ------------------");
 
 pail.complete("Hello World!");
 
+console.log("------------------ TIME ------------------");
+
+pail.time("test");
+pail.time();
+pail.time();
+
+setTimeout(() => {
+  pail.timeEnd();
+  pail.timeEnd();
+  pail.timeEnd("test");
+}, 500);
+
 console.log("------------------ SCOPE NEW CUSTOM ------------------");
 
 const newLogger = pail.scope("new custom");
