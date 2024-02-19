@@ -1,3 +1,10 @@
+## @visulima/fmt [1.1.0](https://github.com/visulima/visulima/compare/@visulima/fmt@1.0.1...@visulima/fmt@1.1.0) (2024-02-19)
+
+
+### Features
+
+* added %c to ANSI transform ([dcf0bff](https://github.com/visulima/visulima/commit/dcf0bffdc591ccb60106fa03a99c2d16d11c5a23))
+
 ## @visulima/fmt [1.0.1](https://github.com/visulima/visulima/compare/@visulima/fmt@1.0.0...@visulima/fmt@1.0.1) (2024-01-19)
 
 
