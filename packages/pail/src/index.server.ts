@@ -47,4 +47,3 @@ export type {
     StreamAwareReporter,
     TimeEndResult,
 } from "./shared";
-export { getType } from "./shared";

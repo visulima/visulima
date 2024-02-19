@@ -1,5 +1,4 @@
 export type {
-    // eslint-disable-next-line import/no-unused-modules
     ConstructorOptions,
     DefaultLoggerTypes,
     DefaultLogTypes,
@@ -14,5 +13,3 @@ export type {
     StreamAwareReporter,
     TimeEndResult,
 } from "./types";
-// eslint-disable-next-line import/no-unused-modules
-export { getType } from "./util/get-type";

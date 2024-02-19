@@ -9,8 +9,10 @@ const pail = createPail({
 export async function middleware(): Promise<NextResponse> {
     const response = NextResponse.next();
 
-    pail.info("\x1b[36m%s\x1b[0m", "Middleware log can use colour"); //cyan
-    pail.info("pail colors works! :)");
+    pail.info("pail colors works! :)", {
+        label: "pail",
+        groups: ["pail", "colors"],
+    });
 
     return response;
 }

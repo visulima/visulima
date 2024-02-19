@@ -10,7 +10,6 @@ import wrapAnsi from "wrap-ansi";
 
 import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter } from "../../types";
 import { getLongestLabel } from "../../util/get-longest-label";
-import { getType } from "../../util/get-type";
 import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
@@ -105,10 +104,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             );
         }
 
-        if (items.length > 0) {
-            items = items.map((item) => item);
-        }
-
         const titleSize = stringLength(items.join(" "));
 
         if (file) {
@@ -125,7 +120,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (message) {
-            const formattedMessage: string | undefined = getType(message) === "String" ? (message as string) : (this._stringify as typeof stringify)(message);
+            const formattedMessage: string | undefined = typeof  message === "string" ? message : (this._stringify as typeof stringify)(message);
 
             items.push(
                 groupSpaces +
