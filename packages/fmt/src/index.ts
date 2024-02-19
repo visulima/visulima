@@ -179,8 +179,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     // Inspired by Deno's handling of '%c'.
                     // eslint-disable-next-line no-secrets/no-secrets
                     // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
-                    // @ts-expect-error Deno is not defined in the browser
-                    if (typeof window === "undefined" || globalThis.Deno == null) {
+                    if (typeof window === "undefined") {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const css = parseCss(arguments_[a as keyof typeof arguments_]);
 
