@@ -94,32 +94,21 @@ console.log(formatted); // hello world at 1/1/1970, 1:00:00 AM
 Format specifiers are dependent on the type of data-elements that are to be added to the string.
 The most commonly used format specifiers supported are:
 
-| Specifier | Description                                                                                                                              |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| %s        | Converts all values except for `BigInt`, `-0` and `Object` to a string.                                                                  |
-| %d        | Used to convert any value to `Number` of any type other than `BigInt` and `Symbol`.                                                      |
-| %i        | Used for all values except `BigInt` and `Symbol`.                                                                                        |
-| %f        | Used to convert a value to type `Float`. It does not support conversion of values of type `Symbol`.                                      |
-| %j        | Used to add JSON data. If a circular reference is present, the string ‘[Circular]’ is added instead.                                     |
-| %o        | Adds the string representation of an object. Note that it does not contain non-enumerable characteristics of the object.                 |
-| %O        | Adds the string representation of an object. Note that it will contain all characteristics of the object, including non-enumerable ones. |
-| %%        | Used to add the % sign.                                                                                                                  |
+| Specifier | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| %s        | Converts all values except for `BigInt`, `-0` and `Object` to a string.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| %d        | Used to convert any value to `Number` of any type other than `BigInt` and `Symbol`.                                                                                                                                                                                                                                                                                                                                                                                           |
+| %i        | Used for all values except `BigInt` and `Symbol`.                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| %f        | Used to convert a value to type `Float`. It does not support conversion of values of type `Symbol`.                                                                                                                                                                                                                                                                                                                                                                           |
+| %j        | Used to add JSON data. If a circular reference is present, the string ‘[Circular]’ is added instead.                                                                                                                                                                                                                                                                                                                                                                          |
+| %o        | Adds the string representation of an object. Note that it does not contain non-enumerable characteristics of the object.                                                                                                                                                                                                                                                                                                                                                      |
+| %O        | Adds the string representation of an object. Note that it will contain all characteristics of the object, including non-enumerable ones.                                                                                                                                                                                                                                                                                                                                      |
+| %c        | Will parse basic CSS from the substitution subject like `color: red` into ANSI color codes. These codes will then be placed where the `%c` specifier is. Supported CSS properties are `color`, `background-color`, `font-weight`, `font-style`, `text-decoration`, `text-decoration-color`, and `text-decoration-line`. Unsupported CSS properties are ignored. An empty `%c` CSS string substitution will become an ANSI style reset. If color is disabled, `%c` is ignored. |
+| %%        | Used to add the % sign.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ## Benchmark
 
-```sh
-   ✓ format simple (3) 4209ms
-     name                              hz     min     max    mean     p75     p99    p995    p999     rme  samples
-   · util.format             2,443,716.24  0.0003  0.8279  0.0004  0.0004  0.0007  0.0008  0.0013  ±0.35%  1221859   fastest
-   · @visulima/fmt           2,425,903.43  0.0004  0.1525  0.0004  0.0004  0.0005  0.0006  0.0008  ±0.25%  1212952
-   · quick-format-unescaped  1,770,792.34  0.0005  0.3075  0.0006  0.0006  0.0006  0.0006  0.0009  ±0.30%   885397   slowest
-
-   ✓ format tail object (3) 4922ms
-     name                              hz     min     max    mean     p75     p99    p995    p999     rme  samples
-   · util.format             1,005,974.84  0.0009  0.1501  0.0010  0.0010  0.0013  0.0018  0.0022  ±0.28%   502988   slowest
-   · @visulima/fmt           3,082,590.54  0.0003  0.1489  0.0003  0.0003  0.0004  0.0005  0.0006  ±0.30%  1541296   fastest
-   · quick-format-unescaped  2,164,780.43  0.0004  0.1654  0.0005  0.0005  0.0005  0.0006  0.0008  ±0.25%  1082391
-```
+[See benchmark](./__bench__/README.md)
 
 ## Supported Node.js Versions
 
