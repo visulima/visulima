@@ -1,5 +1,6 @@
 import { cssToAnsi, parseCss } from "./inspect-colors";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
