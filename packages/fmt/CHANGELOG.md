@@ -1,3 +1,10 @@
+## @visulima/fmt [1.1.1](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.0...@visulima/fmt@1.1.1) (2024-02-19)
+
+
+### Bug Fixes
+
+* removed the deno check ([0563ab9](https://github.com/visulima/visulima/commit/0563ab993d1634dd64591b0ef6402a87bc84def9))
+
 ## @visulima/fmt [1.1.0](https://github.com/visulima/visulima/compare/@visulima/fmt@1.0.1...@visulima/fmt@1.1.0) (2024-02-19)
 
 
