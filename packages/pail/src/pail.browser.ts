@@ -21,7 +21,6 @@ import type {
 } from "./types";
 import { arrayify } from "./util/arrayify";
 import { getLongestLabel } from "./util/get-longest-label";
-import { getType } from "./util/get-type";
 import { mergeTypes } from "./util/merge-types";
 import { padEnd } from "./util/pad-end";
 
@@ -353,7 +352,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         meta.date = new Date();
 
         if (arguments_.length === 1 && typeof arguments_[0] === "object" && arguments_[0] !== null) {
-            if (getType(arguments_[0]) === "Error") {
+            if (arguments_[0] instanceof Error) {
                 // eslint-disable-next-line prefer-destructuring
                 meta.error = arguments_[0];
             } else if ("message" in arguments_[0]) {
@@ -380,6 +379,9 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             } else {
                 meta.message = arguments_[0] as Primitive | UnknownArray | UnknownRecord;
             }
+        } else if (arguments_.length > 0 && typeof arguments_[0] === "string") {
+            meta.message = arguments_[0] as string;
+            meta.context = arguments_.slice(1);
         } else {
             meta.message = arguments_;
         }
@@ -514,7 +516,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 export type PailBrowserType<T extends string = never, L extends string = never> = PailBrowserImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+    (new <TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 

@@ -89,17 +89,6 @@
                 "default": "./dist/reporter/file/json-file-reporter.js"
             }
         },
-        "./reporter/basic": {
-            "browser": "./dist/reporter/basic/basic.browser.js",
-            "require": {
-                "types": "./dist/reporter/basic/basic.server.d.cts",
-                "default": "./dist/reporter/basic/basic.server.cjs"
-            },
-            "import": {
-                "types": "./dist/reporter/basic/basic.server.d.ts",
-                "default": "./dist/reporter/basic/basic.server.js"
-            }
-        },
         "./reporter/json": {
             "browser": "./dist/reporter/json/json.browser.js",
             "require": {
@@ -258,8 +247,6 @@
         "src/reporter.server.ts",
         "src/reporter/pretty/pretty.browser.ts",
         "src/reporter/pretty/pretty.server.ts",
-        "src/reporter/basic/basic.browser.ts",
-        "src/reporter/basic/basic.server.ts",
         "src/reporter/json/json.browser.ts",
         "src/reporter/json/json.server.ts",
         "src/reporter/file/json-file-reporter.ts"

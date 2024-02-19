@@ -1,9 +1,8 @@
-import type { FormatterFunction } from "@visulima/fmt";
+import type { format, FormatterFunction } from "@visulima/fmt";
 import { build } from "@visulima/fmt";
 import type { stringify } from "safe-stable-stringify";
 
 import type { Meta, Serializer, StringifyAwareProcessor } from "../types";
-import { getType } from "../util/get-type";
 
 export class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
     readonly #serializers: Map<string, Serializer>;
@@ -23,7 +22,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
     }
 
     public process(meta: Meta<L>): Meta<L> {
-        const format = build({
+        const formatter = build({
             formatters: this.#formatters,
             stringify: (value: unknown) => {
                 // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,@typescript-eslint/naming-convention,@typescript-eslint/no-unused-vars
@@ -37,7 +36,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
 
                 if (stringified === undefined) {
                     // eslint-disable-next-line no-console
-                    console.warn("Unable to stringify value of type " + getType(value), value);
+                    console.warn("Unable to stringify value of type " + typeof value, value);
 
                     return "undefined";
                 }
@@ -46,16 +45,47 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
             },
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (getType(meta.message) === "Array" && (meta.message as [string, unknown[]]).length > 0) {
-            const message = meta.message as [string, unknown[]];
+        if (meta.message !== undefined) {
+            // eslint-disable-next-line no-param-reassign
+            meta.message = this._format(formatter, meta.message);
+        }
 
-            if (getType(message[0]) === "String") {
-                // eslint-disable-next-line no-param-reassign
-                meta.message = format(message[0], message.slice(1));
-            }
+        if (meta.context !== undefined) {
+            // eslint-disable-next-line no-param-reassign
+            meta.context = this._format(formatter, meta.context);
         }
 
         return meta;
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
+    private _format(formatter: format, data: any): any {
+        if (typeof data === "string") {
+            // eslint-disable-next-line no-param-reassign
+            data = formatter(data as string);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        } else if (Array.isArray(data) && (data as [string, unknown[]]).length > 0) {
+            // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+            for (const index in data as [string, unknown[]]) {
+                const value = (data as [string, unknown[]])[index];
+
+                if (typeof value === "string") {
+                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    data[index] = formatter(value);
+                }
+            }
+        } else if (typeof data === "object" && data !== null) {
+            // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+            for (const key in data as Record<string, unknown>) {
+                const value = (data as Record<string, unknown>)[key];
+
+                if (typeof value === "string") {
+                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    data[key] = formatter(value);
+                }
+            }
+        }
+
+        return data;
     }
 }

@@ -3,11 +3,11 @@ import { PailBrowser } from "./pail.browser";
 import { ErrorProcessor } from "./processor/error/error-processor";
 import { MessageFormatterProcessor } from "./processor/message-formatter-processor";
 import { JsonReporter } from "./reporter/json/json.browser";
-import type { ConstructorOptions } from "./types";
+import type { ConstructorOptions, Processor } from "./types";
 
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailBrowserType<T, L> =>
     new PailBrowser<T, L>({
-        processors: options?.processors ?? [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
+        processors: options?.processors ?? [new MessageFormatterProcessor<L>(), ...(typeof window === "undefined" ? [new ErrorProcessor()] as Processor<L>[] : [])],
 
         reporters: options?.reporters ?? [new JsonReporter<L>()],
         ...options,
@@ -30,4 +30,3 @@ export type {
     StreamAwareReporter,
     TimeEndResult,
 } from "./shared";
-export { getType } from "./shared";

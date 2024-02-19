@@ -1,4 +1,3 @@
-export { BasicReporter } from "./reporter/basic/basic.server";
 export type { Options as AbstractFileReporterOptions } from "./reporter/file/abstract-file-reporter";
 export { AbstractFileReporter } from "./reporter/file/abstract-file-reporter";
 export { JsonFileReporter } from "./reporter/file/json-file-reporter";

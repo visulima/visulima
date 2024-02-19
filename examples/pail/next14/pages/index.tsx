@@ -11,7 +11,8 @@ const pail = createPail({
 })
 
 export const getServerSideProps = () => {
-    pail.info("gSSP");
+    const scope = pail.scope("getServerSideProps");
+    scope.info("gSSP");
 
     return {
         props: {},
@@ -19,7 +20,9 @@ export const getServerSideProps = () => {
 };
 
 const Home: NextPage = () => {
-    pail.success("page");
+    const scope = pail.scope("React");
+
+    scope.success("hey", ["a", "b", "c"]);
 
     return (
         <div className={styles.container}>

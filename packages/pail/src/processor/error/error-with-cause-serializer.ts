@@ -1,4 +1,3 @@
-import { getType } from "../../util/get-type";
 import type { SerializedError } from "./error-proto";
 import { ErrorProto, seen } from "./error-proto";
 
@@ -38,7 +37,7 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
     }
 
     // Handle aggregate errors
-    if (getType((error as CauseError).cause) === "Error" && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen)) {
+    if ((error as CauseError).cause instanceof Error && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen)) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         protoError.cause = errorWithCauseSerializer((error as CauseError).cause, options);
     }
@@ -50,7 +49,7 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
             // eslint-disable-next-line security/detect-object-injection
             const value = error[key];
 
-            if (getType(value) === "Error") {
+            if (value instanceof Error) {
                 if (!Object.prototype.hasOwnProperty.call(value, seen)) {
                     // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unsafe-argument
                     protoError[key] = errorWithCauseSerializer(value, options);
