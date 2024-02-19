@@ -1,7 +1,7 @@
 import { format as utilFormat } from "node:util";
 
+import { default as quickFormat } from "quick-format-unescaped";
 import { bench, describe } from "vitest";
-import * as quickFormat from "quick-format-unescaped";
 
 import { format as fmt } from "../src/index";
 
@@ -15,7 +15,7 @@ describe("format simple", () => {
     });
 
     bench("quick-format-unescaped", () => {
-        quickFormat.default("%s %j %d", ["a", [{ a: { x: 1 } }, 1]]);
+        quickFormat("%s %j %d", ["a", [{ a: { x: 1 } }, 1]]);
     });
 });
 
@@ -29,6 +29,6 @@ describe("format tail object", () => {
     });
 
     bench("quick-format-unescaped", () => {
-        quickFormat.default("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
+        quickFormat("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
     });
 });
