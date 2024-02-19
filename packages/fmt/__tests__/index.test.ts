@@ -36,6 +36,17 @@ describe("fmt", () => {
     });
 
     it.each([
+        ["%cfoo", ["color: red"], "\u001B[31mfoo\u001B[0m"],
+        ["%cfoo", ["color: red; background-color: blue"], "\u001B[44m\u001B[31mfoo\u001B[0m"],
+        ["%cfoo%c bar", ["color: red", ""], "\u001B[31mfoo\u001B[39m bar\u001B[0m"],
+        ["%cfoo %cbar", ["color:red", "color: blue"], "\u001B[31mfoo \u001B[34mbar\u001B[0m"],
+    ])("should format %s", (f, a, expected) => {
+        expect.assertions(1);
+
+        expect(format(f, a)).toBe(expected);
+    });
+
+    it.each([
         ["%d", [42], "42"],
         ["%d", [42], "42"],
         ["%d", [undefined], "%d"],

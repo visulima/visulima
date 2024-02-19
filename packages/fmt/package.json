@@ -3,16 +3,18 @@
     "version": "1.0.1",
     "description": "Util.format-like string formatting utility.",
     "keywords": [
-        "visulima",
         "anolilab",
         "fmt",
+        "format",
+        "formatter",
+        "formatting",
+        "quick-format-unescaped",
+        "str",
+        "string",
+        "string-format",
         "util",
         "util.format",
-        "format",
-        "string",
-        "formatting",
-        "string-format",
-        "quick-format-unescaped"
+        "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/fmt",
     "repository": {
