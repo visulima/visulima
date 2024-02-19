@@ -1,3 +1,5 @@
+import { cssToAnsi, parseCss } from "./inspect-colors";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tryStringify = (o: any): string => {
     try {
@@ -21,6 +23,8 @@ const CHAR_O = "O".codePointAt(0);
 const CHAR_o = "o".codePointAt(0);
 // eslint-disable-next-line @typescript-eslint/naming-convention,unicorn/prevent-abbreviations
 const CHAR_j = "j".codePointAt(0);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const CHAR_c = "c".codePointAt(0);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 export const format = (fmt: Record<string, any> | string, arguments_: any[] = [], options: Options = {}): string => {
@@ -59,6 +63,9 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
     let result = "";
     let a = 1 - offset;
     let lastPosition = -1;
+
+    let usedStyle = false;
+    let previousCss = null;
 
     for (let index = 0; index < fmt.length; ) {
         if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
@@ -168,6 +175,33 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     a--;
                     break;
                 }
+                case CHAR_c: {
+                    // Inspired by Deno's handling of '%c'.
+                    // eslint-disable-next-line no-secrets/no-secrets
+                    // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
+                    // @ts-expect-error Deno is not defined in the browser
+                    if (typeof window === "undefined" || globalThis.Deno == null) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        const css = parseCss(arguments_[a as keyof typeof arguments_]);
+
+                        if (lastPosition < index) {
+                            result += fmt.slice(lastPosition, index);
+                        }
+
+                        result += cssToAnsi(css, previousCss);
+
+                        if (result !== "") {
+                            usedStyle = true;
+                            previousCss = css;
+                        }
+                    }
+
+                    lastPosition = index + 2;
+
+                    index++;
+
+                    break;
+                }
             }
 
             // eslint-disable-next-line security/detect-object-injection
@@ -189,6 +223,10 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 
     if (lastPosition < fmt.length) {
         result += fmt.slice(lastPosition);
+    }
+
+    if (usedStyle) {
+        result += "\u001B[0m";
     }
 
     return result;
