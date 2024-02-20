@@ -59,7 +59,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
     }
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
-    private _format(formatter: format, data: any): any {
+    private _format(formatter: typeof format, data: any): any {
         if (typeof data === "string") {
             // eslint-disable-next-line no-param-reassign
             data = formatter(data as string);

@@ -1,6 +1,5 @@
 import { sep } from "node:path";
 
-import type { AnsiColors } from "@visulima/colorize";
 import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
@@ -54,13 +53,13 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, type } = data;
 
-        const colorized = this._loggerTypes[type.name as keyof typeof this._loggerTypes].color
-            ? colorize[this._loggerTypes[type.name as keyof typeof this._loggerTypes].color as AnsiColors]
-            : white;
+        const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
+        // eslint-disable-next-line security/detect-object-injection
+        const colorized = color ? colorize[color] : white;
 
         const groupSpaces: string = groups ? groups.map(() => "   ").join("") : "";
 
-        let items: string[] = [];
+        const items: string[] = [];
 
         if (Array.isArray(groups) && groups.length > 0) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
@@ -68,6 +67,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (date) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push(grey(this._styles.dateFormatter(new Date(date))) + " ");
         }
 
@@ -78,18 +78,15 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            const replacement = ".".repeat(longestLabel.length - stringLength(label as string));
-
-            items.push(colorized(this._formatLabel(label as string)) + " ");
-
-            if (repeated) {
-                items.push(bgGrey.white("[" + repeated + "x]") + " ");
-            }
-
-            items.push(grey(replacement));
+            items.push(colorized(this._formatLabel(label as string)) + " ", grey(".".repeat(longestLabel.length - stringLength(label as string))));
         } else {
             // plus 2 for the space and the dot
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push(grey(".".repeat(longestLabel.length + 2)));
+        }
+
+        if (repeated) {
+            items.push(bgGrey.white("[" + repeated + "x]") + " ");
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
@@ -99,7 +96,10 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         if (prefix) {
             items.push(
                 grey(
-                    (Array.isArray(scope) && scope.length > 0 ? ". " : " ") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] ",
+                    (Array.isArray(scope) && scope.length > 0 ? ". " : " ") +
+                        "[" +
+                        (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
+                        "] ",
                 ),
             );
         }
@@ -120,7 +120,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (message) {
-            const formattedMessage: string | undefined = typeof  message === "string" ? message : (this._stringify as typeof stringify)(message);
+            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
 
             items.push(
                 groupSpaces +
@@ -137,10 +137,12 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (error) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push(this._formatError(error, size, groupSpaces));
         }
 
         if (suffix) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
@@ -179,7 +181,9 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
             items.push(
                 "\n",
-                lines.map((line: string) => "  " + line.replace(/^at +/, (m) => grey(m)).replace(/\((.+)\)/, (_, m) => "(" + cyan(m) + ")")).join("\n"),
+                lines
+                    .map((line: string) => "  " + line.replace(/^at +/, (m) => grey(m)).replace(/\((.+)\)/, (_, m) => "(" + cyan(m as string) + ")"))
+                    .join("\n"),
             );
         }
 

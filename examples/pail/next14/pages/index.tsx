@@ -20,9 +20,7 @@ export const getServerSideProps = () => {
 };
 
 const Home: NextPage = () => {
-    const scope = pail.scope("React");
-
-    scope.success("hey", ["a", "b", "c"]);
+    pail.success("Page Loaded");
 
     return (
         <div className={styles.container}>
