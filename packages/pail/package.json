@@ -68,15 +68,14 @@
     "type": "module",
     "exports": {
         ".": {
-            "node": {
-                "types": "./dist/index.server.d.ts",
-                "import": "./dist/index.server.js",
-                "require": "./lib/index.server.js"
+            "browser": "./dist/index.browser.js",
+            "require": {
+                "types": "./dist/index.server.d.cts",
+                "default": "./dist/index.server.cjs"
             },
-            "default": {
-                "types": "./dist/index.browser.d.cts",
-                "import": "./dist/index.browser.cjs",
-                "require": "./dist/index.browser.cjs"
+            "import": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
             }
         },
         "./reporter/json-file": {
