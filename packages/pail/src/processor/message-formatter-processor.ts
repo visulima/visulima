@@ -67,6 +67,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
         } else if (Array.isArray(data) && (data as [string, unknown[]]).length > 0) {
             // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
             for (const index in data as [string, unknown[]]) {
+                // eslint-disable-next-line security/detect-object-injection
                 const value = (data as [string, unknown[]])[index];
 
                 if (typeof value === "string") {
@@ -77,6 +78,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
         } else if (typeof data === "object" && data !== null) {
             // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
             for (const key in data as Record<string, unknown>) {
+                // eslint-disable-next-line security/detect-object-injection
                 const value = (data as Record<string, unknown>)[key];
 
                 if (typeof value === "string") {

@@ -23,10 +23,11 @@ type Options = {
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
-    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
-    error[seen] = undefined; // tag to prevent re-looking at this
+    // @ts-expect-error - dynamic property
+    // eslint-disable-next-line no-param-reassign
+    error[seen as keyof Error] = undefined; // tag to prevent re-looking at this
 
-    const protoError = Object.create(ErrorProto) as SerializedError;
+    const protoError = Object.create(ErrorProto as object) as SerializedError;
 
     protoError.name = Object.prototype.toString.call(error.constructor) === "[object Function]" ? error.constructor.name : error.name;
     protoError.message = error.message;
@@ -37,7 +38,7 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
     }
 
     // Handle aggregate errors
-    if ((error as CauseError).cause instanceof Error && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen)) {
+    if ((error as CauseError).cause instanceof Error && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen as PropertyKey)) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         protoError.cause = errorWithCauseSerializer((error as CauseError).cause, options);
     }
@@ -46,12 +47,12 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
     for (const key in error) {
         // eslint-disable-next-line security/detect-object-injection
         if (protoError[key] === undefined) {
-            // eslint-disable-next-line security/detect-object-injection
-            const value = error[key];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const value = error[key as keyof Error] as any;
 
             if (value instanceof Error) {
-                if (!Object.prototype.hasOwnProperty.call(value, seen)) {
-                    // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unsafe-argument
+                if (!Object.prototype.hasOwnProperty.call(value, seen as PropertyKey)) {
+                    // eslint-disable-next-line security/detect-object-injection
                     protoError[key] = errorWithCauseSerializer(value, options);
                 }
             } else if (typeof value === "function") {
@@ -69,8 +70,8 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
         }
     }
 
-    // eslint-disable-next-line no-param-reassign,security/detect-object-injection,@typescript-eslint/no-dynamic-delete
-    delete error[seen]; // clean up tag in case err is serialized again later
+    // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-dynamic-delete
+    delete error[seen as unknown as keyof Error]; // clean up tag in case err is serialized again later
 
     protoError.raw = error;
 

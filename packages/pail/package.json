@@ -163,10 +163,13 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "workspace:*",
         "@visulima/colorize": "workspace:*",
-        "@visulima/fmt": "^1.0.0",
-        "safe-stable-stringify": "^2.4.3"
+        "@visulima/fmt": "workspace:*",
+        "ansi-escapes": "^6.2.0",
+        "safe-stable-stringify": "^2.4.3",
+        "string-length": "^6.0.0",
+        "terminal-size": "^4.0.0",
+        "wrap-ansi": "^9.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -179,7 +182,6 @@
         "@types/node": "18.18.8",
         "@vitest/coverage-v8": "^1.2.2",
         "@vitest/ui": "^1.2.2",
-        "ansi-escapes": "^6.2.0",
         "bunyan": "^1.8.15",
         "consola": "^3.2.3",
         "cross-env": "^7.0.3",
@@ -199,15 +201,12 @@
         "secretlint": "8.1.0",
         "semantic-release": "^23.0.0",
         "sort-package-json": "^2.6.0",
-        "string-length": "^6.0.0",
-        "terminal-size": "^4.0.0",
         "tslog": "^4.9.2",
         "tsup": "^8.0.1",
         "type-fest": "^4.10.1",
         "typescript": "^5.3.3",
         "vitest": "^1.2.2",
-        "winston": "^3.11.0",
-        "wrap-ansi": "^9.0.0"
+        "winston": "^3.11.0"
     },
     "peerDependencies": {
         "rotating-file-stream": "^3.1.1"
