@@ -155,14 +155,12 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (suffix) {
-            const cSuffix = grey(this._styles.underline.suffix ? underline(suffix as string) : suffix);
+            const cSuffix = grey((this._styles.underline.suffix ? underline(suffix as string) : suffix) as string);
 
             if (isNotBrowser && Array.isArray(cSuffix)) {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                items.push(format(("\n" + cSuffix[0]) as string, cSuffix.slice(1) as unknown as string[]));
+                items.push(format(("\n" + (cSuffix[0] as string)) as string, cSuffix.slice(1) as unknown as string[]));
             } else {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                items.push(Array.isArray(cSuffix) ? [("\n" + cSuffix[0]) as string, ...cSuffix.slice(1)] : "\n" + cSuffix);
+                items.push(Array.isArray(cSuffix) ? [("\n" + (cSuffix[0] as string)) as string, ...cSuffix.slice(1)] : "\n" + cSuffix);
             }
         }
 

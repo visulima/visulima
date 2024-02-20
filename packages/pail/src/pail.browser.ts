@@ -5,7 +5,6 @@ import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-
 import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
 import type {
     ConstructorOptions,
-    DefaultLoggerTypes,
     DefaultLogTypes,
     LoggerConfiguration,
     LoggerFunction,
@@ -58,8 +57,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected _scopeName: string[];
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected readonly _types: DefaultLoggerTypes<L> & LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
+    protected readonly _types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
     protected readonly _longestLabel: string;
 
@@ -549,7 +547,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 export type PailBrowserType<T extends string = never, L extends string = never> = PailBrowserImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+    (new <TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 

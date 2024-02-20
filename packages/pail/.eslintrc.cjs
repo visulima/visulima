@@ -50,6 +50,8 @@ module.exports = {
             files: ["*.test.ts"],
             rules: {
                 "import/no-unused-modules": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-explicit-any": "off",
             },
         },
         {
