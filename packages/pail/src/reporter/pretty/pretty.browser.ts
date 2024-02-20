@@ -103,7 +103,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
                 if (isNotBrowser && Array.isArray(cLabelSpacer)) {
                     items.push(format(cLabelSpacer[0] as string, cLabelSpacer.slice(1) as unknown as string[]));
                 } else {
-                    items.push(Array.isArray(cLabelSpacer) ? [cLabelSpacer[0], ...cLabelSpacer.slice(1)] : cLabelSpacer);
+                    items.push(Array.isArray(cLabelSpacer) ? [" " + cLabelSpacer[0], ...cLabelSpacer.slice(1)] : cLabelSpacer);
                 }
             }
         } else {
