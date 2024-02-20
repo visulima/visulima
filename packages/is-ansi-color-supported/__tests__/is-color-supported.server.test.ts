@@ -37,22 +37,6 @@ describe("node.JS isColorSupported", () => {
         expect(received).toBe(0);
     });
 
-    it(`should process colors in linux terminal`, () => {
-        expect.assertions(1);
-
-        const received = isColorSupported({
-            process: {
-                argv: [],
-                env: { TERM: "xterm" },
-                platform: "linux",
-                stderr: { isTTY: true },
-                stdout: { isTTY: true },
-            },
-        });
-
-        expect(received).toBe(1);
-    });
-
     it(`should return 0 in only CI is in env`, () => {
         expect.assertions(1);
 
@@ -814,8 +798,7 @@ describe("deno isColorSupported", () => {
     });
 });
 
-// // Next.JS
-describe("next.JS isColorSupported", () => {
+describe("next.js isColorSupported", () => {
     it(`should support color on runtime experimental-edge`, () => {
         expect.assertions(1);
 
@@ -858,5 +841,119 @@ describe("next.JS isColorSupported", () => {
         });
 
         expect(received).toBe(2);
+    });
+});
+
+describe("support colors in terminals", () => {
+    it(`should support xterm terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "xterm" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support vt220 terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "vt220" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support vt320-w terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "vt320-w" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support vt525 terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "vt525" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support tmux terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "tmux" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support mintty-direct terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "mintty-direct" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
+    });
+
+    it(`should support ansi.sysk terminal`, () => {
+        expect.assertions(1);
+
+        const received = isColorSupported({
+            process: {
+                argv: [],
+                env: { TERM: "ansi.sysk" },
+                platform: "linux",
+                stderr: { isTTY: true },
+                stdout: { isTTY: true },
+            },
+        });
+
+        expect(received).toBe(1);
     });
 });

@@ -171,7 +171,7 @@ export const isColorSupported = (mockThis?: any): ColorSupportLevel => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
     const isTTY = isDeno ? _this.Deno.isatty(1) : proc["stdout"] && "isTTY" in proc["stdout"];
 
-    if (isTTY && /^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(<string>environment["TERM"])) {
+    if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment["TERM"])) {
         return 1;
     }
 
