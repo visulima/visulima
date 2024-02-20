@@ -152,6 +152,14 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+## About
+
+### Related Projects
+
+-   [pino](https://github.com/pinojs/pino) - 🌲 super fast, all natural json logger
+-   [signale](https://github.com/klaudiosinani/signale) - Highly configurable logging utility
+-   [consola](https://github.com/unjs/consola) - 🐨 Elegant Console Logger for Node.js and Browser
+
 ## License
 
 The visulima pail is open-sourced software licensed under the [MIT][license-url]
