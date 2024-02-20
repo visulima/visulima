@@ -115,14 +115,14 @@
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
         "@babel/core": "^7.23.9",
-        "@rushstack/eslint-plugin-security": "^0.8.0",
+        "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/cli-progress": "^3.11.5",
         "@types/http-errors": "^2.0.4",
         "@types/lodash.mergewith": "^4.6.9",
         "@types/node": "18.18.14",
         "@types/webpack": "^5.28.5",
-        "@vitest/coverage-v8": "^1.2.2",
-        "@vitest/ui": "^1.2.2",
+        "@vitest/coverage-v8": "^1.3.1",
+        "@vitest/ui": "^1.3.1",
         "cli-progress": "^3.12.0",
         "commander": "^12.0.0",
         "cross-env": "^7.0.3",
@@ -140,13 +140,13 @@
         "sort-package-json": "^2.7.0",
         "tsup": "^8.0.2",
         "typescript": "^5.3.3",
-        "vitest": "^1.2.2",
-        "webpack": "^5.90.1"
+        "vitest": "^1.3.1",
+        "webpack": "^5.90.3"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^12.0.0",
-        "webpack": "^5.90.1"
+        "webpack": "^5.90.3"
     },
     "engines": {
         "node": ">=18.* <=21.*"
