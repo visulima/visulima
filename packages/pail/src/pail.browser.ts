@@ -17,7 +17,6 @@ import type {
     Rfc5424LogLevels,
     StringifyAwareProcessor,
     StringifyAwareReporter,
-    TimeEndResult,
 } from "./types";
 import { arrayify } from "./util/arrayify";
 import { getLongestLabel } from "./util/get-longest-label";
@@ -279,8 +278,36 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         return label;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    public timeEnd(label?: string): TimeEndResult | undefined {
+    public timeLog(label?: string, ...data: unknown[]): void {
+        if (!label && this.seqTimers.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            label = [...this.seqTimers].pop();
+        }
+
+        if (label && this.timers.has(label)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const span = Date.now() - this.timers.get(label)!;
+
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            if (this._types.stop.badge) {
+                meta.badge = padEnd(this._types.stop.badge, 2);
+            }
+
+            meta.prefix = label;
+            meta.message = span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s";
+            meta.context = data;
+
+            this._logger("info", meta);
+        } else {
+            this._logger("error", { message: "Timer not found", prefix: label });
+        }
+    }
+
+    public timeEnd(label?: string): void {
         if (!label && this.seqTimers.length > 0) {
             // eslint-disable-next-line no-param-reassign
             label = this.seqTimers.pop();
@@ -306,24 +333,30 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             meta.message += span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s";
 
             this._logger("stop", meta);
-
-            return { label, span };
         }
-
-        return undefined;
     }
 
-    public group(label?: string): void {
-        if (!Array.isArray(this.groups)) {
-            this.groups = [];
-        }
+    public group(label = "console.group"): void {
+        if (typeof window === "undefined") {
+            if (!Array.isArray(this.groups)) {
+                this.groups = [];
+            }
 
-        this.groups.push(label ?? "console.group");
+            this.groups.push(label);
+        } else {
+            // eslint-disable-next-line no-console
+            console.group(label);
+        }
     }
 
     public groupEnd(): void {
-        if (Array.isArray(this.groups)) {
-            this.groups.pop();
+        if (typeof window === "undefined") {
+            if (Array.isArray(this.groups)) {
+                this.groups.pop();
+            }
+        } else {
+            // eslint-disable-next-line no-console
+            console.groupEnd();
         }
     }
 
@@ -379,11 +412,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             } else {
                 meta.message = arguments_[0] as Primitive | UnknownArray | UnknownRecord;
             }
-        } else if (arguments_.length > 0 && typeof arguments_[0] === "string") {
+        } else if (arguments_.length > 1 && typeof arguments_[0] === "string") {
             meta.message = arguments_[0] as string;
             meta.context = arguments_.slice(1);
         } else {
-            meta.message = arguments_;
+            // eslint-disable-next-line prefer-destructuring
+            meta.message = arguments_[0];
         }
 
         if (type.logLevel === "trace") {
@@ -464,7 +498,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
                     this._lastLog.count = 1;
                 }
 
-                // Log
                 if (newLog) {
                     this._lastLog.object = meta;
 
@@ -474,9 +507,9 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
             clearTimeout(this._lastLog.timeout);
 
-            const diffTime = this._lastLog.time && meta.date ? new Date(meta.date).getTime() - this._lastLog.time.getTime() : 0;
+            const diffTime = this._lastLog.time && meta.date ? new Date(meta.date as Date | string).getTime() - this._lastLog.time.getTime() : 0;
 
-            this._lastLog.time = new Date(meta.date);
+            this._lastLog.time = new Date(meta.date as Date | string);
 
             if (diffTime < this._throttle) {
                 try {
@@ -516,7 +549,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 export type PailBrowserType<T extends string = never, L extends string = never> = PailBrowserImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new <TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 

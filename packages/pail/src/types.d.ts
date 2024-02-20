@@ -14,7 +14,7 @@ declare global {
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: Record<string, any> | undefined;
+    context: any[] | Record<string, any> | undefined;
     date: Date | string;
     error: Error | undefined;
     groups: string[] | undefined;
@@ -124,9 +124,4 @@ export interface ServerConstructorOptions<T extends string = never, L extends st
     interactive?: boolean;
     stderr?: NodeJS.WriteStream;
     stdout?: NodeJS.WriteStream;
-}
-
-export interface TimeEndResult {
-    label: string;
-    span: number;
 }

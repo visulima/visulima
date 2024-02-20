@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import ansiEscapes from "ansi-escapes";
 import type { LiteralUnion } from "type-fest";
 

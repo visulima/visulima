@@ -28,5 +28,4 @@ export type {
     Rfc5424LogLevels,
     Serializer,
     StreamAwareReporter,
-    TimeEndResult,
 } from "./shared";

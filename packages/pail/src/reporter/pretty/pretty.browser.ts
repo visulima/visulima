@@ -1,4 +1,4 @@
-import colorize, { bgGrey, bgWhite, bold, grey, underline } from "@visulima/colorize/browser";
+import colorize, { bold, grey, underline, white } from "@visulima/colorize/browser";
 import { format } from "@visulima/fmt";
 
 import type { ReadonlyMeta } from "../../types";
@@ -28,8 +28,16 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
         const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
         // eslint-disable-next-line security/detect-object-injection
-        const colorized = color ? colorize[color] : bgWhite;
+        const colorized = color ? colorize[color] : white;
+
         const items = [];
+
+        if (isNotBrowser && Array.isArray(groups) && groups.length > 0) {
+            const groupSpaces: string = groups.map(() => "   ").join("");
+            const cGroup = grey("[" + (groups.at(-1) as string) + "]");
+
+            items.push(format(groupSpaces + (cGroup[0] as string), cGroup.slice(1) as unknown as string[]));
+        }
 
         if (date) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -53,36 +61,58 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             }
         }
 
+        const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let repeatedMessage: any[] | string | undefined;
+
+        if (repeated) {
+            const cRepeated = white("[" + repeated + "x]");
+
+            if (isNotBrowser && Array.isArray(cRepeated)) {
+                repeatedMessage = format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) as string;
+            } else {
+                repeatedMessage = Array.isArray(cRepeated) ? [cRepeated[0], ...cRepeated.slice(1)] : cRepeated;
+            }
+        }
+
         if (label) {
             const cLabel = colorized(this._formatLabel(label as string));
 
             if (isNotBrowser && Array.isArray(cLabel)) {
                 items.push(format(cLabel[0] as string, cLabel.slice(1) as unknown as string[]));
             } else {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                items.push(Array.isArray(cLabel) ? [cLabel[0] + " ", ...cLabel.slice(1)] : cLabel + " ");
+                items.push(Array.isArray(cLabel) ? [cLabel[0], ...cLabel.slice(1)] : cLabel);
             }
 
-            if (repeated) {
-                const cRepeated = bgGrey.white("[" + repeated + "x]");
+            if (repeatedMessage) {
+                items.push(repeatedMessage);
+            }
 
-                if (isNotBrowser && Array.isArray(cRepeated)) {
-                    items.push(format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]));
+            let lengthDiff = (longestLabel as string).length - (label as string).length;
+
+            if (repeated) {
+                lengthDiff -= String(repeated).length + 3;
+            } else {
+                lengthDiff += 1;
+            }
+
+            if (lengthDiff > 0) {
+                const cLabelSpacer = grey(".".repeat(lengthDiff));
+
+                if (isNotBrowser && Array.isArray(cLabelSpacer)) {
+                    items.push(format(cLabelSpacer[0] as string, cLabelSpacer.slice(1) as unknown as string[]));
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                    items.push(Array.isArray(cRepeated) ? [cRepeated[0] + " ", ...cRepeated.slice(1)] : cRepeated + " ");
+                    items.push(Array.isArray(cLabelSpacer) ? [cLabelSpacer[0], ...cLabelSpacer.slice(1)] : cLabelSpacer);
                 }
             }
         } else {
-            const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
-            // plus 2 for the space and the dot
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const cPlaceholder = grey(" ".repeat(longestLabel.length + 2));
+            const cSpacer = grey(".".repeat((longestLabel as string).length + 1));
 
-            if (isNotBrowser && Array.isArray(cPlaceholder)) {
-                items.push(format(cPlaceholder[0] as string, cPlaceholder.slice(1) as unknown as string[]));
+            if (isNotBrowser && Array.isArray(cSpacer)) {
+                items.push(format(cSpacer[0] as string, cSpacer.slice(1) as unknown as string[]));
             } else {
-                items.push(cPlaceholder);
+                items.push(Array.isArray(cSpacer) ? [cSpacer[0], ...cSpacer.slice(1)] : cSpacer);
             }
         }
 
@@ -92,7 +122,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             if (isNotBrowser && Array.isArray(cScope)) {
                 items.push(format(cScope[0] as string, cScope.slice(1) as unknown as string[]));
             } else {
-                items.push(cScope);
+                items.push(Array.isArray(cScope) ? [cScope[0], ...cScope.slice(1)] : cScope);
             }
         }
 
@@ -112,7 +142,11 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             items.push(message);
 
             if (context) {
-                items.push(context);
+                if (Array.isArray(context)) {
+                    items.push(...context);
+                } else {
+                    items.push(context);
+                }
             }
         }
 
@@ -136,6 +170,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             consoleLogFunction(...items);
         } else {
             let logMessage = "";
+
             const css = [];
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const arguments_ = [];
