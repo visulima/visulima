@@ -45,24 +45,20 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
             },
         });
 
-        if (meta.message !== undefined) {
+        if (meta.message !== undefined && Array.isArray(meta.context)) {
             // eslint-disable-next-line no-param-reassign
-            meta.message = this._format(formatter, meta.message);
-        }
-
-        if (meta.context !== undefined) {
-            // eslint-disable-next-line no-param-reassign
-            meta.context = this._format(formatter, meta.context);
+            meta.message = this._format(formatter, meta.message, meta.context);
+            meta.context = [];
         }
 
         return meta;
     }
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
-    private _format(formatter: typeof format, data: any): any {
+    private _format(formatter: typeof format, data: any, argsuments_: any[]): any {
         if (typeof data === "string") {
             // eslint-disable-next-line no-param-reassign
-            data = formatter(data as string);
+            data = formatter(data as string, argsuments_);
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         } else if (Array.isArray(data) && (data as [string, unknown[]]).length > 0) {
             // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax

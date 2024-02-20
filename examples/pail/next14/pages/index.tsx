@@ -21,6 +21,8 @@ export const getServerSideProps = () => {
 
 const Home: NextPage = () => {
     pail.success("Page Loaded");
+    pail.info('%o hello %s', {worldly: 1}, 'world')
+    pail.info("%cError:%c %s", "color: red;", "", "This is an error message")
 
     return (
         <div className={styles.container}>
