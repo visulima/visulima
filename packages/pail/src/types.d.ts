@@ -17,7 +17,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     context: any[] | Record<string, any> | undefined;
     date: Date | string;
     error: Error | undefined;
-    groups: string[] | undefined;
+    groups: string[];
     label: string | undefined;
     message: Primitive | UnknownArray | UnknownRecord;
     prefix: string | undefined;

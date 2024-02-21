@@ -31,7 +31,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
         const items = [];
 
-        if (isNotBrowser && Array.isArray(groups) && groups.length > 0) {
+        if (isNotBrowser && groups.length > 0) {
             const groupSpaces: string = groups.map(() => "   ").join("");
             const cGroup = grey("[" + (groups.at(-1) as string) + "]");
 

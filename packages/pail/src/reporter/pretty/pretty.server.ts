@@ -54,12 +54,10 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         // eslint-disable-next-line security/detect-object-injection
         const colorized = color ? colorize[color] : white;
 
-        const groupSpaces: string = groups ? groups.map(() => "   ").join("") : "";
-
+        const groupSpaces: string = groups.map(() => "   ").join("");
         const items: string[] = [];
 
-        if (Array.isArray(groups) && groups.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        if (groups.length > 0) {
             items.push((groupSpaces + grey("[" + groups.at(-1) + "] ")) as string);
         }
 

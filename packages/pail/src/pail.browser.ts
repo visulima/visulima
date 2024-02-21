@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
-import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
+import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -35,9 +35,11 @@ const EMPTY_META = {
 };
 
 export class PailBrowserImpl<T extends string = never, L extends string = never> {
-    protected timers: Map<string, number>;
+    protected timersMap: Map<string, number>;
 
-    protected seqTimers: string[];
+    protected countMap: Map<string, number>;
+
+    protected seqTimers: Set<string>;
 
     protected readonly _lastLog: {
         count?: number;
@@ -73,7 +75,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected readonly _stringify: typeof stringify;
 
-    protected groups: string[] | undefined;
+    protected groups: string[];
 
     protected readonly _startTimerMessage: string;
 
@@ -95,7 +97,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         this._longestLabel = getLongestLabel<L, T>(this._types);
 
         this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
-        this._logLevels = { ...RFC_5424_LOG_LEVELS, ...this._customLogLevels };
+        this._logLevels = { ...EXTENDED_RFC_5424_LOG_LEVELS, ...this._customLogLevels };
         this._generalLogLevel = this._normalizeLogLevel(options.logLevel);
 
         this._reporters = new Set();
@@ -128,8 +130,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         this._scopeName = arrayify(options.scope).filter(Boolean) as string[];
 
-        this.timers = new Map();
-        this.seqTimers = [];
+        this.timersMap = new Map();
+        this.countMap = new Map();
+
+        this.groups = [];
+
+        this.seqTimers = new Set();
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,guard-for-in
         for (const type in this._types) {
@@ -223,8 +229,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             ...cloneOptions,
         });
 
-        newInstance.timers = new Map(this.timers.entries());
-        newInstance.seqTimers = [...this.seqTimers];
+        newInstance.timersMap = new Map(this.timersMap.entries());
+        newInstance.seqTimers = new Set(this.seqTimers.values());
 
         return newInstance;
     }
@@ -249,42 +255,46 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         this._scopeName = [];
     }
 
-    public time(label?: string): string {
-        if (!label) {
-            // eslint-disable-next-line no-param-reassign
-            label = "timer_" + this.timers.size;
+    public time(label = "default"): void {
+        if (this.seqTimers.has(label)) {
+            const meta = { ...EMPTY_META } as Meta<L>;
 
-            this.seqTimers.push(label);
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            meta.message = "Timer '" + label + "' already exists";
+            meta.prefix = label;
+
+            this._logger("warn", meta);
+        } else {
+            this.seqTimers.add(label);
+            this.timersMap.set(label, Date.now());
+
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            if (this._types.start.badge) {
+                meta.badge = padEnd(this._types.start.badge, 2);
+            }
+
+            meta.prefix = label;
+            meta.message = this._startTimerMessage;
+
+            this._logger("start", meta);
         }
-
-        this.timers.set(label, Date.now());
-
-        const meta = { ...EMPTY_META } as Meta<L>;
-
-        meta.scope = this._scopeName;
-        meta.date = new Date();
-
-        if (this._types.start.badge) {
-            meta.badge = padEnd(this._types.start.badge, 2);
-        }
-
-        meta.prefix = label;
-        meta.message = this._startTimerMessage;
-
-        this._logger("start", meta);
-
-        return label;
     }
 
     public timeLog(label?: string, ...data: unknown[]): void {
-        if (!label && this.seqTimers.length > 0) {
+        if (!label && this.seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
             label = [...this.seqTimers].pop();
         }
 
-        if (label && this.timers.has(label)) {
+        if (label && this.timersMap.has(label)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const span = Date.now() - this.timers.get(label)!;
+            const span = Date.now() - this.timersMap.get(label)!;
 
             const meta = { ...EMPTY_META } as Meta<L>;
 
@@ -301,21 +311,29 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
             this._logger("info", meta);
         } else {
-            this._logger("error", { message: "Timer not found", prefix: label });
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            meta.message = "Timer not found";
+            meta.prefix = label;
+
+            this._logger("warn", meta);
         }
     }
 
     public timeEnd(label?: string): void {
-        if (!label && this.seqTimers.length > 0) {
+        if (!label && this.seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
-            label = this.seqTimers.pop();
+            label = [...this.seqTimers].pop();
         }
 
-        if (label && this.timers.has(label)) {
+        if (label && this.timersMap.has(label)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const span = Date.now() - this.timers.get(label)!;
+            const span = Date.now() - this.timersMap.get(label)!;
 
-            this.timers.delete(label);
+            this.timersMap.delete(label);
 
             const meta = { ...EMPTY_META } as Meta<L>;
 
@@ -336,10 +354,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     public group(label = "console.group"): void {
         if (typeof window === "undefined") {
-            if (!Array.isArray(this.groups)) {
-                this.groups = [];
-            }
-
             this.groups.push(label);
         } else {
             // eslint-disable-next-line no-console
@@ -349,12 +363,46 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     public groupEnd(): void {
         if (typeof window === "undefined") {
-            if (Array.isArray(this.groups)) {
-                this.groups.pop();
-            }
+            this.groups.pop();
         } else {
             // eslint-disable-next-line no-console
             console.groupEnd();
+        }
+    }
+
+    public count(label = "default"): void {
+        const current = this.countMap.get(label) ?? 0;
+
+        this.countMap.set(label, current + 1);
+
+        const meta = { ...EMPTY_META } as Meta<L>;
+
+        meta.scope = this._scopeName;
+        meta.date = new Date();
+
+        meta.prefix = label;
+        meta.message = label + ": " + (current + 1);
+
+        this._logger("log", meta);
+    }
+
+    public countReset(label = "default"): void {
+        if (this.countMap.has(label)) {
+            this.countMap.delete(label);
+        } else {
+            const meta = { ...EMPTY_META } as Meta<L>;
+
+            meta.scope = this._scopeName;
+            meta.date = new Date();
+
+            if (this._types.warn.badge) {
+                meta.badge = padEnd(this._types.warn.badge, 2);
+            }
+
+            meta.prefix = label;
+            meta.message = "Count for " + label + " does not exist";
+
+            this._logger("warn", meta);
         }
     }
 
