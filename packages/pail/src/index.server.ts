@@ -3,10 +3,10 @@ import { PailServer } from "./pail.server";
 import { ErrorProcessor } from "./processor/error/error-processor";
 import { MessageFormatterProcessor } from "./processor/message-formatter-processor";
 import { PrettyReporter } from "./reporter/pretty/pretty.server";
-import type { ConstructorOptions, Rfc5424LogLevels } from "./types";
+import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const _getDefaultLogLevel = (): Rfc5424LogLevels => {
+const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
     if (process.env["NODE_ENV"] === "debug" || process.env["DEBUG"] !== undefined) {
         return "debug";
     }
@@ -36,13 +36,13 @@ export type {
     ConstructorOptions,
     DefaultLoggerTypes,
     DefaultLogTypes,
+    ExtendedRfc5424LogLevels,
     LoggerConfiguration,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
     Processor,
     Reporter,
-    Rfc5424LogLevels,
     Serializer,
     StreamAwareReporter,
 } from "./shared";

@@ -8,11 +8,12 @@ import { PrettyReporter } from "@visulima/pail/reporter/pretty";
 
 const pail = createPail({
     reporters: [new PrettyReporter()],
-})
+});
 
 export const getServerSideProps = () => {
     const scope = pail.scope("getServerSideProps");
     scope.info("gSSP");
+    scope.trace("this is a trace");
 
     return {
         props: {},
@@ -21,8 +22,9 @@ export const getServerSideProps = () => {
 
 const Home: NextPage = () => {
     pail.success("Page Loaded");
-    pail.info('%o hello %s', {worldly: 1}, 'world')
-    pail.info("%cError:%c %s", "color: red;", "", "This is an error message")
+    pail.info("%o hello %s", { worldly: 1 }, "world");
+    pail.info("%cError:%c %s", "color: red;", "", "This is an error message");
+    pail.trace("test");
 
     return (
         <div className={styles.container}>

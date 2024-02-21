@@ -1,7 +1,7 @@
 import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion } from "type-fest";
 
-import type { ReadonlyMeta, Rfc5424LogLevels, StringifyAwareReporter } from "../../types";
+import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
 export abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
     protected _stringify: typeof stringify | undefined;
@@ -31,5 +31,5 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
         this._log((this._stringify as typeof stringify)(rest) as string, type.level);
     }
 
-    protected abstract _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void;
+    protected abstract _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void;
 }

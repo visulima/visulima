@@ -18,7 +18,7 @@ export abstract class AbstractPrettyReporter<T extends string = never, L extends
             bold: {
                 label: false,
             },
-            dateFormatter: (date: Date) => date.toISOString(),
+            dateFormatter: (date: Date) => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":"),
             underline: {
                 label: false,
                 message: false,

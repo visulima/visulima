@@ -1,5 +1,3 @@
-import { sep } from "node:path";
-
 import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
@@ -7,7 +5,7 @@ import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
-import type { ReadonlyMeta, Rfc5424LogLevels, StreamAwareReporter } from "../../types";
+import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StreamAwareReporter } from "../../types";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
@@ -20,7 +18,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
-            dateFormatter: (date: Date) => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":"),
             uppercase: {
                 label: true,
                 ...options.uppercase,
@@ -51,7 +48,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             size = this._styles.messageLength;
         }
 
-        const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, type } = data;
+        const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
         const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
         // eslint-disable-next-line security/detect-object-injection
@@ -137,8 +134,11 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (error) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            items.push(this._formatError(error, size, groupSpaces));
+            items.push(this._formatError(error as Error, size, groupSpaces));
+        }
+
+        if (traceError) {
+            items.push(this._formatError(traceError as Error, size, groupSpaces, true));
         }
 
         if (suffix) {
@@ -149,35 +149,33 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         return items.join("") + "\n";
     }
 
-    protected _log(message: string, logLevel: LiteralUnion<Rfc5424LogLevels, L>): void {
-        const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+    protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
+        const stream = ["error", "trace", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
 
         writeStream(message + "\n", stream);
     }
 
     // eslint-disable-next-line class-methods-use-this
-    protected _formatError(error: Error, size: number, groupSpaces: string): string {
+    private _formatError(error: Error, size: number, groupSpaces: string, hideName = false): string {
         const { message, name, stack } = error;
 
         const items: string[] = [];
-        const cwd = process.cwd() + sep;
 
         items.push(
-            groupSpaces + red(name),
-            "\n",
-            groupSpaces +
-                wrapAnsi(message, size - 3, {
-                    hard: true,
-                    trim: true,
-                    wordWrap: true,
-                }),
+            ...(hideName ? [] : [groupSpaces + red(name), ": "]),
+            wrapAnsi(message, size - 3, {
+                hard: true,
+                trim: true,
+                wordWrap: true,
+            }),
         );
 
         if (stack) {
             const lines = stack
                 .split("\n")
                 .splice(1)
-                .map((line: string) => groupSpaces + line.trim().replace("file://", "").replace(cwd, ""));
+                .map((line: string) => groupSpaces + line.trim().replace("file://", ""))
+                .filter((line: string) => !line.includes("/pail/dist"));
 
             items.push(
                 "\n",
