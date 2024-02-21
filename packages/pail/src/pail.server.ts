@@ -87,8 +87,9 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         });
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        newInstance.timers = new Map(this.timers.entries());
-        newInstance.seqTimers = [...this.seqTimers];
+        newInstance.timersMap = new Map(this.timersMap.entries());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        newInstance.seqTimers = new Set(this.seqTimers.values());
 
         return newInstance;
     }
