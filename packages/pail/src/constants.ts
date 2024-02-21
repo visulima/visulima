@@ -86,9 +86,9 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
     trace: {
-        color: "gray",
+        color: "magenta",
         label: "trace",
-        logLevel: "debug",
+        logLevel: "trace",
     },
     wait: {
         color: "blue",

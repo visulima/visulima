@@ -24,13 +24,14 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     repeated?: number | undefined;
     scope: string[] | undefined;
     suffix: string | undefined;
+    traceError: Error | undefined; // for internal use
     type: {
-        level: L | Rfc5424LogLevels;
+        level: ExtendedRfc5424LogLevels | L;
         name: string;
     };
 }
 
-export type Rfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "warning";
+export type ExtendedRfc5424LogLevels = "alert" | "critical" | "debug" | "emergency" | "error" | "informational" | "notice" | "trace" | "warning";
 
 export type DefaultLogTypes =
     | "alert"
@@ -59,7 +60,7 @@ export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
     color?: AnsiColors | undefined;
     label: string;
-    logLevel: L | Rfc5424LogLevels;
+    logLevel: ExtendedRfc5424LogLevels | L;
 }
 
 export type LoggerTypesConfig<T extends string, L extends string = never> = Record<T, Partial<LoggerConfiguration<L>>>;
@@ -103,8 +104,8 @@ export type Serializer<Type = string, Options = UnknownRecord> = {
 
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
     disabled?: boolean;
-    logLevel?: LiteralUnion<Rfc5424LogLevels, L>;
-    logLevels?: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
+    logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
+    logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
     messages?: {
         timerEnd?: string;
         timerStart?: string;

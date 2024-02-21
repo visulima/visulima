@@ -9,29 +9,35 @@ import { JsonFileReporter } from "@visulima/pail/reporter/json-file";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 
-console.log("------------------ DEFAULT ------------------");
+console.log("------------------ DEFAULT ------------------", "\n");
 
 pail.complete("Hello World!");
 
-console.log("------------------ TIME ------------------");
+console.log("------------------ TRACE ------------------", "\n");
+
+const traceLevel = pail.clone({ logLevel: "trace" });
+
+traceLevel.trace("This is a trace message");
+
+console.log("------------------ TIME ------------------", "\n");
 
 pail.time("test");
 pail.time();
 pail.time();
 
 setTimeout(() => {
-  pail.timeEnd();
-  pail.timeEnd();
-  pail.timeEnd("test");
+    pail.timeEnd();
+    pail.timeEnd();
+    pail.timeEnd("test");
 }, 500);
 
-console.log("------------------ SCOPE NEW CUSTOM ------------------");
+console.log("------------------ SCOPE NEW CUSTOM ------------------", "\n");
 
 const newLogger = pail.scope("new custom");
 
 newLogger.complete("Hello World!");
 
-console.log("------------------ SCOPE CLIENT|SERVER ------------------");
+console.log("------------------ SCOPE CLIENT|SERVER ------------------", "\n");
 
 const newLogger2 = newLogger.scope("client", "server");
 
@@ -56,7 +62,7 @@ newLogger2.notice({
     prefix: "prefix",
 });
 
-console.log("------------------ REPEATER ------------------");
+console.log("------------------ REPEATER ------------------", "\n");
 
 function wait(delay) {
     return new Promise((resolve) => {
@@ -74,7 +80,7 @@ for (let i = 0; i < 10; i++) {
 
 await wait(300);
 
-console.log("------------------ JSON ------------------");
+console.log("------------------ JSON ------------------", "\n");
 
 const jsonLogger = createPail({
     processors: [new CallerProcessor()],
@@ -138,7 +144,6 @@ newLogger3.groupEnd();
 newLogger3.log("Back to level 2");
 newLogger3.groupEnd();
 newLogger3.log("Back to the outer level");
-
 
 console.log("------------------ INTERACTIVE ------------------\n");
 

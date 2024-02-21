@@ -10,7 +10,6 @@ import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
-            dateFormatter: (date: Date) => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":"),
             uppercase: {
                 label: true,
                 ...options.uppercase,
@@ -43,21 +42,20 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const cDate = grey(this._styles.dateFormatter(new Date(date)));
 
-            if (isNotBrowser && Array.isArray(cDate)) {
+            if (isNotBrowser) {
                 items.push(format(cDate[0] as string, cDate.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cDate) ? [(cDate[0] as string) + " ", ...cDate.slice(1)] : cDate + " ");
+                items.push([(cDate[0] as string) + " ", ...cDate.slice(1)]);
             }
         }
 
         if (badge) {
             const cBadge = colorized(badge);
 
-            if (isNotBrowser && Array.isArray(cBadge)) {
+            if (isNotBrowser) {
                 items.push(format(cBadge[0] as string, cBadge.slice(1) as unknown as string[]));
             } else {
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                items.push(Array.isArray(cBadge) ? [cBadge[0] + " ", ...cBadge.slice(1)] : cBadge + " ");
+                items.push([cBadge[0] + " ", ...cBadge.slice(1)]);
             }
         }
 
@@ -69,20 +67,18 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         if (repeated) {
             const cRepeated = white("[" + repeated + "x]");
 
-            if (isNotBrowser && Array.isArray(cRepeated)) {
-                repeatedMessage = format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) as string;
-            } else {
-                repeatedMessage = Array.isArray(cRepeated) ? [cRepeated[0], ...cRepeated.slice(1)] : cRepeated;
-            }
+            repeatedMessage = isNotBrowser
+                ? (format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) as string)
+                : [cRepeated[0], ...cRepeated.slice(1)];
         }
 
         if (label) {
             const cLabel = colorized(this._formatLabel(label as string));
 
-            if (isNotBrowser && Array.isArray(cLabel)) {
+            if (isNotBrowser) {
                 items.push(format(cLabel[0] as string, cLabel.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cLabel) ? [cLabel[0], ...cLabel.slice(1)] : cLabel);
+                items.push([cLabel[0], ...cLabel.slice(1)]);
             }
 
             if (repeatedMessage) {
@@ -100,29 +96,29 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             if (lengthDiff > 0) {
                 const cLabelSpacer = grey(".".repeat(lengthDiff));
 
-                if (isNotBrowser && Array.isArray(cLabelSpacer)) {
+                if (isNotBrowser) {
                     items.push(format(cLabelSpacer[0] as string, cLabelSpacer.slice(1) as unknown as string[]));
                 } else {
-                    items.push(Array.isArray(cLabelSpacer) ? [" " + cLabelSpacer[0], ...cLabelSpacer.slice(1)] : cLabelSpacer);
+                    items.push([" " + cLabelSpacer[0], ...cLabelSpacer.slice(1)]);
                 }
             }
         } else {
             const cSpacer = grey(".".repeat((longestLabel as string).length + 1));
 
-            if (isNotBrowser && Array.isArray(cSpacer)) {
+            if (isNotBrowser) {
                 items.push(format(cSpacer[0] as string, cSpacer.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cSpacer) ? [cSpacer[0], ...cSpacer.slice(1)] : cSpacer);
+                items.push([cSpacer[0], ...cSpacer.slice(1)]);
             }
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
             const cScope = grey("[" + scope.join(" | ") + "]");
 
-            if (isNotBrowser && Array.isArray(cScope)) {
+            if (isNotBrowser) {
                 items.push(format(cScope[0] as string, cScope.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cScope) ? [cScope[0], ...cScope.slice(1)] : cScope);
+                items.push([cScope[0], ...cScope.slice(1)]);
             }
         }
 
@@ -131,10 +127,10 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
                 (Array.isArray(scope) && scope.length > 0 ? ". " : " ") + "[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] ",
             );
 
-            if (isNotBrowser && Array.isArray(cPrefix)) {
+            if (isNotBrowser) {
                 items.push(format(cPrefix[0] as string, cPrefix.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cPrefix) ? [cPrefix[0] as string, ...cPrefix.slice(1)] : cPrefix);
+                items.push([cPrefix[0] as string, ...cPrefix.slice(1)]);
             }
         }
 
@@ -151,16 +147,16 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (error) {
-            items.push(error);
+            items.push(error, "\n\n");
         }
 
         if (suffix) {
             const cSuffix = grey((this._styles.underline.suffix ? underline(suffix as string) : suffix) as string);
 
-            if (isNotBrowser && Array.isArray(cSuffix)) {
+            if (isNotBrowser) {
                 items.push(format(("\n" + (cSuffix[0] as string)) as string, cSuffix.slice(1) as unknown as string[]));
             } else {
-                items.push(Array.isArray(cSuffix) ? [("\n" + (cSuffix[0] as string)) as string, ...cSuffix.slice(1)] : "\n" + cSuffix);
+                items.push([("\n" + (cSuffix[0] as string)) as string, ...cSuffix.slice(1)]);
             }
         }
 

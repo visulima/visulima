@@ -6,6 +6,7 @@ import { LOG_TYPES, RFC_5424_LOG_LEVELS } from "./constants";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
+    ExtendedRfc5424LogLevels,
     LoggerConfiguration,
     LoggerFunction,
     LoggerTypesAwareReporter,
@@ -13,7 +14,6 @@ import type {
     Meta,
     Processor,
     Reporter,
-    Rfc5424LogLevels,
     StringifyAwareProcessor,
     StringifyAwareReporter,
 } from "./types";
@@ -49,7 +49,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected readonly _customTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 
-    protected readonly _customLogLevels: Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
+    protected readonly _customLogLevels: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
 
     protected readonly _logLevels: Record<string, number>;
 
@@ -63,7 +63,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected readonly _processors: Set<Processor<L>>;
 
-    protected readonly _generalLogLevel: LiteralUnion<Rfc5424LogLevels, L>;
+    protected readonly _generalLogLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;
 
     protected _reporters: Set<Reporter<L>>;
 
@@ -94,7 +94,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         this._types = mergeTypes<L, T>(LOG_TYPES, this._customTypes);
         this._longestLabel = getLongestLabel<L, T>(this._types);
 
-        this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<Rfc5424LogLevels, number>> & Record<L, number>;
+        this._customLogLevels = (options.logLevels ?? {}) as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
         this._logLevels = { ...RFC_5424_LOG_LEVELS, ...this._customLogLevels };
         this._generalLogLevel = this._normalizeLogLevel(options.logLevel);
 
@@ -365,7 +365,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    private _normalizeLogLevel(level: LiteralUnion<Rfc5424LogLevels, L> | undefined): LiteralUnion<Rfc5424LogLevels, L> {
+    private _normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
         return level && Object.keys(this._logLevels).includes(level as string) ? level : "debug";
     }
 
@@ -374,7 +374,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         let meta = { ...EMPTY_META } as Meta<L>;
 
         meta.type = {
-            level: type.logLevel as LiteralUnion<Rfc5424LogLevels, L>,
+            level: type.logLevel as LiteralUnion<ExtendedRfc5424LogLevels, L>,
             name: typeName,
         };
 
@@ -419,8 +419,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         }
 
         if (type.logLevel === "trace") {
-            // eslint-disable-next-line unicorn/error-message
-            meta.error = new Error();
+            meta.traceError = new Error("Trace");
         }
 
         if (type.badge) {

@@ -7,7 +7,10 @@ import type { ConstructorOptions, Processor } from "./types";
 
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailBrowserType<T, L> =>
     new PailBrowser<T, L>({
-        processors: options?.processors ?? [new MessageFormatterProcessor<L>(), ...(typeof window === "undefined" ? [new ErrorProcessor()] as Processor<L>[] : [])],
+        processors: options?.processors ?? [
+            new MessageFormatterProcessor<L>(),
+            ...(typeof window === "undefined" ? ([new ErrorProcessor()] as Processor<L>[]) : []),
+        ],
 
         reporters: options?.reporters ?? [new JsonReporter<L>()],
         ...options,
@@ -19,13 +22,13 @@ export type {
     ConstructorOptions,
     DefaultLoggerTypes,
     DefaultLogTypes,
+    ExtendedRfc5424LogLevels,
     LoggerConfiguration,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
     Processor,
     Reporter,
-    Rfc5424LogLevels,
     Serializer,
     StreamAwareReporter,
 } from "./shared";
