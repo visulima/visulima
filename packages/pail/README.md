@@ -137,7 +137,7 @@ pail.watch("Recursively watching build directory...");
 pail.complete({
     prefix: "[task]",
     message: "Fix issue #59",
-    suffix: "(@klauscfhq)",
+    suffix: "(@prisis)",
 });
 ```
 
