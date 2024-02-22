@@ -126,7 +126,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            const cScope = grey("[" + scope.join(" | ") + "]");
+            const cScope = grey("[" + scope.join(" > ") + "]");
 
             if (isNotBrowser) {
                 items.push(format(cScope[0] as string, cScope.slice(1) as unknown as string[]));
