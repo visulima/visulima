@@ -145,7 +145,7 @@ pail.complete({
 
 ### Custom Loggers
 
-To create a custom logger define an `options` object yielding a types field with the logger data and pass it as argument to a new signale instance.
+To create a custom logger define an `options` object yielding a types field with the logger data and pass it as argument to the createPail function.
 
 ```typescript
 import { createPail } from "@visulima/pail";
@@ -172,6 +172,220 @@ custom.santa("Hoho! You have an unused variable on L45.");
 ```
 
 ![custom-types](./__assets__/custom-types.png)
+
+Here is an example where we override the default `error` and `success` loggers.
+
+```typescript
+import { pail, createPail } from "@visulima/pail";
+
+pail.error("Default Error Log");
+pail.success("Default Success Log");
+
+const custom = createPail({
+    scope: "custom",
+    types: {
+        error: {
+            badge: "!!",
+            label: "fatal error",
+        },
+        success: {
+            badge: "++",
+            label: "huge success",
+        },
+    },
+});
+
+custom.error("Custom Error Log");
+custom.success("Custom Success Log");
+```
+
+![override default types](./__assets__/types-override.png)
+
+## Scoped Loggers
+
+To create a scoped logger from scratch, define the `scope` field inside the options object and pass it as argument to the createPail function.
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const mayAppLogger = createPail({
+    scope: "my-app",
+});
+
+mayAppLogger.info("Hello from my app");
+```
+
+![simple scope](./__assets__/simple-scope.png)
+
+To create a scoped logger based on an already existing one, use the `scope()` function, which will return a new pail instance, inheriting all custom loggers, timers, secrets, streams, configuration, log level, interactive mode & disabled statuses from the initial one.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const global = pail.scope("global scope");
+
+global.success("Hello from the global scope");
+
+function foo() {
+    const outer = global.scope("outer", "scope");
+    outer.success("Hello from the outer scope");
+
+    setTimeout(() => {
+        const inner = outer.scope("inner", "scope");
+        inner.success("Hello from the inner scope");
+    }, 500);
+}
+
+foo();
+```
+
+![extended scope](./__assets__/extended-scope.png)
+
+## Child loggers
+
+You can also create a new child logger which will have a parent scope and a passed one.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const systemLogger = pail.scope("system");
+systemLogger.success("Hello from system logger");
+
+const childLogger = systemLogger.child("net");
+childLogger.success("Hello from child logger");
+```
+
+![child scope](./__assets__/child-logger.png)
+
+## Interactive Loggers (Only on if stdout and stderr is a TTY)
+
+To initialize an interactive logger, create a new pail instance with the `interactive` attribute set to `true`.
+While into the interactive mode, previously logged messages originating from an interactive logger, will be overridden only by new ones originating from the same or a different interactive logger.
+Note that regular messages originating from regular loggers are not overridden by the interactive ones.
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const interactive = createPail({ interactive: true });
+
+interactive.await("[%d/4] - Process A", 1);
+
+setTimeout(() => {
+    interactive.success("[%d/4] - Process A", 2);
+    setTimeout(() => {
+        interactive.await("[%d/4] - Process B", 3);
+        setTimeout(() => {
+            interactive.error("[%d/4] - Process B", 4);
+            setTimeout(() => {}, 1000);
+        }, 1000);
+    }, 1000);
+}, 1000);
+```
+
+For a more complex example, use can use the `getInteractiveManager` function, see the following code:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const interactive = createPail({ interactive: true });
+
+const TICKS = 60;
+const TIMEOUT = 80;
+const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const messages = ["Swapping time and space...", "Have a good day.", "Don't panic...", "Updating Updater...", "42"];
+let ticks = TICKS;
+let i = 0;
+
+const interactiveManager = interactive.getInteractiveManager();
+
+interactiveManager.hook();
+
+// eslint-disable-next-line no-console
+console.log(" - log message");
+// eslint-disable-next-line no-console
+console.error(" - error message");
+// eslint-disable-next-line no-console
+console.warn(" - warn message");
+
+const id = setInterval(() => {
+    if (--ticks < 0) {
+        clearInterval(id);
+
+        interactiveManager.update(["✔ Success", "", "Messages:", "this line is be deleted!!!"]);
+        interactiveManager.erase(1);
+        interactiveManager.unhook(false);
+    } else {
+        const frame = frames[(i = ++i % frames.length)];
+        const index = Math.round(ticks / 10) % messages.length;
+        const message = messages[index];
+
+        if (message) {
+            interactiveManager.update([`${frame} Some process...`, message]);
+        }
+    }
+}, TIMEOUT);
+```
+
+### Timers
+
+Timer are managed by the `time()`, `timeLog()` and `timeEnd()` functions.
+A unique label can be used to identify a timer on initialization, though if none is provided the timer will be assigned one automatically.
+In addition, calling the `timeEnd()` function without a specified label will have as effect the termination of the most recently initialized timer, that was created without providing a label.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.time("test");
+pail.time();
+pail.timeLog("default", "Hello");
+
+setTimeout(() => {
+    pail.timeEnd();
+    pail.timeEnd("test");
+}, 500);
+```
+
+![timers](./__assets__/timer.png)
+
+Its also possible to change the text inside `time()` and `timeEnd()` by using the options object.
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const pail = createPail({
+    messages: {
+        timerStart: "Start Timer:",
+        timerEnd: "End Timer:",
+    },
+});
+
+pail.time("test");
+pail.timeEnd("test");
+```
+
+## Disable and Enable Loggers
+
+To disable a logger, use the `disable()` function, which will prevent any log messages from being written to the console or a file.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.disable();
+pail.success("This message will not be logged");
+```
+
+To enable a logger, use the `enable()` function, which will allow log messages to be written to the console or a file.
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.disable();
+pail.success("This message will not be logged");
+pail.enable();
+pail.success("This message will be logged");
+```
+
+## Api
 
 ## Supported Node.js Versions
 

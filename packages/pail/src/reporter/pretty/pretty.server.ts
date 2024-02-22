@@ -91,7 +91,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(grey(" [" + scope.join(" | ") + "] "));
+            items.push(grey(" [" + scope.join(" > ") + "] "));
         }
 
         if (prefix) {

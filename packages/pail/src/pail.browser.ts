@@ -246,7 +246,9 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     public child<N extends string = T>(name: string): PailBrowserType<N, L> {
-        const newScope = new Set([...this._scopeName, name]);
+        const newScope = new Set(this._scopeName);
+
+        newScope.add(name);
 
         return this.scope<N>(...newScope);
     }
