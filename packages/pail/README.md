@@ -18,12 +18,6 @@
 
 <div align="center">
 
-<div style="display: flex;">
-<img alt="pail server" src="./__assets__/header-server.png"  style="width: 50%"/>
-
-<img alt="pail browser" src="./__assets__/header-browser.png" style="width: 50%"/>
-</div>
-
 [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 </div>
@@ -57,7 +51,7 @@
 -   Stack trace and pretty errors
 -   Simple and minimal syntax
 -   Spam prevention by throttling logs
--   Browser support
+-   [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
 -   Redirect console and stdout/stderr to pail and easily restore redirect.
 -   `Pretty` or `JSON` output
 -   CJS & ESM with tree shaking support
@@ -147,7 +141,11 @@ pail.complete({
 });
 ```
 
+<center>
+
 ![usage](./__assets__/usage.png)
+
+</center>
 
 ### Custom Loggers
 
@@ -177,7 +175,11 @@ custom.remind("Improve documentation.");
 custom.santa("Hoho! You have an unused variable on L45.");
 ```
 
+<center>
+
 ![custom-types](./__assets__/custom-types.png)
+
+</center>
 
 Here is an example where we override the default `error` and `success` loggers.
 
@@ -205,7 +207,11 @@ custom.error("Custom Error Log");
 custom.success("Custom Success Log");
 ```
 
+<center>
+
 ![override default types](./__assets__/types-override.png)
+
+</center>
 
 ## Scoped Loggers
 
@@ -245,7 +251,11 @@ function foo() {
 foo();
 ```
 
+<center>
+
 ![extended scope](./__assets__/extended-scope.png)
+
+</center>
 
 ## Child loggers
 
@@ -261,7 +271,11 @@ const childLogger = systemLogger.child("net");
 childLogger.success("Hello from child logger");
 ```
 
+<center>
+
 ![child scope](./__assets__/child-logger.png)
+
+</center>
 
 ## Interactive Loggers (Only on if stdout and stderr is a TTY)
 
@@ -351,7 +365,11 @@ setTimeout(() => {
 }, 500);
 ```
 
+<center>
+
 ![timers](./__assets__/timer.png)
+
+</center>
 
 Its also possible to change the text inside `time()` and `timeEnd()` by using the options object.
 
