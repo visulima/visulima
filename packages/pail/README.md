@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima Pail</h3>
   <p>
-  Highly configurable Logger for Node.js and Browser, built on top of
+  Highly configurable Logger for Node.js, Edge and Browser, built on top of
 
 [@visulima/fmt][fmt],
 [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
@@ -86,7 +86,7 @@ Pail supports the logging levels described by [RFC 5424][rfc-5424].
 -   `INFO`: Interesting events. Examples: User logs in, SQL logs.
 
 -   `NOTICE`: Normal but significant events.
--
+
 -   `TRACE`: Very detailed and fine-grained informational events.
 
 -   `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
@@ -141,11 +141,7 @@ pail.complete({
 });
 ```
 
-<center>
-
 ![usage](./__assets__/usage.png)
-
-</center>
 
 ### Custom Loggers
 
@@ -175,11 +171,7 @@ custom.remind("Improve documentation.");
 custom.santa("Hoho! You have an unused variable on L45.");
 ```
 
-<center>
-
 ![custom-types](./__assets__/custom-types.png)
-
-</center>
 
 Here is an example where we override the default `error` and `success` loggers.
 
@@ -207,11 +199,7 @@ custom.error("Custom Error Log");
 custom.success("Custom Success Log");
 ```
 
-<center>
-
 ![override default types](./__assets__/types-override.png)
-
-</center>
 
 ## Scoped Loggers
 
@@ -251,11 +239,7 @@ function foo() {
 foo();
 ```
 
-<center>
-
 ![extended scope](./__assets__/extended-scope.png)
-
-</center>
 
 ## Child loggers
 
@@ -271,11 +255,7 @@ const childLogger = systemLogger.child("net");
 childLogger.success("Hello from child logger");
 ```
 
-<center>
-
 ![child scope](./__assets__/child-logger.png)
-
-</center>
 
 ## Interactive Loggers (Only on if stdout and stderr is a TTY)
 
@@ -365,11 +345,7 @@ setTimeout(() => {
 }, 500);
 ```
 
-<center>
-
 ![timers](./__assets__/timer.png)
-
-</center>
 
 Its also possible to change the text inside `time()` and `timeEnd()` by using the options object.
 
