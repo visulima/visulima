@@ -49,7 +49,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
             // eslint-disable-next-line no-param-reassign
             meta.message = this._format(formatter, meta.message, meta.context as unknown[]);
             // eslint-disable-next-line no-param-reassign
-            meta.context = [];
+            meta.context = undefined;
         }
 
         return meta;

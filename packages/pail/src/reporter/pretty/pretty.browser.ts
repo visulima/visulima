@@ -6,6 +6,7 @@ import { getLongestLabel } from "../../util/get-longest-label";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+import { getLongestBadge } from "../../util/get-longest-badge";
 
 export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
@@ -56,6 +57,18 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
                 items.push(format(cBadge[0] as string, cBadge.slice(1) as unknown as string[]));
             } else {
                 items.push([cBadge[0] + " ", ...cBadge.slice(1)]);
+            }
+        } else {
+            const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
+
+            if (longestBadge.length > 0) {
+                const cBadgePlaceholder = grey(".".repeat(longestBadge.length));
+
+                if (isNotBrowser) {
+                    items.push(format((cBadgePlaceholder[0] as string) + " ", cBadgePlaceholder.slice(1) as unknown as string[]));
+                } else {
+                    items.push([(cBadgePlaceholder[0] as string) + " ", ...cBadgePlaceholder.slice(1)]);
+                }
             }
         }
 

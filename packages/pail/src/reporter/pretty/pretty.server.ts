@@ -6,6 +6,7 @@ import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
 import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StreamAwareReporter } from "../../types";
+import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
@@ -67,16 +68,21 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (badge) {
-            items.push(colorized(badge) + " ");
+            items.push(colorized(badge) as string);
+        } else {
+            const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
+
+            if (longestBadge.length > 0) {
+                items.push(grey(".".repeat(longestBadge.length)) + " ");
+            }
         }
 
-        const longestLabel = getLongestLabel<L, T>(this._loggerTypes);
+        const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
             items.push(colorized(this._formatLabel(label as string)) + " ", grey(".".repeat(longestLabel.length - stringLength(label as string))));
         } else {
             // plus 2 for the space and the dot
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push(grey(".".repeat(longestLabel.length + 2)));
         }
 
