@@ -18,6 +18,12 @@
 
 <div align="center">
 
+<div style="display: flex;">
+<img alt="pail server" src="./__assets__/header-server.png"  style="width: 50%"/>
+
+<img alt="pail browser" src="./__assets__/header-browser.png" style="width: 50%"/>
+</div>
+
 [![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
 
 </div>
