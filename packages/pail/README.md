@@ -3,13 +3,13 @@
   <p>
   Highly configurable Logger for Node.js and Browser, built on top of
 
-[@visulima/fmt](https://github.com/visulima/visulima/tree/main/packages/fmt),
+[@visulima/fmt][fmt],
 [@visulima/colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
-[@visulima/is-ansi-color-supported](https://github.com/visulima/visulima/tree/main/packages/is-ansi-color-supported),
-[string-length](),
-[strip-ansi](),
-[terminal-size]() and
-[wrap-ansi]()
+[ansi-escapes](https://www.npmjs.com/package/ansi-escapes),
+[safe-stable-stringify](https://www.npmjs.com/package/safe-stable-stringify),
+[string-length](https://www.npmjs.com/package/string-length),
+[terminal-size](https://www.npmjs.com/package/terminal-size) and
+[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
 
   </p>
 </div>
@@ -39,7 +39,7 @@
 -   Easy to use
 -   Hackable to the core
 -   Integrated timers
--   Custom pluggable processors, reporters and serializers
+-   Custom pluggable processors and reporters
 -   TypeScript support
 -   Interactive and regular modes
 -   Secrets & sensitive information filtering (soon)
@@ -74,7 +74,7 @@ pnpm add @visulima/pail
 
 ## Concepts
 
-> Most importantly, `pail` adheres to the log levels defined in [RFC 5424][rfc-5424].
+> Most importantly, `pail` adheres to the log levels defined in [RFC 5424][rfc-5424] extended with `trace` level.
 > This means that you can use the log levels to filter out messages that are not important to you.
 
 ### Log Levels
@@ -86,6 +86,8 @@ Pail supports the logging levels described by [RFC 5424][rfc-5424].
 -   `INFO`: Interesting events. Examples: User logs in, SQL logs.
 
 -   `NOTICE`: Normal but significant events.
+-
+-   `TRACE`: Very detailed and fine-grained informational events.
 
 -   `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
 
@@ -119,22 +121,57 @@ A processor can be added to a logger directly (and is subsequently applied to lo
 -   `CallerProcessor` - adds the caller information to the log message
     -   The Meta Object is extended with a file name, line number and column number
 -   `RedactProcessor` - redacts sensitive information from the log message (Soon)
-
-### Serializers
-
-Serializers are responsible for serializing the log message (Meta Object) before it's written to the console or a file.
-
-`pail` comes with a few built-in serializers:
-
--   `errorWithCauseSerializer` - serializes the error with cause object to a std error object that can be serialized.
+-   `MessageFormatterProcessor` - formats the log message (Util.format-like unescaped string formatting utility) [@visulima/fmt][fmt]
+-   `ErrorProcessor` - serializes the error with cause object to a std error object that can be serialized.
 
 ## Usage
 
 ```typescript
 import { pail } from "@visulima/pail";
 
-pail.info("Hello World");
+pail.success("Operation successful");
+pail.debug("Hello", "from", "L59");
+pail.pending("Write release notes for %s", "1.2.0");
+pail.fatal(new Error("Unable to acquire lock"));
+pail.watch("Recursively watching build directory...");
+pail.complete({
+    prefix: "[task]",
+    message: "Fix issue #59",
+    suffix: "(@klauscfhq)",
+});
 ```
+
+![usage](./__assets__/usage.png)
+
+### Custom Loggers
+
+To create a custom logger define an `options` object yielding a types field with the logger data and pass it as argument to a new signale instance.
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const custom = createPail({
+    types: {
+        remind: {
+            badge: "**",
+            color: "yellow",
+            label: "reminder",
+            logLevel: "info",
+        },
+        santa: {
+            badge: "🎅",
+            color: "red",
+            label: "santa",
+            logLevel: "info",
+        },
+    },
+});
+
+custom.remind("Improve documentation.");
+custom.santa("Hoho! You have an unused variable on L45.");
+```
+
+![custom-types](./__assets__/custom-types.png)
 
 ## Supported Node.js Versions
 
@@ -157,6 +194,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 ### Related Projects
 
 -   [pino](https://github.com/pinojs/pino) - 🌲 super fast, all natural json logger
+-   [winston](https://github.com/winstonjs/winston) - A logger for just about everything.
 -   [signale](https://github.com/klaudiosinani/signale) - Highly configurable logging utility
 -   [consola](https://github.com/unjs/consola) - 🐨 Elegant Console Logger for Node.js and Browser
 
@@ -171,3 +209,4 @@ The visulima pail is open-sourced software licensed under the [MIT][license-url]
 [npm-image]: https://img.shields.io/npm/v/@visulima/pail/latest.svg?style=for-the-badge&logo=npm
 [npm-url]: https://www.npmjs.com/package/@visulima/pail/v/latest "npm"
 [rfc-5424]: https://datatracker.ietf.org/doc/html/rfc5424#page-36
+[fmt]: https://github.com/visulima/visulima/tree/main/packages/fmt
