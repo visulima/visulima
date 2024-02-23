@@ -7,82 +7,66 @@ import { PailBrowserImpl } from "./pail.browser";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
+    InteractiveStreamReporter,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
+    Reporter,
     ServerConstructorOptions,
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
 
 class PailServerImpl<T extends string = never, L extends string = never> extends PailBrowserImpl<T, L> {
-    protected readonly _stdout: NodeJS.WriteStream | undefined;
+    protected readonly stdout: NodeJS.WriteStream;
 
-    protected readonly _stderr: NodeJS.WriteStream | undefined;
+    protected readonly stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected readonly _interactiveStdout: InteractiveStreamHook | undefined = undefined;
+    protected readonly interactiveStdout: InteractiveStreamHook;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected readonly _interactiveStderr: InteractiveStreamHook | undefined = undefined;
+    protected readonly interactiveStderr: InteractiveStreamHook;
 
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected _interactiveManager: InteractiveManager | undefined;
+    protected interactiveManager: InteractiveManager | undefined;
 
-    protected readonly _interactive: boolean;
+    protected readonly interactive: boolean;
 
     public constructor(public readonly options: ServerConstructorOptions<T, L> = {}) {
-        const { interactive, reporters, stderr, stdout, ...rest } = options;
+        const { interactive, reporters = [], stderr, stdout, ...rest } = options;
 
         super(rest as ConstructorOptions<T, L>);
 
-        this._interactive = interactive ?? false;
+        this.interactive = interactive ?? false;
 
-        this._stdout = stdout;
-        this._stderr = stderr;
+        this.stdout = stdout as NodeJS.WriteStream;
+        this.stderr = stderr as NodeJS.WriteStream;
+        this.interactiveStdout = new InteractiveStreamHook(this.stdout);
+        this.interactiveStderr = new InteractiveStreamHook(this.stderr);
 
-        if (this._interactive && stdout && stderr) {
-            this._interactiveStdout = new InteractiveStreamHook(stdout);
-            this._interactiveStderr = new InteractiveStreamHook(stderr);
+        if (this.interactive) {
+            this.getInteractiveManager();
         }
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const reporter of reporters ?? []) {
-            if (this._stdout && (reporter as StreamAwareReporter<L>).setStdout) {
-                (reporter as StreamAwareReporter<L>).setStdout(this._stdout);
-            }
-
-            if (this._stderr && (reporter as StreamAwareReporter<L>).setStderr) {
-                (reporter as StreamAwareReporter<L>).setStderr(this._stderr);
-            }
-
-            if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
-                (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this._types);
-            }
-
-            if ((reporter as StringifyAwareReporter<L>).setStringify) {
-                (reporter as StringifyAwareReporter<L>).setStringify(this._stringify);
-            }
-
-            this._reporters.add(reporter);
-        }
+        this.registerReporters(reporters as Reporter<L>[]);
     }
 
     public override clone<N extends string = T>(cloneOptions: ServerConstructorOptions<N, L>): PailServerType<N, L> {
         const PailConstructor = PailServerImpl as unknown as new (options: ServerConstructorOptions<N, L>) => PailServerType<N, L>;
 
+        this.interactiveManager?.unhook(true);
+
         const newInstance = new PailConstructor({
-            disabled: this._disabled,
-            interactive: this._interactive,
-            logLevel: this._generalLogLevel,
-            logLevels: this._customLogLevels,
-            processors: [...this._processors],
-            reporters: [...this._reporters],
-            stderr: this._stderr,
-            stdout: this._stdout,
-            throttle: this._throttle,
-            throttleMin: this._throttleMin,
-            types: this._customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
+            disabled: this.disabled,
+            interactive: this.interactive,
+            logLevel: this.generalLogLevel,
+            logLevels: this.customLogLevels,
+            processors: [...this.processors],
+            reporters: [...this.reporters],
+            stderr: this.stderr,
+            stdout: this.stdout,
+            throttle: this.throttle,
+            throttleMin: this.throttleMin,
+            types: this.customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
             ...cloneOptions,
         });
 
@@ -105,33 +89,33 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     }
 
     public override child<N extends string = T>(name: string): PailServerType<N, L> {
-        const newScope = new Set([...this._scopeName, name]);
+        const newScope = new Set([...this.scopeName, name]);
 
         return this.scope<N>(...newScope);
     }
 
     public getInteractiveManager() {
-        if (this._interactiveManager) {
-            return this._interactiveManager;
+        if (this.interactiveManager) {
+            return this.interactiveManager;
         }
 
-        if (this._interactive && this._interactiveStdout && this._interactiveStderr) {
-            this._interactiveManager = new InteractiveManager(this._interactiveStdout, this._interactiveStderr);
+        if (this.interactive) {
+            this.interactiveManager = new InteractiveManager(this.interactiveStdout, this.interactiveStderr);
 
-            return this._interactiveManager;
+            return this.interactiveManager;
         }
 
         throw new Error("Interactive mode is disabled because you forgot to provide the interactive, stdout or stderr flag.");
     }
 
     public wrapStd() {
-        this._wrapStream(this._stdout, "log");
-        this._wrapStream(this._stderr, "log");
+        this._wrapStream(this.stdout, "log");
+        this._wrapStream(this.stderr, "log");
     }
 
     public restoreStd() {
-        this._restoreStream(this._stdout);
-        this._restoreStream(this._stderr);
+        this._restoreStream(this.stdout);
+        this._restoreStream(this.stderr);
     }
 
     public wrapAll(): void {
@@ -145,12 +129,38 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     }
 
     public override clear(): void {
-        if (this._stdout) {
-            this._stdout.write(ansiEscapes.clearTerminal);
-        }
+        this.stdout.write(ansiEscapes.clearTerminal);
+        this.stderr.write(ansiEscapes.clearTerminal);
+    }
 
-        if (this._stderr) {
-            this._stderr.write(ansiEscapes.clearTerminal);
+    protected override registerReporters(reporters: Reporter<L>[]): void {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const reporter of reporters) {
+            if ((reporter as StreamAwareReporter<L>).setStdout) {
+                (reporter as StreamAwareReporter<L>).setStdout(this.stdout);
+            }
+
+            if ((reporter as StreamAwareReporter<L>).setStderr) {
+                (reporter as StreamAwareReporter<L>).setStderr(this.stderr);
+            }
+
+            if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+                (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
+            }
+
+            if ((reporter as StringifyAwareReporter<L>).setStringify) {
+                (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
+            }
+
+            if ((reporter as InteractiveStreamReporter<L>).setIsInteractive) {
+                (reporter as InteractiveStreamReporter<L>).setIsInteractive(this.interactive);
+            }
+
+            if (this.interactive && (reporter as InteractiveStreamReporter<L>).setInteractiveManager) {
+                (reporter as InteractiveStreamReporter<L>).setInteractiveManager(this.interactiveManager);
+            }
+
+            this.reporters.add(reporter);
         }
     }
 

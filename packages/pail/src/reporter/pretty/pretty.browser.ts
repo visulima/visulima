@@ -2,11 +2,11 @@ import colorize, { bold, grey, underline, white } from "@visulima/colorize/brows
 import { format } from "@visulima/fmt";
 
 import type { ReadonlyMeta } from "../../types";
+import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
-import { getLongestBadge } from "../../util/get-longest-badge";
 
 export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
