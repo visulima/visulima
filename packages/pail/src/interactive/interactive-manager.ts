@@ -3,8 +3,13 @@ import wrapAnsi from "wrap-ansi";
 
 import type { InteractiveStreamHook } from "./interactive-stream-hook";
 
+type StreamType = "stderr" | "stdout";
+
 export class InteractiveManager {
-    readonly #hooks: InteractiveStreamHook[];
+    readonly #stream: {
+        stderr: InteractiveStreamHook;
+        stdout: InteractiveStreamHook;
+    };
 
     #isActive = false;
 
@@ -15,7 +20,10 @@ export class InteractiveManager {
     #outside = 0;
 
     public constructor(stdout: InteractiveStreamHook, stderr: InteractiveStreamHook) {
-        this.#hooks = [stdout, stderr];
+        this.#stream = {
+            stderr,
+            stdout,
+        };
     }
 
     /**
@@ -48,14 +56,18 @@ export class InteractiveManager {
 
     /**
      * Removes from the bottom of output up the specified count of lines
+     *
+     * @param stream - Stream to remove lines from
      * @param count - lines count to remove
      */
-    public erase(count = this.#lastLength): void {
-        const [hook] = this.#hooks;
-
-        if (hook) {
-            hook.erase(count);
+    public erase(stream: StreamType, count = this.#lastLength): void {
+        // eslint-disable-next-line security/detect-object-injection
+        if (!this.#stream[stream]) {
+            throw new Error(`Stream "${stream}" is not available`);
         }
+
+        // eslint-disable-next-line security/detect-object-injection
+        this.#stream[stream].erase(count);
     }
 
     /**
@@ -64,8 +76,9 @@ export class InteractiveManager {
      */
     public hook(): boolean {
         if (!this.#isActive) {
-            this.#hooks.forEach((hook) => hook.active());
-            this.clear(true);
+            Object.values(this.#stream).forEach((hook) => hook.active());
+
+            this._clear(true);
         }
 
         return this.#isActive;
@@ -73,34 +86,39 @@ export class InteractiveManager {
 
     /**
      * Resume suspend hooks
+     *
+     * @param stream - Stream to resume
      * @param eraseRowCount - erase output rows count
      */
-    public resume(eraseRowCount?: number): void {
+    public resume(stream: StreamType, eraseRowCount?: number): void {
         if (this.#isSuspended) {
             this.#isSuspended = false;
 
             if (eraseRowCount) {
-                this.erase(eraseRowCount);
+                this.erase(stream, eraseRowCount);
             }
 
             this.#lastLength = 0;
-            this.#hooks.forEach((hook) => hook.active());
+
+            Object.values(this.#stream).forEach((hook) => hook.active());
         }
     }
 
     /**
      * Suspend active hooks for external output
+     *
+     * @param stream - Stream to suspend
      * @param erase - erase output
      */
-    public suspend(erase = true): void {
+    public suspend(stream: StreamType, erase = true): void {
         if (!this.#isSuspended) {
             this.#isSuspended = true;
 
             if (erase) {
-                this.erase();
+                this.erase(stream);
             }
 
-            this.#hooks.forEach((hook) => hook.renew());
+            Object.values(this.#stream).forEach((hook) => hook.renew());
         }
     }
 
@@ -113,8 +131,9 @@ export class InteractiveManager {
      */
     public unhook(separateHistory = true): boolean {
         if (this.#isActive) {
-            this.#hooks.forEach((hook) => hook.inactive(separateHistory));
-            this.clear();
+            Object.values(this.#stream).forEach((hook) => hook.inactive(separateHistory));
+
+            this._clear();
         }
 
         return !this.#isActive;
@@ -122,13 +141,16 @@ export class InteractiveManager {
 
     /**
      * Update output
+     *
+     * @param stream - Stream to write to
      * @param rows - Text lines to write to standard output
      * @param from - Index of the line starting from which the contents of the terminal are being overwritten
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public update(rows: string[], from = 0): void {
+    public update(stream: StreamType, rows: string[], from = 0): void {
         if (rows.length > 0) {
-            const [hook] = this.#hooks;
+            // eslint-disable-next-line security/detect-object-injection
+            const hook = this.#stream[stream];
 
             if (hook) {
                 const { columns: width, rows: height } = terminalSize();
@@ -168,7 +190,7 @@ export class InteractiveManager {
         }
     }
 
-    private clear(status = false): void {
+    private _clear(status = false): void {
         this.#isActive = status;
         this.#lastLength = 0;
         this.#outside = 0;

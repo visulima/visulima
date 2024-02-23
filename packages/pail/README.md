@@ -311,7 +311,7 @@ const id = setInterval(() => {
     if (--ticks < 0) {
         clearInterval(id);
 
-        interactiveManager.update(["✔ Success", "", "Messages:", "this line is be deleted!!!"]);
+        interactiveManager.update(["✔ Success", "", "Messages:", "this line will be deleted!!!"]);
         interactiveManager.erase(1);
         interactiveManager.unhook(false);
     } else {

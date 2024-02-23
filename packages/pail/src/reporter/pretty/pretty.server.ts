@@ -5,17 +5,23 @@ import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
-import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StreamAwareReporter } from "../../types";
+import type { InteractiveManager } from "../../interactive/interactive-manager";
+import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
 import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements StreamAwareReporter<L> {
-    #stdout: NodeJS.WriteStream | undefined;
+export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+    #stdout: NodeJS.WriteStream;
 
-    #stderr: NodeJS.WriteStream | undefined;
+    #stderr: NodeJS.WriteStream;
+
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    #interactiveManager: InteractiveManager | undefined;
+
+    #interactive = false;
 
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
@@ -25,6 +31,9 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             },
             ...options,
         });
+
+        this.#stdout = process.stdout;
+        this.#stderr = process.stderr;
     }
 
     public setStdout(stdout: NodeJS.WriteStream): void {
@@ -33,6 +42,14 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
     public setStderr(stderr: NodeJS.WriteStream): void {
         this.#stderr = stderr;
+    }
+
+    public setInteractiveManager(manager?: InteractiveManager): void {
+        this.#interactiveManager = manager;
+    }
+
+    public setIsInteractive(interactive: boolean): void {
+        this.#interactive = interactive;
     }
 
     public log(meta: ReadonlyMeta<L>): void {
@@ -154,9 +171,14 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
     }
 
     protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const stream = ["error", "trace", "warn"].includes(logLevel as string) ? this.#stderr ?? process.stderr : this.#stdout ?? process.stdout;
+        const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
+        const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
 
-        writeStream(message + "\n", stream);
+        if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
+            this.#interactiveManager.update(streamType, message.split("\n"), 0);
+        } else {
+            writeStream(message + "\n", stream);
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this

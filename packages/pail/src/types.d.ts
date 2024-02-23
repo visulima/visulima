@@ -1,6 +1,8 @@
 import type { AnsiColors } from "@visulima/colorize";
 import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
+import type { InteractiveManager } from "./interactive/interactive-manager";
+
 /**
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
  */
@@ -83,6 +85,11 @@ export interface LoggerTypesAwareReporter<T extends string = never, L extends st
 
 export interface StringifyAwareReporter<L extends string = never> extends Reporter<L> {
     setStringify: (stringify: typeof JSON.stringify) => void;
+}
+
+export interface InteractiveStreamReporter<L extends string = never> extends StreamAwareReporter<L> {
+    setInteractiveManager: (manager?: InteractiveManager) => void;
+    setIsInteractive: (interactive: boolean) => void;
 }
 
 export interface Processor<L extends string = never> {
