@@ -241,22 +241,6 @@ foo();
 
 ![extended scope](./__assets__/extended-scope.png)
 
-## Child loggers
-
-You can also create a new child logger which will have a parent scope and a passed one.
-
-```typescript
-import { pail } from "@visulima/pail";
-
-const systemLogger = pail.scope("system");
-systemLogger.success("Hello from system logger");
-
-const childLogger = systemLogger.child("net");
-childLogger.success("Hello from child logger");
-```
-
-![child scope](./__assets__/child-logger.png)
-
 ## Interactive Loggers (Only on if stdout and stderr is a TTY)
 
 To initialize an interactive logger, create a new pail instance with the `interactive` attribute set to `true`.
@@ -266,20 +250,30 @@ Note that regular messages originating from regular loggers are not overridden b
 ```typescript
 import { createPail } from "@visulima/pail";
 
+console.log("\n");
+
+const pail = createPail();
+
 const interactive = createPail({ interactive: true });
 
-interactive.await("[%d/4] - Process A", 1);
+pail.info("This is a log message 1");
 
 setTimeout(() => {
-    interactive.success("[%d/4] - Process A", 2);
-    setTimeout(() => {
-        interactive.await("[%d/4] - Process B", 3);
+    interactive.await("[%d/4] - Process A", 1);
+     setTimeout(() => {
+         interactive.success("[%d/4] - Process A", 2);
         setTimeout(() => {
-            interactive.error("[%d/4] - Process B", 4);
-            setTimeout(() => {}, 1000);
+            interactive.await("[%d/4] - Process B", 3);
+            setTimeout(() => {
+                interactive.error("[%d/4] - Process B", 4);
+            }, 1000);
         }, 1000);
-    }, 1000);
-}, 1000);
+     }, 1000);
+});
+
+pail.info("This is a log message 2");
+pail.info("This is a log message 3");
+pail.info("This is a log message 4");
 ```
 
 For a more complex example, use can use the `getInteractiveManager` function, see the following code:

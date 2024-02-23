@@ -10,7 +10,6 @@ import type {
     InteractiveStreamReporter,
     LoggerFunction,
     LoggerTypesAwareReporter,
-    LoggerTypesConfig,
     Reporter,
     ServerConstructorOptions,
     StreamAwareReporter,
@@ -21,10 +20,6 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     protected readonly stdout: NodeJS.WriteStream;
 
     protected readonly stderr: NodeJS.WriteStream;
-
-    protected readonly interactiveStdout: InteractiveStreamHook;
-
-    protected readonly interactiveStderr: InteractiveStreamHook;
 
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected interactiveManager: InteractiveManager | undefined;
@@ -40,42 +35,12 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 
         this.stdout = stdout as NodeJS.WriteStream;
         this.stderr = stderr as NodeJS.WriteStream;
-        this.interactiveStdout = new InteractiveStreamHook(this.stdout);
-        this.interactiveStderr = new InteractiveStreamHook(this.stderr);
 
         if (this.interactive) {
-            this.getInteractiveManager();
+            this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
         this.registerReporters(reporters as Reporter<L>[]);
-    }
-
-    public override clone<N extends string = T>(cloneOptions: ServerConstructorOptions<N, L>): PailServerType<N, L> {
-        const PailConstructor = PailServerImpl as unknown as new (options: ServerConstructorOptions<N, L>) => PailServerType<N, L>;
-
-        this.interactiveManager?.unhook(true);
-
-        const newInstance = new PailConstructor({
-            disabled: this.disabled,
-            interactive: this.interactive,
-            logLevel: this.generalLogLevel,
-            logLevels: this.customLogLevels,
-            processors: [...this.processors],
-            reporters: [...this.reporters],
-            stderr: this.stderr,
-            stdout: this.stdout,
-            throttle: this.throttle,
-            throttleMin: this.throttleMin,
-            types: this.customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
-            ...cloneOptions,
-        });
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        newInstance.timersMap = new Map(this.timersMap.entries());
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        newInstance.seqTimers = new Set(this.seqTimers.values());
-
-        return newInstance;
     }
 
     public override scope<N extends string = T>(...name: string[]): PailServerType<N, L> {
@@ -83,29 +48,14 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
             throw new Error("No scope name was defined.");
         }
 
-        return this.clone<N>({
-            scope: name.flat(),
-        });
+        this.scopeName = name.flat();
+
+        return this as unknown as PailServerType<N, L>;
     }
 
-    public override child<N extends string = T>(name: string): PailServerType<N, L> {
-        const newScope = new Set([...this.scopeName, name]);
-
-        return this.scope<N>(...newScope);
-    }
-
-    public getInteractiveManager() {
-        if (this.interactiveManager) {
-            return this.interactiveManager;
-        }
-
-        if (this.interactive) {
-            this.interactiveManager = new InteractiveManager(this.interactiveStdout, this.interactiveStderr);
-
-            return this.interactiveManager;
-        }
-
-        throw new Error("Interactive mode is disabled because you forgot to provide the interactive, stdout or stderr flag.");
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    public getInteractiveManager(): InteractiveManager | undefined {
+        return this.interactiveManager;
     }
 
     public wrapStd() {
@@ -206,7 +156,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 export type PailServerType<T extends string = never, L extends string = never> = PailServerImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new <TC extends string = never, LC extends string = never>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
+    (new<TC extends string = never, LC extends string = never>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 

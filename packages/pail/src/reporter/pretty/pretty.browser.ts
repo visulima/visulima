@@ -20,7 +20,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async log(meta: ReadonlyMeta<L>): Promise<void> {
+    public log(meta: ReadonlyMeta<L>): void {
         const isNotBrowser = typeof window === "undefined";
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
 

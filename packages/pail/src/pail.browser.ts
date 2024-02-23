@@ -123,8 +123,9 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // Track of last log
         this.lastLog = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.registerReporters(options?.reporters ?? []);
-
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.registerProcessors(options?.processors ?? []);
     }
 
@@ -194,43 +195,14 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         return !this.disabled;
     }
 
-    public clone<N extends string = T>(cloneOptions: ConstructorOptions<N, L>): PailBrowserType<N, L> {
-        const PailConstructor = PailBrowserImpl as unknown as new (options: ConstructorOptions<N, L>) => PailBrowserType<N, L>;
-
-        const newInstance = new PailConstructor({
-            disabled: this.disabled,
-            logLevel: this.generalLogLevel,
-            logLevels: this.customLogLevels,
-            processors: [...this.processors],
-            reporters: [...this.reporters],
-            throttle: this.throttle,
-            throttleMin: this.throttleMin,
-            types: this.customTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, L>,
-            ...cloneOptions,
-        });
-
-        newInstance.timersMap = new Map(this.timersMap.entries());
-        newInstance.seqTimers = new Set(this.seqTimers.values());
-
-        return newInstance;
-    }
-
     public scope<N extends string = T>(...name: string[]): PailBrowserType<N, L> {
         if (name.length === 0) {
             throw new Error("No scope name was defined.");
         }
 
-        return this.clone<N>({
-            scope: name.flat(),
-        });
-    }
+        this.scopeName = name.flat();
 
-    public child<N extends string = T>(name: string): PailBrowserType<N, L> {
-        const newScope = new Set(this.scopeName);
-
-        newScope.add(name);
-
-        return this.scope<N>(...newScope);
+        return this as unknown as PailBrowserType<N, L>;
     }
 
     public unscope(): void {
@@ -602,7 +574,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 export type PailBrowserType<T extends string = never, L extends string = never> = PailBrowserImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new <TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
 export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 
