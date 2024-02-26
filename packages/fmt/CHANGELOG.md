@@ -1,3 +1,10 @@
+## @visulima/fmt [1.1.2](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.1...@visulima/fmt@1.1.2) (2024-02-26)
+
+
+### Bug Fixes
+
+* moved custom formatters into the default switch call ([eaf550b](https://github.com/visulima/visulima/commit/eaf550bd72f464e86a50e713410d41e068ebf953))
+
 ## @visulima/fmt [1.1.1](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.0...@visulima/fmt@1.1.1) (2024-02-19)
 
 
