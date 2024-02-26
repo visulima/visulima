@@ -41,6 +41,5 @@ export type {
     LoggerTypesConfig,
     Processor,
     Reporter,
-    Serializer,
     StreamAwareReporter,
 } from "./shared";
