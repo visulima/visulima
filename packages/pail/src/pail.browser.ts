@@ -49,10 +49,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         timeout?: ReturnType<typeof setTimeout>;
     };
 
-    protected readonly customTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
-
-    protected readonly customLogLevels: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
-
     protected readonly logLevels: Record<string, number>;
 
     protected disabled: boolean;
@@ -91,12 +87,10 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         this.startTimerMessage = options?.messages?.timerStart ?? "Initialized timer...";
         this.endTimerMessage = options?.messages?.timerEnd ?? "Timer run for:";
-        this.customTypes = (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
-        this.types = mergeTypes<L, T>(LOG_TYPES, this.customTypes);
+        this.types = mergeTypes<L, T>(LOG_TYPES, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
         this.longestLabel = getLongestLabel<L, T>(this.types);
 
-        this.customLogLevels = (options.logLevels ?? {}) as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
-        this.logLevels = { ...EXTENDED_RFC_5424_LOG_LEVELS, ...this.customLogLevels };
+        this.logLevels = { ...EXTENDED_RFC_5424_LOG_LEVELS, ...options.logLevels };
         this.generalLogLevel = this._normalizeLogLevel(options.logLevel);
 
         this.reporters = new Set();
@@ -399,12 +393,13 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     private _normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
-        return level && Object.keys(this.logLevels).includes(level as string) ? level : "debug";
+        // eslint-disable-next-line security/detect-object-injection
+        return level && this.logLevels[level] ? level : "debug";
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
     private _buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
-        let meta = { ...EMPTY_META } as Meta<L>;
+        const meta = { ...EMPTY_META } as Meta<L>;
 
         meta.type = {
             level: type.logLevel as LiteralUnion<ExtendedRfc5424LogLevels, L>,
@@ -463,36 +458,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             meta.label = type.label;
         }
 
-        // Apply global processors
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const processor of this.processors) {
-            meta = { ...processor.process(meta) };
-        }
-
         return meta;
-    }
-
-    /**
-     * This is a simple, *insecure* hash that's short, fast.
-     * For algorithmic use, where security isn't needed, it's way simpler than sha1 (and all its deps)
-     * or similar, and with a short, clean (base 36 alphanumeric) result.
-     *
-     * @param {string} string_
-     * @returns {string}
-     * @private
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private _simpleHash(string_: string): string {
-        let hash = 0;
-
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 0; index < string_.length; index++) {
-            // eslint-disable-next-line no-bitwise
-            hash = Math.trunc((hash << 5) - hash + (string_.codePointAt(index) as number));
-        }
-
-        // eslint-disable-next-line no-bitwise
-        return (hash >>> 0).toString(36);
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
@@ -507,7 +473,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // eslint-disable-next-line security/detect-object-injection
         if ((this.logLevels[logLevel] as number) >= (this.logLevels[this.generalLogLevel] as number)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,security/detect-object-injection
-            const meta = this._buildMeta(type, this.types[type], ...messageObject);
+            let meta = this._buildMeta(type, this.types[type], ...messageObject);
 
             /**
              * @param newLog false if the throttle expired and we don't want to log a duplicate
@@ -529,6 +495,12 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
                 }
 
                 if (newLog) {
+                    // Apply global processors
+                    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+                    for (const processor of this.processors) {
+                        meta = { ...processor.process(meta) };
+                    }
+
                     this.lastLog.object = meta;
 
                     this._report(meta);
@@ -543,7 +515,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
             if (diffTime < this.throttle) {
                 try {
-                    const serializedLog = this._simpleHash([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix].join(""));
+                    const serializedLog = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
                     const isSameLog = this.lastLog.serialized === serializedLog;
 
                     this.lastLog.serialized = serializedLog;

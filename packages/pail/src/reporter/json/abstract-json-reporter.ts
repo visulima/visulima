@@ -12,6 +12,7 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
     }
 
     public log(meta: ReadonlyMeta<L>): void {
+        // @ts-expect-error -- tsup can find the type
         const { file, type, ...rest } = meta;
 
         if (rest.label) {

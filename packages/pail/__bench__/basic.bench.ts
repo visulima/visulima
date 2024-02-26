@@ -29,10 +29,16 @@ const browserPail = createBrowserPail({
     reporters: [new BrowserJsonReporter()],
 });
 
+const wsDevNull2 = fs.createWriteStream("/dev/null");
+
+wsDevNull2.on("finish", () => {
+    console.log("finish");
+});
+
 const serverConsola = createServerConsola({
     throttle: 999999999,
-    stderr: wsDevNull,
-    stdout: wsDevNull,
+    stderr: wsDevNull2,
+    stdout: wsDevNull2,
     reporters: [new JsonServerConsolaReporter()],
 });
 
@@ -123,15 +129,15 @@ describe("basic", async () => {
         },
     );
 
-    bench(
-        "tslog",
-        async () => {
-            tsLog.info("hello world");
-        },
-        {
-            iterations: 10000,
-        },
-    );
+    // bench(
+    //     "tslog",
+    //     async () => {
+    //         tsLog.info("hello world");
+    //     },
+    //     {
+    //         iterations: 10000,
+    //     },
+    // );
 
     bench(
         "bunyan node stream",
