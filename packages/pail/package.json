@@ -1,0 +1,256 @@
+{
+    "name": "@visulima/pail",
+    "version": "0.0.0",
+    "description": "Find a file or directory by walking up parent directories.",
+    "keywords": [
+        "anolilab",
+        "box",
+        "boxen",
+        "browser",
+        "browser-logger",
+        "callsite",
+        "callsites",
+        "cli",
+        "color",
+        "colorful",
+        "colorize",
+        "consola",
+        "console",
+        "console-logger",
+        "debug",
+        "error-logging",
+        "file-logger",
+        "file-logging",
+        "filesystem-logger",
+        "filter",
+        "fs-logger",
+        "handling exceptions",
+        "json",
+        "json-logger",
+        "json-logging",
+        "log level",
+        "log",
+        "log-cleaner",
+        "log-rotation",
+        "log4j",
+        "log4js",
+        "log4ts",
+        "logger",
+        "logging",
+        "node",
+        "node-logger",
+        "pail",
+        "pino",
+        "pretty-error",
+        "pretty-log",
+        "print",
+        "progress",
+        "redact",
+        "rotating-log",
+        "show error",
+        "timer",
+        "visulima",
+        "warning-logging",
+        "winston"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/pail",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/pail"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de",
+        "url": "https://danielbannert.com"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "browser": "./dist/index.browser.js",
+            "require": {
+                "types": "./dist/index.server.d.cts",
+                "default": "./dist/index.server.cjs"
+            },
+            "import": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            }
+        },
+        "./browser": {
+            "require": {
+                "types": "./dist/index.browser.d.cts",
+                "default": "./dist/index.browser.cjs"
+            },
+            "import": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
+            }
+        },
+        "./server": {
+            "require": {
+                "types": "./dist/index.server.d.cts",
+                "default": "./dist/index.server.cjs"
+            },
+            "import": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            }
+        },
+        "./reporter": {
+            "browser": "./dist/reporter.browser.js",
+            "require": {
+                "types": "./dist/reporter.server.d.cts",
+                "default": "./dist/reporter.server.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.server.d.ts",
+                "default": "./dist/reporter.server.js"
+            }
+        },
+        "./browser/reporter": {
+            "require": {
+                "types": "./dist/reporter.browser.d.cts",
+                "default": "./dist/reporter.browser.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.browser.d.ts",
+                "default": "./dist/reporter.browser.js"
+            }
+        },
+        "./server/reporter": {
+            "browser": "./dist/reporter.browser.js",
+            "require": {
+                "types": "./dist/reporter.server.d.cts",
+                "default": "./dist/reporter.server.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.server.d.ts",
+                "default": "./dist/reporter.server.js"
+            }
+        },
+        "./processor": {
+            "browser": "./dist/processor.browser.js",
+            "require": {
+                "types": "./dist/processor.server.d.cts",
+                "default": "./dist/processor.server.cjs"
+            },
+            "import": {
+                "types": "./dist/processor.server.d.ts",
+                "default": "./dist/processor.server.js"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.server.cjs",
+    "module": "dist/index.server.js",
+    "browser": "dist/index.browser.js",
+    "types": "dist/index.server.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "@visulima/fmt": "workspace:*",
+        "safe-stable-stringify": "^2.4.3",
+        "string-length": "^6.0.0",
+        "terminal-size": "^4.0.0",
+        "wrap-ansi": "^9.0.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-preset": "^8.0.3",
+        "@babel/core": "^7.23.9",
+        "@rushstack/eslint-plugin-security": "^0.8.1",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
+        "@total-typescript/ts-reset": "^0.5.1",
+        "@types/node": "18.18.8",
+        "@vitest/coverage-v8": "^1.3.1",
+        "@vitest/ui": "^1.3.1",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.57.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.3.22",
+        "eslint-plugin-vitest-globals": "^1.4.0",
+        "prettier": "^3.2.5",
+        "rimraf": "^5.0.5",
+        "rotating-file-stream": "^3.2.1",
+        "secretlint": "8.1.2",
+        "semantic-release": "^23.0.2",
+        "sort-package-json": "^2.8.0",
+        "tsup": "^8.0.2",
+        "type-fest": "^4.10.3",
+        "typescript": "^5.3.3",
+        "vitest": "^1.3.1"
+    },
+    "peerDependencies": {
+        "rotating-file-stream": "^3.1.1"
+    },
+    "peerDependenciesMeta": {
+        "rotating-file-stream": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    },
+    "sources": [
+        "src/index.browser.ts",
+        "src/index.server.ts",
+        "src/processor.browser.ts",
+        "src/processor.server.ts",
+        "src/reporter.browser.ts",
+        "src/reporter.server.ts"
+    ]
+}
