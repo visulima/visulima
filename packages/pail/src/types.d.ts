@@ -62,7 +62,7 @@ export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
     color?: AnsiColors | undefined;
     label: string;
-    logLevel: ExtendedRfc5424LogLevels | L;
+    logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;
 }
 
 export type LoggerTypesConfig<T extends string, L extends string = never> = Record<T, Partial<LoggerConfiguration<L>>>;
