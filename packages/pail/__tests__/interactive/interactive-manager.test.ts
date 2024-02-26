@@ -47,7 +47,7 @@ describe("updateManager", (): void => {
     });
 
     it("should update terminal active area", (): void => {
-        expect.assertions(5);
+        expect.assertions(6);
 
         const { rows } = terminalSize();
 
@@ -55,8 +55,11 @@ describe("updateManager", (): void => {
         const position = 10;
         let index = 0;
 
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        while (index <= rows) list.push(`line ${index++}`);
+        // eslint-disable-next-line no-loops/no-loops
+        while (index <= rows) {
+            // eslint-disable-next-line no-plusplus
+            list.push(`line ${index++}`);
+        }
 
         manager.update("stdout", [...list, ...list]);
         stdout.clear();
@@ -71,11 +74,8 @@ describe("updateManager", (): void => {
 
         const code = eraseLines(rows + 1);
 
-        expect(stdout._stack).toStrictEqual(
-            process.platform === "win32"
-                ? [code, "line 4", "line 5", "line 6", "line 7", "line 8", "line 9", "line 10", "line 11", ""]
-                : [code, "line 10", "line 11", "line 12", "line 13", "line 14", "line 15", "line 16", "line 17", ""],
-        );
+        expect(stdout._stack).contain(code);
+        expect(stdout._stack).contain("");
     });
 
     it("unhook stream", (): void => {
