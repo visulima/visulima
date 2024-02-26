@@ -78,7 +78,6 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                 break;
             }
 
-            // eslint-disable-next-line default-case
             switch (c) {
                 case CHAR_d:
                 case CHAR_f: {
@@ -201,13 +200,21 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 
                     break;
                 }
-            }
+                default: {
+                    // eslint-disable-next-line security/detect-object-injection
+                    if (typeof options.formatters?.[c] === "function") {
+                        if (lastPosition < index) {
+                            result += fmt.slice(lastPosition, index);
+                        }
 
-            // eslint-disable-next-line security/detect-object-injection
-            if (typeof options.formatters?.[c] === "function") {
-                // eslint-disable-next-line security/detect-object-injection
-                result += (options.formatters[c] as FormatterFunction)(arguments_[a as keyof typeof arguments_]);
-                lastPosition = index + 2;
+                        // eslint-disable-next-line security/detect-object-injection
+                        result += (options.formatters[c] as FormatterFunction)(arguments_[a as keyof typeof arguments_]);
+
+                        lastPosition = index + 2;
+
+                        index++;
+                    }
+                }
             }
 
             ++a;
