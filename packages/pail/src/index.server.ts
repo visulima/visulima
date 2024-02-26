@@ -21,10 +21,8 @@ const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailServerType<T, L> =>
     new PailServer<T, L>({
         logLevel: _getDefaultLogLevel(),
-
-        processors: options?.processors ?? [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
-
-        reporters: options?.reporters ?? [new PrettyReporter()],
+        processors: [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
+        reporters: [new PrettyReporter()],
         stderr: process.stderr,
         stdout: process.stdout,
         ...options,

@@ -12,16 +12,15 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        const { type, ...rest } = meta;
+        const { file, type, ...rest } = meta;
 
         if (rest.label) {
             rest.label = rest.label.trim();
         }
 
-        if (rest?.file) {
+        if (file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file =
-                rest.file.name + ":" + rest.file.line + (rest.file.column ? ":" + rest.file.column : "");
+            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = file.name + ":" + file.line + (file.column ? ":" + file.column : "");
         }
 
         if (rest.scope?.length === 0) {

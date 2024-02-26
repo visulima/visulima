@@ -123,10 +123,15 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // Track of last log
         this.lastLog = {};
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.registerReporters(options?.reporters ?? []);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.registerProcessors(options?.processors ?? []);
+        if (Array.isArray(options?.reporters)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            this.registerReporters(options.reporters);
+        }
+
+        if (Array.isArray(options?.processors)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            this.registerProcessors(options?.processors);
+        }
     }
 
     public wrapConsole(): void {
@@ -308,19 +313,19 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     public group(label = "console.group"): void {
         if (typeof window === "undefined") {
-            this.groups.push(label);
-        } else {
             // eslint-disable-next-line no-console
             console.group(label);
+        } else {
+            this.groups.push(label);
         }
     }
 
     public groupEnd(): void {
         if (typeof window === "undefined") {
-            this.groups.pop();
-        } else {
             // eslint-disable-next-line no-console
             console.groupEnd();
+        } else {
+            this.groups.pop();
         }
     }
 

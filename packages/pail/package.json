@@ -89,39 +89,48 @@
                 "default": "./dist/index.server.js"
             }
         },
-        "./reporter/json-file": {
+        "./browser": {
             "require": {
-                "types": "./dist/reporter/file/json-file-reporter.d.cts",
-                "default": "./dist/reporter/file/json-file-reporter.cjs"
+                "types": "./dist/index.browser.d.cts",
+                "default": "./dist/index.browser.cjs"
             },
             "import": {
-                "types": "./dist/reporter/file/json-file-reporter.d.ts",
-                "default": "./dist/reporter/file/json-file-reporter.js"
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
             }
         },
-        "./reporter/json": {
-            "browser": "./dist/reporter/json/json.browser.js",
+        "./server": {
             "require": {
-                "types": "./dist/reporter/json/json.server.d.cts",
-                "default": "./dist/reporter/json/json.server.cjs"
+                "types": "./dist/index.server.d.cts",
+                "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter/json/json.server.d.ts",
-                "default": "./dist/reporter/json/json.server.js"
-            }
-        },
-        "./reporter/pretty": {
-            "browser": "./dist/reporter/pretty/pretty.browser.js",
-            "require": {
-                "types": "./dist/reporter/pretty/pretty.server.d.cts",
-                "default": "./dist/reporter/pretty/pretty.server.cjs"
-            },
-            "import": {
-                "types": "./dist/reporter/pretty/pretty.server.d.ts",
-                "default": "./dist/reporter/pretty/pretty.server.js"
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
             }
         },
         "./reporter": {
+            "browser": "./dist/reporter.browser.js",
+            "require": {
+                "types": "./dist/reporter.server.d.cts",
+                "default": "./dist/reporter.server.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.server.d.ts",
+                "default": "./dist/reporter.server.js"
+            }
+        },
+        "./browser/reporter": {
+            "require": {
+                "types": "./dist/reporter.browser.d.cts",
+                "default": "./dist/reporter.browser.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.browser.d.ts",
+                "default": "./dist/reporter.browser.js"
+            }
+        },
+        "./server/reporter": {
             "browser": "./dist/reporter.browser.js",
             "require": {
                 "types": "./dist/reporter.server.d.cts",
@@ -167,7 +176,6 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
@@ -175,7 +183,6 @@
     "dependencies": {
         "@visulima/colorize": "workspace:*",
         "@visulima/fmt": "workspace:*",
-        "ansi-escapes": "^6.2.0",
         "safe-stable-stringify": "^2.4.3",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
@@ -192,31 +199,24 @@
         "@types/node": "18.18.8",
         "@vitest/coverage-v8": "^1.3.1",
         "@vitest/ui": "^1.3.1",
-        "bunyan": "^1.8.15",
-        "consola": "^3.2.3",
         "cross-env": "^7.0.3",
-        "devalue": "^4.3.2",
-        "eslint": "^8.56.0",
+        "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.3.22",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "figures": "^6.0.1",
-        "pino": "^8.19.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "rotating-file-stream": "^3.2.1",
         "secretlint": "8.1.2",
         "semantic-release": "^23.0.2",
-        "sort-package-json": "^2.7.0",
-        "tslog": "^4.9.2",
+        "sort-package-json": "^2.8.0",
         "tsup": "^8.0.2",
-        "type-fest": "^4.10.2",
+        "type-fest": "^4.10.3",
         "typescript": "^5.3.3",
-        "vitest": "^1.3.1",
-        "winston": "^3.11.0"
+        "vitest": "^1.3.1"
     },
     "peerDependencies": {
         "rotating-file-stream": "^3.1.1"
@@ -246,18 +246,11 @@
         }
     },
     "sources": [
-        "src/pail.browser.ts",
-        "src/pail.server.ts",
         "src/index.browser.ts",
         "src/index.server.ts",
         "src/processor.browser.ts",
         "src/processor.server.ts",
         "src/reporter.browser.ts",
-        "src/reporter.server.ts",
-        "src/reporter/pretty/pretty.browser.ts",
-        "src/reporter/pretty/pretty.server.ts",
-        "src/reporter/json/json.browser.ts",
-        "src/reporter/json/json.server.ts",
-        "src/reporter/file/json-file-reporter.ts"
+        "src/reporter.server.ts"
     ]
 }

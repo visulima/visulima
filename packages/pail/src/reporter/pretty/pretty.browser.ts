@@ -21,7 +21,8 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public log(meta: ReadonlyMeta<L>): void {
-        const isNotBrowser = typeof window === "undefined";
+        // eslint-disable-next-line unicorn/no-typeof-undefined,@typescript-eslint/prefer-optional-chain
+        const isNotBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
 
         const { badge, context, date, error, groups, label, message, prefix, repeated, scope, suffix, type } = meta;
