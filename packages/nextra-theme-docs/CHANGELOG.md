@@ -1,3 +1,22 @@
+## @visulima/nextra-theme-docs [4.0.14](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.13...@visulima/nextra-theme-docs@4.0.14) (2024-02-26)
+
+
+### Bug Fixes
+
+* updated @giscus/react, next-seo and all dev deps ([9a81746](https://github.com/visulima/visulima/commit/9a81746cccd56a22bcf50005e2cbf9eea3a495f7))
+
+
+### Miscellaneous Chores
+
+* changed all @types/node version to 18.18.14 ([9aab8db](https://github.com/visulima/visulima/commit/9aab8db8c07d574dd2d6286b3281f56fd02f6265))
+* **deps:** update dependency @types/node to v18.19.15 ([3b3acec](https://github.com/visulima/visulima/commit/3b3acecaef8acce3d7b8f05e8c2abccf3e35d039))
+* **deps:** update patch updates ([dafdecb](https://github.com/visulima/visulima/commit/dafdecbfea9c2c365a9b8ec07f0227c16ce1536d))
+* dev deps update ([eeffd86](https://github.com/visulima/visulima/commit/eeffd86217777b0629f8f18e4ab2c540cc21887b))
+* update dev deps ([4d9764d](https://github.com/visulima/visulima/commit/4d9764df3fbb79577bb5a8c711fd4029d3fafecd))
+* update dev deps ([795feac](https://github.com/visulima/visulima/commit/795feacfc2cdbeee538dca444bf91cf41015dd0a))
+* update dev deps ([c4e2508](https://github.com/visulima/visulima/commit/c4e2508431f57447e9cf42e6acbcadd60f4eb24f))
+* updated license ([a140ef8](https://github.com/visulima/visulima/commit/a140ef8517b848d29559a48851867b07eab7d0c3))
+
 ## @visulima/nextra-theme-docs [4.0.13](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.12...@visulima/nextra-theme-docs@4.0.13) (2024-01-31)
 
 
