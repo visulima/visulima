@@ -4,36 +4,28 @@ import { MessageFormatterProcessor } from "../../src/processor/message-formatter
 import type { Meta } from "../../src/types";
 
 describe("messageFormatterProcessor", () => {
-    // Given a MessageFormatterProcessor instance, when calling process() with a Meta object containing a message array with a string as the first element and unknown values as the remaining elements, then the message should be formatted using the build function with the formatters and serializers provided in the constructor, and the resulting string should be assigned to the message property of the Meta object.
     it("should format message array with formatters and serializers", () => {
         expect.assertions(1);
 
         const formatters = {
-            uppercase: (argument: any) => argument.toUpperCase(),
+            u: (argument: any) => argument.toUpperCase(),
         };
 
-        const serializers = [
-            {
-                isApplicable: (value: any) => typeof value === "string",
-                name: "string",
-                serialize: (value: any) => value.toUpperCase(),
-            },
-        ];
-
-        const processor = new MessageFormatterProcessor({ formatters, serializers });
+        const processor = new MessageFormatterProcessor({ formatters });
 
         const meta: Meta<string> = {
             badge: undefined,
-            context: undefined,
+            context: ["UPPERCASE"],
             date: new Date(),
             error: undefined,
             groups: undefined,
             label: undefined,
-            message: ["Hello", "world"],
+            message: "%uHello world",
             prefix: undefined,
             repeated: undefined,
             scope: undefined,
             suffix: undefined,
+            traceError: undefined,
             type: {
                 level: "info",
                 name: "test",
@@ -42,40 +34,10 @@ describe("messageFormatterProcessor", () => {
 
         const processedMeta = processor.process(meta);
 
-        expect(processedMeta.message).toBe("HELLO WORLD");
+        expect(processedMeta.message).toBe("UPPERCASEHello world");
     });
 
-    // Given a MessageFormatterProcessor instance, when calling process() with a Meta object containing a message array with a string as the first element and no remaining elements, then the message property of the Meta object should remain unchanged.
     it("should not change message array with no remaining elements", () => {
-        expect.assertions(1);
-
-        const processor = new MessageFormatterProcessor();
-
-        const meta: Meta<string> = {
-            badge: undefined,
-            context: undefined,
-            date: new Date(),
-            error: undefined,
-            groups: undefined,
-            label: undefined,
-            message: ["Hello"],
-            prefix: undefined,
-            repeated: undefined,
-            scope: undefined,
-            suffix: undefined,
-            type: {
-                level: "info",
-                name: "test",
-            },
-        };
-
-        const processedMeta = processor.process(meta);
-
-        expect(processedMeta.message).toBe("Hello");
-    });
-
-    // Given a MessageFormatterProcessor instance, when calling process() with a Meta object containing a message that is not an array, then the message property of the Meta object should remain unchanged.
-    it("should not change message if not an array", () => {
         expect.assertions(1);
 
         const processor = new MessageFormatterProcessor();
@@ -92,6 +54,7 @@ describe("messageFormatterProcessor", () => {
             repeated: undefined,
             scope: undefined,
             suffix: undefined,
+            traceError: undefined,
             type: {
                 level: "info",
                 name: "test",
@@ -103,8 +66,7 @@ describe("messageFormatterProcessor", () => {
         expect(processedMeta.message).toBe("Hello");
     });
 
-    // Given a MessageFormatterProcessor instance with no options provided, when calling process() with a Meta object containing a message array with a string as the first element and unknown values as the remaining elements, then the message should be formatted using the default build function, and the resulting string should be assigned to the message property of the Meta object.
-    it("should format message array with default build function", () => {
+    it("should not change message if its a array", () => {
         expect.assertions(1);
 
         const processor = new MessageFormatterProcessor();
@@ -116,11 +78,12 @@ describe("messageFormatterProcessor", () => {
             error: undefined,
             groups: undefined,
             label: undefined,
-            message: ["Hello", "world"],
+            message: ["Hello"],
             prefix: undefined,
             repeated: undefined,
             scope: undefined,
             suffix: undefined,
+            traceError: undefined,
             type: {
                 level: "info",
                 name: "test",
@@ -129,7 +92,36 @@ describe("messageFormatterProcessor", () => {
 
         const processedMeta = processor.process(meta);
 
-        expect(processedMeta.message).toBe("Hello world");
+        expect(processedMeta.message).toStrictEqual(["Hello"]);
+    });
+
+    it("should format message array with default build function", () => {
+        expect.assertions(1);
+
+        const processor = new MessageFormatterProcessor();
+
+        const meta: Meta<string> = {
+            badge: undefined,
+            context: ["world"],
+            date: new Date(),
+            error: undefined,
+            groups: undefined,
+            label: undefined,
+            message: ["Hello %s"],
+            prefix: undefined,
+            repeated: undefined,
+            scope: undefined,
+            suffix: undefined,
+            traceError: undefined,
+            type: {
+                level: "info",
+                name: "test",
+            },
+        };
+
+        const processedMeta = processor.process(meta);
+
+        expect(processedMeta.message).toStrictEqual(["Hello world"]);
     });
 
     // Given a MessageFormatterProcessor instance with no options provided, when calling process() with a Meta object containing a message array with a string as the first element and an object as the second element, and the object contains a circular reference, then the function should not crash and the message property of the Meta object should be assigned a string representation of the object.
@@ -143,16 +135,17 @@ describe("messageFormatterProcessor", () => {
 
         const meta: Meta<string> = {
             badge: undefined,
-            context: undefined,
+            context: [object],
             date: new Date(),
             error: undefined,
             groups: undefined,
             label: undefined,
-            message: ["Hello", object],
+            message: "Hello %o",
             prefix: undefined,
             repeated: undefined,
             scope: undefined,
             suffix: undefined,
+            traceError: undefined,
             type: {
                 level: "info",
                 name: "test",
@@ -161,7 +154,7 @@ describe("messageFormatterProcessor", () => {
 
         const processedMeta = processor.process(meta);
 
-        expect(processedMeta.message).toBe("Hello [object Object]");
+        expect(processedMeta.message).toBe('Hello "[Circular]"');
     });
 
     // Given a MessageFormatterProcessor instance with no options provided, when calling process() with a Meta object containing a message array with a string as the first element and an object as the second element, and the object contains a function, then the function should be ignored and the message property of the Meta object should be assigned a string representation of the object.
@@ -174,16 +167,17 @@ describe("messageFormatterProcessor", () => {
 
         const meta: Meta<string> = {
             badge: undefined,
-            context: undefined,
+            context: [object],
             date: new Date(),
             error: undefined,
             groups: undefined,
             label: undefined,
-            message: ["Hello", object],
+            message: "Hello %o",
             prefix: undefined,
             repeated: undefined,
             scope: undefined,
             suffix: undefined,
+            traceError: undefined,
             type: {
                 level: "info",
                 name: "test",

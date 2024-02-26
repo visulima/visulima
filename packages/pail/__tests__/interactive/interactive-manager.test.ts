@@ -1,12 +1,12 @@
 import type { WriteStream as TtyWriteStream } from "node:tty";
 
-import ansiEscapes from "ansi-escapes";
 import terminalSize from "terminal-size";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { InteractiveManager } from "../../src/interactive/interactive-manager";
 import { InteractiveStreamHook } from "../../src/interactive/interactive-stream-hook";
 import { WriteStream } from "./__mocks__/write-stream.mock.js";
+import { cursorHide, cursorShow, eraseLines } from "../../src/util/ansi-escapes";
 
 const stdout = new WriteStream() as unknown as TtyWriteStream & WriteStream;
 const stderr = new WriteStream() as unknown as TtyWriteStream & WriteStream;
@@ -25,28 +25,28 @@ describe("updateManager", (): void => {
         expect(manager.isHooked).toBeFalsy();
         expect(manager.hook()).toBeTruthy();
         expect(manager.isHooked).toBeTruthy();
-        expect(stdout._stack).toStrictEqual([ansiEscapes.cursorHide]);
+        expect(stdout._stack).toStrictEqual([cursorHide]);
     });
 
-    it("update lines", (): void => {
+    it("should update lines", (): void => {
         expect.assertions(1);
 
-        manager.update(["line 1"]);
-        manager.update(["line 2"], 1);
+        manager.update("stdout", ["line 1"]);
+        manager.update("stdout", ["line 2"], 1);
 
         expect(stdout._stack).toStrictEqual(["line 1", "", "line 2", ""]);
     });
 
-    it("update lines with empty array", (): void => {
+    it("should update lines with empty array", (): void => {
         expect.assertions(1);
 
-        manager.update([]);
-        manager.update([], 1);
+        manager.update("stdout", []);
+        manager.update("stdout", [], 1);
 
         expect(stdout._stack).toStrictEqual([]);
     });
 
-    it("update terminal active area", (): void => {
+    it("should update terminal active area", (): void => {
         expect.assertions(5);
 
         const { rows } = terminalSize();
@@ -58,23 +58,23 @@ describe("updateManager", (): void => {
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         while (index <= rows) list.push(`line ${index++}`);
 
-        manager.update([...list, ...list]);
+        manager.update("stdout", [...list, ...list]);
         stdout.clear();
 
         expect(manager.lastLength).toBe(list.length * 2);
         expect(manager.outside).toBe(list.length + 1);
         expect(stdout._stack).toStrictEqual([]);
 
-        manager.update(list, position);
+        manager.update("stdout", list, position);
 
         expect(stdout._stack).toHaveLength(list.length - (manager.outside - position) + 1);
 
-        const code = ansiEscapes.eraseLines(rows + 1);
+        const code = eraseLines(rows + 1);
 
         expect(stdout._stack).toStrictEqual(
             process.platform === "win32"
                 ? [code, "line 4", "line 5", "line 6", "line 7", "line 8", "line 9", "line 10", "line 11", ""]
-                : [code, "line 8", "line 9", "line 10", "line 11", "line 12", "line 13", "line 14", "line 15", ""],
+                : [code, "line 10", "line 11", "line 12", "line 13", "line 14", "line 15", "line 16", "line 17", ""],
         );
     });
 
@@ -83,6 +83,6 @@ describe("updateManager", (): void => {
 
         expect(manager.isHooked).toBeTruthy();
         expect(manager.unhook()).toBeTruthy();
-        expect(stdout._stack).toStrictEqual([ansiEscapes.cursorShow]);
+        expect(stdout._stack).toStrictEqual([cursorShow]);
     });
 });
