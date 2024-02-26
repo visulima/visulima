@@ -1,3 +1,16 @@
+## @visulima/error [3.0.4](https://github.com/visulima/visulima/compare/@visulima/error@3.0.3...@visulima/error@3.0.4) (2024-02-26)
+
+
+### Bug Fixes
+
+* updated @jridgewell/trace-mapping ([f2061d1](https://github.com/visulima/visulima/commit/f2061d11c0db0df18b1ae065118e6a2f33811eab))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.14
+
 ## @visulima/error [3.0.3](https://github.com/visulima/visulima/compare/@visulima/error@3.0.2...@visulima/error@3.0.3) (2024-01-31)
 
 
