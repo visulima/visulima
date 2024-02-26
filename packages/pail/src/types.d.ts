@@ -100,15 +100,6 @@ export interface StringifyAwareProcessor<L extends string = never> extends Proce
     setStringify: (stringify: typeof JSON.stringify) => void;
 }
 
-export type Serializer<Type = string, Options = UnknownRecord> = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    isApplicable: (value: any) => boolean;
-    name: string;
-    options?: Options;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serialize: (value: any, options?: Options) => Type;
-};
-
 export interface ConstructorOptions<T extends string = never, L extends string = never> {
     disabled?: boolean;
     logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
