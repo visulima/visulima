@@ -1,6 +1,6 @@
 import { StringDecoder } from "node:string_decoder";
 
-import ansiEscapes from "ansi-escapes";
+import { cursorHide, cursorShow, eraseLines } from "../util/ansi-escapes";
 
 export class InteractiveStreamHook {
     public static readonly DRAIN = true;
@@ -20,7 +20,7 @@ export class InteractiveStreamHook {
     }
 
     public active(): void {
-        this.write(ansiEscapes.cursorHide);
+        this.write(cursorHide as string);
 
         this.#stream.write = (data: Uint8Array | string, ...arguments_: [((error?: Error) => void)?] | [(string | undefined)?, ((error?: Error) => void)?]) => {
             const callback = arguments_.at(-1);
@@ -43,7 +43,7 @@ export class InteractiveStreamHook {
 
     public erase(count: number): void {
         if (count > 0) {
-            this.write(ansiEscapes.eraseLines(count + 1));
+            this.write(eraseLines(count + 1) as string);
         }
     }
 
@@ -64,7 +64,7 @@ export class InteractiveStreamHook {
 
     public renew(): void {
         this.#stream.write = this.#method;
-        this.write(ansiEscapes.cursorShow);
+        this.write(cursorShow as string);
     }
 
     public write(message: string): void {

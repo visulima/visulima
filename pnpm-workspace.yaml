@@ -8,7 +8,7 @@ packages:
     - "!packages/readdir/__fixtures__/**"
     - "!**/__tests__/**"
     - "!**/__test__/**"
-    - "!**/__bench__/**"
+    - "**/__bench__/**"
     - "packages/colorize/__fixtures__/package/cjs"
     - "packages/colorize/__fixtures__/package/mjs"
     - "docs"

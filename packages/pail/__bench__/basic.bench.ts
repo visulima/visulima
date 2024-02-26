@@ -3,44 +3,42 @@ import * as fs from "node:fs";
 import { Logger, ILogObj } from "tslog";
 import { bench, describe } from "vitest";
 import pino from "pino";
-import { ConsolaReporter, createConsola as createBasicConsola } from "consola/basic";
 import { createConsola as createServerConsola } from "consola";
 import { createConsola as createBrowserConsola } from "consola/browser";
 import * as winston from "winston";
 import bunyan from "bunyan";
+import { createPail as createServerPail } from "@visulima/pail/server";
+import { createPail as createBrowserPail } from "@visulima/pail/browser";
+import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
+import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
+import { Signale } from "@dynamicabot/signales";
 
-import { createPail as createServerPail } from "../src/index.server";
-import { createPail as createBrowserPail } from "../src/index.browser";
-import { JsonReporter as ServerJsonReporter } from "../src/reporter/json/json.server";
-import { JsonReporter as BrowserJsonReporter } from "../src/reporter/json/json.browser";
+import { JsonBrowserConsolaReporter, JsonServerConsolaReporter } from "./utils";
 
 const wsDevNull = fs.createWriteStream("/dev/null");
 
 const serverPail = createServerPail({
     throttle: 999999999,
     reporters: [new ServerJsonReporter()],
+    stderr: wsDevNull,
+    stdout: wsDevNull,
 });
+
 const browserPail = createBrowserPail({
     throttle: 999999999,
     reporters: [new BrowserJsonReporter()],
 });
 
-const basicConsola = createBasicConsola({
-    throttle: 999999999,
-    // Kind of the same interface as Pail
-    reporters: [new ServerJsonReporter() as ConsolaReporter],
-});
-
 const serverConsola = createServerConsola({
     throttle: 999999999,
-    // Kind of the same interface as Pail
-    reporters: [new ServerJsonReporter() as ConsolaReporter],
+    stderr: wsDevNull,
+    stdout: wsDevNull,
+    reporters: [new JsonServerConsolaReporter()],
 });
 
 const browserConsola = createBrowserConsola({
     throttle: 999999999,
-    // Kind of the same interface as Pail
-    reporters: [new BrowserJsonReporter() as ConsolaReporter],
+    reporters: [new JsonBrowserConsolaReporter()],
 });
 
 const tsLog: Logger<ILogObj> = new Logger({
@@ -70,7 +68,21 @@ const bunyanNodeStream = bunyan.createLogger({
     ],
 });
 
+const signale = new Signale({
+    stream: wsDevNull,
+})
+
 describe("basic", async () => {
+    bench(
+        "signale",
+        async () => {
+            signale.info("hello world");
+        },
+        {
+            iterations: 10000,
+        },
+    );
+
     bench(
         "pail server",
         async () => {
@@ -85,16 +97,6 @@ describe("basic", async () => {
         "pail browser",
         async () => {
             browserPail.info("hello world");
-        },
-        {
-            iterations: 10000,
-        },
-    );
-
-    bench(
-        "consola basic",
-        async () => {
-            basicConsola.info("hello world");
         },
         {
             iterations: 10000,

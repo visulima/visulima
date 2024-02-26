@@ -1,4 +1,3 @@
-import ansiEscapes from "ansi-escapes";
 import type { LiteralUnion } from "type-fest";
 
 import { InteractiveManager } from "./interactive/interactive-manager";
@@ -15,6 +14,7 @@ import type {
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
+import { clearTerminal } from "./util/ansi-escapes";
 
 class PailServerImpl<T extends string = never, L extends string = never> extends PailBrowserImpl<T, L> {
     protected readonly stdout: NodeJS.WriteStream;
@@ -27,7 +27,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     protected readonly interactive: boolean;
 
     public constructor(public readonly options: ServerConstructorOptions<T, L> = {}) {
-        const { interactive, reporters = [], stderr, stdout, ...rest } = options;
+        const { interactive, reporters, stderr, stdout, ...rest } = options;
 
         super(rest as ConstructorOptions<T, L>);
 
@@ -40,7 +40,9 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
-        this.registerReporters(reporters as Reporter<L>[]);
+        if (Array.isArray(reporters)) {
+            this.registerReporters(reporters);
+        }
     }
 
     public override scope<N extends string = T>(...name: string[]): PailServerType<N, L> {
@@ -79,8 +81,8 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     }
 
     public override clear(): void {
-        this.stdout.write(ansiEscapes.clearTerminal);
-        this.stderr.write(ansiEscapes.clearTerminal);
+        this.stdout.write(clearTerminal as string);
+        this.stderr.write(clearTerminal as string);
     }
 
     protected override registerReporters(reporters: Reporter<L>[]): void {

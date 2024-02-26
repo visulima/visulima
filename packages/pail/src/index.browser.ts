@@ -7,12 +7,12 @@ import type { ConstructorOptions, Processor } from "./types";
 
 export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailBrowserType<T, L> =>
     new PailBrowser<T, L>({
-        processors: options?.processors ?? [
+        processors: [
             new MessageFormatterProcessor<L>(),
-            ...(typeof window === "undefined" ? ([new ErrorProcessor()] as Processor<L>[]) : []),
+            // eslint-disable-next-line unicorn/no-negated-condition
+            ...(typeof window !== 'undefined' ? ([new ErrorProcessor()] as Processor<L>[]) : []),
         ],
-
-        reporters: options?.reporters ?? [new JsonReporter<L>()],
+        reporters: [new JsonReporter<L>()],
         ...options,
     });
 
