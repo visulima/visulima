@@ -1,0 +1,53 @@
+type CallSite = NodeJS.CallSite;
+
+type CallSiteWithFileName = { columnNumber: number | null; fileName: string | undefined; lineNumber: number | null };
+
+export const getCallerFilename = (): {
+    columnNumber?: number;
+    fileName: string | undefined;
+    lineNumber: number | undefined;
+} => {
+    const errorStack = Error.prepareStackTrace;
+
+    try {
+        let result: CallSite[] = [];
+
+        Error.prepareStackTrace = (_error, stack) => {
+            const callSitesWithoutCurrent = stack.slice(1);
+
+            result = callSitesWithoutCurrent;
+
+            return callSitesWithoutCurrent;
+        };
+
+        // eslint-disable-next-line unicorn/error-message,@typescript-eslint/no-unused-expressions
+        new Error().stack;
+
+        // eslint-disable-next-line unicorn/no-array-reduce
+        const callers = result.reduce<CallSiteWithFileName[]>((accumulator, x) => {
+            accumulator.push({
+                columnNumber: x.getColumnNumber(),
+                fileName: x.getFileName(),
+                lineNumber: x.getLineNumber(),
+            });
+            return accumulator;
+        }, []);
+
+        const firstExternalFilePath = callers.at(-2);
+
+        if (firstExternalFilePath) {
+            return {
+                columnNumber: firstExternalFilePath.columnNumber ?? undefined,
+                fileName: firstExternalFilePath.fileName,
+                lineNumber: firstExternalFilePath.lineNumber ?? undefined,
+            };
+        }
+
+        return {
+            fileName: "anonymous",
+            lineNumber: undefined,
+        };
+    } finally {
+        Error.prepareStackTrace = errorStack;
+    }
+};
