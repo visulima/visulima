@@ -1,15 +1,14 @@
 import hardRejection from "hard-rejection";
+import type { Pail } from "@visulima/pail/server";
 
-import type { Logger as ILogger } from "../@types";
-
-const registerExceptionHandler = (logger_: ILogger): void => {
+const registerExceptionHandler = (logger: Pail): void => {
     // we want to see real exceptions with backtraces and stuff
     process.on("uncaughtException", (error: Partial<Error> | null | undefined) => {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        logger_.error(`Uncaught exception: ${error}`);
+        logger.error(`Uncaught exception: ${error}`);
 
         if (error?.stack) {
-            logger_.error(error.stack);
+            logger.error(error.stack);
         }
 
         process.exit(1);
@@ -17,10 +16,10 @@ const registerExceptionHandler = (logger_: ILogger): void => {
 
     process.on("unhandledRejection", (error: Partial<Error> | null | undefined) => {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        logger_.error(`Promise rejection: ${error}`);
+        logger.error(`Promise rejection: ${error}`);
 
         if (error?.stack) {
-            logger_.error(error.stack);
+            logger.error(error.stack);
         }
 
         process.exit(1);
@@ -28,7 +27,7 @@ const registerExceptionHandler = (logger_: ILogger): void => {
 
     hardRejection((stack?: string) => {
         if (stack) {
-            logger_.error(stack);
+            logger.error(stack);
         }
     });
 };

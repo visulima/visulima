@@ -9,6 +9,5 @@ declare global {
 export type { Cli, CommandSection } from "./cli";
 export type { Command } from "./command";
 export type { Extension } from "./extension";
-export type { ConfigType, Logger } from "./logger";
 export type { Options } from "./options";
 export type { Toolbox } from "./toolbox";

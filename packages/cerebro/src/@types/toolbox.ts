@@ -1,6 +1,7 @@
+import type { Pail } from "@visulima/pail/server";
+
 import type { Cli as ICli } from "./cli";
 import type { Command as ICommand } from "./command";
-import type { Logger as ILogger } from "./logger";
 import type { Options } from "./options";
 
 // Final toolbox
@@ -19,7 +20,8 @@ export interface Toolbox extends Cerebro.ExtensionOverrides {
 
     commandName: string;
 
-    logger: ILogger;
+    logger: Pail;
+
     /**
      * Any optional parameters. Typically coming from command-line
      * argument like this: `--force -p tsconfig-mjson`.

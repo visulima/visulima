@@ -7,7 +7,7 @@ export default {
         const version = runtime.getPackageVersion();
 
         if (version === undefined) {
-            logger.warning("Unknown version");
+            logger.warn("Unknown version");
             logger.debug("The version number was not provided by the cli constructor.");
         } else {
             logger.info(version);

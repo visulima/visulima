@@ -1,5 +1,7 @@
-import * as process from "node:process";
+import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
+import type { Pail } from "@visulima/pail/server";
+import { createPail } from "@visulima/pail/server";
 import boxen from "boxen";
 import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
@@ -12,7 +14,6 @@ import type {
     Command as ICommand,
     CommandSection as ICommandSection,
     Extension as IExtension,
-    Logger as ILogger,
     Options as IOptions,
     Toolbox as IToolbox,
 } from "./@types";
@@ -22,7 +23,6 @@ import VersionCommand from "./command/version";
 import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
-import logger from "./toolbox/logger-tools";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
 import checkNodeVersion from "./util/check-node-version";
 import getBooleanValues from "./util/command-line-args/get-boolean-values";
@@ -36,15 +36,15 @@ import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
 
 /** Detect if `CI` environment variable is set */
-const isCI = "CI" in process.env && ("GITHUB_ACTIONS" in process.env || "GITLAB_CI" in process.env || "CIRCLECI" in process.env);
+const isCI = "CI" in env && ("GITHUB_ACTIONS" in env || "GITLAB_CI" in env || "CIRCLECI" in env);
 
 /** Detect if `NODE_ENV` environment variable is `test` */
-const isTest = process.env["NODE_ENV"] === "test" || process.env["TEST"] !== "false";
+const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
 class Cli implements ICli {
-    private readonly logger: ILogger;
+    private readonly logger: Pail;
 
     private readonly argv: string[];
 
@@ -84,8 +84,8 @@ class Cli implements ICli {
         } = {},
     ) {
         const { argv, cwd, packageName, packageVersion } = {
-            argv: process.argv,
-            cwd: process.cwd(),
+            argv: process_argv,
+            cwd: process_cwd(),
             ...options,
         };
 
@@ -94,25 +94,27 @@ class Cli implements ICli {
         // If the "--quiet"/"-q" flag is ever present, set our global logging
         // to quiet mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
-            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
+            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
         }
 
         // If the "--verbose"/"-v" flag is ever present, set our global logging
         // to verbose mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
-            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
+            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
         } else if (this.argv.includes("--very-verbose") || this.argv.includes("-vv")) {
-            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
-        } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in process.env) {
-            process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
+            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
+        } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in env) {
+            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
         }
 
-        this.logger = logger;
+        this.logger = createPail({
+            // logLevel: env["CEREBRO_OUTPUT_LEVEL"] as "debug" | "error" | "informational" | "warning",
+        });
 
         checkNodeVersion();
         registerExceptionHandler(this.logger);
 
-        process.env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
+        env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
 
         this.cliName = cliName;
         this.packageVersion = packageVersion;
@@ -237,7 +239,7 @@ class Cli implements ICli {
 
         this.updateNotifierOptions = {
             alwaysRun: false,
-            debug: process.env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
+            debug: env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
             distTag: "latest",
             pkg: {
                 name: this.packageName,
@@ -276,9 +278,9 @@ class Cli implements ICli {
 
         let parsedArguments: { argv: string[]; command: string | null | undefined };
 
-        this.logger.debug(`process.execPath: ${process.execPath}`);
-        this.logger.debug(`process.execArgv: ${process.execArgv.join(" ")}`);
-        this.logger.debug(`process.argv: ${process.argv.join(" ")}`);
+        this.logger.debug(`process.execPath: ${execPath}`);
+        this.logger.debug(`process.execArgv: ${execArgv.join(" ")}`);
+        this.logger.debug(`process.argv: ${process_argv.join(" ")}`);
 
         try {
             parsedArguments = commandLineCommands([null, ...commandNames], this.argv);
@@ -297,13 +299,13 @@ class Cli implements ICli {
                     alternatives = ` Did you mean: \r\n    - ${foundAlternatives.join("    \r\n- ")}`;
                 }
 
-                this.logger.error(`\r\n"${error.command}" is not an available command.${alternatives}`);
+                this.logger.error(`"${error.command}" is not an available command.${alternatives}`);
             } else {
                 this.logger.error(error as object);
             }
 
-            // eslint-disable-next-line unicorn/no-process-exit
-            return isTest ? undefined : process.exit(1);
+
+            return isTest ? undefined : exit(1);
         }
 
         const commandName = parsedArguments.command ?? this.defaultCommand;
@@ -312,8 +314,7 @@ class Cli implements ICli {
         if (typeof command.execute !== "function") {
             this.logger.error(`Command "${command.name}" has no function to execute.`);
 
-            // eslint-disable-next-line unicorn/no-process-exit
-            return isTest ? undefined : process.exit(1);
+            return isTest ? undefined : exit(1);
         }
 
         const commandArguments = parsedArguments.argv;
@@ -349,7 +350,7 @@ class Cli implements ICli {
             ];
         }
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations
+        // eslint-disable-next-line unicorn/prevent-abbreviations,@typescript-eslint/no-unsafe-argument
         const parsedArgs = commandLineArgs(arguments_, {
             argv: removeBooleanValues(commandArguments, command.options ?? []),
             camelCase: true,
@@ -402,8 +403,8 @@ class Cli implements ICli {
 
         await this.prepareToolboxResult(commandArgs, toolbox as IToolbox, command);
 
-        // eslint-disable-next-line unicorn/no-process-exit
-        return isTest ? undefined : process.exit(0);
+
+        return isTest ? undefined : exit(0);
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -501,15 +502,15 @@ class Cli implements ICli {
         await command.execute(toolbox);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
+
     private async updateNotifier({ logger }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
-            (!(process.env["NO_UPDATE_NOTIFIER"] || process.env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) &&
+            (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) &&
                 this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger
-            logger.log("Checking for updates...");
+            logger.raw("Checking for updates...");
 
             const hasNewVersion = await import("./update-notifier/has-new-version").then((m) => m.default);
 
@@ -623,7 +624,7 @@ class Cli implements ICli {
     private async registerExtensions(toolbox: IToolbox): Promise<void> {
         const callback = async (extension: IExtension) => {
             if (typeof extension.execute !== "function") {
-                this.logger.warning(`Skipped ${extension.name} because execute is not a function.`);
+                this.logger.warn(`Skipped ${extension.name} because execute is not a function.`);
 
                 return null;
             }

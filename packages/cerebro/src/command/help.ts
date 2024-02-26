@@ -1,4 +1,6 @@
-import type { Cli as ICli, Command as ICommand, Logger as ILogger, Toolbox as IToolbox } from "../@types";
+import type { Pail } from "@visulima/pail/server";
+
+import type { Cli as ICli, Command as ICommand, Toolbox as IToolbox } from "../@types";
 import type { OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
@@ -10,7 +12,7 @@ const EMPTY_GROUP_KEY = "__Other";
 const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
+const printGeneralHelp = (logger: Pail, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
 
     let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
@@ -35,51 +37,54 @@ const printGeneralHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
         return accumulator;
     }, {});
 
-    logger.log(
-        commandLineUsage([
-            {
-                content: `{cyan ${runtime.getCliName()}} {green <command>} [positional arguments] {yellow [options]}`,
-                header: "{inverse.cyan  Usage }",
-            },
-            ...Object.keys(groupedCommands).map((key) => {
-                return {
-                    // eslint-disable-next-line security/detect-object-injection
-                    content: (groupedCommands[key] as ICommand[]).map((command) => {
-                        let aliases = "";
+    logger.raw(
+        commandLineUsage(
+            [
+                {
+                    content: `{cyan ${runtime.getCliName()}} {green <command>} [positional arguments] {yellow [options]}`,
+                    header: "{inverse.cyan  Usage }",
+                },
+                ...Object.keys(groupedCommands).map((key) => {
+                    return {
+                        // eslint-disable-next-line security/detect-object-injection
+                        content: (groupedCommands[key] as ICommand[]).map((command) => {
+                            let aliases = "";
 
-                        if (typeof command.alias === "string") {
-                            aliases = command.alias;
-                        } else if (Array.isArray(command.alias)) {
-                            aliases = command.alias.join(", ");
-                        }
+                            if (typeof command.alias === "string") {
+                                aliases = command.alias;
+                            } else if (Array.isArray(command.alias)) {
+                                aliases = command.alias.join(", ");
+                            }
 
-                        if (aliases !== "") {
-                            aliases = ` [${aliases}]`;
-                        }
+                            if (aliases !== "") {
+                                aliases = ` [${aliases}]`;
+                            }
 
-                        return [`{green ${command.name}} ${aliases}`, command.description ?? ""];
-                    }),
-                    header:
-                        key === EMPTY_GROUP_KEY || groupOption
-                            ? `{inverse.green  Available${groupOption ? ` ${upperFirstChar(groupOption)}` : ""} Commands }`
-                            : ` {inverse.green  ${upperFirstChar(key)} }`,
-                };
-            }),
-            commands.has("help") ? {
-                header: "{inverse.yellow  Command Options }",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-            } : undefined,
-            { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
-            {
-                content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
-                raw: true,
-            },
-        ].filter(Boolean)),
+                            return [`{green ${command.name}} ${aliases}`, command.description ?? ""];
+                        }),
+                        header:
+                            key === EMPTY_GROUP_KEY || groupOption
+                                ? `{inverse.green  Available${groupOption ? ` ${upperFirstChar(groupOption)}` : ""} Commands }`
+                                : ` {inverse.green  ${upperFirstChar(key)} }`,
+                    };
+                }),
+                commands.has("help")
+                    ? {
+                          header: "{inverse.yellow  Command Options }",
+                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                      }
+                    : undefined,
+                { header: "{inverse.yellow  Global Options }", optionList: defaultOptions },
+                {
+                    content: `Run "{cyan ${runtime.getCliName()}} {green help <command>}" or "{cyan ${runtime.getCliName()}} {green <command>} {yellow --help}" for help with a specific command.`,
+                    raw: true,
+                },
+            ].filter(Boolean),
+        ),
     );
 };
 
-const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
+const printCommandHelp = (logger: Pail, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
     const command = commands.get(name) as ICommand;
 
     const usageGroups: Section[] = [];
@@ -100,8 +105,11 @@ const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        usageGroups.push({ header: "{inverse.yellow  Command Options }", optionList: command.options.filter((option) => !option.hidden) as OptionDefinition<any>[] });
+        usageGroups.push({
+            header: "{inverse.yellow  Command Options }",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            optionList: command.options.filter((option) => !option.hidden) as OptionDefinition<any>[],
+        });
     }
 
     usageGroups.push({ header: "{inverse.yellow  Global Options }", optionList: defaultOptions });
@@ -126,7 +134,7 @@ const printCommandHelp = (logger: ILogger, runtime: ICli, commands: Map<string, 
         });
     }
 
-    logger.log(commandLineUsage(usageGroups));
+    logger.raw(commandLineUsage(usageGroups));
 };
 
 class HelpCommand implements ICommand {
@@ -152,7 +160,7 @@ class HelpCommand implements ICommand {
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            logger.log(chalkFormat(header));
+            logger.raw(chalkFormat(header));
         }
 
         if (commandName === "help") {
@@ -163,7 +171,7 @@ class HelpCommand implements ICommand {
         }
 
         if (footer) {
-            logger.log(chalkFormat(footer));
+            logger.raw(chalkFormat(footer));
         }
     }
 }
