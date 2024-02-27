@@ -45,7 +45,7 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        const { context, message, type } = meta;
+        const { context, groups, message, type } = meta;
 
         const items: string[] = [];
 
@@ -68,11 +68,12 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
 
         const streamType = ["error", "trace", "warn"].includes(type.level as string) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
+        const groupSpaces: string = groups ? groups.map(() => "    ").join("") : "";
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
-            this.#interactiveManager.update(streamType, items.join("").split("\n"), 0);
+            this.#interactiveManager.update(streamType, (groupSpaces + items.join("")).split("\n"), 0);
         } else {
-            writeStream(items.join(""), stream);
+            writeStream(groupSpaces + items.join(""), stream);
         }
     }
 }

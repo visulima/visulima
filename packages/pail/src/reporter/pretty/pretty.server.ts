@@ -72,7 +72,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         // eslint-disable-next-line security/detect-object-injection
         const colorized = color ? colorize[color] : white;
 
-        const groupSpaces: string = groups.map(() => "   ").join("");
+        const groupSpaces: string = groups.map(() => "    ").join("");
         const items: string[] = [];
 
         if (groups.length > 0) {
