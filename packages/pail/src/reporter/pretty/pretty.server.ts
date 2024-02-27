@@ -72,7 +72,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         // eslint-disable-next-line security/detect-object-injection
         const colorized = color ? colorize[color] : white;
 
-        const groupSpaces: string = groups.map(() => "   ").join("");
+        const groupSpaces: string = groups.map(() => "    ").join("");
         const items: string[] = [];
 
         if (groups.length > 0) {
@@ -150,7 +150,16 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             );
 
             if (context) {
-                items.push("\n", groupSpaces + grey((this._stringify as typeof stringify)(context)));
+                items.push(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    ...context.map((value) => {
+                        if (typeof value === "object") {
+                            return " " + (this._stringify as typeof stringify)(value);
+                        }
+
+                        return " " + value;
+                    }),
+                );
             }
         }
 

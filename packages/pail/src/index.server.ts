@@ -30,6 +30,7 @@ export const createPail = <T extends string = never, L extends string = never>(o
 
 export const pail = createPail();
 
+export type { PailServerType as Pail } from "./pail.server";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,

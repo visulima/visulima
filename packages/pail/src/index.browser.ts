@@ -18,6 +18,7 @@ export const createPail = <T extends string = never, L extends string = never>(o
 
 export const pail = createPail();
 
+export type { PailBrowserType as Pail } from "./pail.browser";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,

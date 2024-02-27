@@ -16,7 +16,7 @@ declare global {
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: any[] | Record<string, any> | undefined;
+    context: any[] | undefined;
     date: Date | string;
     error: Error | undefined;
     groups: string[];
@@ -109,6 +109,7 @@ export interface ConstructorOptions<T extends string = never, L extends string =
         timerStart?: string;
     };
     processors?: Processor<L>[];
+    rawReporter?: Reporter<L>;
     reporters?: Reporter<L>[];
     scope?: string[] | string;
     throttle?: number;
@@ -124,3 +125,11 @@ export interface ServerConstructorOptions<T extends string = never, L extends st
     stderr?: NodeJS.WriteStream;
     stdout?: NodeJS.WriteStream;
 }
+
+export type Message = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    context?: any[] | undefined;
+    message: Primitive | unknown[] | undefined;
+    prefix?: string;
+    suffix?: string;
+};

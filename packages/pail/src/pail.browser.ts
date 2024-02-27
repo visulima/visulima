@@ -3,6 +3,7 @@ import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
+import { RawReporter } from "./reporter/raw/raw.browser";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -11,6 +12,7 @@ import type {
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
+    Message,
     Meta,
     Processor,
     Reporter,
@@ -77,6 +79,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     protected readonly endTimerMessage: string;
 
+    protected rawReporter: Reporter<L>;
+
     public constructor(options: ConstructorOptions<T, L>) {
         this.throttle = options.throttle ?? 1000;
         this.throttleMin = options.throttleMin ?? 5;
@@ -111,7 +115,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         for (const type in this.types) {
             // @ts-expect-error - dynamic property
             // eslint-disable-next-line security/detect-object-injection
-            this[type] = this._logger.bind(this, type as T);
+            this[type] = this._logger.bind(this,  type as T, false,);
         }
 
         // Track of last log
@@ -121,6 +125,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.registerReporters(options.reporters);
         }
+
+        this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
 
         if (Array.isArray(options?.processors)) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -210,32 +216,18 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     public time(label = "default"): void {
         if (this.seqTimers.has(label)) {
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            meta.message = "Timer '" + label + "' already exists";
-            meta.prefix = label;
-
-            this._logger("warn", meta);
+            this._logger("warn", false, {
+                message: "Timer '" + label + "' already exists",
+                prefix: label,
+            });
         } else {
             this.seqTimers.add(label);
             this.timersMap.set(label, Date.now());
 
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            if (this.types.start.badge) {
-                meta.badge = padEnd(this.types.start.badge, 2);
-            }
-
-            meta.prefix = label;
-            meta.message = this.startTimerMessage;
-
-            this._logger("start", meta);
+            this._logger("start", false, {
+                message: this.startTimerMessage,
+                prefix: label,
+            });
         }
     }
 
@@ -249,30 +241,17 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const span = Date.now() - this.timersMap.get(label)!;
 
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            if (this.types.stop.badge) {
-                meta.badge = padEnd(this.types.stop.badge, 2);
-            }
-
-            meta.prefix = label;
-            meta.message = span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s";
-            meta.context = data;
-
-            this._logger("info", meta);
+            this._logger("info", false, {
+                context: data,
+                message: span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s",
+                prefix: label,
+            });
         } else {
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            meta.message = "Timer not found";
-            meta.prefix = label;
-
-            this._logger("warn", meta);
+            this._logger("warn", false, {
+                context: data,
+                message: "Timer not found",
+                prefix: label,
+            });
         }
     }
 
@@ -288,20 +267,10 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
             this.timersMap.delete(label);
 
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            if (this.types.stop.badge) {
-                meta.badge = padEnd(this.types.stop.badge, 2);
-            }
-
-            meta.prefix = label;
-            meta.message = this.endTimerMessage + " ";
-            meta.message += span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s";
-
-            this._logger("stop", meta);
+            this._logger("stop", false, {
+                message: this.endTimerMessage + " " + (span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s"),
+                prefix: label,
+            });
         }
     }
 
@@ -328,34 +297,20 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         this.countMap.set(label, current + 1);
 
-        const meta = { ...EMPTY_META } as Meta<L>;
-
-        meta.scope = this.scopeName;
-        meta.date = new Date();
-
-        meta.prefix = label;
-        meta.message = label + ": " + (current + 1);
-
-        this._logger("log", meta);
+        this._logger("log", false, {
+            message: label + ": " + (current + 1),
+            prefix: label,
+        });
     }
 
     public countReset(label = "default"): void {
         if (this.countMap.has(label)) {
             this.countMap.delete(label);
         } else {
-            const meta = { ...EMPTY_META } as Meta<L>;
-
-            meta.scope = this.scopeName;
-            meta.date = new Date();
-
-            if (this.types.warn.badge) {
-                meta.badge = padEnd(this.types.warn.badge, 2);
-            }
-
-            meta.prefix = label;
-            meta.message = "Count for " + label + " does not exist";
-
-            this._logger("warn", meta);
+            this._logger("warn", false, {
+                message: "Count for " + label + " does not exist",
+                prefix: label,
+            });
         }
     }
 
@@ -365,18 +320,44 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         console.clear();
     }
 
+    public raw(message: string, ...arguments_: unknown[]): void {
+        if (this.disabled) {
+            return;
+        }
+
+        this._logger("log", true, {
+            context: arguments_,
+            message,
+        });
+    }
+
+    protected extendReporter(reporter: Reporter<L>): Reporter<L> {
+        if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+            (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
+        }
+
+        if ((reporter as StringifyAwareReporter<L>).setStringify) {
+            (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
+        }
+
+        return reporter;
+    }
+
     protected registerReporters(reporters: Reporter<L>[]): void {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const reporter of reporters) {
-            if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
-                (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
-            }
+            this.reporters.add(this.extendReporter(reporter));
+        }
+    }
 
-            if ((reporter as StringifyAwareReporter<L>).setStringify) {
-                (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
+    private _report(meta: Meta<L>, raw: boolean): void {
+        if (raw) {
+            this.rawReporter.log(Object.freeze(meta));
+        } else {
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const reporter of this.reporters) {
+                reporter.log(Object.freeze(meta));
             }
-
-            this.reporters.add(reporter);
         }
     }
 
@@ -415,12 +396,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
                 // eslint-disable-next-line prefer-destructuring
                 meta.error = arguments_[0];
             } else if ("message" in arguments_[0]) {
-                const { context, message, prefix, suffix } = arguments_[0] as {
-                    context?: Record<string, unknown>;
-                    message: Primitive | unknown[] | undefined;
-                    prefix?: string;
-                    suffix?: string;
-                };
+                const { context, message, prefix, suffix } = arguments_[0] as Message;
 
                 if (context) {
                     meta.context = context;
@@ -462,7 +438,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
-    private _logger(type: LiteralUnion<DefaultLogTypes, T>, ...messageObject: any[]): void {
+    private _logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, ...messageObject: any[]): void {
         if (this.disabled) {
             return;
         }
@@ -489,7 +465,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
                         lastMeta.repeated = repeated;
                     }
 
-                    this._report(lastMeta);
+                    this._report(lastMeta, raw);
 
                     this.lastLog.count = 1;
                 }
@@ -503,7 +479,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
                     this.lastLog.object = meta;
 
-                    this._report(meta);
+                    this._report(meta, raw);
                 }
             };
 
@@ -537,13 +513,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             }
 
             resolveLog(true);
-        }
-    }
-
-    private _report(meta: Meta<L>): void {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const reporter of this.reporters) {
-            reporter.log(Object.freeze(meta));
         }
     }
 }
