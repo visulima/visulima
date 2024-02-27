@@ -150,7 +150,16 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             );
 
             if (context) {
-                items.push("\n", groupSpaces + grey((this._stringify as typeof stringify)(context)));
+                items.push(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    ...context.map((value) => {
+                        if (typeof value === "object") {
+                            return " " + (this._stringify as typeof stringify)(value);
+                        }
+
+                        return " " + value;
+                    }),
+                );
             }
         }
 

@@ -36,10 +36,8 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
         });
 
         if (meta.message !== undefined) {
-            // eslint-disable-next-line no-param-reassign
-            meta.message = this._format(formatter, meta.message, meta.context as unknown[]);
-            // eslint-disable-next-line no-param-reassign
-            meta.context = undefined;
+            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-unsafe-argument
+            meta.message = this._format(formatter, meta.message, meta.context ?? []);
         }
 
         return meta;

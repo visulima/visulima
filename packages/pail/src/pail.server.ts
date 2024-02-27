@@ -3,6 +3,7 @@ import type { LiteralUnion } from "type-fest";
 import { InteractiveManager } from "./interactive/interactive-manager";
 import { InteractiveStreamHook } from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
+import { RawReporter } from "./reporter/raw/raw.server";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -27,7 +28,7 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     protected readonly interactive: boolean;
 
     public constructor(public readonly options: ServerConstructorOptions<T, L> = {}) {
-        const { interactive, reporters, stderr, stdout, ...rest } = options;
+        const { interactive, rawReporter, reporters, stderr, stdout, ...rest } = options;
 
         super(rest as ConstructorOptions<T, L>);
 
@@ -43,6 +44,8 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         if (Array.isArray(reporters)) {
             this.registerReporters(reporters);
         }
+
+        this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
     }
 
     public override scope<N extends string = T>(...name: string[]): PailServerType<N, L> {
@@ -85,35 +88,32 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         this.stderr.write(clearTerminal as string);
     }
 
-    protected override registerReporters(reporters: Reporter<L>[]): void {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const reporter of reporters) {
-            if ((reporter as StreamAwareReporter<L>).setStdout) {
-                (reporter as StreamAwareReporter<L>).setStdout(this.stdout);
-            }
-
-            if ((reporter as StreamAwareReporter<L>).setStderr) {
-                (reporter as StreamAwareReporter<L>).setStderr(this.stderr);
-            }
-
-            if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
-                (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
-            }
-
-            if ((reporter as StringifyAwareReporter<L>).setStringify) {
-                (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
-            }
-
-            if ((reporter as InteractiveStreamReporter<L>).setIsInteractive) {
-                (reporter as InteractiveStreamReporter<L>).setIsInteractive(this.interactive);
-            }
-
-            if (this.interactive && (reporter as InteractiveStreamReporter<L>).setInteractiveManager) {
-                (reporter as InteractiveStreamReporter<L>).setInteractiveManager(this.interactiveManager);
-            }
-
-            this.reporters.add(reporter);
+    protected override extendReporter(reporter: Reporter<L>): Reporter<L> {
+        if ((reporter as StreamAwareReporter<L>).setStdout) {
+            (reporter as StreamAwareReporter<L>).setStdout(this.stdout);
         }
+
+        if ((reporter as StreamAwareReporter<L>).setStderr) {
+            (reporter as StreamAwareReporter<L>).setStderr(this.stderr);
+        }
+
+        if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+            (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
+        }
+
+        if ((reporter as StringifyAwareReporter<L>).setStringify) {
+            (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
+        }
+
+        if ((reporter as InteractiveStreamReporter<L>).setIsInteractive) {
+            (reporter as InteractiveStreamReporter<L>).setIsInteractive(this.interactive);
+        }
+
+        if (this.interactive && (reporter as InteractiveStreamReporter<L>).setInteractiveManager) {
+            (reporter as InteractiveStreamReporter<L>).setInteractiveManager(this.interactiveManager);
+        }
+
+        return reporter;
     }
 
     private _wrapStream(stream: NodeJS.WriteStream | undefined, type: LiteralUnion<DefaultLogTypes, L>) {

@@ -152,11 +152,8 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             items.push(message);
 
             if (context) {
-                if (Array.isArray(context)) {
-                    items.push(...context);
-                } else {
-                    items.push(context);
-                }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                items.push(...context);
             }
         }
 
