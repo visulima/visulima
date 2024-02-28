@@ -54,6 +54,29 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@visulima/package": "workspace:*",
+        "@visulima/colorize": "workspace:*",
+        "@visulima/pail": "workspace:*",
+        "@rollup/plugin-alias": "^5.1.0",
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-replace": "^5.0.5",
+        "@rollup/pluginutils": "^5.1.0",
+        "magic-string": "^0.30.5",
+        "esbuild": "^0.20.1",
+        "rollup": "^4.12.0",
+        "rollup-plugin-dts": "^6.1.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5.3.3"
+    },
+    "peerDependenciesMeta": {
+        "typescript": {
+            "optional": true
+        }
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
