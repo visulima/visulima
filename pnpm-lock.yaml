@@ -3056,6 +3056,94 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
 
+  packages/redact:
+    dependencies:
+      '@visulima/deep-clone':
+        specifier: workspace:*
+        version: link:../deep-clone
+      compromise:
+        specifier: ^14.11.2
+        version: 14.11.2
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.3
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.3.0)(@babel/core@7.23.9)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.33.2)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.6.15)(eslint-plugin-tailwindcss@3.14.1)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.14
+        version: 5.0.14(prettier@3.2.4)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.3
+        version: 8.0.3(semantic-release@23.0.0)
+      '@babel/core':
+        specifier: ^7.23.9
+        version: 7.23.9
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.8.0
+        version: 0.8.0(eslint@8.56.0)(typescript@5.3.3)
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: ^8.1.1
+        version: 8.1.1
+      '@types/micromatch':
+        specifier: ^4.0.6
+        version: 4.0.6
+      '@types/node':
+        specifier: 18.18.8
+        version: 18.18.8
+      '@vitest/coverage-v8':
+        specifier: ^1.2.2
+        version: 1.2.2(vitest@1.2.2)
+      '@vitest/ui':
+        specifier: ^1.2.2
+        version: 1.2.2(vitest@1.2.2)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      eslint:
+        specifier: ^8.56.0
+        version: 8.56.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: /eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.56.0)
+      eslint-plugin-mdx:
+        specifier: ^3.1.5
+        version: 3.1.5(eslint@8.56.0)
+      eslint-plugin-vitest:
+        specifier: ^0.3.21
+        version: 0.3.21(eslint@8.56.0)(typescript@5.3.3)(vitest@1.2.2)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.4.0
+        version: 1.4.0
+      prettier:
+        specifier: ^3.2.4
+        version: 3.2.4
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      secretlint:
+        specifier: 8.1.1
+        version: 8.1.1
+      semantic-release:
+        specifier: ^23.0.0
+        version: 23.0.0(typescript@5.3.3)
+      sort-package-json:
+        specifier: ^2.7.0
+        version: 2.7.0
+      tsup:
+        specifier: ^8.0.1
+        version: 8.0.1(postcss@8.4.33)(typescript@5.3.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.2.2(@types/node@18.18.8)(@vitest/ui@1.2.2)(jsdom@24.0.0)
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:
@@ -15310,6 +15398,15 @@ packages:
       - supports-color
     dev: true
 
+  /compromise@14.11.2:
+    resolution: {integrity: sha512-7KZgYlu9Lp+qju9CjEhDi1PcbkGZfjTuDA80pZIXxsP/+QzRyfts5H20EzHrxas4P5O4NOtaydS6gmD6YkLlHg==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      efrt: 2.7.0
+      grad-school: 0.0.5
+      suffix-thumb: 5.0.2
+    dev: false
+
   /compute-scroll-into-view@3.0.3:
     resolution: {integrity: sha512-nadqwNxghAGTamwIqQSG433W6OADZx2vCo3UXHNrzTRHK/htu+7+L0zhjEoaeaQVNAi3YgqWDv8+tzf0hRfR+A==}
     dev: false
@@ -16685,6 +16782,11 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     requiresBuild: true
+
+  /efrt@2.7.0:
+    resolution: {integrity: sha512-/RInbCy1d4P6Zdfa+TMVsf/ufZVotat5hCw3QXmWtjU+3pFEOvOQ7ibo3aIxyCJw2leIeAMjmPj+1SLJiCpdrQ==}
+    engines: {node: '>=12.0.0'}
+    dev: false
 
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
@@ -19875,6 +19977,11 @@ packages:
 
   /graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  /grad-school@0.0.5:
+    resolution: {integrity: sha512-rXunEHF9M9EkMydTBux7+IryYXEZinRk6g8OBOGDBzo/qWJjhTxy86i5q7lQYpCLHN8Sqv1XX3OIOc7ka2gtvQ==}
+    engines: {node: '>=8.0.0'}
+    dev: false
 
   /graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
@@ -29815,6 +29922,10 @@ packages:
       mz: 2.7.0
       pirates: 4.0.6
       ts-interface-checker: 0.1.13
+
+  /suffix-thumb@5.0.2:
+    resolution: {integrity: sha512-I5PWXAFKx3FYnI9a+dQMWNqTxoRt6vdBdb0O+BJ1sxXCWtSoQCusc13E58f+9p4MYx/qCnEMkD5jac6K2j3dgA==}
+    dev: false
 
   /supports-color@4.5.0:
     resolution: {integrity: sha512-ycQR/UbvI9xIlEdQT1TQqwoXtEldExbCEAJgRo5YXlmSKjv6ThHnP9/vwGa1gr19Gfw+LkFd7KqYMhzrRC5JYw==}

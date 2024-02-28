@@ -11,6 +11,7 @@
         "audit": "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
+        "bench:redact": "pnpm --filter \"redact\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
@@ -66,6 +67,7 @@
         "lint:eslint:fix:pail": "pnpm --filter \"pail\" run lint:eslint:fix",
         "lint:eslint:fix:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:eslint:fix",
         "lint:eslint:fix:readdir": "pnpm --filter \"readdir\" run lint:eslint:fix",
+        "lint:eslint:fix:redact": "pnpm --filter \"redact\" run lint:eslint:fix",
         "lint:eslint:fix:root": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
         "lint:eslint:fmt": "pnpm --filter \"fmt\" run lint:eslint",
         "lint:eslint:health-check": "pnpm --filter \"health-check\" run lint:eslint",
@@ -77,6 +79,7 @@
         "lint:eslint:pail": "pnpm --filter \"pail\" run lint:eslint",
         "lint:eslint:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:eslint",
         "lint:eslint:readdir": "pnpm --filter \"readdir\" run lint:eslint",
+        "lint:eslint:redact": "pnpm --filter \"redact\" run lint:eslint",
         "lint:eslint:root": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix && pnpm run sort-package-json",
         "lint:packagejson": "nx run-many --target=lint:packagejson --parallel --projects=tag:type:package",
@@ -106,6 +109,7 @@
         "lint:types:pail": "pnpm --filter \"pail\" run lint:types",
         "lint:types:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:types",
         "lint:types:readdir": "pnpm --filter \"readdir\" run lint:types",
+        "lint:types:redact": "pnpm --filter \"redact\" run lint:types",
         "lint:types:root": "tsc --noEmit",
         "plop": "plop",
         "prepare": "is-ci || husky install || exit 0",
@@ -131,6 +135,7 @@
         "test:coverage:pail": "pnpm --filter \"pail\" run test:coverage",
         "test:coverage:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:coverage",
         "test:coverage:readdir": "pnpm --filter \"readdir\" run test:coverage",
+        "test:coverage:redact": "pnpm --filter \"redact\" run test:coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
         "test:deep-clone": "pnpm --filter \"deep-clone\" run test",
         "test:error": "pnpm --filter \"error\" run test",
@@ -144,6 +149,7 @@
         "test:pail": "pnpm --filter \"pail\" run test",
         "test:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test",
         "test:readdir": "pnpm --filter \"readdir\" run test",
+        "test:redact": "pnpm --filter \"redact\" run test",
         "test:ui:api-platform": "pnpm --filter \"api-platform\" run test:ui",
         "test:ui:colorize": "pnpm --filter \"colorize\" run test:ui",
         "test:ui:connect": "pnpm --filter \"connect\" run test:ui",
@@ -159,7 +165,8 @@
         "test:ui:pagination": "pnpm --filter \"pagination\" run test:ui",
         "test:ui:pail": "pnpm --filter \"pail\" run test:coverage",
         "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui",
-        "test:ui:readdir": "pnpm --filter \"readdir\" run test:coverage"
+        "test:ui:readdir": "pnpm --filter \"readdir\" run test:coverage",
+        "test:ui:redact": "pnpm --filter \"redact\" run test:ui"
     },
     "browserslist": [
         "extends browserslist-config-anolilab"
