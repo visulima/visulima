@@ -1,7 +1,7 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "buildCommand": "pnpm run -w build:storybook",
-    "ignoreCommand": "node ./scripts/vercel-ignore-command.js",
+    "ignoreCommand": "node ./scripts/vercel-ignore-command.cjs",
     "devCommand": "pnpm run dev:storybook",
     "installCommand": "pnpm install --frozen-lockfile",
     "framework": null,

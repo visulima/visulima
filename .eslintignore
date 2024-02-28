@@ -17,11 +17,21 @@ tsconfig.base.json
 tsconfig.esm.base.json
 tsconfig.react-esm.base.json
 
+.eslintrc.cjs
+.lintstagedrc.cjs
+.prettierrc.cjs
+.secretlintrc.cjs
+commitlint.config.cjs
+verify-node-version.cjs
+
 docs
 examples
 packages
 plop/package/src
 plop/package-configuration.js
+
+storybook/scripts/vercel-ignore-command.cjs
+scripts/mv.cjs
 
 bench
 README.md
