@@ -1,3 +1,5 @@
+import type { ColorizeType } from "../types";
+
 const TEMPLATE_REGEX =
     /(?:\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.))|(?:{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(})|((?:.|[\r\n\f])+?)/gi;
 const STYLE_REGEX = /(?:^|\.)(?:(?:(\w+)(?:\(([^)]*)\))?)|(?:#(?=[:a-fA-F\d]{2,})([a-fA-F\d]{6})?(?::([a-fA-F\d]{6}))?))/g;
@@ -63,7 +65,7 @@ function parseStyle(style) {
     return results;
 }
 
-export function makeTemplate(chalk) {
+export const makeTemplate = (colorize: ColorizeType): (string: any) => string => {
     function buildStyle(styles) {
         const enabled = {};
 
@@ -73,7 +75,7 @@ export function makeTemplate(chalk) {
             }
         }
 
-        let current = chalk;
+        let current = colorize;
 
         for (const [styleName, styles] of Object.entries(enabled)) {
             if (!Array.isArray(styles)) {
@@ -90,9 +92,10 @@ export function makeTemplate(chalk) {
         return current;
     }
 
-    function template(string) {
+    function template(string: string) {
         const styles = [];
         const chunks = [];
+
         let chunk = [];
 
         // eslint-disable-next-line max-params
@@ -101,8 +104,10 @@ export function makeTemplate(chalk) {
                 chunk.push(unescape(escapeCharacter));
             } else if (style) {
                 const string = chunk.join("");
+
                 chunk = [];
                 chunks.push(styles.length === 0 ? string : buildStyle(styles)(string));
+
                 styles.push({ inverse, styles: parseStyle(style) });
             } else if (close) {
                 if (styles.length === 0) {
@@ -111,6 +116,7 @@ export function makeTemplate(chalk) {
 
                 chunks.push(buildStyle(styles)(chunk.join("")));
                 chunk = [];
+
                 styles.pop();
             } else {
                 chunk.push(character);

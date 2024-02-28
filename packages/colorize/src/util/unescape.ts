@@ -11,6 +11,7 @@ const ESCAPES = new Map([
     ["v", "\v"],
 ]);
 
+// eslint-disable-next-line import/no-unused-modules
 export const unescape = (c: string): string => {
     const u = c.startsWith("u");
     const bracket = c[1] === "{";

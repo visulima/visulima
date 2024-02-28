@@ -82,10 +82,19 @@
             }
         },
         "./browser": {
-            "browser": "./dist/index.browser.js",
             "import": {
                 "types": "./dist/index.browser.d.ts",
                 "default": "./dist/index.browser.js"
+            }
+        },
+        "./template": {
+            "require": {
+                "types": "./dist/template.d.cts",
+                "default": "./dist/template.cjs"
+            },
+            "import": {
+                "types": "./dist/template.d.ts",
+                "default": "./dist/template.js"
             }
         },
         "./package.json": "./package.json"
@@ -190,6 +199,14 @@
         },
         {
             "source": "src/index.server.cts",
+            "format": "cjs"
+        },
+        {
+            "source": "src/template.ts",
+            "format": "esm"
+        },
+        {
+            "source": "src/template.ts",
             "format": "cjs"
         }
     ]

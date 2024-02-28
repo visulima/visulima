@@ -20,6 +20,7 @@
  * @param {string} hex A string that contains the hexadecimal RGB color representation.
  * @return {[number, number, number]} The red, green, blue values in range [0, 255] .
  */
+// eslint-disable-next-line import/no-unused-modules
 export const hexToRgb = (hex: string): [number, number, number] => {
     let color: string = hex.replace("#", "");
 
