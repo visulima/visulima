@@ -1,6 +1,5 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { withConsole } from "@storybook/addon-console";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview, ReactRenderer, StoryContext } from "@storybook/react";
 

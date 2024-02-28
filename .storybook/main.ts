@@ -1,5 +1,4 @@
 import type { StorybookConfig } from "@storybook/react-vite";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
@@ -19,7 +18,7 @@ const config: StorybookConfig = {
     },
     stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+
     viteFinal: async (vConfig) => mergeConfig(vConfig, { plugins: [] }),
 };
 

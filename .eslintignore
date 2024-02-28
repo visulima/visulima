@@ -16,7 +16,6 @@ tsconfig.eslint.json
 tsconfig.base.json
 tsconfig.esm.base.json
 tsconfig.react-esm.base.json
-.lintstagedrc.js
 
 docs
 examples
