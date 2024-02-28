@@ -1,3 +1,21 @@
+## @visulima/is-ansi-color-supported [2.0.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@1.2.0...@visulima/is-ansi-color-supported@2.0.0) (2024-02-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* export changed to isStderrColorSupported,isStdoutColorSupported; isColorSupported is now isStdoutColorSupported
+
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* added support for stderr, migrated deno api to v2 ([2e8ac8f](https://github.com/visulima/visulima/commit/2e8ac8f0251719aa54a2bf3466618d47988dd248))
+
+
+### Bug Fixes
+
+* fixed tests ([12c7b71](https://github.com/visulima/visulima/commit/12c7b716f716f9190d462c1b8665989b57602160))
+
 ## @visulima/is-ansi-color-supported [1.2.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@1.1.0...@visulima/is-ansi-color-supported@1.2.0) (2024-02-20)
 
 
