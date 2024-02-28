@@ -4,8 +4,7 @@
 
 import type { ColorSupportLevel } from "./types";
 
-// eslint-disable-next-line import/no-unused-modules
-export const isColorSupported = (): ColorSupportLevel =>
+const isColorSupported = (): ColorSupportLevel =>
     (() => {
         if (typeof navigator !== "undefined") {
             // @ts-expect-error - `navigator` is not defined in Node.
@@ -36,6 +35,12 @@ export const isColorSupported = (): ColorSupportLevel =>
 
         return 0;
     })();
+
+// eslint-disable-next-line import/no-unused-modules
+export const isStdoutColorSupported = isColorSupported;
+
+// eslint-disable-next-line import/no-unused-modules
+export const isStderrColorSupported = isColorSupported;
 
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";

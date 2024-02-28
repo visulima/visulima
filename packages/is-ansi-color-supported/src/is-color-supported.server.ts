@@ -5,15 +5,15 @@
 import type { ColorSupportLevel } from "./types";
 
 /**
- * @param {Object?} mockThis The mock object of globalThis, used by unit test only.
+ * @param {string} stdName The standard name of the stream, either "err" or "out".
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-export const isColorSupported = (mockThis?: any): ColorSupportLevel => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _this = mockThis ?? globalThis;
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any
+    const _this = globalThis as any;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const isDeno = _this.Deno != null;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
     const proc: Record<string, any> = _this.process ?? _this.Deno ?? {};
     // Node -> `argv`, Deno -> `args`
     const argv: string[] = (proc["argv"] ?? proc["args"] ?? []) as string[];
@@ -168,8 +168,20 @@ export const isColorSupported = (mockThis?: any): ColorSupportLevel => {
         return 2;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-    const isTTY = isDeno ? _this.Deno.isatty(1) : proc["stdout"] && "isTTY" in proc["stdout"];
+    let isTTY = false;
+
+    if (isDeno) {
+        if (stdName === "out") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
+            isTTY = _this.Deno.stdout.isTerminal();
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        } else if (stdName === "err") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
+            isTTY = _this.Deno.stderr.isTerminal();
+        }
+    } else {
+        isTTY = proc["std" + stdName] && "isTTY" in proc["std" + stdName];
+    }
 
     if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment["TERM"])) {
         return 1;
@@ -181,6 +193,12 @@ export const isColorSupported = (mockThis?: any): ColorSupportLevel => {
 
     return minColorLevel;
 };
+
+// eslint-disable-next-line import/no-unused-modules
+export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedFactory("out");
+
+// eslint-disable-next-line import/no-unused-modules
+export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
 
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";
