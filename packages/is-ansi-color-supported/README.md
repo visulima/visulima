@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima is-ansi-color-supported</h3>
   <p>
-  Detect whether a terminal, browser or edge supports ansi colors.
+  Detect whether a terminal (stdout/stderr), browser or edge supports (next.js) ansi colors.
   </p>
 </div>
 
@@ -42,7 +42,7 @@ pnpm add @visulima/is-ansi-color-supported
 ## Usage
 
 ```typescript
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
+import { isStdoutColorSupported, isStderrColorSupported } from "@visulima/is-ansi-color-supported";
 
 /**
  * Levels:
@@ -51,7 +51,9 @@ import { isColorSupported } from "@visulima/is-ansi-color-supported";
  * - `2` - ANSI 256 colors support.
  * - `3` - Truecolor 16 million colors support.
  */
-console.log(isColorSupported()); // 3
+console.log(isStdoutColorSupported()); // 3
+
+console.log(isStderrColorSupported()); // 3
 ```
 
 ## Environment variables
@@ -74,9 +76,9 @@ For example, an executable script _colors.js_:
 
 ```js
 #!/usr/bin/env node
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
+import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
 
-console.log(isColorSupported());
+console.log(isStdoutColorSupported());
 ```
 
 Execute the script in a terminal:
