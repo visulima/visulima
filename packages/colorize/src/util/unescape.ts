@@ -1,3 +1,12 @@
+/**
+ * Modified copy of https://github.com/chalk/chalk-template/blob/main/index.js
+ *
+ * MIT License
+ *
+ * Copyright (c) Josh Junon
+ * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ */
+
 const ESCAPES = new Map([
     ["\\", "\\"],
     ["0", "\0"],
@@ -11,7 +20,6 @@ const ESCAPES = new Map([
     ["v", "\v"],
 ]);
 
-// eslint-disable-next-line import/no-unused-modules
 export const unescape = (c: string): string => {
     const u = c.startsWith("u");
     const bracket = c[1] === "{";

@@ -1,3 +1,12 @@
+/**
+ * Modified copy of https://github.com/chalk/chalk-template/blob/main/index.js
+ *
+ * MIT License
+ *
+ * Copyright (c) Josh Junon
+ * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ */
+
 // prettier-ignore
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeColorizeTemplate = (template: (text: string) => string): ((firstString: TemplateStringsArray, ...arguments_: any[]) => string) =>

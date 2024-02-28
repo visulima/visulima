@@ -1352,7 +1352,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 1.2.0
+        specifier: 2.0.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -2752,10 +2752,10 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 1.2.2
         version: link:../colorize
       '@visulima/fmt':
-        specifier: workspace:*
+        specifier: 1.1.2
         version: link:../fmt
       safe-stable-stringify:
         specifier: ^2.4.3

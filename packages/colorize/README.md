@@ -53,6 +53,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 -   **Auto detects** color support
 -   **TypeScript** support out of the box
 -   Clean and focused
+-   String styling with [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), see [template-literals](#tagged-template-literals)
 
 ## Install
 
@@ -462,6 +463,57 @@ For other browsers (like firefox) we use the console style syntax command `%c`.
 
 If you're on Windows, do yourself a favor and use [Windows Terminal](https://github.com/microsoft/terminal) instead of cmd.exe.
 
+## Tagged Template Literals
+
+The `@visulima/colorize` supports the [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates).
+
+<!--
+ Modified copy of https://github.com/chalk/chalk-template/blob/main/readme.md
+
+ MIT License
+
+ Copyright (c) Josh Junon
+ Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+-->
+
+```typescript
+import template from "@visulima/colorize/template";
+
+console.log(template`
+CPU: {red ${cpu.totalPercent}%}
+RAM: {green ${(ram.used / ram.total) * 100}%}
+DISK: {rgb(255,131,0) ${(disk.used / disk.total) * 100}%}
+`);
+
+const miles = 18;
+const calculateFeet = (miles) => miles * 5280;
+
+console.log(template`
+    There are {bold 5280 feet} in a mile.
+    In {bold ${miles} miles}, there are {green.bold ${calculateFeet(miles)} feet}.
+`);
+
+console.log(template`
+    There are also {#FF0000 shorthand hex styles} for
+    both the {#ABCDEF foreground}, {#:123456 background},
+    or {#ABCDEF:123456 both}.
+`);
+```
+
+### API
+
+Blocks are delimited by an opening curly brace (`{`), a style, some content, and a closing curly brace (`}`).
+
+Template styles are chained exactly like normal Colorize styles. The following two statements are equivalent:
+
+```typescript
+import colorize from '@visulima/colorize';
+import template from "@visulima/colorize/template";
+
+console.log(colorize.bold.rgb(10, 100, 200)('Hello!'));
+console.log(template`{bold.rgb(10,100,200) Hello!}`);
+```
+
 ## Comparison of most popular libraries
 
 | Library<br>**\*\***\_\_**\*\***<br> - name<br> - named import     | Code size                                                                      |               Naming colors                | ANSI 256<br>colors | True-<br>color | Chained<br>syntax | Nested<br>template strings | New<br>Line |                  Supports<br>CLI params                  |
@@ -525,11 +577,11 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 > ```
 
 <!--
-Modified table from https://github.com/webdiscus/ansis
+ Modified table from https://github.com/webdiscus/ansis
 
-ISC License
+ ISC License
 
-Copyright (c) 2023, webdiscus
+ Copyright (c) 2023, webdiscus
 -->
 
 ## Benchmark
@@ -576,6 +628,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
 -   [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
 -   [chalk][chalk] - Terminal string styling done right
+-   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
 -   [cli-color][cli-color] - Colors and formatting for the console
 -   [colorette][colorette] - Easily set your terminal text color & styles
 -   [colors-cli][colors-cli] - Terminal string styling done right.
@@ -601,4 +654,5 @@ The visulima colorize is open-sourced software licensed under the [MIT][license-
 [ansi-colors]: https://github.com/doowb/ansi-colors
 [kleur]: https://github.com/lukeed/kleur
 [chalk]: https://github.com/chalk/chalk
+[chalk-template]: https://github.com/chalk/chalk-template
 [ansis]: https://github.com/webdiscus/ansis

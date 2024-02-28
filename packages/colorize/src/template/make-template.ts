@@ -1,61 +1,69 @@
+/**
+ * Modified copy of https://github.com/chalk/chalk-template/blob/main/index.js
+ *
+ * MIT License
+ *
+ * Copyright (c) Josh Junon
+ * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ */
+
 import type { ColorizeType } from "../types";
+import { hexToRgb } from "../util/hex-to-rgb";
+import { unescape } from "../util/unescape";
 
 const TEMPLATE_REGEX =
-    /(?:\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.))|(?:{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(})|((?:.|[\r\n\f])+?)/gi;
-const STYLE_REGEX = /(?:^|\.)(?:(?:(\w+)(?:\(([^)]*)\))?)|(?:#(?=[:a-fA-F\d]{2,})([a-fA-F\d]{6})?(?::([a-fA-F\d]{6}))?))/g;
+    // eslint-disable-next-line security/detect-unsafe-regex
+    /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
+// eslint-disable-next-line security/detect-unsafe-regex
+const STYLE_REGEX = /(?:^|\.)(?:(\w+)(?:\(([^)]*)\))?|#(?=[:a-f\d]{2,})([a-f\d]{6})?(?::([a-f\d]{6}))?)/gi;
 const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
-const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.)|([^\\])/gi;
+const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|([^\\])/gi;
 
-function parseArguments(name, arguments_) {
-    const results = [];
-    const chunks = arguments_.trim().split(/\s*,\s*/g);
+const parseArguments = (name: string, value: string): (number | string)[] => {
+    const results: (number | string)[] = [];
+    const chunks = value.trim().split(/\s*,\s*/);
+
     let matches;
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const chunk of chunks) {
         const number = Number(chunk);
 
         if (!Number.isNaN(number)) {
             results.push(number);
-        } else if ((matches = chunk.match(STRING_REGEX))) {
-            results.push(matches[2].replace(ESCAPE_REGEX, (_, escape, character) => (escape ? unescape(escape) : character)));
+            // eslint-disable-next-line no-cond-assign
+        } else if ((matches = STRING_REGEX.exec(chunk))) {
+            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => (escape ? unescape(escape as string) : character)));
         } else {
-            throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
+            throw new Error(`Invalid template style argument: ${chunk} (in style '${name}')`);
         }
     }
 
     return results;
-}
+};
 
-function parseHex(hex) {
-    const n = Number.parseInt(hex, 16);
-    return [
-        // eslint-disable-next-line no-bitwise
-        (n >> 16) & 0xff,
-        // eslint-disable-next-line no-bitwise
-        (n >> 8) & 0xff,
-        // eslint-disable-next-line no-bitwise
-        n & 0xff,
-    ];
-}
-
-function parseStyle(style) {
+const parseStyle: (style: string) => (number | string | undefined)[][] = (style: string) => {
     STYLE_REGEX.lastIndex = 0;
 
-    const results = [];
+    const results: (number | string | undefined)[][] = [];
     let matches;
 
+    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
     while ((matches = STYLE_REGEX.exec(style)) !== null) {
         const name = matches[1];
 
         if (matches[2]) {
-            results.push([name, ...parseArguments(name, matches[2])]);
+            results.push([name, ...parseArguments(name as string, matches[2])]);
         } else if (matches[3] || matches[4]) {
             if (matches[3]) {
-                results.push(["rgb", ...parseHex(matches[3])]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                results.push(["rgb", ...hexToRgb(matches[3])]);
             }
 
             if (matches[4]) {
-                results.push(["bgRgb", ...parseHex(matches[4])]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                results.push(["bgRgb", ...hexToRgb(matches[4])]);
             }
         } else {
             results.push([name]);
@@ -63,74 +71,97 @@ function parseStyle(style) {
     }
 
     return results;
-}
+};
 
-export const makeTemplate = (colorize: ColorizeType): (string: any) => string => {
-    function buildStyle(styles) {
-        const enabled = {};
+const buildStyle = (
+    colorize: ColorizeType,
+    styles: {
+        inverse: string | undefined;
+        styles: (number | string | undefined)[][];
+    }[],
+) => {
+    const enabled: Record<string, (number | string | undefined)[] | null> = {};
 
-        for (const layer of styles) {
-            for (const style of layer.styles) {
-                enabled[style[0]] = layer.inverse ? null : style.slice(1);
-            }
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const layer of styles) {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const style of layer.styles) {
+            enabled[style[0] as string] = layer.inverse ? null : style.slice(1);
         }
-
-        let current = colorize;
-
-        for (const [styleName, styles] of Object.entries(enabled)) {
-            if (!Array.isArray(styles)) {
-                continue;
-            }
-
-            if (!(styleName in current)) {
-                throw new Error(`Unknown Chalk style: ${styleName}`);
-            }
-
-            current = styles.length > 0 ? current[styleName](...styles) : current[styleName];
-        }
-
-        return current;
     }
 
-    function template(string: string) {
-        const styles = [];
+    let current: ColorizeType = colorize;
+
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const [styleName, enabledStyles] of Object.entries(enabled)) {
+        if (!Array.isArray(enabledStyles)) {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        if (!(styleName in current)) {
+            throw new Error(`Unknown style: ${styleName}`);
+        }
+
+        // @ts-expect-error - @TODO fix types
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        current = enabledStyles.length > 0 ? current[styleName as keyof ColorizeType](...enabledStyles) : current[styleName as keyof ColorizeType];
+    }
+
+    return current;
+};
+
+export const makeTemplate =
+    (colorize: ColorizeType): ((string: string) => string) =>
+    (string: string) => {
+        const styles: {
+            inverse: string | undefined;
+            styles: (number | string | undefined)[][];
+        }[] = [];
         const chunks = [];
 
-        let chunk = [];
+        let chunk: string[] = [];
 
-        // eslint-disable-next-line max-params
-        string.replace(TEMPLATE_REGEX, (_, escapeCharacter, inverse, style, close, character) => {
-            if (escapeCharacter) {
-                chunk.push(unescape(escapeCharacter));
-            } else if (style) {
-                const string = chunk.join("");
+        string.replaceAll(
+            TEMPLATE_REGEX,
+            // @ts-expect-error - TS doesn't understand that the regex args are defined
+            (
+                _: string,
+                escapeCharacter: string | undefined,
+                inverse: string | undefined,
+                style: string | undefined,
+                close: string | undefined,
+                character: string | undefined,
+            ) => {
+                if (escapeCharacter) {
+                    chunk.push(unescape(escapeCharacter) as string);
+                } else if (style) {
+                    const joinedChunk = chunk.join("");
 
-                chunk = [];
-                chunks.push(styles.length === 0 ? string : buildStyle(styles)(string));
+                    chunk = [];
+                    chunks.push(styles.length === 0 ? joinedChunk : buildStyle(colorize, styles)(joinedChunk));
 
-                styles.push({ inverse, styles: parseStyle(style) });
-            } else if (close) {
-                if (styles.length === 0) {
-                    throw new Error("Found extraneous } in Chalk template literal");
+                    styles.push({ inverse, styles: parseStyle(style) });
+                } else if (close) {
+                    if (styles.length === 0) {
+                        throw new Error("Found extraneous } in template literal");
+                    }
+
+                    chunks.push(buildStyle(colorize, styles)(chunk.join("")));
+                    chunk = [];
+
+                    styles.pop();
+                } else {
+                    chunk.push(character as string);
                 }
-
-                chunks.push(buildStyle(styles)(chunk.join("")));
-                chunk = [];
-
-                styles.pop();
-            } else {
-                chunk.push(character);
-            }
-        });
+            },
+        );
 
         chunks.push(chunk.join(""));
 
         if (styles.length > 0) {
-            throw new Error(`Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
+            throw new Error(`template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
         }
 
         return chunks.join("");
-    }
-
-    return template;
-}
+    };
