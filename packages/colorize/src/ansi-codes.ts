@@ -6,13 +6,13 @@
  * Copyright (c) 2023, webdiscus
  */
 
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
+import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
 
 import type { AnsiColors, AnsiStyles, ColorData } from "./types";
 import { clamp, hexToRgb } from "./utils";
 
 const esc: (open: number | string, close: number | string) => ColorData =
-    isColorSupported() > 0
+    isStdoutColorSupported() > 0
         ? (open: number | string, close: number | string): ColorData => {
               return { close: "\u001B[" + close + "m", open: "\u001B[" + open + "m" };
           }
