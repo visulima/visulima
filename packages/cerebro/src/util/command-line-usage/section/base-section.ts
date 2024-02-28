@@ -1,6 +1,6 @@
 import os from "node:os";
 
-import chalk from "chalk";
+import { bold } from "@visulima/colorize";
 
 class BaseSection {
     protected lines: string[];
@@ -18,7 +18,7 @@ class BaseSection {
     }
 
     public header(text: string): void {
-        this.add(chalk.bold(text));
+        this.add(bold(text));
         this.lines.push("");
     }
 }

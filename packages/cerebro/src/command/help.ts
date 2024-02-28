@@ -12,7 +12,7 @@ const EMPTY_GROUP_KEY = "__Other";
 const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const printGeneralHelp = (logger: Pail, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
+const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: Map<string, ICommand>, groupOption: string | undefined) => {
     logger.debug("no command given, printing general help...");
 
     let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
@@ -84,7 +84,7 @@ const printGeneralHelp = (logger: Pail, runtime: ICli, commands: Map<string, ICo
     );
 };
 
-const printCommandHelp = (logger: Pail, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
+const printCommandHelp = (logger: Pail<never, string>, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
     const command = commands.get(name) as ICommand;
 
     const usageGroups: Section[] = [];

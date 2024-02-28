@@ -18,7 +18,7 @@ export type OutputType = 1 | 2 | 4;
 
 /**
  * Any of the verbosity types
- * [[VERBOSITY_QUIET]], [[VERBOSITY_NORMAL]], [[VERBOSITY_VERBOSE]], [[VERBOSITY_VERY_VERBOSE]] nad [[VERBOSITY_DEBUG]].
+ * [[VERBOSITY_QUIET]], [[VERBOSITY_NORMAL]], [[VERBOSITY_VERBOSE]] and [[VERBOSITY_DEBUG]].
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type VERBOSITY_LEVEL = 16 | 32 | 64 | 128 | 256;

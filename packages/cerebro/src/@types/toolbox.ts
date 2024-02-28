@@ -20,7 +20,7 @@ export interface Toolbox extends Cerebro.ExtensionOverrides {
 
     commandName: string;
 
-    logger: Pail;
+    logger: Pail<never, string>;
 
     /**
      * Any optional parameters. Typically coming from command-line

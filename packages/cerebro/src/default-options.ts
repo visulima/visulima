@@ -8,12 +8,6 @@ const defaultOptions: PossibleOptionDefinition<boolean>[] = [
         type: Boolean,
     },
     {
-        description: "Turn on very-verbose output",
-        group: "global",
-        name: "very-verbose",
-        type: Boolean,
-    },
-    {
         description: "Turn on debugging output",
         group: "global",
         name: "debug",

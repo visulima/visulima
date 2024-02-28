@@ -1,9 +1,9 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
+import { dim, green, reset } from "@visulima/colorize";
 import type { Pail } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
 import boxen from "boxen";
-import chalk from "chalk";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
 // eslint-disable-next-line no-restricted-imports
@@ -20,7 +20,7 @@ import type {
 import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
 import HelpCommand from "./command/help";
 import VersionCommand from "./command/version";
-import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE, VERBOSITY_VERY_VERBOSE } from "./constants";
+import { POSITIONALS_KEY, VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import EmptyToolbox from "./empty-toolbox";
 import type { UpdateNotifierOptions } from "./update-notifier/has-new-version";
@@ -44,7 +44,7 @@ const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
 class Cli implements ICli {
-    private readonly logger: Pail;
+    private readonly logger: Pail<never, string>;
 
     private readonly argv: string[];
 
@@ -95,26 +95,35 @@ class Cli implements ICli {
         // to quiet mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
             env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
-        }
 
-        // If the "--verbose"/"-v" flag is ever present, set our global logging
-        // to verbose mode. Also set the level on the logger we've already created.
-        if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
+            // If the "--verbose"/"-v" flag is ever present, set our global logging
+            // to verbose mode. Also set the level on the logger we've already created.
+        } else if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
             env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
-        } else if (this.argv.includes("--very-verbose") || this.argv.includes("-vv")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERY_VERBOSE);
         } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in env) {
             env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
+        } else {
+            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
         }
 
+        const cerebroLevelToPailLevel: Record<string, string> = {
+            "32": "informational",
+            "64": "trace",
+            "128": "debug",
+        };
+
         this.logger = createPail({
-            // logLevel: env["CEREBRO_OUTPUT_LEVEL"] as "debug" | "error" | "informational" | "warning",
+            logLevel: env["CEREBRO_OUTPUT_LEVEL"]
+                ? cerebroLevelToPailLevel[env["CEREBRO_OUTPUT_LEVEL"] as keyof typeof cerebroLevelToPailLevel] ?? "informational"
+                : "informational",
         });
+
+        if (env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_QUIET)) {
+            this.logger.disable();
+        }
 
         checkNodeVersion();
         registerExceptionHandler(this.logger);
-
-        env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
 
         this.cliName = cliName;
         this.packageVersion = packageVersion;
@@ -304,7 +313,6 @@ class Cli implements ICli {
                 this.logger.error(error as object);
             }
 
-
             return isTest ? undefined : exit(1);
         }
 
@@ -350,7 +358,7 @@ class Cli implements ICli {
             ];
         }
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations,@typescript-eslint/no-unsafe-argument
+        // eslint-disable-next-line unicorn/prevent-abbreviations
         const parsedArgs = commandLineArgs(arguments_, {
             argv: removeBooleanValues(commandArguments, command.options ?? []),
             camelCase: true,
@@ -402,7 +410,6 @@ class Cli implements ICli {
         this.logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
         await this.prepareToolboxResult(commandArgs, toolbox as IToolbox, command);
-
 
         return isTest ? undefined : exit(0);
     }
@@ -502,12 +509,10 @@ class Cli implements ICli {
         await command.execute(toolbox);
     }
 
-
     private async updateNotifier({ logger }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
-            (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) &&
-                this.updateNotifierOptions)
+            (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger
             logger.raw("Checking for updates...");
@@ -517,7 +522,7 @@ class Cli implements ICli {
             const updateAvailable = await hasNewVersion(this.updateNotifierOptions);
 
             if (updateAvailable) {
-                const template = `Update available ${chalk.dim(this.packageVersion)}${chalk.reset(" → ")}${chalk.green(updateAvailable)}`;
+                const template = "Update available " + dim(this.packageVersion + "") + reset(" → ") + green(updateAvailable);
 
                 this.logger.error(
                     boxen(template, {

@@ -32,13 +32,8 @@ export const VERBOSITY_NORMAL = 32;
 export const VERBOSITY_VERBOSE = 64;
 
 /**
- * Output with this verbosity will be super detailed.
- */
-export const VERBOSITY_VERY_VERBOSE = 128;
-
-/**
  * Output with this verbosity will reveal internals.
  */
-export const VERBOSITY_DEBUG = 256;
+export const VERBOSITY_DEBUG = 128;
 
 export const POSITIONALS_KEY = "positionals";
