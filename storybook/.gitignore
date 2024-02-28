@@ -1,4 +1,4 @@
 *
 
-!scripts/vercel-ignore-command.js
+!scripts/vercel-ignore-command.cjs
 !vercel.json
