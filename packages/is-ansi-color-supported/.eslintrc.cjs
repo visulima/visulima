@@ -29,6 +29,7 @@ module.exports = {
                 "import/no-default-export": "error",
                 "import/prefer-default-export": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
+                "prefer-template": "off",
             },
         },
         {
