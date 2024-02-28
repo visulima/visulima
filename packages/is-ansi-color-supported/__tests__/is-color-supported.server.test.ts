@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { isStdoutColorSupported, isStderrColorSupported } from "../src/is-color-supported.server";
+import { isStderrColorSupported, isStdoutColorSupported } from "../src/is-color-supported.server";
 
-describe("node.JS isStdoutColorSupported", () => {
+describe("node.JS", () => {
     it(`process undefined`, () => {
         expect.assertions(1);
 
@@ -94,22 +94,6 @@ describe("node.JS isStdoutColorSupported", () => {
             argv: [],
             env: { TERM: "dumb" },
             stdout: { isTTY: true },
-        });
-
-        const received = isStdoutColorSupported();
-
-        vi.unstubAllGlobals();
-
-        expect(received).toBe(0);
-    });
-
-    it(`should process stderr no colors, unsupported terminal`, () => {
-        expect.assertions(1);
-
-        vi.stubGlobal("process", {
-            argv: [],
-            env: { TERM: "dumb" },
-            stderr: { isTTY: true },
         });
 
         const received = isStdoutColorSupported();
@@ -765,11 +749,27 @@ describe("node.JS isStdoutColorSupported", () => {
 
         expect(received).toBe(1);
     });
+
+    it(`should support stderr`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "color" },
+            stderr: { isTTY: true },
+        });
+
+        const received = isStderrColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
 });
 
 // Deno
-describe("deno isStdoutColorSupported", () => {
-    it(`should support env TERM in stdout`, () => {
+describe("deno", () => {
+    it(`should support env TERM`, () => {
         expect.assertions(1);
 
         vi.stubGlobal("process", undefined);
@@ -795,7 +795,7 @@ describe("deno isStdoutColorSupported", () => {
         expect(received).toBe(2);
     });
 
-    it(`should support env TERM in stderr`, () => {
+    it(`should support stderr`, () => {
         expect.assertions(1);
 
         vi.stubGlobal("process", undefined);
@@ -806,7 +806,7 @@ describe("deno isStdoutColorSupported", () => {
             },
             env: {
                 toObject: () => {
-                    return { TERM: "xterm-256color" };
+                    return { TERM: "color" };
                 },
             },
             stderr: {
@@ -814,11 +814,11 @@ describe("deno isStdoutColorSupported", () => {
             },
         });
 
-        const received = isStdoutColorSupported();
+        const received = isStderrColorSupported();
 
         vi.unstubAllGlobals();
 
-        expect(received).toBe(2);
+        expect(received).toBe(1);
     });
 
     it(`should support deno platform win`, () => {
@@ -923,7 +923,7 @@ describe("deno isStdoutColorSupported", () => {
     });
 });
 
-describe("next.js isStdoutColorSupported", () => {
+describe("next.js", () => {
     it(`should support color on runtime experimental-edge`, () => {
         expect.assertions(1);
 

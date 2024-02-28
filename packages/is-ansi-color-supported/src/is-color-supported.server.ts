@@ -194,10 +194,8 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     return minColorLevel;
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedFactory("out");
 
-// eslint-disable-next-line import/no-unused-modules
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
 
 // eslint-disable-next-line import/no-unused-modules

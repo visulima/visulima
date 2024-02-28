@@ -36,10 +36,8 @@ const isColorSupported = (): ColorSupportLevel =>
         return 0;
     })();
 
-// eslint-disable-next-line import/no-unused-modules
 export const isStdoutColorSupported = isColorSupported;
 
-// eslint-disable-next-line import/no-unused-modules
 export const isStderrColorSupported = isColorSupported;
 
 // eslint-disable-next-line import/no-unused-modules
