@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bold, cyan, green, italic, red, reset, strikethrough } from "../../src/index.server";
+import { bold, cyan, green, italic, magenta, red, reset, strikethrough, blue } from "../../src/index.server";
 // eslint-disable-next-line import/no-named-as-default
 import template from "../../src/template";
 
@@ -125,9 +125,7 @@ describe("template", () => {
     it.each([["stdout", template]])(`[%s] should correctly perform template parsing`, (_, function_) => {
         expect.assertions(1);
 
-        expect(function_`{bold Hello, {cyan World!} This is a} test. {green Woo!}`).toBe(
-            bold("Hello,", cyan("World!"), "This is a") + " test. " + green("Woo!"),
-        );
+        expect(function_`{bold Hello, {cyan World!} This is a} test. {green Woo!}`).toBe(bold`Hello, ${cyan`World!`} This is a ` + "test. " + green`Woo!`);
     });
 
     it.each([["stdout", template]])(`[%s] should correctly perform template substitutions`, (_, function_) => {
@@ -137,7 +135,7 @@ describe("template", () => {
         const exclamation = "Neat";
 
         expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a} test. {green ${exclamation}!}`).toBe(
-            bold("Hello,", cyan.inverse(name + "!"), "This is a") + " test. " + green(exclamation + "!"),
+            bold`Hello, ${cyan.inverse`${name}!`} This is a ` + "test. " + green`${exclamation}!`,
         );
     });
 
@@ -148,7 +146,7 @@ describe("template", () => {
         const exclamation = "Neat";
 
         expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a}` + " test. " + function_`{green ${exclamation}!}`).toBe(
-            bold("Hello,", cyan.inverse(name + "!"), "This is a") + " test. " + green(exclamation + "!"),
+            bold`Hello, ${cyan.inverse`${name}!`} This is a ` + "test. " + green`${exclamation}!`,
         );
 
         expect(function_`{red.bgGreen.bold Hello {italic.blue ${name}}}`).toBe(red.bgGreen.bold("Hello " + italic.blue(name)));
@@ -161,10 +159,9 @@ describe("template", () => {
     it.each([["stdout", template]])(`[%s] should correctly parse newline literals (bug #184)`, (_, function_) => {
         expect.assertions(1);
 
-        expect(
-            function_`Hello
-{red there}`,
-        ).toBe("Hello\nthere");
+        expect(function_`Hello
+{red there}`).toBe(`Hello
+there`);
     });
 
     it.each([["stdout", template]])(`[%s] should correctly parse newline escapes (bug #177)`, (_, function_) => {
@@ -176,15 +173,17 @@ describe("template", () => {
     it.each([["stdout", template]])(`[%s] should correctly parse escape in parameters (bug #177 comment 318622809)`, (_, function_) => {
         expect.assertions(1);
 
-        const string = '\\';
+        const string = "\\";
 
-        expect(function_`{blue ${string}}`).toBe('\\');
+        expect(function_`{blue ${string}}`).toBe(blue("\\"));
     });
 
     it.each([["stdout", template]])(`[%s] should correctly parses unicode/hex escapes`, (_, function_) => {
         expect.assertions(1);
 
-        expect(function_`\u0078ylophones are fo\u0078y! {magenta.inverse \u0078ylophones are fo\u0078y!}`).toBe("xylophones are foxy! xylophones are foxy!");
+        expect(function_`\u0078ylophones are fo\u0078y! {magenta.inverse \u0078ylophones are fo\u0078y!}`).toBe(
+            `xylophones are foxy! ${magenta.inverse`xylophones are foxy!`}`,
+        );
     });
 
     it.each([["stdout", template]])(`[%s] should throws if an extra unescaped } is found`, (_, function_) => {
