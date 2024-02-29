@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bold, cyan, green, italic, magenta, red, reset, strikethrough, blue } from "../../src/index.server";
+import { blue, bold, cyan, green, italic, magenta, red, reset, strikethrough } from "../../src/index.server";
 // eslint-disable-next-line import/no-named-as-default
 import template from "../../src/template";
 
@@ -122,37 +122,39 @@ describe("template", () => {
         expect(function_`hello`).toBe("hello");
     });
 
-    it.each([["stdout", template]])(`[%s] should correctly perform template parsing`, (_, function_) => {
+    it.each([["stdout", template]])(`[%s] should correctly perform template parsing`, async (name, function_) => {
         expect.assertions(1);
 
-        expect(function_`{bold Hello, {cyan World!} This is a} test. {green Woo!}`).toBe(bold`Hello, ${cyan`World!`} This is a ` + "test. " + green`Woo!`);
+        await expect(function_`{bold Hello, {cyan World!} This is a} test. {green Woo!}`).toMatchFileSnapshot(
+            "__snapshots__/template[" + name + "-template-parsing].test.ts.snap",
+        );
     });
 
-    it.each([["stdout", template]])(`[%s] should correctly perform template substitutions`, (_, function_) => {
+    it.each([["stdout", template]])(`[%s] should correctly perform template substitutions`, async (_, function_) => {
         expect.assertions(1);
 
         const name = "Sindre";
         const exclamation = "Neat";
 
-        expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a} test. {green ${exclamation}!}`).toBe(
-            bold`Hello, ${cyan.inverse`${name}!`} This is a ` + "test. " + green`${exclamation}!`,
+        await expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a} test. {green ${exclamation}!}`).toMatchFileSnapshot(
+            "__snapshots__/template[" + name + "-template-substitutions].test.ts.snap",
         );
     });
 
-    it.each([["stdout", template]])(`[%s] should correctly perform nested template substitutions`, (_, function_) => {
+    it.each([["stdout", template]])(`[%s] should correctly perform nested template substitutions`, async (_, function_) => {
         expect.assertions(3);
 
         const name = "Sindre";
         const exclamation = "Neat";
 
-        expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a}` + " test. " + function_`{green ${exclamation}!}`).toBe(
-            bold`Hello, ${cyan.inverse`${name}!`} This is a ` + "test. " + green`${exclamation}!`,
+        await expect(function_`{bold Hello, {cyan.inverse ${name}!} This is a}` + " test. " + function_`{green ${exclamation}!}`).toMatchFileSnapshot(
+            "__snapshots__/template[" + name + "-nested-template-substitutions-1].test.ts.snap",
         );
-
-        expect(function_`{red.bgGreen.bold Hello {italic.blue ${name}}}`).toBe(red.bgGreen.bold("Hello " + italic.blue(name)));
-
-        expect(function_`{strikethrough.cyanBright.bgBlack Works with {reset {bold numbers}} {bold.red ${1}}}`).toBe(
-            strikethrough.cyanBright.bgBlack("Works with " + reset.bold("numbers") + " " + bold.red(1)),
+        await expect(function_`{red.bgGreen.bold Hello {italic.blue ${name}}}`).toMatchFileSnapshot(
+            "__snapshots__/template[" + name + "-nested-template-substitutions-2].test.ts.snap",
+        );
+        await expect(function_`{strikethrough.cyanBright.bgBlack Works with {reset {bold numbers}} {bold.red ${1}}}`).toMatchFileSnapshot(
+            "__snapshots__/template[" + name + "-nested-template-substitutions-3].test.ts.snap",
         );
     });
 
@@ -161,7 +163,7 @@ describe("template", () => {
 
         expect(function_`Hello
 {red there}`).toBe(`Hello
-there`);
+${red("there")}`);
     });
 
     it.each([["stdout", template]])(`[%s] should correctly parse newline escapes (bug #177)`, (_, function_) => {
