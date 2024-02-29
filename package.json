@@ -2,8 +2,8 @@
     "name": "visulima",
     "version": "0.0.0",
     "private": true,
-    "sideEffects": false,
     "license": "MIT",
+    "sideEffects": false,
     "type": "module",
     "workspaces": [
         "packages/*",
@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "audit": "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc",
-        "bench:colorize": "pnpm --filter \"colorize\" run test:bench",
+        "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
@@ -167,7 +167,6 @@
         "extends browserslist-config-anolilab"
     ],
     "dependencies": {
-        "@jsenv/file-size-impact": "^14.1.5",
         "@anolilab/commitlint-config": "^5.0.3",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/lint-staged-config": "^2.1.7",
@@ -178,6 +177,7 @@
         "@babel/core": "^7.23.9",
         "@commitlint/cli": "^18.6.1",
         "@commitlint/config-conventional": "^18.6.2",
+        "@jsenv/file-size-impact": "^14.1.5",
         "@nrwl/tao": "18.0.5",
         "@nrwl/workspace": "18.0.5",
         "@octokit/rest": "^20.0.2",

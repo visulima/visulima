@@ -44,7 +44,14 @@
         "tty",
         "visulima",
         "xterm",
-        "yellow"
+        "yellow",
+        "template",
+        "templates",
+        "template-string",
+        "tagged-template",
+        "tagged template",
+        "tagged template string",
+        "tagged template literal"
     ],
     "homepage": "https://www.visulima.com/docs/package/colorize",
     "repository": {
@@ -120,13 +127,13 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "node __bench__",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "2.0.0"
+        "@visulima/is-ansi-color-supported": "2.0.0",
+        "ansi-regex": "^6.0.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -135,21 +142,11 @@
         "@babel/core": "^7.23.9",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
-        "@types/micromatch": "^4.0.6",
+        "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
         "@vitest/coverage-v8": "^1.3.1",
         "@vitest/ui": "^1.3.1",
-        "ansi-colors": "4.1.3",
-        "ansi-regex": "^6.0.1",
         "ansi-styles": "^6.2.1",
-        "ansis": "2.3.0",
-        "benchmark": "2.1.4",
-        "chalk": "5.3.0",
-        "chalk-template": "^1.1.0",
-        "cli-color": "2.0.3",
-        "colorette": "2.0.20",
-        "colors": "1.4.0",
-        "colors-cli": "1.0.33",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -158,8 +155,6 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.3.22",
         "eslint-plugin-vitest-globals": "^1.4.0",
-        "kleur": "4.1.5",
-        "picocolors": "1.0.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "secretlint": "8.1.2",

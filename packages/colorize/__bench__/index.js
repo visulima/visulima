@@ -216,6 +216,12 @@ bench("Template literals")
     .add("ansis", () => red`red ${yellow`yellow ${green`green`} yellow`} red`)
     .run();
 
+// Tagged Template Literals
+bench("Tagged Template literals")
+    .add("@visulima/colorize", () => colorize`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
+    .add("ansis", () => chalk`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
+    .run();
+
 function coloretteBench(c) {
     return c.red(`${c.bold(`${c.cyan(`${c.yellow("yellow")}cyan`)}`)}red`);
 }

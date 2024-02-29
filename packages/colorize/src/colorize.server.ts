@@ -6,7 +6,6 @@
  * Copyright (c) 2023, webdiscus
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import ansiRegex from "ansi-regex";
 
 import { baseColors, baseStyles, styleMethods } from "./ansi-codes";
