@@ -47,6 +47,8 @@ jobs:
         needs: "files-changed"
         name: "Package bundle size impact"
         runs-on: "ubuntu-latest"
+        permissions:
+            issues: "write" # for actions/stale to close stale issues
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0

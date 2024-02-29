@@ -1,5 +1,5 @@
 import type { AnsiColors, AnsiStyles } from "./types";
-import { ansiCodeHexMap } from "./utils";
+import { ansiCodeHexMap } from "./util/ansi-code-hex-map";
 
 export const baseStyles: Required<Record<AnsiStyles, string>> = {
     bold: "font-weight: bold;",

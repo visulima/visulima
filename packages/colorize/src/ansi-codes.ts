@@ -9,7 +9,8 @@
 import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
 
 import type { AnsiColors, AnsiStyles, ColorData } from "./types";
-import { clamp, hexToRgb } from "./utils";
+import { clamp } from "./util/clamp";
+import { hexToRgb } from "./util/hex-to-rgb";
 
 const esc: (open: number | string, close: number | string) => ColorData =
     isStdoutColorSupported() > 0
