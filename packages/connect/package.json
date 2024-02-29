@@ -80,7 +80,7 @@
     },
     "dependencies": {
         "http-errors": "^2.0.0",
-        "regexparam": "^2.0.2"
+        "regexparam": "^3.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
