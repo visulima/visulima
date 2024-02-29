@@ -111,14 +111,12 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "dependencies": {
+    "devDependencies": {
         "detect-indent": "^7.0.1",
         "find-up": "^7.0.0",
         "get-tsconfig": "^4.7.3",
         "read-pkg": "^9.0.1",
-        "strip-json-comments": "^5.0.1"
-    },
-    "devDependencies": {
+        "strip-json-comments": "^5.0.1",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
