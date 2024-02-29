@@ -40,6 +40,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
     -   `import { red } from '@visulima/colorize'` or `const { red } = require('@visulima/colorize')`
 -   [Chained syntax](#chained-syntax) `red.bold.underline('text')`
 -   [Template literals](#template-literals) `` red`text` ``
+-   String styling with [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), see [template-literals](#tagged-template-literals)
 -   [Nested **template strings**](#nested-syntax) `` red`R ${green`G`} R` ``
 -   [ANSI 256 colors](#256-colors) and [Truecolor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
 -   [ANSI codes](#escape-codes) as `open` and `close` property for each style `` `Hello ${red.open}World${red.close}!` ``
@@ -194,7 +195,7 @@ as [chalk][chalk], [colorette][colorette], [kleur][kleur].
 
 The `@visulima/colorize` supports both the `default import` and `named import`.
 
-```js
+```typescript
 // default import
 import colorize from "@visulima/colorize";
 
@@ -203,7 +204,7 @@ colorize.red.bold("text");
 
 You can import named colors, styles and functions. All imported colors and styles are `chainable`.
 
-```js
+```typescript
 // named import
 import { red, hex, italic } from "@visulima/colorize";
 
@@ -212,7 +213,7 @@ red.bold("text");
 
 Default import and named import can be combined.
 
-```js
+```typescript
 // default and named import
 import colorize, { red } from "@visulima/colorize";
 
@@ -227,7 +228,7 @@ The `@visulima/colorize` supports both the function syntax `red('error')` and te
 The `template literals` allow you to make a complex template more readable and shorter.\
 The `function syntax` can be used to colorize a variable.
 
-```js
+```typescript
 import { red, blue } from "@visulima/colorize";
 
 let message = "error";
@@ -237,11 +238,62 @@ blue`text`;
 blue`text ${message} text`;
 ```
 
+## Tagged Template Literals
+
+The `@visulima/colorize` supports the [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates).
+
+<!--
+ Modified copy of https://github.com/chalk/chalk-template/blob/main/readme.md
+
+ MIT License
+
+ Copyright (c) Josh Junon
+ Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+-->
+
+```typescript
+import template from "@visulima/colorize/template";
+
+console.log(template`
+CPU: {red ${cpu.totalPercent}%}
+RAM: {green ${(ram.used / ram.total) * 100}%}
+DISK: {rgb(255,131,0) ${(disk.used / disk.total) * 100}%}
+`);
+
+const miles = 18;
+const calculateFeet = (miles) => miles * 5280;
+
+console.log(template`
+    There are {bold 5280 feet} in a mile.
+    In {bold ${miles} miles}, there are {green.bold ${calculateFeet(miles)} feet}.
+`);
+
+console.log(template`
+    There are also {#FF0000 shorthand hex styles} for
+    both the {#ABCDEF foreground}, {#:123456 background},
+    or {#ABCDEF:123456 both}.
+`);
+```
+
+### API
+
+Blocks are delimited by an opening curly brace (`{`), a style, some content, and a closing curly brace (`}`).
+
+Template styles are chained exactly like normal Colorize styles. The following two statements are equivalent:
+
+```typescript
+import colorize from "@visulima/colorize";
+import template from "@visulima/colorize/template";
+
+console.log(colorize.bold.rgb(10, 100, 200)("Hello!"));
+console.log(template`{bold.rgb(10,100,200) Hello!}`);
+```
+
 ## Chained syntax
 
 All colors, styles and functions are chainable. Each color or style can be combined in any order.
 
-```js
+```typescript
 import { blue, bold, italic, hex } from "@visulima/colorize";
 
 blue.bold`text`;
@@ -260,7 +312,7 @@ None of the other libraries (chalk, kleur, colorette, colors.js etc.) support ne
 
 Nested template strings:
 
-```js
+```typescript
 import { red, green } from "@visulima/colorize";
 
 red`red ${green`green`} red`;
@@ -268,7 +320,7 @@ red`red ${green`green`} red`;
 
 Deep nested chained styles:
 
-```js
+```typescript
 import { red, green, cyan, magenta, yellow, italic, underline } from "@visulima/colorize";
 
 console.log(red(`red ${italic(`red italic ${underline(`red italic underline`)}`)} red`));
@@ -290,7 +342,7 @@ Copyright (c) 2023, webdiscus
 
 Multiline nested template strings:
 
-```js
+```typescript
 import { red, green, hex, visible, inverse } from "@visulima/colorize";
 
 // defined a truecolor as the constant
@@ -342,7 +394,7 @@ Background function: `bgAnsi256(code)` has short alias `bg(code)`
 
 See [ANSI color codes](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit).
 
-```js
+```typescript
 import { bold, ansi256, fg, bgAnsi256, bg } from "@visulima/colorize";
 
 // foreground color
@@ -371,7 +423,7 @@ You can use the `hex` or `rgb` format.
 Foreground function: `hex()` `rgb()`\
 Background function: `bgHex()` `bgRgb()`
 
-```js
+```typescript
 import { bold, hex, rgb, bgHex, bgRgb } from "@visulima/colorize";
 
 // foreground color
@@ -401,7 +453,7 @@ Copyright (c) 2023, webdiscus
 You can use the [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors_and_Styles) with `open`
 and `close` properties for each style.
 
-```js
+```typescript
 import { green, bold } from "@visulima/colorize";
 
 // each style has `open` and `close` properties
@@ -425,7 +477,7 @@ Copyright (c) 2023, webdiscus
 
 The Colorize class contains the method `strip()` to remove all ANSI codes from string.
 
-```js
+```typescript
 import colorize from "@visulima/colorize";
 // or named import
 import { strip } from "@visulima/colorize";
@@ -440,7 +492,7 @@ The variable `string` will contain the pure string without ANSI codes.
 
 Supports correct style break at the `end of line`.
 
-```js
+```typescript
 import { bgGreen } from "@visulima/colorize";
 
 console.log(bgGreen`\nColorize\nNew Line\nNext New Line\n`);
@@ -525,11 +577,11 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 > ```
 
 <!--
-Modified table from https://github.com/webdiscus/ansis
+ Modified table from https://github.com/webdiscus/ansis
 
-ISC License
+ ISC License
 
-Copyright (c) 2023, webdiscus
+ Copyright (c) 2023, webdiscus
 -->
 
 ## Benchmark
@@ -576,6 +628,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
 -   [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
 -   [chalk][chalk] - Terminal string styling done right
+-   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
 -   [cli-color][cli-color] - Colors and formatting for the console
 -   [colorette][colorette] - Easily set your terminal text color & styles
 -   [colors-cli][colors-cli] - Terminal string styling done right.
@@ -601,4 +654,5 @@ The visulima colorize is open-sourced software licensed under the [MIT][license-
 [ansi-colors]: https://github.com/doowb/ansi-colors
 [kleur]: https://github.com/lukeed/kleur
 [chalk]: https://github.com/chalk/chalk
+[chalk-template]: https://github.com/chalk/chalk-template
 [ansis]: https://github.com/webdiscus/ansis

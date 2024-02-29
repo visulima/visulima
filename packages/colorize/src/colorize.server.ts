@@ -11,7 +11,7 @@ import ansiRegex from "ansi-regex";
 
 import { baseColors, baseStyles, styleMethods } from "./ansi-codes";
 import type { ColorData, ColorizeType } from "./types";
-import { stringReplaceAll } from "./utils";
+import { stringReplaceAll } from "./util/string-replace-all";
 
 const styles: Record<string, object> = {};
 

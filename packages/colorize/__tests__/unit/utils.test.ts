@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { clamp, hexToRgb, stringReplaceAll } from "../../src/utils";
+import { clamp } from "../../src/util/clamp";
+import { hexToRgb } from "../../src/util/hex-to-rgb";
+import { stringReplaceAll } from "../../src/util/string-replace-all";
 
 describe("utils tests", () => {
     it(`should transform hex 'FFAA99' to a valid rgb`, () => {

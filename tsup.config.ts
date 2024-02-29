@@ -135,6 +135,17 @@ export const createConfig = (
             }
 
             return sources.map((obj) => {
+                if (typeof obj === "string") {
+                    return {
+                        ...baseConfig,
+                        plugins: [fixCjsExports()],
+                        entry: [obj],
+                        format: ["esm", "cjs"],
+                        cjsInterop: true,
+                        ...(config as Options),
+                    };
+                }
+
                 const formatConfig = (config as Options)?.[obj.format];
 
                 return {
