@@ -9,7 +9,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import { blue, bold, cyan, green, italic, magenta, red, reset, strikethrough } from "../../src/index.server";
+// eslint-disable-next-line import/extensions
+import { blue, magenta, red } from "../../src/index.server";
 // eslint-disable-next-line import/no-named-as-default
 import template from "../../src/template";
 

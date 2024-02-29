@@ -13,9 +13,9 @@ import { unescape } from "../util/unescape";
 
 const TEMPLATE_REGEX =
     // eslint-disable-next-line security/detect-unsafe-regex
-    /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
+    /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n])+)/gi;
 // eslint-disable-next-line security/detect-unsafe-regex
-const STYLE_REGEX = /(?:^|\.)(?:(\w+)(?:\(([^)]*)\))?|#(?=[:a-f\d]{2,})([a-f\d]{6})?(?::([a-f\d]{6}))?)/gi;
+const STYLE_REGEX = /(?:^|\.)(?:(\w+)(?:\(([^)]*)\))?|#(?=[:a-f\d]{2})([a-f\d]{6})?(?::([a-f\d]{6}))?)/gi;
 const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
 const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|([^\\])/gi;
 

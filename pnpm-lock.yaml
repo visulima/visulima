@@ -1403,6 +1403,9 @@ importers:
       chalk:
         specifier: 5.3.0
         version: 5.3.0
+      chalk-template:
+        specifier: ^1.1.0
+        version: 1.1.0
       cli-color:
         specifier: 2.0.3
         version: 2.0.3
@@ -14637,6 +14640,13 @@ packages:
       loupe: 2.3.7
       pathval: 1.1.1
       type-detect: 4.0.8
+    dev: true
+
+  /chalk-template@1.1.0:
+    resolution: {integrity: sha512-T2VJbcDuZQ0Tb2EWwSotMPJjgpy1/tGee1BTpUNsGZ/qgNjV2t7Mvu+d4600U564nbLesN1x2dPL+xii174Ekg==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      chalk: 5.3.0
     dev: true
 
   /chalk@2.3.0:

@@ -6,7 +6,7 @@
  * Copyright (c) 2023, webdiscus
  */
 
-// eslint-disable-next-line import/no-unused-modules
+ 
 export const ansiCodeHexMap: Record<number, string> = {
     0: "#000",
     1: "#800",

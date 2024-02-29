@@ -21,6 +21,7 @@ export const makeColorizeTemplate = (template: (text: string) => string): ((firs
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 1; index < firstString.raw.length; index++) {
+            // eslint-disable-next-line security/detect-object-injection
             parts.push(String(arguments_[index - 1]).replaceAll(/[{}\\]/g, "\\$&"), String(firstString.raw[index]));
         }
 
