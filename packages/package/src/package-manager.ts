@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 
 import type { Options } from "find-up";
 import { findUp } from "find-up";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { parsePackage, readPackage } from "read-pkg";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"] as const;
