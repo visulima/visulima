@@ -4,7 +4,7 @@ import type { Cli as ICli, Command as ICommand, Toolbox as IToolbox } from "../@
 import type { OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
-import chalkFormat from "../util/chalk-format";
+import templateFormat from "../util/template-format";
 import commandLineUsage from "../util/command-line-usage";
 
 const EMPTY_GROUP_KEY = "__Other";
@@ -160,7 +160,7 @@ class HelpCommand implements ICommand {
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            logger.raw(chalkFormat(header));
+            logger.raw(templateFormat(header));
         }
 
         if (commandName === "help") {
@@ -171,7 +171,7 @@ class HelpCommand implements ICommand {
         }
 
         if (footer) {
-            logger.raw(chalkFormat(footer));
+            logger.raw(templateFormat(footer));
         }
     }
 }

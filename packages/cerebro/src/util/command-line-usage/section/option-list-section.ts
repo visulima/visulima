@@ -2,7 +2,7 @@ import CliTable3 from "cli-table3";
 
 import type { ArgumentDefinition, OptionDefinition as IOptionDefinition } from "../../../@types/command";
 import type { OptionList as IOptionList } from "../../../@types/command-line-usage";
-import chalkFormat from "../../chalk-format";
+import templateFormat from "../../template-format";
 import BaseSection from "./base-section";
 
 class OptionListSection extends BaseSection {
@@ -21,7 +21,7 @@ class OptionListSection extends BaseSection {
         }
 
         if (data.header) {
-            this.header(chalkFormat(data.header));
+            this.header(templateFormat(data.header));
         }
 
         if (groups.length > 0) {
@@ -57,7 +57,7 @@ class OptionListSection extends BaseSection {
         });
 
         definitions.forEach((definition) =>
-            table.push([this.getOptionNames(definition, data.reverseNameOrder ?? false, data.isArgument ?? false), chalkFormat(definition.description)]),
+            table.push([this.getOptionNames(definition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(definition.description)]),
         );
 
         this.add(table.toString());
@@ -75,7 +75,7 @@ class OptionListSection extends BaseSection {
 
         const multiple = definition.multiple || definition.lazyMultiple ? "[]" : "";
 
-        type = chalkFormat(definition.typeLabel ?? `{underline ${type}${multiple}}`);
+        type = templateFormat(definition.typeLabel ?? `{underline ${type}${multiple}}`);
 
         let result: string;
 
@@ -84,15 +84,15 @@ class OptionListSection extends BaseSection {
                 const name = isArgument ? definition.name : `{yellow --${definition.name}}`;
 
                 result = reverseNameOrder
-                    ? chalkFormat(`{bold ${name}}, {bold -${definition.alias}} ${type}`)
-                    : chalkFormat(`{bold -${definition.alias}}, {bold ${name}} ${type}`);
+                    ? templateFormat(`{bold ${name}}, {bold -${definition.alias}} ${type}`)
+                    : templateFormat(`{bold -${definition.alias}}, {bold ${name}} ${type}`);
             } else if (reverseNameOrder) {
-                result = chalkFormat(`{bold -${definition.alias}} ${type}`);
+                result = templateFormat(`{bold -${definition.alias}} ${type}`);
             } else {
-                result = chalkFormat(`{bold -${definition.alias}} ${type}`);
+                result = templateFormat(`{bold -${definition.alias}} ${type}`);
             }
         } else {
-            result = chalkFormat(`{bold ${isArgument ? definition.name : `{yellow --${definition.name}}`}} ${type}`);
+            result = templateFormat(`{bold ${isArgument ? definition.name : `{yellow --${definition.name}}`}} ${type}`);
         }
 
         return result;

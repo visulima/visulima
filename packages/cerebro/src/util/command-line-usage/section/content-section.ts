@@ -2,7 +2,7 @@ import type { TableInstanceOptions } from "cli-table3";
 import CliTable3 from "cli-table3";
 
 import type { Content as IContent } from "../../../@types/command-line-usage";
-import chalkFormat from "../../chalk-format";
+import templateFormat from "../../template-format";
 import BaseSection from "./base-section";
 
 const defaultTableOptions: Partial<TableInstanceOptions> = {
@@ -40,7 +40,7 @@ const defaultTableOptions: Partial<TableInstanceOptions> = {
  *
  * @property raw - Set to true to avoid indentation and wrapping. Useful for banners.
  * @example
- * Simple string of content. For ansi formatting, use [chalk template literal syntax](https://github.com/chalk/chalk#tagged-template-literal).
+ * Simple string of content. For ansi formatting, use [colorize template literal syntax](https://github.com/visulima/visulima/tree/main/packages/colorize#tagged-template-literals).
  * ```js
  * {
  *   header: 'A typical app',
@@ -93,7 +93,7 @@ class ContentSection extends BaseSection {
         super();
 
         if (section.header) {
-            this.header(chalkFormat(section.header));
+            this.header(templateFormat(section.header));
         }
 
         if (section.content) {
@@ -102,13 +102,13 @@ class ContentSection extends BaseSection {
                 if (Array.isArray(section.content) && section.content.every((value) => typeof value === "string")) {
                     section.content.forEach((row) => {
                         if (Array.isArray(row)) {
-                            row.forEach((cell) => this.add(chalkFormat(cell)));
+                            row.forEach((cell) => this.add(templateFormat(cell)));
                         } else {
-                            this.add(chalkFormat(row));
+                            this.add(templateFormat(row));
                         }
                     });
                 } else if (typeof section.content === "string") {
-                    this.add(chalkFormat(section.content));
+                    this.add(templateFormat(section.content));
                 } else {
                     throw new TypeError("Invalid raw content, must be a string or array of strings.");
                 }
@@ -128,7 +128,7 @@ class ContentSection extends BaseSection {
                 colWidths: [80],
             });
 
-            table.push([chalkFormat(content)]);
+            table.push([templateFormat(content)]);
 
             return table.toString();
         }
@@ -144,9 +144,9 @@ class ContentSection extends BaseSection {
 
             content.forEach((row) => {
                 if (Array.isArray(row)) {
-                    table.push(row.map((cell) => chalkFormat(cell)));
+                    table.push(row.map((cell) => templateFormat(cell)));
                 } else {
-                    table.push([chalkFormat(row)]);
+                    table.push([templateFormat(row)]);
                 }
             });
 
@@ -168,9 +168,9 @@ class ContentSection extends BaseSection {
 
             contentObject.data.forEach((row) => {
                 if (Array.isArray(row)) {
-                    table.push(row.map((cell) => chalkFormat(cell)));
+                    table.push(row.map((cell) => templateFormat(cell)));
                 } else {
-                    table.push([chalkFormat(row)]);
+                    table.push([templateFormat(row)]);
                 }
             });
 
