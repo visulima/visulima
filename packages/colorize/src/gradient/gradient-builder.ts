@@ -2,7 +2,7 @@ import type { ColorizeType, ColorValueHex, CssColorName, RGB, StopInput, StopOut
 import { hexToRgb } from "../util/hex-to-rgb";
 import { colorNames } from "./util/color-names";
 import { computeSubSteps } from "./util/compute";
-import { interpolateRgb } from "./util/interpolate";
+import { interpolateHsv, interpolateRgb } from "./util/interpolate";
 
 export class GradientBuilder {
     readonly #colorize: ColorizeType;
@@ -31,7 +31,6 @@ export class GradientBuilder {
 
             let stop = {} as StopOutput;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const hasPosition = (stop_ as StopInput).position !== undefined;
 
             if (havingPositions !== hasPosition) {
@@ -41,7 +40,6 @@ export class GradientBuilder {
             if (hasPosition) {
                 const stopInput = stop_ as StopInput;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 const hasColor = stopInput.color !== undefined;
 
                 if (!hasColor && (lastColorLess || index === 0 || index === l - 1)) {
@@ -53,17 +51,11 @@ export class GradientBuilder {
                 let color: [number, number, number] | undefined;
 
                 if (hasColor) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (Array.isArray(stopInput.color)) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         color = stopInput.color as [number, number, number];
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     } else if (typeof stopInput.color === "string") {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         color = stopInput.color.includes("#") ? hexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     } else if ((stopInput.color as RGB).r !== undefined && (stopInput.color as RGB).g !== undefined && (stopInput.color as RGB).b) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         color = [(stopInput.color as RGB).r, (stopInput.color as RGB).g, (stopInput.color as RGB).b];
                     }
                 }
@@ -71,19 +63,16 @@ export class GradientBuilder {
                 stop = {
                     color,
                     colorLess: !hasColor,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     position: stopInput.position,
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (stop.position < 0 || stop.position > 1) {
                     throw new Error("Color stops positions must be between 0 and 1");
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 } else if (stop.position < p) {
                     throw new Error("Color stops positions are not ordered");
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 p = stop.position;
             } else if (Array.isArray(stop_)) {
                 stop = {
@@ -92,14 +81,11 @@ export class GradientBuilder {
                 };
             } else if (typeof stop_ === "string") {
                 stop = {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     color: stop_.includes("#") ? hexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if ((stop_ as RGB).r !== undefined && (stop_ as RGB).g !== undefined && (stop_ as RGB).b !== undefined) {
                 stop = {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     color: [(stop_ as RGB).r, (stop_ as RGB).g, (stop_ as RGB).b],
                     position: index / (l - 1),
                 };
@@ -135,7 +121,6 @@ export class GradientBuilder {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const stop_ = { ...stop };
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             stop_.position = 1 - stop.position;
 
             stops.push(stop_);
@@ -175,21 +160,41 @@ export class GradientBuilder {
 
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,no-param-reassign
+                // eslint-disable-next-line no-param-reassign
                 stop.color = interpolateRgb(this.#colorize, this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2)[1];
             }
         });
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 0, l = this.stops.length; index < l - 1; index++) {
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line security/detect-object-injection
             const rgb = interpolateRgb(this.#colorize, this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             gradient.splice(gradient.length, 0, ...rgb);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        gradient.push(this.#colorize.rgb(...this.stops.at(-1).color));
+
+        return gradient;
+    }
+
+    public hsv(steps: number, mode?: boolean | "long" | "short"): ColorizeType[] {
+        const subSteps = computeSubSteps(this.stops, steps);
+        const gradient: ColorizeType[] = [];
+
+        this.stops.forEach((stop, index) => {
+            if (stop.colorLess) {
+                stop.color = interpolateHsv(this.#colorize, this.stops[index - 1], this.stops[index + 1], 2, mode)[1];
+            }
+        });
+
+        for (let index = 0, l = this.stops.length; index < l - 1; index++) {
+            const hsv = interpolateHsv(this.#colorize, this.stops[index], this.stops[index + 1], subSteps[index], mode);
+
+            gradient.splice(gradient.length, 0, ...hsv);
+        }
+
         gradient.push(this.#colorize.rgb(...this.stops.at(-1).color));
 
         return gradient;

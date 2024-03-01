@@ -24,9 +24,13 @@
         "firefox",
         "FORCE_COLOR",
         "formatting",
+        "gradient",
+        "gradients",
         "green",
         "kleur",
         "log",
+        "log",
+        "logging",
         "logging",
         "magenta",
         "NO_COLOR",
@@ -38,20 +42,20 @@
         "strip-color",
         "style",
         "styles",
+        "tagged template literal",
+        "tagged template string",
+        "tagged template",
+        "tagged-template",
+        "template",
+        "template-string",
+        "templates",
         "terminal",
         "text",
         "truecolor",
         "tty",
         "visulima",
         "xterm",
-        "yellow",
-        "template",
-        "templates",
-        "template-string",
-        "tagged-template",
-        "tagged template",
-        "tagged template string",
-        "tagged template literal"
+        "yellow"
     ],
     "homepage": "https://www.visulima.com/docs/package/colorize",
     "repository": {
@@ -102,6 +106,16 @@
             "import": {
                 "types": "./dist/template.d.ts",
                 "default": "./dist/template.js"
+            }
+        },
+        "./gradient": {
+            "require": {
+                "types": "./dist/gradient.d.cts",
+                "default": "./dist/gradient.cjs"
+            },
+            "import": {
+                "types": "./dist/gradient.d.ts",
+                "default": "./dist/gradient.js"
             }
         },
         "./package.json": "./package.json"
@@ -203,6 +217,14 @@
         },
         {
             "source": "src/template.ts",
+            "format": "cjs"
+        },
+        {
+            "source": "src/gradient.ts",
+            "format": "esm"
+        },
+        {
+            "source": "src/gradient.ts",
             "format": "cjs"
         }
     ]

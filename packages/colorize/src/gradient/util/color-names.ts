@@ -1,5 +1,5 @@
 // A JSON with color names and its values. Based on http://dev.w3.org/csswg/css-color/#named-colors.
-import { CssColorCodes } from "../../types";
+import type { CssColorCodes } from "../../types";
 
 export const colorNames: CssColorCodes = {
     aliceblue: [240, 248, 255],

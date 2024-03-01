@@ -104,7 +104,7 @@ const buildStyle = (
         }
 
         // @ts-expect-error - @TODO fix types
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         current = enabledStyles.length > 0 ? current[styleName as keyof ColorizeType](...enabledStyles) : current[styleName as keyof ColorizeType];
     }
 

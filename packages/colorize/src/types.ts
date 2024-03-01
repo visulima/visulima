@@ -413,3 +413,10 @@ export type RGB = {
     g: number;
     r: number;
 };
+
+export type HSVA = {
+    h: number;
+    s: number;
+    v: number;
+    a?: number;
+};
