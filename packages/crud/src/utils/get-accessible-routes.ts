@@ -1,4 +1,4 @@
-import { RouteType } from "../types.d";
+import { RouteType } from "../types";
 
 const getAccessibleRoutes = (only?: RouteType[], exclude?: RouteType[], defaultExposeStrategy: "all" | "none" = "all"): RouteType[] => {
     let accessibleRoutes: RouteType[] =

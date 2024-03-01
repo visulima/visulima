@@ -3,7 +3,7 @@ import { parse as parseComments } from "comment-parser";
 // eslint-disable-next-line no-restricted-imports
 import mergeWith from "lodash.mergewith";
 
-import type { OpenApiObject, PathsObject } from "../exported.d";
+import type { OpenApiObject, PathsObject } from "../exported";
 import customizer from "../util/customizer";
 
 // The security object has a bizare setup...

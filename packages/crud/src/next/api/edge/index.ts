@@ -1,5 +1,5 @@
 import baseHandler from "../../../base-crud-handler";
-import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../../types.d";
+import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../../types";
 
 const handler = async <T, R extends Request, Context, Q extends ParsedQueryParameters = any, M extends string = string>(
     adapter: Adapter<T, Q>,

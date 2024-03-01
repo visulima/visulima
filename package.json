@@ -195,8 +195,6 @@
         "@storybook/test-runner": "^0.16.0",
         "@storybook/testing-library": "~0.2.2",
         "@testing-library/react": "^14.2.1",
-        "@tsconfig/node18": "^18.2.2",
-        "@tsconfig/strictest": "^2.0.3",
         "@types/node": "18.18.14",
         "browserslist-config-anolilab": "^5.0.14",
         "commitizen": "^4.3.0",

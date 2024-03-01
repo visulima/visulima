@@ -1,11 +1,11 @@
 import type { OpenAPIV3 } from "openapi-types";
 
 import modelsToRouteNames from "../../../adapter/prisma/utils/models-to-route-names";
-import type { FakePrismaClient, ModelsOptions } from "../../../types.d";
+import type { FakePrismaClient, ModelsOptions } from "../../../types";
 import PrismaJsonSchemaParser from "../../json-schema-parser";
-import type { SwaggerModelsConfig } from "../../types.d";
+import type { SwaggerModelsConfig } from "../../types";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
-import getSwaggerPaths from "../../utils/get-swagger-paths";
+import getSwaggerPaths, { GetSwaggerPathsParameters } from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
 const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: Record<string, OpenAPIV3.ExampleObject>): OpenAPIV3.PathsObject => {
@@ -96,7 +96,7 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
         modelsConfig: swagger.models,
         routes: swaggerRoutes,
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
-    });
+    } as GetSwaggerPathsParameters<M>);
     const schemas = JSON.parse(schema.replaceAll("#/definitions", "#/components/schemas"));
     const examples = parser.getExampleModelsSchemas(dModels, schemas);
 

@@ -1,5 +1,5 @@
-import type { OrderByField, OrderByOperator } from "../../../types.d";
-import type { PrismaOrderBy, PrismaOrderByOperator } from "../types.d";
+import type { OrderByField, OrderByOperator } from "../../../types";
+import type { PrismaOrderBy, PrismaOrderByOperator } from "../types";
 
 const operatorsAssociation: Record<OrderByOperator, PrismaOrderByOperator> = {
     $asc: "asc",

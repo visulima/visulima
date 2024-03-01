@@ -6,7 +6,7 @@ import { collect } from "@visulima/readdir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
 
-import type { BaseDefinition } from "../../exported.d";
+import type { BaseDefinition } from "../../exported";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";

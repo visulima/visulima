@@ -1,5 +1,5 @@
 import isPrimitive from "../../../utils/is-primitive";
-import type { PrismaCursor } from "../types.d";
+import type { PrismaCursor } from "../types";
 
 const parsePrismaCursor = (cursor: Record<string, boolean | number | string>): PrismaCursor => {
     const parsed: PrismaCursor = {};

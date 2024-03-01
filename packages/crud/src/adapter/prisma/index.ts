@@ -5,8 +5,8 @@ import type {
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters } from "../../types.d";
-import type { PrismaParsedQueryParameters } from "./types.d";
+import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters } from "../../types";
+import type { PrismaParsedQueryParameters } from "./types";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
 import parsePrismaOrderBy from "./utils/parse-order-by";
@@ -43,7 +43,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
-        this.ctorModels = models;
+        this.ctorModels = models as M[];
     }
 
     public async connect(): Promise<void> {

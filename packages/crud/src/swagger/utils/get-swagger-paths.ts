@@ -1,7 +1,7 @@
-import type { ModelOption, ModelsOptions } from "../../types.d";
-import { RouteType } from "../../types.d";
+import type { ModelOption, ModelsOptions } from "../../types";
+import { RouteType } from "../../types";
 import { getQueryParameters } from "../parameters";
-import type { Routes, SwaggerModelsConfig } from "../types.d";
+import type { Routes, SwaggerModelsConfig } from "../types";
 import formatExampleReference from "./format-example-ref";
 import formatSchemaReference from "./format-schema-ref";
 
@@ -174,6 +174,7 @@ const generateSwaggerPathObject = <M extends string>({
 
             methods[method] = {
                 parameters: getQueryParameters(routeType).map((queryParameter) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return { ...queryParameter, in: "query" };
                 }),
 
@@ -211,13 +212,6 @@ const generateSwaggerPathObject = <M extends string>({
     return methods;
 };
 
-interface GetSwaggerPathsParameters<M extends string> {
-    models?: ModelsOptions<M>;
-    modelsConfig?: SwaggerModelsConfig<M>;
-    routes: Routes<M>;
-    routesMap?: { [key in M]?: string };
-}
-
 const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, routesMap }: GetSwaggerPathsParameters<M>): Record<string, any> =>
     // eslint-disable-next-line unicorn/no-array-reduce
     Object.keys(routes).reduce((accumulator: Record<string, any>, value: M | string) => {
@@ -238,7 +232,7 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
                 modelsConfig,
                 routeTypes: routeTypesToUse,
                 tag,
-            });
+            } as GenerateSwaggerPathObjectParameters<M>);
         }
 
         if (routeTypes.includes(RouteType.READ_ONE) || routeTypes.includes(RouteType.UPDATE) || routeTypes.includes(RouteType.DELETE)) {
@@ -251,10 +245,17 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
                 modelsConfig,
                 routeTypes: routeTypesToUse,
                 tag,
-            });
+            } as GenerateSwaggerPathObjectParameters<M>);
         }
 
         return accumulator;
     }, {});
+
+export interface GetSwaggerPathsParameters<M extends string> {
+    models?: ModelsOptions<M>;
+    modelsConfig?: SwaggerModelsConfig<M>;
+    routes: Routes<M>;
+    routesMap?: { [key in M]?: string };
+}
 
 export default getSwaggerPaths;

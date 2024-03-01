@@ -13,6 +13,7 @@ declare global {
     }
 }
 
+// @ts-expect-error -- wrong extend type
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

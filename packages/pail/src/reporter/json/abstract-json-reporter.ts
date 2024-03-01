@@ -24,10 +24,6 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
             (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = file.name + ":" + file.line + (file.column ? ":" + file.column : "");
         }
 
-        if (rest.scope?.length === 0) {
-            delete rest.scope;
-        }
-
         this._log((this._stringify as typeof stringify)(rest) as string, type.level);
     }
 

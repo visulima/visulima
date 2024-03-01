@@ -5,7 +5,7 @@ import mergeWith from "lodash.mergewith";
 import type { YAMLError } from "yaml";
 import yaml from "yaml";
 
-import type { OpenApiObject } from "../exported.d";
+import type { OpenApiObject } from "../exported";
 import customizer from "../util/customizer";
 import organizeSwaggerObject from "./organize-swagger-object";
 import { getSwaggerVersionFromSpec, hasEmptyProperty } from "./utils";

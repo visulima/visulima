@@ -6,7 +6,6 @@ const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 
 const forbiddenChars = /\s/g;
 
-
 export const gradient = (
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[],
