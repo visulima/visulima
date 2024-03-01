@@ -1,34 +1,50 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node18/tsconfig"],
-    "display": "React + Node 18",
+    "display": "Node 18 + Strict",
     "compilerOptions": {
         "baseUrl": "./",
-        "target": "ES2021",
-        "module": "ES2022",
-        "lib": ["DOM", "DOM.Iterable", "ES2021"],
-        "resolvePackageJsonExports": true,
-        "jsx": "react-jsx",
-        "noEmit": true,
-        "declaration": true,
-        "allowJs": true,
+        "downlevelIteration": true,
+        "isolatedModules": true,
+        "lib": ["DOM", "DOM.Iterable", "es2023"],
+        "module": "es2020",
+        "target": "es2022",
+        "tsBuildInfoFile": ".tsbuildinfo",
+
+        "strict": true,
         "alwaysStrict": true,
         "strictNullChecks": true,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "stripInternal": true,
         "strictPropertyInitialization": true,
+        "noImplicitAny": true,
         "noImplicitThis": true,
+
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUncheckedIndexedAccess": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noFallthroughCasesInSwitch": true,
+        "exactOptionalPropertyTypes": false,
         "useUnknownInCatchVariables": true,
-        "isolatedModules": true,
-        "resolveJsonModule": true,
-        "inlineSources": false,
+
+        "esModuleInterop": true,
+
+        "declaration": true,
+        "allowJs": true,
         "removeComments": true,
         "incremental": true,
-        "tsBuildInfoFile": ".tsbuildinfo",
-        "noPropertyAccessFromIndexSignature": true,
-        "exactOptionalPropertyTypes": false,
-        "skipLibCheck": true
+
+        "inlineSources": false,
+
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+
+        "checkJs": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
     },
     "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**"]
 }

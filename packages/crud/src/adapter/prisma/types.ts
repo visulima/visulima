@@ -1,4 +1,4 @@
-import type { Condition, SearchCondition } from "../../types.d";
+import type { Condition, SearchCondition } from "../../types";
 
 export type PrismaRecursiveField = "include" | "select";
 

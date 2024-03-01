@@ -1,6 +1,6 @@
-import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types.d";
+import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types";
 import isPrimitive from "../../../utils/is-primitive";
-import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types.d";
+import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types";
 
 const isObject = (a: any) => a instanceof Object;
 
@@ -38,6 +38,7 @@ const getSearchValue = (originalValue: any): SearchCondition => {
 const isRelation = (key: string, manyRelations: string[]): boolean => {
     // Get the key containing . and remove the property name
     const splitKey = key.split(".");
+
     splitKey.splice(-1, 1);
 
     return manyRelations.includes(splitKey.join("."));
@@ -50,14 +51,13 @@ const parseSimpleField = (value: Condition): Record<string, Condition> | undefin
     if (prismaOperator) {
         return {
             [prismaOperator]: value[operator as string],
-        };
+        } as Record<string, Condition>;
     }
 
     return undefined;
 };
 
 const parseRelation = (
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     value: Condition | Date | WhereCondition | boolean | number | string,
     key: string,
     parsed: PrismaWhereField,
@@ -108,7 +108,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
         const value = object[key];
 
         if (isRelation(key, manyRelations)) {
-            parseRelation(value, key, parsed, manyRelations);
+            parseRelation(value as WhereCondition, key, parsed, manyRelations);
         } else if (isPrimitive(value)) {
             parsed[key] = value as SearchCondition;
         } else if (isObject(value)) {
@@ -123,7 +123,6 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
     return parsed;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const basicParse = (value: Condition | Date | WhereCondition | boolean | number | string, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
     if (isPrimitive(value)) {
         // eslint-disable-next-line no-param-reassign
@@ -187,9 +186,9 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          * }
          */
         if (isRelation(key, manyRelations)) {
-            parseRelation(value, key, parsed, manyRelations);
+            parseRelation(value as WhereCondition, key, parsed, manyRelations);
         } else {
-            basicParse(value, key, parsed, manyRelations);
+            basicParse(value as Condition, key, parsed, manyRelations);
         }
     });
 

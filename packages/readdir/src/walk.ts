@@ -144,7 +144,7 @@ export default async function* walk(
                 match,
                 maxDepth: maxDepth - 1,
                 skip,
-            });
+            } as Options);
         }
     }
 }

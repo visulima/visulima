@@ -1,5 +1,5 @@
-import type { RecursiveField } from "../../../types.d";
-import type { PrismaRecursive, PrismaRecursiveField } from "../types.d";
+import type { RecursiveField } from "../../../types";
+import type { PrismaRecursive, PrismaRecursiveField } from "../types";
 
 const parsePrismaRecursiveField = <T extends PrismaRecursiveField>(select: RecursiveField, fieldName: T): PrismaRecursive<T> => {
     const parsed: PrismaRecursive<T> = {};

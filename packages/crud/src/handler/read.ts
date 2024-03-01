@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 
-import type { UniqueResourceHandlerParameters } from "../types.d";
+import type { UniqueResourceHandlerParameters } from "../types";
 
 const readHandler: Handler = async ({ adapter, query, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);

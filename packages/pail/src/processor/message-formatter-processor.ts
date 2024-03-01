@@ -1,4 +1,4 @@
-import type { format, FormatterFunction } from "@visulima/fmt";
+import type { format, FormatterFunction, Options } from "@visulima/fmt";
 import { build } from "@visulima/fmt";
 import type { stringify } from "safe-stable-stringify";
 
@@ -33,7 +33,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
 
                 return stringified;
             },
-        });
+        } as Options);
 
         if (meta.message !== undefined) {
             // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-unsafe-argument
