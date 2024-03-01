@@ -1,3 +1,5 @@
+export type ColorValueHex = `#${string}`;
+
 export interface ColorizeType {
     /**
      * Return styled string.
@@ -69,7 +71,7 @@ export interface ColorizeType {
      *
      * @param {string} hex
      */
-    bgHex: (color: string) => this;
+    bgHex: (color: ColorValueHex) => this;
 
     readonly bgMagenta: this;
 
@@ -121,6 +123,7 @@ export interface ColorizeType {
      * @param {number} code in range [0, 255].
      */
     fg: (code: number) => this;
+
     readonly gray: this;
     readonly green: this;
     readonly greenBright: this;
@@ -131,7 +134,7 @@ export interface ColorizeType {
      *
      * @param {string} hex
      */
-    hex: (color: string) => this;
+    hex: (color: ColorValueHex) => this;
 
     /** Print the invisible text. */
     readonly hidden: this;
@@ -238,3 +241,182 @@ export type AnsiColors =
     | "whiteBright"
     | "yellow"
     | "yellowBright";
+
+export type CssColorName =
+    | "aliceblue"
+    | "antiquewhite"
+    | "aqua"
+    | "aquamarine"
+    | "azure"
+    | "beige"
+    | "bisque"
+    | "black"
+    | "blanchedalmond"
+    | "blue"
+    | "blueviolet"
+    | "brown"
+    | "burlywood"
+    | "cadetblue"
+    | "chartreuse"
+    | "chocolate"
+    | "coral"
+    | "cornflowerblue"
+    | "cornsilk"
+    | "crimson"
+    | "cyan"
+    | "darkblue"
+    | "darkcyan"
+    | "darkgoldenrod"
+    | "darkgray"
+    | "darkgreen"
+    | "darkgrey"
+    | "darkkhaki"
+    | "darkmagenta"
+    | "darkolivegreen"
+    | "darkorange"
+    | "darkorchid"
+    | "darkred"
+    | "darksalmon"
+    | "darkseagreen"
+    | "darkslateblue"
+    | "darkslategray"
+    | "darkslategrey"
+    | "darkturquoise"
+    | "darkviolet"
+    | "deeppink"
+    | "deepskyblue"
+    | "dimgray"
+    | "dimgrey"
+    | "dodgerblue"
+    | "firebrick"
+    | "floralwhite"
+    | "forestgreen"
+    | "fuchsia"
+    | "gainsboro"
+    | "ghostwhite"
+    | "gold"
+    | "goldenrod"
+    | "gray"
+    | "green"
+    | "greenyellow"
+    | "grey"
+    | "honeydew"
+    | "hotpink"
+    | "indianred"
+    | "indigo"
+    | "ivory"
+    | "khaki"
+    | "lavender"
+    | "lavenderblush"
+    | "lawngreen"
+    | "lemonchiffon"
+    | "lightblue"
+    | "lightcoral"
+    | "lightcyan"
+    | "lightgoldenrodyellow"
+    | "lightgray"
+    | "lightgreen"
+    | "lightgrey"
+    | "lightpink"
+    | "lightsalmon"
+    | "lightseagreen"
+    | "lightskyblue"
+    | "lightslategray"
+    | "lightslategrey"
+    | "lightsteelblue"
+    | "lightyellow"
+    | "lime"
+    | "limegreen"
+    | "linen"
+    | "magenta"
+    | "maroon"
+    | "mediumaquamarine"
+    | "mediumblue"
+    | "mediumorchid"
+    | "mediumpurple"
+    | "mediumseagreen"
+    | "mediumslateblue"
+    | "mediumspringgreen"
+    | "mediumturquoise"
+    | "mediumvioletred"
+    | "midnightblue"
+    | "mintcream"
+    | "mistyrose"
+    | "moccasin"
+    | "navajowhite"
+    | "navy"
+    | "oldlace"
+    | "olive"
+    | "olivedrab"
+    | "orange"
+    | "orangered"
+    | "orchid"
+    | "palegoldenrod"
+    | "palegreen"
+    | "paleturquoise"
+    | "palevioletred"
+    | "papayawhip"
+    | "peachpuff"
+    | "peru"
+    | "pink"
+    | "plum"
+    | "powderblue"
+    | "purple"
+    | "rebeccapurple"
+    | "red"
+    | "rosybrown"
+    | "royalblue"
+    | "saddlebrown"
+    | "salmon"
+    | "sandybrown"
+    | "seagreen"
+    | "seashell"
+    | "sienna"
+    | "silver"
+    | "skyblue"
+    | "slateblue"
+    | "slategray"
+    | "slategrey"
+    | "snow"
+    | "springgreen"
+    | "steelblue"
+    | "tan"
+    | "teal"
+    | "thistle"
+    | "tomato"
+    | "turquoise"
+    | "violet"
+    | "wheat"
+    | "white"
+    | "whitesmoke"
+    | "yellow"
+    | "yellowgreen";
+
+export type CssColorCodes = {
+    [key in CssColorName]: [number, number, number];
+};
+
+export type StopInput = {
+    color?: ColorValueHex | CssColorName | RGB | [number, number, number];
+    colorLess?: boolean;
+    position: number;
+};
+
+export type StopOutput = {
+    color: [number, number, number] | undefined;
+    colorLess?: boolean;
+    position: number;
+};
+
+export type RGB = {
+    b: number;
+    g: number;
+    r: number;
+};
+
+export type HSVA = {
+    a?: number;
+    h: number;
+    s: number;
+    v: number;
+};

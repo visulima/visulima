@@ -54,6 +54,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 -   **Auto detects** color support
 -   **TypeScript** support out of the box
 -   Clean and focused
+-   [String Gradient´s](#gradient)
 
 ## Install
 
@@ -584,6 +585,33 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
  Copyright (c) 2023, webdiscus
 -->
 
+## Gradient
+
+![gradient](__assets__/gradient.png)
+
+The `@visulima/colorize/gradient` supports the string gradient´s, single and multi line.
+
+```typescript
+import { gradient } from "@visulima/colorize/gradient";
+
+console.log(gradient("red", "green", "blue")("Hello World!"));
+```
+
+### Multi line gradient
+
+In some cases, you may want to apply the same horizontal gradient on each line of a long text (or a piece of ASCII art).
+
+You can use the `multilineGradient` method of a gradient to ensure that the colors are vertically aligned.
+
+```typescript
+import { multilineGradient, gradient } from "@visulima/colorize/gradient";
+
+console.log(multilineGradient(["orange", "yellow"])(["     __", "   <(o )___", "    ( ._> /", "     `---'"].join("\n")));
+console.log(gradient(["blue", "cyan", "blue"])("----------------"));
+```
+
+![duck](__assets__/gradient-multi-line.png)
+
 ## Benchmark
 
 [See benchmark](./__bench__/README.md)
@@ -628,13 +656,21 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
 -   [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
 -   [chalk][chalk] - Terminal string styling done right
--   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
 -   [cli-color][cli-color] - Colors and formatting for the console
 -   [colorette][colorette] - Easily set your terminal text color & styles
 -   [colors-cli][colors-cli] - Terminal string styling done right.
 -   [colors.js][colors.js] - get colors in your node.js console
 -   [kleur][kleur] - The fastest Node.js library for formatting terminal text with ANSI colors~!
 -   [picocolors][picocolors] - Tiny yet powerful colors for terminal
+
+Template:
+
+-   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
+
+Gradient:
+
+-   [tinygradient](https://github.com/mistic100/tinygradient) - Easily generate color gradients with an unlimited number of color stops and steps.
+-   [gradient-string](https://github.com/bokub/gradient-string) - Beautiful color gradients in terminal output
 
 ## License
 

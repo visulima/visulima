@@ -7,7 +7,7 @@
  * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
-import type { ColorizeType } from "../types";
+import type { ColorizeType, ColorValueHex } from "../types";
 import { hexToRgb } from "../util/hex-to-rgb";
 import { unescape } from "../util/unescape";
 
@@ -58,12 +58,12 @@ const parseStyle: (style: string) => (number | string | undefined)[][] = (style:
         } else if (matches[3] || matches[4]) {
             if (matches[3]) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                results.push(["rgb", ...hexToRgb(matches[3])]);
+                results.push(["rgb", ...hexToRgb(matches[3] as ColorValueHex)]);
             }
 
             if (matches[4]) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                results.push(["bgRgb", ...hexToRgb(matches[4])]);
+                results.push(["bgRgb", ...hexToRgb(matches[4] as ColorValueHex)]);
             }
         } else {
             results.push([name]);
@@ -104,7 +104,7 @@ const buildStyle = (
         }
 
         // @ts-expect-error - @TODO fix types
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         current = enabledStyles.length > 0 ? current[styleName as keyof ColorizeType](...enabledStyles) : current[styleName as keyof ColorizeType];
     }
 

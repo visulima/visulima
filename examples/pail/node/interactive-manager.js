@@ -32,7 +32,7 @@ const id = setInterval(() => {
         const message = messages[index];
 
         if (message) {
-            interactiveManager.update("stdout",[`${frame} Some process...`, message]);
+            interactiveManager.update("stdout", [`${frame} Some process...`, message]);
         }
     }
 }, TIMEOUT);

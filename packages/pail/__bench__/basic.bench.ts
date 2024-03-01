@@ -76,7 +76,7 @@ const bunyanNodeStream = bunyan.createLogger({
 
 const signale = new Signale({
     stream: wsDevNull,
-})
+});
 
 describe("basic", async () => {
     bench(
