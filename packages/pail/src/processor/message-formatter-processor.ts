@@ -51,7 +51,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
 
         if (typeof data === "object" && data !== null) {
             // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
-            for (const index in data as (Record<string, unknown> | [string, unknown[]])) {
+            for (const index in data as Record<string, unknown> | [string, unknown[]]) {
                 // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
                 const value = (data as any)[index];
 

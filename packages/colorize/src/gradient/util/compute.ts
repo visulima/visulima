@@ -16,9 +16,10 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
 
     const substeps: number[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = 1; index < l; index++) {
-        const step = (steps - 1) * (stops[index].position! - stops[index - 1].position!);
+        // eslint-disable-next-line security/detect-object-injection
+        const step = (steps - 1) * ((stops[index] as StopOutput).position - (stops[index - 1] as StopOutput).position);
 
         substeps.push(Math.max(1, Math.round(step)));
     }
@@ -27,7 +28,8 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
 
     // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let n = l - 1; n--; ) {
-        totalSubsteps += substeps[n];
+        // eslint-disable-next-line security/detect-object-injection
+        totalSubsteps += substeps[n] as number;
     }
 
     // eslint-disable-next-line no-loops/no-loops
@@ -35,12 +37,16 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
         if (totalSubsteps < steps) {
             const min = Math.min(...substeps);
 
+            // eslint-disable-next-line no-plusplus
             substeps[substeps.indexOf(min)]++;
+            // eslint-disable-next-line no-plusplus
             totalSubsteps++;
         } else {
             const max = Math.max(...substeps);
 
+            // eslint-disable-next-line no-plusplus
             substeps[substeps.indexOf(max)]--;
+            // eslint-disable-next-line no-plusplus
             totalSubsteps--;
         }
     }

@@ -628,13 +628,21 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
 -   [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
 -   [chalk][chalk] - Terminal string styling done right
--   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
 -   [cli-color][cli-color] - Colors and formatting for the console
 -   [colorette][colorette] - Easily set your terminal text color & styles
 -   [colors-cli][colors-cli] - Terminal string styling done right.
 -   [colors.js][colors.js] - get colors in your node.js console
 -   [kleur][kleur] - The fastest Node.js library for formatting terminal text with ANSI colors~!
 -   [picocolors][picocolors] - Tiny yet powerful colors for terminal
+
+Template:
+
+-   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
+
+Gradient:
+
+-   [tinygradient](https://github.com/mistic100/tinygradient) - Easily generate color gradients with an unlimited number of color stops and steps.
+-   [gradient-string](https://github.com/bokub/gradient-string) - Beautiful color gradients in terminal output
 
 ## License
 

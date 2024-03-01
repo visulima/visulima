@@ -7,35 +7,13 @@ import type { ColorizeType } from "../../../src/types";
 const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 
 describe("gradient", () => {
-    // it("should throw an error on invalid steps/colors number", () => {
-    //     expect.assertions(4);
-    //
-    //     expect(() => {
-    //         tinygradient("red");
-    //     }).toThrow();
-    //
-    //     expect(() => {
-    //         tinygradient(["red"]);
-    //     }).toThrow();
-    //
-    //     expect(() => {
-    //         const grad = tinygradient("red", "blue");
-    //         grad.rgb(1);
-    //     }).toThrow();
-    //
-    //     expect(() => {
-    //         const grad = tinygradient("red", "blue", "green");
-    //         grad.rgb(2);
-    //     }).toThrow();
-    // });
-
     it("should reverse gradient", () => {
         expect.assertions(1);
 
         const grad1 = new GradientBuilder(colorize, ["red", "green", "blue", "yellow", "black"]);
         const grad2 = grad1.reverse();
 
-        expect(grad1.stops).toStrictEqual(grad2.stops.reverse());
+        expect(grad1.stops.map((stop) => stop.color)).toStrictEqual(grad2.stops.reverse().map((stop) => stop.color));
     });
 
     it("should generate 11 steps gradient from black to grey in RGB", () => {
@@ -90,48 +68,67 @@ describe("gradient", () => {
     });
 
     it("should allow position only stops", () => {
-        // reference
+        expect.assertions(2);
+
         const grad1 = new GradientBuilder(colorize, [
             { color: "black", position: 0 },
             { color: "white", position: 1 },
         ]);
 
-        assert.deepStrictEqual(
-            grad1.rgb(5).map((c) => c.toHex()),
-            ["000000", "404040", "808080", "bfbfbf", "ffffff"],
-        );
+        expect(grad1.rgb(5).map((color) => color.open + color.close)).toStrictEqual([
+            "[38;2;0;0;0m[39m",
+            "[38;2;63;63;63m[39m",
+            "[38;2;127;127;127m[39m",
+            "[38;2;191;191;191m[39m",
+            "[38;2;255;255;255m[39m",
+        ]);
 
         // with position stop
         const grad2 = new GradientBuilder(colorize, [{ color: "black", position: 0 }, { position: 0.2 }, { color: "white", position: 1 }]);
 
-        assert.deepStrictEqual(
-            grad2.rgb(5).map((c) => c.toHex()),
-            ["000000", "808080", "aaaaaa", "d5d5d5", "ffffff"],
-        );
+        expect(grad2.rgb(5).map((color) => color.open + color.close)).toStrictEqual([
+            "[38;2;0;0;0m[39m",
+            "[38;2;127;127;127m[39m",
+            "[38;2;169;169;169m[39m",
+            "[38;2;212;212;212m[39m",
+            "[38;2;255;255;255m[39m",
+        ]);
     });
 
     it("should prevent consecutive position stops", () => {
-        assert.throws(() => {
+        expect.assertions(3);
+
+        expect(() => {
+            // eslint-disable-next-line no-new
             new GradientBuilder(colorize, [{ color: "black", position: 0 }, { position: 0.2 }, { position: 0.4 }, { color: "white", position: 1 }]);
-        });
-        assert.throws(() => {
+        }).toThrow("Cannot define two consecutive position-only stops");
+
+        expect(() => {
+            // eslint-disable-next-line no-new
             new GradientBuilder(colorize, [{ position: 0.4 }, { color: "white", position: 1 }]);
-        });
-        assert.throws(() => {
+        }).toThrow("Cannot define two consecutive position-only stops");
+
+        expect(() => {
+            // eslint-disable-next-line no-new
             new GradientBuilder(colorize, [{ color: "black", position: 0 }, { position: 0.2 }]);
-        });
+        }).toThrow("Cannot define two consecutive position-only stops");
     });
 
     it("should prevent misordered stops", () => {
-        assert.throws(() => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new
             new GradientBuilder(colorize, [
                 { color: "black", position: 0.5 },
                 { color: "white", position: 0 },
             ]);
-        });
+        }).toThrow("Color stops positions are not ordered");
     });
 
     it("should allow equal position stops", () => {
+        expect.assertions(1);
+
         const grad = new GradientBuilder(colorize, [
             { color: "black", position: 0 },
             { color: "white", position: 0.5 },
@@ -139,18 +136,26 @@ describe("gradient", () => {
             { color: "white", position: 1 },
         ]);
 
-        assert.deepStrictEqual(
-            grad.rgb(8).map((c) => c.toHex()),
-            ["000000", "555555", "aaaaaa", "ffffff", "000000", "555555", "aaaaaa", "ffffff"],
-        );
+        expect(grad.rgb(8).map((color) => color.open + color.close)).toStrictEqual([
+            "[38;2;0;0;0m[39m",
+            "[38;2;85;85;85m[39m",
+            "[38;2;170;170;170m[39m",
+            "[38;2;255;255;255m[39m",
+            "[38;2;0;0;0m[39m",
+            "[38;2;85;85;85m[39m",
+            "[38;2;170;170;170m[39m",
+            "[38;2;255;255;255m[39m",
+        ]);
     });
 
     it("should force RGB interpolation when a color is grey", () => {
-        const grad = new GradientBuilder(colorize, "rgba(86, 86, 86)", "rgb(45, 163, 185)");
+        expect.assertions(1);
 
-        assert.deepStrictEqual(
-            grad.hsv(5).map((c) => c.toHex()),
-            grad.rgb(5).map((c) => c.toHex()),
-        );
+        const grad = new GradientBuilder(colorize, [
+            [86, 86, 86],
+            [45, 163, 185],
+        ]);
+
+        expect(grad.hsv(5).map((color) => color.open + color.close)).toStrictEqual(grad.rgb(5).map((color) => color.open + color.close));
     });
 });

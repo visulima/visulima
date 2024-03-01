@@ -18,7 +18,7 @@ export class GradientBuilder {
             throw new Error("Invalid number of stops (< 2)");
         }
 
-        const havingPositions = stops[0].position !== undefined;
+        const havingPositions = (stops[0] as StopInput).position !== undefined;
         let l = stops.length;
         let p = -1;
         let lastColorLess = false;
@@ -63,7 +63,6 @@ export class GradientBuilder {
                 stop = {
                     color,
                     colorLess: !hasColor,
-
                     position: stopInput.position,
                 };
 
@@ -96,18 +95,19 @@ export class GradientBuilder {
             this.stops.push(stop);
         }
 
-        if (this.stops[0].position !== 0) {
+        if ((this.stops[0] as StopOutput).position !== 0) {
             this.stops.unshift({
-                color: this.stops[0].color,
+                color: (this.stops[0] as StopOutput).color,
                 position: 0,
             });
 
+            // eslint-disable-next-line no-plusplus
             l++;
         }
 
-        if (this.stops[l - 1].position !== 1) {
+        if ((this.stops[l - 1] as StopOutput).position !== 1) {
             this.stops.push({
-                color: this.stops[l - 1].color,
+                color: (this.stops[l - 1] as StopOutput).color,
                 position: 1,
             });
         }
@@ -160,42 +160,48 @@ export class GradientBuilder {
 
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
+                const rgbs = interpolateRgb(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2);
                 // eslint-disable-next-line no-param-reassign
-                stop.color = interpolateRgb(this.#colorize, this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2)[1];
+                stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
             }
         });
 
         // eslint-disable-next-line no-loops/no-loops,no-plusplus
         for (let index = 0, l = this.stops.length; index < l - 1; index++) {
             // eslint-disable-next-line security/detect-object-injection
-            const rgb = interpolateRgb(this.#colorize, this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
+            const rgbs = interpolateRgb(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            gradient.splice(gradient.length, 0, ...rgb);
+            gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
         }
 
-        gradient.push(this.#colorize.rgb(...this.stops.at(-1).color));
+        gradient.push(this.#colorize.rgb(...((this.stops.at(-1) as StopOutput).color as [number, number, number])));
 
         return gradient;
     }
 
-    public hsv(steps: number, mode?: boolean | "long" | "short"): ColorizeType[] {
+    public hsv(steps: number, mode: boolean | "long" | "short" = false): ColorizeType[] {
         const subSteps = computeSubSteps(this.stops, steps);
         const gradient: ColorizeType[] = [];
 
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
-                stop.color = interpolateHsv(this.#colorize, this.stops[index - 1], this.stops[index + 1], 2, mode)[1];
+                const rgbs = interpolateHsv(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2, mode);
+                // eslint-disable-next-line no-param-reassign
+                stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
             }
         });
 
+        // eslint-disable-next-line no-plusplus,no-loops/no-loops
         for (let index = 0, l = this.stops.length; index < l - 1; index++) {
-            const hsv = interpolateHsv(this.#colorize, this.stops[index], this.stops[index + 1], subSteps[index], mode);
+            // eslint-disable-next-line security/detect-object-injection
+            const rgbs = interpolateHsv(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number, mode);
 
-            gradient.splice(gradient.length, 0, ...hsv);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
         }
 
-        gradient.push(this.#colorize.rgb(...this.stops.at(-1).color));
+        gradient.push(this.#colorize.rgb(...((this.stops.at(-1) as StopOutput).color as [number, number, number])));
 
         return gradient;
     }

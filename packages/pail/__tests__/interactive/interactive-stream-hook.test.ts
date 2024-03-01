@@ -46,17 +46,6 @@ describe("hook", (): void => {
 
         hook.inactive(true);
 
-        expect(stream._stack).toStrictEqual([
-            "line 1",
-            eraseLines(2),
-            "line 3",
-            "",
-            "",
-            "line 2",
-            "line 4",
-            "line 5",
-            "line 6",
-            cursorShow,
-        ]);
+        expect(stream._stack).toStrictEqual(["line 1", eraseLines(2), "line 3", "", "", "line 2", "line 4", "line 5", "line 6", cursorShow]);
     });
 });

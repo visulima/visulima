@@ -1,69 +1,87 @@
-import type { ColorizeType, HSVA, RGB, StopOutput } from "../../types";
+import type { HSVA, RGB, StopOutput } from "../../types";
 import { hsvToRgb } from "./hsv-to-rgb";
 import { rgbToHsv } from "./rgb-to-hsv";
 
 const RGBA_MAX: RGB = { b: 256, g: 256, r: 256 };
 const HSV_MAX: HSVA = { h: 360, s: 1, v: 1 };
 
-const stepize = <T>(start: T, end: T, steps: number): T => {
-    const step: T = {};
+const calculateStepSize = <T extends Record<string, number>>(start: T, end: T, steps: number): T => {
+    const step: T = {} as T;
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const k in start) {
         if (Object.prototype.hasOwnProperty.call(start, k)) {
-            step[k] = steps === 0 ? 0 : (end[k] - start[k]) / steps;
+            // @TODO: Fix this any type
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
+            (step as any)[k] = steps === 0 ? 0 : ((end[k] as number) - (start[k] as number)) / steps;
         }
     }
 
     return step;
 };
 
-const interpolate = <T>(step: T, start: T, index: number, max: T): T => {
+const interpolate = <T extends Record<string, number>>(step: T, start: T, index: number, max: T): T => {
     const color: T = {} as T;
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const k in start) {
         if (Object.prototype.hasOwnProperty.call(start, k)) {
-            color[k] = step[k] * index + start[k];
-            color[k] = color[k] < 0 ? color[k] + max[k] : max[k] === 1 ? color[k] : color[k] % max[k];
+            // @TODO: Fix this any type
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
+            (color as any)[k] = (step[k] as number) * index + (start[k] as number);
+            // @TODO: Fix this any type
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any,sonarjs/no-element-overwrite
+            (color as any)[k] =
+                // eslint-disable-next-line security/detect-object-injection
+                (color[k] as number) < 0
+                    ? // eslint-disable-next-line security/detect-object-injection
+                      (color[k] as number) + (max[k] as number)
+                    : // eslint-disable-next-line security/detect-object-injection
+                      max[k] === 1
+                      ? // eslint-disable-next-line security/detect-object-injection
+                        (color[k] as number)
+                      : // eslint-disable-next-line security/detect-object-injection
+                        (color[k] as number) % (max[k] as number);
         }
     }
 
     return color;
 };
 
-export const interpolateRgb = (colorize: ColorizeType, stop1: StopOutput, stop2: StopOutput, steps: number): ColorizeType[] => {
+export const interpolateRgb = (stop1: StopOutput, stop2: StopOutput, steps: number): RGB[] => {
     const start: RGB = { b: (stop1.color as number[])[2] as number, g: (stop1.color as number[])[1] as number, r: (stop1.color as number[])[0] as number };
-
     const end: RGB = { b: (stop2.color as number[])[2] as number, g: (stop2.color as number[])[1] as number, r: (stop2.color as number[])[0] as number };
 
-    const step = stepize<RGB>(start, end, steps);
+    const step = calculateStepSize<RGB>(start, end, steps);
 
-    const gradient: ColorizeType[] = [colorize.rgb(...(stop1.color as [number, number, number]))];
+    const gradient: RGB[] = [{ ...start }];
 
     // eslint-disable-next-line no-loops/no-loops,no-plusplus
     for (let index = 1; index < steps; index++) {
         const color = interpolate<RGB>(step, start, index, RGBA_MAX);
 
-        gradient.push(colorize.rgb(Math.floor(color.r), Math.floor(color.g), Math.floor(color.b)));
+        gradient.push({
+            b: Math.floor(color.b as number),
+            g: Math.floor(color.g as number),
+            r: Math.floor(color.r as number),
+        });
     }
 
     return gradient;
 };
 
 export const interpolateHsv = (
-    colorize: ColorizeType,
     stop1: StopOutput,
     stop2: StopOutput,
     steps: number,
     mode: boolean | "long" | "short",
     // eslint-disable-next-line sonarjs/cognitive-complexity
-): ColorizeType[] => {
+): RGB[] => {
     const start = rgbToHsv({ b: (stop1.color as number[])[2] as number, g: (stop1.color as number[])[1] as number, r: (stop1.color as number[])[0] as number });
     const end = rgbToHsv({ b: (stop2.color as number[])[2] as number, g: (stop2.color as number[])[1] as number, r: (stop2.color as number[])[0] as number });
 
     if (start.s === 0 || end.s === 0) {
-        return interpolateRgb(colorize, stop1, stop2, steps);
+        return interpolateRgb(stop1, stop2, steps);
     }
 
     let trigonometric: boolean;
@@ -76,8 +94,14 @@ export const interpolateHsv = (
         trigonometric = (mode === "long" && trigShortest) || (mode === "short" && !trigShortest);
     }
 
-    const step = stepize(start, end, steps);
-    const gradient: ColorizeType[] = [colorize.rgb(...(stop1.color as [number, number, number]))];
+    const step = calculateStepSize(start, end, steps);
+    const gradient: RGB[] = [
+        {
+            b: (stop1.color as [number, number, number])[2],
+            g: (stop1.color as [number, number, number])[1],
+            r: (stop1.color as [number, number, number])[0],
+        },
+    ];
 
     let diff: number;
 
@@ -95,9 +119,7 @@ export const interpolateHsv = (
     for (let index = 1; index < steps; index++) {
         const color = interpolate<HSVA>(step, start, index, HSV_MAX);
 
-        const rgb = hsvToRgb(color.h, color.s, color.v);
-
-        gradient.push(colorize.rgb(rgb.r, rgb.g, rgb.b));
+        gradient.push(hsvToRgb(color.h, color.s, color.v));
     }
 
     return gradient;

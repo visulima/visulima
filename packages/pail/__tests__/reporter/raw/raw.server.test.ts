@@ -109,7 +109,6 @@ describe("raw-reporter", () => {
         expect(stdoutWriteSpy).toHaveBeenCalledWith("This is a message 1 2 3");
     });
 
-
     it("should log a message to stderr when given a message with level 'error'", () => {
         expect.assertions(1);
 
