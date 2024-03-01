@@ -13,14 +13,14 @@ export class JsonServerConsolaReporter implements ConsolaReporter {
 
 export class JsonBrowserConsolaReporter implements ConsolaReporter {
     _getLogFn(level: number) {
-    if (level < 1) {
-      return (console as any).__error || console.error;
+        if (level < 1) {
+            return (console as any).__error || console.error;
+        }
+        if (level === 1) {
+            return (console as any).__warn || console.warn;
+        }
+        return (console as any).__log || console.log;
     }
-    if (level === 1) {
-      return (console as any).__warn || console.warn;
-    }
-    return (console as any).__log || console.log;
-  }
 
     public log(logObj, ctx): void {
         const json = JSON.stringify(logObj);

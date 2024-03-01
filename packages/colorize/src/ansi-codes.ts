@@ -8,7 +8,7 @@
 
 import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
 
-import type { AnsiColors, AnsiStyles, ColorData } from "./types";
+import type { AnsiColors, AnsiStyles, ColorData, ColorValueHex } from "./types";
 import { clamp } from "./util/clamp";
 import { hexToRgb } from "./util/hex-to-rgb";
 
@@ -85,10 +85,10 @@ export const baseColors: Required<Record<AnsiColors, ColorData>> = {
 
 export const styleMethods: {
     bg: (code: number) => ColorData;
-    bgHex: (hex: string) => ColorData;
+    bgHex: (hex: ColorValueHex) => ColorData;
     bgRgb: (r: number, g: number, b: number) => ColorData;
     fg: (code: number) => ColorData;
-    hex: (hex: string) => ColorData;
+    hex: (hex: ColorValueHex) => ColorData;
     rgb: (r: number, g: number, b: number) => ColorData;
 } = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

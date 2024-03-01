@@ -97,7 +97,7 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -112,7 +112,7 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -137,7 +137,7 @@ for (const name in styleMethods) {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 const pail = createPail({
     reporters: [new PrettyReporter()],
-})
+});
 
 export async function middleware(): Promise<NextResponse> {
     const response = NextResponse.next();

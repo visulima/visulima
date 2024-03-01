@@ -10,7 +10,7 @@ export const createPail = <T extends string = never, L extends string = never>(o
         processors: [
             new MessageFormatterProcessor<L>(),
             // eslint-disable-next-line unicorn/no-negated-condition
-            ...(typeof window !== 'undefined' ? ([new ErrorProcessor()] as Processor<L>[]) : []),
+            ...(typeof window !== "undefined" ? ([new ErrorProcessor()] as Processor<L>[]) : []),
         ],
         reporters: [new JsonReporter<L>()],
         ...options,

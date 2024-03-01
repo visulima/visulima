@@ -115,7 +115,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         for (const type in this.types) {
             // @ts-expect-error - dynamic property
             // eslint-disable-next-line security/detect-object-injection
-            this[type] = this._logger.bind(this,  type as T, false,);
+            this[type] = this._logger.bind(this, type as T, false);
         }
 
         // Track of last log

@@ -6,7 +6,6 @@
  * Copyright (c) 2023, webdiscus
  */
 
- 
 export const ansiCodeHexMap: Record<number, string> = {
     0: "#000",
     1: "#800",
