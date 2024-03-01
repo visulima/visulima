@@ -66,7 +66,7 @@ export const {
     yellowBright,
 } = colorize;
 
-export { default as Colorize } from "./colorize.server";
+export const Colorize = ColorizeImpl;
 
 // eslint-disable-next-line import/no-unused-modules
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

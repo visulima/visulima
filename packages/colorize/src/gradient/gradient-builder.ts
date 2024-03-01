@@ -123,7 +123,7 @@ export class GradientBuilder {
 
             stop_.position = 1 - stop.position;
 
-            stops.push(stop_);
+            stops.push(stop_ as StopInput);
         }
 
         // eslint-disable-next-line etc/no-assign-mutated-array
@@ -139,7 +139,7 @@ export class GradientBuilder {
             stops1.push({
                 color: stop.color,
                 position: (stop.position ?? 0) / 2,
-            });
+            } as StopInput);
         }
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -147,7 +147,7 @@ export class GradientBuilder {
             stops2.push({
                 color: stop.color,
                 position: 1 - (stop.position ?? 0) / 2,
-            });
+            } as StopInput);
         }
 
         // eslint-disable-next-line etc/no-assign-mutated-array
