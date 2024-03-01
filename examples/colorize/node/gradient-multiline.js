@@ -3,9 +3,7 @@
 import { multilineGradient, gradient } from "@visulima/colorize/gradient";
 
 // Use the same gradient on every line
-let duck = multilineGradient(["orange", "yellow"])(["     __", "   <(o )___", "    ( ._> /", "     `---'"].join("\n"));
-
-console.log(duck);
+console.log(multilineGradient(["orange", "yellow"])(["     __", "   <(o )___", "    ( ._> /", "     `---'"].join("\n")));
 console.log(gradient(["blue", "cyan", "blue"])("----------------"));
 
 console.log("");

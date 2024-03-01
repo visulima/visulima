@@ -54,6 +54,7 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 -   **Auto detects** color support
 -   **TypeScript** support out of the box
 -   Clean and focused
+-   [String Gradient´s](#gradient)
 
 ## Install
 
@@ -583,6 +584,33 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 
  Copyright (c) 2023, webdiscus
 -->
+
+## Gradient
+
+![gradient](__assets__/gradient.png)
+
+The `@visulima/colorize/gradient` supports the string gradient´s, single and multi line.
+
+```typescript
+import { gradient } from "@visulima/colorize/gradient";
+
+console.log(gradient("red", "green", "blue")("Hello World!"));
+```
+
+### Multi line gradient
+
+In some cases, you may want to apply the same horizontal gradient on each line of a long text (or a piece of ASCII art).
+
+You can use the `multilineGradient` method of a gradient to ensure that the colors are vertically aligned.
+
+```typescript
+import { multilineGradient, gradient } from "@visulima/colorize/gradient";
+
+console.log(multilineGradient(["orange", "yellow"])(["     __", "   <(o )___", "    ( ._> /", "     `---'"].join("\n")));
+console.log(gradient(["blue", "cyan", "blue"])("----------------"));
+```
+
+![duck](__assets__/gradient-multi-line.png)
 
 ## Benchmark
 
