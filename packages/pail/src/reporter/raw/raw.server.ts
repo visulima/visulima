@@ -67,7 +67,7 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
 
         const streamType = ["error", "trace", "warn"].includes(type.level as string) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
-        const groupSpaces: string = groups?.map(() => "    ").join("");
+        const groupSpaces: string = groups.map(() => "    ").join("");
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
             this.#interactiveManager.update(streamType, (groupSpaces + items.join("")).split("\n"), 0);
