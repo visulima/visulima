@@ -16,7 +16,7 @@ describe("httpCheck", () => {
                 healthy: true,
 
                 message: "HTTP check for https://example.com was successful.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
@@ -42,7 +42,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
@@ -69,7 +69,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
@@ -92,7 +92,7 @@ describe("httpCheck", () => {
             health: {
                 healthy: false,
                 message: "HTTP check for https://example.com returned status 200 instead of 404",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
@@ -113,9 +113,9 @@ describe("httpCheck", () => {
             displayName: "HTTP check for https://example.com",
             health: {
                 healthy: false,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 message: expect.any(String),
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {

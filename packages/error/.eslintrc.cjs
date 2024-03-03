@@ -4,12 +4,6 @@ const { defineConfig } = require("@anolilab/eslint-config/define-config");
 // eslint-disable-next-line import/no-commonjs
 const globals = require("@anolilab/eslint-config/globals");
 
-/// <reference types="@eslint-types/unicorn" />
-/// <reference types="@eslint-types/typescript-eslint" />
-/// <reference types="@eslint-types/jsdoc" />
-/// <reference types="@eslint-types/import" />
-/// <reference types="@eslint-types/deprecation" />
-
 /** @type {import('eslint').Linter.Config} */
 module.exports = defineConfig({
     env: {
@@ -37,8 +31,15 @@ module.exports = defineConfig({
             rules: {},
         },
         {
-            files: ["*.js", "*.jsx"],
-            rules: {},
+            files: ["*.test.ts", "*.bench.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
+            rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+            },
         },
         {
             files: ["*.mdx"],
@@ -76,6 +77,7 @@ module.exports = defineConfig({
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

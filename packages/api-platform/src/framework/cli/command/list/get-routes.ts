@@ -9,7 +9,7 @@ import hapiRoutes from "./routes/hapi-routes";
 import koaRoutes from "./routes/koa-routes";
 import apiRouteFileParser from "./routes/next/api-route-file-parser";
 import collectApiRouteFiles from "./routes/next/collect-api-route-files";
-import type { Route } from "./routes/types.d";
+import type { Route } from "./routes/types";
 
 export type FrameworkName = "express" | "fastify" | "hapi" | "koa" | "next" | "unknown";
 export const getRoutes = async (

@@ -1,6 +1,6 @@
-import type { ModelOption, ModelsOptions } from "../../types.d";
+import type { ModelOption, ModelsOptions } from "../../types";
 import getAccessibleRoutes from "../../utils/get-accessible-routes";
-import type { Routes } from "../types.d";
+import type { Routes } from "../types";
 
 const getModelsAccessibleRoutes = <M extends string>(modelNames: M[], models?: ModelsOptions<M>, defaultExposeStrategy: "all" | "none" = "all"): Routes<M> =>
     // eslint-disable-next-line unicorn/no-array-reduce

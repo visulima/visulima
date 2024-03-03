@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import baseHandler from "../../../base-crud-handler";
-import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../../types.d";
+import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../../types";
 
 const handler = async <
     T,

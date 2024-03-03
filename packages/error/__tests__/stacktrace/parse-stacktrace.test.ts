@@ -1285,7 +1285,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parse a eval Error", () => {
             expect.assertions(3);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,no-eval
+            // eslint-disable-next-line no-eval
             const stackFrames = parseStacktrace(eval('new Error("foo:eval")'));
 
             expect(stackFrames).toHaveLength(10);

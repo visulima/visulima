@@ -1,9 +1,6 @@
-import type { LiteralUnion } from "type-fest";
-
-import type { DefaultLogTypes, LoggerTypesConfig } from "../types";
+import type { DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../types";
 
 export const getLongestBadge = <L extends string, T extends string>(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): string => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const badges = Object.keys(types).map((x) => types[x as T].badge ?? "");
 
     if (badges.length === 0) {

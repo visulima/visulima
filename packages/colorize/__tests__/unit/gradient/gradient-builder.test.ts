@@ -13,6 +13,7 @@ describe("gradient", () => {
         const grad1 = new GradientBuilder(colorize, ["red", "green", "blue", "yellow", "black"]);
         const grad2 = grad1.reverse();
 
+        // eslint-disable-next-line etc/no-assign-mutated-array
         expect(grad1.stops.map((stop) => stop.color)).toStrictEqual(grad2.stops.reverse().map((stop) => stop.color));
     });
 

@@ -1,6 +1,6 @@
 import type { OpenAPIV3 } from "openapi-types";
 
-import type { RouteType } from "../types.d";
+import type { RouteType } from "../types";
 
 export interface SwaggerType {
     description?: string;

@@ -1,6 +1,6 @@
 import { paginate } from "@visulima/pagination";
 
-import type { HandlerParameters, PaginationConfig, ParsedQueryParameters } from "../types.d";
+import type { HandlerParameters, PaginationConfig, ParsedQueryParameters } from "../types";
 
 interface PaginationOptions {
     page: number;

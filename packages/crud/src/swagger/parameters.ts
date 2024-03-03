@@ -1,5 +1,5 @@
-import { RouteType } from "../types.d";
-import type { SwaggerParameter } from "./types.d";
+import { RouteType } from "../types";
+import type { SwaggerParameter } from "./types";
 
 const queryParameters: Record<string, SwaggerParameter> = {
     distinct: {

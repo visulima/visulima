@@ -211,15 +211,19 @@ describe("fmt", () => {
         expect.assertions(2);
 
         // @ts-expect-error - invalid fmt
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => format(1)).toThrow("fmt must be a string or object, got number");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => format(null)).toThrow("fmt must be a string or object, got null");
     });
 
     it("should be possible to build a custom formatter", () => {
         expect.assertions(3);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => build({ formatters: { haha: () => "Jonathan" } })).toThrow("Formatter %haha has more than one character");
         // @ts-expect-error - invalid formatter
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => build({ formatters: { t: "Jonathan" } })).toThrow("Formatter for %t is not a function");
 
         const customFormatter = build({

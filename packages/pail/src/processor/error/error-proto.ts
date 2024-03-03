@@ -1,5 +1,3 @@
-import type { UnknownRecord } from "type-fest";
-
 // eslint-disable-next-line import/exports-last
 export const seen = Symbol("circular-reference-tag");
 
@@ -60,7 +58,7 @@ Object.defineProperty(errorProto, rawSymbol, {
 
 export const ErrorProto = errorProto;
 
-export type SerializedError<ErrorType = Error> = UnknownRecord & {
+export type SerializedError<ErrorType = Error> = Record<PropertyKey, unknown> & {
     aggregateErrors?: SerializedError<ErrorType>[];
     cause?: unknown;
     code?: string;

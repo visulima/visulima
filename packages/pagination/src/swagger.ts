@@ -63,6 +63,7 @@ export const createPaginationSchemaObject = (
         [name]: {
             properties: {
                 data: {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     items,
                     type: "array",
                     xml: {

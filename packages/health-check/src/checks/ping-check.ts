@@ -12,8 +12,10 @@ const pingCheck =
     (host: string, options?: extendedPingOptions): Checker =>
     async () => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
             const response = await ping(host.replace(/^https?:\/\//, ""), options);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (!response.alive) {
                 return {
                     displayName: `${DISPLAY_NAME} ${host}`,
@@ -22,6 +24,7 @@ const pingCheck =
                         message: `Ping failed for ${host}.`,
                         timestamp: new Date().toISOString(),
                     },
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     meta: response,
                 };
             }
@@ -33,6 +36,7 @@ const pingCheck =
                     message: `${DISPLAY_NAME} ${host} was successful.`,
                     timestamp: new Date().toISOString(),
                 },
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 meta: response,
             };
         } catch (error) {

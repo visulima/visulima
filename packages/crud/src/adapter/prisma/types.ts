@@ -1,4 +1,4 @@
-import type { Condition, SearchCondition } from "../../types.d";
+import type { Condition, SearchCondition } from "../../types";
 
 export type PrismaRecursiveField = "include" | "select";
 
@@ -12,7 +12,6 @@ export type PrismaFieldFilterOperator = {
     [key in PrismaWhereOperator]?: SearchCondition;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type PrismaFieldFilter = Record<string, Condition | PrismaFieldFilterOperator | PrismaRelationFilter | SearchCondition | undefined>;
 
 export type PrismaWhereField = PrismaFieldFilter & {

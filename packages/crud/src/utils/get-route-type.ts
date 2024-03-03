@@ -1,6 +1,6 @@
 import { match } from "path-to-regexp";
 
-import { RouteType } from "../types.d";
+import { RouteType } from "../types";
 
 interface PathMatch {
     id: string;

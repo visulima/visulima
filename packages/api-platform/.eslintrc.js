@@ -22,6 +22,17 @@ module.exports = {
             rules: {},
         },
         {
+            files: ["*.test.ts", "*.bench.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
+            rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+            },
+        },
+        {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
@@ -31,13 +42,16 @@ module.exports = {
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-redundant-type-constituents": "off",
                 "@typescript-eslint/no-unnecessary-condition": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/restrict-template-expressions": "off",
+
                 "security/detect-non-literal-fs-filename": "off",
                 "security/detect-object-injection": "off",
+
                 "vitest/no-conditional-expect": "off",
                 "vitest/no-conditional-in-test": "off",
                 "vitest/no-conditional-tests": "off",
@@ -61,6 +75,7 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

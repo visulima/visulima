@@ -44,7 +44,7 @@ describe("expressWrapper", () => {
             throw error;
         });
 
-        await expect(async () => await context2.run(request, response), "throws async error").rejects.toThrow(error);
+        await expect(() => context2.run(request, response), "throws async error").rejects.toThrow(error);
     });
 
     it("next(err)", async () => {
@@ -59,6 +59,6 @@ describe("expressWrapper", () => {
 
         context.use(expressWrapper(midd)).use(async () => "ok");
 
-        await expect(async () => await context.run(request, response), "throws error called with next(err)").rejects.toThrow(error);
+        await expect(() => context.run(request, response), "throws error called with next(err)").rejects.toThrow(error);
     });
 });

@@ -6,9 +6,7 @@ const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
 
 const forbiddenChars = /\s/g;
 
-
 export const gradient = (
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[],
     options?: {
         hsvSpin?: "long" | "short";
@@ -28,7 +26,6 @@ export const gradient = (
     }
 
     return (string_: string): string => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const colorsCount = Math.max(string_.replaceAll(forbiddenChars, "").length, builder.stops.length);
         const colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
 
@@ -51,7 +48,6 @@ export const gradient = (
 
 // eslint-disable-next-line import/no-unused-modules
 export const multilineGradient = (
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[],
     options?: {
         hsvSpin?: "long" | "short";

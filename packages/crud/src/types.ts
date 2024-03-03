@@ -87,17 +87,11 @@ export type WhereCondition = {
     [key in WhereOperator]?: SearchCondition;
 };
 
-// TODO: find the correct way to type this
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type Condition = Record<string, Condition | SearchCondition | WhereCondition>;
+export type Condition = { [key: string]: Condition | SearchCondition | WhereCondition };
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type WhereField = Condition & {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     $and?: Condition | Condition[];
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     $not?: Condition | Condition[];
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     $or?: Condition | Condition[];
 };
 
@@ -108,12 +102,12 @@ export type OrderByField = Record<string, OrderByOperator>;
 export interface ParsedQueryParameters {
     distinct?: string;
     include?: RecursiveField;
-    limit?: number;
+    limit?: number | undefined;
     orderBy?: OrderByField;
     originalQuery?: Record<string, any>;
-    page?: number;
+    page?: number | undefined;
     select?: RecursiveField;
-    skip?: number;
+    skip?: number | undefined;
     where?: WhereField;
 }
 
