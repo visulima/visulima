@@ -3,7 +3,7 @@ import assert from "node:assert";
 import type { DMMF } from "@prisma/generator-helper";
 import type { JSONSchema7, JSONSchema7TypeName } from "json-schema";
 
-import type { ModelMetaData, PrismaPrimitive, PropertyMap, PropertyMetaData, TransformOptions } from "./types.d";
+import type { ModelMetaData, PrismaPrimitive, PropertyMap, PropertyMetaData, TransformOptions } from "./types";
 
 const isDefined = <T>(value: T | null | undefined): value is T => value !== undefined && value !== null;
 

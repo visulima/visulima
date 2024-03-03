@@ -1,5 +1,3 @@
-import type { LiteralUnion } from "type-fest";
-
 import { InteractiveManager } from "./interactive/interactive-manager";
 import { InteractiveStreamHook } from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
@@ -8,6 +6,7 @@ import type {
     ConstructorOptions,
     DefaultLogTypes,
     InteractiveStreamReporter,
+    LiteralUnion,
     LoggerFunction,
     LoggerTypesAwareReporter,
     Reporter,
@@ -22,7 +21,6 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
 
     protected readonly stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected interactiveManager: InteractiveManager | undefined;
 
     protected readonly interactive: boolean;
@@ -58,7 +56,6 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
         return this as unknown as PailServerType<N, L>;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public getInteractiveManager(): InteractiveManager | undefined {
         return this.interactiveManager;
     }
@@ -89,27 +86,27 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     }
 
     protected override extendReporter(reporter: Reporter<L>): Reporter<L> {
-        if ((reporter as StreamAwareReporter<L>).setStdout) {
+        if (typeof (reporter as StreamAwareReporter<L>).setStdout === "function") {
             (reporter as StreamAwareReporter<L>).setStdout(this.stdout);
         }
 
-        if ((reporter as StreamAwareReporter<L>).setStderr) {
+        if (typeof (reporter as StreamAwareReporter<L>).setStderr === "function") {
             (reporter as StreamAwareReporter<L>).setStderr(this.stderr);
         }
 
-        if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+        if (typeof (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes === "function") {
             (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
         }
 
-        if ((reporter as StringifyAwareReporter<L>).setStringify) {
+        if (typeof (reporter as StringifyAwareReporter<L>).setStringify === "function") {
             (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
         }
 
-        if ((reporter as InteractiveStreamReporter<L>).setIsInteractive) {
+        if (typeof (reporter as InteractiveStreamReporter<L>).setIsInteractive === "function") {
             (reporter as InteractiveStreamReporter<L>).setIsInteractive(this.interactive);
         }
 
-        if (this.interactive && (reporter as InteractiveStreamReporter<L>).setInteractiveManager) {
+        if (this.interactive && typeof (reporter as InteractiveStreamReporter<L>).setInteractiveManager === "function") {
             (reporter as InteractiveStreamReporter<L>).setInteractiveManager(this.interactiveManager);
         }
 

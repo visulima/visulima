@@ -1,7 +1,7 @@
 import type { Express, Router } from "express";
 
 import pathRegexParser from "./path-regex-parser";
-import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types.d";
+import type { Key, Layer, Parameter, Route, RouteMetaData } from "./types";
 
 /**
  * Parses a route object. Route objects are the leafs of an express router tree

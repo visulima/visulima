@@ -68,7 +68,6 @@ const FolderImpl: FC<FolderProperties> = ({ anchors, item }) => {
     const isOpen =
         TreeState[item.route] === undefined
             ? active ||
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               activeRouteInside ||
               focusedRouteInside ||
               (theme && "collapsed" in theme ? !theme.collapsed : level < config.sidebar.defaultMenuCollapseLevel)

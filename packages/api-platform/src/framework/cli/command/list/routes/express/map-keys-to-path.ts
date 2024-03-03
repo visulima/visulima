@@ -1,4 +1,4 @@
-import type { ExpressRegex, Key } from "./types.d";
+import type { ExpressRegex, Key } from "./types";
 
 /**
  * Map's the keys/path variables to the regex inside a given path

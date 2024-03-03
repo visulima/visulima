@@ -9,7 +9,7 @@ export class GradientBuilder {
 
     public readonly stops: StopOutput[];
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-redundant-type-constituents
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(colorize: ColorizeType, stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[]) {
         this.#colorize = colorize;
         this.stops = [];
@@ -18,19 +18,18 @@ export class GradientBuilder {
             throw new Error("Invalid number of stops (< 2)");
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const havingPositions = (stops[0] as StopInput).position !== undefined;
+
         let l = stops.length;
         let p = -1;
         let lastColorLess = false;
 
         // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-restricted-syntax
         for (const [index, stop_] of stops.entries()) {
-            if (stop_ === undefined) {
-                throw new Error("Invalid color stop");
-            }
-
             let stop = {} as StopOutput;
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const hasPosition = (stop_ as StopInput).position !== undefined;
 
             if (havingPositions !== hasPosition) {
@@ -55,6 +54,7 @@ export class GradientBuilder {
                         color = stopInput.color as [number, number, number];
                     } else if (typeof stopInput.color === "string") {
                         color = stopInput.color.includes("#") ? hexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     } else if ((stopInput.color as RGB).r !== undefined && (stopInput.color as RGB).g !== undefined && (stopInput.color as RGB).b) {
                         color = [(stopInput.color as RGB).r, (stopInput.color as RGB).g, (stopInput.color as RGB).b];
                     }
@@ -83,6 +83,7 @@ export class GradientBuilder {
                     color: stop_.includes("#") ? hexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if ((stop_ as RGB).r !== undefined && (stop_ as RGB).g !== undefined && (stop_ as RGB).b !== undefined) {
                 stop = {
                     color: [(stop_ as RGB).r, (stop_ as RGB).g, (stop_ as RGB).b],
@@ -138,7 +139,7 @@ export class GradientBuilder {
         for (const stop of this.stops) {
             stops1.push({
                 color: stop.color,
-                position: (stop.position ?? 0) / 2,
+                position: (stop.position || 0) / 2,
             } as StopInput);
         }
 
@@ -146,7 +147,7 @@ export class GradientBuilder {
         for (const stop of this.stops.slice(0, -1)) {
             stops2.push({
                 color: stop.color,
-                position: 1 - (stop.position ?? 0) / 2,
+                position: 1 - (stop.position || 0) / 2,
             } as StopInput);
         }
 
@@ -171,7 +172,6 @@ export class GradientBuilder {
             // eslint-disable-next-line security/detect-object-injection
             const rgbs = interpolateRgb(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
         }
 
@@ -197,7 +197,6 @@ export class GradientBuilder {
             // eslint-disable-next-line security/detect-object-injection
             const rgbs = interpolateHsv(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number, mode);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
         }
 

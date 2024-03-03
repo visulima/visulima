@@ -41,7 +41,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (date) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const cDate = grey(this._styles.dateFormatter(new Date(date)));
 
             if (isNotBrowser) {
@@ -152,7 +151,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             items.push(message);
 
             if (context) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 items.push(...context);
             }
         }
@@ -183,8 +181,8 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const value of items) {
                 if (Array.isArray(value) && value.length > 1 && (value[0] as string).includes("%c")) {
-                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                     logMessage += value[0];
+
                     css.push(...value.slice(1));
                 } else {
                     arguments_.push(value);

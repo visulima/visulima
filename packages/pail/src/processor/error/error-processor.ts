@@ -7,7 +7,6 @@ declare global {
     namespace VisulimaPail {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         interface CustomMeta<L> {
-            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             error: SerializedError | undefined;
         }
     }

@@ -16,6 +16,7 @@ const specificationTemplate = {
     v4: ["components", "channels"],
 };
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type ExtendedYAMLError = YAMLError & { annotation?: string };
 
 const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
@@ -29,17 +30,18 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
 
                     newError.annotation = spec.description;
 
-                    return newError;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                    return newError as ExtendedYAMLError;
                 });
 
                 let errorString = "Error parsing YAML in @openapi spec:";
 
                 errorString += verbose
                     ? (parsed.errors as ExtendedYAMLError[])
-                          // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                           .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replace(/\n/gu, "\n  ")}\n\`\`\``)
                           .join("\n")
-                    : // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    : // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                       parsed.errors.map((error) => error.toString()).join("\n");
 
                 throw new Error(errorString);

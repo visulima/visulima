@@ -1,5 +1,4 @@
 import type { AnsiColors } from "@visulima/colorize";
-import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import type { InteractiveManager } from "./interactive/interactive-manager";
 
@@ -7,11 +6,16 @@ import type { InteractiveManager } from "./interactive/interactive-manager";
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
  */
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace VisulimaPail {
         // eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/no-unused-vars
         interface CustomMeta<L> {}
     }
 }
+
+export type Primitive = bigint | boolean | number | string | symbol | null | undefined;
+
+export type LiteralUnion<LiteralType, BaseType extends Primitive> = LiteralType | (BaseType & Record<never, never>);
 
 // @ts-expect-error -- wrong extend type
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
@@ -22,7 +26,8 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     error: Error | undefined;
     groups: string[];
     label: string | undefined;
-    message: Primitive | UnknownArray | UnknownRecord;
+
+    message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
     prefix: string | undefined;
     repeated?: number | undefined;
     scope: string[] | undefined;
@@ -61,6 +66,7 @@ export type LoggerFunction = (...message: any[]) => void;
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     color?: AnsiColors | undefined;
     label: string;
     logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;
@@ -130,7 +136,8 @@ export interface ServerConstructorOptions<T extends string = never, L extends st
 export type Message = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any[] | undefined;
-    message: Primitive | unknown[] | undefined;
+
+    message: Primitive | ReadonlyArray<unknown> | undefined;
     prefix?: string;
     suffix?: string;
 };

@@ -61,9 +61,9 @@ export class InteractiveManager {
      * @param count - lines count to remove
      */
     public erase(stream: StreamType, count = this.#lastLength): void {
-        // eslint-disable-next-line security/detect-object-injection
-        if (!this.#stream[stream]) {
-            throw new Error(`Stream "${stream}" is not available`);
+        // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+        if (this.#stream[stream] === undefined) {
+            throw new TypeError(`Stream "${stream}" is not available`);
         }
 
         // eslint-disable-next-line security/detect-object-injection
@@ -146,47 +146,49 @@ export class InteractiveManager {
      * @param rows - Text lines to write to standard output
      * @param from - Index of the line starting from which the contents of the terminal are being overwritten
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public update(stream: StreamType, rows: string[], from = 0): void {
         if (rows.length > 0) {
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-unnecessary-condition
+            if (this.#stream[stream] === undefined) {
+                throw new TypeError(`Stream "${stream}" is not available`);
+            }
+
             // eslint-disable-next-line security/detect-object-injection
             const hook = this.#stream[stream];
 
-            if (hook) {
-                const { columns: width, rows: height } = terminalSize();
+            const { columns: width, rows: height } = terminalSize();
 
-                const position = from > height ? height - 1 : Math.max(0, Math.min(height - 1, from));
-                const actualLength = this.lastLength - position;
-                const outside = Math.max(actualLength - height, this.outside);
+            const position = from > height ? height - 1 : Math.max(0, Math.min(height - 1, from));
+            const actualLength = this.lastLength - position;
+            const outside = Math.max(actualLength - height, this.outside);
 
-                // eslint-disable-next-line unicorn/no-array-reduce
-                let output = rows.reduce<string[]>(
-                    (accumulator, row) => [
-                        ...accumulator,
-                        wrapAnsi(row, width, {
-                            hard: true,
-                            trim: false,
-                            wordWrap: true,
-                        }),
-                    ],
-                    [],
-                );
+            // eslint-disable-next-line unicorn/no-array-reduce
+            let output = rows.reduce<string[]>(
+                (accumulator, row) => [
+                    ...accumulator,
+                    wrapAnsi(row, width, {
+                        hard: true,
+                        trim: false,
+                        wordWrap: true,
+                    }),
+                ],
+                [],
+            );
 
-                if (height <= actualLength) {
-                    hook.erase(height);
+            if (height <= actualLength) {
+                hook.erase(height);
 
-                    if (position < outside) {
-                        output = output.slice(outside - position + 1);
-                    }
-                } else if (actualLength) {
-                    hook.erase(actualLength);
+                if (position < outside) {
+                    output = output.slice(outside - position + 1);
                 }
-
-                hook.write(output.join("\n") + "\n");
-
-                this.#lastLength = outside ? outside + output.length + 1 : output.length;
-                this.#outside = Math.max(this.lastLength - height, this.outside);
+            } else if (actualLength) {
+                hook.erase(actualLength);
             }
+
+            hook.write(output.join("\n") + "\n");
+
+            this.#lastLength = outside ? outside + output.length + 1 : output.length;
+            this.#outside = Math.max(this.lastLength - height, this.outside);
         }
     }
 

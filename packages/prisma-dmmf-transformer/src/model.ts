@@ -2,7 +2,7 @@ import type { DMMF } from "@prisma/generator-helper";
 import type { JSONSchema7Definition } from "json-schema";
 
 import getJSONSchemaProperty from "./properties";
-import type { DefinitionMap, ModelMetaData, TransformOptions } from "./types.d";
+import type { DefinitionMap, ModelMetaData, TransformOptions } from "./types";
 
 const getRelationScalarFields = (model: DMMF.Model): string[] => model.fields.flatMap((field) => field.relationFromFields ?? []);
 

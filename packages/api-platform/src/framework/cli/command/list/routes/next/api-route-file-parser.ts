@@ -4,7 +4,7 @@ import process from "node:process";
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
 import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
 
-import type { Route } from "../types.d";
+import type { Route } from "../types";
 
 // eslint-disable-next-line regexp/no-unused-capturing-group
 const extensionRegex = /\.(js|ts|mjs|cjs)$/u;

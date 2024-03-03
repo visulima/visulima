@@ -74,7 +74,6 @@ class SwaggerCompilerPlugin {
     }
 
     public apply(compiler: Compiler): void {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");

@@ -5,13 +5,13 @@ import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "
 import { writeStream } from "../../util/write-stream";
 
 export class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #interactiveManager: InteractiveManager | undefined;
 
     #interactive = false;
@@ -55,7 +55,6 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
 
         if (context) {
             items.push(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 ...context.map((value) => {
                     if (typeof value === "object") {
                         return " " + (this.#stringify as typeof stringify)(value);
@@ -68,7 +67,7 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
 
         const streamType = ["error", "trace", "warn"].includes(type.level as string) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
-        const groupSpaces: string = groups ? groups.map(() => "    ").join("") : "";
+        const groupSpaces: string = groups?.map(() => "    ").join("");
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
             this.#interactiveManager.update(streamType, (groupSpaces + items.join("")).split("\n"), 0);

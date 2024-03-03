@@ -23,7 +23,7 @@ vi.mock("find-up", async (importOriginal) => {
             }
 
             // @ts-expect-error - types are wrong
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return module.findUp(path, options);
         },
     };

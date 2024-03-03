@@ -174,7 +174,6 @@ const generateSwaggerPathObject = <M extends string>({
 
             methods[method] = {
                 parameters: getQueryParameters(routeType).map((queryParameter) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return { ...queryParameter, in: "query" };
                 }),
 

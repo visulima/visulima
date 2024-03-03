@@ -22,7 +22,7 @@ vi.mock("get-tsconfig", async (importOriginal) => {
             }
 
             // @ts-expect-error - type mismatch
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return module.getTsconfig(path, fileName);
         },
     };

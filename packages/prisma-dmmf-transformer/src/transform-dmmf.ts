@@ -2,7 +2,7 @@ import type { DMMF } from "@prisma/generator-helper";
 import type { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
 import getJSONSchemaModel from "./model";
-import type { TransformOptions } from "./types.d";
+import type { TransformOptions } from "./types";
 
 const toCamelCase = (name: string): string => name.slice(0, 1).toLowerCase() + name.slice(1);
 
@@ -30,6 +30,7 @@ const transformDmmf = (dmmf: DMMF.Document, transformOptions: TransformOptions =
     const { schemaId } = transformOptions;
 
     const modelDefinitionsMap = models.map(getJSONSchemaModel({ enums }, transformOptions));
+
     const typeDefinitionsMap = types.map(getJSONSchemaModel({ enums }, transformOptions));
     const modelPropertyDefinitionsMap = models.map(getPropertyDefinition(transformOptions));
     const definitions = Object.fromEntries([...modelDefinitionsMap, ...typeDefinitionsMap]);
