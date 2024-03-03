@@ -8,8 +8,14 @@ let stylePrototype: object | null = null;
 const cssStringToObject = (css: string): Record<string, string> => {
     const cssObject: Record<string, string> = {};
 
-    // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/optimal-quantifier-concatenation,security/detect-object-injection,no-return-assign
-    css.replaceAll(/(?<=^|;)\s*([^:]+)\s*:\s*([^;]+)\s*/g, (_, key: string, value) => (cssObject[key] = value));
+    // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/optimal-quantifier-concatenation,unicorn/prefer-string-replace-all
+    css.replace(/(?<=^|;)\s*([^:]+)\s*:\s*([^;]+)\s*/g, (_, key: string, value) => {
+        // eslint-disable-next-line security/detect-object-injection
+        cssObject[key] = value;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return value;
+    });
 
     return cssObject;
 };
@@ -97,7 +103,6 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -112,7 +117,6 @@ const WebColorize = function () {
         // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
 
                 Object.defineProperty(this, name, { value: style });
@@ -137,7 +141,7 @@ for (const name in styleMethods) {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };

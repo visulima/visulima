@@ -91,16 +91,15 @@ export const styleMethods: {
     hex: (hex: ColorValueHex) => ColorData;
     rgb: (r: number, g: number, b: number) => ColorData;
 } = {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bg: (code) => createBgAnsi256(clamp(code, 0, 255)),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     bgHex: (hex) => createBgRgb(...hexToRgb(hex)),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     bgRgb: (r, g, b) => createBgRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     fg: (code) => createAnsi256(clamp(code, 0, 255)),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     hex: (hex) => createRgb(...hexToRgb(hex)),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     rgb: (r, g, b) => createRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
 };

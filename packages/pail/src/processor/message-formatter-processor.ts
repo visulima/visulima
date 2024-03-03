@@ -5,6 +5,7 @@ import type { stringify } from "safe-stable-stringify";
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 export class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
     readonly #formatters: Record<string, FormatterFunction> | undefined;
@@ -36,7 +37,7 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
         } as Options);
 
         if (meta.message !== undefined) {
-            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line no-param-reassign
             meta.message = this._format(formatter, meta.message, meta.context ?? []);
         }
 

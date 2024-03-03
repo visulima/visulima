@@ -1,4 +1,4 @@
-import type { Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry } from "./types.d";
+import type { Checker, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry } from "./types";
 
 class Healthcheck implements HealthcheckInterface {
     /**

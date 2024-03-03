@@ -30,7 +30,7 @@ module.exports = {
             },
         },
         {
-            files: ["*.test.ts"],
+            files: ["*.test.ts", "*.bench.ts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {
@@ -87,6 +87,7 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

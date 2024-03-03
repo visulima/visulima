@@ -13,11 +13,10 @@ describe("dnsCheck", () => {
             health: {
                 healthy: true,
                 message: "DNS check for example.com were resolved.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addresses: expect.any(Array),
                 host: "example.com",
             },
@@ -34,11 +33,10 @@ describe("dnsCheck", () => {
             health: {
                 healthy: false,
                 message: "DNS check for example.com returned address 93.184.216.34 instead of 93.122.1212.45.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addresses: expect.any(Object),
                 host: "example.com",
             },

@@ -28,12 +28,11 @@ const include = (
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
-    // eslint-disable-next-line no-param-reassign
-    path = normalize(path);
+    const normalizePath: string = normalize(path as string);
 
-    const name = basename(path);
+    const name = basename(normalizePath);
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const info: Stats = await promises.stat(path);
+    const info: Stats = await promises.stat(normalizePath);
 
     return {
         // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -43,7 +42,7 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         isSymbolicLink: info.isSymbolicLink,
         name,
-        path,
+        path: normalizePath,
     };
 };
 

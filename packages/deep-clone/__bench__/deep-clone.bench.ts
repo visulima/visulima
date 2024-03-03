@@ -48,7 +48,6 @@ describe("clone", () => {
     });
 
     bench("clone-deep", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = cloneDeep(data);
 
         if (cloneData === data) {
@@ -81,7 +80,6 @@ describe("clone", () => {
     });
 
     bench("nano-copy", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = nanoCopy(data);
 
         if (cloneData === data) {
@@ -146,7 +144,6 @@ describe("clone", () => {
     });
 
     bench("@ungap/structured-clone clone", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const cloneData = ungapStructuredClone(data);
 
         if (cloneData === data) {

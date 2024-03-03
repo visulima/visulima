@@ -9,7 +9,7 @@ import chalk from "chalk";
 import { getRoutes } from "./get-routes";
 import routesGroupBy from "./routes/routes-group-by";
 import routesRender from "./routes/routes-render";
-import type { Route } from "./routes/types.d";
+import type { Route } from "./routes/types";
 import { ALLOWED_EXTENSIONS, getApp, getAppWorkingDirectoryPath, getFrameworkName } from "./utils";
 
 interface RenderOptions {
@@ -17,16 +17,13 @@ interface RenderOptions {
     group: string;
     includePaths: string[];
     methods: string[];
+    verbose: boolean;
 }
 
 const listCommand = async (
     framework: "express" | "fastify" | "hapi" | "koa" | "next" | undefined,
     path: string,
-    options: Partial<
-        RenderOptions & {
-            verbose: boolean;
-        }
-    > = {},
+    options: Partial<RenderOptions> = {},
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
     const frameworkPath = join(process.cwd(), path);
@@ -106,7 +103,6 @@ const listCommand = async (
             const { default: defaultExport } = await import(appJsFilePath);
 
             routes = await getRoutes(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 ["AsyncFunction", "Function"].includes(defaultExport.constructor.name as string) ? await defaultExport() : getApp(defaultExport, framework),
                 framework,
                 options.verbose ?? false,

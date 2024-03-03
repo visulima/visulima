@@ -1,6 +1,5 @@
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
-import type { LiteralUnion, Primitive, UnknownArray, UnknownRecord } from "type-fest";
 
 import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import { RawReporter } from "./reporter/raw/raw.browser";
@@ -8,12 +7,14 @@ import type {
     ConstructorOptions,
     DefaultLogTypes,
     ExtendedRfc5424LogLevels,
+    LiteralUnion,
     LoggerConfiguration,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
     Message,
     Meta,
+    Primitive,
     Processor,
     Reporter,
     StringifyAwareProcessor,
@@ -89,8 +90,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             strict: true,
         });
 
-        this.startTimerMessage = options?.messages?.timerStart ?? "Initialized timer...";
-        this.endTimerMessage = options?.messages?.timerEnd ?? "Timer run for:";
+        this.startTimerMessage = options.messages?.timerStart ?? "Initialized timer...";
+        this.endTimerMessage = options.messages?.timerEnd ?? "Timer run for:";
         this.types = mergeTypes<L, T>(LOG_TYPES, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
         this.longestLabel = getLongestLabel<L, T>(this.types);
 
@@ -121,16 +122,14 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         // Track of last log
         this.lastLog = {};
 
-        if (Array.isArray(options?.reporters)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        if (Array.isArray(options.reporters)) {
             this.registerReporters(options.reporters);
         }
 
         this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
 
-        if (Array.isArray(options?.processors)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            this.registerProcessors(options?.processors);
+        if (Array.isArray(options.processors)) {
+            this.registerProcessors(options.processors);
         }
     }
 
@@ -332,11 +331,11 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     protected extendReporter(reporter: Reporter<L>): Reporter<L> {
-        if ((reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes) {
+        if (typeof (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes === "function") {
             (reporter as LoggerTypesAwareReporter<T, L>).setLoggerTypes(this.types);
         }
 
-        if ((reporter as StringifyAwareReporter<L>).setStringify) {
+        if (typeof (reporter as StringifyAwareReporter<L>).setStringify === "function") {
             (reporter as StringifyAwareReporter<L>).setStringify(this.stringify);
         }
 
@@ -364,7 +363,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     private registerProcessors(processors: Processor<L>[]): void {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const processor of processors) {
-            if ((processor as StringifyAwareProcessor<L>).setStringify) {
+            if (typeof (processor as StringifyAwareProcessor<L>).setStringify === "function") {
                 (processor as StringifyAwareProcessor<L>).setStringify(this.stringify);
             }
 
@@ -372,7 +371,6 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     private _normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
         // eslint-disable-next-line security/detect-object-injection
         return level && this.logLevels[level] ? level : "debug";
@@ -412,7 +410,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
                 meta.message = message;
             } else {
-                meta.message = arguments_[0] as Primitive | UnknownArray | UnknownRecord;
+                meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
             }
         } else if (arguments_.length > 1 && typeof arguments_[0] === "string") {
             meta.message = arguments_[0] as string;
@@ -448,7 +446,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         // eslint-disable-next-line security/detect-object-injection
         if ((this.logLevels[logLevel] as number) >= (this.logLevels[this.generalLogLevel] as number)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection
             let meta = this._buildMeta(type, this.types[type], ...messageObject);
 
             /**

@@ -13,6 +13,7 @@ const noop: AnyHandler = async () => {
     /** noop */
 };
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const testRoute = (rr: Route<any>, { route, ...match }: Partial<Route<any> & { route: string }>) => {
     // @ts-expect-error: pattern does not always exist
 
@@ -38,9 +39,9 @@ describe("router", () => {
 
         expect(context).instanceOf(Router, "creates new `Router` instance");
         expect(Array.isArray(context.routes), "~> has `routes` key (Array)").toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         expect(context.add, "~> has `add` method").toBeTypeOf("function");
-        // eslint-disable-next-line @typescript-eslint/unbound-method
+
         expect(context.find, "~> has `find` method").toBeTypeOf("function");
     });
 
@@ -425,21 +426,21 @@ describe("router", () => {
 
         expect(foo1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
 
-        expect(foo1.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(foo1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const foo2 = find(context2, "/api/v1/users");
         expect(foo2.fns, '~> does not match "/api/v1/users" - too long').toHaveLength(0);
-        expect(foo2.params["version"], '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
+        expect(foo2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
         expect(find(context3, "/api").fns, '~> does match "/api" because optional').toHaveLength(1);
 
         const bar1 = find(context3, "/api/v1");
         expect(bar1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
-        expect(bar1.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(bar1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const bar2 = find(context3, "/api/v1/users");
         expect(bar2.fns, '~> does match "/api/v1/users" - too long').toHaveLength(0);
-        expect(bar2.params["version"], '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
+        expect(bar2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
         expect(find(context4, "/movies").fns, '~> does not match "/movies" directly').toHaveLength(0);
         expect(find(context4, "/movies/narnia").fns, '~> does not match "/movies/narnia" directly').toHaveLength(0);
@@ -471,21 +472,21 @@ describe("router", () => {
 
         const foo1 = find(context2, "/api/v1");
         expect(foo1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
-        expect(foo1.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(foo1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const foo2 = find(context2, "/api/v1/users");
         expect(foo2.fns, '~> does match "/api/v1/users" loosely').toHaveLength(1);
-        expect(foo2.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(foo2.params.version, '~> parses the "version" correctly').toBe("v1");
 
         expect(find(context3, "/api").fns, '~> does match "/api" because optional').toHaveLength(1);
 
         const bar1 = find(context3, "/api/v1");
         expect(bar1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
-        expect(bar1.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(bar1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const bar2 = find(context3, "/api/v1/users");
         expect(bar2.fns, '~> does match "/api/v1/users" loosely').toHaveLength(1);
-        expect(bar2.params["version"], '~> parses the "version" correctly').toBe("v1");
+        expect(bar2.params.version, '~> parses the "version" correctly').toBe("v1");
 
         expect(find(context4, "/movies").fns, '~> does not match "/movies" directly').toHaveLength(0);
         expect(find(context4, "/movies/narnia").fns, '~> does not match "/movies/narnia" directly').toHaveLength(0);

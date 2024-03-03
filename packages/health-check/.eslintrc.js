@@ -28,8 +28,15 @@ module.exports = {
             rules: {},
         },
         {
-            files: ["*.js", "*.jsx"],
-            rules: {},
+            files: ["*.test.ts", "*.bench.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
+            rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+            },
         },
         {
             files: ["*.mdx"],
@@ -44,6 +51,7 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

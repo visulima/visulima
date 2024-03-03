@@ -12,11 +12,11 @@ describe("node-environment-check", () => {
             displayName: "Node Environment Check",
             health: {
                 healthy: true,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
-                env: process.env["NODE_ENV"],
+                env: process.env.NODE_ENV,
             },
         });
     });
@@ -24,9 +24,9 @@ describe("node-environment-check", () => {
     it("should return healthy when the node env is set to production", async () => {
         expect.assertions(1);
 
-        const oldEnvironment = process.env["NODE_ENV"];
+        const oldEnvironment = process.env.NODE_ENV;
 
-        process.env["NODE_ENV"] = "production";
+        process.env.NODE_ENV = "production";
 
         const result = await nodeEnvironmentCheck("production")();
 
@@ -34,15 +34,15 @@ describe("node-environment-check", () => {
             displayName: "Node Environment Check",
             health: {
                 healthy: true,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
             meta: {
-                env: process.env["NODE_ENV"],
+                env: process.env.NODE_ENV,
             },
         });
 
-        process.env["NODE_ENV"] = oldEnvironment;
+        process.env.NODE_ENV = oldEnvironment;
     });
 
     it("should return unhealthy when the node env is set to production", async () => {
@@ -55,7 +55,7 @@ describe("node-environment-check", () => {
             health: {
                 healthy: false,
                 message: 'NODE_ENV environment variable is set to "test" instead of "production".',
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
         });
@@ -64,10 +64,9 @@ describe("node-environment-check", () => {
     it("should return unhealthy when the node env is not set", async () => {
         expect.assertions(1);
 
-        const oldEnvironment = process.env["NODE_ENV"];
+        const oldEnvironment = process.env.NODE_ENV;
 
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete process.env["NODE_ENV"];
+        delete process.env.NODE_ENV;
 
         const result = await nodeEnvironmentCheck()();
 
@@ -76,11 +75,11 @@ describe("node-environment-check", () => {
             health: {
                 healthy: false,
                 message: "Missing NODE_ENV environment variable. It can make some parts of the application misbehave",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
         });
 
-        process.env["NODE_ENV"] = oldEnvironment;
+        process.env.NODE_ENV = oldEnvironment;
     });
 });

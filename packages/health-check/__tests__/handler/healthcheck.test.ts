@@ -38,7 +38,7 @@ describe("health check route", () => {
                     displayName: "Node Environment Check",
                     health: {
                         healthy: true,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                         timestamp: expect.any(String),
                     },
                     meta: {
@@ -54,8 +54,8 @@ describe("health check route", () => {
     it("endpoint returns health checks reports with custom app name and version", async () => {
         expect.assertions(3);
 
-        process.env["APP_NAME"] = "my-app";
-        process.env["APP_VERSION"] = "1.0.0";
+        process.env.APP_NAME = "my-app";
+        process.env.APP_VERSION = "1.0.0";
 
         const callback = healthCheckHandler(HealthCheckService);
 
@@ -80,7 +80,7 @@ describe("health check route", () => {
                     displayName: "Node Environment Check",
                     health: {
                         healthy: true,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                         timestamp: expect.any(String),
                     },
                     meta: {
@@ -92,7 +92,7 @@ describe("health check route", () => {
             timestamp: jsonResponse["timestamp"],
         });
 
-        process.env["APP_NAME"] = undefined;
-        process.env["APP_VERSION"] = undefined;
+        process.env.APP_NAME = undefined;
+        process.env.APP_VERSION = undefined;
     });
 });

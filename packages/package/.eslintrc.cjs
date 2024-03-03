@@ -46,14 +46,14 @@ module.exports = {
             },
         },
         {
-            files: [
-                "__tests__/monorepo.test.ts",
-                "__tests__/package-json.test.ts",
-                "__tests__/package-manager.test.ts",
-                "__tests__/package.test.ts",
-                "__tests__/tsconfig.test.ts",
-            ],
+            files: ["*.test.ts", "*.bench.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
             rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
                 "import/no-unused-modules": "off",
             },
         },
@@ -62,6 +62,7 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

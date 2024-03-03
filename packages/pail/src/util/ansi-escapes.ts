@@ -7,8 +7,7 @@ const cursorLeft = ESC + "G";
 const cursorUp = (count = 1) => ESC + count + "A";
 
 export const clearTerminal: string =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    process?.platform === "win32"
+    process.platform === "win32"
         ? `${eraseScreen}${ESC}0f`
         : // 1. Erases the screen (Only done in case `2` is not supported)
           // 2. Erases the whole screen including scrollback buffer

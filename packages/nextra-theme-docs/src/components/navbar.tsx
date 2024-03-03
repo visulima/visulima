@@ -173,7 +173,6 @@ const Navbar: FC<NavBarProperties> = ({ activeType, flatDirectories, items, them
 
                             const page = pageOrMenu as PageItem;
 
-                            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                             let href = page.href || page.route || "#";
 
                             // If it's a directory

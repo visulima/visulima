@@ -309,7 +309,6 @@ export const DEFAULT_THEME: DocumentationThemeConfig = {
     },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const DEEP_OBJECT_KEYS = Object.entries(DEFAULT_THEME)
     .map(([key, value]) => {
         const isObject = value && typeof value === "object" && !Array.isArray(value) && !isValidElement(value);

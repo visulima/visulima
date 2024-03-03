@@ -38,7 +38,6 @@ export interface SearchResult {
     route: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type ActiveType = string | "doc" | "hidden" | "page";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations

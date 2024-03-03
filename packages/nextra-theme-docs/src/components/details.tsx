@@ -25,7 +25,6 @@ const findSummary = (children: ReactNode) => {
             summary = result[0];
 
             restChildren.push(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 cloneElement(child, {
                     ...child.props,
                     children: result[1]?.length ? result[1] : null,

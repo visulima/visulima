@@ -103,7 +103,7 @@
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.23.9",
+        "@babel/core": "^7.24.0",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.1",
         "@eslint-types/jsdoc": "^48.2.0",

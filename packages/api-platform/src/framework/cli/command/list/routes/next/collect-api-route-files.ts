@@ -26,7 +26,7 @@ const collectApiRouteFiles = async (path = "", verbose = false): Promise<string[
         }
     }
 
-    return await collect(apiFolderPath, {
+    return collect(apiFolderPath, {
         extensions: ALLOWED_EXTENSIONS,
         includeDirs: false,
         minimatchOptions: {

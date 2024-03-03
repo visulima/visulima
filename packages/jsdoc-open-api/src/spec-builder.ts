@@ -31,12 +31,26 @@ class SpecBuilder implements OpenApiObject {
     public constructor(baseDefinition: BaseDefinition) {
         this.openapi = baseDefinition.openapi;
         this.info = baseDefinition.info;
-        this.servers = baseDefinition.servers;
         this.paths = baseDefinition.paths ?? {};
-        this.components = baseDefinition.components;
-        this.security = baseDefinition.security;
-        this.tags = baseDefinition.tags;
-        this.externalDocs = baseDefinition.externalDocs;
+
+        if (baseDefinition.servers) {
+            this.servers = baseDefinition.servers;
+        }
+        if (baseDefinition.components) {
+            this.components = baseDefinition.components;
+        }
+
+        if (baseDefinition.security) {
+            this.security = baseDefinition.security;
+        }
+
+        if (baseDefinition.tags) {
+            this.tags = baseDefinition.tags;
+        }
+
+        if (baseDefinition.externalDocs) {
+            this.externalDocs = baseDefinition.externalDocs;
+        }
     }
 
     public addData(parsedFile: OpenApiObject[]): void {

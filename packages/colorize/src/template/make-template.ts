@@ -33,7 +33,7 @@ const parseArguments = (name: string, value: string): (number | string)[] => {
             results.push(number);
             // eslint-disable-next-line no-cond-assign
         } else if ((matches = STRING_REGEX.exec(chunk))) {
-            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,@typescript-eslint/no-unsafe-return
             results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => (escape ? unescape(escape as string) : character)));
         } else {
             throw new Error(`Invalid template style argument: ${chunk} (in style '${name}')`);
@@ -57,12 +57,10 @@ const parseStyle: (style: string) => (number | string | undefined)[][] = (style:
             results.push([name, ...parseArguments(name as string, matches[2])]);
         } else if (matches[3] || matches[4]) {
             if (matches[3]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 results.push(["rgb", ...hexToRgb(matches[3] as ColorValueHex)]);
             }
 
             if (matches[4]) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 results.push(["bgRgb", ...hexToRgb(matches[4] as ColorValueHex)]);
             }
         } else {

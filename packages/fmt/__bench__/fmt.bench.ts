@@ -17,7 +17,6 @@ describe("format simple", () => {
     });
 
     bench("quick-format-unescaped", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         quickFormat("%s %j %d", ["a", [{ a: { x: 1 } }, 1]]);
     });
 });
@@ -32,7 +31,6 @@ describe("format tail object", () => {
     });
 
     bench("quick-format-unescaped", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         quickFormat("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
     });
 });

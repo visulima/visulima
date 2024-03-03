@@ -1,5 +1,5 @@
 import mapKeysToPath from "./map-keys-to-path";
-import type { ExpressRegex, Key } from "./types.d";
+import type { ExpressRegex, Key } from "./types";
 
 /** Parses an express layer's regex and converts it to the original format seen in code.
  *
