@@ -1,7 +1,7 @@
 import type { Options } from "./walk";
 import walk from "./walk";
 
-const collect = async (directory: string, options: Partial<Options & { extensions: string[] }> = {}): Promise<string[]> => {
+const collect = async (directory: string, options: Options = {}): Promise<string[]> => {
     const config = {
         extensions: ["js", "mjs", "cjs", "ts"],
         ...options,

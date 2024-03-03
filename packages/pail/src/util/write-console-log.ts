@@ -1,6 +1,4 @@
-import type { LiteralUnion } from "type-fest";
-
-import type { ExtendedRfc5424LogLevels } from "../types";
+import type { ExtendedRfc5424LogLevels, LiteralUnion } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeConsoleLogBasedOnLevel = <L extends string = never>(level: LiteralUnion<ExtendedRfc5424LogLevels, L>): ((...data: any[]) => void) => {

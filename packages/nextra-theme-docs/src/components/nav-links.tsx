@@ -24,9 +24,9 @@ const NavLinks: FC<NavLinkProperties> = ({ currentIndex, flatDirectories, layout
     const config = useConfig();
     const nav = config.navigation;
     const navigation: Exclude<DocumentationThemeConfig["navigation"], boolean> = typeof nav === "boolean" ? { next: nav, prev: nav } : nav;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     const previous: DocumentationItem | undefined = navigation.prev ? flatDirectories[currentIndex - 1] : undefined;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     const next: DocumentationItem | undefined = navigation.next ? flatDirectories[currentIndex + 1] : undefined;
 
     if (!previous && !next) {

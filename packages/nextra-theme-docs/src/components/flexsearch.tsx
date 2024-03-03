@@ -119,7 +119,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
             });
 
             // Add the page itself.
-            pageContent += ` ${title} ${content}`;
+            pageContent += ` ${title} ${content as string}`;
         });
 
         pageIndex.add({

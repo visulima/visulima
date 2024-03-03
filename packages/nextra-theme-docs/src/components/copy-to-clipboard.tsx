@@ -41,6 +41,7 @@ const CopyToClipboard = ({
     const handleClick = useCallback<NonNullable<ComponentProps<"button">["onClick"]>>(async () => {
         setCopied(true);
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (copy(getValue())) {
             toast.custom(<SuccessToast title="Snippet was copied">Paste it wherever you like it.</SuccessToast>, {
                 id: toastId,

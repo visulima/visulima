@@ -1,10 +1,10 @@
-import type { EmptyObject, UnknownRecord } from "type-fest";
-
 import type { State } from "../types";
 import copyOwnProperties from "../utils/copy-own-properties";
 import getCleanClone from "../utils/get-clean-clone";
 
-const copyObjectIsFunctions = <Value extends UnknownRecord>(object: Value, clone: Value): void => {
+declare const emptyObjectSymbol: unique symbol;
+
+const copyObjectIsFunctions = <Value extends Record<PropertyKey, unknown>>(object: Value, clone: Value): void => {
     if (!Object.isExtensible(object)) {
         Object.preventExtensions(clone);
     }
@@ -18,8 +18,8 @@ const copyObjectIsFunctions = <Value extends UnknownRecord>(object: Value, clone
     }
 };
 
-export const copyObjectLoose = <Value extends UnknownRecord>(object: Value, state: State): Value => {
-    const clone = getCleanClone(object) as EmptyObject;
+export const copyObjectLoose = <Value extends Record<PropertyKey, unknown>>(object: Value, state: State): Value => {
+    const clone = getCleanClone(object) as { [emptyObjectSymbol]?: never };
 
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);
@@ -53,8 +53,8 @@ export const copyObjectLoose = <Value extends UnknownRecord>(object: Value, stat
  * Deeply copy the properties (keys and symbols) and values of the original, as well
  * as any hidden or non-enumerable properties.
  */
-export const copyObjectStrict = <Value extends UnknownRecord>(object: Value, state: State): Value => {
-    const clone = getCleanClone(object) as EmptyObject;
+export const copyObjectStrict = <Value extends Record<PropertyKey, unknown>>(object: Value, state: State): Value => {
+    const clone = getCleanClone(object) as { [emptyObjectSymbol]?: never };
 
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);

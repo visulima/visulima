@@ -4,5 +4,5 @@
     "sourceRoot": "packages/api-platform/src",
     "projectType": "library",
     "tags": ["type:package", "api-platform"],
-    "implicitDependencies": []
+    "implicitDependencies": ["connect"]
 }

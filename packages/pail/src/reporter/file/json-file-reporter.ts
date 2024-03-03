@@ -5,6 +5,7 @@ import type { Options as FileReporterOptions } from "./abstract-file-reporter";
 import { AbstractFileReporter } from "./abstract-file-reporter";
 
 export class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
     public constructor(options: FileReporterOptions) {

@@ -9,10 +9,10 @@ const consoleMessage = "Skipping DNS check in CI environment, please validate th
 describe("pingCheck", () => {
     it("should return healthy when the host is reachable", async () => {
         // eslint-disable-next-line vitest/prefer-expect-assertions
-        expect.assertions(process.env["CI"] ? 0 : 1);
+        expect.assertions(process.env.CI ? 0 : 1);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (process.env["CI"]) {
+        if (process.env.CI) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
@@ -25,20 +25,20 @@ describe("pingCheck", () => {
             health: {
                 healthy: true,
                 message: "Ping check for www.github.com was successful.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             meta: expect.any(Object),
         });
     }, 10_000);
 
     it("should return unhealthy when the host is reachable", async () => {
         // eslint-disable-next-line vitest/prefer-expect-assertions
-        expect.assertions(process.env["CI"] ? 0 : 1);
+        expect.assertions(process.env.CI ? 0 : 1);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (process.env["CI"]) {
+        if (process.env.CI) {
             // eslint-disable-next-line no-console
             console.log(consoleMessage);
             return;
@@ -51,10 +51,10 @@ describe("pingCheck", () => {
             health: {
                 healthy: false,
                 message: "Ping failed for https://example.com1.",
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 timestamp: expect.any(String),
             },
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             meta: expect.any(Object),
         });
     });

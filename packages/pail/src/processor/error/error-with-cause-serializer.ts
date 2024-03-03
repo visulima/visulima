@@ -39,7 +39,6 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
 
     // Handle aggregate errors
     if ((error as CauseError).cause instanceof Error && !Object.prototype.hasOwnProperty.call((error as CauseError).cause, seen as PropertyKey)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         protoError.cause = errorWithCauseSerializer((error as CauseError).cause, options);
     }
 

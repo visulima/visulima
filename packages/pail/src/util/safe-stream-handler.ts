@@ -29,7 +29,6 @@ export class SafeStreamHandler {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public end(...arguments_: any[]): void {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._stream.end(...arguments_);
     }
 

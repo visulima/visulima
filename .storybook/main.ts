@@ -17,7 +17,7 @@ const config: StorybookConfig = {
         options: {},
     },
     stories: ["../packages/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)"],
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
     viteFinal: async (vConfig) => mergeConfig(vConfig, { plugins: [] }),
 };
 

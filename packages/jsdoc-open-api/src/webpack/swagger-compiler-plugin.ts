@@ -5,7 +5,7 @@ import { exit } from "node:process";
 import { collect } from "@visulima/readdir";
 import type { Compiler } from "webpack";
 
-import type { BaseDefinition } from "../exported.d";
+import type { BaseDefinition } from "../exported";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
@@ -74,7 +74,6 @@ class SwaggerCompilerPlugin {
     }
 
     public apply(compiler: Compiler): void {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");

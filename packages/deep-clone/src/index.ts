@@ -1,5 +1,3 @@
-import type { UnknownRecord } from "type-fest";
-
 import { copyArrayLoose, copyArrayStrict } from "./handler/copy-array";
 import copyArrayBuffer from "./handler/copy-array-buffer";
 import copyBlob from "./handler/copy-blob";
@@ -90,7 +88,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (typeof value === "object" && value.constructor === Object && (value as FakeJSDOM).nodeType === undefined) {
-            return cloner.Object(value as UnknownRecord, state);
+            return cloner.Object(value as Record<PropertyKey, unknown>, state);
         }
 
         if ((value as FakeJSDOM).nodeType !== undefined && (value as FakeJSDOM).cloneNode !== undefined) {
@@ -161,7 +159,7 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (typeof value === "object") {
-            return cloner.Object(value as UnknownRecord, state);
+            return cloner.Object(value as Record<PropertyKey, unknown>, state);
         }
 
         throw new TypeError(`Type of ${typeof value} cannot be cloned`, value);

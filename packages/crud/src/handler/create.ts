@@ -1,4 +1,4 @@
-import type { HandlerParameters } from "../types.d";
+import type { HandlerParameters } from "../types";
 
 const createHandler: Handler = async ({ adapter, query, request, resourceName }) => {
     const resources = await adapter.create(resourceName, request.body, query);

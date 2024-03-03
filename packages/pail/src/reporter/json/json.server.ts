@@ -1,8 +1,6 @@
 import process from "node:process";
 
-import type { LiteralUnion } from "type-fest";
-
-import type { ExtendedRfc5424LogLevels, StreamAwareReporter } from "../../types";
+import type { ExtendedRfc5424LogLevels, LiteralUnion, StreamAwareReporter } from "../../types";
 import { writeStream } from "../../util/write-stream";
 import { AbstractJsonReporter } from "./abstract-json-reporter";
 

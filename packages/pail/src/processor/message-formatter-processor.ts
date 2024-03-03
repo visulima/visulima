@@ -1,10 +1,11 @@
-import type { format, FormatterFunction } from "@visulima/fmt";
+import type { format, FormatterFunction, Options } from "@visulima/fmt";
 import { build } from "@visulima/fmt";
 import type { stringify } from "safe-stable-stringify";
 
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 export class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
     readonly #formatters: Record<string, FormatterFunction> | undefined;
@@ -33,10 +34,10 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
 
                 return stringified;
             },
-        });
+        } as Options);
 
         if (meta.message !== undefined) {
-            // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-unsafe-argument
+            // eslint-disable-next-line no-param-reassign
             meta.message = this._format(formatter, meta.message, meta.context ?? []);
         }
 

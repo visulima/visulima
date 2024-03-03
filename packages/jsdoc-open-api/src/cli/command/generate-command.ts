@@ -2,11 +2,12 @@ import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import type { Options } from "@visulima/readdir";
 import { collect } from "@visulima/readdir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
 
-import type { BaseDefinition } from "../../exported.d";
+import type { BaseDefinition } from "../../exported";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
@@ -78,7 +79,7 @@ const generateCommand = async (
                 },
             },
             skip: [...openapiConfig.exclude, "node_modules/**"],
-        });
+        } as Options);
 
         if (options.verbose ?? options.veryVerbose) {
             // eslint-disable-next-line no-console

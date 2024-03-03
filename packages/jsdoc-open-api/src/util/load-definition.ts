@@ -3,7 +3,7 @@ import path from "node:path";
 
 import yaml from "yaml";
 
-import type { BaseDefinition } from "../exported.d";
+import type { BaseDefinition } from "../exported";
 
 const parseFile = (file: string): BaseDefinition => {
     const extension = path.extname(file);

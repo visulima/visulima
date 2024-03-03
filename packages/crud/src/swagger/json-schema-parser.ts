@@ -90,6 +90,7 @@ class PrismaJsonSchemaParser {
     public getExampleModelsSchemas(
         modelNames: string[],
         schemas: Record<string, OpenAPIV3.SchemaObject>,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     ): Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> {
         const referenceToSchema = (reference: string) => {
             const name = reference.replace("#/components/schemas/", "");
@@ -97,6 +98,7 @@ class PrismaJsonSchemaParser {
 
             const values: Record<string, object[] | string> = {};
 
+            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             Object.entries((model.properties as OpenAPIV3.SchemaObject | undefined) ?? {}).forEach(([key, v]) => {
                 const type = (v as OpenAPIV3.SchemaObject).type as string;
 
@@ -107,6 +109,7 @@ class PrismaJsonSchemaParser {
             return values;
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         const objectPropertiesToSchema = (objectProperties: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>) => {
             const values: Record<string, object[] | object | string> = {};
 
@@ -213,6 +216,7 @@ class PrismaJsonSchemaParser {
 
     // eslint-disable-next-line class-methods-use-this
     public getPaginationDataSchema(): Record<string, OpenAPIV3.SchemaObject> {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return createPaginationMetaSchemaObject(PAGINATION_SCHEMA_NAME);
     }
 

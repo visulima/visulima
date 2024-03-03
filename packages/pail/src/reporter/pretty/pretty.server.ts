@@ -2,11 +2,10 @@ import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visu
 import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 import terminalSize from "terminal-size";
-import type { LiteralUnion } from "type-fest";
 import wrapAnsi from "wrap-ansi";
 
 import type { InteractiveManager } from "../../interactive/interactive-manager";
-import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
+import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, LiteralUnion, ReadonlyMeta } from "../../types";
 import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
@@ -18,7 +17,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
     #stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #interactiveManager: InteractiveManager | undefined;
 
     #interactive = false;
@@ -80,7 +78,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (date) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push(grey(this._styles.dateFormatter(new Date(date))) + " ");
         }
 
@@ -151,7 +148,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
 
             if (context) {
                 items.push(
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     ...context.map((value) => {
                         if (typeof value === "object") {
                             return " " + (this._stringify as typeof stringify)(value);
@@ -172,7 +168,6 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
 
         if (suffix) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 

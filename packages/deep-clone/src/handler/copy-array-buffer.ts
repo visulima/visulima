@@ -1,4 +1,4 @@
-import type { TypedArray } from "type-fest";
+import type { TypedArray } from "../types";
 
 const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | TypedArray>(arrayBuffer: Value): Value => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
