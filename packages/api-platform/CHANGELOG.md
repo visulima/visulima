@@ -1,3 +1,19 @@
+## @visulima/api-platform [2.0.19](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.18...@visulima/api-platform@2.0.19) (2024-03-04)
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.0
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.14
+* **@visulima/crud:** upgraded to 2.0.14
+* **@visulima/readdir:** upgraded to 2.0.12
+
 ## @visulima/api-platform [2.0.18](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.17...@visulima/api-platform@2.0.18) (2024-02-26)
 
 
