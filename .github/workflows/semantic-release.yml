@@ -12,6 +12,8 @@ on: # yamllint disable-line rule:truthy
             - "alpha"
             - "beta"
 
+concurrency: "${{ github.workflow }}-${{ github.ref }}"
+
 permissions:
     contents: "read" # for checkout
 
