@@ -3,11 +3,9 @@
 name: "Lint"
 
 on: # yamllint disable-line rule:truthy
-    push:
-        branches:
-            - "main"
     # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
+        types: ["opened", "synchronize"]
 
 concurrency:
     group: "ci-lint-${{ github.ref }}-1"
