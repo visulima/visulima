@@ -1,3 +1,11 @@
+## @visulima/fmt [1.1.3](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.2...@visulima/fmt@1.1.3) (2024-03-04)
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+
 ## @visulima/fmt [1.1.2](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.1...@visulima/fmt@1.1.2) (2024-02-26)
 
 
