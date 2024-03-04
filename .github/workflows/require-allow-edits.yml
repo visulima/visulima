@@ -1,6 +1,6 @@
 name: "Require 'Allow Edits'"
 
-on: ["pull_request_target"] # yamllint disable-line rule:truthy
+on: ["pull_request_target", "merge_group"] # yamllint disable-line rule:truthy
 
 permissions:
     contents: "read"
