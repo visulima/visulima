@@ -1,3 +1,23 @@
+## @visulima/colorize [1.3.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.2.2...@visulima/colorize@1.3.0) (2024-03-04)
+
+
+### Features
+
+* adding new gradient helper ([#324](https://github.com/visulima/visulima/issues/324)) ([49b1ab0](https://github.com/visulima/visulima/commit/49b1ab0c94b1e6c272ae41e2477b064150c9ec49))
+* adding tagged template literals support ([#323](https://github.com/visulima/visulima/issues/323)) ([492e66b](https://github.com/visulima/visulima/commit/492e66b0c9eff631fdedef12cf92f9f258218c56))
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.0.1
+
 ## @visulima/colorize [1.2.2](https://github.com/visulima/visulima/compare/@visulima/colorize@1.2.1...@visulima/colorize@1.2.2) (2024-02-28)
 
 
