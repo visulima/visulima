@@ -1,3 +1,18 @@
+## @visulima/error [3.0.5](https://github.com/visulima/visulima/compare/@visulima/error@3.0.4...@visulima/error@3.0.5) (2024-03-04)
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+* updated @jridgewell/trace-mapping ([2955e4a](https://github.com/visulima/visulima/commit/2955e4adad7478947e4b224fad7bca9c8d5fe4d5))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.15
+
 ## @visulima/error [3.0.4](https://github.com/visulima/visulima/compare/@visulima/error@3.0.3...@visulima/error@3.0.4) (2024-02-26)
 
 
