@@ -1,3 +1,27 @@
+## @visulima/connect [3.0.0](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.14...@visulima/connect@3.0.0) (2024-03-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgraded regexparam to v3
+
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* request.params.wild changed to request.params["*"] ([e683936](https://github.com/visulima/visulima/commit/e6839366660f51da095c598563d395967860c23e))
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.15
+
 ## @visulima/connect [2.1.14](https://github.com/visulima/visulima/compare/@visulima/connect@2.1.13...@visulima/connect@2.1.14) (2024-02-26)
 
 
