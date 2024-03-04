@@ -10,4 +10,6 @@ _meta.*.json
 tsup.config.ts
 README.md
 
+scripts/wait.js
+
 tsconfig.eslint.json
