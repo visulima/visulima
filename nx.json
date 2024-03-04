@@ -1,30 +1,45 @@
 {
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "build:packages": {
+            "dependsOn": ["^build:packages"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "build:prod:packages": {
+            "dependsOn": ["^build:prod:packages"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
         },
         "prepare": {
             "dependsOn": ["^prepare"]
-        },
-        "package": {
-            "dependsOn": ["^package"]
         }
     },
+    "parallel": 5,
     "extends": "@nrwl/workspace/presets/npm.json",
     "affected": {
         "defaultBase": "main"
     },
     "namedInputs": {
-        "default": ["{projectRoot}/**/*"],
-        "production": [
+        "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
+        "public": [
             "default",
+            "{projectRoot}/dist",
             "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
             "!{projectRoot}/vite.config.ts",
             "!{projectRoot}/.eslintrc.json",
             "!{projectRoot}/.storybook/**/*",
             "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
             "!{projectRoot}/tsconfig.storybook.json"
-        ]
+        ],
+        "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"]
     },
     "tasksRunnerOptions": {
         "default": {
