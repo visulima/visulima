@@ -76,7 +76,9 @@ jobs:
                   SKIP_CHECK: "true"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build Production"
               run: "pnpm run build:prod:packages"
@@ -124,7 +126,9 @@ jobs:
                   node-version: "18.x"
 
             - name: "Update pnpm lock"
-              run: "pnpm install --no-frozen-lockfile"
+              run: "pnpm install --no-frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Commit modified files"
               uses: "stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d" # v5.0.0

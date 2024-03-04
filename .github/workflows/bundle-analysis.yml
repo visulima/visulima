@@ -78,9 +78,10 @@ jobs:
               run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
               env:
                   SKIP_CHECK: "true"
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Restore Next.js Build"
               uses: "actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2" # v4.0.0
