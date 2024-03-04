@@ -76,6 +76,7 @@ export class Router<H extends FunctionLike> {
         return new Router<H>(base, [...this.routes]);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public find(method: HttpMethod, pathname: string): FindResult<H> {
         let middleOnly = true;
 
@@ -83,8 +84,8 @@ export class Router<H extends FunctionLike> {
         const parameters: Record<string, string> = {};
         const isHead = method === "HEAD";
 
-        // eslint-disable-next-line sonarjs/cognitive-complexity
-        Object.values(this.routes).forEach((route) => {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const route of this.routes) {
             if (
                 route.method !== method &&
                 // matches any method
@@ -92,7 +93,8 @@ export class Router<H extends FunctionLike> {
                 // The HEAD method requests that the target resource transfer a representation of its state, as for a GET request...
                 !(isHead && route.method === "GET")
             ) {
-                return;
+                // eslint-disable-next-line no-continue
+                continue;
             }
 
             let matched = false;
@@ -104,7 +106,8 @@ export class Router<H extends FunctionLike> {
                 const matches = route.pattern.exec(pathname);
 
                 if (matches === null) {
-                    return;
+                    // eslint-disable-next-line no-continue
+                    continue;
                 }
 
                 // eslint-disable-next-line no-void
@@ -121,7 +124,8 @@ export class Router<H extends FunctionLike> {
                 const matches = route.pattern.exec(pathname);
 
                 if (matches === null) {
-                    return;
+                    // eslint-disable-next-line no-continue
+                    continue;
                 }
 
                 // eslint-disable-next-line no-loops/no-loops
@@ -141,6 +145,7 @@ export class Router<H extends FunctionLike> {
 
             if (matched) {
                 fns.push(
+                    // eslint-disable-next-line @typescript-eslint/no-loop-func
                     ...route.fns.flatMap((function_) => {
                         if (function_ instanceof Router) {
                             const { base } = function_;
@@ -174,7 +179,7 @@ export class Router<H extends FunctionLike> {
                     middleOnly = false;
                 }
             }
-        });
+        }
 
         return { fns, middleOnly, params: parameters };
     }

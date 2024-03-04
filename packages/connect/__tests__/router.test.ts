@@ -330,7 +330,7 @@ describe("router", () => {
             .add("GET", "/foo/*", ((request) => {
                 expect(true, '~> ran "GET /foo/*" route').toBeTruthy();
 
-                expect(request.params.wild, '~~> saw "params.wild" value').toBe("bar");
+                expect(request.params["*"], '~~> saw "params["*"]" value').toBe("bar");
                 expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 3rd").toBe(2);
