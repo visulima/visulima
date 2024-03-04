@@ -1,3 +1,11 @@
+## @visulima/readdir [2.0.12](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.11...@visulima/readdir@2.0.12) (2024-03-04)
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+
 ## @visulima/readdir [2.0.11](https://github.com/visulima/visulima/compare/@visulima/readdir@2.0.10...@visulima/readdir@2.0.11) (2024-01-19)
 
 
