@@ -9,6 +9,7 @@ on: # yamllint disable-line rule:truthy
             - "reopened"
             - "edited"
             - "synchronize"
+    merge_group: # yamllint disable-line rule:empty-values
 
 permissions: {}
 

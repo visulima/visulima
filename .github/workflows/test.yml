@@ -6,6 +6,7 @@ on: # yamllint disable-line rule:truthy
     # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
         types: ["opened", "synchronize"]
+    merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
     group: "ci-tests-${{ github.ref }}-1"
