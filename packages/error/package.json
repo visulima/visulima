@@ -97,7 +97,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@jridgewell/trace-mapping": "^0.3.23"
+        "@jridgewell/trace-mapping": "^0.3.25"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
