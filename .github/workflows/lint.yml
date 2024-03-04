@@ -81,7 +81,9 @@ jobs:
               run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -123,7 +125,9 @@ jobs:
               run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -165,7 +169,9 @@ jobs:
               run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build"
               run: "pnpm run build:packages"
@@ -234,8 +240,9 @@ jobs:
               run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
-              run: "pnpm install --frozen-lockfile"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
               env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
                   SKIP_CHECK: "true"
 
             - name: "lint"
