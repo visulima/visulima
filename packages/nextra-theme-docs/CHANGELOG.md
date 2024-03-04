@@ -1,3 +1,16 @@
+## @visulima/nextra-theme-docs [4.0.15](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.14...@visulima/nextra-theme-docs@4.0.15) (2024-03-04)
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+
+
+### Miscellaneous Chores
+
+* updated dev deps ([74bb8bb](https://github.com/visulima/visulima/commit/74bb8bb5855ee734fc35d0d5a4b7a3bc63e5144e))
+
 ## @visulima/nextra-theme-docs [4.0.14](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.13...@visulima/nextra-theme-docs@4.0.14) (2024-02-26)
 
 
