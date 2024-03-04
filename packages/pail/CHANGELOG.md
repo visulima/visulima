@@ -1,3 +1,23 @@
+## @visulima/pail [1.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.0.0...@visulima/pail@1.1.0) (2024-03-04)
+
+
+### Features
+
+* adding new gradient helper ([#324](https://github.com/visulima/visulima/issues/324)) ([49b1ab0](https://github.com/visulima/visulima/commit/49b1ab0c94b1e6c272ae41e2477b064150c9ec49))
+
+
+### Bug Fixes
+
+* fixed all found type issues ([eaa40d1](https://github.com/visulima/visulima/commit/eaa40d11f3fc056dfddcc25404bf109587ef2862))
+* minifyWhitespace on prod build, removed @tsconfig/* configs ([410cb73](https://github.com/visulima/visulima/commit/410cb737c44c445a0479bdd49b4100d5daf2d83d))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.3.0
+* **@visulima/fmt:** upgraded to 1.1.3
+
 ## @visulima/pail 1.0.0 (2024-02-28)
 
 
