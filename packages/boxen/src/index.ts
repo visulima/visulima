@@ -456,13 +456,13 @@ export const boxen = (text: string, options: Options = {}): string => {
     config.padding = getObject(options.padding ?? 0);
     config.margin = getObject(options.margin);
 
-    const { columns } = terminalSize();
-
     // replace tabs with spaces
     if (config.transformTabToSpace) {
         // eslint-disable-next-line no-param-reassign
         text = text.replaceAll("\t", " ".repeat(config.transformTabToSpace));
     }
+
+    const { columns } = terminalSize();
 
     config = determineDimensions(text, columns, config);
 

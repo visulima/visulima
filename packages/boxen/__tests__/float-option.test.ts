@@ -2,10 +2,27 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../src";
 
+vi.mock("terminal-size", () => {
+    return {
+        default: () => {
+            return {
+                columns: 80,
+                rows: 24,
+            };
+        },
+    };
+});
+
 describe("float option", () => {
     beforeEach(() => {
         vi.stubGlobal("process", {
             env: { COLUMNS: "22" },
+            stderr: {
+                rows: 24,
+            },
+            stdout: {
+                columns: 80,
+            },
         });
     });
 

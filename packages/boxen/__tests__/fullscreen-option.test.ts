@@ -1,7 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../src";
 
+vi.mock("terminal-size", () => {
+    return {
+        default: () => {
+            return {
+                columns: 80,
+                rows: 24,
+            };
+        },
+    };
+});
 describe("fullscreen option", () => {
     it("fullscreen option", () => {
         expect.assertions(1);
