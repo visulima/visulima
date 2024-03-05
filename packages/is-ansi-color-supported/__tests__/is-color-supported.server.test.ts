@@ -107,10 +107,8 @@ describe("node.JS", () => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
-            process: {
-                argv: [],
-                env: { TERM: "xterm" },
-            },
+            argv: [],
+            env: { TERM: "xterm" },
         });
 
         const received = isStdoutColorSupported();
@@ -700,11 +698,9 @@ describe("node.JS", () => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
-            process: {
-                argv: [],
-                env: { TERM: "dumb", TERM_PROGRAM: "Apple_Terminal" },
-                platform: "linux",
-            },
+            argv: [],
+            env: { TERM: "dumb", TERM_PROGRAM: "Apple_Terminal" },
+            platform: "linux",
         });
 
         const received = isStdoutColorSupported();
