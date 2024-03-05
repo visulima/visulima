@@ -18,9 +18,11 @@ export interface BorderStyle {
     vertical?: string;
 }
 
+export type BorderPosition = "bottom" | "bottomLeft" | "bottomRight" | "horizontal" | "left" | "right" | "top" | "topLeft" | "topRight";
+
 interface BaseOptions {
     backgroundColor?: (text: string) => string;
-    borderColor?: (border: string, position: "bottom" | "left" | "right" | "top") => string;
+    borderColor?: (border: string, position: BorderPosition, length: number) => string;
     float?: "center" | "left" | "right";
     footerText?: string;
     footerTextColor?: (text: string) => string;
@@ -32,7 +34,7 @@ interface BaseOptions {
 }
 
 export interface Options extends BaseOptions {
-    borderStyle?: BorderStyle | string;
+    borderStyle?: BorderStyle | "arrow" | "bold" | "classic" | "double" | "doubleSingle" | "round" | "single" | "singleDouble";
     footerAlignment?: "center" | "left" | "right";
     headerAlignment?: "center" | "left" | "right";
     margin?: Spacer | number;

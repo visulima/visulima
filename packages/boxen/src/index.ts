@@ -12,7 +12,7 @@ import terminalSize from "terminal-size";
 import wrapAnsi from "wrap-ansi";
 
 import { alignAnsi } from "./align";
-import type { BorderStyle, DimensionOptions, Options, Spacer } from "./types";
+import type { BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
 import { widestLine } from "./widest-line";
 
 const NEWLINE = "\n";
@@ -20,7 +20,7 @@ const PAD = " ";
 const NONE = "none";
 
 const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
-    (typeof detail === "number"
+    typeof detail === "number"
         ? {
               bottom: detail,
               left: detail * 3,
@@ -33,7 +33,7 @@ const getObject = (detail: Partial<Spacer> | number | undefined): Spacer =>
               right: 0,
               top: 0,
               ...detail,
-          });
+          };
 
 const getBorderWidth = (borderStyle: BorderStyle | string) => (borderStyle === NONE ? 0 : 2);
 
@@ -94,19 +94,30 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
     return characters;
 };
 
-const makeTitle = (text: string, horizontal: string, alignment: string) => {
+const wrapText = (
+    text: string,
+    colorizeText: (string: string) => string,
+    horizontal: string,
+    colorizeBorder: (string: string, length: number) => string,
+    alignment: string,
+) => {
     let title = "";
+
+    // eslint-disable-next-line no-param-reassign
+    text = colorizeText(text);
 
     const textWidth = stringWidth(text);
 
     switch (alignment) {
         case "left": {
-            title = text + horizontal.slice(textWidth);
+            title = text + colorizeBorder(horizontal.slice(textWidth), stringWidth(horizontal.slice(textWidth)));
+
             break;
         }
 
         case "right": {
-            title = horizontal.slice(textWidth) + text;
+            title = colorizeBorder(horizontal.slice(textWidth + 2), stringWidth(horizontal.slice(textWidth)) + 2) + " " + text + " ";
+
             break;
         }
 
@@ -119,12 +130,14 @@ const makeTitle = (text: string, horizontal: string, alignment: string) => {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title = horizontal.slice(1) + text + horizontal; // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title = colorizeBorder(horizontal.slice(1), stringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, stringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
 
-                title = horizontal + text + horizontal;
+                const horizontalLength = stringWidth(horizontal);
+
+                title = colorizeBorder(horizontal, horizontalLength) + text + colorizeBorder(horizontal, horizontalLength);
             }
 
             break;
@@ -225,11 +238,11 @@ const makeContentText = (
 };
 
 const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions) => {
-    const colorizeBorder = (border: string, position: "bottom" | "left" | "right" | "top") =>
-        (options.borderColor ? options.borderColor(border, position) : border);
-    const colorizeHeaderText = (title: string) => (options.headerTextColor ? options.headerTextColor(title) : title);
-    const colorizeFooterText = (title: string) => (options.footerTextColor ? options.footerTextColor(title) : title);
-    const colorizeContent = (value: string) => (options.backgroundColor ? options.backgroundColor(value) : value);
+    const colorizeBorder = (border: string, position: BorderPosition, length: number): string =>
+        options.borderColor ? options.borderColor(border, position, length) : border;
+    const colorizeHeaderText = (title: string): string => (options.headerTextColor ? options.headerTextColor(title) : title);
+    const colorizeFooterText = (title: string): string => (options.footerTextColor ? options.footerTextColor(title) : title);
+    const colorizeContent = (value: string): string => (options.backgroundColor ? options.backgroundColor(value) : value);
 
     const chars = getBorderChars(options.borderStyle) as Required<BorderStyle>;
 
@@ -250,29 +263,50 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     }
 
     if (options.borderStyle !== NONE || options.headerText) {
-        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "top");
-        let headerText = colorizeBorder(chars.top.repeat(contentWidth), "top");
+        let headerText = colorizeBorder(chars.top.repeat(contentWidth), "top", contentWidth);
 
         if (options.headerText) {
-            headerText = colorizeHeaderText(makeTitle(options.headerText, chars.top.repeat(contentWidth), options.headerAlignment));
+            headerText = wrapText(
+                options.headerText,
+                colorizeHeaderText,
+                chars.top.repeat(contentWidth),
+                (value: string, length: number) => colorizeBorder(value, "top", length),
+                options.headerAlignment,
+            );
         }
 
-        result += topBorder + headerText + colorizeBorder(chars.topRight, "top") + NEWLINE;
+        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", stringWidth(marginLeft + chars.topLeft));
+
+        result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", stringWidth(chars.topRight)) + NEWLINE;
     }
 
     const lines = content.split(NEWLINE);
 
-    result += lines.map((line) => marginLeft + colorizeBorder(chars.left, "left") + colorizeContent(line) + colorizeBorder(chars.right, "right")).join(NEWLINE);
+    result += lines
+        .map(
+            (line) =>
+                marginLeft +
+                colorizeBorder(chars.left, "left", stringWidth(chars.left)) +
+                colorizeContent(line) +
+                colorizeBorder(chars.right, "right", stringWidth(chars.right)),
+        )
+        .join(NEWLINE);
 
     if (options.borderStyle !== NONE || options.footerText) {
-        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottom");
-        let footerText = colorizeBorder(chars.bottom.repeat(contentWidth), "bottom");
+        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", stringWidth(marginLeft + chars.bottomLeft));
+        let footerText = colorizeBorder(chars.bottom.repeat(contentWidth), "bottom", contentWidth);
 
         if (options.footerText) {
-            footerText = colorizeFooterText(makeTitle(options.footerText, chars.bottom.repeat(contentWidth), options.footerAlignment));
+            footerText = wrapText(
+                options.footerText,
+                colorizeFooterText,
+                chars.bottom.repeat(contentWidth),
+                (value: string, length: number) => colorizeBorder(value, "bottom", length),
+                options.footerAlignment,
+            );
         }
 
-        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottom");
+        result += bottomBorder + footerText + colorizeBorder(chars.bottomRight, "bottomRight", stringWidth(chars.bottomRight));
     }
 
     if (options.margin.bottom) {

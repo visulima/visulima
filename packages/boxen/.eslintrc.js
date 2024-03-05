@@ -28,6 +28,7 @@ module.exports = {
             rules: {
                 "no-loops/no-loops": "off",
                 "no-plusplus": "off",
+                "prefer-template": "off",
             },
         },
         {

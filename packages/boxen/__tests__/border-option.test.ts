@@ -1,15 +1,43 @@
+import { blue, green, red, yellow } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
-import { red } from "@visulima/colorize";
 
 import { boxen } from "../src";
 
 describe("border option", () => {
-    it("border color (red)", () => {
+    it("should support border color (red)", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
             borderColor: (border: string) => red(border),
+        });
+
+        expect(box).toMatchSnapshot();
+    });
+
+    it("should support multi border color (red)", () => {
+        expect.assertions(1);
+
+        const box = boxen("foo", {
+            borderColor: (border, position): string => {
+                if (position === "top") {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    return red(border);
+                }
+
+                if (position === "left") {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    return yellow(border);
+                }
+
+                if (position === "right") {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    return green(border);
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                return blue(border);
+            },
         });
 
         expect(box).toMatchSnapshot();
@@ -22,7 +50,7 @@ describe("border option", () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
             // @ts-ignore - intentional error for testing
             boxen("foo", { borderColor: "greasy-white" });
-        }).toThrow("")
+        }).toThrow("");
     });
 
     it("border style (single)", () => {
@@ -129,6 +157,6 @@ describe("border option", () => {
 
         expect(() => {
             boxen("foo", { borderStyle: "shakenSnake" });
-        }).toThrow("s")
+        }).toThrow("s");
     });
 });
