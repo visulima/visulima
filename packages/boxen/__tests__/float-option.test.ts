@@ -1,8 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../src";
 
 describe("float option", () => {
+    beforeEach(() => {
+        vi.stubGlobal("process", {
+            env: { COLUMNS: "22" },
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it("float option (left)", () => {
         expect.assertions(1);
 
@@ -64,10 +74,6 @@ describe("float option", () => {
     it("float option (center) when content > columns", () => {
         expect.assertions(2);
 
-        vi.stubGlobal("process", {
-            env: { COLUMNS: "22" },
-        });
-
         const longContent = "foobar".repeat(Number(process.env["COLUMNS"]));
 
         expect(() => {
@@ -75,8 +81,6 @@ describe("float option", () => {
                 float: "center",
             });
         }).not.toThrow();
-
-        vi.unstubAllGlobals();
 
         const box = boxen(longContent, {
             float: "center",
@@ -88,10 +92,6 @@ describe("float option", () => {
     it("float option (right) when content > columns", () => {
         expect.assertions(2);
 
-        vi.stubGlobal("process", {
-            env: { COLUMNS: "22" },
-        });
-
         const longContent = "foobar".repeat(Number(process.env["COLUMNS"]));
 
         expect(() => {
@@ -99,8 +99,6 @@ describe("float option", () => {
                 float: "right",
             });
         }).not.toThrow();
-
-        vi.unstubAllGlobals();
 
         const box = boxen(longContent, {
             float: "right",

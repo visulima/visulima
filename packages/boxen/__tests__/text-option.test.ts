@@ -10,7 +10,7 @@ describe("text option", () => {
     it("textColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { textColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -19,7 +19,7 @@ describe("text option", () => {
     it("headerTextColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { headerText: "Header Text", headerTextColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -28,7 +28,7 @@ describe("text option", () => {
     it("footerTextColor option", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const box = boxen("foo", { footerText: "Footer Text", footerTextColor: (text: string) => bgRed(text) });
 
         expect(box).toMatchSnapshot();
@@ -320,7 +320,7 @@ describe("text option", () => {
                 headerText: "very long title",
                 width: 3,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 3");
 
         // Space for only one character
         expect(
@@ -328,14 +328,14 @@ describe("text option", () => {
                 headerText: "very long title",
                 width: 5,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 5");
 
         expect(
             boxen("foo", {
                 headerText: "very long title",
                 width: 20,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 20");
     });
 
     it("headerText option with border style (none)", () => {
@@ -411,7 +411,7 @@ describe("text option", () => {
                 footerText: "very long title",
                 width: 3,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 3");
 
         // Space for only one character
         expect(
@@ -419,14 +419,14 @@ describe("text option", () => {
                 footerText: "very long title",
                 width: 5,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 5");
 
         expect(
             boxen("foo", {
                 footerText: "very long title",
                 width: 20,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 20");
     });
 
     it("footerText option with border style (none)", () => {

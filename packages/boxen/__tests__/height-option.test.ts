@@ -11,14 +11,14 @@ describe("height option", () => {
             boxen("foo", {
                 height: 5,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("height 5");
 
         // Creates a 1 line box, cropping the other lines
         expect(
             boxen("foo bar\nfoo bar", {
                 height: 3,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("height 3");
     });
 
     it("height option with padding + margin", () => {
@@ -52,9 +52,9 @@ describe("height option", () => {
         // Creates a wide box for little text
         const box = boxen("foo", {
             height: 5,
-            width: 20,
             margin: 2,
             padding: 1,
+            width: 20,
         });
 
         expect(box).toMatchSnapshot();
@@ -64,8 +64,8 @@ describe("height option", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
-            height: 3,
             borderStyle: "none",
+            height: 3,
         });
 
         expect(box).toMatchSnapshot();

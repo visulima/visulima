@@ -53,6 +53,20 @@ exports[`height option > height option with width 1`] = `
 └──────────────────┘"
 `;
 
+exports[`height option > height option works > height 3 1`] = `
+"┌───────┐
+│foo bar│
+└───────┘"
+`;
+
+exports[`height option > height option works > height 5 1`] = `
+"┌───┐
+│foo│
+│   │
+│   │
+└───┘"
+`;
+
 exports[`height option > height option works 1`] = `
 "┌───┐
 │foo│

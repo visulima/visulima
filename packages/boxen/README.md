@@ -482,6 +482,13 @@ Values: `'left'` `'center'` `'right'`
 
 Align the text in the box based on the widest line.
 
+##### transformTabToSpace
+
+Type: `false | number`\
+Default: `'4'`
+
+Transform tab characters to spaces. Set to `false` to disable.
+
 ## Supported Node.js Versions
 
 26.3 15:00

@@ -8,7 +8,7 @@ describe("border option", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             borderColor: (border: string) => red(border),
         });
 
@@ -21,21 +21,21 @@ describe("border option", () => {
         const box = boxen("foo", {
             borderColor: (border, position): string => {
                 if (position === "top") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return red(border);
                 }
 
                 if (position === "left") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return yellow(border);
                 }
 
                 if (position === "right") {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return green(border);
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return blue(border);
             },
         });

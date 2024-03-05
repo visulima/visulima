@@ -43,25 +43,25 @@ describe("margin option", () => {
         expect.assertions(3);
 
         // Plenty space
-        let box = boxen("x".repeat(process.env.COLUMNS / 2 - 2), {
+        let box = boxen("x".repeat(Number(process.env["COLUMNS"]) / 2 - 2), {
             margin: 2,
         });
 
-        expect(box).toMatchSnapshot();
+        expect(box).toMatchSnapshot("columns / 2 - 2");
 
         // A bit of space
-        box = boxen("x".repeat(process.env.COLUMNS - 6 - 2), {
+        box = boxen("x".repeat(Number(process.env["COLUMNS"]) - 6 - 2), {
             margin: 2,
         });
 
-        expect(box).toMatchSnapshot();
+        expect(box).toMatchSnapshot("columns - 6 - 2");
 
         // No room
-        box = boxen("ax".repeat(process.env.COLUMNS - 2), {
+        box = boxen("ax".repeat(Number(process.env["COLUMNS"]) - 2), {
             margin: 2,
         });
 
-        expect(box).toMatchSnapshot();
+        expect(box).toMatchSnapshot("columns - 2");
     });
 
     it("margin option with border style (none)", () => {

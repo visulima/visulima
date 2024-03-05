@@ -37,6 +37,36 @@ exports[`margin option > margin option works 1`] = `
 "
 `;
 
+exports[`margin option > margin proportionally decreases when content <= columns > columns / 2 - 2 1`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;
+
+exports[`margin option > margin proportionally decreases when content <= columns > columns - 2 1`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;
+
+exports[`margin option > margin proportionally decreases when content <= columns > columns - 6 - 2 1`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;
+
 exports[`margin option > margin proportionally decreases when content <= columns 1`] = `
 "
 

@@ -175,7 +175,7 @@ const makeContentText = (
             const createdLines = wrapAnsi(line, max, { hard: true }) as string;
             const alignedLines = alignAnsi(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
-            const longestLength = Math.max(...alignedLinesArray.map((s) => stringWidth(s)));
+            const longestLength = Math.max(...alignedLinesArray.map((s) => stringWidth(s) as number));
 
             // eslint-disable-next-line no-restricted-syntax
             for (const alignedLine of alignedLinesArray) {
@@ -237,7 +237,8 @@ const makeContentText = (
     return lines.join(NEWLINE);
 };
 
-const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions) => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const boxContent = (content: string, contentWidth: number, columnsWidth: number, options: DimensionOptions): string => {
     const colorizeBorder = (border: string, position: BorderPosition, length: number): string =>
         options.borderColor ? options.borderColor(border, position, length) : border;
     const colorizeHeaderText = (title: string): string => (options.headerTextColor ? options.headerTextColor(title) : title);
@@ -390,8 +391,8 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     }
 
     // If fixed width is provided, use it or content width as reference
-    // eslint-disable-next-line no-param-reassign
-    options.width = options.width ?? widest;
+    // eslint-disable-next-line no-param-reassign,@typescript-eslint/prefer-nullish-coalescing
+    options.width = options.width || widest;
 
     if (!widthOverride) {
         if (options.margin.left && options.margin.right && options.width > maxWidth) {
@@ -448,6 +449,7 @@ export const boxen = (text: string, options: Options = {}): string => {
         footerAlignment: "right",
         headerAlignment: "left",
         textAlignment: "left",
+        transformTabToSpace: 4,
         ...options,
     } as DimensionOptions;
 
@@ -455,6 +457,12 @@ export const boxen = (text: string, options: Options = {}): string => {
     config.margin = getObject(options.margin);
 
     const { columns } = terminalSize();
+
+    // replace tabs with spaces
+    if (config.transformTabToSpace) {
+        // eslint-disable-next-line no-param-reassign
+        text = text.replaceAll("\t", " ".repeat(config.transformTabToSpace));
+    }
 
     config = determineDimensions(text, columns, config);
 

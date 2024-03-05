@@ -26,6 +26,19 @@ exports[`padding option > width option with padding + margin 1`] = `
 "
 `;
 
+exports[`padding option > width option works > width 10 1`] = `
+"┌────────┐
+│foo bar │
+│foo bar │
+└────────┘"
+`;
+
+exports[`padding option > width option works > width 20 1`] = `
+"┌──────────────────┐
+│foo               │
+└──────────────────┘"
+`;
+
 exports[`padding option > width option works 1`] = `
 "┌──────────────────┐
 │foo               │

@@ -11,14 +11,14 @@ describe("padding option", () => {
             boxen("foo", {
                 width: 20,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 20");
 
         // Creates a small box for a lot of text
         expect(
             boxen("foo bar foo bar", {
                 width: 10,
             }),
-        ).toMatchSnapshot();
+        ).toMatchSnapshot("width 10");
     });
 
     it("width option with padding + margin", () => {
@@ -26,9 +26,9 @@ describe("padding option", () => {
 
         // Creates a wide box for little text
         const box = boxen("foo", {
-            width: 20,
             margin: 2,
             padding: 1,
+            width: 20,
         });
 
         expect(box).toMatchSnapshot();
@@ -39,8 +39,8 @@ describe("padding option", () => {
 
         // Should disable the paddings
         const box = boxen("foo", {
-            width: 6,
             padding: 3,
+            width: 6,
         });
 
         expect(box).toMatchSnapshot();
@@ -50,8 +50,8 @@ describe("padding option", () => {
         expect.assertions(1);
 
         const box = boxen("foo", {
-            width: 3,
             borderStyle: "none",
+            width: 3,
         });
 
         expect(box).toMatchSnapshot();

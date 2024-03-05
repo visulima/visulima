@@ -6,12 +6,19 @@
         "anolilab",
         "visulima",
         "ansi",
-        "align",
         "cli",
-        "center",
-        "right",
-        "left",
-        "pad"
+        "box",
+        "gradient",
+        "boxes",
+        "boxen",
+        "box",
+        "terminal",
+        "term",
+        "console",
+        "ascii",
+        "unicode",
+        "border",
+        "text"
     ],
     "homepage": "https://www.visulima.com/docs/package/boxen",
     "repository": {
@@ -76,7 +83,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "cli-boxes":  "^3.0.0",
+        "cli-boxes": "^3.0.0",
         "terminal-size": "^4.0.0",
         "string-width": "^7.1.0",
         "wrap-ansi": "^9.0.0"

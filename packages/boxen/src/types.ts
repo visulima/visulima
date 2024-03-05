@@ -8,6 +8,7 @@ interface BaseOptions {
     headerTextColor?: (text: string) => string;
     height?: number;
     textColor?: (text: string) => string;
+    transformTabToSpace?: number | false;
     width?: number;
 }
 

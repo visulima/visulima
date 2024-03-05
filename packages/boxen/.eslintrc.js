@@ -22,6 +22,14 @@ module.exports = {
             rules: {},
         },
         {
+            files: ["*.test.ts"],
+            rules: {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+            },
+        },
+        {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
@@ -32,8 +40,13 @@ module.exports = {
             },
         },
         {
-            files: ["*.js", "*.jsx"],
-            rules: {},
+            files: ["index.ts"],
+            rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off"
+            },
         },
         {
             files: ["*.mdx"],

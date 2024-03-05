@@ -1,5 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`text option > footerText + width option > width 3 1`] = `
+"┌─┐
+│f│
+│o│
+│o│
+└ very long title ┘"
+`;
+
+exports[`text option > footerText + width option > width 5 1`] = `
+"┌───┐
+│foo│
+└ very long title ┘"
+`;
+
+exports[`text option > footerText + width option > width 20 1`] = `
+"┌──────────────────┐
+│foo               │
+└─ very long title ┘"
+`;
+
 exports[`text option > footerText + width option 1`] = `
 "┌─┐
 │f│
@@ -53,6 +73,26 @@ exports[`text option > footerTextColor option 1`] = `
 "┌───┐
 │foo│
 └ [41mFooter Text[49m ┘"
+`;
+
+exports[`text option > headerText + width option > width 3 1`] = `
+"┌─┐
+│f│
+│o│
+│o│
+└─┘"
+`;
+
+exports[`text option > headerText + width option > width 5 1`] = `
+"┌ v ┐
+│foo│
+└───┘"
+`;
+
+exports[`text option > headerText + width option > width 20 1`] = `
+"┌ very long title ─┐
+│foo               │
+└──────────────────┘"
 `;
 
 exports[`text option > headerText + width option 1`] = `
