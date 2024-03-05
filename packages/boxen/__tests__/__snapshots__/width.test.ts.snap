@@ -1,0 +1,60 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`padding option > width option with big padding 1`] = `
+"┌────┐
+│    │
+│    │
+│    │
+│foo │
+│    │
+│    │
+│    │
+└────┘"
+`;
+
+exports[`padding option > width option with border style (none) 1`] = `"foo"`;
+
+exports[`padding option > width option with padding + margin 1`] = `
+"
+
+      ┌──────────────────┐
+      │                  │
+      │   foo            │
+      │                  │
+      └──────────────────┘
+
+"
+`;
+
+exports[`padding option > width option works > width 10 1`] = `
+"┌────────┐
+│foo bar │
+│foo bar │
+└────────┘"
+`;
+
+exports[`padding option > width option works > width 20 1`] = `
+"┌──────────────────┐
+│foo               │
+└──────────────────┘"
+`;
+
+exports[`padding option > width option works > width 66 1`] = `
+"┌────────┐
+│foo bar │
+│foo bar │
+└────────┘"
+`;
+
+exports[`padding option > width option works 1`] = `
+"┌──────────────────┐
+│foo               │
+└──────────────────┘"
+`;
+
+exports[`padding option > width option works 2`] = `
+"┌────────┐
+│foo bar │
+│foo bar │
+└────────┘"
+`;

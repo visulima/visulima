@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`padding option > padding option advanced 1`] = `
+"┌──────────────────┐
+│     foo          │
+│                  │
+│                  │
+└──────────────────┘"
+`;
+
+exports[`padding option > padding option with border style (none) 1`] = `
+"     
+ foo 
+     "
+`;
+
+exports[`padding option > padding option works 1`] = `
+"┌───────────────┐
+│               │
+│               │
+│      foo      │
+│               │
+│               │
+└───────────────┘"
+`;
