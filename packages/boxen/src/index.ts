@@ -242,7 +242,7 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
         options.borderColor ? options.borderColor(border, position, length) : border;
     const colorizeHeaderText = (title: string): string => (options.headerTextColor ? options.headerTextColor(title) : title);
     const colorizeFooterText = (title: string): string => (options.footerTextColor ? options.footerTextColor(title) : title);
-    const colorizeContent = (value: string): string => (options.backgroundColor ? options.backgroundColor(value) : value);
+    const colorizeContent = (value: string): string => (options.textColor ? options.textColor(value) : value);
 
     const chars = getBorderChars(options.borderStyle) as Required<BorderStyle>;
 
@@ -437,7 +437,7 @@ export const boxen = (text: string, options: Options = {}): string => {
         throw new Error(`"borderColor" is not a valid function`);
     }
 
-    if (options.backgroundColor !== undefined && typeof options.backgroundColor !== "function") {
+    if (options.textColor !== undefined && typeof options.textColor !== "function") {
         throw new Error(`"backgroundColor" is not a valid function`);
     }
 

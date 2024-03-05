@@ -156,6 +156,8 @@ describe("border option", () => {
         expect.assertions(1);
 
         expect(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
+            // @ts-ignore - intentional error for testing
             boxen("foo", { borderStyle: "shakenSnake" });
         }).toThrow("s");
     });

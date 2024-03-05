@@ -1,0 +1,68 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`margin option > margin option with border style (none) 1`] = `
+"
+ foo
+"
+`;
+
+exports[`margin option > margin option with custom margins 1`] = `
+"
+  ┌───┐
+  │foo│
+  └───┘
+
+
+
+"
+`;
+
+exports[`margin option > margin option with padding 1`] = `
+"
+   ┌─────────┐
+   │         │
+   │   foo   │
+   │         │
+   └─────────┘
+"
+`;
+
+exports[`margin option > margin option works 1`] = `
+"
+
+      ┌───┐
+      │foo│
+      └───┘
+
+"
+`;
+
+exports[`margin option > margin proportionally decreases when content <= columns 1`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;
+
+exports[`margin option > margin proportionally decreases when content <= columns 2`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;
+
+exports[`margin option > margin proportionally decreases when content <= columns 3`] = `
+"
+
+      ┌┐
+      ││
+      └┘
+
+"
+`;

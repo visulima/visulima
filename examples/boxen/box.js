@@ -1,14 +1,18 @@
 import { boxen } from "@visulima/boxen";
-import colorize, { red, green, yellow, blue } from "@visulima/colorize";
+import colorize, {red, green, yellow, blue, bgRed} from "@visulima/colorize";
 import { GradientBuilder } from "@visulima/colorize/gradient";
 
 console.log("\n----------- Box with a red text -----------");
 
-console.log(boxen(red("Hello, world!")));
+console.log(boxen("Hello, world!", { textColor: (text) => red(text) }));
 
 console.log("\n----------- Box with a red boarder -----------");
 
 console.log(boxen("Hello, world!", { borderColor: (border) => red(border) }));
+
+console.log("\n----------- Red Box -----------");
+
+console.log(boxen("Hello, world!", { textColor: (text) => bgRed.white(text), borderColor: (border) => bgRed.white(border) }));
 
 console.log("\n----------- Box with a multi color boarder -----------");
 

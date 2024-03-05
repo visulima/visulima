@@ -1,8 +1,17 @@
 <div align="center">
-  <h3>Visulima boxen (util.format)</h3>
-  <p>
-  Util.format-like unescaped string formatting utility based on <a href="https://github.com/pinojs/quick-format-unescaped">quick-format-unescaped</a>.
-  </p>
+  <h3>Visulima boxen</h3>
+
+  <img src="./__assets__/boxen.png" width="100%" height="100%" alt="Boxen Examples">
+
+  <p>Create boxes in the terminal, built on top of
+
+[cli-boxes](https://www.npmjs.com/package/cli-boxes),
+[string-width](https://www.npmjs.com/package/string-width),
+[terminal-size](https://www.npmjs.com/package/terminal-size) and
+[wrap-ansi](https://www.npmjs.com/package/wrap-ansi)
+
+</p>
+
 </div>
 
 <br />
@@ -42,76 +51,440 @@ pnpm add @visulima/boxen
 ## Usage
 
 ```typescript
-import { format } from "@visulima/boxen";
+import { boxen } from "@visulima/boxen";
 
-const formatted = format("hello %s %j %d", ["world", [{ obj: true }, 4, { another: "obj" }]]);
+console.log(boxen("unicorn", { padding: 1 }));
+/*
+┌─────────────┐
+│             │
+│   unicorn   │
+│             │
+└─────────────┘
+*/
 
-console.log(formatted); // hello world [{"obj":true},4,{"another":"obj"}] NaN
+console.log(boxen("unicorn", { padding: 1, margin: 1, borderStyle: "double" }));
+/*
+   ╔═════════════╗
+   ║             ║
+   ║   unicorn   ║
+   ║             ║
+   ╚═════════════╝
+
+*/
+
+console.log(
+    boxen("unicorns love rainbows", {
+        headerText: "magical",
+        headerAlignment: "center",
+    }),
+);
+/*
+┌────── magical ───────┐
+│unicorns love rainbows│
+└──────────────────────┘
+*/
+
+console.log(
+    boxen("unicorns love rainbows", {
+        headerText: "magical",
+        headerAlignment: "center",
+        footerText: "magical",
+        footerAlignment: "center",
+    }),
+);
+/*
+┌────── magical ───────┐
+│unicorns love rainbows│
+└────── magical ───────┘
+*/
 ```
 
-### format(boxen, parameters, [options])
+Check more examples in the [examples/boxen](./examples/boxen) folder.
 
-#### boxen
+## API
 
-A `printf`-like format string. Example: `'hello %s %j %d'`
+### boxen(text, options?)
 
-#### parameters
+#### text
 
-Array of values to be inserted into the `format` string. Example: `['world', {obj:true}]`
+Type: `string`
 
-#### options.stringify
+Text inside the box.
 
-Passing an options object as the third parameter with a `stringify` will mean
-any objects will be passed to the supplied function instead of an the
-internal `tryStringify` function. This can be useful when using augmented
-capability serializers such as [`fast-safe-stringify`](http://github.com/davidmarkclements/fast-safe-stringify) or [`fast-redact`](http://github.com/davidmarkclements/fast-redact).
+#### options
 
-> uses `JSON.stringify` instead of `util.inspect`, this means functions _will not be serialized_.
+Type: `object`
 
-### build
+##### borderColor
 
-With the `build` function you can generate a `format` function that is optimized for your use case.
+Type: `(border: string, position: BorderPosition, length: number) => string`\
 
-```typescript
-import { build } from "@visulima/boxen";
+Color of the box border.
 
-const format = build({
-    formatters: {
-        // Pass in whatever % interpolator you want, as long as it's a single character;
-        // in this case, it's `t`.
-        // The formatter should be a function that takes in a value and returns the formatted value.
-        t: (time) => new Date(time).toLocaleString(),
-    },
-});
+```js
+import { boxen } from "@visulima/boxen";
+import { red, green, yellow, blue } from "@visulima/colorize";
 
-const formatted = format("hello %s at %t", ["world", Date.now()]);
+console.log(
+    boxen("Hello, world!", {
+        borderColor: (border, position) => {
+            if (["top", "topLeft", "topRight"].includes(position)) {
+                return red(border);
+            }
 
-console.log(formatted); // hello world at 1/1/1970, 1:00:00 AM
+            if (position === "left") {
+                return yellow(border);
+            }
+
+            if (position === "right") {
+                return green(border);
+            }
+
+            if (["bottom", "bottomLeft", "bottomRight"].includes(position)) {
+                return blue(border);
+            }
+        },
+    }),
+);
+````
+
+##### borderStyle
+
+Type: `string | object`\
+Default: `'single'`\
+Values:
+
+-   `'single'`
+
+```
+┌───┐
+│foo│
+└───┘
 ```
 
-## Format Specifiers
+-   `'double'`
 
-Format specifiers are dependent on the type of data-elements that are to be added to the string.
-The most commonly used format specifiers supported are:
+```
+╔═══╗
+║foo║
+╚═══╝
+```
 
-| Specifier | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| %s        | Converts all values except for `BigInt`, `-0` and `Object` to a string.                                                                                                                                                                                                                                                                                                                                                                                                       |
-| %d        | Used to convert any value to `Number` of any type other than `BigInt` and `Symbol`.                                                                                                                                                                                                                                                                                                                                                                                           |
-| %i        | Used for all values except `BigInt` and `Symbol`.                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| %f        | Used to convert a value to type `Float`. It does not support conversion of values of type `Symbol`.                                                                                                                                                                                                                                                                                                                                                                           |
-| %j        | Used to add JSON data. If a circular reference is present, the string ‘[Circular]’ is added instead.                                                                                                                                                                                                                                                                                                                                                                          |
-| %o        | Adds the string representation of an object. Note that it does not contain non-enumerable characteristics of the object.                                                                                                                                                                                                                                                                                                                                                      |
-| %O        | Adds the string representation of an object. Note that it will contain all characteristics of the object, including non-enumerable ones.                                                                                                                                                                                                                                                                                                                                      |
-| %c        | Will parse basic CSS from the substitution subject like `color: red` into ANSI color codes. These codes will then be placed where the `%c` specifier is. Supported CSS properties are `color`, `background-color`, `font-weight`, `font-style`, `text-decoration`, `text-decoration-color`, and `text-decoration-line`. Unsupported CSS properties are ignored. An empty `%c` CSS string substitution will become an ANSI style reset. If color is disabled, `%c` is ignored. |
-| %%        | Used to add the % sign.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-   `'round'` (`'single'` sides with round corners)
 
-## Benchmark
+```
+╭───╮
+│foo│
+╰───╯
+```
 
-[See benchmark](./__bench__/README.md)
+-   `'bold'`
+
+```
+┏━━━┓
+┃foo┃
+┗━━━┛
+```
+
+-   `'singleDouble'` (`'single'` on top and bottom, `'double'` on right and left)
+
+```
+╓───╖
+║foo║
+╙───╜
+```
+
+-   `'doubleSingle'` (`'double'` on top and bottom, `'single'` on right and left)
+
+```
+╒═══╕
+│foo│
+╘═══╛
+```
+
+-   `'classic'`
+
+```
++---+
+|foo|
++---+
+```
+
+-   `'arrow'`
+
+```
+↘↓↓↓↙
+→foo←
+↗↑↑↑↖
+```
+
+-   `'none'`
+
+```
+foo
+```
+
+Style of the box border.
+
+Can be any of the above predefined styles or an object with the following keys:
+
+```js
+{
+    topLeft: '+',
+    topRight: '+',
+    bottomLeft: '+',
+    bottomRight: '+',
+    top: '-',
+    bottom: '-',
+    left: '|',
+    right: '|'
+}
+```
+
+##### headerText
+
+Type: `string`
+
+Display a title at the top of the box.
+If needed, the box will horizontally expand to fit the text.
+
+Example:
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("foo bar", { headerText: "example" }));
+
+/*
+┌ example ┐
+│foo bar  │
+└─────────┘
+*/
+```
+
+##### headerColor
+
+Type: `(text: string) => string`
+
+```js
+import { red } from "@visulima/colorize"
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("foo bar", {
+        headerText: "example",
+        headerColor: (text) => red(text),
+    }),
+);
+```
+
+##### headerAlignment
+
+Type: `string`\
+Default: `'left'`
+
+Align the text in the top bar.
+
+Values:
+
+-   `'left'`
+
+```text
+┌ example ──────┐
+│foo bar foo bar│
+└───────────────┘
+```
+
+-   `'center'`
+
+```text
+┌─── example ───┐
+│foo bar foo bar│
+└───────────────┘
+```
+
+-   `'right'`
+
+```text
+┌────── example ┐
+│foo bar foo bar│
+└───────────────┘
+```
+
+##### footerText
+
+Type: `string`
+
+Display a text at the bottom of the box.
+If needed, the box will horizontally expand to fit the text.
+
+Example:
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("foo bar", { footerText: "example" }));
+
+/*
+┌─────────┐
+│foo bar  │
+└ example ┘
+*/
+```
+##### footerColor
+
+Type: `(text: string) => string`
+
+```js
+import { red } from "@visulima/colorize"
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("foo bar", {
+        footerText: "example",
+        footerColor: (text) => red(text),
+    }),
+);
+```
+
+##### footerAlignment
+
+Type: `string`\
+Default: `'left'`
+
+Align the footer text.
+
+Values:
+
+-   `'left'`
+
+```text
+┌───────────────┐
+│foo bar foo bar│
+└ Footer Text ──┘
+```
+
+-   `'center'`
+
+```text
+┌───────────────┐
+│foo bar foo bar│
+└─── example ───┘
+```
+
+-   `'right'`
+
+```text
+┌───────────────┐
+│foo bar foo bar│
+└────── example ┘
+```
+
+##### width
+
+Type: `number`
+
+Set a fixed width for the box.
+
+_Note:_ This disables terminal overflow handling and may cause the box to look broken if the user's terminal is not wide enough.
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("foo bar", { width: 15 }));
+// ┌─────────────┐
+// │foo bar      │
+// └─────────────┘
+```
+
+##### height
+
+Type: `number`
+
+Set a fixed height for the box.
+
+_Note:_ This option will crop overflowing content.
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("foo bar", { height: 5 }));
+// ┌───────┐
+// │foo bar│
+// │       │
+// │       │
+// └───────┘
+```
+
+##### fullscreen
+
+Type: `boolean | (width: number, height: number) => [width: number, height: number]`
+
+Whether or not to fit all available space within the terminal.
+
+Pass a callback function to control box dimensions:
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("foo bar", {
+        fullscreen: (width, height) => [width, height - 1],
+    }),
+);
+```
+
+##### padding
+
+Type: `number | object`\
+Default: `0`
+
+Space between the text and box border.
+
+Accepts a number or an object with any of the `top`, `right`, `bottom`, `left` properties. When a number is specified, the left/right padding is 3 times the top/bottom to make it look nice.
+
+##### margin
+
+Type: `number | object`\
+Default: `0`
+
+Space around the box.
+
+Accepts a number or an object with any of the `top`, `right`, `bottom`, `left` properties. When a number is specified, the left/right margin is 3 times the top/bottom to make it look nice.
+
+##### float
+
+Type: `string`\
+Default: `'left'`\
+Values: `'right'` `'center'` `'left'`
+
+Float the box on the available terminal screen space.
+
+##### textColor
+
+Type: `(text: string) => string`\
+```js
+import { bgRed } from "@visulima/colorize"
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("foo bar", {
+        textColor: (text) => bgRed(text),
+    }),
+);
+```
+
+##### textAlignment
+
+Type: `string`\
+Default: `'left'`\
+Values: `'left'` `'center'` `'right'`
+
+Align the text in the box based on the widest line.
 
 ## Supported Node.js Versions
 
+26.3 15:00
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
 Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
@@ -123,7 +496,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [quick-format-unescaped](https://github.com/pinojs/quick-format-unescaped)
+-   [boxen](https://github.com/sindresorhus/boxen)
+-   [ansi-align](https://github.com/nexdrew/ansi-align)
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
