@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`float option > float option (center) 1`] = `
+"                                     ┌───┐
+                                     │foo│
+                                     └───┘"
+`;
+
+exports[`float option > float option (center) when content > columns 1`] = `
+"┌──────────────────────────────────────────────────────────────────────────────┐
+│foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar│
+│foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar                        │
+└──────────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`float option > float option (center) with margin 1`] = `
+"
+
+
+
+                                                                           ┌───┐
+                                                                           │foo│
+                                                                           └───┘"
+`;
+
+exports[`float option > float option (left) 1`] = `
+"┌───┐
+│foo│
+└───┘"
+`;
+
+exports[`float option > float option (right) 1`] = `
+"                                                                           ┌───┐
+                                                                           │foo│
+                                                                           └───┘"
+`;
+
+exports[`float option > float option (right) when content > columns 1`] = `
+"┌──────────────────────────────────────────────────────────────────────────────┐
+│foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar│
+│foobarfoobarfoobarfoobarfoobarfoobarfoobarfoobarfoobar                        │
+└──────────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`float option > float option (right) with margin 1`] = `
+"                                                                         ┌───┐
+                                                                         │foo│
+                                                                         └───┘
+
+
+
+
+"
+`;
