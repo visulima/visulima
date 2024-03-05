@@ -46,7 +46,7 @@ describe("boxen", () => {
     it("box not overflowing terminal", () => {
         expect.assertions(1);
 
-        const box = boxen("foo".repeat(Number(process.env["COLUMNS"])));
+        const box = boxen("foo".repeat(22));
 
         expect(box).toMatchSnapshot();
     });
@@ -54,7 +54,7 @@ describe("boxen", () => {
     it("box not overflowing terminal with padding", () => {
         expect.assertions(1);
 
-        const box = boxen("foo".repeat(Number(process.env["COLUMNS"])), {
+        const box = boxen("foo".repeat(22), {
             padding: 3,
         });
 
@@ -64,7 +64,7 @@ describe("boxen", () => {
     it("box not overflowing terminal with words", () => {
         expect.assertions(1);
 
-        const box = boxen("foo ".repeat(Number(process.env["COLUMNS"])));
+        const box = boxen("foo ".repeat(22));
 
         expect(box).toMatchSnapshot();
     });
@@ -72,7 +72,7 @@ describe("boxen", () => {
     it("box not overflowing terminal with words + padding", () => {
         expect.assertions(1);
 
-        const box = boxen("foo ".repeat(Number(process.env["COLUMNS"])), {
+        const box = boxen("foo ".repeat(22), {
             padding: 2,
         });
 
@@ -82,7 +82,7 @@ describe("boxen", () => {
     it("box not overflowing terminal with words + padding + margin", () => {
         expect.assertions(1);
 
-        const box = boxen("foo ".repeat(Number(process.env["COLUMNS"])), {
+        const box = boxen("foo ".repeat(22), {
             margin: 1,
             padding: 2,
         });

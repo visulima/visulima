@@ -74,7 +74,7 @@ describe("float option", () => {
     it("float option (center) when content > columns", () => {
         expect.assertions(2);
 
-        const longContent = "foobar".repeat(Number(process.env["COLUMNS"]));
+        const longContent = "foobar".repeat(22);
 
         expect(() => {
             boxen(longContent, {
@@ -92,7 +92,7 @@ describe("float option", () => {
     it("float option (right) when content > columns", () => {
         expect.assertions(2);
 
-        const longContent = "foobar".repeat(Number(process.env["COLUMNS"]));
+        const longContent = "foobar".repeat(22);
 
         expect(() => {
             boxen(longContent, {
