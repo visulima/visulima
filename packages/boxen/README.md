@@ -146,7 +146,7 @@ console.log(
         },
     }),
 );
-````
+```
 
 ##### borderStyle
 
@@ -267,7 +267,7 @@ console.log(boxen("foo bar", { headerText: "example" }));
 Type: `(text: string) => string`
 
 ```js
-import { red } from "@visulima/colorize"
+import { red } from "@visulima/colorize";
 import { boxen } from "@visulima/boxen";
 
 console.log(
@@ -331,12 +331,13 @@ console.log(boxen("foo bar", { footerText: "example" }));
 └ example ┘
 */
 ```
+
 ##### footerColor
 
 Type: `(text: string) => string`
 
 ```js
-import { red } from "@visulima/colorize"
+import { red } from "@visulima/colorize";
 import { boxen } from "@visulima/boxen";
 
 console.log(
@@ -463,8 +464,9 @@ Float the box on the available terminal screen space.
 ##### textColor
 
 Type: `(text: string) => string`\
+
 ```js
-import { bgRed } from "@visulima/colorize"
+import { bgRed } from "@visulima/colorize";
 import { boxen } from "@visulima/boxen";
 
 console.log(
