@@ -1,5 +1,4 @@
 import type { Pail } from "@visulima/pail/server";
-import hardRejection from "hard-rejection";
 
 const registerExceptionHandler = (logger: Pail<never, string>): void => {
     // we want to see real exceptions with backtraces and stuff
@@ -23,12 +22,6 @@ const registerExceptionHandler = (logger: Pail<never, string>): void => {
         }
 
         process.exit(1);
-    });
-
-    hardRejection((stack?: string) => {
-        if (stack) {
-            logger.error(stack);
-        }
     });
 };
 
