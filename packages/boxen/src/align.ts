@@ -57,7 +57,7 @@ export const alignAnsi = (
                 width: width as number,
             };
         })
-        .map((object) => Array.from({length: widthDiffFunction(maxWidth, object.width) + 1}).join(pad) + object.str);
+        .map((object) => Array.from({ length: widthDiffFunction(maxWidth, object.width) + 1 }).join(pad) + object.str);
 
     return returnString ? text.join(split) : text;
 };

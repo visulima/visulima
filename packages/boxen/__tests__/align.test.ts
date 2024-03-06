@@ -1,5 +1,5 @@
-import { bold, cyan, green,red } from "@visulima/colorize";
-import { describe, expect,it } from "vitest";
+import { bold, cyan, green, red } from "@visulima/colorize";
+import { describe, expect, it } from "vitest";
 
 import { alignAnsi } from "../src/align";
 
@@ -60,7 +60,7 @@ describe("align", () => {
         const inp = [" one ", " two ", " three four ", " five "];
         const out = alignAnsi(inp, { align: "center" });
 
-        expect(out).toStrictEqual( ["    one ", "    two ", " three four ", "    five "]);
+        expect(out).toStrictEqual(["    one ", "    two ", " three four ", "    five "]);
     });
 
     it("should support right align", () => {
