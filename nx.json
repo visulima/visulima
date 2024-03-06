@@ -6,14 +6,38 @@
             "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
-        "build:packages": {
-            "dependsOn": ["^build:packages"],
+        "build:prod": {
+            "dependsOn": ["^build:prod"],
             "inputs": ["default", "^public"],
             "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
-        "build:prod:packages": {
-            "dependsOn": ["^build:prod:packages"],
+        "lint:eslint": {
+            "dependsOn": ["^lint:eslint"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "lint:eslint:fix": {
+            "dependsOn": ["^lint:eslint:fix"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "lint:prettier": {
+            "dependsOn": ["^lint:prettier"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "lint:prettier:fix": {
+            "dependsOn": ["^lint:prettier:fix"],
+            "inputs": ["default", "^public"],
+            "outputs": ["{projectRoot}/dist"],
+            "cache": true
+        },
+        "lint:types": {
+            "dependsOn": ["^lint:types"],
             "inputs": ["default", "^public"],
             "outputs": ["{projectRoot}/dist"],
             "cache": true
@@ -45,7 +69,17 @@
         "default": {
             "runner": "nx/tasks-runners/default",
             "options": {
-                "cacheableOperations": ["build", "build:prod", "test", "lint:types", "lint:eslint", "lint:eslint:fix", "build-storybook"]
+                "cacheableOperations": [
+                    "build",
+                    "build:prod",
+                    "test",
+                    "lint:types",
+                    "lint:eslint",
+                    "lint:eslint:fix",
+                    "lint:prettier",
+                    "lint:prettier:fix",
+                    "build-storybook"
+                ]
             }
         }
     },
