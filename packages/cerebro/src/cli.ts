@@ -2,7 +2,7 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 
 import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
-import type { Pail } from "@visulima/pail/server";
+import type { ConstructorOptions, Pail } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
 import camelCase from "camelcase";
 import type { CommandLineOptions } from "command-line-args";
@@ -78,6 +78,7 @@ class Cli implements ICli {
         options: {
             argv?: string[];
             cwd?: string;
+            logger?: ConstructorOptions<string, string>
             packageName?: string;
             packageVersion?: string;
         } = {},
@@ -115,6 +116,7 @@ class Cli implements ICli {
             logLevel: env["CEREBRO_OUTPUT_LEVEL"]
                 ? cerebroLevelToPailLevel[env["CEREBRO_OUTPUT_LEVEL"] as keyof typeof cerebroLevelToPailLevel] ?? "informational"
                 : "informational",
+            ...options.logger
         });
 
         if (env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_QUIET)) {
