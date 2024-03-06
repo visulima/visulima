@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { Content as IContent } from "../../../../../src/@types/command-line-usage";
 import ContentSection from "../../../../../src/util/command-line-usage/section/content-section";
 
+const isWindows = process.platform === "win32";
+
 describe("line-usage/content-section", () => {
     it("should render header only, no content", () => {
         expect.assertions(1);
@@ -69,7 +71,7 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections as IContent);
 
-        expect(result.toString()).toBe("user-defined\nnew\nlines\n");
+        expect(result.toString()).toBe("user-defined\nnew\nlines" + (isWindows ? "\r\n" : "\n"));
     });
 
     it("should throw a error with content: { options: object, data: section[] }, invalid", () => {
