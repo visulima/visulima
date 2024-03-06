@@ -1,9 +1,9 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
-import { dim, green, reset } from "@visulima/colorize";
+import { dim, green, reset, yellow } from "@visulima/colorize";
 import type { Pail } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
-import boxen from "boxen";
+import boxen from "@visulima/boxen";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
 // eslint-disable-next-line no-restricted-imports
@@ -526,7 +526,7 @@ class Cli implements ICli {
 
                 this.logger.error(
                     boxen(template, {
-                        borderColor: "yellow",
+                        borderColor: (border: string) => yellow(border),
                         borderStyle: "round",
                         margin: 1,
                         padding: 1,

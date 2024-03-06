@@ -89,7 +89,7 @@
     "dependencies": {
         "@visulima/colorize": "workspace:*",
         "@visulima/pail": "workspace:*",
-        "boxen": "^7.1.1",
+        "@visulima/boxen": "workspace:*",
         "cli-table3": "^0.6.3",
         "command-line-args": "^5.2.1",
         "fastest-levenshtein": "^1.0.16",
