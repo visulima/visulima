@@ -100,8 +100,6 @@ export const createConfig = (
             silent: !options.watch,
             minify: process.env["NODE_ENV"] === "production",
             minifyWhitespace: process.env["NODE_ENV"] === "production",
-            bundle: process.env["NODE_ENV"] === "production",
-            skipNodeModulesBundle: true,
             incremental: !options.watch,
             dts: true,
             sourcemap: true,
