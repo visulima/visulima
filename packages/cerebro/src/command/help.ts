@@ -4,8 +4,8 @@ import type { Cli as ICli, Command as ICommand, Toolbox as IToolbox } from "../@
 import type { OptionDefinition } from "../@types/command";
 import type { Section } from "../@types/command-line-usage";
 import defaultOptions from "../default-options";
-import templateFormat from "../util/template-format";
 import commandLineUsage from "../util/command-line-usage";
+import templateFormat from "../util/template-format";
 
 const EMPTY_GROUP_KEY = "__Other";
 
@@ -160,18 +160,18 @@ class HelpCommand implements ICommand {
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            logger.raw(templateFormat(header));
+            logger.raw(templateFormat(header as string));
         }
 
         if (commandName === "help") {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unnecessary-condition
+            // eslint-disable-next-line @typescript-eslint/dot-notation
             printGeneralHelp(logger, runtime, this.commands, options?.["group"]);
         } else {
-            printCommandHelp(logger, runtime, this.commands, commandName);
+            printCommandHelp(logger, runtime, this.commands, commandName as string);
         }
 
         if (footer) {
-            logger.raw(templateFormat(footer));
+            logger.raw(templateFormat(footer as string));
         }
     }
 }

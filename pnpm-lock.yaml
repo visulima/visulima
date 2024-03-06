@@ -1454,6 +1454,9 @@ importers:
       '@visulima/pail':
         specifier: workspace:*
         version: link:../pail
+      camelcase:
+        specifier: 7.0.1
+        version: 7.0.1
       cli-table3:
         specifier: ^0.6.3
         version: 0.6.3
@@ -1469,9 +1472,6 @@ importers:
       hard-rejection:
         specifier: ^2.1.0
         version: 2.1.0
-      lodash.camelcase:
-        specifier: ^4.3.0
-        version: 4.3.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3

@@ -19,6 +19,7 @@ class BaseSection {
 
     public header(text: string): void {
         this.add(bold(text));
+
         this.lines.push("");
     }
 }

@@ -5,6 +5,8 @@ import versionCommand from "../../../src/command/version";
 
 describe("command/version", () => {
     it("should output the version number when version is defined", async () => {
+        expect.assertions(4);
+
         const loggerMock = {
             debug: vi.fn(),
             info: vi.fn(),
@@ -23,6 +25,8 @@ describe("command/version", () => {
     });
 
     it("should warn and debug when version is undefined", async () => {
+        expect.assertions(4);
+
         const loggerMock = {
             debug: vi.fn(),
             info: vi.fn(),

@@ -4,6 +4,8 @@ import findAlternatives from "../../../src/util/levenstein";
 
 describe("util/levenstein", () => {
     it("should find an approximate match within the Levenshtein distance", () => {
+        expect.assertions(1);
+
         const string = "command";
         const array = ["commnd", "comman", "cmand"];
 
@@ -13,6 +15,8 @@ describe("util/levenstein", () => {
     });
 
     it("should find a string which includes the given string", () => {
+        expect.assertions(1);
+
         const string = "command";
         const array = ["mycommand", "exactcommand", "commandtest"];
 
@@ -22,6 +26,8 @@ describe("util/levenstein", () => {
     });
 
     it("should return an empty array if no strings are similar", () => {
+        expect.assertions(1);
+
         const string = "command";
         const array = ["test", "something", "anything"];
 

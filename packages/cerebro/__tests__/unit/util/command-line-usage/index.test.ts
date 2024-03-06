@@ -4,6 +4,8 @@ import commandLineUsage from "../../../../src/util/command-line-usage";
 
 describe("line-usage", () => {
     it("should render a typical output", () => {
+        expect.assertions(1);
+
         const definitions = [
             {
                 alias: "h",
@@ -43,6 +45,8 @@ describe("line-usage", () => {
     });
 
     it("should render a empty out if empty sections are provided", () => {
+        expect.assertions(1);
+
         expect(commandLineUsage([])).toBe("");
     });
 });

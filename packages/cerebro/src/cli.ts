@@ -1,13 +1,12 @@
 import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit } from "node:process";
 
+import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
 import type { Pail } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
-import boxen from "@visulima/boxen";
+import camelCase from "camelcase";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
-// eslint-disable-next-line no-restricted-imports
-import camelCase from "lodash.camelcase";
 
 import type {
     Cli as ICli,
@@ -167,6 +166,7 @@ class Cli implements ICli {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public addCommand<OT = any>(command: ICommand<OT>): this {
         // add the command to the runtime (if it isn't already there)
+
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
         } else {
@@ -301,7 +301,6 @@ class Cli implements ICli {
             if (error.name === "INVALID_COMMAND" && error.command) {
                 let alternatives = "";
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const foundAlternatives = findAlternatives(error.command, [...this.commands.keys()]);
 
                 if (foundAlternatives.length > 0) {
@@ -344,14 +343,14 @@ class Cli implements ICli {
             arguments_ = [
                 {
                     defaultOption: true,
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                     description: command.argument?.description,
                     group: "positionals",
                     multiple: true,
                     name: POSITIONALS_KEY,
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                     type: command.argument?.type,
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
                     typeLabel: command.argument?.typeLabel,
                 },
                 ...arguments_,

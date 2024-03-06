@@ -1,5 +1,5 @@
 import { boxen } from "@visulima/boxen";
-import colorize, {red, green, yellow, blue, bgRed} from "@visulima/colorize";
+import colorize, { red, green, yellow, blue, bgRed } from "@visulima/colorize";
 import { GradientBuilder } from "@visulima/colorize/gradient";
 
 console.log("\n----------- Box with a red text -----------");
@@ -123,8 +123,8 @@ const builder = new GradientBuilder(colorize, ["#ff0000", "#ff0100"]);
 
 let colors;
 
-const headerText = "Header Text"
-const footerText = "Footer Text"
+const headerText = "Header Text";
+const footerText = "Footer Text";
 
 console.log(
     boxen("This is a long this", {
@@ -135,7 +135,7 @@ console.log(
             if ("top" === position || "bottom" === position) {
                 const textLength = headerText.replaceAll(forbiddenChars, "").length;
 
-                const colorsCount = Math.max(length  + textLength, builder.stops.length);
+                const colorsCount = Math.max(length + textLength, builder.stops.length);
 
                 colors = builder.hsv(colorsCount, "long");
 

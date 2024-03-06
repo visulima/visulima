@@ -1,10 +1,10 @@
-import { beforeEach, Mock } from "vitest";
-import { describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Command as ICommand, Toolbox as IToolbox } from "../../../src/@types";
 import HelpCommand from "../../../src/command/help";
-import commandLineUsage from "../../../src/util/command-line-usage";
 import globalOptions from "../../../src/default-options";
+import commandLineUsage from "../../../src/util/command-line-usage";
 
 vi.mock("../../../src/util/command-line-usage");
 vi.mock("../default-options", () => {
@@ -51,14 +51,16 @@ describe("command/help", () => {
 
         commandsMap.set("test", {
             description: "A test command",
-            group: "test",
             execute: () => {},
+            group: "test",
             name: "test",
             options: [{ description: "Enable verbose output", name: "verbose" }],
         });
     });
 
     it("should print general help", () => {
+        expect.assertions(3);
+
         const helpCommand = new HelpCommand(commandsMap);
         const toolboxMock = {
             commandName: "help",
@@ -74,6 +76,8 @@ describe("command/help", () => {
     });
 
     it("should print command-specific help", () => {
+        expect.assertions(3);
+
         const helpCommand = new HelpCommand(commandsMap);
         const toolboxMock = {
             commandName: "test",
@@ -108,6 +112,8 @@ describe("command/help", () => {
     });
 
     it("should print general help and not include hidden commands", () => {
+        expect.assertions(4);
+
         const secretCommandsMap = new Map([
             // Add a hidden command for testing
             [
@@ -152,11 +158,13 @@ describe("command/help", () => {
 
         // Ensure hidden commands are not included in the output
         const usageCalls = (commandLineUsage as Mock).mock.calls[0][0];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         expect(usageCalls.some((section) => section.content?.includes("secret"))).toBeFalsy();
     });
 
     it("should display aliases if present", () => {
+        expect.assertions(3);
+
         const commandWithAlias = {
             alias: ["cwa", "aliasForCommand"],
             execute: () => {},
@@ -179,6 +187,8 @@ describe("command/help", () => {
     });
 
     it("should display command examples", () => {
+        expect.assertions(3);
+
         const commandWithExamples = {
             examples: ["testcli test --verbose", "testcli test --verbose --debug"],
             execute: () => {},
@@ -212,6 +222,8 @@ describe("command/help", () => {
     });
 
     it("should display a empty help command if no commands exists", () => {
+        expect.assertions(3);
+
         const helpCommand = new HelpCommand(new Map());
 
         const toolboxMock = {
@@ -228,10 +240,12 @@ describe("command/help", () => {
     });
 
     it("should display group of commands if the group option is passed", () => {
+        expect.assertions(3);
+
         commandsMap.set("test2", {
             description: "A test2 command",
-            group: "test",
             execute: () => {},
+            group: "test",
             name: "test2",
             options: [{ description: "Enable verbose output", name: "verbose" }],
         });
@@ -248,10 +262,10 @@ describe("command/help", () => {
         const toolboxMock = {
             commandName: "help",
             logger: loggerMock,
-            runtime: runtimeMock,
             options: {
                 group: "test",
             },
+            runtime: runtimeMock,
         };
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);

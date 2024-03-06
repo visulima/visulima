@@ -20,6 +20,8 @@ vi.mock("https", async () => {
 
 describe("update-notifier/get-dist-version", () => {
     it("valid response returns version", async () => {
+        expect.assertions(1);
+
         const st = new Stream();
 
         (get as Mock).mockImplementation((_, callback) => {
@@ -35,6 +37,8 @@ describe("update-notifier/get-dist-version", () => {
     });
 
     it("invalid response throws error", async () => {
+        expect.assertions(1);
+
         const st = new Stream();
 
         (get as Mock).mockImplementation((_, callback) => {

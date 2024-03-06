@@ -6,6 +6,8 @@ import listMissingArguments from "../../../src/util/list-missing-arguments";
 
 describe("util/list-missing-arguments", () => {
     it("should return missing argument if it was not provided", () => {
+        expect.assertions(1);
+
         const commandLineConfig: OptionDefinition<string>[] = [{ name: "test", required: true, type: String }];
         const parsedArguments: CommandLineOptions = {};
 
@@ -15,6 +17,8 @@ describe("util/list-missing-arguments", () => {
     });
 
     it("should return empty array if required argument is provided", () => {
+        expect.assertions(1);
+
         const commandLineConfig: OptionDefinition<string>[] = [{ name: "test", required: true, type: String }];
         const parsedArguments: CommandLineOptions = {
             test: "value",
@@ -26,6 +30,8 @@ describe("util/list-missing-arguments", () => {
     });
 
     it("should set false for missing boolean argument and do not return it as missing", () => {
+        expect.assertions(2);
+
         const commandLineConfig: OptionDefinition<boolean>[] = [{ name: "test", required: true, type: Boolean }];
         const parsedArguments: CommandLineOptions = {};
 

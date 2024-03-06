@@ -87,18 +87,17 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@visulima/boxen": "workspace:*",
         "@visulima/colorize": "workspace:*",
         "@visulima/pail": "workspace:*",
-        "@visulima/boxen": "workspace:*",
+        "camelcase": "7.0.1",
         "cli-table3": "^0.6.3",
         "command-line-args": "^5.2.1",
         "fastest-levenshtein": "^1.0.16",
         "find-cache-dir": "^5.0.0",
-        "hard-rejection": "^2.1.0",
-        "lodash.camelcase": "^4.3.0"
+        "hard-rejection": "^2.1.0"
     },
     "devDependencies": {
-        "@types/lodash.camelcase": "^4.3.9",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
@@ -111,6 +110,7 @@
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
+        "@types/lodash.camelcase": "^4.3.9",
         "@types/node": "18.18.5",
         "@types/which": "^3.0.3",
         "@types/wordwrap": "^1.0.3",

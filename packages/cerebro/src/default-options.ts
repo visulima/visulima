@@ -35,17 +35,17 @@ const defaultOptions: PossibleOptionDefinition<boolean>[] = [
         type: Boolean,
     },
     {
-        name: "no-color",
         description: "Turn off colored output",
         group: "global",
+        name: "no-color",
         type: Boolean,
     },
     {
-        name: "color",
         description: "Force colored output",
         group: "global",
+        name: "color",
         type: Boolean,
-    }
+    },
 ];
 
 export default defaultOptions;

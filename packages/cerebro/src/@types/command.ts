@@ -52,7 +52,13 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T> &
     };
 
 export type PossibleOptionDefinition<T> =
-    OptionDefinition<boolean[]> | OptionDefinition<boolean> | OptionDefinition<number[]> | OptionDefinition<number> | OptionDefinition<string[]> | OptionDefinition<string> | OptionDefinition<T>;
+    | OptionDefinition<boolean[]>
+    | OptionDefinition<boolean>
+    | OptionDefinition<number[]>
+    | OptionDefinition<number>
+    | OptionDefinition<string[]>
+    | OptionDefinition<string>
+    | OptionDefinition<T>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;

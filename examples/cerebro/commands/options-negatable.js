@@ -32,7 +32,7 @@ const optionsNegatable = (cli) => {
                 description: "Ignore the sauce and no-sauce option",
                 type: Boolean,
                 defaultValue: false,
-            }
+            },
         ],
         execute: ({ logger, options }) => {
             const sauceStr = options.ignoreNoSauce ? "ignore" : options.sauce ? "sauce" : "no sauce";

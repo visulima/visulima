@@ -5,6 +5,8 @@ import ContentSection from "../../../../../src/util/command-line-usage/section/c
 
 describe("line-usage/content-section", () => {
     it("should render header only, no content", () => {
+        expect.assertions(1);
+
         const sections = { header: "header" };
         const result = new ContentSection(sections as IContent).toString();
 
@@ -12,6 +14,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should render content: array of strings", () => {
+        expect.assertions(1);
+
         const sections = {
             content: ["one", "two"],
         };
@@ -22,6 +26,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should render content: array of string array", () => {
+        expect.assertions(1);
+
         const sections = {
             content: [
                 ["one", "two"],
@@ -35,6 +41,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should render content: { options: object, data: string[][]|string[] }", () => {
+        expect.assertions(1);
+
         const sections = {
             content: {
                 data: [["one", "two"], ["one", "two"], "foo"],
@@ -52,6 +60,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should render content: raw", () => {
+        expect.assertions(1);
+
         const sections = {
             content: "user-defined\nnew\nlines",
             raw: true,
@@ -63,6 +73,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should throw a error with content: { options: object, data: section[] }, invalid", () => {
+        expect.assertions(1);
+
         const sections = {
             content: {
                 broken: true,
@@ -74,6 +86,8 @@ describe("line-usage/content-section", () => {
     });
 
     it("should throw a error with content: invalid", () => {
+        expect.assertions(1);
+
         const sections = {
             content: true,
         };

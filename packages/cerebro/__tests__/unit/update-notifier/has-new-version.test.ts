@@ -38,12 +38,16 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should not trigger update for same version", async () => {
+        expect.assertions(1);
+
         const newVersion = await hasNewVersion(defaultArguments);
 
         expect(newVersion).toBeFalsy();
     });
 
     it("should trigger update for patch version bump", async () => {
+        expect.assertions(1);
+
         (getDistributionVersion as Mock).mockReturnValue("1.0.1");
 
         const newVersion = await hasNewVersion(defaultArguments);
@@ -52,6 +56,8 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should trigger update for minor version bump", async () => {
+        expect.assertions(1);
+
         (getDistributionVersion as Mock).mockReturnValue("1.1.0");
 
         const newVersion = await hasNewVersion(defaultArguments);
@@ -60,6 +66,8 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should trigger update for major version bump", async () => {
+        expect.assertions(1);
+
         (getDistributionVersion as Mock).mockReturnValue("2.0.0");
 
         const newVersion = await hasNewVersion(defaultArguments);
@@ -68,6 +76,8 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should not trigger update if version is lower", async () => {
+        expect.assertions(1);
+
         (getDistributionVersion as Mock).mockReturnValue("0.0.9");
 
         const newVersion = await hasNewVersion(defaultArguments);
@@ -76,6 +86,8 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should trigger update check if last update older than config", async () => {
+        expect.assertions(2);
+
         const TWO_WEEKS = Date.now() - 1000 * 60 * 60 * 24 * 14;
 
         (getLastUpdate as Mock).mockReturnValue(TWO_WEEKS);
@@ -90,6 +102,8 @@ describe("update-notifier/has-new-version", () => {
     });
 
     it("should not trigger update check if last update is too recent", async () => {
+        expect.assertions(2);
+
         const TWELVE_HOURS = Date.now() - 1000 * 60 * 60 * 12;
 
         (getLastUpdate as Mock).mockReturnValue(TWELVE_HOURS);

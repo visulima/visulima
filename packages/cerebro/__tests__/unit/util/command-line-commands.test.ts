@@ -4,6 +4,8 @@ import commandLineCommands from "../../../src/util/command-line-commands";
 
 describe("util/command-line-commands", () => {
     it("should parse given argv for the correct command and option", () => {
+        expect.assertions(4);
+
         const commands = ["eat", "sleep"];
 
         let clc = commandLineCommands(commands, ["eat", "--food", "peas"]);
@@ -18,6 +20,8 @@ describe("util/command-line-commands", () => {
     });
 
     it("should throw a error if no commands defined", () => {
+        expect.assertions(2);
+
         expect(() => {
             commandLineCommands([], ["eat"]);
         }).toThrow("Command not recognised: eat");
@@ -27,6 +31,8 @@ describe("util/command-line-commands", () => {
     });
 
     it("should not throw if null as command is specified", () => {
+        expect.assertions(4);
+
         const commands = [null];
 
         let clc;
@@ -41,6 +47,8 @@ describe("util/command-line-commands", () => {
     });
 
     it("invalid command", () => {
+        expect.assertions(1);
+
         const commands = ["eat", "sleep"];
 
         const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: cheese`);

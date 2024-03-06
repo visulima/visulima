@@ -35,7 +35,9 @@ module.exports = defineConfig({
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {
-                "prefer-template": "off"
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "prefer-template": "off",
             },
         },
         {

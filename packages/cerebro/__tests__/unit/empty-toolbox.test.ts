@@ -5,6 +5,8 @@ import EmptyToolbox from "../../src/empty-toolbox";
 
 describe("emptyToolbox", () => {
     it("should create an instance with the given command name and command", () => {
+        expect.assertions(2);
+
         const commandName = "testCommand";
         const command = { execute: vi.fn(), name: "test" };
         const toolbox = new EmptyToolbox(commandName, command);
@@ -14,6 +16,8 @@ describe("emptyToolbox", () => {
     });
 
     it("should allow setting and getting properties", () => {
+        expect.assertions(5);
+
         const toolbox = new EmptyToolbox("testCommand", { execute: vi.fn(), name: "test" });
         const runtime = {
             addCommand() {
@@ -67,6 +71,8 @@ describe("emptyToolbox", () => {
     });
 
     it("should not throw error when accessing undefined properties", () => {
+        expect.assertions(2);
+
         const toolbox = new EmptyToolbox("testCommand", { execute: vi.fn(), name: "test" });
 
         expect(() => {

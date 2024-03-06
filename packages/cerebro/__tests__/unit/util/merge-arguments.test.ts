@@ -5,6 +5,8 @@ import mergeArguments from "../../../src/util/merge-arguments";
 
 describe("util/merge-arguments", () => {
     it("should return single argument list it was the only one provided", () => {
+        expect.assertions(1);
+
         const singleArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
 
         const result = mergeArguments([singleArgumentList]);
@@ -13,6 +15,8 @@ describe("util/merge-arguments", () => {
     });
 
     it("should merge multiple argument lists without duplicates", () => {
+        expect.assertions(1);
+
         const firstArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
         const secondArgumentList: OptionDefinition<number> = { name: "arg", required: false, type: Number };
 
@@ -25,6 +29,8 @@ describe("util/merge-arguments", () => {
     });
 
     it("should merge multiple argument lists and overwrites duplicates", () => {
+        expect.assertions(1);
+
         const firstArgumentList: OptionDefinition<string> = { name: "test", required: true, type: String };
         const secondArgumentList: OptionDefinition<number> = { name: "test", required: false, type: Number };
 
