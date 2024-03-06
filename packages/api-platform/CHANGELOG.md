@@ -1,3 +1,17 @@
+## @visulima/api-platform [2.0.21](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.20...@visulima/api-platform@2.0.21) (2024-03-06)
+
+
+### Bug Fixes
+
+* removed lodash.set ([387d110](https://github.com/visulima/visulima/commit/387d110f715d295457d8cb34f6cbd900856e92a3))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.1
+* **@visulima/crud:** upgraded to 2.0.16
+
 ## @visulima/api-platform [2.0.20](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.19...@visulima/api-platform@2.0.20) (2024-03-06)
 
 
