@@ -1,0 +1,11 @@
+{
+    "introduction": {
+        "title": "Introduction"
+    },
+    "quickstart": {
+        "title": "Quick Start",
+        "description": "Start building a awesome cli's in under 2 minutes"
+    },
+    "toolbox": "Toolboxes",
+    "configuration": "Configuration"
+}

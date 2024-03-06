@@ -1,0 +1,67 @@
+import { Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
+import { PartyPopper } from "lucide-react";
+
+Visulima Nextra Docs Theme is a theme that includes almost everything you need to build a modern documentation website. It includes a top navigation bar, a search bar, a pages sidebar, a TOC sidebar, and other [built-in components](/docs/nextra-theme-docs/writing-content/components).
+
+This website itself is built with the Visulima Nextra Docs Theme.
+
+## Start as New Project
+
+<Steps>
+### Install
+
+Run the following command to install the dependency:
+
+<Tabs>
+    <Tab title="pnpm">```pnpm i @visulima/cerebro ```</Tab>
+    <Tab title="npm">```npm i @visulima/cerebro ```</Tab>
+    <Tab title="yarn">```yarn add @visulima/cerebro ```</Tab>
+</Tabs>
+
+### Create a new bin file
+
+For this example we will use `bin/cerebro`.
+
+```js filename="bin/cerebro"
+import Cli from "@visulima/cerebro";
+
+(async () => {
+    try {
+        // Create a CLI runtime
+        const cli = new Cli("cerebro");
+
+        // Your command
+        cli.addCommand({
+            description: "Say hello",
+            execute: ({ logger }) => {
+                logger.log("Hello, world!");
+            },
+            name: "hello",
+        });
+
+        await cli.run();
+    } catch (error) {
+        // Abort via CTRL-C
+        if (error) {
+            // Throw error
+            throw error;
+        } else {
+            console.log("Goodbye ✌️");
+        }
+    }
+})();
+```
+
+### Ready to Go!
+
+With the above created bin file, you can run the following command to say hello:
+
+```bash
+$ ./bin/cerebro hello // -> Hello, world!
+```
+
+Now you ready to create your own CLI tool with cerebro.
+
+<PartyPopper size={24} className="mt-0.5" />
+
+</Steps>
