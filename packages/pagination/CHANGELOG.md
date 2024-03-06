@@ -1,3 +1,10 @@
+## @visulima/pagination [3.0.13](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.12...@visulima/pagination@3.0.13) (2024-03-06)
+
+
+### Bug Fixes
+
+* updated qs to 6.12 ([9e35cee](https://github.com/visulima/visulima/commit/9e35cee0ad1d511419e80b3bd39b2045690c0d22))
+
 ## @visulima/pagination [3.0.12](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.11...@visulima/pagination@3.0.12) (2024-03-04)
 
 
