@@ -9,7 +9,6 @@
 [cli-table3](https://github.com/cli-table/cli-table3),
 [command-line-args](https://github.com/75lb/command-line-args),
 [fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein),
-[hard-rejection](https://github.com/sindresorhus/hard-rejection),
 [strip-ansi](https://github.com/chalk/strip-ansi) and
 [term-size](https://github.com/sindresorhus/term-size)
 
