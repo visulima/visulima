@@ -1,3 +1,10 @@
+## @visulima/crud [2.0.16](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.15...@visulima/crud@2.0.16) (2024-03-06)
+
+
+### Bug Fixes
+
+* removed lodash.set ([387d110](https://github.com/visulima/visulima/commit/387d110f715d295457d8cb34f6cbd900856e92a3))
+
 ## @visulima/crud [2.0.15](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.14...@visulima/crud@2.0.15) (2024-03-06)
 
 
