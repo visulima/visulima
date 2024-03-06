@@ -1,3 +1,15 @@
+## @visulima/nextra-theme-docs [4.0.16](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.15...@visulima/nextra-theme-docs@4.0.16) (2024-03-06)
+
+
+### Bug Fixes
+
+* removed lodash.set ([387d110](https://github.com/visulima/visulima/commit/387d110f715d295457d8cb34f6cbd900856e92a3))
+
+
+### Miscellaneous Chores
+
+* updated dev deps ([3f034b7](https://github.com/visulima/visulima/commit/3f034b7049b25c2a628c2973152d3de384d005e2))
+
 ## @visulima/nextra-theme-docs [4.0.15](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.14...@visulima/nextra-theme-docs@4.0.15) (2024-03-04)
 
 
