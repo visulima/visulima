@@ -4,5 +4,5 @@
     "sourceRoot": "packages/pail/src",
     "projectType": "library",
     "tags": ["type:package", "pail"],
-    "implicitDependencies": []
+    "implicitDependencies": ["fmt", "colorize"]
 }

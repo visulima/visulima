@@ -11,3 +11,5 @@ __bench__
 .secretlintrc.cjs
 _meta.*.json
 tsup.config.ts
+
+scripts/wait.js
