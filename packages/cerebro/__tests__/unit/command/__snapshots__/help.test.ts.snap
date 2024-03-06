@@ -19,12 +19,6 @@ exports[`command/help > should display a empty help command if no commands exist
               "type": [Function],
             },
             {
-              "description": "Turn on very-verbose output",
-              "group": "global",
-              "name": "very-verbose",
-              "type": [Function],
-            },
-            {
               "description": "Turn on debugging output",
               "group": "global",
               "name": "debug",
@@ -104,12 +98,6 @@ exports[`command/help > should display aliases if present 1`] = `
               "description": "Turn on verbose output",
               "group": "global",
               "name": "verbose",
-              "type": [Function],
-            },
-            {
-              "description": "Turn on very-verbose output",
-              "group": "global",
-              "name": "very-verbose",
               "type": [Function],
             },
             {
@@ -197,12 +185,6 @@ exports[`command/help > should display group of commands if the group option is 
               "type": [Function],
             },
             {
-              "description": "Turn on very-verbose output",
-              "group": "global",
-              "name": "very-verbose",
-              "type": [Function],
-            },
-            {
               "description": "Turn on debugging output",
               "group": "global",
               "name": "debug",
@@ -284,12 +266,6 @@ exports[`command/help > should print general help 1`] = `
               "description": "Turn on verbose output",
               "group": "global",
               "name": "verbose",
-              "type": [Function],
-            },
-            {
-              "description": "Turn on very-verbose output",
-              "group": "global",
-              "name": "very-verbose",
               "type": [Function],
             },
             {

@@ -30,7 +30,7 @@ describe("command/version", () => {
         const loggerMock = {
             debug: vi.fn(),
             info: vi.fn(),
-            warning: vi.fn(),
+            warn: vi.fn(),
         };
         const runtimeMock = {
             getPackageVersion: vi.fn().mockReturnValue(undefined),
@@ -39,7 +39,7 @@ describe("command/version", () => {
         await versionCommand.execute({ logger: loggerMock as unknown as ILogger, runtime: runtimeMock as unknown as ICli } as IToolbox);
 
         expect(runtimeMock.getPackageVersion).toHaveBeenCalledWith();
-        expect(loggerMock.warning).toHaveBeenCalledWith("Unknown version");
+        expect(loggerMock.warn).toHaveBeenCalledWith("Unknown version");
         expect(loggerMock.debug).toHaveBeenCalledWith("The version number was not provided by the cli constructor.");
         expect(loggerMock.info).not.toHaveBeenCalled();
     });

@@ -17,8 +17,8 @@ vi.mock("../default-options", () => {
 
 const loggerMock = {
     debug: vi.fn(),
-    log: vi.fn(),
-    warning: vi.fn(),
+    raw: vi.fn(),
+    warn: vi.fn(),
 };
 
 const runtimeMock = {
@@ -70,9 +70,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 
     it("should print command-specific help", () => {
@@ -87,7 +87,7 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toHaveBeenCalledWith([
             {
                 content: "{cyan testcli} {green test} [options]",
@@ -108,7 +108,7 @@ describe("command/help", () => {
             },
             globalOptionsOptionsList,
         ]);
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 
     it("should print general help and not include hidden commands", () => {
@@ -144,7 +144,7 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toHaveBeenCalledWith([
             headerSection,
             {
@@ -154,7 +154,7 @@ describe("command/help", () => {
             globalOptionsOptionsList,
             footerSection,
         ]);
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
 
         // Ensure hidden commands are not included in the output
         const usageCalls = (commandLineUsage as Mock).mock.calls[0][0];
@@ -181,9 +181,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 
     it("should display command examples", () => {
@@ -206,7 +206,7 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toHaveBeenCalledWith([
             {
                 content: "{cyan testcli} {green commandWithExamples}",
@@ -218,7 +218,7 @@ describe("command/help", () => {
                 header: "Examples",
             },
         ]);
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 
     it("should display a empty help command if no commands exists", () => {
@@ -234,9 +234,9 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 
     it("should display group of commands if the group option is passed", () => {
@@ -270,8 +270,8 @@ describe("command/help", () => {
 
         helpCommand.execute(toolboxMock as unknown as IToolbox);
 
-        expect(loggerMock.log).toHaveBeenCalledWith("Test header");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test header");
         expect(commandLineUsage).toMatchSnapshot();
-        expect(loggerMock.log).toHaveBeenCalledWith("Test footer");
+        expect(loggerMock.raw).toHaveBeenCalledWith("Test footer");
     });
 });
