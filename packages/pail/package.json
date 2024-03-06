@@ -4,8 +4,6 @@
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "anolilab",
-        "box",
-        "boxen",
         "browser",
         "browser-logger",
         "callsite",
