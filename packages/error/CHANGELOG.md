@@ -1,3 +1,11 @@
+## @visulima/error [3.0.6](https://github.com/visulima/visulima/compare/@visulima/error@3.0.5...@visulima/error@3.0.6) (2024-03-06)
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.16
+
 ## @visulima/error [3.0.5](https://github.com/visulima/visulima/compare/@visulima/error@3.0.4...@visulima/error@3.0.5) (2024-03-04)
 
 
