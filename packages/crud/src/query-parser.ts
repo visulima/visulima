@@ -1,7 +1,6 @@
 import { URL } from "node:url";
 
-// eslint-disable-next-line no-restricted-imports
-import set from "lodash.set";
+import { setProperty } from "dot-prop";
 
 import type { OrderByField, ParsedQueryParameters, RecursiveField, WhereField } from "./types";
 
@@ -11,7 +10,7 @@ const parseRecursive = (select: string): RecursiveField => {
     const fields = select.split(",");
 
     fields.forEach((field) => {
-        set(selectFields, field, true);
+        setProperty(selectFields, field, true);
     });
 
     return selectFields;
@@ -22,7 +21,7 @@ const parseWhere = (where: string): WhereField => {
     const parsed: WhereField = {};
 
     Object.keys(whereObject).forEach((key) => {
-        set(parsed, key, whereObject[key]);
+        setProperty(parsed, key, whereObject[key]);
     });
 
     return parsed;

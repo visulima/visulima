@@ -115,7 +115,6 @@
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
-        "@types/lodash.camelcase": "^4.3.9",
         "@types/node": "18.18.5",
         "@types/which": "^3.0.3",
         "@types/wordwrap": "^1.0.3",
