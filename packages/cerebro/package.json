@@ -55,6 +55,10 @@
     "type": "module",
     "exports": {
         ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
             "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
@@ -62,6 +66,8 @@
         },
         "./package.json": "./package.json"
     },
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
     "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
@@ -94,8 +100,7 @@
         "cli-table3": "^0.6.3",
         "command-line-args": "^5.2.1",
         "fastest-levenshtein": "^1.0.16",
-        "find-cache-dir": "^5.0.0",
-        "hard-rejection": "^2.1.0"
+        "find-cache-dir": "^5.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
