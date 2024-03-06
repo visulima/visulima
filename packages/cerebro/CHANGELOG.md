@@ -1,3 +1,10 @@
+## @visulima/cerebro [1.0.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.1...@visulima/cerebro@1.0.2) (2024-03-06)
+
+
+### Bug Fixes
+
+* **cerebro:** allow to overwrite the logger settings ([3437a08](https://github.com/visulima/visulima/commit/3437a081cf5d304cf9bd79b62b159bb10242c92f))
+
 ## @visulima/cerebro [1.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.0...@visulima/cerebro@1.0.1) (2024-03-06)
 
 
