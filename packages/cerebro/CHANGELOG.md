@@ -1,3 +1,10 @@
+## @visulima/cerebro [1.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.0...@visulima/cerebro@1.0.1) (2024-03-06)
+
+
+### Bug Fixes
+
+* **cerebro:** changed package to commonjs and esm, removed hard-rejection ([4c2dffb](https://github.com/visulima/visulima/commit/4c2dffba479b3c29eef833f9535b98e4c1bf9c44))
+
 ## @visulima/cerebro 1.0.0 (2024-03-06)
 
 
