@@ -8,7 +8,7 @@ import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { Options as EsbuildOptions } from "rollup-plugin-esbuild";
 import type { RollupCommonJSOptions } from "vite";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
-import type { PackageJson } from "read-pkg";
+import type { PackageJson } from "@visulima/package";
 
 export interface BaseBuildEntry {
   builder?: "rollup";

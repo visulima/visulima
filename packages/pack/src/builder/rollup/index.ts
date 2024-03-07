@@ -11,7 +11,7 @@ import replace from "@rollup/plugin-replace";
 import { resolve, dirname, normalize, extname, isAbsolute } from "pathe";
 import { resolvePath, resolveModuleExportNames } from "mlly";
 import { arrayIncludes, getpkg, tryResolve, warn } from "../utils";
-import type { BuildContext } from "../types";
+import type { BuildContext } from "../../types";
 import { JSONPlugin } from "./plugins/json";
 import { rawPlugin } from "./plugins/raw";
 import { cjsPlugin } from "./plugins/cjs";

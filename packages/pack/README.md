@@ -1,5 +1,5 @@
 <div align="center">
-  <h3>Visulima is-ansi-color-supported</h3>
+  <h3>Visulima pack</h3>
   <p>
   Detect whether a terminal, browser or edge supports ansi colors.
   </p>
@@ -28,21 +28,21 @@
 ## Install
 
 ```sh
-npm install @visulima/is-ansi-color-supported
+npm install @visulima/pack
 ```
 
 ```sh
-yarn add @visulima/is-ansi-color-supported
+yarn add @visulima/pack
 ```
 
 ```sh
-pnpm add @visulima/is-ansi-color-supported
+pnpm add @visulima/pack
 ```
 
 ## Usage
 
 ```typescript
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
+import { isColorSupported } from "@visulima/pack";
 
 /**
  * Levels:
@@ -74,7 +74,7 @@ For example, an executable script _colors.js_:
 
 ```js
 #!/usr/bin/env node
-import { isColorSupported } from "@visulima/is-ansi-color-supported";
+import { isColorSupported } from "@visulima/pack";
 
 console.log(isColorSupported());
 ```
@@ -124,11 +124,11 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## License
 
-The visulima is-ansi-color-supported is open-sourced software licensed under the [MIT][license-url]
+The visulima pack is open-sourced software licensed under the [MIT][license-url]
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: "typescript"
-[license-image]: https://img.shields.io/npm/l/@visulima/is-ansi-color-supported?color=blueviolet&style=for-the-badge
+[license-image]: https://img.shields.io/npm/l/@visulima/pack?color=blueviolet&style=for-the-badge
 [license-url]: LICENSE.md "license"
-[npm-image]: https://img.shields.io/npm/v/@visulima/is-ansi-color-supported/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/is-ansi-color-supported/v/latest "npm"
+[npm-image]: https://img.shields.io/npm/v/@visulima/pack/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@visulima/pack/v/latest "npm"
