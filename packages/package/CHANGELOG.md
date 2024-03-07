@@ -1,3 +1,10 @@
+## @visulima/package [1.2.9](https://github.com/visulima/visulima/compare/@visulima/package@1.2.8...@visulima/package@1.2.9) (2024-03-07)
+
+
+### Bug Fixes
+
+* **package:** added missing PackageJson type export ([06e1c50](https://github.com/visulima/visulima/commit/06e1c50c269ba034df7ab319e30b33342a1a810f))
+
 ## @visulima/package [1.2.8](https://github.com/visulima/visulima/compare/@visulima/package@1.2.7...@visulima/package@1.2.8) (2024-03-04)
 
 
