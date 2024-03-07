@@ -1,6 +1,6 @@
 {
     "name": "@visulima/nextra-theme-docs",
-    "version": "4.0.15",
+    "version": "4.0.16",
     "description": "A Visulima Nextra theme for documentation sites.",
     "keywords": [
         "anolilab",
@@ -100,7 +100,6 @@
         "git-url-parse": "^14.0.0",
         "he": "^1.2.0",
         "intersection-observer": "^0.12.2",
-        "lodash.set": "^4.3.2",
         "next-seo": "^6.5.0",
         "next-themes": "^0.2.1",
         "prism-react-renderer": "^2.3.1",
@@ -128,11 +127,10 @@
         "@types/flexsearch": "^0.7.6",
         "@types/git-url-parse": "^9.0.3",
         "@types/he": "^1.2.3",
-        "@types/lodash.set": "^4.3.9",
         "@types/micromatch": "^4.0.6",
         "@types/node": "18.18.14",
-        "@types/react": "^18.2.61",
-        "@types/react-dom": "^18.2.19",
+        "@types/react": "^18.2.64",
+        "@types/react-dom": "^18.2.20",
         "@vitejs/plugin-react": "^4.2.1",
         "@vitest/coverage-v8": "^1.3.1",
         "@vitest/ui": "^1.3.1",
@@ -172,7 +170,7 @@
         "tailwindcss": "^3.4.1",
         "tailwindcss-hyphens": "^0.1.0",
         "tsup": "8.0.2",
-        "typescript": "^5.3.3",
+        "typescript": "^5.4.2",
         "vitest": "^1.3.1",
         "zod": "^3.22.4"
     },

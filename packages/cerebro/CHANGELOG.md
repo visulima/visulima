@@ -1,3 +1,23 @@
+## @visulima/cerebro [1.0.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.3...@visulima/cerebro@1.0.4) (2024-03-06)
+
+
+### Bug Fixes
+
+* removed lodash.set ([387d110](https://github.com/visulima/visulima/commit/387d110f715d295457d8cb34f6cbd900856e92a3))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.16
+
+## @visulima/cerebro [1.0.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.2...@visulima/cerebro@1.0.3) (2024-03-06)
+
+
+### Bug Fixes
+
+* updated camelcase to 8 ([9c0ab52](https://github.com/visulima/visulima/commit/9c0ab523ec5234e1bf1b958a1204414fdafed5cd))
+
 ## @visulima/cerebro [1.0.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.1...@visulima/cerebro@1.0.2) (2024-03-06)
 
 
