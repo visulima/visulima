@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.0...@visulima/pail@1.1.1) (2024-03-07)
+
+
+### Bug Fixes
+
+* fixed logger function type, for better input typing ([f08bbd4](https://github.com/visulima/visulima/commit/f08bbd44b33e62dc0f04fb516557541abaec6863))
+
 ## @visulima/pail [1.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.0.0...@visulima/pail@1.1.0) (2024-03-04)
 
 

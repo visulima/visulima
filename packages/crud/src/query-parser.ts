@@ -1,5 +1,6 @@
 import { URL } from "node:url";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { setProperty } from "dot-prop";
 
 import type { OrderByField, ParsedQueryParameters, RecursiveField, WhereField } from "./types";
