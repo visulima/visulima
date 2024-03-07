@@ -78,7 +78,7 @@ class Cli implements ICli {
         options: {
             argv?: string[];
             cwd?: string;
-            logger?: ConstructorOptions<string, string>
+            logger?: ConstructorOptions<string, string>;
             packageName?: string;
             packageVersion?: string;
         } = {},
@@ -116,7 +116,7 @@ class Cli implements ICli {
             logLevel: env["CEREBRO_OUTPUT_LEVEL"]
                 ? cerebroLevelToPailLevel[env["CEREBRO_OUTPUT_LEVEL"] as keyof typeof cerebroLevelToPailLevel] ?? "informational"
                 : "informational",
-            ...options.logger
+            ...options.logger,
         });
 
         if (env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_QUIET)) {
