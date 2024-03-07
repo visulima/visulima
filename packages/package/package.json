@@ -50,36 +50,60 @@
     "type": "module",
     "exports": {
         ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
             "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
             }
         },
         "./monorepo": {
+            "require": {
+                "types": "./dist/monorepo.d.cts",
+                "default": "./dist/monorepo.cjs"
+            },
             "import": {
                 "types": "./dist/monorepo.d.ts",
                 "default": "./dist/monorepo.js"
             }
         },
         "./package": {
+            "require": {
+                "types": "./dist/package.d.cts",
+                "default": "./dist/package.cjs"
+            },
             "import": {
                 "types": "./dist/package.d.ts",
                 "default": "./dist/package.js"
             }
         },
         "./package-json": {
+            "require": {
+                "types": "./dist/package-json.d.cts",
+                "default": "./dist/package-json.cjs"
+            },
             "import": {
                 "types": "./dist/package-json.d.ts",
                 "default": "./dist/package-json.js"
             }
         },
         "./package-manager": {
+            "require": {
+                "types": "./dist/package-manager.d.cts",
+                "default": "./dist/package-manager.cjs"
+            },
             "import": {
                 "types": "./dist/package-manager.d.ts",
                 "default": "./dist/package-manager.js"
             }
         },
         "./tsconfig": {
+            "require": {
+                "types": "./dist/tsconfig.d.cts",
+                "default": "./dist/tsconfig.cjs"
+            },
             "import": {
                 "types": "./dist/tsconfig.d.ts",
                 "default": "./dist/tsconfig.js"
@@ -87,6 +111,7 @@
         },
         "./package.json": "./package.json"
     },
+    "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
