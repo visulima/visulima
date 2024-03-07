@@ -55,25 +55,40 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "hookable": "^5.5.3",
+        "jiti": "^1.21.0",
+        "mlly": "^1.6.1",
+        "pathe": "^1.1.2",
+        "read-pkg": "^9.0.1",
         "@visulima/package": "workspace:*",
         "@visulima/colorize": "workspace:*",
         "@visulima/pail": "workspace:*",
+        "@visulima/cerebro": "workspace:*",
         "@rollup/plugin-alias": "^5.1.0",
+        "@rollup/plugin-inject": "^5.0.5",
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-replace": "^5.0.5",
         "@rollup/pluginutils": "^5.1.0",
+        "rollup-plugin-esbuild": "^6.1.1",
         "magic-string": "^0.30.5",
         "esbuild": "^0.20.1",
         "rollup": "^4.12.0",
         "rollup-plugin-dts": "^6.1.0"
     },
     "peerDependencies": {
+        "postcss": "^8.4.12",
         "typescript": "^5.3.3"
     },
     "peerDependenciesMeta": {
         "typescript": {
+            "optional": true
+        },
+        "postcss": {
+            "optional": true
+        },
+        "@swc/core": {
             "optional": true
         }
     },
