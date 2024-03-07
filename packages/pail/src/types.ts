@@ -61,8 +61,12 @@ export type DefaultLogTypes =
     | "warn"
     | "watch";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type LoggerFunction = (...message: any[]) => void;
+export interface LoggerFunction {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (...message: any[]): void;
+    (message: Message): void;
+}
+
 // alias for backward-compatibility
 export interface LoggerConfiguration<L extends string = never> {
     badge?: string;
@@ -136,7 +140,6 @@ export interface ServerConstructorOptions<T extends string = never, L extends st
 export type Message = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any[] | undefined;
-
     message: Primitive | ReadonlyArray<unknown> | undefined;
     prefix?: string;
     suffix?: string;
