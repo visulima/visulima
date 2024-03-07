@@ -1,8 +1,8 @@
 {
-    "name": "pack",
+    "name": "packem",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/pack/src",
     "projectType": "library",
-    "tags": ["type:package", "pack"],
+    "tags": ["type:package", "packem"],
     "implicitDependencies": []
 }

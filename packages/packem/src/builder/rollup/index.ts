@@ -1,5 +1,4 @@
-import { writeFile, mkdir } from "node:fs/promises";
-import { promises as fsp } from "node:fs";
+import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import type { RollupOptions, OutputOptions, OutputChunk, PreRenderedChunk } from "rollup";
 import { rollup } from "rollup";
@@ -7,15 +6,21 @@ import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import alias from "@rollup/plugin-alias";
 import dts from "rollup-plugin-dts";
+import esbuild from "rollup-plugin-esbuild";
 import replace from "@rollup/plugin-replace";
 import { resolve, dirname, normalize, extname, isAbsolute } from "pathe";
 import { resolvePath, resolveModuleExportNames } from "mlly";
-import { arrayIncludes, getpkg, tryResolve, warn } from "../utils";
+import { arrayIncludes } from "../../utils/array-includes";
+import { getPackageName } from "../../utils/get-package-name";
+import { tryResolve } from "../../utils/try-resolve";
+import { warn } from "../../utils/warn";
 import type { BuildContext } from "../../types";
 import { JSONPlugin } from "./plugins/json";
 import { rawPlugin } from "./plugins/raw";
 import { cjsPlugin } from "./plugins/cjs";
 import { shebangPlugin, makeExecutable, getShebang, removeShebangPlugin } from "./plugins/shebang";
+import { externalizeNodeBuiltins } from "./plugins/externalize-node-builtins";
+import { patchBinary } from "./plugins/patch-binary";
 
 const DEFAULT_EXTENSIONS = [".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx", ".json"];
 
@@ -39,7 +44,7 @@ export async function rollupBuild(ctx: BuildContext) {
 
             const resolvedEntry = normalize(tryResolve(entry.input, ctx.options.rootDir) || entry.input);
             const resolvedEntryWithoutExt = resolvedEntry.slice(0, Math.max(0, resolvedEntry.length - extname(resolvedEntry).length));
-            const code = await fsp.readFile(resolvedEntry, "utf8");
+            const code = await readFile(resolvedEntry, "utf8");
             const shebang = getShebang(code);
 
             await mkdir(dirname(output), { recursive: true });
@@ -99,11 +104,14 @@ export async function rollupBuild(ctx: BuildContext) {
                 await makeExecutable(output + ".mjs");
             }
         }
+
         await ctx.hooks.callHook("rollup:done", ctx);
+
         return;
     }
 
     const rollupOptions = getRollupOptions(ctx);
+
     await ctx.hooks.callHook("rollup:options", ctx, rollupOptions);
 
     if (Object.keys(rollupOptions.input as any).length === 0) {
@@ -114,15 +122,19 @@ export async function rollupBuild(ctx: BuildContext) {
     await ctx.hooks.callHook("rollup:build", ctx, buildResult);
 
     const allOutputOptions = rollupOptions.output! as OutputOptions[];
+
     for (const outputOptions of allOutputOptions) {
         const { output } = await buildResult.write(outputOptions);
         const chunkFileNames = new Set<string>();
         const outputChunks = output.filter((e) => e.type === "chunk") as OutputChunk[];
+
         for (const entry of outputChunks) {
             chunkFileNames.add(entry.fileName);
+
             for (const id of entry.imports) {
                 ctx.usedImports.add(id);
             }
+
             if (entry.isEntry) {
                 ctx.buildEntries.push({
                     chunks: entry.imports.filter((i) => outputChunks.find((c) => c.fileName === i)),
@@ -136,6 +148,7 @@ export async function rollupBuild(ctx: BuildContext) {
                 });
             }
         }
+
         for (const chunkFileName of chunkFileNames) {
             ctx.usedImports.delete(chunkFileName);
         }
@@ -148,6 +161,7 @@ export async function rollupBuild(ctx: BuildContext) {
         await ctx.hooks.callHook("rollup:dts:options", ctx, rollupOptions);
         const typesBuild = await rollup(rollupOptions);
         await ctx.hooks.callHook("rollup:dts:build", ctx, typesBuild);
+
         // #region cjs
         if (ctx.options.rollup.emitCJS) {
             await typesBuild.write({
@@ -222,17 +236,21 @@ export function getRollupOptions(ctx: BuildContext): RollupOptions {
         ].filter(Boolean),
 
         external(id) {
-            const pkg = getpkg(id);
+            const pkg = getPackageName(id);
             const isExplicitExternal = arrayIncludes(ctx.options.externals, pkg) || arrayIncludes(ctx.options.externals, id);
+
             if (isExplicitExternal) {
                 return true;
             }
+
             if (ctx.options.rollup.inlineDependencies || id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(ctx.pkg.name!)) {
                 return false;
             }
+
             if (!isExplicitExternal) {
                 warn(ctx, `Inlined implicit external ${id}`);
             }
+
             return isExplicitExternal;
         },
 
@@ -243,6 +261,8 @@ export function getRollupOptions(ctx: BuildContext): RollupOptions {
         },
 
         plugins: [
+            // externalizeNodeBuiltins(ctx.options.rollup.externalizeNodeBuiltins),
+            // resolveTypescriptMjsCts(),
             ctx.options.rollup.replace &&
                 replace({
                     ...ctx.options.rollup.replace,
@@ -273,7 +293,7 @@ export function getRollupOptions(ctx: BuildContext): RollupOptions {
 
             ctx.options.rollup.esbuild &&
                 esbuild({
-                    sourcemap: ctx.options.sourcemap,
+                    sourceMap: ctx.options.sourcemap,
                     ...ctx.options.rollup.esbuild,
                 }),
 
@@ -290,6 +310,8 @@ export function getRollupOptions(ctx: BuildContext): RollupOptions {
             },
 
             ctx.options.rollup.cjsBridge && cjsPlugin({}),
+
+            // patchBinary(executablePaths),
 
             rawPlugin(),
         ].filter(Boolean),

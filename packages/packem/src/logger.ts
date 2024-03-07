@@ -1,7 +1,7 @@
 import { createPail } from "@visulima/pail";
 
 const logger = createPail({
-    scope: "pack",
+    scope: "packem",
 });
 
 export default logger;
