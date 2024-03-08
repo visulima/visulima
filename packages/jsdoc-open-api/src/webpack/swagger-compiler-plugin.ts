@@ -5,13 +5,13 @@ import { exit } from "node:process";
 import { collect } from "@visulima/readdir";
 import type { Compiler } from "webpack";
 
+import { DEFAULT_EXCLUDE } from "../constants";
 import type { BaseDefinition } from "../exported";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
 import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
 import validate from "../validate";
-import { DEFAULT_EXCLUDE } from "../constants";
 
 const errorHandler = (error: any) => {
     if (error) {
