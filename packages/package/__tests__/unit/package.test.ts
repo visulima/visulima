@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { findPackageRoot } from "../src/package";
+import { findPackageRoot } from "../../src/package";
 
 const { findUp } = vi.hoisted(() => {
     return {

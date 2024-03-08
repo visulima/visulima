@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { findTSConfig, writeTSConfig } from "../src/tsconfig";
+import { findTSConfig, writeTSConfig } from "../../src/tsconfig";
 
-const cwd = join(dirname(fileURLToPath(import.meta.url)), `../__fixtures__/tsconfig`);
+const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "tsconfig");
 
 vi.mock("get-tsconfig", async (importOriginal) => {
     const module = await importOriginal();

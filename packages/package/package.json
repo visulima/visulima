@@ -136,6 +136,13 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@visulima/readdir": "workspace:*",
+        "detect-indent": "^7.0.1",
+        "get-tsconfig": "^4.7.2",
+        "read-pkg": "^9.0.1",
+        "strip-json-comments": "^5.0.1"
+    },
     "devDependencies": {
         "detect-indent": "^7.0.1",
         "find-up": "^7.0.0",
