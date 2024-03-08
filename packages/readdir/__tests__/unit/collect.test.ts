@@ -4,7 +4,7 @@ import collect from "../../src/collect";
 
 describe("collect", () => {
     it("should collects default file extensions from a valid directory", async () => {
-        expect.assertions(6);
+        expect.assertions(7);
 
         // Replace with a real directory for your test
         const directory = "./src";

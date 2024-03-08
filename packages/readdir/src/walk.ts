@@ -1,6 +1,6 @@
 import type { Dirent, Stats } from "node:fs";
 import { readdir, realpath, stat } from "node:fs/promises";
-import { basename, join, normalize } from "node:path";
+import { basename, join, normalize, resolve } from "node:path";
 
 import globToRegExp from "./utils/glob-to-regex";
 import toPath from "./utils/to-path";
@@ -14,7 +14,7 @@ const include = (path: string, extensions?: string[], match?: RegExp[], skip?: R
         return false;
     }
 
-    return !(skip && micromatch.isMatch(path, skip, minimatchOptions.skip));
+    return !(skip && skip.some((pattern): boolean => pattern.test(path)));
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -123,7 +123,7 @@ export default async function* walk(
     const mappedSkip = skip ? skip.map((pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern)) : undefined;
 
     // eslint-disable-next-line no-param-reassign
-    directory = toPath(directory);
+    directory = resolve(toPath(directory));
 
     if (includeDirectories && include(directory, extensions, mappedMatch, mappedSkip)) {
         yield await _createWalkEntry(directory);

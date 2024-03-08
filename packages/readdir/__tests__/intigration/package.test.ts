@@ -13,9 +13,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        const expected = "a";
-
-        expect(esc(received)).toStrictEqual(esc(expected));
+        expect(received.includes("packages/readdir")).toBeTruthy();
     });
 
     it(`should work as ESM package`, async () => {
@@ -25,8 +23,6 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        const expected = "a";
-
-        expect(received).toStrictEqual(esc(expected));
+        expect(received.includes("packages/readdir")).toBeTruthy();
     });
 });

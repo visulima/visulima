@@ -1,4 +1,5 @@
 const { collect } = require("@visulima/readdir");
 
-
-console.log(collect("."));
+(async () => {
+    console.log(await collect("."));
+})();
