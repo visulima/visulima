@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima readdir</h3>
   <p>
-  Find a file or directory by walking up parent directories.
+  Helpers to finding a file or directory.
   </p>
 </div>
 
@@ -41,6 +41,8 @@ pnpm add @visulima/readdir
 
 ## Usage
 
+## walk
+
 ```typescript
 import { walk } from "@visulima/readdir";
 
@@ -53,44 +55,157 @@ for await (const index of walk(`${__dirname}/fixtures`, {})) {
 console.log(filesAndFolders);
 ```
 
-These helpers can be used to find specific files in all Next.js `['src', 'app', 'integrations']` folders.
+### API for `walk`
 
-This example will find all files in the sub-folder `commands` and add it to the build process.
+#### path
+
+Type: `string`
+
+The directory to start from.
+
+#### options
+
+Type: `object`
+
+#### maxDepth
+
+Type: `number`
+
+Default: `Infinity`
+
+Optional: `true`
+
+Description: The maximum depth of the file tree to be walked recursively.
+
+#### includeFiles
+
+Type: `boolean`
+
+Default: `true`
+
+Optional: `true`
+
+Description: Indicates whether file entries should be included or not.
+
+#### includeDirs
+
+Type: `boolean`
+
+Default: `true`
+
+Optional: `true`
+
+Description: Indicates whether directory entries should be included or not.
+
+#### includeSymlinks
+
+Type: `boolean`
+
+Default: `true`
+
+Optional: `true`
+
+Description: Indicates whether symlink entries should be included or not. This option is meaningful only if followSymlinks is set to false.
+
+#### followSymlinks
+
+Type: `boolean`
+
+Default: `false`
+
+Optional: `true`
+
+Description: Indicates whether symlinks should be resolved or not.
+
+#### extensions
+
+Type: `string[]`
+
+Default: `undefined`
+
+Optional: `true`
+
+Description: List of file extensions used to filter entries. If specified, entries without the file extension specified by this option are excluded.
+
+#### match
+
+Type: `RegExp[]`
+
+Default: `undefined`
+
+Optional: `true`
+
+Description: List of regular expression patterns used to filter entries. If specified, entries that do not match the patterns specified by this option are excluded.
+
+#### skip
+
+Type: `RegExp[]`
+
+Default: `undefined`
+
+Optional: `true`
+
+Description: List of regular expression patterns used to filter entries. If specified, entries matching the patterns specified by this option are excluded.
+
+## findUp
+
+Find a file or directory by walking up parent directories.
 
 ```typescript
-import type { NextConfig } from "next";
-import { collect } from "@visulima/readdir";
+import { findUp } from "@visulima/readdir";
 
-const config: NextConfig = {
-    webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-        if (isServer) {
-            return {
-                ...config,
-                entry() {
-                    return config.entry().then(async (entry) => {
-                        const allCommands = await collect("commands", __dirname, {
-                            includeDirs: false,
-                        });
-                        const commands: { [key: string]: string } = {};
+// Returns a Promise for the found path or undefined if it could not be found.
+const file = await findUp("package.json");
 
-                        allCommands.forEach((commandPath) => {
-                            commands[commandPath.replace(/\.[^./]+$/, "").slice(1)] = `.${commandPath}`;
-                        });
-
-                        return {
-                            ...entry,
-                            ...commands,
-                        };
-                    });
-                },
-            };
-        }
-
-        return config;
-    },
-};
-module.exports = config;
+console.log(file);
 ```
+
+## findUpSync
+
+Find a file or directory by walking up parent directories
+
+```typescript
+import { findUpSync } from "@visulima/readdir";
+
+// Returns the found path or undefined if it could not be found.
+const file = findUpSync("package.json");
+
+console.log(file);
+```
+
+### API for `findUp` and `findUpSync`
+
+#### name
+
+Type: `string`
+
+The name of the file or directory to find.
+
+#### options
+
+Type: `object`
+
+##### cwd
+
+Type: `URL | string`\
+Default: `process.cwd()`
+
+The directory to start from.
+
+##### type
+
+Type: `string`\
+Default: `'file'`\
+Values: `'file' | 'directory'`
+
+The type of path to match.
+
+##### stopAt
+
+Type: `URL | string`\
+Default: Root directory
+
+A directory path where the search halts if no matches are found before reaching this point.
 
 ## Supported Node.js Versions
 

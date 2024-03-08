@@ -4,8 +4,26 @@
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "anolilab",
+        "directory",
+        "file",
+        "find",
+        "find-up",
+        "findup",
+        "folder",
+        "look",
+        "look-up",
+        "match",
+        "package",
+        "parent",
+        "parents",
+        "path",
         "readdir",
-        "walk"
+        "resolve",
+        "search",
+        "up",
+        "visulima",
+        "walk",
+        "walking"
     ],
     "homepage": "https://www.visulima.com/docs/package/readdir",
     "repository": {
@@ -68,10 +86,8 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "dependencies": {
-        "micromatch": "^4.0.5"
-    },
     "devDependencies": {
+        "tempy": "^3.1.0",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",

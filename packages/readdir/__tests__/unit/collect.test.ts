@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import collect from "../src/collect";
+import collect from "../../src/collect";
 
 describe("collect", () => {
     it("should collects default file extensions from a valid directory", async () => {
-        expect.assertions(3);
+        expect.assertions(6);
 
         // Replace with a real directory for your test
         const directory = "./src";
@@ -18,7 +18,7 @@ describe("collect", () => {
     });
 
     it("collects custom file extensions from a valid directory", async () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
         // Replace with a real directory for your test
         const directory = "./__fixtures__";
