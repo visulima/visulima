@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { esc, execScriptSync } from "../helpers";
+import { execScriptSync } from "../helpers";
 
 describe("usage `@visulima/package` npm package", () => {
     it(`should work as CommonJS package`, () => {

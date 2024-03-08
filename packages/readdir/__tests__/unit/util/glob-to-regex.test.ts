@@ -201,6 +201,7 @@ describe("globToRegExp", () => {
 
         const globPattern = "dir/**";
         const regexPattern = globToRegExp(globPattern);
+        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
         const regex = new RegExp(regexPattern);
 
         expect(regex.test("dir/fileA.txt")).toBeTruthy();
