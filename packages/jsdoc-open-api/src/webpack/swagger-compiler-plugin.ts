@@ -11,31 +11,7 @@ import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
 import validate from "../validate";
-
-const exclude = [
-    "coverage/**",
-    ".github/**",
-    "packages/*/test{,s}/**",
-    "**/*.d.ts",
-    "test{,s}/**",
-    "test{,-*}.{js,cjs,mjs,ts,tsx,jsx,yaml,yml}",
-    "**/*{.,-}test.{js,cjs,mjs,ts,tsx,jsx,yaml,yml}",
-    "**/__tests__/**",
-    "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
-    "**/jest.config.{js,cjs,mjs,ts}",
-    "**/{karma,rollup,webpack}.config.js",
-    "**/.{eslint,mocha}rc.{js,cjs}",
-    "**/.{travis,yarnrc}.yml",
-    "**/{docker-compose,docker}.yml",
-    "**/.yamllint.{yaml,yml}",
-    "**/node_modules/**",
-    "**/pnpm-lock.yaml",
-    "**/pnpm-workspace.yaml",
-    "**/{package,package-lock}.json",
-    "**/yarn.lock",
-    "**/package.json5",
-    "**/.next/**",
-];
+import { DEFAULT_EXCLUDE } from "../constants";
 
 const errorHandler = (error: any) => {
     if (error) {
@@ -49,7 +25,7 @@ const errorHandler = (error: any) => {
 class SwaggerCompilerPlugin {
     private readonly assetsPath: string;
 
-    private readonly ignore: ReadonlyArray<string> | string;
+    private readonly ignore: (RegExp | string)[];
 
     private readonly sources: string[];
 
@@ -62,7 +38,7 @@ class SwaggerCompilerPlugin {
         sources: string[],
         swaggerDefinition: BaseDefinition,
         options: {
-            ignore?: ReadonlyArray<string> | string;
+            ignore?: (RegExp | string)[];
             verbose?: boolean;
         },
     ) {
@@ -74,6 +50,8 @@ class SwaggerCompilerPlugin {
     }
 
     public apply(compiler: Compiler): void {
+        const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...this.ignore]);
+
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
@@ -85,17 +63,7 @@ class SwaggerCompilerPlugin {
                 const files = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
                     includeDirs: false,
-                    minimatchOptions: {
-                        match: {
-                            debug: this.verbose,
-                            matchBase: true,
-                        },
-                        skip: {
-                            debug: this.verbose,
-                            matchBase: true,
-                        },
-                    },
-                    skip: [...this.ignore, ...exclude],
+                    skip: [...skip],
                 });
 
                 if (this.verbose) {

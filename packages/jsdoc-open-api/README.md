@@ -45,7 +45,7 @@ pnpm add @visulima/jsdoc-open-api
 
 Choose the syntax you want to use for your OpenAPI definitions:
 
-![choose the syntax](./assets/swagger-difference.png)
+![choose the syntax](./__assets__/swagger-difference.png)
 
 ### CLI:
 
