@@ -1,3 +1,10 @@
+## @visulima/fs [1.2.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.1.0...@visulima/fs@1.2.0) (2024-03-09)
+
+
+### Features
+
+* added readFile and readFileSync ([#340](https://github.com/visulima/visulima/issues/340)) ([47dd800](https://github.com/visulima/visulima/commit/47dd800cbadc8d353e9546487fa4c288d3f8be79))
+
 ## @visulima/fs [1.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.0.0...@visulima/fs@1.1.0) (2024-03-09)
 
 
