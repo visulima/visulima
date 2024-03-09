@@ -31,6 +31,8 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
     expect(entries.map(({ path }) => path)).toStrictEqual(expect.arrayContaining(result));
 };
 
+const isWindows = process.platform === "win32";
+
 describe("walk", () => {
     it("should return current dir for empty dir", async () => {
         expect.assertions(2);
@@ -98,7 +100,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: ["**/x", "**/y"],
+            match: isWindows ? ["**\\x", "**\\y"] : ["**/x", "**/y"],
         });
     });
 
