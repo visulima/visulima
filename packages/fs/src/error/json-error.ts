@@ -1,10 +1,10 @@
 class JSONError extends Error {
+    public fileName: string | undefined;
 
-    public fileName: string | undefined = null;
+    public codeFrame: string | undefined;
 
-    public codeFrame: string | null = null;
-
-    private override readonly name = "JSONError";
+    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    override readonly name = "JSONError";
 
     #message;
 

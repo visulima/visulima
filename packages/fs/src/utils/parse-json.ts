@@ -1,14 +1,29 @@
+/**
+ * A modified version of `parse-json` from `https://github.com/sindresorhus/parse-json/blob/main/index.js`
+ *
+ * MIT License
+ * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ */
+
 import { codeFrame } from "@visulima/error";
 import type { JsonValue } from "type-fest";
 
 import JsonError from "../error/json-error";
-import type { CodeFrameLocation, Reviver } from "../types";
+import type { CodeFrameLocation, CodeFrameOptions, Reviver } from "../types";
 import indexToPosition from "./index-to-position";
 
 const getCodePoint = (character: string): string => `\\u{${(character.codePointAt(0) as number).toString(16)}}`;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
-const generateCodeFrame = (source: string, location: CodeFrameLocation) => codeFrame(source, { start: location });
+const generateCodeFrame = (source: string, location: CodeFrameLocation, options?: CodeFrameOptions) =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+    codeFrame(
+        source,
+        { start: location },
+        {
+            tabWidth: false,
+            ...options,
+        },
+    );
 
 const getErrorLocation = (source: string, message: string): CodeFrameLocation | undefined => {
     // eslint-disable-next-line security/detect-unsafe-regex
@@ -45,11 +60,16 @@ const addCodePointToUnexpectedToken = (message: string): string =>
         (_, _quote, token) => `"${token}"(${getCodePoint(token)})`,
     );
 
-function parseJson(string: string, filename?: string): JsonValue;
-function parseJson(string: string, reviver: Reviver, fileName?: string): JsonValue;
+function parseJson(string: string, filename?: string, options?: CodeFrameOptions): JsonValue;
+function parseJson(string: string, reviver: Reviver, fileName?: string, options?: CodeFrameOptions): JsonValue;
 // eslint-disable-next-line func-style
-function parseJson(string: string, reviver?: Reviver | string, fileName?: string): JsonValue {
+function parseJson(string: string, reviver?: Reviver | string, fileName?: CodeFrameOptions | string, options?: CodeFrameOptions): JsonValue {
     if (typeof reviver === "string") {
+        if (typeof fileName === "object") {
+            // eslint-disable-next-line no-param-reassign
+            options = fileName;
+        }
+
         // eslint-disable-next-line no-param-reassign
         fileName = reviver;
         // eslint-disable-next-line no-param-reassign
@@ -77,11 +97,11 @@ function parseJson(string: string, reviver?: Reviver | string, fileName?: string
 
     const jsonError = new JsonError(message);
 
-    jsonError.fileName = fileName;
+    jsonError.fileName = fileName as string;
 
     if (location) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        jsonError.codeFrame = generateCodeFrame(string, location);
+        jsonError.codeFrame = generateCodeFrame(string, location, options);
     }
 
     throw jsonError;

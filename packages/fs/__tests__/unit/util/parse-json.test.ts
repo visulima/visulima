@@ -1,18 +1,30 @@
+import { CODE_FRAME_POINTER } from "@visulima/error";
 import { describe, expect, it } from "vitest";
 
 import JSONError from "../../../src/error/json-error";
 import parseJson from "../../../src/utils/parse-json";
 
+const NODE_JS_VERSION = Number(process.versions.node.split(".")[0]);
+
 const INVALID_JSON_STRING = `
   {
-  	"foo": true,
+  \t"foo": true,
   }`;
-const EXPECTED_CODE_FRAME = `
-  1 | {
-  2 | 	"foo": true,
-> 3 | }
-    | ^
-`.slice(1, -1);
+
+const errorMessageRegex = (() => {
+    if (NODE_JS_VERSION < 20) {
+        // eslint-disable-next-line regexp/strict
+        return /Unexpected token "}"\(\\u{7d}\) in JSON at position 23/;
+    }
+
+    if (NODE_JS_VERSION < 21) {
+        return /Expected double-quoted property name in JSON at position 23/;
+    }
+
+    return /Expected double-quoted property name in JSON at position 23 \(line 3 column 1\)/;
+})();
+// eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
+const errorMessageRegexWithFileName = new RegExp(`${errorMessageRegex.source}.*in foo\\.json`);
 
 describe("parse-json", () => {
     // Can parse a valid JSON string without a reviver function
@@ -60,12 +72,14 @@ describe("parse-json", () => {
     });
 
     it("should throw a JSONError when parsing an empty string", () => {
-        expect.assertions(1);
-
-        const jsonString = "";
+        expect.assertions(2);
 
         expect(() => {
-            parseJson(jsonString);
+            parseJson("");
+        }).toThrow(JSONError);
+
+        expect(() => {
+            parseJson("  ");
         }).toThrow(JSONError);
     });
 
@@ -83,9 +97,8 @@ describe("parse-json", () => {
     it("should throw a JSONError when parsing a JSON string with a trailing comma", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30,}';
         expect(() => {
-            parseJson(jsonString);
+            parseJson('{"name": "John", "age": 30,}');
         }).toThrow(JSONError);
     });
 
@@ -97,7 +110,105 @@ describe("parse-json", () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toStrictEqual(EXPECTED_CODE_FRAME);
+            expect(error.codeFrame).toBe(`  2 |   {
+  3 |   \t"foo": true,
+${CODE_FRAME_POINTER} 4 |   }
+    |   ^`);
+        }
+    });
+
+    it("should allow error location out of bounds", () => {
+        expect.assertions(1);
+
+        try {
+            parseJson("{");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(error.codeFrame).toStrictEqual(
+                NODE_JS_VERSION === 18
+                    ? undefined
+                    : `${CODE_FRAME_POINTER} 1 | {
+    |  ^`,
+            );
+        }
+    });
+
+    it("should throw a error on a unexpected token", () => {
+        expect.assertions(2);
+
+        try {
+            parseJson("a");
+        } catch (error) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(error).toBeInstanceOf(JSONError);
+
+            const firstLine = error.message.split("\n")[0];
+
+            if (NODE_JS_VERSION === 18) {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(firstLine).toBe('Unexpected token "a"(\\u{61}) in JSON at position 0');
+            } else {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(firstLine).toBe('Unexpected token "a"(\\u{61}), "a" is not valid JSON');
+            }
+        }
+    });
+
+    it("should allow to add fileName to the Error", () => {
+        expect.assertions(5);
+
+        expect(() => {
+            try {
+                parseJson(INVALID_JSON_STRING, "foo.json");
+            } catch (error) {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(error.fileName).toBe("foo.json");
+
+                throw error;
+            }
+        }).toThrow(errorMessageRegexWithFileName);
+
+        expect(() => {
+            try {
+                parseJson(INVALID_JSON_STRING);
+            } catch (error) {
+                error.fileName = "foo.json";
+
+                throw error;
+            }
+        }).toThrow(errorMessageRegexWithFileName);
+
+        expect(() => {
+            try {
+                parseJson(INVALID_JSON_STRING, "bar.json");
+            } catch (error) {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(error.fileName).toBe("bar.json");
+
+                error.fileName = "foo.json";
+
+                throw error;
+            }
+        }).toThrow(errorMessageRegexWithFileName);
+    });
+
+    it("should take codeFrame options", () => {
+        expect.assertions(1);
+
+        try {
+            parseJson(INVALID_JSON_STRING, "foo.json", {
+                color: {
+                    gutter: (value) => `+++${value}`,
+                },
+            });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(error.codeFrame).toStrictEqual(` +++ 2 |   {
+ +++ 3 |   \t"foo": true,
+${CODE_FRAME_POINTER}+++ 4 |   }
+ +++   |   ^`);
         }
     });
 });
