@@ -50,3 +50,26 @@ export interface WalkOptions {
 export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSymbolicLink" | "name"> {
     path: string;
 }
+
+export type ReadFileOptions<C> = {
+    /**
+     * Return content as a Buffer. Default: `false`
+     */
+    buffer?: boolean;
+
+    /**
+     * Compression method to decompress the file against. Default: `none`
+     */
+    compression?: C;
+
+    /**
+     * The encoding to use. Default: `utf8`
+     * @see https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
+     */
+    // eslint-disable-next-line unicorn/text-encoding-identifier-case
+    encoding?: "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le" | undefined;
+
+    flag?: number | string | undefined;
+};
+
+export type ContentType<O = undefined> = O extends { buffer: true } ? Buffer : string;
