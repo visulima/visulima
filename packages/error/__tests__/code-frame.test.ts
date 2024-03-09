@@ -381,4 +381,22 @@ ${POINTER} 2 |     const error = x.y;
         ).toBe(`${POINTER} 1 |  * @name        Foo#a
     |                 ^^`);
     });
+
+    it("should render tabs if tabWidth option is disabled", () => {
+        expect.assertions(1);
+
+        expect(
+            codeFrame(
+                " * @name\t\tFoo#a",
+                {
+                    end: { column: 19, line: 1 },
+                    start: { column: 17, line: 1 },
+                },
+                {
+                    tabWidth: false,
+                },
+            ),
+        ).toBe(`${POINTER} 1 |  * @name\t\tFoo#a
+    |         \t\t     ^^`);
+    });
 });

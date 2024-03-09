@@ -97,6 +97,11 @@ console.log(causes);
 
 ## Pretty Code Frame
 
+Display a pretty code frame with the error location.
+
+> Note: Tabs can be used in the source code, codeFrame transforms them to spaces based on the tabWidth option.
+> The default tabWidth is 4, to disable the transformation, set tabWidth to false.
+
 ```ts
 import { codeFrame } from "@visulima/error";
 
@@ -110,6 +115,82 @@ console.log(frame);
 // > 2 | const error = x.y;
 //     |                ^
 ```
+
+### API
+
+#### source
+
+Type: `string`
+
+The source code to frame.
+
+#### location
+
+Type: `object`
+
+The location of the error.
+
+##### location.start
+
+Type: `object`
+
+The location of the start of the frame.
+
+##### location.start.line
+
+Type: `number`
+
+The line number of the error.
+
+##### location.start.column
+
+Type: `number`
+
+The column number of the error.
+
+##### location.end
+
+Type: `object`
+
+The location of the end of the frame.
+
+##### location.end.line
+
+Type: `number`
+
+The line number of the error.
+
+##### location.end.column
+
+Type: `number`
+
+The column number of the error.
+
+#### options
+
+Type: `object`
+
+##### options.linesAbove
+
+Type: `number`
+
+Default: `2`
+
+The number of lines to show above the error.
+
+##### options.linesBelow
+
+Type: `number`
+
+Default: `3`
+
+The number of lines to show below the error.
+
+##### options.tabWidth
+
+Type: `number` | `false`
+
+Default: `4`
 
 ## Stacktrace
 

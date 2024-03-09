@@ -19,7 +19,7 @@ const POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? "
 export const codeFrame = (
     source: string,
     loc: CodeFrameNodeLocation,
-    options: Partial<CodeFrameOptions> = {},
+    options?: CodeFrameOptions,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
     // grab 2 lines before, and 3 lines after focused line
@@ -28,21 +28,25 @@ export const codeFrame = (
             gutter: (value: string) => value,
             marker: (value: string) => value,
             message: (value: string) => value,
-            ...options.color,
+            ...options?.color,
         },
         linesAbove: 2,
         linesBelow: 3,
         showGutter: true,
         showLineNumbers: true,
+        tabWidth: 4,
         ...options,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const hasColumns = loc.start && typeof loc.start.column === "number";
 
-    const lines = normalizeLF(source)
-        .split("\n")
-        .map((ln) => ln.replaceAll("\t", "    "));
+    let lines = normalizeLF(source).split("\n");
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (typeof config?.tabWidth === "number") {
+        lines = lines.map((ln) => ln.replaceAll("\t", " ".repeat(config.tabWidth as number)));
+    }
 
     const { end, markerLines, start } = getMarkerLines(loc, lines, config.linesAbove, config.linesBelow);
 
