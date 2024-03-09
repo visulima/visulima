@@ -1,3 +1,10 @@
+## @visulima/error [3.1.0](https://github.com/visulima/visulima/compare/@visulima/error@3.0.7...@visulima/error@3.1.0) (2024-03-09)
+
+
+### Features
+
+* **error:** added new tabWidth option to disable the tab transformer ([a115918](https://github.com/visulima/visulima/commit/a11591825f841c9ab28ebadd85d20633c5cd9e50))
+
 ## @visulima/error [3.0.7](https://github.com/visulima/visulima/compare/@visulima/error@3.0.6...@visulima/error@3.0.7) (2024-03-09)
 
 
