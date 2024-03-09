@@ -2,7 +2,7 @@ import { accessSync } from "node:fs";
 
 import { F_OK } from "./constants";
 
-/** Returns a Promise that resolves to a boolean indicating if the path is accessible or not. */
+/** Returns a boolean indicating if the path is accessible or not. */
 function isAccessibleSync(path: string, mode?: number): boolean;
 function isAccessibleSync(path: string[], mode?: number): boolean[];
 // eslint-disable-next-line func-style
