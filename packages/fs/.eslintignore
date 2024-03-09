@@ -5,6 +5,9 @@ coverage
 vitest.config.ts
 recipes
 __fixtures__
-.prettierrc.js
+__bench__
+.prettierrc.cjs
+.eslintrc.cjs
+.secretlintrc.cjs
 _meta.*.json
 tsup.config.ts

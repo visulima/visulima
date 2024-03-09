@@ -58,21 +58,22 @@
         "email": "d.bannert@anolilab.de"
     },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
             "require": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
             }
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
     "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
@@ -86,11 +87,11 @@
         "build:prod": "cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
-        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
-        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:packagejson": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.js --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
