@@ -73,3 +73,6 @@ export type ReadFileOptions<C> = {
 };
 
 export type ContentType<O = undefined> = O extends { buffer: true } ? Buffer : string;
+
+// Get `reviver`` parameter from `JSON.parse()`.
+export type Reviver = Parameters<(typeof JSON)["parse"]>["1"];
