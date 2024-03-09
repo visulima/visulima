@@ -1,3 +1,10 @@
+## @visulima/error [3.1.1](https://github.com/visulima/visulima/compare/@visulima/error@3.1.0...@visulima/error@3.1.1) (2024-03-09)
+
+
+### Bug Fixes
+
+* **error:** fixed color option override ([467f1dc](https://github.com/visulima/visulima/commit/467f1dc979b6d4bca102589d330be083fd44e43e))
+
 ## @visulima/error [3.1.0](https://github.com/visulima/visulima/compare/@visulima/error@3.0.7...@visulima/error@3.1.0) (2024-03-09)
 
 
