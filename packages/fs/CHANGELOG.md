@@ -1,3 +1,10 @@
+## @visulima/fs [1.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.0.0...@visulima/fs@1.1.0) (2024-03-09)
+
+
+### Features
+
+* **fs:** added isAccessibleSync and isAccessible ([#339](https://github.com/visulima/visulima/issues/339)) ([552eaec](https://github.com/visulima/visulima/commit/552eaec4a1b36db08a6386c562fa6a3bf248c40d))
+
 ## @visulima/fs 1.0.0 (2024-03-09)
 
 
