@@ -1,21 +1,17 @@
-import type { Dirent, Stats } from "node:fs";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Documentation and interface for walk were adapted from Go
+// https://golang.org/pkg/path/filepath/#Walk
+// Copyright 2009 The Go Authors. All rights reserved. BSD license.
+
+import type { Stats } from "node:fs";
 import { readdir, realpath, stat } from "node:fs/promises";
 import { basename, join, normalize, resolve } from "node:path";
 
+import WalkError from "./error/walk-error";
+import type { WalkEntry, WalkOptions } from "./types";
 import globToRegExp from "./utils/glob-to-regex";
 import toPath from "./utils/to-path";
-
-const include = (path: string, extensions?: string[], match?: RegExp[], skip?: RegExp[]): boolean => {
-    if (extensions && !extensions.some((extension): boolean => path.endsWith(extension))) {
-        return false;
-    }
-
-    if (match && !match.some((pattern): boolean => pattern.test(path))) {
-        return false;
-    }
-
-    return !(skip && skip.some((pattern): boolean => pattern.test(path)));
-};
+import walkInclude from "./utils/walk-include";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
@@ -36,57 +32,6 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
         path: normalizePath,
     };
 };
-
-export interface Options {
-    /**
-     * List of file extensions used to filter entries.
-     * If specified, entries without the file extension specified by this option are excluded.
-     * @default {undefined}
-     */
-    extensions?: string[];
-    /**
-     * Indicates whether symlinks should be resolved or not.
-     * @default {false}
-     */
-    followSymlinks?: boolean;
-    /**
-     * Indicates whether directory entries should be included or not.
-     * @default {true}
-     */
-    includeDirs?: boolean;
-    /**
-     * Indicates whether file entries should be included or not.
-     * @default {true}
-     */
-    includeFiles?: boolean;
-    /**
-     * Indicates whether symlink entries should be included or not.
-     * This option is meaningful only if `followSymlinks` is set to `false`.
-     * @default {true}
-     */
-    includeSymlinks?: boolean;
-    /**
-     * List of regular expression or glob patterns used to filter entries.
-     * If specified, entries that do not match the patterns specified by this option are excluded.
-     * @default {undefined}
-     */
-    match?: (RegExp | string)[];
-    /**
-     * The maximum depth of the file tree to be walked recursively.
-     * @default {Infinity}
-     */
-    maxDepth?: number;
-    /**
-     * List of regular expression or glob patterns used to filter entries.
-     * If specified, entries matching the patterns specified by this option are excluded.
-     * @default {undefined}
-     */
-    skip?: (RegExp | string)[];
-}
-
-export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSymbolicLink" | "name"> {
-    path: string;
-}
 
 /**
  * Walks the file tree rooted at root, yielding each file or directory in the
@@ -113,7 +58,7 @@ export default async function* walk(
         match,
         maxDepth = Number.POSITIVE_INFINITY,
         skip,
-    }: Options = {},
+    }: WalkOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
     if (maxDepth < 0) {
         return;
@@ -125,29 +70,54 @@ export default async function* walk(
     // eslint-disable-next-line no-param-reassign
     directory = resolve(toPath(directory));
 
-    if (includeDirectories && include(directory, extensions, mappedMatch, mappedSkip)) {
+    if (includeDirectories && walkInclude(directory, extensions, mappedMatch, mappedSkip)) {
         yield await _createWalkEntry(directory);
     }
 
-    if (maxDepth < 1 || !include(directory, undefined, undefined, mappedSkip)) {
+    if (maxDepth < 1 || !walkInclude(directory, undefined, undefined, mappedSkip)) {
         return;
     }
 
-    // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename,no-loops/no-loops
-    for await (const entry of await readdir(directory, {
-        withFileTypes: true,
-    })) {
-        if (!entry.name) {
-            throw new Error("Null Entry");
-        }
+    try {
+        // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename,no-loops/no-loops
+        for await (const entry of await readdir(directory, {
+            withFileTypes: true,
+        })) {
+            let path = join(directory, entry.name);
 
-        let path = join(directory, entry.name);
+            if (entry.isSymbolicLink()) {
+                if (followSymlinks) {
+                    // eslint-disable-next-line security/detect-non-literal-fs-filename
+                    path = await realpath(path);
+                } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
+                    yield {
+                        // eslint-disable-next-line @typescript-eslint/unbound-method
+                        isDirectory: entry.isDirectory,
+                        // eslint-disable-next-line @typescript-eslint/unbound-method
+                        isFile: entry.isFile,
+                        // eslint-disable-next-line @typescript-eslint/unbound-method
+                        isSymbolicLink: entry.isSymbolicLink,
+                        name: entry.name,
+                        path,
+                    };
+                } else {
+                    // eslint-disable-next-line no-continue
+                    continue;
+                }
+            }
 
-        if (entry.isSymbolicLink()) {
-            if (followSymlinks) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                path = await realpath(path);
-            } else if (includeSymlinks && include(path, extensions, mappedMatch, mappedSkip)) {
+            if (entry.isSymbolicLink() || entry.isDirectory()) {
+                yield* walk(path, {
+                    extensions,
+                    followSymlinks,
+                    includeDirs: includeDirectories,
+                    includeFiles,
+                    includeSymlinks,
+                    match: mappedMatch,
+                    maxDepth: maxDepth - 1,
+                    skip: mappedSkip,
+                } as WalkOptions);
+            } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield {
                     // eslint-disable-next-line @typescript-eslint/unbound-method
                     isDirectory: entry.isDirectory,
@@ -158,34 +128,13 @@ export default async function* walk(
                     name: entry.name,
                     path,
                 };
-            } else {
-                // eslint-disable-next-line no-continue
-                continue;
             }
         }
-
-        if (entry.isSymbolicLink() || entry.isDirectory()) {
-            yield* walk(path, {
-                extensions,
-                followSymlinks,
-                includeDirs: includeDirectories,
-                includeFiles,
-                includeSymlinks,
-                match: mappedMatch,
-                maxDepth: maxDepth - 1,
-                skip: mappedSkip,
-            } as Options);
-        } else if (entry.isFile() && includeFiles && include(path, extensions, mappedMatch, mappedSkip)) {
-            yield {
-                // eslint-disable-next-line @typescript-eslint/unbound-method
-                isDirectory: entry.isDirectory,
-                // eslint-disable-next-line @typescript-eslint/unbound-method
-                isFile: entry.isFile,
-                // eslint-disable-next-line @typescript-eslint/unbound-method
-                isSymbolicLink: entry.isSymbolicLink,
-                name: entry.name,
-                path,
-            };
+    } catch (error) {
+        if (error instanceof WalkError) {
+            throw error;
         }
+
+        throw new WalkError(error, directory);
     }
 }

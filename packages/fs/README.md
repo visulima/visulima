@@ -55,7 +55,21 @@ for await (const index of walk(`${__dirname}/fixtures`, {})) {
 console.log(filesAndFolders);
 ```
 
-### API for `walk`
+## walkSync
+
+```typescript
+import { walkSync } from "@visulima/fs";
+
+const filesAndFolders: string[] = [];
+
+for (const index of walkSync(`${__dirname}/fixtures`, {})) {
+    filesAndFolders.push(index.path);
+}
+
+console.log(filesAndFolders);
+```
+
+### API for `walk` and `walkSync`
 
 #### path
 
@@ -129,23 +143,23 @@ Description: List of file extensions used to filter entries. If specified, entri
 
 #### match
 
-Type: `RegExp[]`
+Type: `(RegExp | string)[]`
 
 Default: `undefined`
 
 Optional: `true`
 
-Description: List of regular expression patterns used to filter entries. If specified, entries that do not match the patterns specified by this option are excluded.
+Description: List of regular expression or [glob](<https://en.wikipedia.org/wiki/Glob_(programming)>) patterns used to filter entries. If specified, entries that do not match the patterns specified by this option are excluded.
 
 #### skip
 
-Type: `RegExp[]`
+Type: `(RegExp | string)[]`
 
 Default: `undefined`
 
 Optional: `true`
 
-Description: List of regular expression patterns used to filter entries. If specified, entries matching the patterns specified by this option are excluded.
+Description: List of regular expression or [glob](<https://en.wikipedia.org/wiki/Glob_(programming)>) patterns used to filter entries. If specified, entries matching the patterns specified by this option are excluded.
 
 ## findUp
 
@@ -162,7 +176,7 @@ console.log(file);
 
 ## findUpSync
 
-Find a file or directory by walking up parent directories
+Find a file or directory by walking up parent directories.
 
 ```typescript
 import { findUpSync } from "@visulima/fs";

@@ -1,11 +1,11 @@
-import type { Options } from "./walk";
+import type { WalkOptions } from "./types";
 import walk from "./walk";
 
-const collect = async (directory: string, options: Options = {}): Promise<string[]> => {
+const collect = async (directory: string, options: WalkOptions = {}): Promise<string[]> => {
     const config = {
         extensions: ["js", "mjs", "cjs", "ts"],
         ...options,
-    } as Options;
+    } as WalkOptions;
 
     const entries: string[] = [];
 

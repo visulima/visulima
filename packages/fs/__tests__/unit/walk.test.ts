@@ -116,7 +116,7 @@ describe("walk", () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: ["**/x", "**/y"],
+            skip: isWindows ? ["**\\x", "**\\y"] : ["**/x", "**/y"],
         });
     });
 

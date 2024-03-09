@@ -4,16 +4,15 @@ import collect from "../../src/collect";
 
 describe("collect", () => {
     it("should collects default file extensions from a valid directory", async () => {
-        expect.assertions(7);
+        expect.assertions(3);
 
         // Replace with a real directory for your test
-        const directory = "./src";
-        const entries = await collect(directory);
+        const entries = await collect("./__fixtures__/find-up");
 
         entries.forEach((entry) => {
             const extension = entry.split(".").pop();
 
-            expect("ts").toStrictEqual(extension);
+            expect("js").toStrictEqual(extension);
         });
     });
 
