@@ -1,10 +1,14 @@
 dist
 node_modules
-__fixtures__
+inject-react-import.js
 coverage
-
 vitest.config.ts
-.prettierrc.js
+recipes
+__fixtures__
+__bench__
+.prettierrc.cjs
+.eslintrc.cjs
+.secretlintrc.cjs
 _meta.*.json
 tsup.config.ts
 

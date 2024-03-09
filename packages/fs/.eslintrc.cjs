@@ -24,23 +24,19 @@ module.exports = {
         {
             files: ["*.test.ts"],
             rules: {
-                "@typescript-eslint/no-unsafe-assignment": "off",
-                "@typescript-eslint/no-unsafe-call": "off",
-                "@typescript-eslint/no-unsafe-member-access": "off",
-            },
-        },
-        {
-            files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
-            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
-            parserOptions: {},
-            rules: {
-                "no-loops/no-loops": "off",
-                "no-plusplus": "off",
-                "prefer-template": "off",
+                "import/no-unused-modules": "off",
             },
         },
         {
             files: ["index.ts"],
+            rules: {
+                "import/no-unused-modules": "off",
+            },
+        },
+        {
+            files: ["*.test.ts", "*.bench.ts"],
+            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
+            parserOptions: {},
             rules: {
                 "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
@@ -61,6 +57,7 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
+        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,

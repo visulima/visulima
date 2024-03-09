@@ -1,1 +1,1 @@
-baz.js
+baz.js;
