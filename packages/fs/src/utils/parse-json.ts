@@ -2,23 +2,24 @@ import { codeFrame } from "@visulima/error";
 import type { JsonValue } from "type-fest";
 
 import JsonError from "../error/json-error";
-import type { Reviver } from "../types";
+import type { CodeFrameLocation, Reviver } from "../types";
 import indexToPosition from "./index-to-position";
 
-const getCodePoint = (character: string): string => `\\u{${character.codePointAt(0).toString(16)}}`;
+const getCodePoint = (character: string): string => `\\u{${(character.codePointAt(0) as number).toString(16)}}`;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
-const generateCodeFrame = (source: string, location: { column: number; line: number }) => codeFrame(source, { start: location });
+const generateCodeFrame = (source: string, location: CodeFrameLocation) => codeFrame(source, { start: location });
 
-const getErrorLocation = (source: string, message: string) => {
+const getErrorLocation = (source: string, message: string): CodeFrameLocation | undefined => {
     // eslint-disable-next-line security/detect-unsafe-regex
     const match = /in JSON at position (?<index>\d+)(?: \(line (?<line>\d+) column (?<column>\d+)\))?$/.exec(message);
 
     if (!match) {
-        return;
+        return undefined;
     }
 
-    let { column, index, line } = match.groups;
+    // eslint-disable-next-line prefer-const
+    let { column, index, line } = match.groups as { column?: string; index: number | string; line?: string };
 
     if (line && column) {
         return { column: Number(column), line: Number(line) };
@@ -28,21 +29,21 @@ const getErrorLocation = (source: string, message: string) => {
 
     // The error location can be out of bounds.
     if (index === source.length) {
-        const { column, line } = indexToPosition(source, source.length - 1, { oneBased: true });
+        const { column: pColumn, line: pLine } = indexToPosition(source, source.length - 1);
 
-        return { column: column + 1, line };
+        return { column: pColumn + 1, line: pLine };
     }
 
     return indexToPosition(source, index);
 };
 
-const addCodePointToUnexpectedToken = (message) =>
+const addCodePointToUnexpectedToken = (message: string): string =>
     message.replace(
         // TODO[engine:node@>=20]: The token always quoted after Node.js 20
         /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         (_, _quote, token) => `"${token}"(${getCodePoint(token)})`,
     );
-
 
 function parseJson(string: string, filename?: string): JsonValue;
 function parseJson(string: string, reviver: Reviver, fileName?: string): JsonValue;
@@ -65,10 +66,10 @@ function parseJson(string: string, reviver?: Reviver | string, fileName?: string
         message = error.message;
     }
 
-    let location: { column: number; line: number } | undefined;
+    let location: CodeFrameLocation | undefined;
+
     if (string) {
         location = getErrorLocation(string, message);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         message = addCodePointToUnexpectedToken(message);
     } else {
         message += " while parsing empty string";

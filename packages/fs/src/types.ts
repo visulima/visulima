@@ -76,3 +76,8 @@ export type ContentType<O = undefined> = O extends { buffer: true } ? Buffer : s
 
 // Get `reviver`` parameter from `JSON.parse()`.
 export type Reviver = Parameters<(typeof JSON)["parse"]>["1"];
+
+export type CodeFrameLocation = {
+    column?: number;
+    line: number;
+};
