@@ -1,3 +1,17 @@
+## @visulima/api-platform [2.0.22](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.21...@visulima/api-platform@2.0.22) (2024-03-09)
+
+
+### Bug Fixes
+
+* migrating readdir to fs package ([8da1572](https://github.com/visulima/visulima/commit/8da157281faddf606ceacfb8e091175be2dd0acf))
+
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.16
+* **@visulima/fs:** upgraded to 1.0.0
+
 ## @visulima/api-platform [2.0.21](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.20...@visulima/api-platform@2.0.21) (2024-03-06)
 
 
