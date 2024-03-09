@@ -221,6 +221,126 @@ Default: Root directory
 
 A directory path where the search halts if no matches are found before reaching this point.
 
+## readFile
+
+Read a file.
+
+```typescript
+import { readFile } from "@visulima/fs";
+
+// Returns a Promise for the file contents.
+const file = await readFile("package.json");
+
+console.log(file);
+```
+
+## readFileSync
+
+Read a file.
+
+```typescript
+import { readFileSync } from "@visulima/fs";
+
+// Returns the file contents.
+
+const file = readFileSync("package.json");
+
+console.log(file);
+```
+
+### API for `readFile` and `readFileSync`
+
+#### path
+
+Type: `string`
+
+The path to the file to read.
+
+#### options
+
+Type: `object`
+
+##### buffer
+
+Type: `boolean`
+
+Default: `true`
+
+Optional: `true`
+
+Description: Indicates whether the file contents should be returned as a Buffer or a string.
+
+##### compression
+
+Type: `"brotli" | "gzip" | undefined`
+
+Default: `undefined`
+
+Optional: `true`
+
+Description: The file compression.
+
+##### encoding
+
+Type: `"ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le" | undefined`
+
+Default: `utf8`
+
+Optional: `true`
+
+#### flag
+
+Type: `number | string | undefined`
+
+Default: `'r'`
+
+Optional: `true`
+
+## isAccessible
+
+Check if a file or directory exists and is accessible.
+
+```typescript
+import { isAccessible } from "@visulima/fs";
+
+// Returns a Promise for the result.
+const file = await isAccessible("package.json");
+
+console.log(file);
+```
+
+## isAccessibleSync
+
+Check if a file or directory exists and is accessible.
+
+```typescript
+import { isAccessibleSync } from "@visulima/fs";
+
+// Returns the result.
+
+const file = isAccessibleSync("package.json");
+
+console.log(file);
+```
+
+### API for `isAccessible` and `isAccessibleSync`
+
+#### path
+
+Type: `string`
+
+The path to the file or directory to check.
+
+#### mode
+
+Type: `number`
+
+Default: `fs.constants.F_OK`
+
+Optional: `true`
+
+Description: The accessibility mode.
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
