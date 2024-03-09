@@ -296,6 +296,51 @@ Default: `'r'`
 
 Optional: `true`
 
+## isAccessible
+
+Check if a file or directory exists and is accessible.
+
+```typescript
+import { isAccessible } from "@visulima/fs";
+
+// Returns a Promise for the result.
+const file = await isAccessible("package.json");
+
+console.log(file);
+```
+
+## isAccessibleSync
+
+Check if a file or directory exists and is accessible.
+
+```typescript
+import { isAccessibleSync } from "@visulima/fs";
+
+// Returns the result.
+
+const file = isAccessibleSync("package.json");
+
+console.log(file);
+```
+
+### API for `isAccessible` and `isAccessibleSync`
+
+#### path
+
+Type: `string`
+
+The path to the file or directory to check.
+
+#### mode
+
+Type: `number`
+
+Default: `fs.constants.F_OK`
+
+Optional: `true`
+
+Description: The accessibility mode.
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).

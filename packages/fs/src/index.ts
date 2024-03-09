@@ -6,8 +6,6 @@ export { default as isAccessible } from "./is-accessible";
 export { default as isAccessibleSync } from "./is-accessible-sync";
 export { default as readFile } from "./read-file";
 export { default as readFileSync } from "./read-file-sync";
-export { default as isAccessible } from "./is-accessible";
-export { default as isAccessibleSync } from "./is-accessible-sync";
 export type { WalkEntry, WalkOptions } from "./types";
 export { default as walk } from "./walk";
 export { default as walkSync } from "./walk-sync";

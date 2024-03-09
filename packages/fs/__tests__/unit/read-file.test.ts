@@ -11,6 +11,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fixturePath = join(__dirname, "..", "..", "__fixtures__", "read-file");
 
+const isWindows = process.platform === "win32";
+
 describe.each([
     ["readFile", readFile],
     ["readFileSync", readdirSync],
@@ -25,7 +27,7 @@ describe.each([
             result = await result;
         }
 
-        expect(result).toBe("hello world!\n");
+        expect(result).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
     it("read buffer", async () => {
@@ -38,7 +40,7 @@ describe.each([
             result = await result;
         }
 
-        expect(result?.toString()).toBe("hello world!\n");
+        expect(result?.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
     it("read empty", async () => {
