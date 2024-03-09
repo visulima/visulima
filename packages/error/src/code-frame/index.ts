@@ -100,4 +100,4 @@ export const codeFrame = (
     return frame;
 };
 
-export type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "./types";
+export type { CodeFrameLocation, CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "./types";
