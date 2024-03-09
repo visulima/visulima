@@ -137,7 +137,7 @@ jobs:
     types-lint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
         needs: "files-changed"
-        name: "Lint (Typescript types)"
+        name: "Lint (typescript types)"
         runs-on: "ubuntu-latest"
         steps:
             - name: "Harden Runner"
@@ -175,7 +175,7 @@ jobs:
             - name: "Build"
               run: "pnpm run build:packages"
 
-            - name: "lint package.json"
+            - name: "lint typescript types"
               run: "pnpm run lint:types"
 
     yaml-lint:
