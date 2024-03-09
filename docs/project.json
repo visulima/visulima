@@ -4,5 +4,5 @@
     "sourceRoot": "docs",
     "projectType": "app",
     "tags": ["docs"],
-    "implicitDependencies": ["readdir", "nextra-theme-docs"]
+    "implicitDependencies": ["fs", "nextra-theme-docs"]
 }
