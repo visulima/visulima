@@ -85,6 +85,49 @@ ${POINTER}  8 |    ]
   10 |     throw error`);
     });
 
+    it("should colorize the code frame with only one function", () => {
+        expect.assertions(1);
+
+        const source = "const x = 10;\nconst error = x.y;\n";
+        const loc = { column: 16, line: 2 };
+        const result = codeFrame(
+            source,
+            { start: loc },
+            {
+                color: {
+                    gutter: (v) => `gutter-${v}`,
+                },
+            },
+        );
+
+        expect(result).toBe(` gutter- 1 | const x = 10;
+${POINTER}gutter- 2 | const error = x.y;
+ gutter-   |                ^
+ gutter- 3 |`);
+    });
+
+    it("should colorize the code frame with only two function", () => {
+        expect.assertions(1);
+
+        const source = "const x = 10;\nconst error = x.y;\n";
+        const loc = { column: 16, line: 2 };
+        const result = codeFrame(
+            source,
+            { start: loc },
+            {
+                color: {
+                    gutter: (v) => `gutter-${v}`,
+                    marker: (v) => `marker-${v}`,
+                },
+            },
+        );
+
+        expect(result).toBe(` gutter- 1 | const x = 10;
+marker-${POINTER}gutter- 2 | const error = x.y;
+ gutter-   |                marker-^
+ gutter- 3 |`);
+    });
+
     it("should colorize the error line", () => {
         expect.assertions(1);
 

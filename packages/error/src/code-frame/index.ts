@@ -11,9 +11,9 @@
 import normalizeLF from "../util/normalize-lf";
 import process from "../util/process";
 import getMarkerLines from "./get-marker-lines";
-import type { CodeFrameNodeLocation, CodeFrameOptions, ColorizeMethod } from "./types";
+import type { CodeFrameNodeLocation, CodeFrameOptions } from "./types";
 
-const POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? ">" : "❯";
+export const CODE_FRAME_POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? ">" : "❯";
 
 /** Generate a code frame from string and an error location */
 export const codeFrame = (
@@ -24,18 +24,18 @@ export const codeFrame = (
 ): string => {
     // grab 2 lines before, and 3 lines after focused line
     const config = {
-        color: {
-            gutter: (value: string) => value,
-            marker: (value: string) => value,
-            message: (value: string) => value,
-            ...options?.color,
-        },
         linesAbove: 2,
         linesBelow: 3,
         showGutter: true,
         showLineNumbers: true,
         tabWidth: 4,
         ...options,
+        color: {
+            gutter: (value: string) => value,
+            marker: (value: string) => value,
+            message: (value: string) => value,
+            ...options?.color,
+        },
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -51,16 +51,7 @@ export const codeFrame = (
     const { end, markerLines, start } = getMarkerLines(loc, lines, config.linesAbove, config.linesBelow);
 
     const numberMaxWidth = String(end).length;
-
-    const {
-        gutter: colorizeGutter,
-        marker: colorizeMarker,
-        message: colorizeMessage,
-    } = config.color as {
-        gutter: ColorizeMethod;
-        marker: ColorizeMethod;
-        message: ColorizeMethod;
-    };
+    const { gutter: colorizeGutter, marker: colorizeMarker, message: colorizeMessage } = config.color;
 
     let frame = lines
         .slice(start, end)
@@ -90,7 +81,7 @@ export const codeFrame = (
                     }
                 }
 
-                return [colorizeMarker(POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
+                return [colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
             }
 
             return ` ${colorizeGutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
