@@ -1,3 +1,10 @@
+## @visulima/error [3.0.7](https://github.com/visulima/visulima/compare/@visulima/error@3.0.6...@visulima/error@3.0.7) (2024-03-09)
+
+
+### Bug Fixes
+
+* **error:** added missing CodeFrameLocation export ([d4144e0](https://github.com/visulima/visulima/commit/d4144e0bd579797c49c9fe5b867289ef89400293))
+
 ## @visulima/error [3.0.6](https://github.com/visulima/visulima/compare/@visulima/error@3.0.5...@visulima/error@3.0.6) (2024-03-06)
 
 
