@@ -137,7 +137,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/readdir": "workspace:*",
+        "@visulima/fs": "workspace:*",
         "detect-indent": "^7.0.1",
         "get-tsconfig": "^4.7.2",
         "read-pkg": "^9.0.1",
