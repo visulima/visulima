@@ -13,6 +13,7 @@ describe.each([
         // Replace with a real directory for your test
         let entries = function_("./__fixtures__/find-up");
 
+        // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "collect") {
             entries = await entries;
         }
@@ -30,6 +31,7 @@ describe.each([
         // Replace with a real directory for your test
         let entries = function_("./__fixtures__", { extensions: ["json"] });
 
+        // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "collect") {
             entries = await entries;
         }
