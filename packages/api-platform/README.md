@@ -45,7 +45,7 @@ npm install @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-npm install @visulima/api-platform zod @visulima/readdir
+npm install @visulima/api-platform zod @visulima/fs
 ```
 
 ### Yarn
@@ -57,7 +57,7 @@ yarn add @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-yarn add @visulima/api-platform zod @visulima/readdir
+yarn add @visulima/api-platform zod @visulima/fs
 ```
 
 ### Pnpm
@@ -69,7 +69,7 @@ pnpm add @visulima/api-platform zod
 #### Installation for Next.js
 
 ```sh
-pnpm add @visulima/api-platform zod @visulima/readdir
+pnpm add @visulima/api-platform zod @visulima/fs
 ```
 
 ### To use the swagger-ui or the redoc-ui you need to install the following packages:

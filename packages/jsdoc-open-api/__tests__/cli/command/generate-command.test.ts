@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-namespace
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
 import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
 import generateCommand from "../../../src/cli/command/generate-command";
 
-vi.mock("node:fs", async () => {
+vi.mock("node:fs/promises", async () => {
     return {
-        ...(await import("node:fs")),
-        writeFileSync: vi.fn(),
+        ...(await import("node:fs/promises")),
+        writeFile: vi.fn(),
     };
 });
 
@@ -29,12 +29,12 @@ describe("generate command", () => {
     it("collects the correct files from the given directories", async () => {
         expect.assertions(2);
 
-        const writeFileSyncSpy = vi.spyOn(fs, "writeFileSync");
+        const writeFileSpy = vi.spyOn(fs, "writeFile");
         const consoleLogMock = vi.spyOn(console, "log");
 
         await generateCommand(".openapirc.js", [fixturesDirectory], { config: join(fixturesDirectory, ".openapirc.js") });
 
-        expect(writeFileSyncSpy).toMatchSnapshot();
+        expect(writeFileSpy).toMatchSnapshot();
         expect(consoleLogMock).toHaveBeenCalledWith('\nSwagger specification is ready, check the "swagger.json" file.');
     });
 });
