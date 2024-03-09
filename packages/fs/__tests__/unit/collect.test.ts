@@ -1,15 +1,23 @@
 import { describe, expect, it } from "vitest";
 
 import collect from "../../src/collect";
+import collectSync from "../../src/collect-sync";
 
-describe("collect", () => {
+describe.each([
+    ["collect", collect],
+    ["collectSync", collectSync],
+])("%s", (name: string, function_) => {
     it("should collects default file extensions from a valid directory", async () => {
         expect.assertions(3);
 
         // Replace with a real directory for your test
-        const entries = await collect("./__fixtures__/find-up");
+        let entries = function_("./__fixtures__/find-up");
 
-        entries.forEach((entry) => {
+        if (name === "collect") {
+            entries = await entries;
+        }
+
+        (entries as unknown as string[]).forEach((entry) => {
             const extension = entry.split(".").pop();
 
             expect("js").toStrictEqual(extension);
@@ -20,11 +28,13 @@ describe("collect", () => {
         expect.assertions(3);
 
         // Replace with a real directory for your test
-        const directory = "./__fixtures__";
-        const options = { extensions: ["json"] };
-        const entries = await collect(directory, options);
+        let entries = function_("./__fixtures__", { extensions: ["json"] });
 
-        entries.forEach((entry) => {
+        if (name === "collect") {
+            entries = await entries;
+        }
+
+        (entries as unknown as string[]).forEach((entry) => {
             const extension = entry.split(".").pop();
 
             expect(extension).toBe("json");
@@ -35,6 +45,7 @@ describe("collect", () => {
         expect.assertions(1);
 
         const directory = "./Invalid_directory_name";
+
         try {
             await collect(directory);
         } catch (error) {
