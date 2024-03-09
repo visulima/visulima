@@ -2,7 +2,7 @@ import { statSync } from "node:fs";
 import { join } from "node:path";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { collect } from "@visulima/readdir";
+import { collect } from "@visulima/fs";
 
 import { ALLOWED_EXTENSIONS } from "../../utils";
 
@@ -14,7 +14,7 @@ const isDirectory = (path: string): boolean => {
     }
 };
 
-const collectApiRouteFiles = async (path = "", verbose = false): Promise<string[]> => {
+const collectApiRouteFiles = async (path = ""): Promise<string[]> => {
     let apiFolderPath = join(path, "pages/api");
 
     // src/pages will be ignored if pages is present in the root directory
@@ -29,16 +29,6 @@ const collectApiRouteFiles = async (path = "", verbose = false): Promise<string[
     return collect(apiFolderPath, {
         extensions: ALLOWED_EXTENSIONS,
         includeDirs: false,
-        minimatchOptions: {
-            match: {
-                debug: verbose,
-                matchBase: true,
-            },
-            skip: {
-                debug: verbose,
-                matchBase: true,
-            },
-        },
     });
 };
 

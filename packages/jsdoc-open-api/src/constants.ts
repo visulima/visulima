@@ -1,0 +1,23 @@
+// eslint-disable-next-line import/prefer-default-export
+export const DEFAULT_EXCLUDE = [
+    "coverage/**",
+    ".github/**",
+    "**/*.d.ts",
+    "**/test{,s}/**",
+    "**/test{,-*}.{js,cjs,mjs,ts,tsx,jsx,yaml,yml}",
+    "**/*{.,-}test.{js,cjs,mjs,ts,tsx,jsx,yaml,yml}",
+    "**/__tests__/**",
+    "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
+    "**/jest.config.{js,cjs,mjs,ts}",
+    "**/{karma,rollup,webpack}.config.js",
+    "**/.{eslint,mocha}rc.{js,cjs}",
+    "**/.{travis,yarnrc}.yml",
+    "**/{docker-compose,docker}.yml",
+    "**/.yamllint.{yaml,yml}",
+    "**/node_modules/**",
+    "**/{pnpm-workspace,pnpm-lock}.yaml",
+    "**/{package,package-lock}.json",
+    "**/yarn.lock",
+    "**/package.json5",
+    "**/.next/**",
+];
