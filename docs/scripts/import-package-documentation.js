@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { walk } from "@visulima/readdir";
+import { walk } from "@visulima/fs";
 import fse from "fs-extra";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import symlinkDir from "symlink-dir";

@@ -1,12 +1,13 @@
-import { lstatSync, mkdirSync, writeFileSync } from "node:fs";
+import { lstat, mkdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { Options } from "@visulima/readdir";
-import { collect } from "@visulima/readdir";
+import type { WalkOptions } from "@visulima/fs";
+import { collect } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
 
+import { DEFAULT_EXCLUDE } from "../../constants";
 import type { BaseDefinition } from "../../exported";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
 import parseFile from "../../parse-file";
@@ -29,7 +30,7 @@ const generateCommand = async (
         exclude: string[];
         extensions?: string[];
         followSymlinks?: boolean;
-        include?: ReadonlyArray<string> | string;
+        include?: (RegExp | string)[];
         swaggerDefinition: BaseDefinition;
     } = {
         exclude: [],
@@ -56,34 +57,29 @@ const generateCommand = async (
         },
         Presets.shades_grey,
     );
+
     const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
+    const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
 
     // eslint-disable-next-line no-restricted-syntax,unicorn/prevent-abbreviations,no-loops/no-loops
     for await (const dir of paths) {
         // Check if the path is a directory
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        lstatSync(dir).isDirectory();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename,unicorn/no-await-expression-member
+        (await lstat(dir)).isDirectory();
 
-        const files = await collect(dir, {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const realDirectory = await realpath(dir);
+
+        const files = await collect(realDirectory, {
             extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
             followSymlinks: openapiConfig.followSymlinks ?? false,
             match: openapiConfig.include,
-            minimatchOptions: {
-                match: {
-                    debug: options.verbose,
-                    matchBase: true,
-                },
-                skip: {
-                    debug: options.verbose,
-                    matchBase: true,
-                },
-            },
-            skip: [...openapiConfig.exclude, "node_modules/**"],
-        } as Options);
+            skip: [...skip],
+        } as WalkOptions);
 
         if (options.verbose ?? options.veryVerbose) {
             // eslint-disable-next-line no-console
-            console.log(`\nFound ${files.length} files in ${dir}`);
+            console.log(`\nFound ${files.length} files in ${realDirectory}`);
         }
 
         if (options.veryVerbose) {
@@ -99,7 +95,7 @@ const generateCommand = async (
                 console.log(`Parsing file ${file}`);
             }
 
-            bar.increment(1, { filename: dir });
+            bar.increment(1, { filename: realDirectory });
 
             const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, options.verbose);
 
@@ -133,9 +129,9 @@ const generateCommand = async (
     }
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    mkdirSync(dirname(output), { recursive: true });
+    await mkdir(dirname(output), { recursive: true });
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    writeFileSync(output, JSON.stringify(spec, null, 2));
+    await writeFile(output, JSON.stringify(spec, null, 2));
 
     // eslint-disable-next-line no-console
     console.log(`\nSwagger specification is ready, check the "${output}" file.`);

@@ -252,12 +252,12 @@ importers:
       '@vercel/og':
         specifier: ^0.6.2
         version: 0.6.2
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../packages/fs
       '@visulima/nextra-theme-docs':
         specifier: workspace:*
         version: link:../packages/nextra-theme-docs
-      '@visulima/readdir':
-        specifier: workspace:*
-        version: link:../packages/readdir
       clsx:
         specifier: ^2.1.0
         version: 2.1.0
@@ -1132,7 +1132,7 @@ importers:
         version: link:../crud
       '@visulima/readdir':
         specifier: 2.0.12
-        version: link:../readdir
+        version: 2.0.12
       chalk:
         specifier: 5.3.0
         version: 5.3.0
@@ -1242,6 +1242,9 @@ importers:
       '@types/webpack':
         specifier: ^5.28.5
         version: 5.28.5
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.3.1
         version: 1.3.1(vitest@1.3.1)
@@ -1452,7 +1455,7 @@ importers:
         specifier: 1.3.0
         version: link:../colorize
       '@visulima/pail':
-        specifier: 1.1.0
+        specifier: 1.1.1
         version: link:../pail
       camelcase:
         specifier: 8.0.0
@@ -2225,6 +2228,98 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
 
+  packages/fs:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.3
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.3.1)(@babel/core@7.24.0)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.34.0)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.8.0)(eslint-plugin-tailwindcss@3.14.3)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.57.0)(typescript@5.4.2)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.14
+        version: 5.0.14(prettier@3.2.5)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.3
+        version: 8.0.3(semantic-release@23.0.2)
+      '@babel/core':
+        specifier: ^7.24.0
+        version: 7.24.0
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.8.1
+        version: 0.8.1(eslint@8.57.0)(typescript@5.4.2)
+      '@types/micromatch':
+        specifier: ^4.0.6
+        version: 4.0.6
+      '@types/node':
+        specifier: 18.18.14
+        version: 18.18.14
+      '@vitest/coverage-v8':
+        specifier: ^1.3.1
+        version: 1.3.1(vitest@1.3.1)
+      '@vitest/ui':
+        specifier: ^1.3.1
+        version: 1.3.1(vitest@1.3.1)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.57.0)(typescript@5.4.2)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.57.0)(typescript@5.4.2)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: /eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-mdx:
+        specifier: ^3.1.5
+        version: 3.1.5(eslint@8.57.0)
+      eslint-plugin-vitest:
+        specifier: ^0.3.22
+        version: 0.3.22(eslint@8.57.0)(typescript@5.4.2)(vitest@1.3.1)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.4.0
+        version: 1.4.0
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      semantic-release:
+        specifier: ^23.0.2
+        version: 23.0.2(typescript@5.4.2)
+      sort-package-json:
+        specifier: ^2.8.0
+        version: 2.8.0
+      tempy:
+        specifier: ^3.1.0
+        version: 3.1.0
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(postcss@8.4.35)(typescript@5.4.2)
+      typescript:
+        specifier: ^5.4.2
+        version: 5.4.2
+      vitest:
+        specifier: ^1.3.1
+        version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
+
+  packages/fs/__fixtures__: {}
+
+  packages/fs/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/fs/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/health-check:
     dependencies:
       cacheable-lookup:
@@ -2403,9 +2498,9 @@ importers:
       '@apidevtools/swagger-parser':
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
-      '@visulima/readdir':
-        specifier: 2.0.12
-        version: link:../readdir
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../fs
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -3195,85 +3290,6 @@ importers:
         version: 5.4.2
       vitest:
         specifier: 1.3.1
-        version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
-
-  packages/readdir:
-    dependencies:
-      micromatch:
-        specifier: ^4.0.5
-        version: 4.0.5
-    devDependencies:
-      '@anolilab/eslint-config':
-        specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.3.1)(@babel/core@7.24.0)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.34.0)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.8.0)(eslint-plugin-tailwindcss@3.14.3)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-tsdoc@0.2.17)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.57.0)(typescript@5.4.2)
-      '@anolilab/prettier-config':
-        specifier: ^5.0.14
-        version: 5.0.14(prettier@3.2.5)
-      '@anolilab/semantic-release-preset':
-        specifier: ^8.0.3
-        version: 8.0.3(semantic-release@23.0.2)
-      '@babel/core':
-        specifier: ^7.24.0
-        version: 7.24.0
-      '@rushstack/eslint-plugin-security':
-        specifier: ^0.8.1
-        version: 0.8.1(eslint@8.57.0)(typescript@5.4.2)
-      '@types/micromatch':
-        specifier: ^4.0.6
-        version: 4.0.6
-      '@types/node':
-        specifier: 18.18.14
-        version: 18.18.14
-      '@vitest/coverage-v8':
-        specifier: ^1.3.1
-        version: 1.3.1(vitest@1.3.1)
-      '@vitest/ui':
-        specifier: ^1.3.1
-        version: 1.3.1(vitest@1.3.1)
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
-      eslint:
-        specifier: ^8.57.0
-        version: 8.57.0
-      eslint-plugin-deprecation:
-        specifier: ^2.0.0
-        version: 2.0.0(eslint@8.57.0)(typescript@5.4.2)
-      eslint-plugin-etc:
-        specifier: ^2.0.3
-        version: 2.0.3(eslint@8.57.0)(typescript@5.4.2)
-      eslint-plugin-import:
-        specifier: npm:eslint-plugin-i@^2.29.1
-        version: /eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
-      eslint-plugin-mdx:
-        specifier: ^3.1.5
-        version: 3.1.5(eslint@8.57.0)
-      eslint-plugin-vitest:
-        specifier: ^0.3.22
-        version: 0.3.22(eslint@8.57.0)(typescript@5.4.2)(vitest@1.3.1)
-      eslint-plugin-vitest-globals:
-        specifier: ^1.4.0
-        version: 1.4.0
-      prettier:
-        specifier: ^3.2.5
-        version: 3.2.5
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      semantic-release:
-        specifier: ^23.0.2
-        version: 23.0.2(typescript@5.4.2)
-      sort-package-json:
-        specifier: ^2.8.0
-        version: 2.8.0
-      tsup:
-        specifier: ^8.0.2
-        version: 8.0.2(postcss@8.4.35)(typescript@5.4.2)
-      typescript:
-        specifier: ^5.4.2
-        version: 5.4.2
-      vitest:
-        specifier: ^1.3.1
         version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
 
 packages:
@@ -12841,6 +12857,15 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
+  /@visulima/readdir@2.0.12:
+    resolution: {integrity: sha512-QvuHcmFGq0mvwAJMSQs0f0Vk5csomT/lAC+cED2VwH9hYY5OhxSS+5+ko/uNW5aaDW4eFe9/Uhj+S4+RgKom0Q==}
+    engines: {node: '>=18.* <=21.*'}
+    requiresBuild: true
+    dependencies:
+      micromatch: 4.0.5
+    dev: false
+    optional: true
+
   /@vitejs/plugin-react@3.1.0(vite@5.1.5):
     resolution: {integrity: sha512-AfgcRL8ZBhAlc3BFdigClmTUMISmmzHn7sB2h9U1odvc5U/MjWXsAaz18b/WoppUTDBzxOJwo2VdClfUcItu9g==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -18720,6 +18745,7 @@ packages:
   /fill-range@7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
     engines: {node: '>=8'}
+    requiresBuild: true
     dependencies:
       to-regex-range: 5.0.1
 
@@ -20747,6 +20773,7 @@ packages:
   /is-number@7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
+    requiresBuild: true
 
   /is-obj-prop@1.0.0:
     resolution: {integrity: sha512-5Idb61slRlJlsAzi0Wsfwbp+zZY+9LXKUAZpvT/1ySw+NxKLRWfa0Bzj+wXI3fX5O9hiddm5c3DAaRSNP/yl2w==}
@@ -30078,6 +30105,7 @@ packages:
   /to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+    requiresBuild: true
     dependencies:
       is-number: 7.0.0
 

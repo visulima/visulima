@@ -34,7 +34,7 @@ export const getRoutes = async (
     }
 
     if (frameworkName === "next") {
-        const apiRouteFiles = await collectApiRouteFiles(appOrPath as string, verbose);
+        const apiRouteFiles = await collectApiRouteFiles(appOrPath as string);
 
         if (apiRouteFiles.length === 0) {
             throw new Error(`No API routes found, in "${appOrPath}".`);
