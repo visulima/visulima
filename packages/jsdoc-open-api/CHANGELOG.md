@@ -1,3 +1,17 @@
+## @visulima/jsdoc-open-api [2.0.16](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.15...@visulima/jsdoc-open-api@2.0.16) (2024-03-09)
+
+
+### Bug Fixes
+
+* **jsdoc-open-api:** use the correct type for fs collect ([274da93](https://github.com/visulima/visulima/commit/274da9336a1ce4f8f3f5065d6975fcfdd151e6ae))
+* migrating readdir to fs package ([8da1572](https://github.com/visulima/visulima/commit/8da157281faddf606ceacfb8e091175be2dd0acf))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 1.0.0
+
 ## @visulima/jsdoc-open-api [2.0.15](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.14...@visulima/jsdoc-open-api@2.0.15) (2024-03-06)
 
 
