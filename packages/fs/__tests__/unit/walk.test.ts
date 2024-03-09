@@ -4,13 +4,12 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import type { Options } from "../../src";
 import { walk } from "../../src";
-import type { WalkEntry } from "../../src/walk";
+import type { WalkEntry, WalkOptions } from "../../src/types";
 
 const fixture = resolve(fileURLToPath(import.meta.url), "../../../__fixtures__/walk");
 
-const getEntries = async (root: string, options?: Options): Promise<WalkEntry[]> => {
+const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -21,7 +20,7 @@ const getEntries = async (root: string, options?: Options): Promise<WalkEntry[]>
     return entries;
 };
 
-const assertWalkPaths = async (rootPath: string, expectedPaths: string[], options?: Options): Promise<void> => {
+const assertWalkPaths = async (rootPath: string, expectedPaths: string[], options?: WalkOptions): Promise<void> => {
     const root = resolve(fixture, rootPath);
     const entries = await getEntries(root, options);
 

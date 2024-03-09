@@ -15,7 +15,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes(`packages${isWindows ? "\\" : "/"}fs`)).toBeTruthy();
+        expect(received.includes(`packages${isWindows ? "\\\\" : "/"}fs`)).toBeTruthy();
     });
 
     it(`should work as ESM package`, async () => {
@@ -25,6 +25,6 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes(`packages${isWindows ? "\\" : "/"}fs`)).toBeTruthy();
+        expect(received.includes(`packages${isWindows ? "\\\\" : "/"}fs`)).toBeTruthy();
     });
 });
