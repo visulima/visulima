@@ -11,14 +11,15 @@ export type CodeFrameNodeLocation = {
 export type ColorizeMethod = (value: string) => string;
 
 export type CodeFrameOptions = {
-    color?: Partial<{
-        gutter: ColorizeMethod;
-        marker: ColorizeMethod;
-        message: ColorizeMethod;
-    }>;
+    color?: {
+        gutter?: ColorizeMethod;
+        marker?: ColorizeMethod;
+        message?: ColorizeMethod;
+    };
     linesAbove?: number;
     linesBelow?: number;
     message?: string;
     showGutter?: boolean;
     showLineNumbers?: boolean;
+    tabWidth?: number | false;
 };
