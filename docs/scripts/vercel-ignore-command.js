@@ -25,7 +25,7 @@ if (env.VERCEL_GIT_COMMIT_MESSAGE?.startsWith("[skip ci]")) {
 }
 
 // Skip builds if no files changed happened in required directories or files
-const requiredChanges = ["docs/", "__docs__/", "__assets__/", "nextra-theme-docs/", "readdir/", "visulima/package.json"];
+const requiredChanges = ["docs/", "__docs__/", "__assets__/", "nextra-theme-docs/", "fs/", "visulima/package.json"];
 
 const changedFiles = getChangedFiles().filter((file) => {
     let changed = false;

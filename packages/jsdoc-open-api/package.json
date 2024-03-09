@@ -104,7 +104,7 @@
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "^10.1.0",
-        "@visulima/readdir": "2.0.12",
+        "@visulima/fs": "workspace:*",
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
