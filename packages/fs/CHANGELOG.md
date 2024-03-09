@@ -1,3 +1,10 @@
+## @visulima/fs [1.2.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.2.0...@visulima/fs@1.2.1) (2024-03-09)
+
+
+### Bug Fixes
+
+* added missing type module to the package.json ([510c5b7](https://github.com/visulima/visulima/commit/510c5b7e9cdca2b6de104d0b6b0f5ad2fbf50956))
+
 ## @visulima/fs [1.2.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.1.0...@visulima/fs@1.2.0) (2024-03-09)
 
 
