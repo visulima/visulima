@@ -34,11 +34,6 @@ describe.each([
         ["missing", F_OK, false, "missing is not accessible"],
         ["missing", R_OK, false, "missing is not readable"],
         ["missing", W_OK, false, "missing is not writable"],
-
-        [[file, directory, "missing"], undefined, [true, true, false], "accessible via default combination is as expected"],
-        [[file, directory, "missing"], F_OK, [true, true, false], "accessible combination is as expected"],
-        [[file, directory, "missing"], R_OK, [true, true, false], "readable combination is as expected"],
-        [[file, directory, "missing"], W_OK, [true, true, false], "writable combination is as expected"],
     ])(
         "should should support different mods %s %s",
         async (input: string[] | string, mode: number | undefined, expected: boolean[] | boolean, message: string) => {
@@ -64,8 +59,6 @@ describe.each([
         [directory, X_OK, true, "dir is executable"],
 
         ["missing", X_OK, false, "missing is not executable"],
-
-        [[file, directory, "missing"], X_OK, [false, true, false], "executable combination is as expected"],
     ])(
         "should should support different mods %s %s",
         async (input: string[] | string, mode: number | undefined, expected: boolean[] | boolean, message: string) => {

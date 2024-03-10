@@ -1,6 +1,7 @@
 import { stat } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, resolve } from "node:path";
 
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import toPath from "./utils/to-path";
 
 const findUp = async (
@@ -11,10 +12,18 @@ const findUp = async (
         type?: "directory" | "file";
     } = {},
 ): Promise<string | undefined> => {
-    let directory = resolve(options.cwd ? toPath(options.cwd) : process.cwd());
-    const { root } = parse(directory);
-    const stopAt = resolve(directory, toPath(options.stopAt ?? root));
+    const cwd = options.cwd ? toPath(options.cwd) : process.cwd();
 
+    assertValidFileOrDirectoryPath(cwd);
+
+    let directory = resolve(cwd);
+
+    const { root } = parse(directory);
+    const stopPath = toPath(options.stopAt ?? root);
+
+    assertValidFileOrDirectoryPath(stopPath);
+
+    const stopAt = resolve(directory, stopPath);
     const type = options.type ?? "file";
 
     // eslint-disable-next-line no-loops/no-loops

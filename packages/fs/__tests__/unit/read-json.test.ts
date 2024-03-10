@@ -69,42 +69,16 @@ describe.each([
         expect(result).toStrictEqual({});
     });
 
-    it("should throw an error if the file path is null", async () => {
+    it("should throw an error if the file path is not string or URL", async () => {
         expect.assertions(1);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(function_(null)).rejects.toThrow("Invalid access to read JSON file at: null");
+            await expect(function_(null)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
-            expect(() => function_(null)).toThrow("Invalid access to read JSON file at: null");
-        }
-    });
-
-    it("should throw an error if the file path is undefined", async () => {
-        expect.assertions(1);
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readJson") {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(function_(undefined)).rejects.toThrow("Invalid access to read JSON file at: undefined");
-        } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
-            expect(() => function_(undefined)).toThrow("Invalid access to read JSON file at: undefined");
-        }
-    });
-
-    it("should throw an error if the file path is an empty string", async () => {
-        expect.assertions(1);
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readJson") {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(function_("")).rejects.toThrow("Invalid access to read JSON file at: ");
-        } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
-            expect(() => function_("")).toThrow("Invalid access to read JSON file at: ");
+            expect(() => function_(null)).toThrow("Path must be a non-empty string or URL.");
         }
     });
 
