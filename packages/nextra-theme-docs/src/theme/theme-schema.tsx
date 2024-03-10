@@ -1,3 +1,4 @@
+// @ts-expect-error - @TODO fix this types
 import type { Components as MdxComponents, MergeComponents } from "@mdx-js/react/lib";
 import type { NextSeoProps } from "next-seo";
 import type { Item } from "nextra/normalize-pages";
