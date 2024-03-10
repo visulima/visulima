@@ -205,7 +205,7 @@ ${CODE_FRAME_POINTER} 4 |   }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toStrictEqual(` +++ 2 |   {
+            expect(error.codeFrame).toBe(` +++ 2 |   {
  +++ 3 |   \t"foo": true,
 ${CODE_FRAME_POINTER}+++ 4 |   }
  +++   |   ^`);

@@ -1,5 +1,7 @@
 import type { Dirent } from "node:fs";
 
+type ColorizeMethod = (value: string) => string;
+
 export interface WalkOptions {
     /**
      * List of file extensions used to filter entries.
@@ -75,14 +77,12 @@ export type ReadFileOptions<C> = {
 export type ContentType<O = undefined> = O extends { buffer: true } ? Buffer : string;
 
 // Get `reviver`` parameter from `JSON.parse()`.
-export type Reviver = Parameters<(typeof JSON)["parse"]>["1"];
+export type JsonReviver = Parameters<(typeof JSON)["parse"]>["1"];
 
 export type CodeFrameLocation = {
     column?: number;
     line: number;
 };
-
-export type ColorizeMethod = (value: string) => string;
 
 export type CodeFrameOptions = {
     color?: {
@@ -90,4 +90,8 @@ export type CodeFrameOptions = {
         marker?: ColorizeMethod;
         message?: ColorizeMethod;
     };
+};
+
+export type ReadJsonOptions = CodeFrameOptions & {
+    beforeParse?: (source: string) => string;
 };

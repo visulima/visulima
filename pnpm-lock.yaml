@@ -2354,9 +2354,15 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      redos-detector:
+        specifier: ^5.1.0
+        version: 5.1.0
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
+      safe-regex2:
+        specifier: ^3.1.0
+        version: 3.1.0
       semantic-release:
         specifier: ^23.0.2
         version: 23.0.2(typescript@5.4.2)
@@ -27949,6 +27955,14 @@ packages:
     dev: false
     optional: true
 
+  /redos-detector@5.1.0:
+    resolution: {integrity: sha512-08en/ij0//HwKZdKlelRZGQKmQhmKMQPVJPD+1THfYm64mZhLPOG0NBa47+DrOF53DyaRsCFyD7JHJaYITnt9g==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
+    dependencies:
+      regjsparser: 0.10.0
+    dev: true
+
   /redux-immutable@4.0.0(immutable@3.8.2):
     resolution: {integrity: sha512-SchSn/DWfGb3oAejd+1hhHx01xUoxY+V7TeK0BKqpkLKiQPVFf7DYzEaKmrEVxsWxielKfSK9/Xq66YyxgR1cg==}
     peerDependencies:
@@ -28520,6 +28534,11 @@ packages:
     resolution: {integrity: sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==}
     engines: {node: '>=4'}
 
+  /ret@0.4.3:
+    resolution: {integrity: sha512-0f4Memo5QP7WQyUEAYUO3esD/XjOc3Zjjg5CPsAq1p8sIu0XPeMbHJemKA0BO7tV0X7+A0FoEpbmHXWxPyD3wQ==}
+    engines: {node: '>=10'}
+    dev: true
+
   /retext-english@4.1.0:
     resolution: {integrity: sha512-Pky2idjvgkzfodO0GH9X4IU8LX/d4ULTnLf7S1WsBRlSCh/JdTFPafXZstJqZehtQWNHrgoCqVOiGugsNFYvIQ==}
     dependencies:
@@ -28726,6 +28745,12 @@ packages:
     requiresBuild: true
     dependencies:
       ret: 0.2.2
+
+  /safe-regex2@3.1.0:
+    resolution: {integrity: sha512-RAAZAGbap2kBfbVhvmnTFv73NWLMvDGOITFYTZBAaY8eR+Ir4ef7Up/e7amo+y1+AH+3PtLkrt9mvcTsG9LXug==}
+    dependencies:
+      ret: 0.4.3
+    dev: true
 
   /safe-regex@1.1.0:
     resolution: {integrity: sha512-aJXcif4xnaNUzvUuC5gcb46oTS7zvg4jpMTnuqtrEPlR3vFr4pxtdTwaF1Qs3Enjn9HK+ZlwQui+a7z0SywIzg==}

@@ -1,17 +1,17 @@
 import type { JsonValue } from "type-fest";
 
 import { R_OK } from "./constants";
-import isAccessible from "./is-accessible";
-import readFile from "./read-file";
+import isAccessibleSync from "./is-accessible-sync";
+import readFileSync from "./read-file-sync";
 import type { JsonReviver, ReadJsonOptions } from "./types";
 import parseJson from "./utils/parse-json";
 
-async function readJson<T extends JsonValue>(path: string, options?: ReadJsonOptions): Promise<T>;
+function readJsonSync<T extends JsonValue>(path: string, options?: ReadJsonOptions): T;
 
-async function readJson<T extends JsonValue>(path: string, reviver: JsonReviver, options?: ReadJsonOptions): Promise<T>;
+function readJsonSync<T extends JsonValue>(path: string, reviver: JsonReviver, options?: ReadJsonOptions): T;
 // eslint-disable-next-line func-style
-async function readJson<T extends JsonValue>(path: string, reviver: JsonReviver | ReadJsonOptions, options?: ReadJsonOptions): Promise<T> {
-    if (!(await isAccessible(path, R_OK))) {
+function readJsonSync<T extends JsonValue>(path: string, reviver: JsonReviver | ReadJsonOptions, options?: ReadJsonOptions): T {
+    if (!isAccessibleSync(path, R_OK)) {
         throw new Error(`Invalid access to read JSON file at: ${path}`);
     }
 
@@ -24,7 +24,7 @@ async function readJson<T extends JsonValue>(path: string, reviver: JsonReviver 
 
     const { beforeParse, color } = options ?? {};
 
-    const content = await readFile(path, {
+    const content = readFileSync(path, {
         buffer: true,
         encoding: undefined,
     });
@@ -40,4 +40,4 @@ async function readJson<T extends JsonValue>(path: string, reviver: JsonReviver 
     return parseJson<T>(data, reviver, path, { color });
 }
 
-export default readJson;
+export default readJsonSync;

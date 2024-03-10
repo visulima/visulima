@@ -4,12 +4,12 @@
  * MIT License
  * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
  */
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { codeFrame } from "@visulima/error";
 import type { JsonValue } from "type-fest";
 
 import JsonError from "../error/json-error";
-import type { CodeFrameLocation, CodeFrameOptions, Reviver } from "../types";
+import type { CodeFrameLocation, CodeFrameOptions, JsonReviver } from "../types";
 import indexToPosition from "./index-to-position";
 
 const getCodePoint = (character: string): string => `\\u{${(character.codePointAt(0) as number).toString(16)}}`;
@@ -55,15 +55,16 @@ const getErrorLocation = (source: string, message: string): CodeFrameLocation | 
 const addCodePointToUnexpectedToken = (message: string): string =>
     message.replace(
         // TODO[engine:node@>=20]: The token always quoted after Node.js 20
+        // eslint-disable-next-line regexp/no-potentially-useless-backreference
         /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         (_, _quote, token) => `"${token}"(${getCodePoint(token)})`,
     );
 
-function parseJson(string: string, filename?: string, options?: CodeFrameOptions): JsonValue;
-function parseJson(string: string, reviver: Reviver, fileName?: string, options?: CodeFrameOptions): JsonValue;
+function parseJson<T = JsonValue>(string: string, filename?: string, options?: CodeFrameOptions): T;
+function parseJson<T = JsonValue>(string: string, reviver: JsonReviver, fileName?: string, options?: CodeFrameOptions): T;
 // eslint-disable-next-line func-style
-function parseJson(string: string, reviver?: Reviver | string, fileName?: CodeFrameOptions | string, options?: CodeFrameOptions): JsonValue {
+function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string, fileName?: CodeFrameOptions | string, options?: CodeFrameOptions): T {
     if (typeof reviver === "string") {
         if (typeof fileName === "object") {
             // eslint-disable-next-line no-param-reassign
@@ -79,6 +80,7 @@ function parseJson(string: string, reviver?: Reviver | string, fileName?: CodeFr
     let message: string;
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return JSON.parse(string, reviver);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

@@ -28,7 +28,7 @@ module.exports = {
             },
         },
         {
-            files: ["index.ts"],
+            files: ["index.ts", "utils.ts"],
             rules: {
                 "import/no-unused-modules": "off",
             },
