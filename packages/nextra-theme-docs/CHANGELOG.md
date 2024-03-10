@@ -1,3 +1,20 @@
+## @visulima/nextra-theme-docs [4.0.17](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.16...@visulima/nextra-theme-docs@4.0.17) (2024-03-10)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** fixed found type issue ([e824ee6](https://github.com/visulima/visulima/commit/e824ee65144ea71fc2e2fcfe74fafae071aacff2))
+
+
+### Miscellaneous Chores
+
+* **nextra-theme-docs:** added a new todo to fix a type ([c3d8116](https://github.com/visulima/visulima/commit/c3d8116389aa4b4c682e068229f8b6877daf1e27))
+
+
+### Code Refactoring
+
+* moving apps into a new folder ([#342](https://github.com/visulima/visulima/issues/342)) ([280e787](https://github.com/visulima/visulima/commit/280e787c1894317653359a5ac97dd439ccd925d8))
+
 ## @visulima/nextra-theme-docs [4.0.16](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.15...@visulima/nextra-theme-docs@4.0.16) (2024-03-06)
 
 
