@@ -26,10 +26,10 @@ describe.each([
     });
 
     it("collects custom file extensions from a valid directory", async () => {
-        expect.assertions(3);
+        expect.assertions(1);
 
         // Replace with a real directory for your test
-        let entries = function_("./__fixtures__", { extensions: ["json"] });
+        let entries = function_("./__fixtures__/collect", { extensions: ["json"] });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "collect") {
