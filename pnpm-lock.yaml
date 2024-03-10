@@ -442,6 +442,9 @@ importers:
       serve:
         specifier: ^14.2.1
         version: 14.2.1
+      sort-package-json:
+        specifier: ^2.8.0
+        version: 2.8.0
       storybook:
         specifier: ^7.6.17
         version: 7.6.17
