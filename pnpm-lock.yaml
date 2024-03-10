@@ -98,6 +98,9 @@ importers:
       publint:
         specifier: ^0.2.7
         version: 0.2.7
+      read-pkg:
+        specifier: ^9.0.1
+        version: 9.0.1
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
