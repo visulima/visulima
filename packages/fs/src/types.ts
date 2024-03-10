@@ -53,6 +53,9 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
     path: string;
 }
 
+// eslint-disable-next-line unicorn/text-encoding-identifier-case
+export type Encoding = "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le";
+
 export type ReadFileOptions<C> = {
     /**
      * Return content as a Buffer. Default: `false`
@@ -68,9 +71,11 @@ export type ReadFileOptions<C> = {
      * The encoding to use. Default: `utf8`
      * @see https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
      */
-    // eslint-disable-next-line unicorn/text-encoding-identifier-case
-    encoding?: "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le" | undefined;
+    encoding?: Encoding | undefined;
 
+    /**
+     * The flag used to open the file. Default: `r`
+     */
     flag?: number | string | undefined;
 };
 
@@ -94,4 +99,26 @@ export type CodeFrameOptions = {
 
 export type ReadJsonOptions = CodeFrameOptions & {
     beforeParse?: (source: string) => string;
+};
+
+export type WriteFileOptions = {
+    /**
+     * The encoding to use. Default: `utf8`
+     */
+    encoding?: BufferEncoding | null | undefined;
+
+    /**
+     * The flag used to open the file. Default: `r`
+     */
+    flag?: string | undefined;
+
+    /**
+     * Indicates whether the file should be overwritten if it already exists. Default: `false`
+     */
+    overwrite?: boolean;
+
+    /**
+     * Recursively create parent directories if needed. Default: `true`
+     */
+    recursive?: boolean;
 };
