@@ -1,7 +1,10 @@
 // Prevent `String#lastIndexOf` treat negative index as `0`
 const safeLastIndexOf = (string_: string, searchString: string, index: number) => (index < 0 ? -1 : string_.lastIndexOf(searchString, index));
 
-const indexToPosition = (text: string, textIndex: number): {
+const indexToPosition = (
+    text: string,
+    textIndex: number,
+): {
     column: number;
     line: number;
 } => {
@@ -25,7 +28,7 @@ const indexToPosition = (text: string, textIndex: number): {
         line++;
     }
 
-    return { column: column + 1, line: line + 1 };
+    return { column, line };
 };
 
 export default indexToPosition;

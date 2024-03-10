@@ -6,19 +6,18 @@ import parseJson from "../../../src/utils/parse-json";
 
 const NODE_JS_VERSION = Number(process.versions.node.split(".")[0]);
 
-const INVALID_JSON_STRING = `
-  {
+const INVALID_JSON_STRING = `{
   \t"foo": true,
   }`;
 
 const errorMessageRegex = (() => {
     if (NODE_JS_VERSION < 20) {
         // eslint-disable-next-line regexp/strict
-        return /Unexpected token "}"\(\\u{7d}\) in JSON at position 23/;
+        return /Unexpected token "}"\(\\u{7d}\) in JSON at position 20/;
     }
 
     if (NODE_JS_VERSION < 21) {
-        return /Expected double-quoted property name in JSON at position 23/;
+        return /Expected double-quoted property name in JSON at position 20/;
     }
 
     return /Expected double-quoted property name in JSON at position 23 \(line 3 column 1\)/;
@@ -110,10 +109,10 @@ describe("parse-json", () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toBe(`  2 |   {
-  3 |   \t"foo": true,
-${CODE_FRAME_POINTER} 4 |   }
-    |   ^`);
+            expect(error.codeFrame).toBe(`  1 | {
+${CODE_FRAME_POINTER} 2 |   \t"foo": true,
+    |  ^
+  3 |   }`);
         }
     });
 
@@ -205,10 +204,10 @@ ${CODE_FRAME_POINTER} 4 |   }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toBe(` +++ 2 |   {
- +++ 3 |   \t"foo": true,
-${CODE_FRAME_POINTER}+++ 4 |   }
- +++   |   ^`);
+            expect(error.codeFrame).toBe(` +++ 1 | {
+${CODE_FRAME_POINTER}+++ 2 |   \t"foo": true,
+ +++   |  ^
+ +++ 3 |   }`);
         }
     });
 });

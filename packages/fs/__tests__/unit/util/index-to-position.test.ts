@@ -8,15 +8,15 @@ describe("indexToPosition", () => {
 
         const result = indexToPosition("Hello\nWorld", 6);
 
-        expect(result).toStrictEqual({ column: 1, line: 2 });
+        expect(result).toStrictEqual({ column: 0, line: 1 });
     });
 
-    it("should return {line: 1, column: 1} for textIndex = 0", () => {
+    it("should return {line: 0, column: 0} for textIndex = 0", () => {
         expect.assertions(1);
 
         const result = indexToPosition("Hello\nWorld", 0);
 
-        expect(result).toStrictEqual({ column: 1, line: 1 });
+        expect(result).toStrictEqual({ column: 0, line: 0 });
     });
 
     it("should return {line: 0, column: 1} for empty text and textIndex = 0", () => {
