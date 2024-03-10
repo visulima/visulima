@@ -1,0 +1,8 @@
+{
+    "name": "storybook",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "storybook",
+    "projectType": "app",
+    "tags": ["storybook"],
+    "implicitDependencies": []
+}

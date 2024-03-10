@@ -45,8 +45,8 @@ const getComponents = ({
     }
 
     return {
-        // eslint-disable-next-line react/jsx-props-no-spreading
         a: (properties: Omit<ComponentProps<"a">, "ref"> & { href?: string }) => (
+            // eslint-disable-next-line react/jsx-props-no-spreading
             <A {...properties} className="text-primary-500 underline decoration-from-font [text-underline-position:from-font]" />
         ),
         blockquote: (properties: ComponentProps<"blockquote">) => (
