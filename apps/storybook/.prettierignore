@@ -14,5 +14,3 @@ pnpm-workspace.yaml
 
 **/tsconfig.json
 **/jsconfig.json
-
-/.nx/cache

@@ -44,6 +44,12 @@
         },
         "prepare": {
             "dependsOn": ["^prepare"]
+        },
+        "test": {
+            "cache": true
+        },
+        "build-storybook": {
+            "cache": true
         }
     },
     "parallel": 5,
@@ -63,25 +69,8 @@
             "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
             "!{projectRoot}/tsconfig.storybook.json"
         ],
-        "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"]
-    },
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": [
-                    "build",
-                    "build:prod",
-                    "test",
-                    "lint:types",
-                    "lint:eslint",
-                    "lint:eslint:fix",
-                    "lint:prettier",
-                    "lint:prettier:fix",
-                    "build-storybook"
-                ]
-            }
-        }
+        "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"],
+        "production": ["default"]
     },
     "pluginsConfig": {
         "@nrwl/js": {
