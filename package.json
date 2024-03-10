@@ -24,7 +24,7 @@
         "build:prod:packages": "nx run-many --target=build:prod --parallel --projects=tag:type:package",
         "build:storybook": "pnpm run --filter \"storybook\" build",
         "clean": "nx run-many --target=clean --all --parallel && rimraf ./node_modules",
-        "dev:docs": "pnpm run docs:symlink && nx run-many --target=dev --parallel --projects=tag:type:nextra",
+        "dev:docs": "pnpm run docs:symlink && nx run-many --target=dev --parallel --projects=tag:nextra-theme-docs",
         "dev:storybook": "pnpm run --filter \"storybook\" dev",
         "docs:copy": "pnpm --filter \"docs\" run docs:copy",
         "docs:symlink": "pnpm --filter \"docs\" run docs:symlink",
