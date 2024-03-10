@@ -11,4 +11,6 @@ tsconfig.json
 .prettierrc.cjs
 .secretlintrc.cjs
 
+scripts/vercel-ignore-command.cjs
+
 README.md

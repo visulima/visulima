@@ -1,6 +1,8 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { mergeConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths"
+// eslint-disable-next-line import/no-extraneous-dependencies
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const config: StorybookConfig = {
     addons: ["@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/addon-a11y", "@storybook/addon-actions", "@storybook/addon-themes", "@storybook/addon-links", "@storybook/addon-docs"],

@@ -5,5 +5,5 @@
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": [".storybook/**", "*.d.ts", "stories/**"],
+    "include": [".storybook/**/*", "*.d.ts", "stories/**/*"]
 }
