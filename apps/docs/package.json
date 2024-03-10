@@ -1,5 +1,5 @@
 {
-    "name": "docs",
+    "name": "@apps/docs",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -12,6 +12,7 @@
         "lint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --cache",
         "lint:eslint": "eslint . --ext js,cjs,mjs,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
+        "lint:packagejson": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "start": "next start"
@@ -36,6 +37,7 @@
         "lucide-react": "^0.349.0",
         "next": "13.4.19",
         "nextra": "2.13.4",
+        "publint": "^0.2.7",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "yargs": "^17.7.2",

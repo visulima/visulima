@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "emitDecoratorMetadata": true,
+        "outDir": "tsconfig.storybook"
+    },
+    "files": [
+        "./node_modules/@nx/react/typings/styled-jsx.d.ts",
+        "./node_modules/@nx/react/typings/cssmodule.d.ts",
+        "./node_modules/@nx/react/typings/image.d.ts"
+    ],
+    "include": ["."],
+    "exclude": ["dist", "build", "node_modules"]
+}

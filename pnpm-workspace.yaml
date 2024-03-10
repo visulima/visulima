@@ -11,4 +11,4 @@ packages:
     - "**/__bench__/**"
     - "packages/colorize/__fixtures__/package/cjs"
     - "packages/colorize/__fixtures__/package/mjs"
-    - "docs"
+    - "apps/**"
