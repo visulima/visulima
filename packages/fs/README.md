@@ -435,6 +435,15 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+## About
+
+### Related Projects
+
+-   [strip-json-comments](https://github.com/sindresorhus/strip-json-comments) - Strip comments from JSON. Lets you use comments in your JSON files!
+-   [parse-json](https://github.com/sindresorhus/parse-json) - Parse JSON with more helpful errors.
+-   [find-up](https://github.com/sindresorhus/find-up) - Find a file or directory by walking up parent directories.
+-   [walk](https://deno.land/std/fs/walk.ts) - Walk a directory recursively and yield all files and directories.
+
 ## License
 
 The visulima fs is open-sourced software licensed under the [MIT][license-url]
