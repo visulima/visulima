@@ -1923,6 +1923,12 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
@@ -1995,6 +2001,9 @@ importers:
       eslint-plugin-etc:
         specifier: ^2.0.3
         version: 2.0.3(eslint@8.57.0)(typescript@5.4.2)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: /eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-mdx:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
@@ -2393,6 +2402,12 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
