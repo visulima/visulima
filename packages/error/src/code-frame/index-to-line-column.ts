@@ -23,6 +23,7 @@ const binarySearch = (element: number, array: number[]): number => {
 // split by line break characters, CR, LF or CRLF
 // compile an array of indexes, where each line starts
 const getLineStartIndexes = (string_: string): number[] =>
+    // eslint-disable-next-line unicorn/no-array-reduce
     string_.split(/\n|\r(?!\n)/).reduce(
         (accumulator: number[], current) => {
             accumulator.push((accumulator.at(-1) as number) + current.length + 1);
@@ -62,6 +63,7 @@ const indexToLineColumn = (
         const line = binarySearch(index, startIndexesOfEachLine);
 
         return {
+            // eslint-disable-next-line security/detect-object-injection
             column: index - (startIndexesOfEachLine[line] as number) + 1,
             line: line + 1,
         };
@@ -71,6 +73,7 @@ const indexToLineColumn = (
     const line = binarySearch(index, input);
 
     return {
+        // eslint-disable-next-line security/detect-object-injection
         column: index - (input[line] as number) + 1,
         line: line + 1,
     };
