@@ -341,6 +341,84 @@ Optional: `true`
 
 Description: The accessibility mode.
 
+---
+
+# Utilities
+
+## parseJson
+
+Parse JSON with more helpful errors.
+
+```typescript
+import { parseJson, JSONError } from "@visulima/fs/utils";
+
+const json = '{\n\t"foo": true,\n}';
+
+JSON.parse(json);
+/*
+undefined:3
+}
+^
+SyntaxError: Unexpected token }
+*/
+
+parseJson(json);
+/*
+JSONError: Unexpected token } in JSON at position 16 while parsing near '{      "foo": true,}'
+
+  1 | {
+  2 |   "foo": true,
+> 3 | }
+    | ^
+*/
+
+parseJson(json, "foo.json");
+/*
+JSONError: Unexpected token } in JSON at position 16 while parsing near '{      "foo": true,}' in foo.json
+
+  1 | {
+  2 |   "foo": true,
+> 3 | }
+    | ^
+*/
+```
+
+### API for `parseJson`
+
+#### json
+
+Type: `string`
+
+The JSON string to parse.
+
+#### reviver
+
+Type: `Function`
+
+Prescribes how the value originally produced by parsing is transformed, before being returned. See [JSON.parse docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#Using_the_reviver_parameter) for more.
+
+#### filename
+
+Type: `string`
+
+The filename to use in error messages.
+
+### API for `JSONError`
+
+Exposed for use in `instanceof` checks.
+
+#### fileName
+
+Type: `string`
+
+The filename displayed in the error message.
+
+#### codeFrame
+
+Type: `string`
+
+The printable section of the JSON which produces the error.
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
@@ -356,6 +434,15 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## About
+
+### Related Projects
+
+-   [strip-json-comments](https://github.com/sindresorhus/strip-json-comments) - Strip comments from JSON. Lets you use comments in your JSON files!
+-   [parse-json](https://github.com/sindresorhus/parse-json) - Parse JSON with more helpful errors.
+-   [find-up](https://github.com/sindresorhus/find-up) - Find a file or directory by walking up parent directories.
+-   [walk](https://deno.land/std/fs/walk.ts) - Walk a directory recursively and yield all files and directories.
 
 ## License
 

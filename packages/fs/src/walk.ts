@@ -9,6 +9,7 @@ import { basename, join, normalize, resolve } from "node:path";
 
 import WalkError from "./error/walk-error";
 import type { WalkEntry, WalkOptions } from "./types";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import globToRegExp from "./utils/glob-to-regex";
 import toPath from "./utils/to-path";
 import walkInclude from "./utils/walk-include";
@@ -60,6 +61,8 @@ export default async function* walk(
         skip,
     }: WalkOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
+    assertValidFileOrDirectoryPath(directory);
+
     if (maxDepth < 0) {
         return;
     }

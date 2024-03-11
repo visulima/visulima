@@ -1,5 +1,7 @@
 import type { Dirent } from "node:fs";
 
+type ColorizeMethod = (value: string) => string;
+
 export interface WalkOptions {
     /**
      * List of file extensions used to filter entries.
@@ -51,6 +53,9 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
     path: string;
 }
 
+// eslint-disable-next-line unicorn/text-encoding-identifier-case
+export type ReadFileEncoding = "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le";
+
 export type ReadFileOptions<C> = {
     /**
      * Return content as a Buffer. Default: `false`
@@ -66,10 +71,88 @@ export type ReadFileOptions<C> = {
      * The encoding to use. Default: `utf8`
      * @see https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
      */
-    // eslint-disable-next-line unicorn/text-encoding-identifier-case
-    encoding?: "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le" | undefined;
+    encoding?: ReadFileEncoding | undefined;
 
+    /**
+     * The flag used to open the file. Default: `r`
+     */
     flag?: number | string | undefined;
 };
 
 export type ContentType<O = undefined> = O extends { buffer: true } ? Buffer : string;
+
+// Get `reviver`` parameter from `JSON.parse()`.
+export type JsonReviver = Parameters<(typeof JSON)["parse"]>["1"];
+
+export type CodeFrameLocation = {
+    column?: number;
+    line: number;
+};
+
+export type CodeFrameOptions = {
+    color?: {
+        gutter?: ColorizeMethod;
+        marker?: ColorizeMethod;
+        message?: ColorizeMethod;
+    };
+};
+
+export type ReadJsonOptions = CodeFrameOptions & {
+    beforeParse?: (source: string) => string;
+};
+
+export type WriteFileOptions = {
+    /**
+     * The group and user ID used to set the file ownership. Default: `undefined`
+     */
+    chown?: {
+        gid: number;
+        uid: number;
+    };
+
+    /**
+     * The encoding to use. Default: `utf8`
+     */
+    encoding?: BufferEncoding | null | undefined;
+
+    /**
+     * The flag used to write the file. Default: `w`
+     */
+    flag?: string | undefined;
+
+    /**
+     * The file mode (permission and sticky bits). Default: `0o666`
+     */
+    mode?: number;
+
+    /**
+     * Indicates whether the file should be overwritten if it already exists. Default: `false`
+     */
+    overwrite?: boolean;
+
+    /**
+     * Recursively create parent directories if needed. Default: `true`
+     */
+    recursive?: boolean;
+};
+
+export type JsonReplacer = (this: unknown, key: string, value: unknown) => unknown;
+
+export type WriteJsonOptions = WriteFileOptions & {
+    /**
+     * Detect indentation automatically if the file exists. Default: `false`
+     */
+    detectIndent?: boolean;
+
+    /**
+     * The space used for pretty-printing.
+     *
+     * Pass in `undefined` for no formatting.
+     */
+    indent?: number | string | undefined;
+
+    /**
+     * Passed into `JSON.stringify`.
+     */
+    replacer?: (number | string)[] | JsonReplacer | null;
+};
