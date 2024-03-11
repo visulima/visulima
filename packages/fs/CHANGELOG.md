@@ -1,3 +1,10 @@
+## @visulima/fs [1.3.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.2.1...@visulima/fs@1.3.0) (2024-03-11)
+
+
+### Features
+
+* **fs:** add read and write for file and json ([#341](https://github.com/visulima/visulima/issues/341)) ([a2e16d8](https://github.com/visulima/visulima/commit/a2e16d88ea6b14cef1b55ff7ee5d6a9e4afe262f))
+
 ## @visulima/fs [1.2.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.2.0...@visulima/fs@1.2.1) (2024-03-09)
 
 
