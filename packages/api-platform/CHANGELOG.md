@@ -1,3 +1,10 @@
+## @visulima/api-platform [2.0.27](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.26...@visulima/api-platform@2.0.27) (2024-03-11)
+
+
+### Bug Fixes
+
+* updated jstoxml ([087ffa2](https://github.com/visulima/visulima/commit/087ffa2aec382e3de06804b6e2f8c2d3cb73da65))
+
 ## @visulima/api-platform [2.0.26](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.25...@visulima/api-platform@2.0.26) (2024-03-10)
 
 
