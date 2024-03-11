@@ -3474,8 +3474,6 @@ packages:
         optional: true
       eslint-plugin-jsx-a11y:
         optional: true
-      eslint-plugin-n:
-        optional: true
       eslint-plugin-no-unsanitized:
         optional: true
       eslint-plugin-playwright:
@@ -3637,8 +3635,6 @@ packages:
       eslint-plugin-jsdoc:
         optional: true
       eslint-plugin-jsx-a11y:
-        optional: true
-      eslint-plugin-n:
         optional: true
       eslint-plugin-no-unsanitized:
         optional: true
@@ -31122,11 +31118,6 @@ packages:
   /type-fest@3.13.1:
     resolution: {integrity: sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==}
     engines: {node: '>=14.16'}
-
-  /type-fest@4.12.0:
-    resolution: {integrity: sha512-5Y2/pp2wtJk8o08G0CMkuFPCO354FGwk/vbidxrdhRGZfd0tFnb4Qb8anp9XxXriwBgVPjdWbKpGl4J9lJY2jQ==}
-    engines: {node: '>=16'}
-    dev: true
 
   /type-fest@4.12.0:
     resolution: {integrity: sha512-5Y2/pp2wtJk8o08G0CMkuFPCO354FGwk/vbidxrdhRGZfd0tFnb4Qb8anp9XxXriwBgVPjdWbKpGl4J9lJY2jQ==}
