@@ -156,3 +156,9 @@ export type WriteJsonOptions = WriteFileOptions & {
      */
     replacer?: (number | string)[] | JsonReplacer | null;
 };
+
+export type FindUpOptions = {
+    cwd?: URL | string;
+    stopAt?: URL | string;
+    type?: "directory" | "file";
+};

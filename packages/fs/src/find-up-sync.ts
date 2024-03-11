@@ -1,16 +1,13 @@
 import { statSync } from "node:fs";
 import { dirname, isAbsolute, join, parse, resolve } from "node:path";
 
+import type { FindUpOptions } from "./types";
 import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import toPath from "./utils/to-path";
 
 const findUpSync = (
     name: string,
-    options: {
-        cwd?: URL | string;
-        stopAt?: URL | string;
-        type?: "directory" | "file";
-    } = {},
+    options: FindUpOptions = {},
 ): string | undefined => {
     const cwd = options.cwd ? toPath(options.cwd) : process.cwd();
 
