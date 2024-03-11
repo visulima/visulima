@@ -1,3 +1,10 @@
+## @visulima/error [3.2.0](https://github.com/visulima/visulima/compare/@visulima/error@3.1.2...@visulima/error@3.2.0) (2024-03-11)
+
+
+### Features
+
+* added new index-to-line-column function ([c794be0](https://github.com/visulima/visulima/commit/c794be0867eae45ce66096bd15691d7437545a5d))
+
 ## @visulima/error [3.1.2](https://github.com/visulima/visulima/compare/@visulima/error@3.1.1...@visulima/error@3.1.2) (2024-03-10)
 
 
