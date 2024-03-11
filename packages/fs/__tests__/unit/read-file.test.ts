@@ -17,7 +17,7 @@ describe.each([
     ["readFile", readFile],
     ["readFileSync", readdirSync],
 ])(`%s`, (name: string, function_) => {
-    it("read", async () => {
+    it("should read", async () => {
         expect.assertions(1);
 
         let result = await function_(join(fixturePath, "text.md"));
@@ -30,7 +30,7 @@ describe.each([
         expect(result).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
-    it("read buffer", async () => {
+    it("should read buffer", async () => {
         expect.assertions(1);
 
         let result = await function_(join(fixturePath, "text.md"), { buffer: true });
@@ -43,33 +43,20 @@ describe.each([
         expect(result?.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
-    it("read empty", async () => {
+    it("should throw a error on a missing file", async () => {
         expect.assertions(1);
-
-        let result = await function_(join(fixturePath, "missing.txt"));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readFile") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
         }
-
-        expect(result).toBeUndefined();
     });
 
-    it("read no access", async () => {
-        expect.assertions(1);
-
-        let result = await function_("/no-access/b");
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readFile") {
-            result = await result;
-        }
-
-        expect(result).toBeUndefined();
-    });
-
-    it("read gzip", async () => {
+    it("should read gzip file", async () => {
         expect.assertions(1);
 
         let result = await function_(join(fixturePath, "text.md.gz"), { compression: "gzip" });
@@ -82,7 +69,7 @@ describe.each([
         expect(result).toBe("hello world!");
     });
 
-    it("read brotli", async () => {
+    it("should read brotli file", async () => {
         expect.assertions(1);
 
         let result = await function_(join(fixturePath, "note.md.br"), { compression: "brotli" });
@@ -95,16 +82,16 @@ describe.each([
         expect(result).toBe("hello world!");
     });
 
-    it("read invalid", async () => {
+    it("should read invalid compression", async () => {
         expect.assertions(1);
-
-        let result = await function_("/compressed/note.md.gz", { compression: "brotli" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readFile") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            await expect(() => function_(join(fixturePath, "text.md.gz"), { compression: "brotli" })).rejects.toThrow("Decompression failed");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            expect(() => function_(join(fixturePath, "text.md.gz"), { compression: "brotli" })).toThrow("Decompression failed");
         }
-
-        expect(result).toBeUndefined();
     });
 });

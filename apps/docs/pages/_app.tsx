@@ -7,14 +7,10 @@ import Head from "next/head";
 import type { FC, ReactElement } from "react";
 import React from "react";
 
-import useFathom from "../src/hooks/use-fathom";
-
 // TODO: add accessibility report back if nextra version is updated
 // import reportAccessibility from "../src/utils/report-accessibility";
 
 const MyApp: FC<AppProps & { Component: AppProps["Component"] & { getLayout?: (component: ReactElement) => ReactElement } }> = ({ Component, pageProps }) => {
-    useFathom();
-
     const getLayout: (component: ReactElement) => ReactElement = Component.getLayout ?? ((page) => page);
 
     return (
