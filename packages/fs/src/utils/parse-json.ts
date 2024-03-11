@@ -5,12 +5,11 @@
  * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { codeFrame } from "@visulima/error";
+import { codeFrame, indexToLineColumn } from "@visulima/error";
 import type { JsonValue } from "type-fest";
 
 import JsonError from "../error/json-error";
 import type { CodeFrameLocation, CodeFrameOptions, JsonReviver } from "../types";
-import indexToPosition from "./index-to-position";
 
 const getCodePoint = (character: string): string => `\\u{${(character.codePointAt(0) as number).toString(16)}}`;
 
@@ -44,13 +43,11 @@ const getErrorLocation = (source: string, message: string): CodeFrameLocation | 
 
     // The error location can be out of bounds.
     if (index === source.length) {
-
-        const { column: pColumn, line: pLine } = indexToPosition(source, source.length - 1);
-
-        return { column: pColumn + 1, line: pLine + 1 };
+        index = source.length - 1;
     }
 
-    return indexToPosition(source, index);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+    return indexToLineColumn(source, index);
 };
 
 const addCodePointToUnexpectedToken = (message: string): string =>

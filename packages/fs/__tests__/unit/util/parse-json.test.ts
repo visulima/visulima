@@ -20,7 +20,7 @@ const errorMessageRegex = (() => {
         return /Expected double-quoted property name in JSON at position 20/;
     }
 
-    return /Expected double-quoted property name in JSON at position 23 \(line 3 column 1\)/;
+    return /Expected double-quoted property name in JSON at position 20 \(line 3 column 3\)/;
 })();
 // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
 const errorMessageRegexWithFileName = new RegExp(`${errorMessageRegex.source}.*in foo\\.json`);
@@ -110,9 +110,9 @@ describe("parse-json", () => {
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(`  1 | {
-${CODE_FRAME_POINTER} 2 |   \t"foo": true,
-    |  ^
-  3 |   }`);
+  2 |   \t"foo": true,
+${CODE_FRAME_POINTER} 3 |   }
+    |   ^`);
         }
     });
 
@@ -123,13 +123,18 @@ ${CODE_FRAME_POINTER} 2 |   \t"foo": true,
             parseJson("{");
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
+            let expectedCodeFrame = `${CODE_FRAME_POINTER} 1 | {
+    |  ^`;
+
+            if (NODE_JS_VERSION === 18) {
+                expectedCodeFrame = undefined;
+            } else if (NODE_JS_VERSION === 20) {
+                expectedCodeFrame = `${CODE_FRAME_POINTER} 1 | {
+    | ^`;
+            }
+
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toStrictEqual(
-                NODE_JS_VERSION === 18
-                    ? undefined
-                    : `${CODE_FRAME_POINTER} 1 | {
-    | ^`,
-            );
+            expect(error.codeFrame).toStrictEqual(expectedCodeFrame);
         }
     });
 
@@ -205,9 +210,9 @@ ${CODE_FRAME_POINTER} 2 |   \t"foo": true,
         } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(` +++ 1 | {
-${CODE_FRAME_POINTER}+++ 2 |   \t"foo": true,
- +++   |  ^
- +++ 3 |   }`);
+ +++ 2 |   \t"foo": true,
+${CODE_FRAME_POINTER}+++ 3 |   }
+ +++   |   ^`);
         }
     });
 });
