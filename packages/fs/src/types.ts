@@ -54,7 +54,7 @@ export interface WalkEntry extends Pick<Dirent, "isDirectory" | "isFile" | "isSy
 }
 
 // eslint-disable-next-line unicorn/text-encoding-identifier-case
-export type Encoding = "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le";
+export type ReadFileEncoding = "ascii" | "base64" | "base64url" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf-16le" | "utf8" | "utf16le";
 
 export type ReadFileOptions<C> = {
     /**
@@ -71,7 +71,7 @@ export type ReadFileOptions<C> = {
      * The encoding to use. Default: `utf8`
      * @see https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
      */
-    encoding?: Encoding | undefined;
+    encoding?: ReadFileEncoding | undefined;
 
     /**
      * The flag used to open the file. Default: `r`
@@ -136,7 +136,7 @@ export type WriteFileOptions = {
     recursive?: boolean;
 };
 
-export type Replacer = (this: unknown, key: string, value: unknown) => unknown;
+export type JsonReplacer = (this: unknown, key: string, value: unknown) => unknown;
 
 export type WriteJsonOptions = WriteFileOptions & {
     /**
@@ -154,5 +154,5 @@ export type WriteJsonOptions = WriteFileOptions & {
     /**
      * Passed into `JSON.stringify`.
      */
-    replacer?: (number | string)[] | Replacer | null;
+    replacer?: (number | string)[] | JsonReplacer | null;
 };

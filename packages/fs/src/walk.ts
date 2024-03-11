@@ -9,10 +9,10 @@ import { basename, join, normalize, resolve } from "node:path";
 
 import WalkError from "./error/walk-error";
 import type { WalkEntry, WalkOptions } from "./types";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import globToRegExp from "./utils/glob-to-regex";
 import toPath from "./utils/to-path";
 import walkInclude from "./utils/walk-include";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
