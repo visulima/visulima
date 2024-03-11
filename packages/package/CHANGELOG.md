@@ -1,3 +1,10 @@
+## @visulima/package [1.2.10](https://github.com/visulima/visulima/compare/@visulima/package@1.2.9...@visulima/package@1.2.10) (2024-03-11)
+
+
+### Bug Fixes
+
+* **package:** updated get-tsconfig ([d8d3169](https://github.com/visulima/visulima/commit/d8d31691d16b1640019ec20176560f44f903c4cf))
+
 ## @visulima/package [1.2.9](https://github.com/visulima/visulima/compare/@visulima/package@1.2.8...@visulima/package@1.2.9) (2024-03-07)
 
 
