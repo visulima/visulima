@@ -211,7 +211,7 @@
         "textlint": "^14.0.3",
         "tsup": "^8.0.2",
         "typescript": "^5.4.2",
-        "vite": "^5.1.5"
+        "vite": "^5.1.6"
     },
     "packageManager": "pnpm@8.15.4",
     "engines": {
