@@ -1,3 +1,10 @@
+## @visulima/fs [1.4.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.3.1...@visulima/fs@1.4.0) (2024-03-11)
+
+
+### Features
+
+* **fs:** added new stringify option to write json ([5549b80](https://github.com/visulima/visulima/commit/5549b80386aa8ea5f47997dea50dc05209245008))
+
 ## @visulima/fs [1.3.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.3.0...@visulima/fs@1.3.1) (2024-03-11)
 
 
