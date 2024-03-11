@@ -16,7 +16,6 @@ const environment = createEnv({
         NEXT_PUBLIC_COMMENTS_CATEGORY_ID: validation,
         NEXT_PUBLIC_COMMENTS_REPO: validation,
         NEXT_PUBLIC_COMMENTS_REPO_ID: validation,
-        NEXT_PUBLIC_FATHOM_ID: validation,
     },
     /**
      * What object holds the environment variables at runtime.
@@ -26,7 +25,6 @@ const environment = createEnv({
         NEXT_PUBLIC_COMMENTS_CATEGORY_ID: process_environment.NEXT_PUBLIC_COMMENTS_CATEGORY_ID,
         NEXT_PUBLIC_COMMENTS_REPO: process_environment.NEXT_PUBLIC_COMMENTS_REPO,
         NEXT_PUBLIC_COMMENTS_REPO_ID: process_environment.NEXT_PUBLIC_COMMENTS_REPO_ID,
-        NEXT_PUBLIC_FATHOM_ID: process_environment.NEXT_PUBLIC_FATHOM_ID,
     },
 });
 
