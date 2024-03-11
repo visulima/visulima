@@ -49,10 +49,10 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readFile") {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
-            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, invalid access to read file at: /missing");
+            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
-            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, invalid access to read file at: /missing");
+            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
         }
     });
 

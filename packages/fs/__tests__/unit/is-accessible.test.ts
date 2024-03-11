@@ -44,7 +44,6 @@ describe.each([
 
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "isAccessible") {
-                // @ts-expect-error - we are testing the promise
                 result = await result;
             }
 
@@ -69,11 +68,25 @@ describe.each([
 
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "isAccessible") {
-                // @ts-expect-error - we are testing the promise
                 result = await result;
             }
 
             expect(result, message).toStrictEqual(expected);
         },
     );
+
+    it("should handle path as URL or string", async () => {
+        expect.assertions(1);
+        // eslint-disable-next-line compat/compat
+        const path = new URL(`file:///${file}`);
+
+        let result = function_(path, F_OK);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "isAccessible") {
+            result = await result;
+        }
+
+        expect(result).toBeTruthy();
+    });
 });

@@ -12,6 +12,7 @@ import type { WalkEntry, WalkOptions } from "./types";
 import globToRegExp from "./utils/glob-to-regex";
 import toPath from "./utils/to-path";
 import walkInclude from "./utils/walk-include";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
@@ -60,6 +61,8 @@ export default async function* walk(
         skip,
     }: WalkOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
+    assertValidFileOrDirectoryPath(directory);
+
     if (maxDepth < 0) {
         return;
     }

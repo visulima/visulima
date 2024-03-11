@@ -74,8 +74,8 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(function_(null)).rejects.toThrow("Path must be a non-empty string or URL.");
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            await expect(() => function_(null)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
             expect(() => function_(null)).toThrow("Path must be a non-empty string or URL.");
@@ -113,5 +113,18 @@ describe.each([
         expect(result).toStrictEqual({
             name: "Test",
         });
+    });
+
+    it("should throw a error on a missing file", async () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "readJson") {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+        }
     });
 });

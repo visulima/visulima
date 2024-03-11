@@ -2312,9 +2312,6 @@ importers:
       '@rushstack/eslint-plugin-security':
         specifier: ^0.8.1
         version: 0.8.1(eslint@8.57.0)(typescript@5.4.2)
-      '@types/micromatch':
-        specifier: ^4.0.6
-        version: 4.0.6
       '@types/node':
         specifier: 18.18.14
         version: 18.18.14
@@ -2330,6 +2327,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      detect-indent:
+        specifier: ^7.0.1
+        version: 7.0.1
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -3474,6 +3474,8 @@ packages:
         optional: true
       eslint-plugin-jsx-a11y:
         optional: true
+      eslint-plugin-n:
+        optional: true
       eslint-plugin-no-unsanitized:
         optional: true
       eslint-plugin-playwright:
@@ -3635,6 +3637,8 @@ packages:
       eslint-plugin-jsdoc:
         optional: true
       eslint-plugin-jsx-a11y:
+        optional: true
+      eslint-plugin-n:
         optional: true
       eslint-plugin-no-unsanitized:
         optional: true

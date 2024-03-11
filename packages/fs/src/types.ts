@@ -103,14 +103,27 @@ export type ReadJsonOptions = CodeFrameOptions & {
 
 export type WriteFileOptions = {
     /**
+     * The group and user ID used to set the file ownership. Default: `undefined`
+     */
+    chown?: {
+        gid: number;
+        uid: number;
+    };
+
+    /**
      * The encoding to use. Default: `utf8`
      */
     encoding?: BufferEncoding | null | undefined;
 
     /**
-     * The flag used to open the file. Default: `r`
+     * The flag used to write the file. Default: `w`
      */
     flag?: string | undefined;
+
+    /**
+     * The file mode (permission and sticky bits). Default: `0o666`
+     */
+    mode?: number;
 
     /**
      * Indicates whether the file should be overwritten if it already exists. Default: `false`
@@ -121,4 +134,25 @@ export type WriteFileOptions = {
      * Recursively create parent directories if needed. Default: `true`
      */
     recursive?: boolean;
+};
+
+export type Replacer = (this: unknown, key: string, value: unknown) => unknown;
+
+export type WriteJsonOptions = WriteFileOptions & {
+    /**
+     * Detect indentation automatically if the file exists. Default: `false`
+     */
+    detectIndent?: boolean;
+
+    /**
+     * The space used for pretty-printing.
+     *
+     * Pass in `undefined` for no formatting.
+     */
+    indent?: number | string | undefined;
+
+    /**
+     * Passed into `JSON.stringify`.
+     */
+    replacer?: (number | string)[] | Replacer | null;
 };

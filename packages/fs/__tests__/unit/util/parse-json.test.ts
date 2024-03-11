@@ -128,7 +128,7 @@ ${CODE_FRAME_POINTER} 2 |   \t"foo": true,
                 NODE_JS_VERSION === 18
                     ? undefined
                     : `${CODE_FRAME_POINTER} 1 | {
-    |  ^`,
+    | ^`,
             );
         }
     });

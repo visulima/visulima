@@ -1,5 +1,5 @@
 import type { Stats } from "node:fs";
-import { chmodSync, mkdirSync, renameSync, statSync, writeFileSync as nodeWriteFileSync } from "node:fs";
+import { chmodSync, chownSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync as nodeWriteFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { F_OK } from "./constants";
@@ -10,7 +10,8 @@ import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directo
 import toPath from "./utils/to-path";
 import toUint8Array from "./utils/to-uint-8-array";
 
-const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options: WriteFileOptions): void => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {
     // eslint-disable-next-line no-param-reassign
     options = {
         encoding: "utf8",
@@ -47,21 +48,41 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             stat = statSync(path);
 
+            if (options.chown === undefined) {
+                // eslint-disable-next-line no-param-reassign
+                options.chown = { gid: stat.gid, uid: stat.uid };
+            }
+
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             renameSync(path, `${path}.bak`);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        renameSync(`${path}.tmp`, path);
+        const temporaryPath = `${path}.tmp`;
 
-        if (stat) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            chmodSync(path, stat.mode);
+        if (options.chown) {
+            try {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                chownSync(temporaryPath, options.chown.uid, options.chown.gid);
+            } catch {
+                // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
+                // and trying to chown it causes as permissions error.
+            }
         }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        renameSync(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
+    } finally {
+        if (isAccessibleSync(`${path}.tmp`)) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            unlinkSync(`${path}.tmp`);
+        }
     }
 };
 

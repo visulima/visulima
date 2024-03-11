@@ -1,16 +1,17 @@
 import type { Stats } from "node:fs";
-import { chmod, mkdir, rename, stat as nodeStat, writeFile as nodeWriteFile } from "node:fs/promises";
+import { chmod, chown, mkdir, rename, stat as nodeStat, unlink, writeFile as nodeWriteFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 import { F_OK } from "./constants";
 import isAccessible from "./is-accessible";
+import type { WriteFileOptions } from "./types";
 import assertValidFileContents from "./utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import toPath from "./utils/to-path";
 import toUint8Array from "./utils/to-uint-8-array";
-import type { WriteFileOptions } from "./types";
 
-const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options: WriteFileOptions): Promise<void> => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): Promise<void> => {
     // eslint-disable-next-line no-param-reassign
     options = {
         encoding: "utf8",
@@ -47,21 +48,41 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             stat = await nodeStat(path);
 
+            if (options.chown === undefined) {
+                // eslint-disable-next-line no-param-reassign
+                options.chown = { gid: stat.gid, uid: stat.uid };
+            }
+
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             await rename(path, `${path}.bak`);
         }
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        await rename(`${path}.tmp`, path);
+        const temporaryPath = `${path}.tmp`;
 
-        if (stat) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            await chmod(path, stat.mode);
+        if (options.chown) {
+            try {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                await chown(temporaryPath, options.chown.uid, options.chown.gid);
+            } catch {
+                // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
+                // and trying to chown it causes as permissions error.
+            }
         }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        await rename(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
+    } finally {
+        if (await isAccessible(`${path}.tmp`)) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            await unlink(`${path}.tmp`);
+        }
     }
 };
 

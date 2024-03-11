@@ -44,9 +44,10 @@ const getErrorLocation = (source: string, message: string): CodeFrameLocation | 
 
     // The error location can be out of bounds.
     if (index === source.length) {
+
         const { column: pColumn, line: pLine } = indexToPosition(source, source.length - 1);
 
-        return { column: pColumn + 1, line: pLine };
+        return { column: pColumn + 1, line: pLine + 1 };
     }
 
     return indexToPosition(source, index);

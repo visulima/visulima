@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -10,8 +10,9 @@ import isAccessible from "../../src/is-accessible";
 import isAccessibleSync from "../../src/is-accessible-sync";
 import type { WriteFileOptions } from "../../src/types";
 import writeFile from "../../src/write-file";
+import writeFileSync from "../../src/write-file-sync";
 
-const assertWriteFile = async (path: string, content: string, options: WriteFileOptions) => {
+const assertWriteFile = async (path: URL | string, content: string, options?: WriteFileOptions) => {
     await writeFile(path, content, options);
 
     // Assert that the file exists at the specified path
@@ -24,8 +25,7 @@ const assertWriteFile = async (path: string, content: string, options: WriteFile
     expect(fileContent).toBe(content);
 };
 
-const assertWriteFileSync = (path: string, content: string, options: WriteFileOptions) => {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
+const assertWriteFileSync = (path: URL | string, content: string, options?: WriteFileOptions) => {
     writeFileSync(path, content, options);
 
     // Assert that the file exists at the specified path
@@ -48,6 +48,20 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
     afterEach(async () => {
         await rm(distribution, { recursive: true });
+    });
+
+    it("should set default options if not provided", async () => {
+        expect.assertions(2);
+
+        const path = join(distribution, "file.txt");
+        const content = "Hello, World!";
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await assertWriteFile(path, content);
+        } else {
+            assertWriteFileSync(path, content);
+        }
     });
 
     it("should write file content to specified path", async () => {
@@ -87,10 +101,73 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
             await assertWriteFile(path, newContent, options);
         } else {
             // Create a file with initial content
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             writeFileSync(path, initialContent, options);
 
             assertWriteFileSync(path, newContent, options);
+        }
+    });
+
+    it("should create parent directories if needed", async () => {
+        expect.assertions(2);
+
+        const path = join(distribution, "missing", "file.txt");
+        const content = "Hello, World!";
+        const options: WriteFileOptions = {
+            overwrite: true,
+            recursive: true,
+        };
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await assertWriteFile(path, content, options);
+        } else {
+            assertWriteFileSync(path, content, options);
+        }
+    });
+
+    it("should handle path as URL or string", async () => {
+        expect.assertions(2);
+        // eslint-disable-next-line compat/compat
+        const path = new URL(`file:///${join(distribution, "file.txt")}`);
+        const content = "Hello, World!";
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await assertWriteFile(path, content);
+        } else {
+            assertWriteFileSync(path, content);
+        }
+    });
+
+    it("should throw error if path is invalid", async () => {
+        expect.assertions(1);
+
+        const path = null;
+        const content = "Hello, World!";
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(writeFile(path, content)).rejects.toThrow("Path must be a non-empty string or URL.");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => writeFileSync(path, content)).toThrow("Path must be a non-empty string or URL.");
+        }
+    });
+
+    it("should throw error if content is invalid", async () => {
+        expect.assertions(1);
+
+        const path = "path/to/file.txt";
+        const content = null;
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(writeFile(path, content)).rejects.toThrow("File contents must be a string, ArrayBuffer, or ArrayBuffer view.");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => writeFileSync(path, content)).toThrow("File contents must be a string, ArrayBuffer, or ArrayBuffer view.");
         }
     });
 });
