@@ -1,3 +1,10 @@
+## @visulima/fs [1.3.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.3.0...@visulima/fs@1.3.1) (2024-03-11)
+
+
+### Bug Fixes
+
+* **fs:** exported the find-up options as type ([f8b2321](https://github.com/visulima/visulima/commit/f8b2321cead794003f5100d2aa8b30b31d42cc64))
+
 ## @visulima/fs [1.3.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.2.1...@visulima/fs@1.3.0) (2024-03-11)
 
 
