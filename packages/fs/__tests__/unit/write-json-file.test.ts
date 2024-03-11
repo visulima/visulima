@@ -1,5 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import fastStringify from "fast-safe-stringify";
 import { temporaryFile } from "tempy";
 import { describe, expect, it } from "vitest";
 
@@ -109,5 +111,21 @@ describe.each([
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(readFileSync(path, "utf8")).toBe('{"foo":true}\n');
+    });
+
+    it("should handle the `stringify` option", async () => {
+        expect.assertions(1);
+
+        const path = temporaryFile({ extension: "json" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeJson") {
+            await function_(path, { foo: true }, { stringify: fastStringify });
+        } else {
+            function_(path, { foo: true }, { stringify: fastStringify });
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(readFileSync(path, "utf8")).toBe('{\n\t"foo": true\n}\n');
     });
 });

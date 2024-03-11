@@ -155,6 +155,11 @@ export type WriteJsonOptions = WriteFileOptions & {
      * Passed into `JSON.stringify`.
      */
     replacer?: (number | string)[] | JsonReplacer | null;
+
+    /**
+     * Override the default `JSON.stringify` method.
+     */
+    stringify?: (data: unknown, replacer: JsonReplacer | null, space: number | string | undefined) => string;
 };
 
 export type FindUpOptions = {
