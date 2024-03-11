@@ -9,7 +9,7 @@ import type { WriteJsonOptions } from "./types";
 import writeFile from "./write-file";
 
 const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOptions = {}): Promise<void> => {
-    const { detectIndent, indent: indentOption , replacer, ...writeOptions } = { indent: "\t", ...options};
+    const { detectIndent, indent: indentOption, replacer, stringify = JSON.stringify, ...writeOptions } = { indent: "\t", ...options };
 
     let indent = indentOption;
     let trailingNewline = "\n";
@@ -37,7 +37,7 @@ const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOp
     }
 
     // @ts-expect-error - `replacer` is a valid argument for `JSON.stringify`
-    const json = JSON.stringify(data, replacer, indent);
+    const json = stringify(data, replacer, indent);
 
     await writeFile(path, `${json}${trailingNewline}`, writeOptions);
 };
