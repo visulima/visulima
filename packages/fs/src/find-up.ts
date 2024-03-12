@@ -5,10 +5,12 @@ import type { FindUpOptions } from "./types";
 import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import toPath from "./utils/to-path";
 
-const findUp = async (
-    name: string,
-    options: FindUpOptions = {},
-): Promise<string | undefined> => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const findUp = async (name: string[] | string, options: FindUpOptions = {}): Promise<string[] | string | undefined> => {
+    if (typeof name !== "string" && !Array.isArray(name)) {
+        throw new TypeError("The `name` argument must be of type `string` or `string[]`");
+    }
+
     const cwd = options.cwd ? toPath(options.cwd) : process.cwd();
 
     assertValidFileOrDirectoryPath(cwd);
@@ -23,22 +25,36 @@ const findUp = async (
     const stopAt = resolve(directory, stopPath);
     const type = options.type ?? "file";
 
+    const search = typeof name === "string" ? [name] : name;
+    const matches: string[] = [];
+
     // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
-        const filePath = isAbsolute(name) ? name : join(directory, name);
+        // eslint-disable-next-line no-await-in-loop,no-loops/no-loops,no-restricted-syntax
+        for await (const fileName of search) {
+            const filePath = isAbsolute(fileName) ? fileName : join(directory, fileName);
 
-        try {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            const stats = await stat(filePath); // eslint-disable-line no-await-in-loop
+            try {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                const stats = await stat(filePath);
 
-            if ((type === "file" && stats.isFile()) || (type === "directory" && stats.isDirectory())) {
-                return filePath;
+                if ((type === "file" && stats.isFile()) || (type === "directory" && stats.isDirectory())) {
+                    matches.push(filePath);
+                }
+            } catch {
+                /* empty */
             }
-        } catch {
-            /* empty */
         }
 
         directory = dirname(directory);
+    }
+
+    if (matches.length > 0) {
+        if (typeof name === "string") {
+            return matches[0];
+        }
+
+        return matches;
     }
 
     return undefined;
