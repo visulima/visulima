@@ -45,6 +45,46 @@ jobs:
               with:
                   token: "${{ github.token }}"
                   filters: ".github/file-filters.yml"
+    size:
+        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (package size)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+              with:
+                  ref: "${{ github.event.pull_request.head.ref }}"
+                  fetch-depth: 0
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
+              with:
+                  run_install: false
+
+            - name: "Use Node.js 18.x"
+              uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
+              with:
+                  node-version: "18.x"
+                  cache: "pnpm"
+
+            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
+
+            - uses: "preactjs/compressed-size-action@8119d3d31b6e57b167e09c81dfa877eada3bcb35" # v2
+              with:
+                  build-script: "build:prod"
+                  pattern: "{**/dist/**/*.{js,cjs}}"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
     eslint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"

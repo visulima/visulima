@@ -47,7 +47,7 @@
     },
     "pluginsConfig": {
         "@nrwl/js": {
-            "analyzeSourceFiles": false
+            "analyzePackageJson": false
         }
     },
     "defaultBase": "main",
