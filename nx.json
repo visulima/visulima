@@ -1,51 +1,39 @@
 {
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "build:prod": {
-            "dependsOn": ["^build:prod"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "lint:eslint": {
-            "dependsOn": ["^lint:eslint"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build", "^lint:prettier"],
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:eslint:fix": {
-            "dependsOn": ["^lint:eslint:fix"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build", "^lint:prettier"],
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:prettier": {
-            "dependsOn": ["^lint:prettier"],
             "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "lint:prettier:fix": {
-            "dependsOn": ["^lint:prettier:fix"],
             "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "lint:types": {
-            "dependsOn": ["^lint:types"],
             "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
-        "prepare": {
-            "dependsOn": ["^prepare"]
-        },
         "test": {
+            "inputs": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "cache": true
+        },
+        "test:coverage": {
+            "inputs": ["default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "build-storybook": {
@@ -57,35 +45,12 @@
     "affected": {
         "defaultBase": "main"
     },
-    "namedInputs": {
-        "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
-        "public": [
-            "default",
-            "{projectRoot}/dist",
-            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "!{projectRoot}/vite.config.ts",
-            "!{projectRoot}/.eslintrc.json",
-            "!{projectRoot}/.storybook/**/*",
-            "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-            "!{projectRoot}/tsconfig.storybook.json"
-        ],
-        "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"],
-        "production": ["default"]
-    },
-    "implicitDependencies": {
-        "pnpm-workspace.yaml": "*",
-        "pnpm-lock.yaml": "*",
-        "package.json": {
-            "dependencies": "*",
-            "devDependencies": "*"
-        },
-        "nx.json": "*"
-    },
     "pluginsConfig": {
         "@nrwl/js": {
             "analyzeSourceFiles": false
         }
     },
     "defaultBase": "main",
+    "defaultProject": "visulima",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
