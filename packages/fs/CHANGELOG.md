@@ -1,3 +1,15 @@
+## @visulima/fs [1.6.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.5.0...@visulima/fs@1.6.0) (2024-03-14)
+
+
+### Features
+
+* **fs:** added matcher and FIND_UP_STOP to findup ([#344](https://github.com/visulima/visulima/issues/344)) ([34a5844](https://github.com/visulima/visulima/commit/34a584450416b8e99b70b920357cbde57e2c6b5b))
+
+
+### Bug Fixes
+
+* **fs:** added missing constants exports ([51915b2](https://github.com/visulima/visulima/commit/51915b257fa416c7fbcca24f16eb98132273cf4c))
+
 ## @visulima/fs [1.5.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.4.0...@visulima/fs@1.5.0) (2024-03-14)
 
 
