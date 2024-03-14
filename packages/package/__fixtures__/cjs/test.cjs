@@ -1,3 +1,3 @@
-const { findPackageJson } = require("@visulima/package");
+const { findPackageJsonSync } = require("@visulima/package");
 
-console.log(findPackageJson());
+console.log(findPackageJsonSync());

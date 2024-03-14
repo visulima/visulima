@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { temporaryDirectory } from "tempy";
 import { describe, expect, it, vi } from "vitest";
 
 import { findMonorepoRoot } from "../../src/monorepo";
@@ -79,10 +80,8 @@ describe("monorepo", () => {
         it(`should throw error when no match is found`, async () => {
             expect.assertions(1);
 
-            const root = join(cwd, "noMatch");
-
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
-            expect(async () => await findMonorepoRoot(join(root, "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
+            expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
         });
 
         it("should throw error when package.json is broken", async () => {

@@ -1,7 +1,7 @@
 {
-  "private": true,
-  "name": "@foo/test-npm",
-  "workspaces": [
-    "packages/*"
-  ]
+    "name": "@foo/test-npm",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
 }

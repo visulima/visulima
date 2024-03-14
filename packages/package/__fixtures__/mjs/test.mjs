@@ -1,5 +1,4 @@
-import { findPackageJson } from "@visulima/package";
+import { findPackageJsonSync } from "@visulima/package";
 
-const packageJson = await findPackageJson();
+console.log(findPackageJsonSync());
 
-console.log(packageJson.path);

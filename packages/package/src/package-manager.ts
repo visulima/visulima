@@ -3,7 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { findUp } from "@visulima/fs";
-import { parsePackage, readPackage } from "read-pkg";
+
+import { parsePackageJson } from "./package-json";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
@@ -50,7 +51,7 @@ export type PackageManagerResult = {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
     const foundFile = await findUp(
-        (directory) => {
+        (directory: string) => {
             let lockFile: string | undefined;
 
             lockFileNames.forEach((lockFileName) => {
@@ -68,7 +69,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(packageJsonFilePath)) {
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
-                const packageJson = parsePackage(readFileSync(packageJsonFilePath, "utf8"));
+                const packageJson = parsePackageJson(readFileSync(packageJsonFilePath, "utf8"));
 
                 if (packageJson.packageManager !== undefined) {
                     return packageJsonFilePath;
@@ -79,7 +80,6 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
         },
         {
             ...(cwd && { cwd }),
-            allowSymlinks: false,
         },
     );
 
@@ -88,7 +88,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
     }
 
     if (foundFile.endsWith("package.json")) {
-        const packageJson = await readPackage({ cwd: dirname(foundFile), normalize: true });
+        const packageJson = parsePackageJson(foundFile);
 
         if (packageJson.packageManager) {
             const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
