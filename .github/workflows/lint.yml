@@ -74,6 +74,9 @@ jobs:
                   # Pulls all commits (needed for NX)
                   fetch-depth: 0
 
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              uses: "nrwl/nx-set-shas@v4"
+
             - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
                   run_install: false
@@ -187,7 +190,7 @@ jobs:
                   "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build"
-              run: "pnpm run build:packages"
+              run: "pnpm run build:affected:packages"
 
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json"
@@ -236,7 +239,7 @@ jobs:
                   "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
 
             - name: "Build"
-              run: "pnpm run build:packages"
+              run: "pnpm run build:affected:packages"
 
             - name: "lint typescript files"
               run: "pnpm run lint:affected:types"
