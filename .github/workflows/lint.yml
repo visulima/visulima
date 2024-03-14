@@ -81,7 +81,7 @@ jobs:
 
             - uses: "preactjs/compressed-size-action@8119d3d31b6e57b167e09c81dfa877eada3bcb35" # v2
               with:
-                  build-script: "build:prod:packages"
+                  build-script: "build:affected:prod:packages"
                   pattern: "{**/dist/**/*.{js,cjs}}"
               env:
                   "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
