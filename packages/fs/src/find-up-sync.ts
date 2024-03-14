@@ -9,7 +9,7 @@ const findUpSync = (
     name: string[] | string,
     options: FindUpOptions = {},
     // eslint-disable-next-line sonarjs/cognitive-complexity
-): string[] | string | undefined => {
+): string | undefined => {
     if (typeof name !== "string" && !Array.isArray(name)) {
         throw new TypeError("The `name` argument must be of type `string` or `string[]`");
     }
