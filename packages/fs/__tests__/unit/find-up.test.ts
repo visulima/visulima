@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { FIND_UP_STOP } from "../../src/constants";
 import findUp from "../../src/find-up";
 import findUpSync from "../../src/find-up-sync";
 
@@ -40,8 +41,8 @@ relative.barDir = join(relative.fixtureDirectory, testName.packageDirectory, tes
 const absolute: Record<string, string> = {
     packageDirectory: join(__dirname, "..", ".."),
 };
-absolute.packageJson = join(absolute.packageDirectory, testName.packageJson);
 absolute.fixtureDirectory = join(absolute.packageDirectory, testName.fixtureDirectory, testName.packageDirectory);
+absolute.packageJson = join(absolute.fixtureDirectory, testName.packageJson);
 absolute.baz = join(absolute.fixtureDirectory, testName.baz);
 absolute.qux = join(absolute.fixtureDirectory, testName.qux);
 absolute.fooDir = join(absolute.fixtureDirectory, testName.fooDirectory);
@@ -76,7 +77,7 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(absolute.packageJson);
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "package.json"));
     });
 
     it("should find child directory", async () => {
@@ -95,14 +96,14 @@ describe.each([
     it("should find explicit type file", async () => {
         expect.assertions(2);
 
-        let foundPath = function_(testName.packageJson, { type: "file" });
+        let foundPath = function_(testName.packageJson);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(absolute.packageJson);
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "package.json"));
 
         foundPath = function_(testName.packageJson, { type: "directory" });
 
@@ -250,7 +251,7 @@ describe.each([
     });
 
     it.each([
-        [['fake', testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // second child file
+        [["fake", testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // second child file
         [[testName.qux, testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.qux], // first child file
         [[testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // first child file
     ])("should support a string array as it input", async (path, options, expected) => {
@@ -307,5 +308,91 @@ describe.each([
         }
 
         expect(foundPath).toBeUndefined();
+    });
+
+    it.each([
+        [
+            (directory: string): string => {
+                expect(directory).toStrictEqual(absolute.fixtureDirectory);
+
+                return directory;
+            },
+            { cwd: absolute.fixtureDirectory, type: "directory" },
+            absolute.fixtureDirectory,
+            2,
+        ],
+        [() => ".", { cwd: absolute.fixtureDirectory, type: "directory" }, absolute.fixtureDirectory],
+        // [async (): Promise<string> => 'package.json', { cwd: absolute.fixtureDirectory }, join(absolute.fixtureDirectory, "package.json")],
+        [() => "..", { cwd: absolute.fixtureDirectory, type: "directory" }, join(absolute.fixtureDirectory, "..")],
+        [
+            (directory: string) => (directory === absolute.fixtureDirectory ? undefined : ""),
+            { cwd: absolute.fixtureDirectory, type: "directory" },
+            join(absolute.fixtureDirectory, ".."),
+        ],
+        [
+            (directory: string) => (directory === absolute.fixtureDirectory ? "package.json" : undefined),
+            { cwd: absolute.fixtureDirectory },
+            absolute.packageJson,
+        ],
+    ])("should handle a matcher function", async (path, options, expected, assertions = 1) => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions
+        expect.assertions(assertions);
+
+        let foundPath = function_(path, options);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(expected);
+    });
+
+    it("should should throw a error if it happens in matcher", async () => {
+        expect.assertions(3);
+
+        const visited = new Set<string>();
+
+        const matcher = (directory: string) => {
+            visited.add(directory);
+
+            throw new Error("Some rejection");
+        };
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            await expect(() => function_(matcher, { cwd: absolute.fixtureDirectory })).rejects.toThrow("Some rejection");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            expect(() => function_(matcher, { cwd: absolute.fixtureDirectory })).toThrow("Some rejection");
+        }
+
+        expect(visited).toStrictEqual(new Set([absolute.fixtureDirectory]));
+        expect(visited.size).toBe(1);
+    });
+
+    it("should should stop early if FIND_UP_STOP in matcher is return", async () => {
+        expect.assertions(3);
+
+        const visited = new Set<string>();
+
+        const matcher = (directory: string): typeof FIND_UP_STOP => {
+            visited.add(directory);
+
+            return FIND_UP_STOP;
+        };
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(function_(matcher, { cwd: absolute.fixtureDirectory })).resolves.toBeUndefined();
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(function_(matcher, { cwd: absolute.fixtureDirectory })).toBeUndefined();
+        }
+
+        expect(visited).toStrictEqual(new Set([absolute.fixtureDirectory]));
+        expect(visited.size).toBe(1);
     });
 });
