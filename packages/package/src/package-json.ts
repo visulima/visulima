@@ -39,7 +39,6 @@ export const findPackageJson = async (cwd?: URL | string): Promise<NormalizedRea
     normalizeData(packageJson as Input);
 
     return {
-         
         packageJson: packageJson as NormalizedPackageJson,
         path: filePath,
     };
@@ -60,7 +59,6 @@ export const findPackageJsonSync = (cwd?: URL | string): NormalizedReadResult =>
     normalizeData(packageJson as Input);
 
     return {
-         
         packageJson: packageJson as NormalizedPackageJson,
         path: filePath,
     };
@@ -75,18 +73,15 @@ export const findPackageJsonSync = (cwd?: URL | string): NormalizedReadResult =>
  *                 `cwd` represents the current working directory. If not specified, the default working directory will be used.
  * @returns A `Promise` that resolves once the package.json file has been written. The type of the returned promise is `Promise<void>`.
  */
- 
+
 export const writePackageJson = async <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
-     
     const { cwd, ...writeOptions } = options;
     const directory = toPath(options.cwd ?? process.cwd());
 
     await writeJson(join(directory, "package.json"), data, writeOptions);
 };
 
- 
 export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
-     
     const { cwd, ...writeOptions } = options;
     const directory = toPath(options.cwd ?? process.cwd());
 
@@ -104,8 +99,8 @@ export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPa
 
     const json = isObject
         ? structuredClone(packageFile)
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        : existsSync(packageFile as string)
+        : // eslint-disable-next-line security/detect-non-literal-fs-filename
+          existsSync(packageFile as string)
           ? readJsonSync(packageFile as string)
           : parseJson(packageFile as string);
 
