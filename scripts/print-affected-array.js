@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const processArguments = process.argv.slice(2);
 
+const DEBUG = process.env["DEBUG"] === "true" || processArguments.includes("--debug");
 const ALL_FLAG = "--all";
 const TASK_NAME = processArguments[0];
 const BASE_BRANCH_NAME = processArguments[1];
@@ -67,14 +68,6 @@ function pnpmRun(...args) {
     });
 }
 
-function commaSeparatedListToArray(str) {
-    return str
-        .trim()
-        .split(",")
-        .map((element) => element.trim())
-        .filter((element) => !!element.length);
-}
-
 function getAffectedCommandResult(str) {
     const outputLines = str.trim().split(/\r?\n/);
     if (outputLines.length > 2) {
@@ -84,17 +77,23 @@ function getAffectedCommandResult(str) {
 }
 
 async function affectedProjectsContainingTask(taskName, baseBranch) {
-    // pnpm nx print-affected --target=[task] --base [base branch] --select=tasks.target.project
-    return commaSeparatedListToArray(
-        getAffectedCommandResult(await pnpmRun("nx", "print-affected", "--target", taskName, "--base", baseBranch, "--select=tasks.target.project")),
-    );
+    // pnpm nx show projects --affected --target=[task] --base [base branch] --select=tasks.target.project
+    if (DEBUG) {
+        console.debug("project task:", taskName);
+        console.debug("running command:", "nx", "show", "projects", "--affected", "--target", taskName, "--base", baseBranch, "--select=tasks.target.project", "--json")
+    }
+
+    return getAffectedCommandResult(await pnpmRun("nx", "show", "projects", "--affected", "--target", taskName, "--base", baseBranch, "--select=tasks.target.project", "--json"));
 }
 
 async function allProjectsContainingTask(taskName) {
-    // pnpm nx print-affected --target=[task] --files package.json --select=tasks.target.project
-    return commaSeparatedListToArray(
-        getAffectedCommandResult(await pnpmRun("nx", "print-affected", "--target", taskName, "--files", "package.json", "--select=tasks.target.project")),
-    );
+    // pnpm nx show projects --affected --target=[task] --files package.json --select=tasks.target.project
+    if (DEBUG) {
+        console.debug("project task:", taskName);
+        console.debug("running command:", "nx", "show", "projects", "--affected", "--target", taskName, "--files", "package.json", "--select=tasks.target.project", "--json")
+    }
+
+    return getAffectedCommandResult(await pnpmRun("nx", "show", "projects", "--affected", "--target", taskName, "--files", "package.json", "--select=tasks.target.project", "--json"));
 }
 
 async function printAffectedProjectsContainingTask() {
