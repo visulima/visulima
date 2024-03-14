@@ -1,5 +1,7 @@
 import type { Dirent } from "node:fs";
 
+import type { FIND_UP_STOP } from "./constants";
+
 type ColorizeMethod = (value: string) => string;
 
 export interface WalkOptions {
@@ -167,3 +169,5 @@ export type FindUpOptions = {
     stopAt?: URL | string;
     type?: "directory" | "file";
 };
+
+export type Match = string | typeof FIND_UP_STOP | undefined;
