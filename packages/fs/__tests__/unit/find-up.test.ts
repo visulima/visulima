@@ -266,6 +266,7 @@ describe.each([
         expect(foundPath).toStrictEqual(expected);
     });
 
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.runIf(!isWindows).skip("should support symbolic links", async () => {
         expect.assertions(4);
 

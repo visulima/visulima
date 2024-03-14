@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import fastStringify from "fast-safe-stringify";
 import { temporaryFile } from "tempy";
 import { describe, expect, it } from "vitest";
