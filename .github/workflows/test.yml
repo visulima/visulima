@@ -15,6 +15,9 @@ concurrency:
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
+env:
+    NX_CACHE: "cache-nx"
+
 jobs:
     files-changed:
         name: "Detect what files changed"
