@@ -1,3 +1,16 @@
+## @visulima/fs [1.5.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.4.0...@visulima/fs@1.5.0) (2024-03-14)
+
+
+### Features
+
+* **fs:** added findUp array support, based on the other the file will be found ([#343](https://github.com/visulima/visulima/issues/343)) ([4816318](https://github.com/visulima/visulima/commit/4816318770049c4d9a9cfa27c251449ce3077e8f))
+* **fs:** added new toPath util ([d65cf3e](https://github.com/visulima/visulima/commit/d65cf3e2f53a4d81f927740050741d59bcccfc9f))
+
+
+### Bug Fixes
+
+* **fs:** fixed wrong return type on findUp ([f3c96de](https://github.com/visulima/visulima/commit/f3c96def18cd8e70093bdd943c2e2f396436dda4))
+
 ## @visulima/fs [1.4.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.3.1...@visulima/fs@1.4.0) (2024-03-11)
 
 
