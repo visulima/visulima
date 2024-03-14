@@ -1,3 +1,8 @@
 const { findPackageJsonSync } = require("@visulima/package");
 
-console.log(findPackageJsonSync());
+const packageJson = findPackageJsonSync();
+
+console.log(JSON.stringify({
+    path: packageJson.path,
+    name: packageJson.packageJson.name
+}));
