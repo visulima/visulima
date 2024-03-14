@@ -72,6 +72,15 @@
         "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"],
         "production": ["default"]
     },
+    "implicitDependencies": {
+        "pnpm-workspace.yaml": "*",
+        "pnpm-lock.yaml": "*",
+        "package.json": {
+            "dependencies": "*",
+            "devDependencies": "*"
+        },
+        "nx.json": "*"
+    },
     "pluginsConfig": {
         "@nrwl/js": {
             "analyzeSourceFiles": false

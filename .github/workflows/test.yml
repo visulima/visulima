@@ -43,11 +43,80 @@ jobs:
                   token: "${{ github.token }}"
                   filters: ".github/file-filters.yml"
 
-    test:
+    branch-info:
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Get branch name"
+              id: "branch-name"
+              uses: "tj-actions/branch-names@v5.2"
+              # Get base branch name to compare with. Base branch on a PR, "main" branch on pushing.
+            - name: "Get base branch name"
+              id: "get-base-branch-name"
+              run: |
+                  if [[ "${{github.event.pull_request.base.ref}}" != "" ]]; then
+                    echo "::set-output name=branch::${{github.event.pull_request.base.ref}}"
+                  else
+                    echo "::set-output name=branch::main"
+                  fi
+        outputs:
+            base-branch-name: "${{ steps.get-base-branch-name.outputs.branch }}"
+            branch-name: "${{ steps.branch-name.outputs.current_branch }}"
+
+    get-affected:
+        needs: "branch-info"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  fetch-depth: 0
+
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              uses: "nrwl/nx-set-shas@v2"
+              with:
+                  main-branch-name: "${{needs.branch-info.outputs.base-branch-name}}"
+
+            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
+              with:
+                  run_install: false
+
+            - name: "Use Node.js 18.x"
+              uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
+              with:
+                  node-version: "18.x"
+                  cache: "pnpm"
+
+            - name: "Install packages"
+              run: "pnpm install --frozen-lockfile --prefer-offline"
+              env:
+                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
+                  SKIP_CHECK: "true"
+
+            - name: "Get affected"
+              id: "get-projects-arrays"
+              # When not in a PR and the current branch is main, pass --all flag. Otherwise pass the base branch
+              run: |
+                  if [[ "${{github.event.pull_request.base.ref}}" == "" && "${{needs.branch-info.outputs.branch-name}}" == "main" ]]; then
+                    echo "::set-output name=test::$(node scripts/print-affected-array.js test:coverage --all)"
+                  else
+                    echo "::set-output name=test::$(node scripts/print-affected-array.js test:coverage origin/${{needs.branch-info.outputs.base-branch-name}})"
+                  fi
+        outputs:
+            test: "${{ steps.get-projects-arrays.outputs.test }}"
+
+    test:
+        if: "${{ fromJson(needs.get-affected.outputs.test)[0] }}"
+        needs: "get-affected"
         strategy:
+            max-parallel: 4
             matrix:
+                projectName: "${{fromJson(needs.get-affected.outputs.test)}}"
                 os:
                     - "ubuntu-latest"
                 node_version: ["18", "20", "21"]
@@ -60,6 +129,8 @@ jobs:
             fail-fast: false
         name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
         runs-on: "${{ matrix.os }}"
+        env:
+            NODE: "${{ matrix.node }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
@@ -105,7 +176,7 @@ jobs:
               run: "pnpm i -D bun --filter=package"
 
             - name: "test and coverage"
-              run: "pnpm run test:coverage"
+              run: "pnpm nx test:coverage ${{ matrix.projectName }}"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
@@ -114,7 +185,7 @@ jobs:
         needs: ["files-changed", "test"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
-        if: "always()"
+        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped')"
         runs-on: "ubuntu-22.04"
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check
