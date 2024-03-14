@@ -114,7 +114,7 @@ jobs:
         if: "${{ fromJson(needs.get-affected.outputs.test)[0] }}"
         needs: "get-affected"
         strategy:
-            max-parallel: 4
+            max-parallel: 2
             matrix:
                 projectName: "${{fromJson(needs.get-affected.outputs.test)}}"
                 os:
@@ -127,10 +127,10 @@ jobs:
                     - os: "windows-latest"
                       node_version: "20.3.1" # https://github.com/nodejs/node/issues/48673
             fail-fast: false
-        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
+        name: "Test ${{ matrix.projectName }} (node-${{ matrix.node_version }}, ${{ matrix.os }})"
         runs-on: "${{ matrix.os }}"
         env:
-            NODE: "${{ matrix.node }}"
+            NODE: "${{ matrix.node_version }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
@@ -162,6 +162,16 @@ jobs:
               env:
                   SKIP_CHECK: "true"
 
+            - name: "Cache Nx"
+              uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
+              with:
+                  path: "node_modules/.cache/nx"
+                  key: "${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}"
+                  restore-keys: |
+                      ${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-
+                      ${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-
+                      ${{ env.NX_CACHE }}-
+
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile --prefer-offline"
               env:
@@ -169,7 +179,7 @@ jobs:
                   SKIP_CHECK: "true"
 
             - name: "Build"
-              run: "pnpm run build:packages"
+              run: "pnpm nx build ${{ matrix.projectName }}"
 
             - name: "Install Bun for tests"
               if: "matrix.os == 'ubuntu-latest'"
