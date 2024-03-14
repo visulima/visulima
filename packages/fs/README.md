@@ -191,9 +191,10 @@ console.log(file);
 
 #### name
 
-Type: `string`
+Type: `string | string[]`
 
 The name of the file or directory to find.
+> If an array is specified, the first item that exists will be returned.
 
 #### options
 
