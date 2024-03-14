@@ -1,5 +1,5 @@
 import { rm } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { temporaryDirectory } from "tempy";
@@ -8,6 +8,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import findUp from "../../src/find-up";
 import findUpSync from "../../src/find-up-sync";
 
+const isWindows = process.platform === "win32";
+
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -15,7 +17,7 @@ const testName = {
     barDirectory: "bar",
     baz: "baz.js",
     directoryLink: "directory-link",
-    dotDirectory: ".git",
+    dotDirectory: ".git2",
     fileLink: "file-link",
     fixtureDirectory: "__fixtures__",
     fooDirectory: "foo",
@@ -30,10 +32,10 @@ const relative: Record<string, string> = {
     fixtureDirectory: testName.fixtureDirectory,
     modulesDirectory: testName.modulesDirectory,
 };
-relative.baz = join(relative.fixtureDirectory, testName.baz);
-relative.qux = join(relative.fixtureDirectory, testName.qux);
-relative.barDirQux = join(relative.fixtureDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
-relative.barDir = join(relative.fixtureDirectory, testName.fooDirectory, testName.barDirectory);
+relative.baz = join(relative.fixtureDirectory, testName.packageDirectory, testName.baz);
+relative.qux = join(relative.fixtureDirectory, testName.packageDirectory, testName.qux);
+relative.barDirQux = join(relative.fixtureDirectory, testName.packageDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
+relative.barDir = join(relative.fixtureDirectory, testName.packageDirectory, testName.fooDirectory, testName.barDirectory);
 
 const absolute: Record<string, string> = {
     packageDirectory: join(__dirname, "..", ".."),
@@ -47,20 +49,21 @@ absolute.barDir = join(absolute.fixtureDirectory, testName.fooDirectory, testNam
 absolute.barDirQux = join(absolute.fixtureDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
 absolute.fileLink = join(absolute.fixtureDirectory, testName.fileLink);
 absolute.directoryLink = join(absolute.fixtureDirectory, testName.directoryLink);
-absolute.dotDirectory = join(__dirname, testName.dotDirectory);
+absolute.dotDirectory = join(absolute.fixtureDirectory, testName.dotDirectory);
 
 describe.each([
     ["findUp", findUp],
     ["findUpSync", findUpSync],
 ])("%s", (name: string, function_) => {
-    let distribution: string;
+    // eslint-disable-next-line unicorn/prevent-abbreviations
+    let tempDir: string;
 
     beforeEach(async () => {
-        distribution = temporaryDirectory();
+        tempDir = temporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(distribution, { recursive: true });
+        await rm(tempDir, { recursive: true });
     });
 
     it("should find child file", async () => {
@@ -111,46 +114,198 @@ describe.each([
         expect(foundPath).toBeUndefined();
     });
 
-    // eslint-disable-next-line vitest/no-commented-out-tests
-    // it.runIf(!isWindows)("should support symbolic links", async () => {
-    //     expect.assertions(4);
-    //
-    //     const cwd = absolute.fixtureDirectory;
-    //
-    //     let foundPath = await function_(testName.fileLink, { cwd });
-    //
-    //     // eslint-disable-next-line vitest/no-conditional-in-test
-    //     if (name === "findUp") {
-    //         foundPath = await foundPath;
-    //     }
-    //
-    //     expect(foundPath).toStrictEqual(absolute.fileLink);
-    //
-    //     foundPath = await function_(testName.fileLink, { cwd, followSymlinks: false });
-    //
-    //     // eslint-disable-next-line vitest/no-conditional-in-test
-    //     if (name === "findUp") {
-    //         foundPath = await foundPath;
-    //     }
-    //
-    //     expect(foundPath).toBeUndefined();
-    //
-    //     foundPath = await function_(testName.directoryLink, { cwd, type: "directory" });
-    //
-    //     // eslint-disable-next-line vitest/no-conditional-in-test
-    //     if (name === "findUp") {
-    //         foundPath = await foundPath;
-    //     }
-    //
-    //     expect(foundPath).toStrictEqual(absolute.directoryLink);
-    //
-    //     foundPath = await function_(testName.directoryLink, { cwd, followSymlinks: false, type: "directory" });
-    //
-    //     // eslint-disable-next-line vitest/no-conditional-in-test
-    //     if (name === "findUp") {
-    //         foundPath = await foundPath;
-    //     }
-    //
-    //     expect(foundPath).toBeUndefined();
-    // });
+    it("should find a dot file", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(testName.dotDirectory, { cwd: absolute.fixtureDirectory, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.dotDirectory);
+    });
+
+    it("should handle absolute directory", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(absolute.barDir, { cwd: tempDir, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.barDir);
+    });
+
+    it.each([
+        [testName.packageJson, { cwd: temporaryDirectory() }], // custom cwd
+        ["somenonexistentfile.js"],
+        [resolve("somenonexistentfile.js")], // absolute path
+        [testName.baz, { cwd: relative.barDir, stopAt: absolute.fooDir }], // cousin file, custom cwd with stopAt
+    ])("should return a undefined if no %s file is found", async (path, options) => {
+        expect.assertions(1);
+
+        let foundPath = function_(path, options);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toBeUndefined();
+    });
+
+    it("should find a ancestor directory", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(absolute.fixtureDirectory, { cwd: relative.barDir, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.fixtureDirectory);
+    });
+
+    it("should find a cousin directory with cwd", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(absolute.barDir, { cwd: relative.fixtureDirectory, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.barDir);
+    });
+
+    it("should find a nested descendant directory with cwd", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(absolute.barDir, { cwd: relative.modulesDirectory, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.barDir);
+    });
+
+    it("should find a nested descendant directory", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(absolute.barDir, { type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.barDir);
+    });
+
+    it("should find a nested descendant file", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(relative.baz, { cwd: join(__dirname, "..", "..") });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", relative.baz));
+    });
+
+    it("should support finding a cousin file", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(testName.baz, { cwd: relative.barDir });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.baz);
+    });
+
+    it("should support finding a cousin file with the stopAt option equals to foundPath", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(testName.baz, { cwd: relative.barDir, stopAt: absolute.baz });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.baz);
+    });
+
+    it.each([
+        [['fake', testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // second child file
+        [[testName.qux, testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.qux], // first child file
+        [[testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // first child file
+    ])("should support a string array as it input", async (path, options, expected) => {
+        expect.assertions(1);
+
+        let foundPath = function_(path, options);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(expected);
+    });
+
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.runIf(!isWindows).skip("should support symbolic links", async () => {
+        expect.assertions(4);
+
+        const cwd = absolute.fixtureDirectory;
+
+        let foundPath = await function_(testName.fileLink, { cwd });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.fileLink);
+
+        foundPath = await function_(testName.fileLink, { cwd, followSymlinks: false });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toBeUndefined();
+
+        foundPath = await function_(testName.directoryLink, { cwd, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.directoryLink);
+
+        foundPath = await function_(testName.directoryLink, { cwd, followSymlinks: false, type: "directory" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toBeUndefined();
+    });
 });
