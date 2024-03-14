@@ -3064,6 +3064,18 @@ importers:
         specifier: ^1.22.22
         version: 1.22.22
 
+  packages/package/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/package/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/pagination:
     dependencies:
       qs:
