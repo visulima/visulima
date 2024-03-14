@@ -70,9 +70,11 @@ function pnpmRun(...args) {
 
 function getAffectedCommandResult(str) {
     const outputLines = str.trim().split(/\r?\n/);
+
     if (outputLines.length > 2) {
         return outputLines.slice(-1)[0];
     }
+
     return "";
 }
 
@@ -100,10 +102,11 @@ async function printAffectedProjectsContainingTask() {
     const projects =
         BASE_BRANCH_NAME === ALL_FLAG ? await allProjectsContainingTask(TASK_NAME) : await affectedProjectsContainingTask(TASK_NAME, BASE_BRANCH_NAME);
 
-    console.log(JSON.stringify(projects));
+    console.log(projects);
 }
 
 printAffectedProjectsContainingTask().catch((error) => {
     console.error(error);
+
     process.exit(1);
 });
