@@ -8,7 +8,7 @@ const { findUp } = vi.hoisted(() => {
     };
 });
 
-vi.mock("find-up", async (importOriginal) => {
+vi.mock("@visulima/fs", async (importOriginal) => {
     const module = await importOriginal();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

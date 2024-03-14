@@ -2,25 +2,22 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { Options } from "find-up";
-import { findUp } from "find-up";
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { findUp } from "@visulima/fs";
 import { parsePackage, readPackage } from "read-pkg";
 
-const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"] as const;
+const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
 /**
  * An asynchronous function that finds a lock file in the specified directory or any of its parent directories.
  *
  * @param cwd - Optional. The directory path to start the search from. The type of `cwd` is part of an `Options` type,
- * specifically `Options["cwd"]`. Defaults to the current working directory.
+ * specifically `URL | string`. Defaults to the current working directory.
  * @returns A `Promise` that resolves with the path of the found lock file.
  * The type of the returned promise is `Promise<string>`.
  * @throws An `Error` if no lock file is found.
  */
-export const findLockFile = async (cwd?: Options["cwd"]): Promise<string> => {
+export const findLockFile = async (cwd?: URL | string): Promise<string> => {
     const filePath = await findUp(lockFileNames, {
-        allowSymlinks: false,
         type: "file",
         ...(cwd && { cwd }),
     });
@@ -45,13 +42,13 @@ export type PackageManagerResult = {
  * Throws an error if no lock file or package.json is found.
  *
  * @param cwd - Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
- * type, specifically `Options["cwd"]`.
+ * type, specifically `URL | string`.
  * @returns A `Promise` that resolves to an object containing the package manager and path.
  * The return type of the function is `Promise<PackageManagerResult>`.
  * @throws An `Error` if no lock file or package.json is found.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const findPackageManager = async (cwd?: Options["cwd"]): Promise<PackageManagerResult> => {
+export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
     const foundFile = await findUp(
         (directory) => {
             let lockFile: string | undefined;

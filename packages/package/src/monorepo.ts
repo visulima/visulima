@@ -1,9 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { Options } from "find-up";
-import { findUp } from "find-up";
-import stripJsonComments from "strip-json-comments";
+import { findUp, readJson } from "@visulima/fs";
 
 import { findPackageManager } from "./package-manager";
 
@@ -25,16 +23,14 @@ export interface RootMonorepo<T extends Strategy = Strategy> {
  * @throws An `Error` if no monorepo root can be found using lerna, yarn, pnpm, or npm as indicators.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const findMonorepoRoot = async (cwd?: Options["cwd"]): Promise<RootMonorepo> => {
+export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo> => {
     const workspaceFilePath = await findUp(["lerna.json", "turbo.json"], {
-        allowSymlinks: false,
         type: "file",
         ...(cwd && { cwd }),
     });
 
-    if (workspaceFilePath && workspaceFilePath.endsWith("lerna.json")) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const lerna = JSON.parse(stripJsonComments(readFileSync(workspaceFilePath, "utf8"))) as { packages?: string[]; useWorkspaces?: boolean };
+    if (workspaceFilePath?.endsWith("lerna.json")) {
+        const lerna = await readJson<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
 
         if (lerna.useWorkspaces || lerna.packages) {
             return {
@@ -44,7 +40,7 @@ export const findMonorepoRoot = async (cwd?: Options["cwd"]): Promise<RootMonore
         }
     }
 
-    const isTurbo = workspaceFilePath && workspaceFilePath.endsWith("turbo.json");
+    const isTurbo = workspaceFilePath?.endsWith("turbo.json");
 
     try {
         const { packageManager, path } = await findPackageManager(cwd);

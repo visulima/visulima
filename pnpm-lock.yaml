@@ -2957,18 +2957,12 @@ importers:
       '@visulima/fs':
         specifier: workspace:*
         version: link:../fs
-      detect-indent:
-        specifier: ^7.0.1
-        version: 7.0.1
       get-tsconfig:
         specifier: ^4.7.3
         version: 4.7.3
       read-pkg:
         specifier: ^9.0.1
         version: 9.0.1
-      strip-json-comments:
-        specifier: ^5.0.1
-        version: 5.0.1
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3006,6 +3000,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      detect-indent:
+        specifier: ^7.0.1
+        version: 7.0.1
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -3051,6 +3048,9 @@ importers:
       sort-package-json:
         specifier: ^2.8.0
         version: 2.8.0
+      strip-json-comments:
+        specifier: ^5.0.1
+        version: 5.0.1
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(postcss@8.4.35)(typescript@5.4.2)
@@ -29809,6 +29809,7 @@ packages:
   /strip-json-comments@5.0.1:
     resolution: {integrity: sha512-0fk9zBqO67Nq5M/m45qHCJxylV/DhBlIOVExqgOMiCCrzrhU6tCibRXNqE3jwJLftzE9SNuZtYbpzcO+i9FiKw==}
     engines: {node: '>=14.16'}
+    dev: true
 
   /strip-literal@2.0.0:
     resolution: {integrity: sha512-f9vHgsCWBq2ugHAkGMiiYY+AYG0D/cbloKKg0nhaaaSNsujdGIpVXCNsrJpCKr5M0f4aI31mr13UjY6GAuXCKA==}

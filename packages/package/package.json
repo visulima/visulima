@@ -138,10 +138,8 @@
     },
     "dependencies": {
         "@visulima/fs": "workspace:*",
-        "detect-indent": "^7.0.1",
         "get-tsconfig": "^4.7.3",
-        "read-pkg": "^9.0.1",
-        "strip-json-comments": "^5.0.1"
+        "read-pkg": "^9.0.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
