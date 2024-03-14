@@ -1,5 +1,6 @@
 export { default as collect } from "./collect";
 export { default as collectSync } from "./collect-sync";
+export { F_OK, FIND_UP_STOP, R_OK, W_OK, X_OK } from "./constants";
 export { default as findUp } from "./find-up";
 export { default as findUpSync } from "./find-up-sync";
 export { default as isAccessible } from "./is-accessible";
