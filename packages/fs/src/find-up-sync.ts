@@ -1,5 +1,5 @@
 import { statSync } from "node:fs";
-import { dirname, isAbsolute, join, parse, resolve } from "node:path";
+import { dirname, isAbsolute, parse, resolve } from "node:path";
 
 import type { FindUpOptions } from "./types";
 import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
@@ -29,19 +29,19 @@ const findUpSync = (
     const type = options.type ?? "file";
 
     const search = typeof name === "string" ? [name] : name;
-    const matches: string[] = [];
 
     // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const fileName of search) {
-            const filePath = isAbsolute(fileName) ? fileName : join(directory, fileName);
+            const filePath = isAbsolute(fileName) ? fileName : resolve(directory, fileName);
 
             try {
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
                 const stats = statSync(filePath);
 
                 if ((type === "file" && stats.isFile()) || (type === "directory" && stats.isDirectory())) {
-                    matches.push(filePath);
+                    return filePath;
                 }
             } catch {
                 /* empty */
@@ -49,14 +49,6 @@ const findUpSync = (
         }
 
         directory = dirname(directory);
-    }
-
-    if (matches.length > 0) {
-        if (typeof name === "string") {
-            return matches[0];
-        }
-
-        return matches;
     }
 
     return undefined;
