@@ -44,7 +44,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Nx checkout"
-              uses: "./.github/checkout-nx/setup"
+              uses: "./.github/actions/checkout-nx"
               id: "checkout-nx"
 
             - name: "Setup resources and environment"
@@ -65,7 +65,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Nx checkout"
-              uses: "./.github/checkout-nx/setup"
+              uses: "./.github/actions/checkout-nx"
               id: "checkout-nx"
 
             - name: "Setup resources and environment"
@@ -85,7 +85,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Nx checkout"
-              uses: "./.github/checkout-nx/setup"
+              uses: "./.github/actions/checkout-nx"
               id: "checkout-nx"
 
             - name: "Setup resources and environment"
@@ -105,7 +105,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Nx checkout"
-              uses: "./.github/checkout-nx/setup"
+              uses: "./.github/actions/checkout-nx"
               id: "checkout-nx"
 
             - name: "Setup resources and environment"
