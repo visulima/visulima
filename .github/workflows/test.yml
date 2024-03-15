@@ -99,6 +99,9 @@ jobs:
               if: "matrix.os == 'ubuntu-latest'"
               run: "pnpm i -D bun --filter=package"
 
+            - name: "Build"
+              run: "pnpm run build:affected:packages"
+
             - name: "test and coverage"
               run: "pnpm run test:affected:coverage"
 

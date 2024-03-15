@@ -16,17 +16,17 @@
             "cache": true
         },
         "lint:eslint": {
-            "dependsOn": ["^build", "default"],
+            "dependsOn": ["default"],
             "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:eslint:fix": {
-            "dependsOn": ["^build", "default"],
+            "dependsOn": ["default"],
             "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:packagejson": {
-            "dependsOn": ["^build", "default"],
+            "dependsOn": ["default"],
             "cache": true
         },
         "lint:prettier": {
@@ -38,19 +38,19 @@
             "cache": true
         },
         "lint:types": {
-            "dependsOn": ["^build", "default", "^public"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
         "test": {
-            "dependsOn": ["^build", "default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "dependsOn": ["^build", "default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "build-storybook": {
-            "dependsOn": ["^build", "^build", "^build-storybook"],
+            "dependsOn": ["^build", "^build-storybook"],
             "cache": true
         }
     },
