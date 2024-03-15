@@ -15,6 +15,12 @@ concurrency:
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
+env:
+    NX_BRANCH: "${{ github.event.number }}"
+    NX_RUN_GROUP: "${{ github.run_id }}"
+    HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
+    HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
+
 jobs:
     files-changed:
         name: "Detect what files changed"
@@ -47,6 +53,7 @@ jobs:
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
+            max-parallel: 2
             matrix:
                 os:
                     - "ubuntu-latest"
@@ -60,52 +67,43 @@ jobs:
             fail-fast: false
         name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
         runs-on: "${{ matrix.os }}"
+        env:
+            NODE: "${{ matrix.node_version }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
               with:
                   egress-policy: "audit"
 
-            - name: "Git checkout"
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
               uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
               with:
-                  run_install: false
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
+                  fetch-depth: 0
 
-            - name: "Set node version to ${{ matrix.node_version }}"
-              uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              uses: "nrwl/nx-set-shas@v4"
+
+            - name: "Setup resources and environment"
+              uses: "./.github/actions/setup"
               with:
                   node-version: "${{ matrix.node_version }}"
-                  cache: "pnpm"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Install packages"
-              run: "pnpm install --frozen-lockfile --prefer-offline"
-              env:
-                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
-                  SKIP_CHECK: "true"
-
-            - name: "Build"
-              run: "pnpm run build:packages"
+              id: "setup"
 
             - name: "Install Bun for tests"
               if: "matrix.os == 'ubuntu-latest'"
               run: "pnpm i -D bun --filter=package"
 
+            - name: "Build"
+              run: "pnpm run build:affected:packages"
+
             - name: "test and coverage"
-              run: "pnpm run test:coverage"
+              run: "pnpm run test:affected:coverage"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
@@ -114,7 +112,7 @@ jobs:
         needs: ["files-changed", "test"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
-        if: "always()"
+        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped')"
         runs-on: "ubuntu-22.04"
         steps:
             # If any jobs we depend on fail, we will fail since this is a required check

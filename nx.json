@@ -1,75 +1,87 @@
 {
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "nx/tasks-runners/default"
+        }
+    },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build", "default"],
+            "inputs": ["default", "^default"],
             "cache": true
         },
         "build:prod": {
-            "dependsOn": ["^build:prod"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build:prod", "default"],
+            "inputs": ["default", "^default"],
             "cache": true
         },
         "lint:eslint": {
-            "dependsOn": ["^lint:eslint"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["default"],
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:eslint:fix": {
-            "dependsOn": ["^lint:eslint:fix"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["default"],
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
+            "cache": true
+        },
+        "lint:packagejson": {
+            "dependsOn": ["default"],
             "cache": true
         },
         "lint:prettier": {
-            "dependsOn": ["^lint:prettier"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
         "lint:prettier:fix": {
-            "dependsOn": ["^lint:prettier:fix"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
         "lint:types": {
-            "dependsOn": ["^lint:types"],
-            "inputs": ["default", "^public"],
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
-        "prepare": {
-            "dependsOn": ["^prepare"]
-        },
         "test": {
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "cache": true
+        },
+        "test:coverage": {
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "build-storybook": {
+            "dependsOn": ["^build", "^build-storybook"],
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/.storybook/**/*",
+                "{projectRoot}/.storybook/**/*",
+                "{projectRoot}/tsconfig.json",
+                "{projectRoot}/tsconfig.storybook.json"
+            ],
             "cache": true
         }
-    },
-    "parallel": 5,
-    "extends": "@nrwl/workspace/presets/npm.json",
-    "affected": {
-        "defaultBase": "main"
     },
     "namedInputs": {
         "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
         "public": [
             "default",
-            "{projectRoot}/dist",
-            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "!{projectRoot}/vite.config.ts",
-            "!{projectRoot}/.eslintrc.json",
-            "!{projectRoot}/.storybook/**/*",
-            "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-            "!{projectRoot}/tsconfig.storybook.json"
+            "{workspaceRoot}/dist",
+            "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{workspaceRoot}/vite.config.ts",
+            "!{workspaceRoot}/.eslintrc.js",
+            "!{workspaceRoot}/.eslintrc.cjs",
+            "!{workspaceRoot}/.storybook/**/*",
+            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
         ],
-        "sharedGlobals": ["{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json"],
+        "sharedGlobals": [
+            "{workspaceRoot}/.nvmrc",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/tsup.config.ts",
+            "{workspaceRoot}/tsconfig.json",
+            "{workspaceRoot}/tsconfig.base.json",
+            "{workspaceRoot}/tsconfig.eslint.json"
+        ],
         "production": ["default"]
     },
     "pluginsConfig": {
@@ -77,6 +89,12 @@
             "analyzeSourceFiles": false
         }
     },
+    "parallel": 5,
+    "extends": "@nrwl/workspace/presets/npm.json",
+    "affected": {
+        "defaultBase": "main"
+    },
     "defaultBase": "main",
+    "defaultProject": "visulima",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
