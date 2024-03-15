@@ -96,7 +96,7 @@ jobs:
               id: "setup"
 
             - name: "Build"
-              run: "pnpm nx build ${{ matrix.projectName }}"
+              run: "pnpm run build:affected"
 
             - name: "Install Bun for tests"
               if: "matrix.os == 'ubuntu-latest'"
