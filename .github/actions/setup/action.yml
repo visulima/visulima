@@ -3,7 +3,7 @@ description: "Setup node.js and caching scoped within a workflow"
 
 inputs:
     # The node.js version to use
-    node_version:
+    node-version:
         description: "The node.js version to use"
         required: false
         default: "18"
@@ -20,10 +20,10 @@ runs:
           with:
               run_install: false
 
-        - name: "Set node version to ${{ inputs.node_version }}"
+        - name: "Set node version to ${{ inputs.node-version }}"
           uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
           with:
-              node-version: "${{ inputs.node_version }}"
+              node-version: "${{ inputs.node-version }}"
               cache: "pnpm"
 
         - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
@@ -48,7 +48,7 @@ runs:
                   node_modules
                   */node_modules
                   */*/node_modules
-              key: "node_modules-${{ runner.os }}-node-${{ inputs.node_version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              key: "node_modules-${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
 
         - name: "Cache Nx"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
