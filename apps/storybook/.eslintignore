@@ -12,5 +12,7 @@ tsconfig.json
 .secretlintrc.cjs
 
 scripts/vercel-ignore-command.cjs
+storybook-static
+public
 
 README.md

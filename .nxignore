@@ -1,1 +1,4 @@
 packages/**/__fixtures__/**
+examples/**
+**/CHANGELOG.md
+**/README.md
