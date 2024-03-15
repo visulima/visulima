@@ -1,9 +1,18 @@
 {
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "nx/tasks-runners/default"
+        }
+    },
     "targetDefaults": {
         "build": {
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^default"],
             "cache": true
         },
         "build:prod": {
+            "dependsOn": ["^build:prod"],
+            "inputs": ["default", "^default"],
             "cache": true
         },
         "lint:eslint": {
@@ -25,7 +34,7 @@
             "cache": true
         },
         "lint:types": {
-            "inputs": ["default", "^public"],
+            "inputs": ["^build", "default", "^public"],
             "cache": true
         },
         "test": {
@@ -37,7 +46,34 @@
             "cache": true
         },
         "build-storybook": {
+            "inputs": ["^build", "^build-storybook"],
             "cache": true
+        }
+    },
+    "namedInputs": {
+        "default": ["sharedGlobals", "{projectRoot}/**/*", "!{projectRoot}/**/*.md"],
+        "public": [
+            "default",
+            "{workspaceRoot}/dist",
+            "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{workspaceRoot}/vite.config.ts",
+            "!{workspaceRoot}/.eslintrc.json",
+            "!{workspaceRoot}/.storybook/**/*",
+            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+            "!{workspaceRoot}/tsconfig.storybook.json"
+        ],
+        "sharedGlobals": [
+            "{workspaceRoot}/.eslintrc.cjs",
+            "{workspaceRoot}/.nvmrc",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/tsup.config.ts",
+            "{workspaceRoot}/tsconfig.json"
+        ],
+        "production": ["default"]
+    },
+    "pluginsConfig": {
+        "@nrwl/js": {
+            "analyzeSourceFiles": false
         }
     },
     "parallel": 5,

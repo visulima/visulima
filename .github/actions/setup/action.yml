@@ -56,7 +56,7 @@ runs:
         - name: "Cache Nx"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: "node_modules/.cache/nx"
+              path: ".nx/cache"
               key: "nx-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}"
               restore-keys: |
                   nx-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-
