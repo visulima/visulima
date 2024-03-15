@@ -10,7 +10,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             - name: "Cleanup"

@@ -25,7 +25,7 @@ jobs:
             packages: "${{ steps.changes.outputs.packages }}"
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             - name: "Check for file changes"

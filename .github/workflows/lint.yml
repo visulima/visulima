@@ -28,7 +28,7 @@ jobs:
             package_json_lintable: "${{ steps.changes.outputs.package_json_lintable }}"
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             - name: "Check for file changes"

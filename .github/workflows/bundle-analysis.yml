@@ -30,7 +30,7 @@ jobs:
 
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             - name: "Check for file changes"
@@ -47,7 +47,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0

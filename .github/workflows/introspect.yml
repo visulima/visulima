@@ -21,7 +21,7 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Checkout"
-              uses: "./.github/checkout/setup"
+              uses: "./.github/actions/checkout"
               id: "checkout"
 
             # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
