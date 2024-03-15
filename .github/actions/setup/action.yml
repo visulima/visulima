@@ -1,0 +1,73 @@
+name: "Setup Environment and Resources"
+description: "Setup node.js and caching scoped within a workflow"
+
+inputs:
+    # The node.js version to use
+    node_version:
+        description: "The node.js version to use"
+        required: false
+        default: "18"
+
+    npm_version:
+        description: "The npm version to use"
+        required: false
+        default: "9.6.x"
+
+env:
+    NX_BRANCH: "${{ github.event.number }}"
+    NX_RUN_GROUP: "${{ github.run_id }}"
+    HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
+    HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
+
+runs:
+    using: "composite"
+    steps:
+        - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
+          with:
+              run_install: false
+
+        - name: "Set node version to ${{ inputs.node_version }}"
+          uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
+          with:
+              node-version: "${{ inputs.node_version }}"
+              cache: "pnpm"
+
+        - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+          run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
+
+        # @see: npm install -g npm@latest is necessary to make provenance available. More info: https://docs.npmjs.com/generating-provenance-statements
+        - name: "Upgrade npm to ${{ inputs.npm_version }} version"
+          run: "npm install --global npm@${{ inputs.npm_version }}"
+          env:
+              SKIP_CHECK: "true"
+
+        - name: "Check npm version"
+          run: "npm -v"
+          env:
+              SKIP_CHECK: "true"
+
+        - name: "Setup caching dependencies"
+          uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
+          id: "cache-node_modules"
+          with:
+              path: |
+                  node_modules
+                  */node_modules
+                  */*/node_modules
+              key: "node_modules-${{ runner.os }}-node-${{ inputs.node_version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+
+        - name: "Cache Nx"
+          uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
+          with:
+              path: "node_modules/.cache/nx"
+              key: "nx-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}"
+              restore-keys: |
+                  nx-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-
+                  nx-${{ hashFiles('pnpm-lock.yaml') }}-
+                  nx-
+
+        - name: "Install packages"
+          run: "pnpm install --frozen-lockfile --prefer-offline"
+          env:
+              "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
+              SKIP_CHECK: "true"

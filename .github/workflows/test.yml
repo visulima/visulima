@@ -15,13 +15,6 @@ concurrency:
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
-env:
-    NX_BRANCH: "${{ github.event.number }}"
-    NX_RUN_GROUP: "${{ github.run_id }}"
-    NX_CACHE: "cache-nx"
-    HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
-    HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
-
 jobs:
     files-changed:
         name: "Detect what files changed"
@@ -31,17 +24,9 @@ jobs:
         outputs:
             packages: "${{ steps.changes.outputs.packages }}"
         steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+            - name: "Checkout"
+              uses: "./.github/checkout/setup"
+              id: "checkout"
 
             - name: "Check for file changes"
               uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
@@ -56,7 +41,6 @@ jobs:
         strategy:
             max-parallel: 2
             matrix:
-                projectName: "${{fromJson(needs.get-affected.outputs.test)}}"
                 os:
                     - "ubuntu-latest"
                 node_version: ["18", "20", "21"]
@@ -67,63 +51,20 @@ jobs:
                     - os: "windows-latest"
                       node_version: "20.3.1" # https://github.com/nodejs/node/issues/48673
             fail-fast: false
-        name: "Test ${{ matrix.projectName }} (node-${{ matrix.node_version }}, ${{ matrix.os }})"
+        name: "Test (node-${{ matrix.node_version }}, ${{ matrix.os }})"
         runs-on: "${{ matrix.os }}"
         env:
             NODE: "${{ matrix.node_version }}"
         steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
-              with:
-                  egress-policy: "audit"
+            - name: "Nx checkout"
+              uses: "./.github/checkout-nx/setup"
+              id: "checkout-nx"
 
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
-                  fetch-depth: 0
-
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
-              uses: "nrwl/nx-set-shas@v4"
-
-            - uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
-              with:
-                  run_install: false
-
-            - name: "Set node version to ${{ matrix.node_version }}"
-              uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
+            - name: "Setup resources and environment"
+              uses: "./.github/actions/setup"
               with:
                   node-version: "${{ matrix.node_version }}"
-                  cache: "pnpm"
-
-            - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
-
-            - name: "Check npm version"
-              run: "npm -v"
-              env:
-                  SKIP_CHECK: "true"
-
-            - name: "Cache Nx"
-              uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
-              with:
-                  path: "node_modules/.cache/nx"
-                  key: "${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}"
-                  restore-keys: |
-                      ${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.target }}-${{ matrix.index }}-
-                      ${{ env.NX_CACHE }}-${{ hashFiles('pnpm-lock.yaml') }}-
-                      ${{ env.NX_CACHE }}-
-
-            - name: "Install packages"
-              run: "pnpm install --frozen-lockfile --prefer-offline"
-              env:
-                  "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
-                  SKIP_CHECK: "true"
+              id: "setup"
 
             - name: "Build"
               run: "pnpm nx build ${{ matrix.projectName }}"
@@ -133,7 +74,7 @@ jobs:
               run: "pnpm i -D bun --filter=package"
 
             - name: "test and coverage"
-              run: "pnpm nx test:coverage ${{ matrix.projectName }}"
+              run: "pnpm run test:affected:coverage"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
