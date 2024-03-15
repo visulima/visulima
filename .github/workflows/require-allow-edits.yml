@@ -20,4 +20,4 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - uses: "ljharb/require-allow-edits@main" # main
+            - uses: "ljharb/require-allow-edits@2bf6dc5607979ae0e3f8739b9f9a4018e024b9a0" # main
