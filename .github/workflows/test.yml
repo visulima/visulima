@@ -95,9 +95,6 @@ jobs:
                   node-version: "${{ matrix.node_version }}"
               id: "setup"
 
-            - name: "Build"
-              run: "pnpm run build:affected:packages"
-
             - name: "Install Bun for tests"
               if: "matrix.os == 'ubuntu-latest'"
               run: "pnpm i -D bun --filter=package"

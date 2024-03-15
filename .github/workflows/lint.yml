@@ -116,9 +116,6 @@ jobs:
               uses: "./.github/actions/setup"
               id: "setup"
 
-            - name: "Build"
-              run: "pnpm run build:affected:packages"
-
             - name: "lint"
               run: "pnpm run lint:affected:eslint"
 
@@ -151,9 +148,6 @@ jobs:
               uses: "./.github/actions/setup"
               id: "setup"
 
-            - name: "Build"
-              run: "pnpm run build:affected:packages"
-
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json"
 
@@ -185,9 +179,6 @@ jobs:
             - name: "Setup resources and environment"
               uses: "./.github/actions/setup"
               id: "setup"
-
-            - name: "Build"
-              run: "pnpm run build:affected:packages"
 
             - name: "lint typescript files"
               run: "pnpm run lint:affected:types"

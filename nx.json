@@ -6,47 +6,51 @@
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": ["^build"],
+            "dependsOn": ["^build", "default"],
             "inputs": ["default", "^default"],
             "cache": true
         },
         "build:prod": {
-            "dependsOn": ["^build:prod"],
+            "dependsOn": ["^build:prod", "default"],
             "inputs": ["default", "^default"],
             "cache": true
         },
         "lint:eslint": {
-            "dependsOn": ["^build", "^lint:prettier"],
+            "dependsOn": ["^build", "default"],
             "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
         "lint:eslint:fix": {
-            "dependsOn": ["^build", "^lint:prettier"],
+            "dependsOn": ["^build", "default"],
             "inputs": ["default", "{workspaceRoot}/.eslintrc.cjs", "{workspaceRoot}/.eslintrc.js"],
             "cache": true
         },
+        "lint:packagejson": {
+            "dependsOn": ["^build", "default"],
+            "cache": true
+        },
         "lint:prettier": {
-            "inputs": ["default", "^public"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
         "lint:prettier:fix": {
-            "inputs": ["default", "^public"],
+            "dependsOn": ["default", "^public"],
             "cache": true
         },
         "lint:types": {
-            "inputs": ["^build", "default", "^public"],
+            "dependsOn": ["^build", "default", "^public"],
             "cache": true
         },
         "test": {
-            "inputs": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["^build", "default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "inputs": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["^build", "default", "^default", "{projectRoot}/vite.config.ts"],
             "cache": true
         },
         "build-storybook": {
-            "inputs": ["^build", "^build-storybook"],
+            "dependsOn": ["^build", "^build", "^build-storybook"],
             "cache": true
         }
     },
@@ -57,18 +61,12 @@
             "{workspaceRoot}/dist",
             "!{workspaceRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
             "!{workspaceRoot}/vite.config.ts",
-            "!{workspaceRoot}/.eslintrc.json",
+            "!{workspaceRoot}/.eslintrc.js",
+            "!{workspaceRoot}/.eslintrc.cjs",
             "!{workspaceRoot}/.storybook/**/*",
-            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-            "!{workspaceRoot}/tsconfig.storybook.json"
+            "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
         ],
-        "sharedGlobals": [
-            "{workspaceRoot}/.eslintrc.cjs",
-            "{workspaceRoot}/.nvmrc",
-            "{workspaceRoot}/package.json",
-            "{workspaceRoot}/tsup.config.ts",
-            "{workspaceRoot}/tsconfig.json"
-        ],
+        "sharedGlobals": ["{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsup.config.ts", "{workspaceRoot}/tsconfig.json"],
         "production": ["default"]
     },
     "pluginsConfig": {
