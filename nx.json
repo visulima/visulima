@@ -51,6 +51,14 @@
         },
         "build-storybook": {
             "dependsOn": ["^build", "^build-storybook"],
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/.storybook/**/*",
+                "{projectRoot}/.storybook/**/*",
+                "{projectRoot}/tsconfig.json",
+                "{projectRoot}/tsconfig.storybook.json"
+            ],
             "cache": true
         }
     },
@@ -66,7 +74,14 @@
             "!{workspaceRoot}/.storybook/**/*",
             "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
         ],
-        "sharedGlobals": ["{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsup.config.ts", "{workspaceRoot}/tsconfig.json"],
+        "sharedGlobals": [
+            "{workspaceRoot}/.nvmrc",
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/tsup.config.ts",
+            "{workspaceRoot}/tsconfig.json",
+            "{workspaceRoot}/tsconfig.base.json",
+            "{workspaceRoot}/tsconfig.eslint.json"
+        ],
         "production": ["default"]
     },
     "pluginsConfig": {
