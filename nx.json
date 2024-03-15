@@ -45,11 +45,6 @@
     "affected": {
         "defaultBase": "main"
     },
-    "pluginsConfig": {
-        "@nrwl/js": {
-            "analyzePackageJson": false
-        }
-    },
     "defaultBase": "main",
     "defaultProject": "visulima",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
