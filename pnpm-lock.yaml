@@ -1142,7 +1142,7 @@ importers:
         specifier: 3.0.2
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.24
+        specifier: 2.0.25
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1297,7 +1297,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 1.6.0
+        specifier: 1.7.0
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.3.1
@@ -1404,10 +1404,6 @@ importers:
       zod:
         specifier: ^3.22.4
         version: 3.22.4
-
-  packages/api-platform/cli: {}
-
-  packages/api-platform/cli/commander: {}
 
   packages/boxen:
     dependencies:
@@ -2584,7 +2580,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 1.6.0
+        specifier: 1.7.0
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -2693,10 +2689,6 @@ importers:
       vitest:
         specifier: ^1.3.1
         version: 1.3.1(@types/node@18.18.14)(@vitest/ui@1.3.1)(jsdom@24.0.0)
-
-  packages/jsdoc-open-api/cli: {}
-
-  packages/jsdoc-open-api/cli/commander: {}
 
   packages/nextra-theme-docs:
     dependencies:
@@ -2948,14 +2940,10 @@ importers:
         specifier: ^3.22.4
         version: 3.22.4
 
-  packages/nextra-theme-docs/components: {}
-
-  packages/nextra-theme-docs/config: {}
-
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 1.7.0
         version: link:../fs
       get-tsconfig:
         specifier: ^4.7.3
@@ -13189,6 +13177,13 @@ packages:
       satori: 0.10.9
       yoga-wasm-web: 0.3.3
     dev: false
+
+  /@visulima/fs@1.7.0:
+    resolution: {integrity: sha512-7OucS89Ro0VPT7R2S8mxNN1GvEo8PdRJdGVskoxLyOD6IhmTn9qZ5ShPYv6pBOexpX9aSpjMwy2dgl9p1HxlWA==}
+    engines: {node: '>=18.* <=21.*'}
+    dependencies:
+      type-fest: 4.12.0
+    dev: true
 
   /@visulima/readdir@2.0.12:
     resolution: {integrity: sha512-QvuHcmFGq0mvwAJMSQs0f0Vk5csomT/lAC+cED2VwH9hYY5OhxSS+5+ko/uNW5aaDW4eFe9/Uhj+S4+RgKom0Q==}
@@ -33259,7 +33254,7 @@ packages:
     name: '@visulima/package'
     engines: {node: '>=18.* <=21.*'}
     dependencies:
-      '@visulima/fs': link:packages/fs
+      '@visulima/fs': 1.7.0
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3

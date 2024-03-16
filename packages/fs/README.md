@@ -194,6 +194,7 @@ console.log(file);
 Type: `string | string[] | (dir: string) => string | symbole | undefined`
 
 The name of the file or directory to find.
+
 > If an array is specified, the first item that exists will be returned.
 
 > A function that will be called with each directory until it returns a string with the path, which stops the search, or the root directory has been reached and nothing was found. Useful if you want to match files with certain patterns, set of permissions, or other advanced use-cases.

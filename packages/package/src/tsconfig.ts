@@ -45,9 +45,8 @@ export const findTSConfig = async (cwd?: URL | string): Promise<TsConfigResult> 
  * The return type of function is `Promise<void>`.
  */
 export const writeTSConfig = async (data: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
-     
     const { cwd, ...writeOptions } = options;
-     
+
     const directory = toPath(options.cwd ?? process.cwd());
 
     await writeJson(join(directory, "tsconfig.json"), data, writeOptions);
