@@ -1,3 +1,20 @@
+## @visulima/nextra-theme-docs [4.0.18](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.17...@visulima/nextra-theme-docs@4.0.18) (2024-03-16)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updated next-themes dep ([57a7cb1](https://github.com/visulima/visulima/commit/57a7cb1717ca50c7eee511a0387e60ca28a6b1dd))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([956b7b3](https://github.com/visulima/visulima/commit/956b7b3a18d9fac12b0ac3b87f99680f169f824e))
+
+
+### Code Refactoring
+
+* removed old folders ([5521452](https://github.com/visulima/visulima/commit/5521452be0c8f24b2a1aceb10c276f40993b75f3))
+
 ## @visulima/nextra-theme-docs [4.0.17](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.16...@visulima/nextra-theme-docs@4.0.17) (2024-03-10)
 
 
