@@ -1,11 +1,12 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { temporaryDirectory } from "tempy";
 import { describe, expect, it, vi } from "vitest";
 
-import { findMonorepoRoot } from "../src/monorepo";
+import { findMonorepoRoot } from "../../src/monorepo";
 
-const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtures__", "workspaces");
+const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "workspaces");
 const packages = ["package-a", "package-b", "package-c"];
 const scenarios = ["pnpm", "yarn", "turbo-pnpm", "turbo-yarn", "turbo-npm", "yarn-packageManager", "npm", "lerna", "lerna-sub-yarn-packageManager"];
 
@@ -79,10 +80,8 @@ describe("monorepo", () => {
         it(`should throw error when no match is found`, async () => {
             expect.assertions(1);
 
-            const root = join(cwd, "noMatch");
-
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
-            expect(async () => await findMonorepoRoot(join(root, "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
+            expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
         });
 
         it("should throw error when package.json is broken", async () => {

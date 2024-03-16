@@ -1,0 +1,8 @@
+{
+    "name": "package-esm",
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/package": "workspace:*"
+    }
+}

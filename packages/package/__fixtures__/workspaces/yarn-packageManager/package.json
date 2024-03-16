@@ -1,8 +1,8 @@
 {
-  "private": true,
-  "name": "@foo/test-yarn",
-  "packageManager": "yarn@3.6.1",
-  "workspaces": [
-    "packages/*"
-  ]
+    "name": "@foo/test-yarn",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "packageManager": "yarn@3.6.1"
 }

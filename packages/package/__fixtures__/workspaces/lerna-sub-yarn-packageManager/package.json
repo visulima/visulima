@@ -1,7 +1,7 @@
 {
-  "private": true,
-  "name": "@foo/test-lerna",
-  "workspaces": [
-    "packages/*"
-  ]
+    "name": "@foo/test-lerna",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
 }
