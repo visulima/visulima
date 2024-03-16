@@ -50,36 +50,60 @@
     "type": "module",
     "exports": {
         ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
             "import": {
                 "types": "./dist/index.d.ts",
                 "default": "./dist/index.js"
             }
         },
         "./monorepo": {
+            "require": {
+                "types": "./dist/monorepo.d.cts",
+                "default": "./dist/monorepo.cjs"
+            },
             "import": {
                 "types": "./dist/monorepo.d.ts",
                 "default": "./dist/monorepo.js"
             }
         },
         "./package": {
+            "require": {
+                "types": "./dist/package.d.cts",
+                "default": "./dist/package.cjs"
+            },
             "import": {
                 "types": "./dist/package.d.ts",
                 "default": "./dist/package.js"
             }
         },
         "./package-json": {
+            "require": {
+                "types": "./dist/package-json.d.cts",
+                "default": "./dist/package-json.cjs"
+            },
             "import": {
                 "types": "./dist/package-json.d.ts",
                 "default": "./dist/package-json.js"
             }
         },
         "./package-manager": {
+            "require": {
+                "types": "./dist/package-manager.d.cts",
+                "default": "./dist/package-manager.cjs"
+            },
             "import": {
                 "types": "./dist/package-manager.d.ts",
                 "default": "./dist/package-manager.js"
             }
         },
         "./tsconfig": {
+            "require": {
+                "types": "./dist/tsconfig.d.cts",
+                "default": "./dist/tsconfig.cjs"
+            },
             "import": {
                 "types": "./dist/tsconfig.d.ts",
                 "default": "./dist/tsconfig.js"
@@ -87,6 +111,7 @@
         },
         "./package.json": "./package.json"
     },
+    "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -112,11 +137,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "detect-indent": "^7.0.1",
-        "find-up": "^7.0.0",
+        "@visulima/fs": "workspace:*",
         "get-tsconfig": "^4.7.3",
-        "read-pkg": "^9.0.1",
-        "strip-json-comments": "^5.0.1"
+        "normalize-package-data": "^6.0.0",
+        "type-fest": "^4.12.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -145,6 +169,7 @@
         "rimraf": "^5.0.5",
         "semantic-release": "^23.0.2",
         "sort-package-json": "^2.8.0",
+        "tempy": "^3.1.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.2",
         "vitest": "^1.3.1",

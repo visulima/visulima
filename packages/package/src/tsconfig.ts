@@ -1,12 +1,10 @@
-import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
+import type { WriteJsonOptions } from "@visulima/fs";
+import { writeJson } from "@visulima/fs";
+import { toPath } from "@visulima/fs/utils";
 import type { TsConfigJson, TsConfigResult } from "get-tsconfig";
 import { getTsconfig } from "get-tsconfig";
-
-import toPath from "./utils/to-path";
-import type { WriteOptions } from "./utils/write-json";
-import { writeJsonFile } from "./utils/write-json";
 
 /**
  * An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
@@ -46,14 +44,13 @@ export const findTSConfig = async (cwd?: URL | string): Promise<TsConfigResult> 
  * @returns A `Promise` that resolves when the tsconfig.json file has been written.
  * The return type of function is `Promise<void>`.
  */
-export const writeTSConfig = async (tsConfig: TsConfigJson, options: WriteOptions & { cwd?: URL | string } = {}): Promise<void> => {
+export const writeTSConfig = async (data: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
+     
+    const { cwd, ...writeOptions } = options;
+     
     const directory = toPath(options.cwd ?? process.cwd());
-    const path = join(directory, "tsconfig.json");
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    await mkdir(directory, { recursive: true });
-
-    await writeJsonFile(path, tsConfig, options);
+    await writeJson(join(directory, "tsconfig.json"), data, writeOptions);
 };
 
 export type { TsConfigJson, TsConfigJsonResolved, TsConfigResult } from "get-tsconfig";

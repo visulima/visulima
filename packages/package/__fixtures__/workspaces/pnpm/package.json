@@ -1,4 +1,4 @@
 {
-  "private": true,
-  "name": "@foo/test-pnpm"
+    "name": "@foo/test-pnpm",
+    "private": true
 }

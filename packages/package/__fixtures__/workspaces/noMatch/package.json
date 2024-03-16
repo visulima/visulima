@@ -1,4 +1,4 @@
 {
-  "private": true,
-  "name": "@foo/test-root"
+    "name": "@foo/test-root",
+    "private": true
 }

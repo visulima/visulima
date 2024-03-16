@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 import { execa } from "execa";
 import { describe, expect, it, vi } from "vitest";
 
-import package_ from "../package.json";
-import { getPackageManagerVersion } from "../src/package-manager";
+import package_ from "../../package.json";
+import { getPackageManagerVersion } from "../../src/package-manager";
 
-const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtures__", "which-package-manager");
+const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
 vi.mock("node:child_process", () => {
     return {

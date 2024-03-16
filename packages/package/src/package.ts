@@ -1,7 +1,6 @@
 import { dirname } from "node:path";
 
-import type { Options } from "find-up";
-import { findUp } from "find-up";
+import { findUp } from "@visulima/fs";
 
 import { findLockFile } from "./package-manager";
 
@@ -17,7 +16,7 @@ import { findLockFile } from "./package-manager";
  * console.log(rootDirectory); // '/path/to/project'
  */
 // eslint-disable-next-line import/prefer-default-export
-export const findPackageRoot = async (cwd?: Options["cwd"]): Promise<string> => {
+export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
     // Lookdown for lockfile
     try {
         const lockFile = await findLockFile(cwd);
@@ -30,7 +29,6 @@ export const findPackageRoot = async (cwd?: Options["cwd"]): Promise<string> => 
     // Lookup for .git/config
     const gitConfig = await findUp(".git/config", {
         ...(cwd && { cwd }),
-        allowSymlinks: false,
         type: "file",
     });
 
@@ -41,7 +39,6 @@ export const findPackageRoot = async (cwd?: Options["cwd"]): Promise<string> => 
     // Lookdown for package.json
     const filePath = await findUp("package.json", {
         ...(cwd && { cwd }),
-        allowSymlinks: false,
         type: "file",
     });
 
