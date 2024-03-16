@@ -172,6 +172,7 @@ export type FindUpOptions = {
 
 export type Match = string | typeof FIND_UP_STOP | undefined;
 
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export type EmptyDirOptions = {
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or

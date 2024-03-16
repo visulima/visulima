@@ -1,5 +1,7 @@
 import { platform } from "node:process";
 
+const regDetect = /\r?\n/g;
+
 /** End-of-line character for POSIX platforms such as macOS and Linux. */
 export const LF = "\n" as const;
 
@@ -10,8 +12,6 @@ export const CRLF = "\r\n" as const;
  * End-of-line character evaluated for the current platform.
  */
 export const EOL: "\n" | "\r\n" = platform === "win32" ? CRLF : LF;
-
-const regDetect = /(?:\r?\n)/g;
 
 /**
  * Detect the EOL character for string input.
@@ -33,6 +33,4 @@ export const detect = (content: string): typeof EOL | null => {
 /**
  * Format the file to the targeted EOL.
  */
-export const format = (content: string, eol: typeof EOL): string => {
-    return content.replace(regDetect, eol);
-};
+export const format = (content: string, eol: typeof EOL): string => content.replaceAll(regDetect, eol);
