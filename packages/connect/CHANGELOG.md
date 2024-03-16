@@ -1,3 +1,11 @@
+## @visulima/connect [3.0.3](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.2...@visulima/connect@3.0.3) (2024-03-16)
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.18
+
 ## @visulima/connect [3.0.2](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.1...@visulima/connect@3.0.2) (2024-03-10)
 
 
