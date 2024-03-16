@@ -28,7 +28,7 @@ const emptyDir = (dir: URL | string, options?: EmptyDirOptions): void => {
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,security/detect-non-literal-fs-filename
     for (const item of readdirSync(dir)) {
-        rmSync(join(toPath(dir), item), { ...options, recursive: true });
+        rmSync(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }
 }
 

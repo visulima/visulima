@@ -29,7 +29,7 @@ const emptyDir = async (dir: URL | string, options?: EmptyDirOptions): Promise<v
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,security/detect-non-literal-fs-filename
     for await (const item of await readdir(dir)) {
-        await rm(join(toPath(dir), item), { ...options, recursive: true });
+        await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }
 }
 
