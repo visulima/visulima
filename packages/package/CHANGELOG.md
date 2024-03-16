@@ -1,3 +1,16 @@
+## @visulima/package [1.3.0](https://github.com/visulima/visulima/compare/@visulima/package@1.2.10...@visulima/package@1.3.0) (2024-03-16)
+
+
+### Features
+
+* **package:** added cjs and esm export ([#335](https://github.com/visulima/visulima/issues/335)) ([62b873a](https://github.com/visulima/visulima/commit/62b873a76d2a5356e7596d3a7e299d8e51eb2fcd))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 1.7.0
+
 ## @visulima/package [1.2.10](https://github.com/visulima/visulima/compare/@visulima/package@1.2.9...@visulima/package@1.2.10) (2024-03-11)
 
 
