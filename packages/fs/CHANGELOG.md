@@ -1,3 +1,10 @@
+## @visulima/fs [1.7.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.6.0...@visulima/fs@1.7.0) (2024-03-16)
+
+
+### Features
+
+* **package:** added cjs and esm export ([#335](https://github.com/visulima/visulima/issues/335)) ([62b873a](https://github.com/visulima/visulima/commit/62b873a76d2a5356e7596d3a7e299d8e51eb2fcd))
+
 ## @visulima/fs [1.6.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.5.0...@visulima/fs@1.6.0) (2024-03-14)
 
 
