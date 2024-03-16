@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [2.0.15](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.14...@visulima/prisma-dmmf-transformer@2.0.15) (2024-03-16)
+
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** updated @prisma/generator-helper dep ([9cf6d75](https://github.com/visulima/visulima/commit/9cf6d759e42200106fb2c3e64305676164b4e592))
+
 ## @visulima/prisma-dmmf-transformer [2.0.14](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.13...@visulima/prisma-dmmf-transformer@2.0.14) (2024-03-04)
 
 
