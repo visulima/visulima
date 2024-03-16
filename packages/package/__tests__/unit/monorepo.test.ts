@@ -81,7 +81,9 @@ describe("monorepo", () => {
             expect.assertions(1);
 
             // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
-            expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(/No monorepo root could be found upwards/);
+            expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
+                /No monorepo root could be found upwards/,
+            );
         });
 
         it("should throw error when package.json is broken", async () => {

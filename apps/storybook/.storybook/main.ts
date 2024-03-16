@@ -5,7 +5,15 @@ import { mergeConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const config: StorybookConfig = {
-    addons: ["@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/addon-a11y", "@storybook/addon-actions", "@storybook/addon-themes", "@storybook/addon-links", "@storybook/addon-docs"],
+    addons: [
+        "@storybook/addon-essentials",
+        "@storybook/addon-interactions",
+        "@storybook/addon-a11y",
+        "@storybook/addon-actions",
+        "@storybook/addon-themes",
+        "@storybook/addon-links",
+        "@storybook/addon-docs",
+    ],
     docs: {
         autodocs: "tag",
     },
