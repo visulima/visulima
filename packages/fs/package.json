@@ -4,8 +4,11 @@
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
+        "detect-newline",
         "dir",
         "directory",
+        "eol",
+        "empty-dir",
         "file",
         "files",
         "filesystem",
