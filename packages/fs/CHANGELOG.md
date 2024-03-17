@@ -1,3 +1,10 @@
+## @visulima/fs [1.8.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.7.1...@visulima/fs@1.8.0) (2024-03-17)
+
+
+### Features
+
+* **fs:** added eol, emptyDir and emptyDirSync ([#348](https://github.com/visulima/visulima/issues/348)) ([8084200](https://github.com/visulima/visulima/commit/8084200779f671403b9585c3b6fec985641c1cf6))
+
 ## @visulima/fs [1.7.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.7.0...@visulima/fs@1.7.1) (2024-03-16)
 
 
