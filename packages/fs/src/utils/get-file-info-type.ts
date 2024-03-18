@@ -1,5 +1,6 @@
 import type { Stats } from "node:fs";
 
+// eslint-disable-next-line import/no-unused-modules
 export type PathType = "dir" | "file" | "symlink";
 
 /**
