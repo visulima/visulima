@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "./ensure-dir-sync";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "./utils/is-stats-identical";
 import toPath from "./utils/to-path";
 
@@ -11,6 +12,9 @@ import toPath from "./utils/to-path";
  * If the directory structure does not exist, it is created.
  */
 const ensureLinkSync = (source: URL | string, destination: URL | string): void => {
+    assertValidFileOrDirectoryPath(source);
+    assertValidFileOrDirectoryPath(destination);
+
     let destinationStat;
 
     try {

@@ -1,6 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { lstat, mkdir } from "node:fs/promises";
 
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import { getFileInfoType } from "./utils/get-file-info-type";
 
 /**
@@ -9,6 +10,8 @@ import { getFileInfoType } from "./utils/get-file-info-type";
  */
 // eslint-disable-next-line unicorn/prevent-abbreviations
 const ensureDir = async (directory: URL | string): Promise<void> => {
+    assertValidFileOrDirectoryPath(directory);
+
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const fileInfo = await lstat(directory);

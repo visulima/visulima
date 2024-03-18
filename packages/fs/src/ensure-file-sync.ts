@@ -2,6 +2,7 @@ import { lstatSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 import ensureDirSync from "./ensure-dir-sync";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import { getFileInfoType } from "./utils/get-file-info-type";
 import toPath from "./utils/to-path";
 
@@ -11,6 +12,8 @@ import toPath from "./utils/to-path";
  * these directories are created. If the file already exists, it is NOTMODIFIED.
  */
 const ensureFileSync = (filePath: URL | string): void => {
+    assertValidFileOrDirectoryPath(filePath);
+
     try {
         // if file exists
         // eslint-disable-next-line security/detect-non-literal-fs-filename
