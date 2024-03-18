@@ -4,6 +4,7 @@ import { dirname, resolve } from "node:path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
 import { AlreadyExistsError } from "./error";
+import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
 import { getFileInfoType } from "./utils/get-file-info-type";
 import isStatsIdentical from "./utils/is-stats-identical";
 import resolveSymlinkTarget from "./utils/resolve-symlink-target";
@@ -20,6 +21,9 @@ const isWindows = process.platform === "win32";
  * @param linkName the destination link path
  */
 const ensureSymlink = async (target: URL | string, linkName: URL | string): Promise<void> => {
+    assertValidFileOrDirectoryPath(target);
+    assertValidFileOrDirectoryPath(linkName);
+
     const targetRealPath = resolveSymlinkTarget(target, linkName);
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
