@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterEach } from "vitest";
 import { join, resolve } from "node:path";
 import { rm } from "node:fs/promises";
 import { temporaryDirectory } from "tempy";
@@ -23,7 +23,7 @@ describe.each([["ensureSymlink", ensureSymlink]])("%s", (name, function_) => {
         symlinkSync("dir-foo", "real-symlink-dir-foo");
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await rm(distribution, { recursive: true });
     });
 
