@@ -1,10 +1,11 @@
-import { lstatSync, readlinkSync, symlinkSync } from "node:fs";
+import { lstatSync, readlinkSync, statSync, symlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "./ensure-dir-sync";
 import { AlreadyExistsError } from "./error";
 import { getFileInfoType } from "./utils/get-file-info-type";
+import isStatsIdentical from "./utils/is-stats-identical";
 import resolveSymlinkTarget from "./utils/resolve-symlink-target";
 import toPath from "./utils/to-path";
 
@@ -22,6 +23,22 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
     const targetRealPath = resolveSymlinkTarget(target, linkName);
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     const sourceStatInfo = lstatSync(targetRealPath);
+
+    try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const linkStatInfo = lstatSync(linkName);
+
+        if (
+            linkStatInfo.isSymbolicLink() &&
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            isStatsIdentical(statSync(targetRealPath), statSync(linkName))
+        ) {
+            return;
+        }
+    } catch {
+        /* empty */
+    }
+
     const sourceFilePathType = getFileInfoType(sourceStatInfo);
 
     ensureDirSync(dirname(toPath(linkName)));
