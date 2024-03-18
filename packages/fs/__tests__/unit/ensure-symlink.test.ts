@@ -68,7 +68,7 @@ describe.each([
         // ["./dir-foo/foo.txt", "./symlink.txt"],
         // [resolve(join(distribution, "./foo.txt")), resolve(join(distribution, "./symlink.txt"))],
         // [resolve(join(distribution, "./dir-foo/foo.txt")), resolve(join(distribution, "./symlink.txt"))],
-    ])("should create link file using source %s and destination %s", async (sourcePath, destinationPath) => {
+    ])("should create symlink file using source %s and destination %s", async (sourcePath, destinationPath) => {
         expect.assertions(3);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
