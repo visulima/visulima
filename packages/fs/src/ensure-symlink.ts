@@ -1,10 +1,11 @@
-import { lstat, readlink, symlink } from "node:fs/promises";
+import { lstat, readlink, stat, symlink } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
 import { AlreadyExistsError } from "./error";
 import { getFileInfoType } from "./utils/get-file-info-type";
+import isStatsIdentical from "./utils/is-stats-identical";
 import resolveSymlinkTarget from "./utils/resolve-symlink-target";
 import toPath from "./utils/to-path";
 
@@ -20,8 +21,24 @@ const isWindows = process.platform === "win32";
  */
 const ensureSymlink = async (target: URL | string, linkName: URL | string): Promise<void> => {
     const targetRealPath = resolveSymlinkTarget(target, linkName);
+
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     const sourceStatInfo = await lstat(targetRealPath);
+
+    try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const linkStatInfo = await lstat(linkName);
+
+        if (linkStatInfo.isSymbolicLink()) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            const [sourceStat, destinationStat] = await Promise.all([stat(targetRealPath), stat(linkName)]);
+
+            if (isStatsIdentical(sourceStat, destinationStat)) {
+                return;
+            }
+        }
+    } catch { /* empty */ }
+
     const sourceFilePathType = getFileInfoType(sourceStatInfo);
 
     await ensureDir(dirname(toPath(linkName)));
