@@ -67,7 +67,7 @@
         "@visulima/colorize": "workspace:*",
         "@visulima/pail": "workspace:*",
         "@visulima/cerebro": "workspace:*",
-        "@visulima/readdir": "workspace:*",
+        "@visulima/fs": "workspace:*",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-inject": "^5.0.5",
         "@rollup/plugin-commonjs": "^25.0.7",
