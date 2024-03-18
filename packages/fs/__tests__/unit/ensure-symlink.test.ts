@@ -39,18 +39,16 @@ describe.each([
     });
 
     afterEach(async () => {
-        try {
             await rm("foo.txt");
-        await rm("real-symsymlink.txt");
-        await rm("symsymlink.txt");
-        await rm("symsymlink-dir-foo", { recursive: true });
-        await rm("real-symsymlink-dir-foo", { recursive: true });
-        await rm("empty-dir", { recursive: true });
-        await rm("dir-foo", { recursive: true });
-        await rm("dir-bar", { recursive: true });
-        await rm("real-alpha", { recursive: true });
-        } catch (error) {
-        }
+            await rm("real-symsymlink.txt");
+            await rm("symsymlink.txt");
+            await rm("symsymlink-dir-foo", { recursive: true });
+            await rm("real-symsymlink-dir-foo", { recursive: true });
+            await rm("empty-dir", { recursive: true });
+            await rm("dir-foo", { recursive: true });
+            await rm("dir-bar", { recursive: true });
+            await rm("real-alpha", { recursive: true });
+
     });
 
     it.each([
@@ -72,7 +70,7 @@ describe.each([
         expect.assertions(3);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "ensureLink") {
+        if (name === "ensureSymlink") {
             await function_(sourcePath, destinationPath);
         } else {
             function_(sourcePath, destinationPath);
@@ -93,8 +91,6 @@ describe.each([
         expect(isSymlink).toBeTruthy();
         expect(sourceContent).toStrictEqual(destinationContent);
         expect(destinationDirectoryContents).contains(destinationBasename);
-
-        await rm(destinationPath, { recursive: true });
     });
 
     it.each([
@@ -115,7 +111,7 @@ describe.each([
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "ensureLink") {
+        if (name === "ensureSymlink") {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
@@ -145,7 +141,7 @@ describe.each([
         expect.assertions(3);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "ensureLink") {
+        if (name === "ensureSymlink") {
             await function_(sourcePath, destinationPath);
         } else {
             function_(sourcePath, destinationPath);
@@ -176,7 +172,7 @@ describe.each([
         expect.assertions(3);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "ensureLink") {
+        if (name === "ensureSymlink") {
             await function_(sourcePath, destinationPath);
         } else {
             function_(sourcePath, destinationPath);
@@ -207,7 +203,7 @@ describe.each([
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "ensureLink") {
+        if (name === "ensureSymlink") {
             // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
