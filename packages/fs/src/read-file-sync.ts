@@ -17,7 +17,7 @@ const decompressionMethods = {
 const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethods> | undefined = undefined>(
     path: URL | string,
     options?: O,
-): ContentType<O> | undefined => {
+): ContentType<O> => {
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign

@@ -3,7 +3,7 @@ export { default as collectSync } from "./collect-sync";
 export { F_OK, FIND_UP_STOP, R_OK, W_OK, X_OK } from "./constants";
 export { default as emptyDir } from "./empty-dir";
 export { default as emptyDirSync } from "./empty-dir-sync";
-export { CRLF, detect, EOL, format,LF } from "./eol";
+export { CRLF, detect, EOL, format, LF } from "./eol";
 export { default as findUp } from "./find-up";
 export { default as findUpSync } from "./find-up-sync";
 export { default as isAccessible } from "./is-accessible";
@@ -12,6 +12,8 @@ export { default as readFile } from "./read-file";
 export { default as readFileSync } from "./read-file-sync";
 export { default as readJson } from "./read-json";
 export { default as readJsonSync } from "./read-json-sync";
+export { default as readYaml } from "./read-yaml";
+export { default as readYamlSync } from "./read-yaml-sync";
 export type {
     CodeFrameLocation,
     EmptyDirOptions,
@@ -24,10 +26,14 @@ export type {
     WalkEntry,
     WalkOptions,
     WriteFileOptions,
-    WriteJsonOptions} from "./types";
+    WriteJsonOptions,
+    YamlReplacer,
+} from "./types";
 export { default as walk } from "./walk";
 export { default as walkSync } from "./walk-sync";
 export { default as writeFile } from "./write-file";
 export { default as writeFileSync } from "./write-file-sync";
 export { default as writeJson } from "./write-json";
 export { default as writeJsonSync } from "./write-json-sync";
+export { default as writeYaml } from "./write-yaml";
+export { default as writeYamlSync } from "./write-yaml-sync";

@@ -1142,7 +1142,7 @@ importers:
         specifier: 3.0.3
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.26
+        specifier: 2.0.27
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1297,7 +1297,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 1.7.1
+        specifier: 1.8.0
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2380,6 +2380,9 @@ importers:
       vitest:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@18.18.14)(@vitest/ui@1.4.0)(jsdom@24.0.0)
+      yaml:
+        specifier: ^2.4.1
+        version: 2.4.1
 
   packages/fs/__fixtures__/find-up: {}
 
@@ -2580,7 +2583,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 1.7.1
+        specifier: 1.8.0
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -2943,7 +2946,7 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 1.7.1
+        specifier: 1.8.0
         version: link:../fs
       get-tsconfig:
         specifier: ^4.7.3
@@ -13315,8 +13318,8 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
-  /@visulima/fs@1.7.1:
-    resolution: {integrity: sha512-kFTK/RMmwhEmmIO7okyKcUjmJKGTCWWJBKSCSxofRj+PyUTgb5WLR8XF0m7NyCkB4WhCw4jP7+9uP/5aHeGYog==}
+  /@visulima/fs@1.8.0:
+    resolution: {integrity: sha512-rxVBkS9HcMgFCWbYwyJALWQADedm4/uLv+5inOe38O2jl1Z+Pg407dgSUGJiIr8DI1iePrKgvedZ3Wdu61NOFw==}
     engines: {node: '>=18.* <=21.*'}
     dependencies:
       type-fest: 4.12.0
@@ -33447,7 +33450,7 @@ packages:
     name: '@visulima/package'
     engines: {node: '>=18.* <=21.*'}
     dependencies:
-      '@visulima/fs': 1.7.1
+      '@visulima/fs': 1.8.0
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3

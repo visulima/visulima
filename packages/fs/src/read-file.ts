@@ -19,7 +19,7 @@ const decompressionMethods = {
 const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMethods> | undefined = undefined>(
     path: URL | string,
     options?: O,
-): Promise<ContentType<O> | undefined> => {
+): Promise<ContentType<O>> => {
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign
