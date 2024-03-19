@@ -1,8 +1,8 @@
+import { autoPreset } from "../preset/auto";
 import type { BuildConfig, BuildPreset } from "../types";
 import { tryRequire } from "./try-require";
-import { autoPreset } from "../preset/auto";
 
-export function resolvePreset(preset: string | BuildPreset, rootDir: string): BuildConfig {
+export function resolvePreset(preset: BuildPreset | string, rootDir: string): BuildConfig {
     if (preset === "auto") {
         preset = autoPreset;
     } else if (typeof preset === "string") {

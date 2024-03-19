@@ -1,18 +1,16 @@
-import type { Plugin } from "rollup";
-import { findStaticImports } from "mlly";
 import MagicString from "magic-string";
+import { findStaticImports } from "mlly";
+import type { Plugin } from "rollup";
 
-export const cjsPlugin = (_opts?: any): Plugin => {
-    return {
+export const cjsPlugin = (_options?: any): Plugin => ({
         name: "pack-cjs",
-        renderChunk(code, _chunk, opts) {
-            if (opts.format === "es") {
+        renderChunk(code, _chunk, options) {
+            if (options.format === "es") {
                 return CJSToESM(code);
             }
             return null;
         },
-    } as Plugin;
-}
+    } as Plugin)
 
 const CJSyntaxRe = /__filename|__dirname|require\(|require\.resolve\(/;
 

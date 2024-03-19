@@ -1,7 +1,7 @@
 import jiti from "jiti";
 
 export const tryRequire = (id: string, rootDir: string = process.cwd()): any => {
-    const _require = jiti(rootDir, { interopDefault: true, esmResolve: true });
+    const _require = jiti(rootDir, { esmResolve: true, interopDefault: true });
 
     try {
         return _require(id);

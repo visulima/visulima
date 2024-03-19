@@ -121,3 +121,10 @@ export interface BuildConfig extends DeepPartial<Omit<BuildOptions, "entries">> 
     hooks?: Partial<BuildHooks>;
     preset?: BuildPreset | string;
 }
+
+export type InferEntriesResult = {
+  cjs?: boolean;
+  dts?: boolean;
+  entries: BuildEntry[];
+  warnings: string[];
+};

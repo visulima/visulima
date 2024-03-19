@@ -31,9 +31,25 @@
     },
     "sideEffects": false,
     "type": "module",
+    "bin": {
+        "packem": "./dist/cli.cjs"
+    },
     "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/create-bundler.d.cts",
+                "default": "./dist/create-bundler.cjs"
+            },
+            "import": {
+                "types": "./dist/create-bundler.d.mts",
+                "default": "./dist/create-bundler.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
+    "main": "./dist/create-bundler.cjs",
+    "module": "./dist/create-bundler.mjs",
+    "types": "./dist/create-bundler.d.ts",
     "files": [
         "dist/**",
         "README.md",
@@ -43,7 +59,7 @@
     "scripts": {
         "build": "jiti ./src/cli",
         "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
+        "dev": "pnpm run build",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:packagejson": "publint --strict",

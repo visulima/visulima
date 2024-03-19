@@ -1,9 +1,7 @@
-export const dumpObject = (obj: Record<string, any>): string => {
-    return (
-        "{ " +
-        Object.keys(obj)
-            .map((key) => `${key}: ${JSON.stringify(obj[key])}`)
-            .join(", ") +
-        " }"
+export const dumpObject = (object: Record<string, any>): string => (
+        `{ ${ 
+        Object.keys(object)
+            .map((key) => `${key}: ${JSON.stringify(object[key])}`)
+            .join(", ") 
+        } }`
     );
-};

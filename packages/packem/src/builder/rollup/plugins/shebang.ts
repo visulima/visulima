@@ -1,4 +1,5 @@
 import { promises as fsp } from "node:fs";
+
 import { resolve } from "pathe";
 import type { Plugin } from "rollup";
 
@@ -39,7 +40,7 @@ export async function makeExecutable(filePath: string) {
 }
 
 export function getShebang(code: string, append = "\n") {
-    const m = code.match(SHEBANG_RE);
+    const m = SHEBANG_RE.exec(code);
 
     return m ? m + append : "";
 }

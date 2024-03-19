@@ -1,3 +1,1 @@
-export const removeExtension = (filename: string): string => {
-    return filename.replace(/\.(js|mjs|cjs|ts|mts|cts|json|jsx|tsx)$/, "");
-};
+export const removeExtension = (filename: string): string => filename.replace(/\.(js|mjs|cjs|ts|mts|cts|json|jsx|tsx)$/, "");

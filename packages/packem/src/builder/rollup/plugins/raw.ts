@@ -1,20 +1,20 @@
-import { createFilter } from "@rollup/pluginutils";
 import type { FilterPattern } from "@rollup/pluginutils";
+import { createFilter } from "@rollup/pluginutils";
 import type { Plugin } from "rollup";
 
 export interface RawLoaderOptions {
-    include?: FilterPattern;
     exclude?: FilterPattern;
+    include?: FilterPattern;
 }
 
 const defaults: RawLoaderOptions = {
-    include: [/\.(md|txt|css|htm|html)$/],
     exclude: [],
+    include: [/\.(md|txt|css|htm|html)$/],
 };
 
-export function rawPlugin(opts: RawLoaderOptions = {}): Plugin {
-    opts = { ...opts, ...defaults };
-    const filter = createFilter(opts.include, opts.exclude);
+export function rawPlugin(options: RawLoaderOptions = {}): Plugin {
+    options = { ...options, ...defaults };
+    const filter = createFilter(options.include, options.exclude);
     return {
         name: "pack-raw",
         transform(code, id) {
