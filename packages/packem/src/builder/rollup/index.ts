@@ -11,6 +11,7 @@ import { removeShebangPlugin } from "./plugins/shebang";
 // import { externalizeNodeBuiltins } from "./plugins/externalize-node-builtins";
 // import { patchBinary } from "./plugins/patch-binary";
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const rollupBuild = async (context: BuildContext): Promise<void> => {
     if (context.options.stub) {
         await createStub(context);
@@ -27,6 +28,7 @@ const rollupBuild = async (context: BuildContext): Promise<void> => {
     }
 
     const buildResult = await rollup(rollupOptions);
+
     await context.hooks.callHook("rollup:build", context, buildResult);
 
     const allOutputOptions = rollupOptions.output! as OutputOptions[];

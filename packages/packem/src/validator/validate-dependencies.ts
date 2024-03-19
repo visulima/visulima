@@ -4,7 +4,7 @@ import logger from "../logger";
 import type { BuildContext } from "../types";
 import { arrayIncludes } from "../utils/array-includes";
 import { getPackageName } from "../utils/get-package-name";
-import { warn } from "../utils/warn";
+import warn from "../utils/warn";
 
 const validateDependencies = (context: BuildContext) => {
     const usedDependencies = new Set<string>();

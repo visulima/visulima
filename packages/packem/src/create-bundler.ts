@@ -13,12 +13,12 @@ import prettyBytes from "pretty-bytes";
 import rollupBuild from "./builder/rollup";
 import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions } from "./types";
-import { dumpObject } from "./utils/dump-object";
-import { removeExtension } from "./utils/remove-extension";
-import { resolvePreset } from "./utils/resolve-preset";
-import { rmdir } from "./utils/rmdir";
-import { tryRequire } from "./utils/try-require";
-import { warn } from "./utils/warn";
+import dumpObject from "./utils/dump-object";
+import removeExtension from "./utils/remove-extension";
+import resolvePreset from "./utils/resolve-preset";
+import rmdir from "./utils/rmdir";
+import tryRequire from "./utils/try-require";
+import warn from "./utils/warn";
 import validateDependencies from "./validator/validate-dependencies";
 import validatePackage from "./validator/validate-package";
 
@@ -38,7 +38,7 @@ const build = async (
     const preset = resolvePreset(buildConfig.preset ?? package_?.packem?.preset ?? inputConfig.preset ?? "auto", rootDir);
 
     // Merge options
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
         clean: true,
@@ -99,7 +99,7 @@ const build = async (
     // Build context
     const context: BuildContext = {
         buildEntries: [],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
         hooks: createHooks(),
         options,
         pkg: package_,
@@ -193,6 +193,7 @@ const build = async (
     // Skip rest for stub
     if (options.stub) {
         await context.hooks.callHook("build:done", context);
+
         return;
     }
 
@@ -278,7 +279,7 @@ const build = async (
 
 export const createBundler = async (rootDir: string, stub: boolean, inputConfig: BuildConfig = {}): Promise<void> => {
     // Determine rootDir
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,no-param-reassign
+    // eslint-disable-next-line no-param-reassign
     rootDir = resolve(process.cwd(), rootDir);
 
     let tsConfig: TsConfigResult | undefined;
@@ -286,7 +287,7 @@ export const createBundler = async (rootDir: string, stub: boolean, inputConfig:
     try {
         tsConfig = await findTSConfig(rootDir);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         logger.debug("Using tsconfig.json found at", (tsConfig as TsConfigResult).path);
     } catch {
         logger.info("No tsconfig.json found. Using default settings.");

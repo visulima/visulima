@@ -7,7 +7,7 @@ import { dirname, extname, normalize, resolve } from "pathe";
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
 import { tryResolve } from "../../utils/try-resolve";
-import { warn } from "../../utils/warn";
+import warn from "../../utils/warn";
 import { getShebang, makeExecutable } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 

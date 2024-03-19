@@ -92,7 +92,7 @@ const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: st
             cjs = true;
         }
 
-        const entry = entries.find((index) => index.input === input) || entries[entries.push({ input }) - 1];
+        const entry = entries.find((index) => index.input === input) || entries[entries.push({ builder: "rollup", input }) - 1];
 
         if (/\.d\.(m|c)?ts$/.test(output.file)) {
             dts = true;

@@ -7,7 +7,7 @@ import { resolve } from "pathe";
 
 import logger from "../logger";
 import { extractExportFilenames } from "../utils/extract-export-filenames";
-import { warn } from "../utils/warn";
+import warn from "../utils/warn";
 
 const validatePackage = (package_: PackageJson, rootDir: string, context: BuildContext) => {
     if (!package_) {

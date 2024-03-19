@@ -16,26 +16,26 @@ export const autoPreset: BuildPreset = {
 
             const sourceFiles = collectSync(join(context.options.rootDir, "src"), { includeDirs: false, includeSymlinks: false });
 
-            const res = inferEntries(context.pkg, sourceFiles, context.options.rootDir);
+            const result = inferEntries(context.pkg, sourceFiles, context.options.rootDir);
 
-            for (const message of res.warnings) {
+            for (const message of result.warnings) {
                 logger.warn(context, message);
             }
 
-            context.options.entries.push(...res.entries);
+            context.options.entries.push(...result.entries);
 
-            if (res.cjs) {
+            if (result.cjs) {
                 context.options.rollup.emitCJS = true;
             }
-            if (res.dts) {
-                context.options.declaration = res.dts;
+            if (result.dts) {
+                context.options.declaration = result.dts;
             }
 
             logger.info(
                 "Automatically detected entries:",
                 cyan(context.options.entries.map((e) => bold(e.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
                 gray(
-                    ["esm", res.cjs && "cjs", res.dts && "dts"]
+                    ["esm", result.cjs && "cjs", result.dts && "dts"]
                         .filter(Boolean)
                         .map((tag) => `[${tag}]`)
                         .join(" "),

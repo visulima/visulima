@@ -2,15 +2,15 @@ import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
-import { isAbsolute,resolve } from "pathe";
-import type { OutputOptions, PreRenderedChunk,RollupOptions } from "rollup";
+import { isAbsolute, resolve } from "pathe";
+import type { OutputOptions, PreRenderedChunk, RollupOptions } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
 import { arrayIncludes } from "../../utils/array-includes";
 import { getPackageName } from "../../utils/get-package-name";
-import { warn } from "../../utils/warn";
+import warn from "../../utils/warn";
 import getChunkFilename from "./get-chunk-filename";
 import { cjsPlugin } from "./plugins/cjs";
 import { JSONPlugin } from "./plugins/json";
@@ -18,7 +18,8 @@ import { rawPlugin } from "./plugins/raw";
 import { shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 
-const getRollupOptions = (context: BuildContext): RollupOptions => (<RollupOptions>{
+const getRollupOptions = (context: BuildContext): RollupOptions =>
+    (<RollupOptions>{
         external(id) {
             const package_ = getPackageName(id);
             const isExplicitExternal = arrayIncludes(context.options.externals, package_) || arrayIncludes(context.options.externals, id);
@@ -132,6 +133,6 @@ const getRollupOptions = (context: BuildContext): RollupOptions => (<RollupOptio
 
             rawPlugin(),
         ].filter(Boolean),
-    }) as RollupOptions
+    }) as RollupOptions;
 
 export default getRollupOptions;
