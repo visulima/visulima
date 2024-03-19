@@ -1,3 +1,10 @@
+## @visulima/fs [1.9.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.8.0...@visulima/fs@1.9.0) (2024-03-19)
+
+
+### Features
+
+* **fs:** added read and write yaml functions ([#351](https://github.com/visulima/visulima/issues/351)) ([365b1ed](https://github.com/visulima/visulima/commit/365b1ed5cbf33c356e4427fb4fd8f2d93ee14733))
+
 ## @visulima/fs [1.8.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.7.1...@visulima/fs@1.8.0) (2024-03-17)
 
 
