@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getLongestLabel } from "../../src/util/get-longest-label";
+import { getLongestLabel } from "../../../src/util/get-longest-label";
 
 describe("getLongestLabel", () => {
     it("should return the longest label when all labels have different lengths", () => {
