@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.1...@visulima/pail@1.1.2) (2024-03-19)
+
+
+### Bug Fixes
+
+* **pail:** fixed cjs export ([#352](https://github.com/visulima/visulima/issues/352)) ([cf84ce6](https://github.com/visulima/visulima/commit/cf84ce63f1ec504601592092611d8ba85fbae17e))
+
 ## @visulima/pail [1.1.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.0...@visulima/pail@1.1.1) (2024-03-07)
 
 
