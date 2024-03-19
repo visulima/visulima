@@ -1,5 +1,7 @@
 import type { Dirent } from "node:fs";
 
+import type { DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions } from "yaml";
+
 import type { FIND_UP_STOP } from "./constants";
 
 type ColorizeMethod = (value: string) => string;
@@ -138,7 +140,8 @@ export type WriteFileOptions = {
     recursive?: boolean;
 };
 
-export type JsonReplacer = (this: unknown, key: string, value: unknown) => unknown;
+export type JsonReplacer = (number | string)[] | ((this: unknown, key: string, value: unknown) => unknown) | null;
+export type YamlReplacer = JsonReplacer;
 
 export type WriteJsonOptions = WriteFileOptions & {
     /**
@@ -156,12 +159,12 @@ export type WriteJsonOptions = WriteFileOptions & {
     /**
      * Passed into `JSON.stringify`.
      */
-    replacer?: (number | string)[] | JsonReplacer | null;
+    replacer?: JsonReplacer;
 
     /**
      * Override the default `JSON.stringify` method.
      */
-    stringify?: (data: unknown, replacer: JsonReplacer | null, space: number | string | undefined) => string;
+    stringify?: (data: unknown, replacer: JsonReplacer, space: number | string | undefined) => string;
 };
 
 export type FindUpOptions = {
@@ -190,3 +193,7 @@ export type EmptyDirOptions = {
      */
     retryDelay?: number | undefined;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type ReadYamlOptions<C> = DocumentOptions & ParseOptions & ReadFileOptions<C> & SchemaOptions & ToJSOptions;
+export type YamlReviver = (key: unknown, value: unknown) => unknown;

@@ -29,9 +29,12 @@
         "path",
         "read",
         "read-file",
+        "read-yaml",
         "resolve",
         "safe",
         "search",
+        "std",
+        "standard",
         "up",
         "visulima",
         "walk",
@@ -39,7 +42,8 @@
         "write",
         "write-dir",
         "write-file",
-        "write-safe"
+        "write-safe",
+        "yaml"
     ],
     "homepage": "https://www.visulima.com/docs/package/fs",
     "repository": {
@@ -154,7 +158,16 @@
         "tempy": "^3.1.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.2",
-        "vitest": "^1.4.0"
+        "vitest": "^1.4.0",
+        "yaml": "^2.4.1"
+    },
+    "peerDependencies": {
+        "yaml": "^2.4.0"
+    },
+    "peerDependenciesMeta": {
+        "yaml": {
+            "optional": true
+        }
     },
     "engines": {
         "node": ">=18.* <=21.*"
