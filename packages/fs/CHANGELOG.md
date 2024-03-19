@@ -1,3 +1,10 @@
+## @visulima/fs [1.10.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.9.0...@visulima/fs@1.10.0) (2024-03-19)
+
+
+### Features
+
+* **fs:** added remove a wrapper around rm and unlink ([#354](https://github.com/visulima/visulima/issues/354)) ([ea30c3e](https://github.com/visulima/visulima/commit/ea30c3e3efd75e2bf07ca81af701543e087aff25))
+
 ## @visulima/fs [1.9.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.8.0...@visulima/fs@1.9.0) (2024-03-19)
 
 
