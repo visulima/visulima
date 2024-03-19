@@ -60,7 +60,6 @@
         "jiti": "^1.21.0",
         "mlly": "^1.6.1",
         "pathe": "^1.1.2",
-        "read-pkg": "^9.0.1",
         "pretty-bytes": "^6.1.1",
         "defu": "6.1.4",
         "@visulima/package": "workspace:*",

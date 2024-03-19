@@ -27,4 +27,4 @@ cli.addCommand({
     ],
 });
 
-cli.run();
+await cli.run();

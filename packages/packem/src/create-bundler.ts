@@ -2,12 +2,11 @@ import { mkdir } from "node:fs/promises";
 import Module from "node:module";
 
 import { bold, cyan, green } from "@visulima/colorize";
-import type { TsConfigResult } from "@visulima/package";
+import type { TsConfigResult, PackageJson } from "@visulima/package";
 import { findPackageJson, findTSConfig } from "@visulima/package";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
 import prettyBytes from "pretty-bytes";
-import type { PackageJson } from "read-pkg";
 
 import { rollupBuild } from "./builder/rollup";
 import logger from "./logger";
@@ -167,10 +166,6 @@ const build = async (
 
         if (!entry.input) {
             throw new Error(`Missing entry input: ${dumpObject(entry)}`);
-        }
-
-        if (!entry.builder) {
-            entry.builder = entry.input.endsWith("/") ? "mkdist" : "rollup";
         }
 
         if (options.declaration !== undefined && entry.declaration === undefined) {
