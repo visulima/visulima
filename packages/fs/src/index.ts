@@ -14,6 +14,8 @@ export { default as readJson } from "./read-json";
 export { default as readJsonSync } from "./read-json-sync";
 export { default as readYaml } from "./read-yaml";
 export { default as readYamlSync } from "./read-yaml-sync";
+export { default as remove } from "./remove";
+export { default as removeSync } from "./remove-sync";
 export type {
     CodeFrameLocation,
     EmptyDirOptions,

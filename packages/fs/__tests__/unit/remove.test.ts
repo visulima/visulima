@@ -1,0 +1,47 @@
+import { existsSync } from "node:fs";
+import { symlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+import { temporaryDirectory } from "tempy";
+import { describe, expect, it } from "vitest";
+
+import remove from "../../src/remove";
+import removeSync from "../../src/remove-sync";
+
+const distribution = temporaryDirectory();
+
+describe.each([
+    ["remove", remove],
+    ["removeSync", removeSync],
+])("%s", (name, function_) => {
+    it.each([
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        ["string", join(distribution, "file.txt"), async (path) => await writeFile(path, "Hello, World!")],
+        // eslint-disable-next-line security/detect-non-literal-fs-filename,compat/compat
+        ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path) => await writeFile(path, "Hello, World!")],
+        [
+            "Symbolic link",
+            join(distribution, "symlink.txt"),
+            async (path) => {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                await writeFile(join(distribution, "temp_file.txt"), "Hello, World!");
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                await symlink(join(distribution, "temp_file.txt"), path);
+            },
+        ],
+    ])("should remove a file (%s)", async (_, path, write) => {
+        expect.assertions(1);
+
+        await write(path);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "remove") {
+            await function_(path);
+        } else {
+            function_(path);
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(path)).toBeFalsy();
+    });
+});
