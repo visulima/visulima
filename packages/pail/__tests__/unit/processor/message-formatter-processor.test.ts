@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { MessageFormatterProcessor } from "../../src/processor/message-formatter-processor";
-import type { Meta } from "../../src/types";
+import { MessageFormatterProcessor } from "../../../src/processor/message-formatter-processor";
+import type { Meta } from "../../../src/types";
 
 describe("messageFormatterProcessor", () => {
     it("should format message array with formatters and serializers", () => {

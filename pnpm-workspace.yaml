@@ -16,3 +16,5 @@ packages:
     - "packages/colorize/__fixtures__/package/mjs"
     - "packages/package/__fixtures__/package/cjs"
     - "packages/package/__fixtures__/package/mjs"
+    - "packages/pail/__fixtures__/package/cjs"
+    - "packages/pail/__fixtures__/package/mjs"

@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { describe, expect, it } from "vitest";
 
-import type { SerializedError } from "../../../src/processor/error/error-proto";
-import { errorWithCauseSerializer as serialize } from "../../../src/processor/error/error-with-cause-serializer";
+import type { SerializedError } from "../../../../src/processor/error/error-proto";
+import { errorWithCauseSerializer as serialize } from "../../../../src/processor/error/error-with-cause-serializer";
 
 describe("error with cause serializer", () => {
     it("should serializes Error objects", () => {

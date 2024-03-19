@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CallerProcessor } from "../../src/processor/caller-processor";
+import { CallerProcessor } from "../../../src/processor/caller-processor";
 
 const defaultMeta = {
     badge: undefined,

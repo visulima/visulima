@@ -1,4 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
 import type { InteractiveStreamHook } from "./interactive-stream-hook";

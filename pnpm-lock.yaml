@@ -1142,7 +1142,7 @@ importers:
         specifier: 3.0.3
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.27
+        specifier: 2.0.28
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1297,7 +1297,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 1.8.0
+        specifier: 1.9.0
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2583,7 +2583,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 1.8.0
+        specifier: 1.9.0
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -2946,7 +2946,7 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 1.8.0
+        specifier: 1.9.0
         version: link:../fs
       get-tsconfig:
         specifier: ^4.7.3
@@ -3163,15 +3163,6 @@ importers:
       safe-stable-stringify:
         specifier: ^2.4.3
         version: 2.4.3
-      string-length:
-        specifier: ^6.0.0
-        version: 6.0.0
-      terminal-size:
-        specifier: ^4.0.0
-        version: 4.0.0
-      wrap-ansi:
-        specifier: ^9.0.0
-        version: 9.0.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3245,6 +3236,12 @@ importers:
       sort-package-json:
         specifier: ^2.8.0
         version: 2.8.0
+      string-length:
+        specifier: ^6.0.0
+        version: 6.0.0
+      terminal-size:
+        specifier: ^4.0.0
+        version: 4.0.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(postcss@8.4.35)(typescript@5.4.2)
@@ -3254,6 +3251,9 @@ importers:
       vitest:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@18.18.8)(@vitest/ui@1.4.0)
+      wrap-ansi:
+        specifier: ^9.0.0
+        version: 9.0.0
 
   packages/pail/__bench__:
     dependencies:
@@ -3285,6 +3285,18 @@ importers:
       vitest:
         specifier: ^1.3.1
         version: 1.3.1(@types/node@18.18.14)
+
+  packages/pail/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/pail':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/pail/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/pail':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/prisma-dmmf-transformer:
     dependencies:
@@ -13318,9 +13330,14 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
-  /@visulima/fs@1.8.0:
-    resolution: {integrity: sha512-rxVBkS9HcMgFCWbYwyJALWQADedm4/uLv+5inOe38O2jl1Z+Pg407dgSUGJiIr8DI1iePrKgvedZ3Wdu61NOFw==}
+  /@visulima/fs@1.9.0:
+    resolution: {integrity: sha512-13JcLD1lZ9bzye0vYQpT/qRZpxnMFyWCCFV7pkWW6TU2rGmUm53A9k2uzskYj0y0uzIsfFQ3087e3nF3DSFp1A==}
     engines: {node: '>=18.* <=21.*'}
+    peerDependencies:
+      yaml: ^2.4.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
     dependencies:
       type-fest: 4.12.0
     dev: true
@@ -19809,7 +19826,6 @@ packages:
   /get-east-asian-width@1.2.0:
     resolution: {integrity: sha512-2nk+7SIVb14QrgXFHcm84tD4bKQz0RxPuMT8Ag5KPOq7J5fEmAg0UbXdTOSHqNuHSU28k55qnceesxXRZGzKWA==}
     engines: {node: '>=18'}
-    dev: false
 
   /get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
@@ -29854,7 +29870,7 @@ packages:
     engines: {node: '>=16'}
     dependencies:
       strip-ansi: 7.1.0
-    dev: false
+    dev: true
 
   /string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
@@ -29888,7 +29904,6 @@ packages:
       emoji-regex: 10.3.0
       get-east-asian-width: 1.2.0
       strip-ansi: 7.1.0
-    dev: false
 
   /string.prototype.codepointat@0.2.1:
     resolution: {integrity: sha512-2cBVCj6I4IOvEnjgO/hWqXjqBGsY+zwPmHl12Srk9IXSZ56Jwwmy+66XO5Iut/oQVR7t5ihYdLB0GMa4alEUcg==}
@@ -30623,7 +30638,6 @@ packages:
   /terminal-size@4.0.0:
     resolution: {integrity: sha512-rcdty1xZ2/BkWa4ANjWRp4JGpda2quksXIHgn5TMjNBPZfwzJIgR68DKfSYiTL+CZWowDX/sbOo5ME/FRURvYQ==}
     engines: {node: '>=18'}
-    dev: false
 
   /terser-webpack-plugin@5.3.10(webpack@5.90.3):
     resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}
@@ -33168,7 +33182,6 @@ packages:
       ansi-styles: 6.2.1
       string-width: 7.1.0
       strip-ansi: 7.1.0
-    dev: false
 
   /wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
@@ -33450,7 +33463,7 @@ packages:
     name: '@visulima/package'
     engines: {node: '>=18.* <=21.*'}
     dependencies:
-      '@visulima/fs': 1.8.0
+      '@visulima/fs': 1.9.0
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3
@@ -33458,4 +33471,6 @@ packages:
       read-pkg: 9.0.1
       strip-json-comments: 5.0.1
       type-fest: 4.12.0
+    transitivePeerDependencies:
+      - yaml
     dev: true

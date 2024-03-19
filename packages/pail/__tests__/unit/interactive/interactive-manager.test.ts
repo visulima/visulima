@@ -3,9 +3,9 @@ import type { WriteStream as TtyWriteStream } from "node:tty";
 import terminalSize from "terminal-size";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { InteractiveManager } from "../../src/interactive/interactive-manager";
-import { InteractiveStreamHook } from "../../src/interactive/interactive-stream-hook";
-import { cursorHide, cursorShow, eraseLines } from "../../src/util/ansi-escapes";
+import { InteractiveManager } from "../../../src/interactive/interactive-manager";
+import { InteractiveStreamHook } from "../../../src/interactive/interactive-stream-hook";
+import { cursorHide, cursorShow, eraseLines } from "../../../src/util/ansi-escapes";
 import { WriteStream } from "./__mocks__/write-stream.mock.js";
 
 const stdout = new WriteStream() as unknown as TtyWriteStream & WriteStream;
