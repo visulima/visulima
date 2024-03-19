@@ -1,7 +1,10 @@
 import colorize, { bgGrey, bold, cyan, grey, red, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import stringLength from "string-length";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
 import type { InteractiveManager } from "../../interactive/interactive-manager";
