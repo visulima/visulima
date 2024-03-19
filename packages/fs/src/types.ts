@@ -1,5 +1,7 @@
 import type { Dirent } from "node:fs";
 
+import type { DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions } from "yaml";
+
 import type { FIND_UP_STOP } from "./constants";
 
 type ColorizeMethod = (value: string) => string;
@@ -191,3 +193,7 @@ export type EmptyDirOptions = {
      */
     retryDelay?: number | undefined;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type ReadYamlOptions<C> = DocumentOptions & ParseOptions & ReadFileOptions<C> & SchemaOptions & ToJSOptions;
+export type YamlReviver = (key: unknown, value: unknown) => unknown;
