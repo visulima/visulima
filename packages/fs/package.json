@@ -29,9 +29,12 @@
         "path",
         "read",
         "read-file",
+        "read-yaml",
         "resolve",
         "safe",
         "search",
+        "std",
+        "standard",
         "up",
         "visulima",
         "walk",
@@ -39,7 +42,8 @@
         "write",
         "write-dir",
         "write-file",
-        "write-safe"
+        "write-safe",
+        "yaml"
     ],
     "homepage": "https://www.visulima.com/docs/package/fs",
     "repository": {
