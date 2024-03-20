@@ -91,7 +91,7 @@ jobs:
             - name: "test and coverage"
               run: "pnpm run test:coverage"
               env:
-                  NODE_ENV: "production"
+                  TEST_PROD_BUILD: "true"
 
             - name: "Upload code coverage to codecov"
               uses: "./.github/actions/codecov"
