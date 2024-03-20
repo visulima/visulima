@@ -1,3 +1,4 @@
+export { default as AlreadyExistsError } from "./error/already-exists-error";
 export { default as DirectoryError } from "./error/directory-error";
 export { default as JSONError } from "./error/json-error";
 export { default as NotEmptyError } from "./error/not-empty-error";
