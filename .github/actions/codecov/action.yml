@@ -5,6 +5,9 @@ inputs:
     run-lint:
         description: "Run linting"
         required: true
+    codecov-token:
+        description: "The token to use for uploading to codecov"
+        required: true
 
 runs:
     using: "composite"
@@ -59,4 +62,4 @@ runs:
                   ./codecov --verbose upload-process --dir "${dir}" --flags "$(basename "${dir}")" --token "${CODECOV_TOKEN}" -n "$(basename "${dir}")"-${{ github.run_id }} --fail-on-error --codecov-yml-path .github/.codecov.yml
               done
           env:
-              CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              CODECOV_TOKEN: "${{ inputs.codecov-token }}"

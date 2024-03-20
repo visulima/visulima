@@ -54,7 +54,7 @@ jobs:
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
-            max-parallel: 2
+            max-parallel: 4
             matrix:
                 os:
                     - "ubuntu-latest"
@@ -107,9 +107,11 @@ jobs:
               run: "pnpm run test:affected:coverage"
 
             - name: "Upload code coverage to codecov"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
               uses: "./.github/actions/codecov"
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"
+                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
