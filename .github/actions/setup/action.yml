@@ -10,6 +10,10 @@ inputs:
         description: "Enable corepack"
         required: false
         default: "true"
+    enable-nx-cache:
+        description: "Enable nx cache"
+        required: false
+        default: "true"
     node-version:
         description: "The node.js version to use"
         required: false
@@ -21,20 +25,20 @@ inputs:
     cache-prefix:
         description: "Add a specific cache-prefix"
         required: false
-        default: 'default'
+        default: "default"
     cache-node-modules:
-        description: 'Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)'
+        description: "Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)"
         required: false
-        default: 'true'
+        default: "true"
 
 runs:
     using: "composite"
     steps:
         - name: "Enable Corepack"
-          if: inputs.enable-corepack == 'true'
-          shell: bash
-          working-directory: ${{ inputs.cwd }}
-          run: corepack enable
+          if: "inputs.enable-corepack == 'true'"
+          shell: "bash"
+          working-directory: "${{ inputs.cwd }}"
+          run: "corepack enable"
 
         - name: "Setup pnpm"
           uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
@@ -42,8 +46,8 @@ runs:
               run_install: false
 
         - name: 'Expose pnpm config(s) through "$GITHUB_OUTPUT"'
-          id: pnpm-config
-          shell: bash
+          id: "pnpm-config"
+          shell: "bash"
           run: |
               echo "STORE_PATH=$(pnpm store path | tr -d '\n')" >> $GITHUB_OUTPUT
               echo "CURRENT_BRANCH=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's,/,-,g')" >> $GITHUB_OUTPUT
@@ -68,8 +72,8 @@ runs:
               SKIP_CHECK: "true"
 
         - name: "Cache rotation keys"
-          id: cache-rotation
-          shell: bash
+          id: "cache-rotation"
+          shell: "bash"
           run: |
               echo "YEAR_MONTH=$(/bin/date -u "+%Y%m")" >> $GITHUB_OUTPUT
 
@@ -93,6 +97,7 @@ runs:
                   pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-
 
         - name: "Cache Nx"
+          if: "inputs.enable-nx-cache == 'true'"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
               path: ".nx/cache"
