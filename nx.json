@@ -84,11 +84,6 @@
         ],
         "production": ["default"]
     },
-    "pluginsConfig": {
-        "@nrwl/js": {
-            "analyzeSourceFiles": false
-        }
-    },
     "parallel": 5,
     "extends": "@nrwl/workspace/presets/npm.json",
     "affected": {

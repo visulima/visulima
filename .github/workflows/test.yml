@@ -88,6 +88,7 @@ jobs:
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
               uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
@@ -100,11 +101,20 @@ jobs:
               if: "matrix.os == 'ubuntu-latest'"
               run: "pnpm i -D bun --filter=package"
 
+            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            - name: "Get changed files"
+              id: "files"
+              uses: "tj-actions/changed-files@v42"
+              with:
+                  files_ignore: "pnpm-lock.yaml"
+                  base_sha: "${{ steps.setSHAs.outputs.base }}"
+                  separator: ","
+
             - name: "Build"
-              run: "pnpm run build:affected:packages"
+              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
 
             - name: "test and coverage"
-              run: "pnpm run test:affected:coverage"
+              run: "pnpm run test:affected:coverage --files=${{ steps.files.outputs.all_changed_files }}"
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
@@ -113,6 +123,7 @@ jobs:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"
                   codecov-token: "${{ secrets.CODECOV_TOKEN }}"
                   use-affected: "true"
+                  affected-files: "${{ steps.files.outputs.all_changed_files }}"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
