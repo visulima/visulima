@@ -14,42 +14,42 @@ runs:
     steps:
         - name: "Validate codecov.yml"
           id: "lint_codecov"
-          if: "${{ inputs.run-lint }}"
+          if: "inputs.run-lint"
           shell: "bash"
           # TODO: When GitHub Actions upgrades to curl 7.76+ replace the line below with
-          #       curl --fail-with-body --data-binary @.github/.codecov.yml https://codecov.io/validate
-          #       Until then, go up-vote https://stackoverflow.com/a/67216965/90297
-          #       GitHub VM info: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
-          run: "curl -s -o - -w "\n%{http_code}\n" --data-binary @.github/.codecov.yml https://codecov.io/validate | awk '{l[NR] = $0} END {for (i=1; i<=NR-1; i++) print l[i]}; END{ if ($0<200||$0>299) exit $0 }'"
+          # curl --fail-with-body --data-binary @.github/.codecov.yml https://codecov.io/validate
+          # Until then, go up-vote https://stackoverflow.com/a/67216965/90297
+          # GitHub VM info: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+          run: "curl -s -o - -w \"\n%{http_code}\n\" --data-binary @.github/.codecov.yml https://codecov.io/validate | awk '{l[NR] = $0} END {for (i=1; i<=NR-1; i++) print l[i]}; END{ if ($0<200||$0>299) exit $0 }'"
 
-        - name: Download Codecov CLI Binary
+        - name: "Download Codecov CLI Binary"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: "curl -Os https://cli.codecov.io/latest/linux/codecov"
 
-        - name: Verify integrity get GPG
+        - name: "Verify integrity get GPG"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: "curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import" # One-time step
 
-        - name: Get SHAsums
+        - name: "Get SHAsums"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: |
               curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
               curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
 
-        - name: Test Signature
+        - name: "Test Signature"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: "gpgv codecov.SHA256SUM.sig codecov.SHA256SUM"
 
-        - name: Test SHAsums
+        - name: "Test SHAsums"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: "shasum -a 256 -c codecov.SHA256SUM"
 
-        - name: Fix permission
+        - name: "Fix permission"
           if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
           shell: "bash"
           run: "sudo chmod +x codecov"
