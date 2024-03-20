@@ -22,25 +22,25 @@ runs:
           shell: "bash"
           run: "curl -Os https://cli.codecov.io/latest/linux/codecov"
 
-        - name: "Verify integrity get GPG"
+        - name: "Verify Codecov integrity get GPG"
           shell: "bash"
-          run: "curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import" # One-time step
+          run: "curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import"
 
-        - name: "Get SHAsums"
+        - name: "Get Codecov SHAsums"
           shell: "bash"
           run: |
               curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
               curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
 
-        - name: "Test Signature"
+        - name: "Test Codecov signature"
           shell: "bash"
           run: "gpgv codecov.SHA256SUM.sig codecov.SHA256SUM"
 
-        - name: "Test SHAsums"
+        - name: "Test Codecov SHAsums"
           shell: "bash"
           run: "shasum -a 256 -c codecov.SHA256SUM"
 
-        - name: "Fix permission"
+        - name: "Fix Codecov permission"
           shell: "bash"
           run: "sudo chmod +x codecov"
 
@@ -48,7 +48,7 @@ runs:
           shell: "bash"
           run: |
               for dir in packages/*; do
-                  ./codecov --verbose upload-process --fail-on-error -F "$(basename "${dir}")" --token "${CODECOV_TOKEN}" -n "$(basename "${dir}")"-${{ github.run_id }} -f "${dir}/coverage/coverage-final.json" --codecov-yml-path .github/.codecov.yml
+                  ./codecov --verbose upload-process --fail-on-error -F "$(basename "${dir}")" -t "${CODECOV_TOKEN}" -n "$(basename "${dir}")"-${{ github.run_id }} -f "${dir}/coverage/coverage-final.json"
               done
           env:
               CODECOV_TOKEN: "${{ inputs.codecov-token }}"
