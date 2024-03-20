@@ -1,8 +1,8 @@
-import { mkdir, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import Module from "node:module";
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
-import { walk } from "@visulima/fs";
+import { ensureDir, remove, walk } from "@visulima/fs";
 import type { PackageJson, TsConfigResult } from "@visulima/package";
 import { findPackageJson, findTSConfig } from "@visulima/package";
 import { defu } from "defu";
@@ -16,7 +16,6 @@ import type { BuildConfig, BuildContext, BuildOptions } from "./types";
 import dumpObject from "./utils/dump-object";
 import removeExtension from "./utils/remove-extension";
 import resolvePreset from "./utils/resolve-preset";
-import rmdir from "./utils/rmdir";
 import tryRequire from "./utils/try-require";
 import warn from "./utils/warn";
 import validateDependencies from "./validator/validate-dependencies";
@@ -64,7 +63,15 @@ const build = async (
                 respectExternal: true,
             },
             emitCJS: false,
-            esbuild: { target: "esnext" },
+            esbuild: {
+                minify: process.env.NODE_ENV === "production",
+                target: "esnext",
+                loaders: {
+                    // Add .json files support
+                    // require @rollup/plugin-commonjs
+                    ".json": "json",
+                },
+            },
             inlineDependencies: false,
             json: {
                 preferConst: true,
@@ -183,8 +190,8 @@ const build = async (
 
             logger.info(`Cleaning dist directory: \`./${relative(process.cwd(), dir)}\``);
 
-            await rmdir(dir);
-            await mkdir(dir, { recursive: true });
+            await remove(dir);
+            await ensureDir(dir);
         }
     }
 
@@ -286,7 +293,6 @@ export const createBundler = async (rootDir: string, stub: boolean, inputConfig:
 
     try {
         tsConfig = await findTSConfig(rootDir);
-
 
         logger.debug("Using tsconfig.json found at", (tsConfig as TsConfigResult).path);
     } catch {

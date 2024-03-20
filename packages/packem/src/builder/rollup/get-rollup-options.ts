@@ -22,7 +22,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{
         external(id) {
             const package_ = getPackageName(id);
-            const isExplicitExternal = arrayIncludes(context.options.externals, package_) || arrayIncludes(context.options.externals, id);
+            const isExplicitExternal: boolean = arrayIncludes(context.options.externals, package_) || arrayIncludes(context.options.externals, id);
 
             if (isExplicitExternal) {
                 return true;

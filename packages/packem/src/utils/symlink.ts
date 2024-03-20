@@ -1,9 +1,8 @@
 import fsp from "node:fs/promises";
-
-import { ensuredir } from "./ensuredir";
+import { ensureDir } from "@visulima/fs";
 
 export const symlink = async (from: string, to: string, force = true): Promise<void> =>  {
-  await ensuredir(to);
+  await ensureDir(to);
 
   if (force) {
     await fsp.unlink(to).catch(() => {});
