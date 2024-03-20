@@ -11,7 +11,7 @@ runs:
     steps:
         - name: "Validate codecov.yml"
           id: "lint_codecov"
-          if: "inputs.run-lint"
+          if: "${{ inputs.run-lint }}"
           shell: bash
           # TODO: When GitHub Actions upgrades to curl 7.76+ replace the line below with
           #       curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate
