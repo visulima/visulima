@@ -1,3 +1,10 @@
+## @visulima/fs [1.11.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.10.0...@visulima/fs@1.11.0) (2024-03-20)
+
+
+### Features
+
+* **fs:** adding ensure methods ([#355](https://github.com/visulima/visulima/issues/355)) ([0456bc7](https://github.com/visulima/visulima/commit/0456bc7753d8a117e5bab23d74000906ba1d98ba))
+
 ## @visulima/fs [1.10.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.9.0...@visulima/fs@1.10.0) (2024-03-19)
 
 
