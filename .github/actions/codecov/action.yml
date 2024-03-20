@@ -15,6 +15,9 @@ inputs:
     affected-files:
         description: "The affected files"
         required: false
+    exclude-affected-projects:
+        description: "The projects to exclude"
+        required: false
 
 runs:
     using: "composite"
@@ -55,7 +58,7 @@ runs:
           if: "inputs.use-affected == 'true'"
           shell: "bash"
           run: |
-              IFS=$'\n' read -r -d '' -a affected_projects < <(pnpm nx show projects --affected --files=${{ inputs.affected-files }} && printf '\0')
+              IFS=$'\n' read -r -d '' -a affected_projects < <(pnpm nx show projects --affected --files=${{ inputs.affected-files }} --exclude=${{ inputs.exclude-affected-projects }} && printf '\0')
 
               # Remove the first two elements of the array
               unset 'affected_projects[0]'
