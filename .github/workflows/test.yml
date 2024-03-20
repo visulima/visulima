@@ -106,7 +106,7 @@ jobs:
             - name: "test and coverage"
               run: "pnpm run test:affected:coverage"
 
-            - name: "Lint and upload code coverage to codecov"
+            - name: "Upload code coverage to codecov"
               uses: "./.github/actions/codecov"
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"

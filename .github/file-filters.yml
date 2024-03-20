@@ -34,4 +34,4 @@ nextra:
     - "examples/nextra/**"
 
 codecov:
-    - "codecov.yml"
+    - ".github/.codecov.yml"
