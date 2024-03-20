@@ -26,8 +26,6 @@ packages: &packages
     - "pnpm-lock.yaml"
     - "package.json"
     - "packages/**"
-    - ".github/workflows/test.yml"
-    - ".github/workflows/lint.yml"
 
 nextra:
     - "packages/nextra-theme-docs/**"

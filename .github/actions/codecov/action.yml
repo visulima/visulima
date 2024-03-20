@@ -8,6 +8,16 @@ inputs:
     codecov-token:
         description: "The token to use for uploading to codecov"
         required: true
+    use-affected:
+        description: "Use affected projects"
+        required: false
+        default: "false"
+    affected-files:
+        description: "The affected files"
+        required: false
+    exclude-affected-projects:
+        description: "The projects to exclude"
+        required: false
 
 runs:
     using: "composite"
@@ -44,7 +54,24 @@ runs:
           shell: "bash"
           run: "sudo chmod +x codecov"
 
+        - name: "Upload affected code coverage to codecov"
+          if: "inputs.use-affected == 'true'"
+          shell: "bash"
+          run: |
+              IFS=$'\n' read -r -d '' -a affected_projects < <(pnpm nx show projects --affected --files=${{ inputs.affected-files }} --exclude=${{ inputs.exclude-affected-projects }} && printf '\0')
+
+              # Remove the first two elements of the array
+              unset 'affected_projects[0]'
+              unset 'affected_projects[1]'
+
+              for project in "${affected_projects[@]}"; do
+                  ./codecov --codecov-yml-path codecov.yml --verbose upload-process --fail-on-error --dir "packages/${project}" -t "${CODECOV_TOKEN}" -F "${project}" -n "${project}-${{ github.run_id }}"
+              done
+          env:
+              CODECOV_TOKEN: "${{ inputs.codecov-token }}"
+
         - name: "Upload code coverage to codecov"
+          if: "inputs.use-affected == 'false'"
           shell: "bash"
           run: |
               for dir in packages/*; do
