@@ -7,9 +7,9 @@ export default defineConfig({
     test: {
         coverage: {
             provider: "v8",
-            exclude: [...configDefaults.coverage.exclude, "**/__fixtures__/**", "**/@types/**"],
+            exclude: [...configDefaults.coverage.exclude, "__fixtures__/**", "__bench__/**", "scripts/**", "**/@types/**"],
         },
         environment: "node",
-        exclude: [...configDefaults.exclude, "**/__fixtures__/**"],
+        exclude: [...configDefaults.exclude, "__fixtures__/**"],
     },
 });
