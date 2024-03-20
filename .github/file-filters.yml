@@ -30,6 +30,8 @@ packages: &packages
     - ".github/workflows/lint.yml"
 
 nextra:
-    - "pnpm-lock.yaml"
     - "packages/nextra-theme-docs/**"
     - "examples/nextra/**"
+
+codecov:
+    - "codecov.yml"

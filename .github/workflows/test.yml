@@ -5,7 +5,7 @@ name: "Tests"
 on: # yamllint disable-line rule:truthy
     # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
-        types: ["opened", "synchronize"]
+        types: ["opened", "synchronize", "reopened"]
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -29,6 +29,7 @@ jobs:
         # Map a step output to a job output
         outputs:
             packages: "${{ steps.changes.outputs.packages }}"
+            codecov: "${{ steps.changes.outputs.codecov }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
@@ -53,7 +54,7 @@ jobs:
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         strategy:
-            max-parallel: 2
+            max-parallel: 4
             matrix:
                 os:
                     - "ubuntu-latest"
@@ -104,6 +105,13 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:affected:coverage"
+
+            - name: "Upload code coverage to codecov"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              uses: "./.github/actions/codecov"
+              with:
+                  run-lint: "needs.files-changed.outputs.codecov == 'true'"
+                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
