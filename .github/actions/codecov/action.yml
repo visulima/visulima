@@ -48,7 +48,7 @@ runs:
           shell: "bash"
           run: |
               for dir in packages/*; do
-                  ./codecov --verbose upload-process --dir "${dir}" --flags "$(basename "${dir}")" --token "${CODECOV_TOKEN}" -n "$(basename "${dir}")"-${{ github.run_id }} --fail-on-error --codecov-yml-path .github/.codecov.yml
+                  ./codecov --verbose upload-process --dir "${dir}" --flag "$(basename "${dir}")" --token "${CODECOV_TOKEN}" -n "$(basename "${dir}")"-${{ github.run_id }} --fail-on-error --codecov-yml-path .github/.codecov.yml
               done
           env:
               CODECOV_TOKEN: "${{ inputs.codecov-token }}"
