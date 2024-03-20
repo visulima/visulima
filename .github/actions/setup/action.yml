@@ -45,7 +45,7 @@ runs:
           with:
               run_install: false
 
-        - name: 'Expose pnpm config(s) through "$GITHUB_OUTPUT"'
+        - name: 'Expose pnpm config(s) through "$GITHUB_OUTPUT"' # yamllint disable-line rule:quoted-strings
           id: "pnpm-config"
           shell: "bash"
           run: |
