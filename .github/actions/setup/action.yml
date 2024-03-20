@@ -2,34 +2,57 @@ name: "Setup Environment and Resources"
 description: "Setup node.js and caching scoped within a workflow"
 
 inputs:
-    # The node.js version to use
+    cwd:
+        description: "Changes node's process.cwd() if the project is not located on the root. Default to process.cwd()"
+        required: false
+        default: "."
+    enable-corepack:
+        description: "Enable corepack"
+        required: false
+        default: "true"
     node-version:
         description: "The node.js version to use"
         required: false
         default: "18"
-
     npm-version:
         description: "The npm version to use"
         required: false
         default: "9.6.x"
+    cache-prefix:
+        description: "Add a specific cache-prefix"
+        required: false
+        default: 'default'
+    cache-node-modules:
+        description: 'Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)'
+        required: false
+        default: 'true'
 
 runs:
     using: "composite"
     steps:
+        - name: "Enable Corepack"
+          if: inputs.enable-corepack == 'true'
+          shell: bash
+          working-directory: ${{ inputs.cwd }}
+          run: corepack enable
+
         - name: "Setup pnpm"
           uses: "pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d" # v3.0.0
           with:
               run_install: false
+
+        - name: 'Expose pnpm config(s) through "$GITHUB_OUTPUT"'
+          id: pnpm-config
+          shell: bash
+          run: |
+              echo "STORE_PATH=$(pnpm store path | tr -d '\n')" >> $GITHUB_OUTPUT
+              echo "CURRENT_BRANCH=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's,/,-,g')" >> $GITHUB_OUTPUT
 
         - name: "Set node version to ${{ inputs.node-version }}"
           uses: "actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8" # v4.0.2
           with:
               node-version: "${{ inputs.node-version }}"
               cache: "pnpm"
-
-        - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-          shell: "bash"
-          run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
         # @see: npm install -g npm@latest is necessary to make provenance available. More info: https://docs.npmjs.com/generating-provenance-statements
         - name: "Upgrade npm to ${{ inputs.npm-version }} version"
@@ -44,16 +67,30 @@ runs:
           env:
               SKIP_CHECK: "true"
 
-        - name: "Setup caching dependencies"
+        - name: "Cache rotation keys"
+          id: cache-rotation
+          shell: bash
+          run: |
+              echo "YEAR_MONTH=$(/bin/date -u "+%Y%m")" >> $GITHUB_OUTPUT
+
+        - name: "Setup pnpm cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
-          id: "cache-node_modules"
+          id: "pnpm-store-cache"
           with:
-              path: |
-                  ~/.pnpm-store
-                  **/node_modules
-              key: "node_modules-${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              path: "${{ steps.pnpm-config.outputs.STORE_PATH }}"
+              key: "${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
               restore-keys: |
-                  node_modules-${{ runner.os }}-node-${{ inputs.node-version }}-
+                  ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
+
+        - name: "Restore node_modules"
+          if: "inputs.cache-node-modules == 'true'"
+          id: "pnpm-nm-cache"
+          uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
+          with:
+              path: "${{ inputs.cwd }}/**/node_modules"
+              key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              restore-keys: |
+                  pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-
 
         - name: "Cache Nx"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
@@ -63,6 +100,10 @@ runs:
               restore-keys: |
                   cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-
                   cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-
+
+        - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
+          shell: "bash"
+          run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
 
         - name: "Install packages"
           shell: "bash"
