@@ -95,6 +95,5 @@
         "defaultBase": "main"
     },
     "defaultBase": "main",
-    "defaultProject": "visulima",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
