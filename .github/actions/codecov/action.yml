@@ -16,7 +16,7 @@ runs:
           id: "lint_codecov"
           if: "inputs.run-lint"
           shell: "bash"
-          run: "curl --fail-with-body --data-binary @.github/.codecov.yml https://codecov.io/validate"
+          run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
 
         - name: "Download Codecov CLI Binary"
           shell: "bash"
