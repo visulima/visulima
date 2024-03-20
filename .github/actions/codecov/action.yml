@@ -1,0 +1,31 @@
+name: "Code coverage"
+description: "Lint and upload code coverage to codecov"
+
+inputs:
+    run-lint:
+        description: "Run linting"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - name: "Validate codecov.yml"
+          id: "lint_codecov"
+          if: "inputs.run-lint"
+          shell: bash
+          # TODO: When GitHub Actions upgrades to curl 7.76+ replace the line below with
+          #       curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate
+          #       Until then, go up-vote https://stackoverflow.com/a/67216965/90297
+          #       GitHub VM info: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+          run: curl -s -o - -w "\n%{http_code}\n" --data-binary @codecov.yml https://codecov.io/validate | awk '{l[NR] = $0} END {for (i=1; i<=NR-1; i++) print l[i]}; END{ if ($0<200||$0>299) exit $0 }'
+
+        - name: "Upload code coverage to codecov"
+          if: "always() && (needs.lint_codecov.result == 'success' || needs.lint_codecov.result == 'skipped')"
+          shell: "bash"
+          run: |
+              curl -Os https://uploader.codecov.io/latest/linux/codecov && chmod +x codecov
+              for dir in packages/*; do
+                ./codecov --dir "${dir}" --flags "$(basename "${dir}")" --token "${CODECOV_TOKEN}" --verbose
+              done
+          env:
+              CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

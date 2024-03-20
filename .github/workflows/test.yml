@@ -5,7 +5,7 @@ name: "Tests"
 on: # yamllint disable-line rule:truthy
     # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
-        types: ["opened", "synchronize"]
+        types: ["opened", "synchronize", "reopened"]
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
@@ -29,25 +29,10 @@ jobs:
         # Map a step output to a job output
         outputs:
             packages: "${{ steps.changes.outputs.packages }}"
+            codecov: "${{ steps.changes.outputs.codecov }}"
         steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
             - name: "Check for file changes"
-              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
-              id: "changes"
-              with:
-                  token: "${{ github.token }}"
-                  filters: ".github/file-filters.yml"
+              uses: "./.github/actions/files-changed"
 
     test:
         if: "needs.files-changed.outputs.packages == 'true'"
@@ -104,6 +89,11 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:affected:coverage"
+
+            - name: "Lint and upload code coverage to codecov"
+              uses: "./.github/actions/codecov"
+              with:
+                  run-lint: "needs.files-changed.outputs.codecov == 'true'"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
