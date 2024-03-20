@@ -70,4 +70,4 @@ runs:
               "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
               "CYPRESS_INSTALL_BINARY": 0
               "SKIP_CHECK": "true"
-              "HUSKY": '0'
+              "HUSKY": 0
