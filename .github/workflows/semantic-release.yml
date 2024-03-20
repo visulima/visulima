@@ -89,7 +89,9 @@ jobs:
               run: "echo 'workspaces-update=false' >> .npmrc"
 
             - name: "test and coverage"
-              run: "cross-env NODE_ENV=production pnpm run test:coverage"
+              run: "pnpm run test:coverage"
+              env:
+                  NODE_ENV: "production"
 
             - name: "Upload code coverage to codecov"
               uses: "./.github/actions/codecov"
