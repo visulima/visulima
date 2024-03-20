@@ -14,7 +14,7 @@ comment:
 # Require a minimum coverage for the codecov/project PR check
 coverage:
     status:
-        patch: off
+        patch: off # yamllint disable-line rule:truthy
         project:
             default:
                 target: "75%" # overall project/ repo coverage
