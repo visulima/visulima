@@ -49,19 +49,20 @@ runs:
           id: "cache-node_modules"
           with:
               path: |
-                  node_modules
-                  */node_modules
-                  */*/node_modules
+                  ~/.pnpm-store
+                  **/node_modules
               key: "node_modules-${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              restore-keys: |
+                  node_modules-${{ runner.os }}-node-${{ inputs.node-version }}-
 
         - name: "Cache Nx"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
               path: ".nx/cache"
-              key: "nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
+              key: "cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
               restore-keys: |
-                  nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-
-                  nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-
+                  cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-
+                  cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-
 
         - name: "Install packages"
           shell: "bash"
