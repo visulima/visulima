@@ -84,17 +84,11 @@
         ],
         "production": ["default"]
     },
-    "pluginsConfig": {
-        "@nrwl/js": {
-            "analyzeSourceFiles": false
-        }
-    },
     "parallel": 5,
     "extends": "@nrwl/workspace/presets/npm.json",
     "affected": {
         "defaultBase": "main"
     },
     "defaultBase": "main",
-    "defaultProject": "visulima",
     "$schema": "./node_modules/nx/schemas/nx-schema.json"
 }
