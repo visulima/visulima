@@ -49,7 +49,7 @@ runs:
           run: |
               for dir in packages/*; do
                   package="${dir/\//}";
-                  ./codecov --codecov-yml-path codecov.yml --verbose --fail-on-error --token "${CODECOV_TOKEN}" --flags "${package/-/_}" --dir "${dir}";
+                  ./codecov --codecov-yml-path codecov.yml --verbose --token "${CODECOV_TOKEN}" --flags "${package/-/_}" --dir "${dir}";
               done
           env:
               CODECOV_TOKEN: "${{ inputs.codecov-token }}"
