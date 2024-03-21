@@ -12,6 +12,7 @@
         "read-tsconfig",
         "tsconfig",
         "get-tsconfig",
+        "read-tsconfig",
         "find-monorepo-root",
         "pkg-up",
         "pkg-dir",
@@ -20,10 +21,12 @@
         "tsconfig.json",
         "packages",
         "monorepo",
+        "mono-repo",
         "pkg-manager",
         "package-manager",
         "find",
-        "root"
+        "root",
+        "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/package",
     "repository": {

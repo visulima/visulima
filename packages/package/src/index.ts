@@ -5,7 +5,7 @@ export type { NormalizedReadResult } from "./package-json";
 export { findPackageJson, findPackageJsonSync, parsePackageJson, writePackageJson, writePackageJsonSync } from "./package-json";
 export type { PackageManager, PackageManagerResult } from "./package-manager";
 export { findLockFile, findPackageManager, getPackageManagerVersion, identifyInitiatingPackageManager } from "./package-manager";
-export { default as parseTsConfig } from "./parse-tsconfig";
+export { default as readTsConfig } from "./read-ts-config";
 export type { TsConfigResult } from "./tsconfig";
 export { findTSConfig, findTsConfig, findTSConfigSync, findTsConfigSync, writeTSConfig } from "./tsconfig";
 export type { NormalizedPackageJson, PackageJson, TsConfigJsonResolved } from "./types";

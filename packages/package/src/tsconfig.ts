@@ -5,7 +5,7 @@ import { toPath } from "@visulima/fs/utils";
 import { join } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
-import parseTsConfig from "./parse-tsconfig";
+import readTsConfig from "./read-ts-config";
 import type { TsConfigJsonResolved } from "./types";
 
 type Options = {
@@ -56,7 +56,7 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     }
 
     const output = {
-        config: parseTsConfig(filePath),
+        config: readTsConfig(filePath),
         path: filePath,
     };
 
@@ -96,7 +96,7 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
     }
 
     const output = {
-        config: parseTsConfig(filePath),
+        config: readTsConfig(filePath),
         path: filePath,
     };
 

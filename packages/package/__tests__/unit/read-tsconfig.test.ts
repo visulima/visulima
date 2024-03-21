@@ -11,7 +11,7 @@ import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import parseTsconfig from "../../src/parse-tsconfig";
+import readTsConfig from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
 
 describe("parses tsconfig", () => {
@@ -31,7 +31,7 @@ describe("parses tsconfig", () => {
         it("non-existent path", async () => {
             expect.assertions(1);
 
-            expect(() => parseTsconfig("non-existent-path")).toThrow("Cannot resolve tsconfig at path: non-existent-path");
+            expect(() => readTsConfig("non-existent-path")).toThrow("Cannot resolve tsconfig at path: non-existent-path");
         });
 
         it("empty file", async () => {
@@ -42,7 +42,7 @@ describe("parses tsconfig", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
 
@@ -51,7 +51,7 @@ describe("parses tsconfig", () => {
 
             writeFileSync(join(distribution, "tsconfig.json"), "asdf");
 
-            const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
             expect(parsedTsconfig).toStrictEqual({
                 compilerOptions: {},
@@ -63,7 +63,7 @@ describe("parses tsconfig", () => {
 
             writeFileSync(join(distribution, "tsconfig.json"), '"asdf"');
 
-            expect(() => parseTsconfig(join(distribution, "tsconfig.json"))).toThrow("Failed to parse tsconfig at");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("Failed to parse tsconfig at");
         });
 
         it("json empty", async () => {
@@ -74,7 +74,7 @@ describe("parses tsconfig", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
     });
@@ -96,7 +96,7 @@ describe("parses tsconfig", () => {
             },
         });
 
-        const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
         const expectedTsconfig = await getTscTsconfig(distribution);
 
         delete expectedTsconfig.files;
@@ -114,7 +114,7 @@ describe("parses tsconfig", () => {
                 },
             });
 
-            const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
@@ -131,7 +131,7 @@ describe("parses tsconfig", () => {
                 },
             });
 
-            const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;

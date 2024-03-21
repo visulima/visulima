@@ -1,5 +1,5 @@
 /**
- * A modified version of `parseTsConfig` from `https://github.com/privatenumber/get-tsconfig/blob/develop/src/parse-tsconfig/index.ts`
+ * A modified version of `readTsconfig` from `https://github.com/privatenumber/get-tsconfig/blob/develop/src/parse-tsconfig/index.ts`
  *
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
@@ -83,7 +83,7 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
      * Decided not to cache the TsConfigJsonResolved object because it's
      * mutable.
      *
-     * Note how `resolveExtends` can call `parseTsConfig` rescursively
+     * Note how `resolveExtends` can call `readTsconfig` rescursively
      * and actually mutates the object. It can also be mutated in
      * user-land.
      *
@@ -189,6 +189,6 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
     return config;
 };
 
-const parseTsConfig = (tsconfigPath: string): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath);
+const readTsConfig = (tsconfigPath: string): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath);
 
-export default parseTsConfig;
+export default readTsConfig;

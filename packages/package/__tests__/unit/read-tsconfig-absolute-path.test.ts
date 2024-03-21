@@ -11,7 +11,7 @@ import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import parseTsconfig from "../../src/parse-tsconfig";
+import readTsConfig from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
 
 describe("parse-tsconfig - absolute path", () => {
@@ -43,7 +43,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -64,7 +64,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -85,7 +85,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
