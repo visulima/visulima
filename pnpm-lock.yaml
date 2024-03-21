@@ -2949,12 +2949,18 @@ importers:
       '@visulima/fs':
         specifier: 1.11.0
         version: link:../fs
-      get-tsconfig:
-        specifier: ^4.7.3
-        version: 4.7.3
+      jsonc-parser:
+        specifier: ^3.2.1
+        version: 3.2.1
       normalize-package-data:
         specifier: ^6.0.0
         version: 6.0.0
+      pathe:
+        specifier: ^1.1.2
+        version: 1.1.2
+      resolve-pkg-maps:
+        specifier: ^1.0.0
+        version: 1.0.0
       type-fest:
         specifier: ^4.12.0
         version: 4.12.0
@@ -2989,6 +2995,9 @@ importers:
       '@vitest/ui':
         specifier: ^1.4.0
         version: 1.4.0(vitest@1.4.0)
+      '@yarnpkg/pnp':
+        specifier: 3.3.1
+        version: 3.3.1
       cnpm:
         specifier: ^9.4.0
         version: 9.4.0
@@ -3022,6 +3031,9 @@ importers:
       execa:
         specifier: ^8.0.1
         version: 8.0.1
+      fs-fixture:
+        specifier: ^1.2.0
+        version: 1.2.0
       npm:
         specifier: ^10.5.0
         version: 10.5.0
@@ -11783,7 +11795,7 @@ packages:
     dependencies:
       '@jest/create-cache-key-function': 27.5.1
       '@swc/core': 1.3.80
-      jsonc-parser: 3.2.0
+      jsonc-parser: 3.2.1
     dev: true
 
   /@swc/types@0.1.4:
@@ -12824,6 +12836,10 @@ packages:
       form-data: 3.0.1
     dev: true
 
+  /@types/node@13.13.52:
+    resolution: {integrity: sha512-s3nugnZumCC//n4moGGe6tkNMyYEdaDBitVjwPxXmR5lnMG5dHePinH2EdxkG3Rh1ghFHHixAG4NJhpJW1rthQ==}
+    dev: true
+
   /@types/node@14.18.56:
     resolution: {integrity: sha512-+k+57NVS9opgrEn5l9c0gvD1r6C+PtyhVE4BTnMMRwiEA8ZO8uFcs6Yy2sXIy0eC95ZurBtRSvhZiHXBysbl6w==}
     requiresBuild: true
@@ -13770,7 +13786,7 @@ packages:
     dependencies:
       '@vitest/utils': 1.3.1
       p-limit: 5.0.0
-      pathe: 1.1.1
+      pathe: 1.1.2
     dev: true
 
   /@vitest/runner@1.4.0:
@@ -13778,14 +13794,14 @@ packages:
     dependencies:
       '@vitest/utils': 1.4.0
       p-limit: 5.0.0
-      pathe: 1.1.1
+      pathe: 1.1.2
     dev: true
 
   /@vitest/snapshot@1.3.1:
     resolution: {integrity: sha512-EF++BZbt6RZmOlE3SuTPu/NfwBF6q4ABS37HHXzs2LUVPBLx2QoY/K0fKpRChSo8eLiuxcbCVfqKgx/dplCDuQ==}
     dependencies:
       magic-string: 0.30.5
-      pathe: 1.1.1
+      pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
 
@@ -13793,7 +13809,7 @@ packages:
     resolution: {integrity: sha512-saAFnt5pPIA5qDGxOHxJ/XxhMFKkUSBJmVt5VgDsAqPTX6JP326r5C/c9UuCMPoXNzuudTPsYDZCoJ5ilpqG2A==}
     dependencies:
       magic-string: 0.30.5
-      pathe: 1.1.1
+      pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
 
@@ -14025,6 +14041,14 @@ packages:
       js-yaml: 3.14.1
       tslib: 2.6.2
     dev: false
+
+  /@yarnpkg/pnp@3.3.1:
+    resolution: {integrity: sha512-iA2IKk2hOQqEBBHBZ3j004mCfzsPGx5PNjgGn8kb6/VMXokX4mhZzPNI/q7ipI0+UaIMeDXvIzwdGL2GSmgsTA==}
+    engines: {node: '>=12 <14 || 14.2 - 14.9 || >14.10.0'}
+    dependencies:
+      '@types/node': 13.13.52
+      '@yarnpkg/fslib': 2.10.3
+    dev: true
 
   /@zeit/schemas@2.29.0:
     resolution: {integrity: sha512-g5QiLIfbg3pLuYUJPlisNKY+epQJTcMDsOnVNkscrDP1oi7vmJnzOANYJI/1pZcVJ6umUkBv3aFtlg1UvUHGzA==}
@@ -20186,6 +20210,11 @@ packages:
       universalify: 2.0.0
     dev: false
 
+  /fs-fixture@1.2.0:
+    resolution: {integrity: sha512-bPBNW12US81zxCXzP/BQ6ntSvMXNgX76nHVUxzQJVTmHkzXnbfp+M4mNWeJ9LuCG8M1wyeFov7oiwO9wnCEBjQ==}
+    engines: {node: '>=16.7.0'}
+    dev: true
+
   /fs-minipass@2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
     engines: {node: '>= 8'}
@@ -20354,7 +20383,7 @@ packages:
       https-proxy-agent: 5.0.1
       mri: 1.2.0
       node-fetch-native: 1.4.0
-      pathe: 1.1.1
+      pathe: 1.1.2
       tar: 6.1.15
     transitivePeerDependencies:
       - supports-color
@@ -22975,6 +23004,10 @@ packages:
 
   /jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
+    dev: false
+
+  /jsonc-parser@3.2.1:
+    resolution: {integrity: sha512-AilxAyFOAcK5wA1+LeaySVBrHsGQvUFCDWXKpZjzaL0PqW+xfBOttn8GNtWKFWqneyMZj41MWF9Kl6iPWLwgOA==}
 
   /jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -25337,7 +25370,7 @@ packages:
     resolution: {integrity: sha512-i/Ykufi2t1EZ6NaPLdfnZk2AX8cs0d+mTzVKuPfqPKPatxLApaBoxJQ9x1/uckXtrS/U5oisPMDkNs0yQTaBRg==}
     dependencies:
       acorn: 8.11.3
-      pathe: 1.1.1
+      pathe: 1.1.2
       pkg-types: 1.0.3
       ufo: 1.3.0
     dev: true
@@ -27149,6 +27182,9 @@ packages:
     resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
     dev: true
 
+  /pathe@1.1.2:
+    resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
+
   /pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
     dev: true
@@ -27303,9 +27339,9 @@ packages:
   /pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
     dependencies:
-      jsonc-parser: 3.2.0
+      jsonc-parser: 3.2.1
       mlly: 1.4.2
-      pathe: 1.1.1
+      pathe: 1.1.2
     dev: true
 
   /plain-object-clone@2.0.0:
@@ -29812,7 +29848,7 @@ packages:
     resolution: {integrity: sha512-dNPAPrxSc87ua2sKJ3H5dQ/6ZaY8RNnaAqK+t0eG7p0Soi2ydiqbGOTaZCqaYvA/uZYfS1LJnemt3Q+mSfcPCg==}
     dependencies:
       ansi-sequence-parser: 1.1.1
-      jsonc-parser: 3.2.0
+      jsonc-parser: 3.2.1
       vscode-oniguruma: 1.7.0
       vscode-textmate: 8.0.0
 
@@ -32715,7 +32751,7 @@ packages:
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 5.2.2(@types/node@18.18.14)
     transitivePeerDependencies:
@@ -32736,7 +32772,7 @@ packages:
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 5.2.2(@types/node@18.18.14)
     transitivePeerDependencies:
@@ -32757,7 +32793,7 @@ packages:
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 5.2.2(@types/node@18.18.5)
     transitivePeerDependencies:
@@ -32778,7 +32814,7 @@ packages:
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 5.2.2(@types/node@18.18.8)
     transitivePeerDependencies:
@@ -32799,7 +32835,7 @@ packages:
     dependencies:
       cac: 6.7.14
       debug: 4.3.4
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       vite: 5.2.2(@types/node@18.19.15)
     transitivePeerDependencies:
@@ -33154,7 +33190,7 @@ packages:
       execa: 8.0.1
       local-pkg: 0.5.0
       magic-string: 0.30.5
-      pathe: 1.1.1
+      pathe: 1.1.2
       picocolors: 1.0.0
       std-env: 3.6.0
       strip-literal: 2.0.0
@@ -34016,8 +34052,11 @@ packages:
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3
+      jsonc-parser: 3.2.1
       normalize-package-data: 6.0.0
+      pathe: 1.1.2
       read-pkg: 9.0.1
+      resolve-pkg-maps: 1.0.0
       strip-json-comments: 5.0.1
       type-fest: 4.13.1
     transitivePeerDependencies:

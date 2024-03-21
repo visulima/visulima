@@ -1,6 +1,5 @@
-import { dirname } from "node:path";
-
 import { findUp } from "@visulima/fs";
+import { dirname } from "pathe";
 
 import { findLockFile } from "./package-manager";
 

@@ -1,5 +1,4 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 import type { WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
@@ -7,9 +6,16 @@ import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
+import { join } from "pathe";
 import type { JsonObject } from "type-fest";
 
-import type { NormalizedPackageJson, PackageJson } from "./types";
+import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
+
+type ReadOptions = {
+    cache?: Cache<NormalizedReadResult> | boolean;
+};
+
+const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
 export type NormalizedReadResult = {
     packageJson: NormalizedPackageJson;
@@ -24,7 +30,7 @@ export type NormalizedReadResult = {
  * The type of the returned promise is `Promise<NormalizedReadResult>`.
  * @throws An `Error` if the package.json file cannot be found.
  */
-export const findPackageJson = async (cwd?: URL | string): Promise<NormalizedReadResult> => {
+export const findPackageJson = async (cwd?: URL | string, options: ReadOptions = {}): Promise<NormalizedReadResult> => {
     const filePath = await findUp("package.json", {
         ...(cwd && { cwd }),
         type: "file",
@@ -34,17 +40,27 @@ export const findPackageJson = async (cwd?: URL | string): Promise<NormalizedRea
         throw new NotFoundError("Could not find package.json");
     }
 
+    const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
+
+    if (options.cache && cache.has(filePath)) {
+        return cache.get(filePath) as NormalizedReadResult;
+    }
+
     const packageJson = await readJson(filePath);
 
     normalizeData(packageJson as Input);
 
-    return {
+    const output = {
         packageJson: packageJson as NormalizedPackageJson,
         path: filePath,
     };
+
+    cache.set(filePath, output);
+
+    return output;
 };
 
-export const findPackageJsonSync = (cwd?: URL | string): NormalizedReadResult => {
+export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {}): NormalizedReadResult => {
     const filePath = findUpSync("package.json", {
         ...(cwd && { cwd }),
         type: "file",
@@ -54,14 +70,24 @@ export const findPackageJsonSync = (cwd?: URL | string): NormalizedReadResult =>
         throw new NotFoundError("Could not find package.json");
     }
 
+    const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
+
+    if (options.cache && cache.has(filePath)) {
+        return cache.get(filePath) as NormalizedReadResult;
+    }
+
     const packageJson = readJsonSync(filePath);
 
     normalizeData(packageJson as Input);
 
-    return {
+    const output = {
         packageJson: packageJson as NormalizedPackageJson,
         path: filePath,
     };
+
+    cache.set(filePath, output);
+
+    return output;
 };
 
 /**
