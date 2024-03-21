@@ -3,8 +3,8 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import readFile from "../../src/read-file";
-import readdirSync from "../../src/read-file-sync";
+import readFile from "../../src/read/read-file";
+import readdirSync from "../../src/read/read-file-sync";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));

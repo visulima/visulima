@@ -5,8 +5,8 @@ import { basename, dirname, join, resolve } from "node:path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ensureLink from "../../src/ensure-link";
-import ensureLinkSync from "../../src/ensure-link-sync";
+import ensureLink from "../../src/ensure/ensure-link";
+import ensureLinkSync from "../../src/ensure/ensure-link-sync";
 
 const distribution: string = temporaryDirectory();
 

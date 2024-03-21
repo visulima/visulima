@@ -4,8 +4,8 @@ import fastStringify from "fast-safe-stringify";
 import { temporaryFile } from "tempy";
 import { describe, expect, it } from "vitest";
 
-import writeJson from "../../src/write-json";
-import writeJsonSync from "../../src/write-json-sync";
+import writeJson from "../../src/write/write-json";
+import writeJsonSync from "../../src/write/write-json-sync";
 
 describe.each([
     ["writeJson", writeJson],

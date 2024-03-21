@@ -6,8 +6,8 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { FIND_UP_STOP } from "../../src/constants";
-import findUp from "../../src/find-up";
-import findUpSync from "../../src/find-up-sync";
+import findUp from "../../src/find/find-up";
+import findUpSync from "../../src/find/find-up-sync";
 
 const isWindows = process.platform === "win32";
 

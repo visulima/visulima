@@ -1,10 +1,10 @@
 import { statSync } from "node:fs";
 import { dirname, isAbsolute, parse, resolve } from "node:path";
 
-import { FIND_UP_STOP } from "./constants";
-import type { FindUpOptions, Match } from "./types";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
+import { FIND_UP_STOP } from "../constants";
+import type { FindUpOptions, Match } from "../types";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
 
 const findUpSync = (
     name: ReadonlyArray<string> | string[] | string | ((directory: string) => Match),

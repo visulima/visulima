@@ -1,7 +1,7 @@
-import type { WalkOptions } from "./types";
-import walk from "./walk";
+import type { WalkOptions } from "../types";
+import walkSync from "./walk-sync";
 
-const collect = async (directory: string, options: WalkOptions = {}): Promise<string[]> => {
+const collectSync = (directory: string, options: WalkOptions = {}): string[] => {
     const config = {
         extensions: ["js", "mjs", "cjs", "ts"],
         ...options,
@@ -10,11 +10,11 @@ const collect = async (directory: string, options: WalkOptions = {}): Promise<st
     const entries: string[] = [];
 
     // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops
-    for await (const entry of walk(directory, config)) {
+    for (const entry of walkSync(directory, config)) {
         entries.push(entry.path);
     }
 
     return entries;
 };
 
-export default collect;
+export default collectSync;

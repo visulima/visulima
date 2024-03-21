@@ -1,6 +1,6 @@
 import { rm, unlink } from "node:fs/promises";
 
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
 const remove = async (
     path: URL | string,

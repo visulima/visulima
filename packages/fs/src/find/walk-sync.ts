@@ -4,23 +4,24 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 
 import type { Stats } from "node:fs";
-import { readdir, realpath, stat } from "node:fs/promises";
+import { readdirSync, realpathSync, statSync } from "node:fs";
 import { basename, join, normalize, resolve } from "node:path";
 
-import WalkError from "./error/walk-error";
-import type { WalkEntry, WalkOptions } from "./types";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import globToRegExp from "./utils/glob-to-regex";
-import toPath from "./utils/to-path";
-import walkInclude from "./utils/walk-include";
+import WalkError from "../error/walk-error";
+import type { WalkEntry, WalkOptions } from "../types";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import globToRegExp from "../utils/glob-to-regex";
+import toPath from "../utils/to-path";
+import walkInclude from "../utils/walk-include";
 
+/** Create {@linkcode WalkEntry} for the `path` synchronously. */
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
+const _createWalkEntry = (path: string): WalkEntry => {
     const normalizePath: string = normalize(path as string);
 
     const name = basename(normalizePath);
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const info: Stats = await stat(normalizePath);
+    const info: Stats = statSync(normalizePath);
 
     return {
         // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -34,21 +35,9 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
     };
 };
 
-/**
- * Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options.
- * Options:
- * - maxDepth?: number = Infinity;
- * - includeFiles?: boolean = true;
- * - includeDirs?: boolean = true;
- * - includeSymlinks?: boolean = true;
- * - followSymlinks?: boolean = false;
- * - extensions?: string[];
- * - match?: string | ReadonlyArray<string>;
- * - skip?: string | ReadonlyArray<string>;
- */
+/** Same as {@linkcode walk} but uses synchronous ops */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export default async function* walk(
+export default function* walkSync(
     directory: URL | string,
     {
         extensions,
@@ -60,7 +49,7 @@ export default async function* walk(
         maxDepth = Number.POSITIVE_INFINITY,
         skip,
     }: WalkOptions = {},
-): AsyncIterableIterator<WalkEntry> {
+): IterableIterator<WalkEntry> {
     assertValidFileOrDirectoryPath(directory);
 
     if (maxDepth < 0) {
@@ -74,7 +63,7 @@ export default async function* walk(
     directory = resolve(toPath(directory));
 
     if (includeDirectories && walkInclude(directory, extensions, mappedMatch, mappedSkip)) {
-        yield await _createWalkEntry(directory);
+        yield _createWalkEntry(directory);
     }
 
     if (maxDepth < 1 || !walkInclude(directory, undefined, undefined, mappedSkip)) {
@@ -82,8 +71,8 @@ export default async function* walk(
     }
 
     try {
-        // eslint-disable-next-line no-restricted-syntax,security/detect-non-literal-fs-filename,no-loops/no-loops
-        for await (const entry of await readdir(directory, {
+        // eslint-disable-next-line no-restricted-syntax,no-loops/no-loops,security/detect-non-literal-fs-filename
+        for (const entry of readdirSync(directory, {
             withFileTypes: true,
         })) {
             let path = join(directory, entry.name);
@@ -91,7 +80,7 @@ export default async function* walk(
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
                     // eslint-disable-next-line security/detect-non-literal-fs-filename
-                    path = await realpath(path);
+                    path = realpathSync(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {
                         // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -110,7 +99,7 @@ export default async function* walk(
             }
 
             if (entry.isSymbolicLink() || entry.isDirectory()) {
-                yield* walk(path, {
+                yield* walkSync(path, {
                     extensions,
                     followSymlinks,
                     includeDirs: includeDirectories,

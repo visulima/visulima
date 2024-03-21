@@ -1,6 +1,6 @@
 import { rmSync, unlinkSync } from "node:fs";
 
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
 const removeSync = (
     path: URL | string,

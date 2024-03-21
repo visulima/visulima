@@ -1,17 +1,17 @@
-import { link, lstat } from "node:fs/promises";
+import { linkSync, lstatSync } from "node:fs";
 import { dirname } from "node:path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDir from "./ensure-dir";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import isStatsIdentical from "./utils/is-stats-identical";
-import toPath from "./utils/to-path";
+import ensureDirSync from "./ensure-dir-sync";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import isStatsIdentical from "../utils/is-stats-identical";
+import toPath from "../utils/to-path";
 
 /**
  * Ensures that the hard link exists.
  * If the directory structure does not exist, it is created.
  */
-const ensureLink = async (source: URL | string, destination: URL | string): Promise<void> => {
+const ensureLinkSync = (source: URL | string, destination: URL | string): void => {
     assertValidFileOrDirectoryPath(source);
     assertValidFileOrDirectoryPath(destination);
 
@@ -19,7 +19,7 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        destinationStat = await lstat(destination);
+        destinationStat = lstatSync(destination);
     } catch {
         // ignore error
     }
@@ -28,7 +28,7 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        sourceStat = await lstat(source);
+        sourceStat = lstatSync(source);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
@@ -41,10 +41,10 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
         return;
     }
 
-    await ensureDir(dirname(toPath(destination)));
+    ensureDirSync(dirname(toPath(destination)));
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    await link(source, destination);
+    linkSync(source, destination);
 };
 
-export default ensureLink;
+export default ensureLinkSync;

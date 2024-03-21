@@ -3,9 +3,9 @@ import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import type { EmptyDirOptions } from "./types";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
+import type { EmptyDirOptions } from "../types";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
 
 /**
  * Ensures that a directory is empty.

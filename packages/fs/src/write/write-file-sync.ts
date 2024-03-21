@@ -2,13 +2,13 @@ import type { Stats } from "node:fs";
 import { chmodSync, chownSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync as nodeWriteFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-import { F_OK } from "./constants";
-import isAccessibleSync from "./is-accessible-sync";
-import type { WriteFileOptions } from "./types";
-import assertValidFileContents from "./utils/assert-valid-file-contents";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
-import toUint8Array from "./utils/to-uint-8-array";
+import { F_OK } from "../constants";
+import isAccessibleSync from "../is-accessible-sync";
+import type { WriteFileOptions } from "../types";
+import assertValidFileContents from "../utils/assert-valid-file-contents";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
+import toUint8Array from "../utils/to-uint-8-array";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {

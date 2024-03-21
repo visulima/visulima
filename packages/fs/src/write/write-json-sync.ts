@@ -1,23 +1,23 @@
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import detectIndentFn from "detect-indent";
 
-import { R_OK } from "./constants";
-import isAccessible from "./is-accessible";
-import type { WriteJsonOptions } from "./types";
-import writeFile from "./write-file";
+import { R_OK } from "../constants";
+import isAccessibleSync from "../is-accessible-sync";
+import type { WriteJsonOptions } from "../types";
+import writeFileSync from "./write-file-sync";
 
-const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOptions = {}): Promise<void> => {
+const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOptions = {}): void => {
     const { detectIndent, indent: indentOption, replacer, stringify = JSON.stringify, ...writeOptions } = { indent: "\t", ...options };
 
     let indent = indentOption;
     let trailingNewline = "\n";
 
-    if (await isAccessible(path, R_OK)) {
+    if (isAccessibleSync(path, R_OK)) {
         try {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
-            const file = await readFile(path, "utf8");
+            const file = readFileSync(path, "utf8");
 
             if (detectIndent) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
@@ -39,7 +39,7 @@ const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOp
     // @ts-expect-error - `replacer` is a valid argument for `JSON.stringify`
     const json = stringify(data, replacer, indent);
 
-    await writeFile(path, `${json}${trailingNewline}`, writeOptions);
+    writeFileSync(path, `${json}${trailingNewline}`, writeOptions);
 };
 
-export default writeJson;
+export default writeJsonSync;

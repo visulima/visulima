@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import JsonError from "../../src/error/json-error";
-import readJson from "../../src/read-json";
-import readJsonSync from "../../src/read-json-sync";
+import readJson from "../../src/read/read-json";
+import readJsonSync from "../../src/read/read-json-sync";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));

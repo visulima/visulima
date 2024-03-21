@@ -1,12 +1,12 @@
 import { readFileSync as nodeReadFileSync } from "node:fs";
 import { brotliDecompressSync, unzipSync } from "node:zlib";
 
-import { R_OK } from "./constants";
-import PermissionError from "./error/permission-error";
-import isAccessibleSync from "./is-accessible-sync";
-import type { ContentType, ReadFileOptions } from "./types";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
+import { R_OK } from "../constants";
+import PermissionError from "../error/permission-error";
+import isAccessibleSync from "../is-accessible-sync";
+import type { ContentType, ReadFileOptions } from "../types";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
 
 const decompressionMethods = {
     brotli: brotliDecompressSync,
