@@ -1,7 +1,7 @@
 import { parse } from "yaml";
 
 import readFileSync from "./read-file-sync";
-import type { ReadYamlOptions, YamlReviver } from "./types";
+import type { ReadYamlOptions, YamlReviver } from "../types";
 
 function readYamlSync<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;
 function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): R;

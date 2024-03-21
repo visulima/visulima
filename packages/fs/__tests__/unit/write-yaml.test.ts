@@ -2,8 +2,8 @@ import { readFile, rm } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
-import writeYaml from "../../src/write-yaml";
-import writeYamlSync from "../../src/write-yaml-sync";
+import writeYaml from "../../src/write/write-yaml";
+import writeYamlSync from "../../src/write/write-yaml-sync";
 
 describe.each([
     ["writeYaml", writeYaml],

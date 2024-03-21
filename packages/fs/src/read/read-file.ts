@@ -1,12 +1,12 @@
 import { readFile as nodeReadFile } from "node:fs/promises";
 import { brotliDecompress, unzip } from "node:zlib";
 
-import { R_OK } from "./constants";
-import PermissionError from "./error/permission-error";
-import isAccessible from "./is-accessible";
-import type { ContentType, ReadFileOptions } from "./types";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
+import { R_OK } from "../constants";
+import PermissionError from "../error/permission-error";
+import isAccessible from "../is-accessible";
+import type { ContentType, ReadFileOptions } from "../types";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
 
 const decompressionMethods = {
     brotli: brotliDecompress,

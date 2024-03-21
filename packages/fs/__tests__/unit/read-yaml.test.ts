@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { YAMLError } from "yaml";
 
-import readYaml from "../../src/read-yaml";
-import readYamlSync from "../../src/read-yaml-sync";
+import readYaml from "../../src/read/read-yaml";
+import readYamlSync from "../../src/read/read-yaml-sync";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));

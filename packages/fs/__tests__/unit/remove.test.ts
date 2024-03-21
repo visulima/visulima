@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 
-import remove from "../../src/remove";
-import removeSync from "../../src/remove-sync";
+import remove from "../../src/remove/remove";
+import removeSync from "../../src/remove/remove-sync";
 
 const distribution = temporaryDirectory();
 

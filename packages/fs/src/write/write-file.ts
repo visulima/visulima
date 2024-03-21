@@ -2,13 +2,13 @@ import type { Stats } from "node:fs";
 import { chmod, chown, mkdir, rename, stat as nodeStat, unlink, writeFile as nodeWriteFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-import { F_OK } from "./constants";
-import isAccessible from "./is-accessible";
-import type { WriteFileOptions } from "./types";
-import assertValidFileContents from "./utils/assert-valid-file-contents";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
-import toUint8Array from "./utils/to-uint-8-array";
+import { F_OK } from "../constants";
+import isAccessible from "../is-accessible";
+import type { WriteFileOptions } from "../types";
+import assertValidFileContents from "../utils/assert-valid-file-contents";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import toPath from "../utils/to-path";
+import toUint8Array from "../utils/to-uint-8-array";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): Promise<void> => {

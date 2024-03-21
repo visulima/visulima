@@ -9,8 +9,8 @@ import { F_OK } from "../../src/constants";
 import isAccessible from "../../src/is-accessible";
 import isAccessibleSync from "../../src/is-accessible-sync";
 import type { WriteFileOptions } from "../../src/types";
-import writeFile from "../../src/write-file";
-import writeFileSync from "../../src/write-file-sync";
+import writeFile from "../../src/write/write-file";
+import writeFileSync from "../../src/write/write-file-sync";
 
 const assertWriteFile = async (path: URL | string, content: string, options?: WriteFileOptions) => {
     await writeFile(path, content, options);

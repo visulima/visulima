@@ -1,7 +1,7 @@
 import { parse } from "yaml";
 
 import readFile from "./read-file";
-import type { ReadYamlOptions, YamlReviver } from "./types";
+import type { ReadYamlOptions, YamlReviver } from "../types";
 
 async function readYaml<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<"brotli" | "gzip" | "none">): Promise<R>;
 async function readYaml<R = Record<string, unknown>>(

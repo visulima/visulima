@@ -1,8 +1,8 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { lstat, mkdir } from "node:fs/promises";
 
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import { getFileInfoType } from "./utils/get-file-info-type";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import { getFileInfoType } from "../utils/get-file-info-type";
 
 /**
  * Ensures that the directory exists.

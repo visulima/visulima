@@ -4,8 +4,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ensureFile from "../../src/ensure-file";
-import ensureFileSync from "../../src/ensure-file-sync";
+import ensureFile from "../../src/ensure/ensure-file";
+import ensureFileSync from "../../src/ensure/ensure-file-sync";
 
 describe.each([
     ["ensureFile", ensureFile],

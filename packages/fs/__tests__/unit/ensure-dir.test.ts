@@ -6,9 +6,9 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDir from "../../src/ensure-dir";
+import ensureDir from "../../src/ensure/ensure-dir";
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDirSync from "../../src/ensure-dir-sync";
+import ensureDirSync from "../../src/ensure/ensure-dir-sync";
 
 describe.each([["ensureDir", ensureDir], ["ensureDirSync", ensureDirSync]])("%s", (name, function_) => {
     let distribution: string;
