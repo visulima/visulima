@@ -4,17 +4,21 @@
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
-import { dirname, join, relative, resolve, normalize } from "pathe";
-import type { Cache, TsConfigJsonResolved } from "./types";
-import resolveExtendsPath from "./utils/resolve-extends-path";
-import type { TsConfigJson } from "type-fest";
-import { parse } from "jsonc-parser";
-import { readFileSync } from "@visulima/fs";
 import { realpathSync } from "node:fs";
 
-const implicitBaseUrlSymbol = Symbol('implicitBaseUrl');
+import { readFileSync } from "@visulima/fs";
+import { parse } from "jsonc-parser";
+import { dirname, join, relative, resolve, toNamespacedPath } from "pathe";
+import type { TsConfigJson } from "type-fest";
+
+import type { Cache, TsConfigJsonResolved } from "./types";
+import resolveExtendsPath from "./utils/resolve-extends-path";
+
+const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
 
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) as unknown;
+// eslint-disable-next-line security/detect-unsafe-regex
+const normalizePath = (path: string): string => toNamespacedPath(/^\.{1,2}(?:\/.*)?$/.test(path) ? path : `./${path}`);
 
 const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, cache?: Cache<string>) => {
     const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath, cache);
@@ -30,16 +34,22 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
     circularExtendsTracker.add(resolvedExtendsPath);
 
     const extendsDirectoryPath = dirname(resolvedExtendsPath);
-    const extendsConfig = _parseTsConfig(resolvedExtendsPath, cache, circularExtendsTracker);
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const extendsConfig = internalPparseTsConfig(resolvedExtendsPath, cache, circularExtendsTracker);
     delete extendsConfig.references;
 
     const { compilerOptions } = extendsConfig;
     if (compilerOptions) {
         const resolvePaths = ["baseUrl", "outDir"] as const;
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const property of resolvePaths) {
+            // eslint-disable-next-line security/detect-object-injection
             const unresolvedPath = compilerOptions[property];
+
             if (unresolvedPath) {
-                compilerOptions[property] = relative(fromDirectoryPath, join(extendsDirectoryPath, unresolvedPath)) || "./";
+                // eslint-disable-next-line security/detect-object-injection
+                compilerOptions[property] = relative(fromDirectoryPath, join(extendsDirectoryPath, unresolvedPath)).replaceAll("\\", "/") || "./";
             }
         }
     }
@@ -59,9 +69,11 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
     return extendsConfig;
 };
 
-const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const internalPparseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
     let realTsconfigPath: string;
     try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         realTsconfigPath = realpathSync(tsconfigPath) as string;
     } catch {
         throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
@@ -91,6 +103,7 @@ const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExt
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
                 [implicitBaseUrlSymbol]: string;
             };
+            // eslint-disable-next-line security/detect-object-injection
             (compilerOptions as WithImplicitBaseUrl)[implicitBaseUrlSymbol] = directoryPath;
         }
     }
@@ -100,6 +113,7 @@ const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExt
 
         delete config.extends;
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,etc/no-assign-mutated-array
         for (const extendsPath of extendsPathList.reverse()) {
             const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker), cache);
             const merged = {
@@ -126,12 +140,17 @@ const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExt
         const { compilerOptions } = config;
         const normalizedPaths = ["baseUrl", "rootDir"] as const;
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const property of normalizedPaths) {
+            // eslint-disable-next-line security/detect-object-injection
             const unresolvedPath = compilerOptions[property];
+
             if (unresolvedPath) {
                 const resolvedBaseUrl = resolve(directoryPath, unresolvedPath);
-                const relativeBaseUrl = normalize(relative(directoryPath, resolvedBaseUrl));
-                compilerOptions[property] = relativeBaseUrl;
+                const relativeBaseUrl = relative(directoryPath, resolvedBaseUrl);
+
+                // eslint-disable-next-line security/detect-object-injection
+                compilerOptions[property] = normalizePath(relativeBaseUrl);
             }
         }
 
@@ -144,18 +163,19 @@ const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExt
             if (!config.exclude.includes(outDir)) {
                 config.exclude.push(outDir);
             }
-            compilerOptions.outDir = normalize(outDir);
+
+            compilerOptions.outDir = normalizePath(outDir);
         }
     } else {
         config.compilerOptions = {};
     }
 
     if (config.files) {
-        config.files = config.files.map(normalize);
+        config.files = config.files.map((element) => normalizePath(element));
     }
 
     if (config.include) {
-        config.include = config.include.map(normalize);
+        config.include = config.include.map((element) => normalizePath(element));
     }
 
     if (config.watchOptions) {
@@ -169,6 +189,6 @@ const _parseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExt
     return config;
 };
 
-const parseTsConfig = (tsconfigPath: string, cache: Cache<string> = new Map()): TsConfigJsonResolved => _parseTsConfig(tsconfigPath, cache);
+const parseTsConfig = (tsconfigPath: string, cache: Cache<string> = new Map()): TsConfigJsonResolved => internalPparseTsConfig(tsconfigPath, cache);
 
 export default parseTsConfig;

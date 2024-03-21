@@ -3031,9 +3031,6 @@ importers:
       execa:
         specifier: ^8.0.1
         version: 8.0.1
-      fs-fixture:
-        specifier: ^1.2.0
-        version: 1.2.0
       npm:
         specifier: ^10.5.0
         version: 10.5.0
@@ -20209,11 +20206,6 @@ packages:
       jsonfile: 6.1.0
       universalify: 2.0.0
     dev: false
-
-  /fs-fixture@1.2.0:
-    resolution: {integrity: sha512-bPBNW12US81zxCXzP/BQ6ntSvMXNgX76nHVUxzQJVTmHkzXnbfp+M4mNWeJ9LuCG8M1wyeFov7oiwO9wnCEBjQ==}
-    engines: {node: '>=16.7.0'}
-    dev: true
 
   /fs-minipass@2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
