@@ -8,7 +8,7 @@ import { realpathSync } from "node:fs";
 
 import { readFileSync } from "@visulima/fs";
 import { parse } from "jsonc-parser";
-import { dirname, join, relative, resolve, toNamespacedPath } from "pathe";
+import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
 import type { TsConfigJsonResolved } from "./types";
@@ -175,7 +175,7 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
     }
 
     if (config.include) {
-        config.include = config.include.map((element) => normalizePath(element));
+        config.include = config.include.map((element) => normalize(element));
     }
 
     if (config.watchOptions) {

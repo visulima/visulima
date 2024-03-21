@@ -1,5 +1,5 @@
 /**
- * A modified version of `resolveExtendsPath` from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/parses.spec.ts`
+ * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/develop/tests/specs/parse-tsconfig/parses.spec.ts`
  *
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
