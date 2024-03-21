@@ -11,7 +11,7 @@ import { parse } from "jsonc-parser";
 import { dirname, join, relative, resolve, toNamespacedPath } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
-import type { Cache, TsConfigJsonResolved } from "./types";
+import type { TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
 
 const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
@@ -20,8 +20,8 @@ const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) 
 // eslint-disable-next-line security/detect-unsafe-regex
 const normalizePath = (path: string): string => toNamespacedPath(/^\.{1,2}(?:\/.*)?$/.test(path) ? path : `./${path}`);
 
-const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, cache?: Cache<string>) => {
-    const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath, cache);
+const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>) => {
+    const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath);
 
     if (!resolvedExtendsPath) {
         throw new Error(`File '${extendsPath}' not found.`);
@@ -35,7 +35,7 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
 
     const extendsDirectoryPath = dirname(resolvedExtendsPath);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const extendsConfig = internalPparseTsConfig(resolvedExtendsPath, cache, circularExtendsTracker);
+    const extendsConfig = internalParseTsConfig(resolvedExtendsPath, circularExtendsTracker);
     delete extendsConfig.references;
 
     const { compilerOptions } = extendsConfig;
@@ -70,7 +70,7 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const internalPparseTsConfig = (tsconfigPath: string, cache?: Cache<string>, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
+const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
     let realTsconfigPath: string;
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -115,7 +115,7 @@ const internalPparseTsConfig = (tsconfigPath: string, cache?: Cache<string>, cir
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,etc/no-assign-mutated-array
         for (const extendsPath of extendsPathList.reverse()) {
-            const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker), cache);
+            const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker));
             const merged = {
                 ...extendsConfig,
                 ...config,
@@ -189,6 +189,6 @@ const internalPparseTsConfig = (tsconfigPath: string, cache?: Cache<string>, cir
     return config;
 };
 
-const parseTsConfig = (tsconfigPath: string, cache: Cache<string> = new Map()): TsConfigJsonResolved => internalPparseTsConfig(tsconfigPath, cache);
+const parseTsConfig = (tsconfigPath: string): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath);
 
 export default parseTsConfig;

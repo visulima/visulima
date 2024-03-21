@@ -97,8 +97,8 @@ describe("parses tsconfig", () => {
         });
 
         const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"));
-        console.log(parsedTsconfig)
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
         expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
@@ -138,39 +138,5 @@ describe("parses tsconfig", () => {
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
-    });
-
-    it("cache", async () => {
-        expect.assertions(4);
-
-        writeJsonSync(join(distribution, "tsconfig.json"), {
-            compilerOptions: {
-                baseUrl: ".",
-                declaration: true,
-                esModuleInterop: true,
-                isolatedModules: true,
-                module: "esnext",
-                moduleResolution: "node10",
-                outDir: "dist",
-                strict: true,
-                target: "esnext",
-            },
-        });
-
-        const cache = new Map();
-        const parsedTsconfig = parseTsconfig(join(distribution, "tsconfig.json"), cache);
-
-        expect(cache.size).toBe(2);
-
-        const expectedTsconfig = await getTscTsconfig(distribution);
-        delete expectedTsconfig.files;
-
-        expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
-
-        const parsedTsconfigCached = parseTsconfig(join(distribution, "tsconfig.json"), cache);
-
-        expect(cache.size).toBe(2);
-
-        expect(parsedTsconfigCached).toStrictEqual(expectedTsconfig);
     });
 });

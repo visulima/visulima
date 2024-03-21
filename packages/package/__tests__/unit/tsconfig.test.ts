@@ -1,35 +1,25 @@
 import { existsSync } from "node:fs";
-import { rm, rmdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
 
-import { describe, expect, it, vi } from "vitest";
+import { writeJsonSync } from "@visulima/fs";
+import { temporaryDirectory } from "tempy";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { TsConfigResult } from "../../src/tsconfig";
 import { findTsConfig, findTsConfigSync, writeTsConfig } from "../../src/tsconfig";
 
-const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "tsconfig");
-
-vi.mock("get-tsconfig", async (importOriginal) => {
-    const module = await importOriginal();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return {
-        // @ts-expect-error - type mismatch
-        ...module,
-        getTsConfig: async (path: string | undefined, fileName: string) => {
-            if (path.includes("noMatch")) {
-                return null;
-            }
-
-            // @ts-expect-error - type mismatch
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return module.getTsConfig(path, fileName);
-        },
-    };
-});
-
 describe("tsconfig", () => {
+    let distribution: string;
+
+    beforeEach(async () => {
+        distribution = temporaryDirectory();
+    });
+
+    afterEach(async () => {
+        await rm(distribution, { recursive: true });
+    });
+
     describe.each([
         ["findTsConfig", findTsConfig],
         ["findTsConfigSync", findTsConfigSync],
@@ -37,7 +27,28 @@ describe("tsconfig", () => {
         it("should find the tsconfig.json file", async () => {
             expect.assertions(1);
 
-            const result: TsConfigResult = name === "findTsConfig" ? await function_(cwd) : function_(cwd);
+            const path = join(distribution, "tsconfig.json");
+
+            writeJsonSync(path, {});
+
+            const result: TsConfigResult = name === "findTsConfig" ? await function_(distribution) : function_(distribution);
+
+            expect(result.config).toBeDefined();
+        });
+
+        it("should find the tsconfig.json file with custom name", async () => {
+            expect.assertions(1);
+
+            const options = {
+                configFileName: "tsconfig.custom.json",
+            };
+
+
+            const path = join(distribution, options.configFileName);
+
+            writeJsonSync(path, {});
+
+            const result: TsConfigResult = name === "findTsConfig" ? await function_(path, options) : function_(path, options);
 
             expect(result.config).toBeDefined();
         });
@@ -52,10 +63,9 @@ describe("tsconfig", () => {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(function_("/noMatch")).rejects.toThrow(expectedErrorMessage);
             } else {
-                // eslint-disable-next-line vitest/no-conditional-expect
+                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
                 expect(() => function_("/noMatch")).toThrow(expectedErrorMessage);
             }
-
         });
     });
 
@@ -68,16 +78,14 @@ describe("tsconfig", () => {
                     compilerOptions: {},
                 },
                 {
-                    cwd,
+                    cwd: distribution,
                 },
             );
 
-            const tsconfigFilePath = join(cwd, "tsconfig.json");
+            const tsconfigFilePath = join(distribution, "tsconfig.json");
 
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             expect(existsSync(tsconfigFilePath)).toBeTruthy();
-
-            await rm(tsconfigFilePath);
-            await rmdir(cwd);
         });
     });
 });

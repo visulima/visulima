@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import { execa } from "execa";
 import type { TsConfigJson } from "type-fest";
 
+const tscPath = resolve('node_modules/.bin/tsc');
+
 /**
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
@@ -21,10 +23,6 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     // replace last newline in result
     return result.toString().replace(/\n$/, "");
 };
-
-
-const tscPath = resolve('node_modules/.bin/tsc');
-
 
 /**
  * Copy of the function from the package `get-tsconfig`.
