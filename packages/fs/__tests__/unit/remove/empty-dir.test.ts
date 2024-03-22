@@ -6,9 +6,9 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import emptyDir from "../../src/remove/empty-dir";
+import emptyDir from "../../../src/remove/empty-dir";
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import emptyDirSync from "../../src/remove/empty-dir-sync";
+import emptyDirSync from "../../../src/remove/empty-dir-sync";
 
 describe.each([
     ["emptyDir", emptyDir],

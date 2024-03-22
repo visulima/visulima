@@ -1,5 +1,5 @@
 import { statSync } from "node:fs";
-import { dirname, isAbsolute, parse, resolve } from "node:path";
+import { dirname, isAbsolute, parse, resolve } from "pathe";
 
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpOptions, Match } from "../types";

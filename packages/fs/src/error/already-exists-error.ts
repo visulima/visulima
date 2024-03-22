@@ -3,24 +3,27 @@
  */
 class AlreadyExistsError extends Error {
     /**
-     * Name of the error class.
-     * @type {string}
-     */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
-    override readonly name = "AlreadyExistsError";
-
-    /**
-     * Error code.
-     * @type {string}
-     */
-    public code = "EEXIST";
-
-    /**
      * Creates a new instance.
      * @param {string} message The error message.
      */
     public constructor(message: string) {
         super(`EEXIST: ${message}`);
+    }
+
+    get code() {
+        return "EEXIST";
+    }
+
+    set code(_name) {
+        throw new Error("Cannot overwrite code EEXIST");
+    }
+
+    override get name() {
+        return "AlreadyExistsError";
+    }
+
+    override set name(_name) {
+        throw new Error("Cannot overwrite name of AlreadyExistsError");
     }
 }
 

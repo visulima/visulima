@@ -132,6 +132,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "pathe": "^1.1.2",
         "type-fest": "^4.13.1"
     },
     "devDependencies": {

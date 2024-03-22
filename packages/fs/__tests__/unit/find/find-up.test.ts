@@ -1,13 +1,13 @@
 import { rm } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve } from "pathe";
 import { fileURLToPath } from "node:url";
 
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { FIND_UP_STOP } from "../../src/constants";
-import findUp from "../../src/find/find-up";
-import findUpSync from "../../src/find/find-up-sync";
+import { FIND_UP_STOP } from "../../../src/constants";
+import findUp from "../../../src/find/find-up";
+import findUpSync from "../../../src/find/find-up-sync";
 
 const isWindows = process.platform === "win32";
 
@@ -39,7 +39,7 @@ relative.barDirQux = join(relative.fixtureDirectory, testName.packageDirectory, 
 relative.barDir = join(relative.fixtureDirectory, testName.packageDirectory, testName.fooDirectory, testName.barDirectory);
 
 const absolute: Record<string, string> = {
-    packageDirectory: join(__dirname, "..", ".."),
+    packageDirectory: join(__dirname, "..", "..", ".."),
 };
 absolute.fixtureDirectory = join(absolute.packageDirectory, testName.fixtureDirectory, testName.packageDirectory);
 absolute.packageJson = join(absolute.fixtureDirectory, testName.packageJson);
@@ -77,7 +77,7 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "package.json"));
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "..", "package.json"));
     });
 
     it("should find child directory", async () => {
@@ -103,7 +103,7 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "package.json"));
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "..", "package.json"));
 
         foundPath = function_(testName.packageJson, { type: "directory" });
 
@@ -214,14 +214,14 @@ describe.each([
     it("should find a nested descendant file", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(relative.baz, { cwd: join(__dirname, "..", "..") });
+        let foundPath = function_(relative.baz, { cwd: join(__dirname, "..", "..", "..") });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", relative.baz));
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "..", relative.baz));
     });
 
     it("should support finding a cousin file", async () => {
