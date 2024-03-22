@@ -1,8 +1,8 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 
 import { findUp } from "@visulima/fs";
+import { dirname, join } from "pathe";
 
 import { parsePackageJson } from "./package-json";
 

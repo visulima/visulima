@@ -1,6 +1,7 @@
 {
     "type": "module",
     "scripts": {
-        "preinstall": "node index.js"
-    }
+        "install": "node index.js"
+    },
+    "packageManager": "yarn@1.22.22"
 }

@@ -20,10 +20,12 @@
         "tsconfig.json",
         "packages",
         "monorepo",
+        "mono-repo",
         "pkg-manager",
         "package-manager",
         "find",
-        "root"
+        "root",
+        "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/package",
     "repository": {
@@ -138,8 +140,10 @@
     },
     "dependencies": {
         "@visulima/fs": "1.11.0",
-        "get-tsconfig": "^4.7.3",
+        "jsonc-parser": "^3.2.1",
         "normalize-package-data": "^6.0.0",
+        "pathe": "^1.1.2",
+        "resolve-pkg-maps": "^1.0.0",
         "type-fest": "^4.12.0"
     },
     "devDependencies": {
@@ -153,14 +157,13 @@
         "@types/node": "18.18.14",
         "@vitest/coverage-v8": "^1.4.0",
         "@vitest/ui": "^1.4.0",
-        "cnpm": "^9.4.0",
+        "@yarnpkg/pnp": "3.3.1",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
-        "eslint-plugin-tsdoc": "^0.2.17",
         "eslint-plugin-vitest": "^0.3.26",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "execa": "^8.0.1",
@@ -169,6 +172,7 @@
         "rimraf": "^5.0.5",
         "semantic-release": "^23.0.5",
         "sort-package-json": "^2.8.0",
+        "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.2",
@@ -185,6 +189,9 @@
     },
     "anolilab": {
         "eslint-config": {
+            "plugin": {
+                "tsdoc": false
+            },
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
             "info_on_disabling_prettier_conflict_rule": false,
