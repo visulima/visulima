@@ -104,23 +104,25 @@ jobs:
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
-              uses: "tj-actions/changed-files@v42"
+              uses: "tj-actions/changed-files@20576b4b9ed46d41e2d45a2256e5e2316dde6834" # v43.0.1
               with:
                   files_ignore: "pnpm-lock.yaml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
-            - name: "Normalize changed files path"
-              shell: "bash"
-              id: "normalized"
-              run: |
-                  echo "files=$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\/\//g')"
-
             - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.files }}"
+              shell: "bash"
+              run: |
+                  files=${{ steps.files.outputs.files }};
+                  // replace backslashes with forward slashes
+                  pnpm run build:affected:packages --files=${files//\\/\/}
 
             - name: "test and coverage"
-              run: "pnpm run test:affected:coverage --files=${{ steps.normalized.outputs.files }}"
+              shell: "bash"
+              run: |
+                  files=${{ steps.files.outputs.files }};
+                  // replace backslashes with forward slashes
+                  pnpm run test:affected:coverage --files=${files//\\/\/}
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
