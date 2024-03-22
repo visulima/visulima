@@ -94,7 +94,8 @@ jobs:
             - name: "normalize changed files path"
               shell: bash
               id: "normalized"
-              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+              run: |
+                  echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"
 
             - name: "Build"
               run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
@@ -144,7 +145,8 @@ jobs:
             - name: "normalize changed files path"
               shell: bash
               id: "normalized"
-              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+              run: |
+                  echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"
 
             - name: "Build"
               run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
@@ -194,7 +196,8 @@ jobs:
             - name: "normalize changed files path"
               shell: bash
               id: "normalized"
-              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+              run: |
+                  echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"
 
             - name: "Build"
               run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
