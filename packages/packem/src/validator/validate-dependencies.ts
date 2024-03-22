@@ -1,6 +1,5 @@
 import { cyan } from "@visulima/colorize";
 
-import logger from "../logger";
 import type { BuildContext } from "../types";
 import { arrayIncludes } from "../utils/array-includes";
 import { getPackageName } from "../utils/get-package-name";

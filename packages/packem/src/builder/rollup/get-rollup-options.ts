@@ -4,7 +4,6 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import { isAbsolute, resolve } from "pathe";
 import type { OutputOptions, PreRenderedChunk, RollupOptions } from "rollup";
-import esbuild from "rollup-plugin-esbuild";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
@@ -15,6 +14,7 @@ import getChunkFilename from "./get-chunk-filename";
 import { cjsPlugin } from "./plugins/cjs";
 import { JSONPlugin } from "./plugins/json";
 import { rawPlugin } from "./plugins/raw";
+import esbuildPlugin from "./plugins/esbuild";
 import { shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 
@@ -110,7 +110,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
             shebangPlugin(),
 
             context.options.rollup.esbuild &&
-                esbuild({
+                esbuildPlugin({
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.esbuild,
                 }),

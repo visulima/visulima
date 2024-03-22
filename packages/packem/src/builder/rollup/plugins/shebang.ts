@@ -7,7 +7,7 @@ import type { Plugin } from "rollup";
 
 const SHEBANG_RE = /^#![^\n]*/;
 
-export function shebangPlugin(): Plugin {
+export const shebangPlugin = (): Plugin => {
     return {
         name: "pack-shebang",
         async writeBundle(options, bundle) {
@@ -26,7 +26,7 @@ export function shebangPlugin(): Plugin {
     };
 }
 
-export function removeShebangPlugin(): Plugin {
+export const removeShebangPlugin = (): Plugin => {
     return {
         name: "pack-remove-shebang",
         renderChunk(code) {
@@ -35,11 +35,11 @@ export function removeShebangPlugin(): Plugin {
     };
 }
 
-export async function makeExecutable(filePath: string) {
+export const makeExecutable = async (filePath: string) => {
     await fsp.chmod(filePath, 0o755 /* rwx r-x r-x */).catch(() => {});
 }
 
-export function getShebang(code: string, append = "\n") {
+export const getShebang = (code: string, append = "\n") => {
     const m = SHEBANG_RE.exec(code);
 
     return m ? m + append : "";

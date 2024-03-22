@@ -6,7 +6,6 @@ const warn = (context: BuildContext, message: string): void => {
         return;
     }
 
-
     logger.debug({
         message,
         prefix: "warn",
