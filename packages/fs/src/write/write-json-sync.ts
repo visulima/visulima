@@ -20,7 +20,7 @@ const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOpti
             const file = readFileSync(path, "utf8");
 
             if (detectIndent) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+                 
                 const { indent: dIndent } = detectIndentFn(file);
 
                 indent = dIndent as string;

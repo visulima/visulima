@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
-import { dirname, join, resolve } from "pathe";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join, resolve } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -361,10 +361,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(matcher, { cwd: absolute.fixtureDirectory })).rejects.toThrow("Some rejection");
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(matcher, { cwd: absolute.fixtureDirectory })).toThrow("Some rejection");
         }
 

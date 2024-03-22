@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
-import { basename, dirname, join, resolve } from "pathe";
 
+import { basename, dirname, join, resolve } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -116,10 +116,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureLink") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 

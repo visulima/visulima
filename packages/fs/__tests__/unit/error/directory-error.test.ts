@@ -1,7 +1,8 @@
-import DirectoryError from "../../../src/error/directory-error";
 import { describe, expect, it } from "vitest";
 
-describe("DirectoryError", () => {
+import DirectoryError from "../../../src/error/directory-error";
+
+describe("directoryError", () => {
     it("should set the error message and code when creating a new instance with a message", () => {
         expect.assertions(2);
 
@@ -45,7 +46,7 @@ describe("DirectoryError", () => {
 
         expect(() => {
             directoryError.name = "NewName";
-        }).toThrowError("Cannot overwrite name of DirectoryError");
+        }).toThrow("Cannot overwrite name of DirectoryError");
     });
 
     it("should have the error message as a string", () => {
@@ -58,10 +59,12 @@ describe("DirectoryError", () => {
     });
 
     it("should be read-only when accessing the code property", () => {
+        expect.assertions(1);
+
         const error = new DirectoryError("Invalid operation");
 
         expect(() => {
             error.code = "EISDIR";
-        }).toThrowError("Cannot overwrite code EISDIR");
+        }).toThrow("Cannot overwrite code EISDIR");
     });
 });

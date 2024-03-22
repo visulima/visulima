@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
-import { join } from "pathe";
 
+import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

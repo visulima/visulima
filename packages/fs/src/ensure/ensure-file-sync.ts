@@ -1,11 +1,12 @@
 import { lstatSync, writeFileSync } from "node:fs";
+
 import { dirname } from "pathe";
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDirSync from "./ensure-dir-sync";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import { getFileInfoType } from "../utils/get-file-info-type";
 import toPath from "../utils/to-path";
+// eslint-disable-next-line unicorn/prevent-abbreviations
+import ensureDirSync from "./ensure-dir-sync";
 
 /**
  * Ensures that the file exists.
