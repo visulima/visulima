@@ -112,12 +112,16 @@ jobs:
 
             - name: "Build"
               shell: "bash"
-              run: "pnpm run build:affected:packages --files=${${{ steps.files.outputs.all_changed_files }}//\\/\/}"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+                  pnpm run build:affected:packages --files=${files//\\/\/}
 
 
             - name: "test and coverage"
               shell: "bash"
-              run: "pnpm run test:affected:coverage --files=${${{ steps.files.outputs.all_changed_files }}//\\/\/}"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+                  pnpm run test:affected:coverage --files=${files//\\/\/}
 
 
             - name: "Upload code coverage to codecov"
