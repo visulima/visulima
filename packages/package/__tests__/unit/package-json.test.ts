@@ -1,6 +1,6 @@
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import { findPackageJson, parsePackageJson } from "../../src/package-json";

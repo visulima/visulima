@@ -1,6 +1,6 @@
-import { dirname, join } from "pathe";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it, vi } from "vitest";
 

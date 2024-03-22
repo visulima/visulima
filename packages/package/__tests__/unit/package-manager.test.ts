@@ -1,19 +1,18 @@
 import { platform } from "node:os";
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { execa } from "execa";
+import { dirname, join } from "pathe";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
 import { findPackageManager, getPackageManagerVersion } from "../../src/package-manager";
-import { execa } from "execa";
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
 vi.mock("node:child_process", () => {
     return {
         execSync: (command: string) => {
-            console.log(command);
             if (command === "npm --version") {
                 return "7.0.15";
             }

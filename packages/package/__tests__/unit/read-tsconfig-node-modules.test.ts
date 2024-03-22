@@ -5,18 +5,17 @@
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
 import { rm } from "node:fs/promises";
-import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { execaNode } from "execa";
-import { join } from "pathe";
+import { dirname,join } from "pathe";
+import stripAnsi from "strip-ansi";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import readTsConfig from "../../src/read-tsconfig";
 import { esc, getTscTsconfig } from "../helpers";
-import stripAnsi from "strip-ansi";
 
 describe("node_modules", () => {
     let distribution: string;
