@@ -116,13 +116,11 @@ jobs:
                   files="${{ steps.files.outputs.all_changed_files }}";
                   pnpm run build:affected:packages --files=${files//\\/\/}
 
-
             - name: "test and coverage"
               shell: "bash"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
                   pnpm run test:affected:coverage --files=${files//\\/\/}
-
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
