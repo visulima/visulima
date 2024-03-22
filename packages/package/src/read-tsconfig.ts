@@ -29,7 +29,7 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
     const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath);
 
     if (!resolvedExtendsPath) {
-        throw new NotFoundError(`for '${extendsPath}' found.`);
+        throw new NotFoundError(`No such file or directory, for '${extendsPath}' found.`);
     }
 
     if (circularExtendsTracker.has(resolvedExtendsPath)) {
