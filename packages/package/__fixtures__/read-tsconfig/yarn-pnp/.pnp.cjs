@@ -38,7 +38,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@org/tsconfig-package", "file:../org-tsconfig-package#../org-tsconfig-package::hash=243ad2&locator=root-workspace-0b6124%40workspace%3A."],\
-            ["get-tsconfig", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@visulima/package", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."],\
             ["tsconfig-package", "file:../tsconfig-package#../tsconfig-package::hash=abb316&locator=root-workspace-0b6124%40workspace%3A."]\
           ],\
           "linkType": "SOFT"\
@@ -53,11 +53,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
-      ["get-tsconfig", [\
+      ["@visulima/package", [\
         ["link:../../..::locator=root-workspace-0b6124%40workspace%3A.", {\
           "packageLocation": "../../../",\
           "packageDependencies": [\
-            ["get-tsconfig", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."]\
+            ["@visulima/package", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."]\
           ],\
           "linkType": "SOFT",\
           "discardFromLookup": true\
@@ -69,7 +69,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["root-workspace-0b6124", "workspace:."],\
             ["@org/tsconfig-package", "file:../org-tsconfig-package#../org-tsconfig-package::hash=243ad2&locator=root-workspace-0b6124%40workspace%3A."],\
-            ["get-tsconfig", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@visulima/package", "link:../../..::locator=root-workspace-0b6124%40workspace%3A."],\
             ["tsconfig-package", "file:../tsconfig-package#../tsconfig-package::hash=abb316&locator=root-workspace-0b6124%40workspace%3A."]\
           ],\
           "linkType": "SOFT"\

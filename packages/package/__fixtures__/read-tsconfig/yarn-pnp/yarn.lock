@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-tsconfig@link:../../..::locator=root-workspace-0b6124%40workspace%3A.":
+"@visulima/package@link:../../..::locator=root-workspace-0b6124%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "get-tsconfig@link:../../..::locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@visulima/package@link:../../..::locator=root-workspace-0b6124%40workspace%3A."
   languageName: node
   linkType: soft
 
@@ -23,7 +23,7 @@ __metadata:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     "@org/tsconfig-package": ../org-tsconfig-package
-    get-tsconfig: "link:../../.."
+    @visulima/package: "link:../../.."
     tsconfig-package: ../tsconfig-package
   languageName: unknown
   linkType: soft

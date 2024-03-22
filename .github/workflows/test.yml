@@ -110,11 +110,16 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            - name: "normalize changed files path"
+              shell: bash
+              id: "normalized"
+              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+
             - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
 
             - name: "test and coverage"
-              run: "pnpm run test:affected:coverage --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run test:affected:coverage --files=${{ steps.normalized.outputs.all_changed_files }}"
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"

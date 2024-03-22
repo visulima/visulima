@@ -6,7 +6,7 @@
  */
 import { rm } from "node:fs/promises";
 
-import { writeFileSync, writeJsonSync } from "@visulima/fs";
+import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -20,6 +20,7 @@ describe("parse-tsconfig merges", () => {
     beforeEach(async () => {
         distribution = temporaryDirectory();
 
+        ensureDirSync(distribution);
         writeFileSync(join(distribution, "file.ts"), "");
     });
 
@@ -127,7 +128,7 @@ describe("parse-tsconfig merges", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -357,7 +358,7 @@ describe("parse-tsconfig merges", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });

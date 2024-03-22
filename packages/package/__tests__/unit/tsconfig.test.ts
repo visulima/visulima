@@ -43,7 +43,6 @@ describe("tsconfig", () => {
                 configFileName: "tsconfig.custom.json",
             };
 
-
             const path = join(distribution, options.configFileName);
 
             writeJsonSync(path, {});

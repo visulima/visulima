@@ -46,7 +46,7 @@ describe("relative path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -76,7 +76,7 @@ describe("relative path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -100,7 +100,7 @@ describe("relative path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -123,6 +123,7 @@ describe("relative path", () => {
 
         const testDirectory = `${distribution}/tests/`;
         const expectedTsconfig = await getTscTsconfig(testDirectory);
+
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(testDirectory, "tsconfig.json"));
@@ -142,6 +143,7 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
     });
 
@@ -160,6 +162,7 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
     });
 

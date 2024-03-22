@@ -3074,6 +3074,22 @@ importers:
         specifier: workspace:*
         version: link:../../..
 
+  packages/package/__fixtures__/read-tsconfig/org-tsconfig-package: {}
+
+  packages/package/__fixtures__/read-tsconfig/tsconfig-package: {}
+
+  packages/package/__fixtures__/read-tsconfig/yarn-pnp:
+    dependencies:
+      '@org/tsconfig-package':
+        specifier: ../org-tsconfig-package
+        version: link:../org-tsconfig-package
+      '@visulima/package':
+        specifier: link:../../..
+        version: link:../../..
+      tsconfig-package:
+        specifier: ../tsconfig-package
+        version: link:../tsconfig-package
+
   packages/pagination:
     dependencies:
       qs:

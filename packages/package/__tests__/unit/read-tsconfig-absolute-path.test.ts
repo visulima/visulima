@@ -30,20 +30,21 @@ describe("parse-tsconfig - absolute path", () => {
     it("absolute path", async () => {
         expect.assertions(1);
 
-        writeJsonSync(join(distribution, "dep/tsconfig.json"), {
+        writeJsonSync(join(distribution, "dep", "tsconfig.json"), {
             compilerOptions: {
                 jsx: "react",
                 strict: true,
             },
         });
         writeJsonSync(join(distribution, "tsconfig.json"), {
-            extends: join(distribution, "dep/tsconfig.json"),
+            extends: join(distribution, "dep", "tsconfig.json"),
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
+
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -64,7 +65,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -72,20 +73,20 @@ describe("parse-tsconfig - absolute path", () => {
     it("arbitrary extension", async () => {
         expect.assertions(1);
 
-        writeJsonSync(join(distribution, "dep/tsconfig.json"), {
+        writeJsonSync(join(distribution, "dep", "tsconfig.tsx"), {
             compilerOptions: {
-                    jsx: "react",
-                    strict: true,
-                },
+                jsx: "react",
+                strict: true,
+            },
         });
         writeJsonSync(join(distribution, "tsconfig.json"), {
-                extends: join(distribution, "dep/tsconfig.tsx"),
+            extends: join(distribution, "dep/tsconfig.tsx"),
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });

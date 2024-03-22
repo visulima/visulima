@@ -77,7 +77,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -98,7 +98,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -172,7 +172,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -198,7 +198,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -221,7 +221,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -242,7 +242,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -273,7 +273,7 @@ describe("node_modules", () => {
         });
 
         it("extensionless file should not work", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig"), {
                 compilerOptions: {
@@ -292,7 +292,7 @@ describe("node_modules", () => {
         });
 
         it("arbitrary extension should not work", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.ts"), {
                 compilerOptions: {
@@ -314,20 +314,20 @@ describe("node_modules", () => {
     it('directory named "tsconfig.json"', async () => {
         expect.assertions(1);
 
-        writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json", "tsconfig.ts"), {
+        writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json", "tsconfig.json"), {
             compilerOptions: {
                 jsx: "react-native",
                 strict: true,
             },
         });
         writeJsonSync(join(distribution, "tsconfig.json"), {
-            extends: "dep/tsconfig.ts",
+            extends: "dep/tsconfig.json",
         });
 
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -335,17 +335,17 @@ describe("node_modules", () => {
     it("extends dependency package far", async () => {
         expect.assertions(1);
 
-        writeJsonSync(join(distribution, "nested", "nested", "nested", "tsconfig.ts"), {
+        writeJsonSync(join(distribution, "nested", "nested", "nested", "tsconfig.json"), {
             extends: "dep/tsconfig.json",
         });
-        writeJsonSync(join(distribution, "dep", "tsconfig.json"), {
+        writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json"), {
             compilerOptions: {
-                jsx: "react",
                 strict: true,
+                jsx: "react",
             },
         });
 
-        const fixturePath = `${distribution}/nested/nested/nested`;
+        const fixturePath = join(distribution, "nested", "nested", "nested");
         const expectedTsconfig = await getTscTsconfig(fixturePath);
         delete expectedTsconfig.files;
 
@@ -380,7 +380,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -415,7 +415,7 @@ describe("node_modules", () => {
 
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -467,7 +467,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -497,7 +497,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -531,7 +531,7 @@ describe("node_modules", () => {
 
                 delete expectedTsconfig.files;
 
-                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
                 expect(tsconfig).toStrictEqual(expectedTsconfig);
             });
@@ -563,7 +563,7 @@ describe("node_modules", () => {
                 const expectedTsconfig = await getTscTsconfig(distribution);
                 delete expectedTsconfig.files;
 
-                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
 
                 expect(tsconfig).toStrictEqual(expectedTsconfig);
             });
@@ -601,7 +601,7 @@ describe("node_modules", () => {
         });
 
         it("missing subpath should fail", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
                 exports: {

@@ -91,11 +91,16 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            - name: "normalize changed files path"
+              shell: bash
+              id: "normalized"
+              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+
             - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
 
             - name: "lint eslint"
-              run: "pnpm run lint:affected:eslint --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run lint:affected:eslint --files=${{ steps.normalized.outputs.all_changed_files }}"
 
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
@@ -136,11 +141,16 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            - name: "normalize changed files path"
+              shell: bash
+              id: "normalized"
+              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+
             - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
 
             - name: "lint package.json"
-              run: "pnpm run lint:affected:package-json --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run lint:affected:package-json --files=${{ steps.normalized.outputs.all_changed_files }}"
 
     types-lint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
@@ -181,11 +191,16 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            - name: "normalize changed files path"
+              shell: bash
+              id: "normalized"
+              run: 'echo "::set-output name=all_changed_files::$(echo ${{ steps.files.outputs.all_changed_files }} | sed 's/\\\\/\//g')"'
+
             - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run build:affected:packages --files=${{ steps.normalized.outputs.all_changed_files }}"
 
             - name: "lint typescript files"
-              run: "pnpm run lint:affected:types --files=${{ steps.files.outputs.all_changed_files }}"
+              run: "pnpm run lint:affected:types --files=${{ steps.normalized.outputs.all_changed_files }}"
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"

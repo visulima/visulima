@@ -1,11 +1,11 @@
-import type {WriteJsonOptions} from "@visulima/fs";
-import { findUp, findUpSync  , writeJson } from "@visulima/fs";
+import type { WriteJsonOptions } from "@visulima/fs";
+import { findUp, findUpSync, writeJson } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { toPath } from "@visulima/fs/utils";
 import { join } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
-import readTsConfig from "./read-ts-config";
+import readTsConfig from "./read-tsconfig";
 import type { TsConfigJsonResolved } from "./types";
 
 type Options = {
@@ -128,4 +128,4 @@ export const writeTsConfig = async (data: TsConfigJson, options: WriteJsonOption
 };
 
 // @deprecate Please use `writeTsconfig` instead.
-export const writeTSConfig = writeTsConfig
+export const writeTSConfig = writeTsConfig;

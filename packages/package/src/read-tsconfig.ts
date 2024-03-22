@@ -7,6 +7,7 @@
 import { realpathSync } from "node:fs";
 
 import { readFileSync } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
 import { parse } from "jsonc-parser";
 import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "pathe";
 import type { TsConfigJson } from "type-fest";
@@ -14,17 +15,21 @@ import type { TsConfigJson } from "type-fest";
 import type { TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
 
+type Options = {
+    tscCompatible?: boolean;
+};
+
 const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
 
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) as unknown;
 // eslint-disable-next-line security/detect-unsafe-regex
 const normalizePath = (path: string): string => toNamespacedPath(/^\.{1,2}(?:\/.*)?$/.test(path) ? path : `./${path}`);
 
-const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>) => {
+const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, options?: Options) => {
     const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath);
 
     if (!resolvedExtendsPath) {
-        throw new Error(`File '${extendsPath}' not found.`);
+        throw new NotFoundError(`File '${extendsPath}' not found.`);
     }
 
     if (circularExtendsTracker.has(resolvedExtendsPath)) {
@@ -35,10 +40,12 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
 
     const extendsDirectoryPath = dirname(resolvedExtendsPath);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const extendsConfig = internalParseTsConfig(resolvedExtendsPath, circularExtendsTracker);
+    const extendsConfig = internalParseTsConfig(resolvedExtendsPath, options, circularExtendsTracker);
+
     delete extendsConfig.references;
 
     const { compilerOptions } = extendsConfig;
+
     if (compilerOptions) {
         const resolvePaths = ["baseUrl", "outDir"] as const;
 
@@ -70,8 +77,9 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
+const internalParseTsConfig = (tsconfigPath: string, options?: Options, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
     let realTsconfigPath: string;
+
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         realTsconfigPath = realpathSync(tsconfigPath) as string;
@@ -115,7 +123,7 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,etc/no-assign-mutated-array
         for (const extendsPath of extendsPathList.reverse()) {
-            const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker));
+            const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker), options);
             const merged = {
                 ...extendsConfig,
                 ...config,
@@ -132,6 +140,7 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
                     ...config.watchOptions,
                 };
             }
+
             config = merged;
         }
     }
@@ -155,6 +164,7 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
         }
 
         const { outDir } = compilerOptions;
+
         if (outDir) {
             if (!Array.isArray(config.exclude)) {
                 config.exclude = [];
@@ -165,6 +175,38 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
             }
 
             compilerOptions.outDir = normalizePath(outDir);
+        }
+
+        if (options?.tscCompatible && compilerOptions.module === "node16") {
+            compilerOptions.allowSyntheticDefaultImports = compilerOptions.allowSyntheticDefaultImports ?? true;
+            compilerOptions.esModuleInterop = compilerOptions.esModuleInterop ?? true;
+            compilerOptions.moduleDetection = compilerOptions.moduleDetection ?? "force";
+            compilerOptions.moduleResolution = compilerOptions.moduleResolution ?? "node16";
+            compilerOptions.target = compilerOptions.target ?? "es2022";
+            compilerOptions.useDefineForClassFields = compilerOptions.useDefineForClassFields ?? true;
+        }
+
+        if (options?.tscCompatible && compilerOptions.strict) {
+            compilerOptions.noImplicitAny = compilerOptions.noImplicitAny ?? true;
+            compilerOptions.noImplicitThis = compilerOptions.noImplicitThis ?? true;
+            compilerOptions.strictNullChecks = compilerOptions.strictNullChecks ?? true;
+            compilerOptions.strictFunctionTypes = compilerOptions.strictFunctionTypes ?? true;
+            compilerOptions.strictBindCallApply = compilerOptions.strictBindCallApply ?? true;
+            compilerOptions.strictPropertyInitialization = compilerOptions.strictPropertyInitialization ?? true;
+            compilerOptions.alwaysStrict = compilerOptions.alwaysStrict ?? true;
+            compilerOptions.useUnknownInCatchVariables = compilerOptions.useUnknownInCatchVariables ?? true;
+        }
+
+        if (options?.tscCompatible && compilerOptions.isolatedModules) {
+            compilerOptions.preserveConstEnums = compilerOptions.preserveConstEnums ?? true;
+        }
+
+        if (options?.tscCompatible && compilerOptions.esModuleInterop) {
+            compilerOptions.allowSyntheticDefaultImports = compilerOptions.allowSyntheticDefaultImports ?? true;
+        }
+
+        if (options?.tscCompatible && compilerOptions.target === "esnext") {
+            compilerOptions.useDefineForClassFields = compilerOptions.useDefineForClassFields ?? true;
         }
     } else {
         config.compilerOptions = {};
@@ -189,6 +231,6 @@ const internalParseTsConfig = (tsconfigPath: string, circularExtendsTracker = ne
     return config;
 };
 
-const readTsConfig = (tsconfigPath: string): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath);
+const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath, options);
 
 export default readTsConfig;

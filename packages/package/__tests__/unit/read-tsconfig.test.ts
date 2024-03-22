@@ -96,7 +96,7 @@ describe("parses tsconfig", () => {
             },
         });
 
-        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
         const expectedTsconfig = await getTscTsconfig(distribution);
 
         delete expectedTsconfig.files;
