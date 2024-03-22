@@ -1,5 +1,5 @@
 import { linkSync, lstatSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname } from "pathe";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "./ensure-dir-sync";

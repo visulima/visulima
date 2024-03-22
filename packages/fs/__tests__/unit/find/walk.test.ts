@@ -1,13 +1,13 @@
 import { mkdir, rm } from "node:fs/promises";
-import { resolve } from "node:path";
+import { resolve } from "pathe";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { walk } from "../../src";
-import type { WalkEntry, WalkOptions } from "../../src/types";
+import { walk } from "../../../src";
+import type { WalkEntry, WalkOptions } from "../../../src/types";
 
-const fixture = resolve(fileURLToPath(import.meta.url), "../../../__fixtures__/walk");
+const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk");
 
 const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];

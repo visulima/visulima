@@ -1,5 +1,5 @@
 import { lstat, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname } from "pathe";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
