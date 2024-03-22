@@ -1,3 +1,11 @@
+## @visulima/cerebro [1.0.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.9...@visulima/cerebro@1.0.10) (2024-03-22)
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.19
+
 ## @visulima/cerebro [1.0.9](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.8...@visulima/cerebro@1.0.9) (2024-03-19)
 
 
