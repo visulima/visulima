@@ -1,3 +1,10 @@
+## @visulima/package [1.4.0](https://github.com/visulima/visulima/compare/@visulima/package@1.3.5...@visulima/package@1.4.0) (2024-03-22)
+
+
+### Features
+
+* switched get-tsconfig with internal code, add cache ([#360](https://github.com/visulima/visulima/issues/360)) ([3cdd387](https://github.com/visulima/visulima/commit/3cdd38793f6413edfbbc1af48a5a27fc8d4a9172))
+
 ## @visulima/package [1.3.5](https://github.com/visulima/visulima/compare/@visulima/package@1.3.4...@visulima/package@1.3.5) (2024-03-20)
 
 
