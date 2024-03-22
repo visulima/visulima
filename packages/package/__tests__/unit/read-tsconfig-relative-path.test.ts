@@ -143,7 +143,7 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+         
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
     });
 
@@ -162,7 +162,7 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+         
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
     });
 

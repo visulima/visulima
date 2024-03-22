@@ -340,8 +340,8 @@ describe("node_modules", () => {
         });
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json"), {
             compilerOptions: {
-                strict: true,
                 jsx: "react",
+                strict: true,
             },
         });
 
@@ -423,6 +423,8 @@ describe("node_modules", () => {
 
     // TODO: test pnp package exports
     it("yarn pnp", async () => {
+        expect.assertions(1);
+
         const { stdout } = await execaNode("./index.js", [], {
             cwd: join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "read-tsconfig", "yarn-pnp"),
             nodeOptions: ["--require", "./.pnp.cjs"],
