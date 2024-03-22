@@ -1,5 +1,4 @@
-import { join, resolve } from "node:path";
-
+import { join, resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import apiRouteFileParser from "../../../../../../../src/framework/cli/command/list/routes/next/api-route-file-parser";

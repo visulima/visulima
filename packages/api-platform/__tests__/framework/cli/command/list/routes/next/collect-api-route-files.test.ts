@@ -1,5 +1,4 @@
-import { join, resolve } from "node:path";
-
+import { join, resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import collectApiRouteFiles from "../../../../../../../src/framework/cli/command/list/routes/next/collect-api-route-files";
@@ -13,8 +12,8 @@ describe("collect-api-route-files", () => {
         const apiRouteFiles = await collectApiRouteFiles(resolve(fixturesPath, "pages-example"));
 
         expect(apiRouteFiles).toStrictEqual([
-            join(fixturesPath, "pages-example/pages/api/hello.ts"),
-            join(fixturesPath, "pages-example/pages/api/jsdefaultroute.js"),
+            join(fixturesPath, "pages-example", "pages", "api", "hello.ts"),
+            join(fixturesPath, "pages-example", "pages", "api", "jsdefaultroute.js"),
         ]);
     });
 
@@ -24,8 +23,8 @@ describe("collect-api-route-files", () => {
         const apiRouteFiles = await collectApiRouteFiles(resolve(fixturesPath, "src-and-pages-example"));
 
         expect(apiRouteFiles).toStrictEqual([
-            join(fixturesPath, "src-and-pages-example/pages/api/hello.ts"),
-            join(fixturesPath, "src-and-pages-example/pages/api/jsdefaultroute.js"),
+            join(fixturesPath, "src-and-pages-example", "pages", "api", "hello.ts"),
+            join(fixturesPath, "src-and-pages-example", "pages", "api", "jsdefaultroute.js"),
         ]);
     });
 
@@ -35,8 +34,8 @@ describe("collect-api-route-files", () => {
         const apiRouteFiles = await collectApiRouteFiles(resolve(fixturesPath, "src-example"));
 
         expect(apiRouteFiles).toStrictEqual([
-            join(fixturesPath, "src-example/src/pages/api/hello.ts"),
-            join(fixturesPath, "src-example/src/pages/api/jsdefaultroute.js"),
+            join(fixturesPath, "src-example", "src", "pages", "api", "hello.ts"),
+            join(fixturesPath, "src-example", "src", "pages", "api", "jsdefaultroute.js"),
         ]);
     });
 });
