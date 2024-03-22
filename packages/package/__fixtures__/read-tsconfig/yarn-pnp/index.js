@@ -1,11 +1,12 @@
-const { parseTsConfig } = require("@visulima/package");
+const { readTsConfig } = require("@visulima/package");
+
 const tests = [
-    () => parseTsConfig("./tsconfig.package.json"),
-    () => parseTsConfig("./tsconfig.package-path.json"),
-    () => parseTsConfig("./tsconfig.package-path-directory.json"),
-    () => parseTsConfig("./tsconfig.org-package.json"),
-    () => parseTsConfig("./tsconfig.missing-extends.json"),
-    () => parseTsConfig("./tsconfig.invalid-extends.json"),
+    () => readTsConfig("./tsconfig.package.json"),
+    () => readTsConfig("./tsconfig.package-path.json"),
+    () => readTsConfig("./tsconfig.package-path-directory.json"),
+    () => readTsConfig("./tsconfig.org-package.json"),
+    () => readTsConfig("./tsconfig.missing-extends.json"),
+    () => readTsConfig("./tsconfig.invalid-extends.json"),
 ];
 
 for (const test of tests) {

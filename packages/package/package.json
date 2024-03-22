@@ -159,7 +159,6 @@
         "@vitest/coverage-v8": "^1.4.0",
         "@vitest/ui": "^1.4.0",
         "@yarnpkg/pnp": "3.3.1",
-        "cnpm": "^9.4.0",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",

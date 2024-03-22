@@ -112,18 +112,12 @@ jobs:
 
             - name: "Build"
               shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  // replace backslashes with forward slashes
-                  pnpm run build:affected:packages --files=${files//\\/\/}
+              run: "pnpm run build:affected:packages --files=${${{ steps.files.outputs.all_changed_files }}//\\/\/}"
 
 
             - name: "test and coverage"
               shell: "bash"
-              run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  // replace backslashes with forward slashes
-                  pnpm run test:affected:coverage --files=${files//\\/\/}
+              run: "pnpm run test:affected:coverage --files=${${{ steps.files.outputs.all_changed_files }}//\\/\/}"
 
 
             - name: "Upload code coverage to codecov"

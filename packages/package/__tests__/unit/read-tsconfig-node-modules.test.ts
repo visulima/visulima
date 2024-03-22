@@ -285,10 +285,8 @@ describe("node_modules", () => {
                 extends: "dep/tsconfig",
             });
 
-            const errorMessage = "File 'dep/tsconfig' not found";
-            await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
-
-            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+            await expect(getTscTsconfig(distribution)).rejects.toThrow("File 'dep/tsconfig' not found");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep/tsconfig' found.");
         });
 
         it("arbitrary extension should not work", async () => {
@@ -304,10 +302,8 @@ describe("node_modules", () => {
                 extends: "dep/tsconfig.ts",
             });
 
-            const errorMessage = "File 'dep/tsconfig.ts' not found";
-            await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
-
-            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+            await expect(getTscTsconfig(distribution)).rejects.toThrow("File 'dep/tsconfig.ts' not found");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep/tsconfig.ts' found.");
         });
     });
 
@@ -338,6 +334,7 @@ describe("node_modules", () => {
         writeJsonSync(join(distribution, "nested", "nested", "nested", "tsconfig.json"), {
             extends: "dep/tsconfig.json",
         });
+        writeFileSync(join(distribution, "nested", "nested", "nested", "file.ts"), "");
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json"), {
             compilerOptions: {
                 jsx: "react",
@@ -349,7 +346,7 @@ describe("node_modules", () => {
         const expectedTsconfig = await getTscTsconfig(fixturePath);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -437,8 +434,8 @@ describe("node_modules", () => {
                 "{ compilerOptions: { strict: true, jsx: 'react' } }",
                 "{ compilerOptions: { strict: true, jsx: 'react' } }",
                 "{ compilerOptions: { strict: true, jsx: 'react' } }",
-                "Error: File 'non-existent-package' not found.",
-                "Error: File 'fs/promises' not found.",
+                "Error: ENOENT: No such file or directory, for 'non-existent-package' found.",
+                "Error: ENOENT: No such file or directory, for 'fs/promises' found.",
             ].join("\n"),
         );
     });
@@ -594,11 +591,8 @@ describe("node_modules", () => {
                     extends: "dep",
                 });
 
-                const errorMessage = "File 'dep' not found.";
-
-                await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
-
-                expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+                await expect(getTscTsconfig(distribution)).rejects.toThrow("File 'dep' not found.");
+                expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep' found.");
             });
         });
 
@@ -626,11 +620,8 @@ describe("node_modules", () => {
                 extends: "dep/missing",
             });
 
-            const errorMessage = "File 'dep/missing' not found.";
-
-            await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
-
-            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+            await expect(getTscTsconfig(distribution)).rejects.toThrow("File 'dep/missing' not found.");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep/missing' found.");
         });
 
         // Seems like a TypeScript bug
@@ -699,11 +690,8 @@ describe("node_modules", () => {
                 extends: "dep",
             });
 
-            const errorMessage = "File 'dep' not found.";
-
-            await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
-
-            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+            await expect(getTscTsconfig(distribution)).rejects.toThrow("File 'dep' not found.");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep' found.");
         });
 
         it("package.json ignored in nested directory", async () => {

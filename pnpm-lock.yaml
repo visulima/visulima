@@ -2998,9 +2998,6 @@ importers:
       '@yarnpkg/pnp':
         specifier: 3.3.1
         version: 3.3.1
-      cnpm:
-        specifier: ^9.4.0
-        version: 9.4.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -15727,24 +15724,6 @@ packages:
   /clsx@2.1.0:
     resolution: {integrity: sha512-m3iNNWpd9rl3jvvcBnu70ylMdrXt8Vlq4HYadnU5fwcOtvkSQWPmj7amUcDT2qYI7risszBjI5AUIUox9D16pg==}
     engines: {node: '>=6'}
-
-  /cnpm@9.4.0:
-    resolution: {integrity: sha512-oxvozguyEuXp/3Ie0JEtmHKt8+OayZfNH40/B1gmtok2+0dHTS0Kt4uUn5rZ8qIYNk5UzzFVmu1pZxEn0no/iQ==}
-    engines: {node: '>= 14.18.0'}
-    hasBin: true
-    dev: true
-    bundledDependencies:
-      - auto-correct
-      - bagpipe
-      - commander
-      - cross-spawn
-      - giturl
-      - ini
-      - npm
-      - npm-request
-      - npminstall
-      - open
-      - urllib
 
   /co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}

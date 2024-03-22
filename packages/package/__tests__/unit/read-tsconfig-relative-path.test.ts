@@ -114,6 +114,7 @@ describe("relative path", () => {
             },
             extends: "..",
         });
+        writeFileSync(join(distribution, "tests", "file.ts"), "");
         writeJsonSync(join(distribution, "tsconfig.json"), {
             compilerOptions: {
                 allowJs: true,
@@ -126,7 +127,7 @@ describe("relative path", () => {
 
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(testDirectory, "tsconfig.json"));
+        const tsconfig = readTsConfig(join(testDirectory, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -143,8 +144,8 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
-         
-        expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
+
+        expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './directory' found.");
     });
 
     it("should not resolve directory even with package.json#tsconfig", async () => {
@@ -162,8 +163,8 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
-         
-        expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './directory' not found.");
+
+        expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './directory' found.");
     });
 
     it("should resolve outDir in extends", async () => {

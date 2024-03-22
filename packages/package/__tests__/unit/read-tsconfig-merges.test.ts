@@ -36,7 +36,7 @@ describe("parse-tsconfig merges", () => {
                 extends: "./non-existent.json",
             });
 
-            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("File './non-existent.json' not found.");
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './non-existent.json' found.");
         });
 
         it("invalid json", async () => {
