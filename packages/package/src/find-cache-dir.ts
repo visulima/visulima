@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prevent-abbreviations
 import { cwd } from "node:process";
 
 import { ensureDirSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
@@ -29,6 +30,9 @@ export const findCacheDirectory = async (name: string, options: Options): Promis
     const cacheDirectory = join(nodeModulesDirectory, ".cache", name);
     const cacheNameDirectory = join(cacheDirectory, name);
 
+    // If node_modules/.cache/${name} exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
+    // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
+    // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
     if (await isAccessible(cacheNameDirectory, W_OK) || await isAccessible(cacheDirectory, W_OK) || await isAccessible(nodeModulesDirectory, W_OK)) {
         return undefined;
     }
@@ -47,6 +51,9 @@ export const findCacheDirectorySync = (name: string, options: Options): string |
     const cacheDirectory = join(nodeModulesDirectory, ".cache", name);
     const cacheNameDirectory = join(cacheDirectory, name);
 
+    // If node_modules/.cache/${name} exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
+    // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
+    // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
     if (isAccessibleSync(cacheNameDirectory, W_OK) || isAccessibleSync(cacheDirectory, W_OK) || isAccessibleSync(nodeModulesDirectory, W_OK)) {
         return undefined;
     }

@@ -184,6 +184,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [get-tsconfig](https://github.com/privatenumber/get-tsconfig) - Get the TypeScript configuration from a project.
 -   [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
+-   [find-cache-dir](https://github.com/sindresorhus/find-cache-dir) - Find the cache directory.
 
 ## License
 
