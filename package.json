@@ -217,8 +217,8 @@
         "sort-package-json": "^2.8.0",
         "textlint": "^14.0.4",
         "tsup": "^8.0.2",
-        "typescript": "^5.4.2",
-        "vite": "^5.2.2"
+        "typescript": "^5.4.3",
+        "vite": "^5.2.3"
     },
     "packageManager": "pnpm@8.15.4",
     "engines": {
@@ -230,7 +230,7 @@
             "tsconfig-paths": "^4.2.0",
             "cosmiconfig-typescript-loader": "^5.0.0",
             "estree-util-build-jsx": "^3.0.0",
-            "typescript": "^5.4.2",
+            "typescript": "^5.4.3",
             "semver": "^7.5.4",
             "got@<11.8.5": ">=11.8.5",
             "trim@<0.0.3": ">=0.0.3",

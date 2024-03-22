@@ -156,7 +156,7 @@
         "sort-package-json": "^2.8.0",
         "standard": "^17.1.0",
         "tsup": "^8.0.2",
-        "typescript": "^5.4.2",
+        "typescript": "^5.4.3",
         "vitest": "^1.4.0"
     },
     "engines": {
