@@ -2,10 +2,10 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, findUpSync } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
 import { dirname, join } from "pathe";
 
 import { parsePackageJson } from "./package-json";
-import { NotFoundError } from "@visulima/fs/error";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
@@ -98,7 +98,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
     );
 
     if (!foundFile) {
-        throw new NotFoundError("Could not find lock file");
+        throw new NotFoundError("Could not find a package manager");
     }
 
     if (foundFile.endsWith("package.json")) {
@@ -145,7 +145,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
         };
     }
 
-    throw new Error("Could not find lock file");
+    throw new Error("Could not find a package manager");
 };
 
 /**
