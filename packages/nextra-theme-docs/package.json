@@ -109,7 +109,7 @@
         "react-medium-image-zoom": "^5.1.10",
         "react-wrap-balancer": "^1.1.0",
         "scroll-into-view-if-needed": "^3.1.0",
-        "tailwind-merge": "^2.2.1"
+        "tailwind-merge": "^2.2.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -155,10 +155,10 @@
         "lightningcss-cli": "^1.24.1",
         "next": "^13.5.6",
         "nextra": "2.13.4",
-        "postcss": "^8.4.37",
+        "postcss": "^8.4.38",
         "postcss-cli": "^11.0.0",
         "postcss-focus-visible": "^9.0.1",
-        "postcss-import": "^16.0.1",
+        "postcss-import": "^16.1.0",
         "postcss-lightningcss": "1.0.0",
         "prettier": "^3.2.5",
         "react": "^18.2.0",
@@ -170,7 +170,7 @@
         "tailwindcss": "^3.4.1",
         "tailwindcss-hyphens": "^0.1.0",
         "tsup": "8.0.2",
-        "typescript": "^5.4.2",
+        "typescript": "^5.4.3",
         "vitest": "^1.4.0",
         "zod": "^3.22.4"
     },
