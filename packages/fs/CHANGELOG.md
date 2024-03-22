@@ -1,3 +1,16 @@
+## @visulima/fs [1.11.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.0...@visulima/fs@1.11.1) (2024-03-22)
+
+
+### Bug Fixes
+
+* **fs:** updated type-fest ([aa84569](https://github.com/visulima/visulima/commit/aa84569aca39f2b3af3508fbae9a56ea2da33b9e))
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.2
+
 ## @visulima/fs [1.11.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.10.0...@visulima/fs@1.11.0) (2024-03-20)
 
 
