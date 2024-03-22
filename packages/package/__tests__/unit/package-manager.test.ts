@@ -1,12 +1,12 @@
 import { platform } from "node:os";
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { execa } from "execa";
+import { dirname, join } from "pathe";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
-import { getPackageManagerVersion } from "../../src/package-manager";
+import { findPackageManager, getPackageManagerVersion } from "../../src/package-manager";
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
@@ -38,43 +38,76 @@ describe("package-manager", () => {
         });
     });
 
-    describe("whichPackageManagerRuns", () => {
-        it("detects yarn", () => {
+    describe("findPackageManager", () => {
+        it("detects yarn", async () => {
             expect.assertions(1);
 
-            expect(async () => await execa("yarn", [], { cwd: join(whichPMFixturePath, "yarn") })).not.toThrow();
+            await expect(findPackageManager(join(whichPMFixturePath, "yarn"))).resolves.toStrictEqual({
+                packageManager: "yarn",
+                path: join(whichPMFixturePath, "yarn"),
+            });
         });
 
-        // eslint-disable-next-line vitest/no-done-callback
-        it("should detect bun", async (context) => {
+        it("should detect bun", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
-            if (platform() === "win32" || package_.devDependencies.bun === undefined) {
-                // eslint-disable-next-line no-console
-                console.info("bun is not supported on windows");
-                context.skip();
-            }
-
-            expect(async () => await execa("bun", ["install"], { cwd: join(whichPMFixturePath, "bun") })).not.toThrow();
+            await expect(findPackageManager(join(whichPMFixturePath, "bun"))).resolves.toStrictEqual({
+                packageManager: "bun",
+                path: join(whichPMFixturePath, "bun"),
+            });
         });
 
-        it("should detect npm", () => {
+        it("should detect npm", async () => {
             expect.assertions(1);
 
-            expect(async () => await execa("npm", ["install"], { cwd: join(whichPMFixturePath, "npm") })).not.toThrow();
+            await expect(findPackageManager(join(whichPMFixturePath, "npm"))).resolves.toStrictEqual({
+                packageManager: "npm",
+                path: join(whichPMFixturePath, "npm"),
+            });
         });
 
-        it("should detect pnpm", () => {
+        it("should detect pnpm", async () => {
             expect.assertions(1);
 
-            expect(async () => await execa("pnpm", ["install"], { cwd: join(whichPMFixturePath, "pnpm") })).not.toThrow();
+            await expect(findPackageManager(join(whichPMFixturePath, "pnpm"))).resolves.toStrictEqual({
+                packageManager: "pnpm",
+                path: join(whichPMFixturePath, "pnpm"),
+            });
         });
 
-        it("should detect cnpm", () => {
+        it("should detect cnpm", async () => {
             expect.assertions(1);
 
-            expect(async () => await execa("cnpm", ["install"], { cwd: join(whichPMFixturePath, "cnpm") })).not.toThrow();
+            await expect(findPackageManager(join(whichPMFixturePath, "npm"))).resolves.toStrictEqual({
+                packageManager: "npm",
+                path: join(whichPMFixturePath, "npm"),
+            });
+        });
+    });
+
+    describe("identifyInitiatingPackageManager", () => {
+        it.skipIf(platform() === "win32" || package_.devDependencies.bun === undefined)("should detect bun", async () => {
+            expect.assertions(1);
+
+            const { stdout } = await execa("bun", ["install"], { cwd: join(whichPMFixturePath, "bun") });
+
+            expect(stdout).toBeDefined();
+        });
+
+        it("should detect npm", async () => {
+            expect.assertions(1);
+
+            const { stdout } = await execa("npm", ["install"], { cwd: join(whichPMFixturePath, "npm") });
+
+            expect(stdout).toBeDefined();
+        });
+
+        it("should detect pnpm", async () => {
+            expect.assertions(1);
+
+            const { stdout } = await execa("pnpm", ["install"], { cwd: join(whichPMFixturePath, "pnpm") });
+
+            expect(stdout).toBeDefined();
         });
     });
 });

@@ -3,11 +3,12 @@
   <p>
   One Package to rule them all, finds your root-dir, monorepo, package manager or tsconfig.json is built on top of
 
-[read-pkg](https://github.com/sindresorhus/read-pkg),
-[detect-indent](https://github.com/sindresorhus/detect-indent),
-[strip-json-comments](https://github.com/sindresorhus/strip-json-comments),
-[find-up](https://github.com/sindresorhus/find-up) and
-[get-tsconfig](https://www.npmjs.com/package/get-tsconfig)
+[@visulima/fs](https://github.com/visulima/visulima/tree/main/packages/fs),
+[jsonc-parser](https://github.com/microsoft/node-jsonc-parser),
+[normalize-package-data](https://github.com/npm/normalize-package-data),
+[pathe](https://github.com/unjs/pathe),
+[resolve-pkg-maps](https://github.com/privatenumber/resolve-pkg-maps) and
+[type-fest](https://github.com/sindresorhus/type-fest)
 
   </p>
 </div>
@@ -139,26 +140,26 @@ import { getPackageManagerVersion } from "@visulima/package";
 const version = await getPackageManagerVersion("npm"); // => 7.5.4
 ```
 
-### findTSConfig
+### findTsConfig
 
-Retrieves the TSConfig by searching for the "tsconfig.json" file from a given current working directory.
+Retrieves the TsConfig by searching for the "tsconfig.json" file from a given current working directory.
 
 ```ts
-import { findTSConfig } from "@visulima/package";
-// or import { findTSConfig } from '@visulima/package/tsconfig';
+import { findTsConfig } from "@visulima/package";
+// or import { findTsConfig } from '@visulima/package/tsconfig';
 
-const tsconfig = await findTSConfig(); // => { path: "/Users/../Projects/visulima/packages/package/tsconfig.json", config: { compilerOptions: { ... } } }
+const tsconfig = await findTsConfig(); // => { path: "/Users/../Projects/visulima/packages/package/tsconfig.json", config: { compilerOptions: { ... } } }
 ```
 
-### writeTSConfig
+### writeTsConfig
 
 Writes the provided TypeScript configuration object to a tsconfig.json file.
 
 ```ts
-import { writeTSConfig } from '@visulima/package';
-// or import { writeTSConfig } from '@visulima/package/tsconfig';
+import { writeTsConfig } from '@visulima/package';
+// or import { writeTsConfig } from '@visulima/package/tsconfig';
 
-writeTSConfig({ compilerOptions: { ... } }/* ,{ cwd: "./" }*/);
+writeTsConfig({ compilerOptions: { ... } }/* ,{ cwd: "./" }*/);
 ```
 
 ## Supported Node.js Versions
@@ -176,6 +177,13 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 -   [Daniel Bannert](https://github.com/prisis)
 -   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## About
+
+### Related Projects
+
+-   [get-tsconfig](https://github.com/privatenumber/get-tsconfig) - Get the TypeScript configuration from a project.
+-   [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
 
 ## License
 

@@ -1,10 +1,24 @@
-import { join } from "node:path";
-
 import type { WriteJsonOptions } from "@visulima/fs";
-import { writeJson } from "@visulima/fs";
+import { findUp, findUpSync, writeJson } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
 import { toPath } from "@visulima/fs/utils";
-import type { TsConfigJson, TsConfigResult } from "get-tsconfig";
-import { getTsconfig } from "get-tsconfig";
+import { join } from "pathe";
+import type { TsConfigJson } from "type-fest";
+
+import readTsConfig from "./read-tsconfig";
+import type { TsConfigJsonResolved } from "./types";
+
+type Options = {
+    cache?: Map<string, TsConfigJsonResolved> | boolean;
+    configFileName?: string;
+};
+
+const TsConfigFileCache = new Map<string, TsConfigResult>();
+
+export type TsConfigResult = {
+    config: TsConfigJsonResolved;
+    path: string;
+};
 
 /**
  * An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
@@ -16,24 +30,85 @@ import { getTsconfig } from "get-tsconfig";
  *          The return type of the function is `Promise<TsConfigResult>`.
  * @throws An `Error` when the "tsconfig.json" file is not found.
  */
-export const findTSConfig = async (cwd?: URL | string): Promise<TsConfigResult> => {
-    const searchPath = cwd === undefined ? undefined : toPath(cwd);
+export const findTsConfig = async (cwd?: URL | string, options: Options = {}): Promise<TsConfigResult> => {
+    const configFileName = options.configFileName ?? "tsconfig.json";
 
-    // wrong typing in get-tsconfig
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    let config = await getTsconfig(searchPath, "tsconfig.json");
+    let filePath = await findUp(configFileName, {
+        ...(cwd && { cwd }),
+        type: "file",
+    });
 
-    if (config === null) {
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        config = await getTsconfig(searchPath, "jsconfig.json");
+    if (!filePath) {
+        filePath = await findUp("jsconfig.json", {
+            ...(cwd && { cwd }),
+            type: "file",
+        });
     }
 
-    if (config === null) {
-        throw new Error("Could not find a tsconfig.json or jsconfig.json file.");
+    if (!filePath) {
+        throw new NotFoundError(`for ${configFileName} or jsconfig.json found.`);
     }
 
-    return config;
+    const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
+
+    if (options.cache && cache.has(filePath)) {
+        return cache.get(filePath) as TsConfigResult;
+    }
+
+    const output = {
+        config: readTsConfig(filePath),
+        path: filePath,
+    };
+
+    if (options.cache) {
+        cache.set(filePath, output);
+    }
+
+    return output;
 };
+
+// @deprecate Please use `findTsConfig` instead.
+export const findTSConfig = findTsConfig;
+
+export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsConfigResult => {
+    const configFileName = options.configFileName ?? "tsconfig.json";
+
+    let filePath = findUpSync(configFileName, {
+        ...(cwd && { cwd }),
+        type: "file",
+    });
+
+    if (!filePath) {
+        filePath = findUpSync("jsconfig.json", {
+            ...(cwd && { cwd }),
+            type: "file",
+        });
+    }
+
+    if (!filePath) {
+        throw new NotFoundError(`for ${configFileName} or jsconfig.json found.`);
+    }
+
+    const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
+
+    if (options.cache && cache.has(filePath)) {
+        return cache.get(filePath) as TsConfigResult;
+    }
+
+    const output = {
+        config: readTsConfig(filePath),
+        path: filePath,
+    };
+
+    if (options.cache) {
+        cache.set(filePath, output);
+    }
+
+    return output;
+};
+
+// @deprecate Please use `findTsConfigSync` instead.
+export const findTSConfigSync = findTsConfigSync;
 
 /**
  * An asynchronous function that writes the provided TypeScript configuration object to a tsconfig.json file.
@@ -44,7 +119,7 @@ export const findTSConfig = async (cwd?: URL | string): Promise<TsConfigResult> 
  * @returns A `Promise` that resolves when the tsconfig.json file has been written.
  * The return type of function is `Promise<void>`.
  */
-export const writeTSConfig = async (data: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
+export const writeTsConfig = async (data: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
     const { cwd, ...writeOptions } = options;
 
     const directory = toPath(options.cwd ?? process.cwd());
@@ -52,4 +127,5 @@ export const writeTSConfig = async (data: TsConfigJson, options: WriteJsonOption
     await writeJson(join(directory, "tsconfig.json"), data, writeOptions);
 };
 
-export type { TsConfigJson, TsConfigJsonResolved, TsConfigResult } from "get-tsconfig";
+// @deprecate Please use `writeTsconfig` instead.
+export const writeTSConfig = writeTsConfig;

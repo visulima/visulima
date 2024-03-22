@@ -1,6 +1,6 @@
 {
-    "type": "module",
-    "scripts": {
-        "preinstall": "node index.js"
-    }
+  "type": "module",
+  "scripts": {
+    "install": "node index.js"
+  }
 }

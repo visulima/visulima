@@ -3,6 +3,8 @@ node_modules
 coverage
 __fixtures__
 
+src/module.d.ts
+
 vitest.config.ts
 .prettierrc.js
 _meta.*.json
