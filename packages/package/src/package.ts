@@ -1,7 +1,23 @@
-import { findUp } from "@visulima/fs";
-import { dirname } from "pathe";
+import { existsSync } from "node:fs";
 
-import { findLockFile } from "./package-manager";
+import { findUp, findUpSync, readJsonSync } from "@visulima/fs";
+import { dirname, join } from "pathe";
+
+import { findLockFile, findLockFileSync } from "./package-manager";
+import type { PackageJson } from "./types";
+
+const packageJsonMatcher = (directory: string) => {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    if (existsSync(join(directory, "package.json"))) {
+        const packageJson = readJsonSync<PackageJson>(join(directory, "package.json"));
+
+        if (packageJson.name && packageJson.private !== true) {
+            return "package.json";
+        }
+    }
+
+    return undefined;
+};
 
 /**
  * An asynchronous function that finds the root directory of a project based on certain lookup criteria.
@@ -14,9 +30,7 @@ import { findLockFile } from "./package-manager";
  * const rootDirectory = await findPackageRoot();
  * console.log(rootDirectory); // '/path/to/project'
  */
-// eslint-disable-next-line import/prefer-default-export
 export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
-    // Lookdown for lockfile
     try {
         const lockFile = await findLockFile(cwd);
 
@@ -25,7 +39,6 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
         /* empty */
     }
 
-    // Lookup for .git/config
     const gitConfig = await findUp(".git/config", {
         ...(cwd && { cwd }),
         type: "file",
@@ -35,8 +48,37 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
         return dirname(dirname(gitConfig));
     }
 
-    // Lookdown for package.json
-    const filePath = await findUp("package.json", {
+    const filePath = await findUp(packageJsonMatcher, {
+        ...(cwd && { cwd }),
+        type: "file",
+    });
+
+    if (filePath) {
+        return dirname(filePath);
+    }
+
+    throw new Error("Could not find root directory");
+};
+
+export const findPackageRootSync = (cwd?: URL | string): string => {
+    try {
+        const lockFile = findLockFileSync(cwd);
+
+        return dirname(lockFile);
+    } catch {
+        /* empty */
+    }
+
+    const gitConfig = findUpSync(".git/config", {
+        ...(cwd && { cwd }),
+        type: "file",
+    });
+
+    if (gitConfig) {
+        return dirname(dirname(gitConfig));
+    }
+
+    const filePath = findUpSync(packageJsonMatcher, {
         ...(cwd && { cwd }),
         type: "file",
     });
