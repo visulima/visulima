@@ -6,8 +6,6 @@ import apiRouteFileParser from "../../../../../../../src/framework/cli/command/l
 const cwdPath = resolve(__dirname, "../../../../../../../", "__fixtures__");
 const apiRoutesPath = resolve(cwdPath, "pages/api");
 
-const isWin = process.platform === "win32";
-
 describe("api-route-file-parser", () => {
     it("parse all files in pages/api", () => {
         expect.assertions(1);
@@ -23,8 +21,7 @@ describe("api-route-file-parser", () => {
         expect(parsedApiRouteFiles).toStrictEqual([
             [
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/[customerId].js",
 
                     method: "GET|HEAD",
                     path: "/pages/api/[customerId]",
@@ -32,15 +29,13 @@ describe("api-route-file-parser", () => {
                     tags: [],
                 },
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/[customerId].js",
                     method: "DELETE",
                     path: "/pages/api/[customerId]",
                     tags: [],
                 },
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/[customerId].js".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/[customerId].js",
                     method: "POST",
                     path: "/pages/api/[customerId]",
                     tags: [],
@@ -48,8 +43,7 @@ describe("api-route-file-parser", () => {
             ],
             [
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/corsheader.ts".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/corsheader.ts",
                     method: "GET",
                     path: "/api/cors",
                     tags: ["root"],
@@ -57,8 +51,7 @@ describe("api-route-file-parser", () => {
             ],
             [
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/defaultroute.ts".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/defaultroute.ts",
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/defaultroute",
                     tags: [],
@@ -66,8 +59,7 @@ describe("api-route-file-parser", () => {
             ],
             [
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/hello.ts".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/hello.ts",
                     method: "GET",
                     path: "/api/hello",
                     tags: ["root"],
@@ -75,8 +67,7 @@ describe("api-route-file-parser", () => {
             ],
             [
                 {
-                    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
-                    file: "__fixtures__/pages/api/jsdefaultroute.js".replaceAll("/", isWin ? "\\" : "/"),
+                    file: "__fixtures__/pages/api/jsdefaultroute.js",
                     method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                     path: "/pages/api/jsdefaultroute",
                     tags: [],
