@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { parse } from "node:path";
 
+import { parse } from "pathe";
 import type { PackageJson } from "type-fest";
 
 interface AppExport {
