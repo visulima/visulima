@@ -1,11 +1,12 @@
 import { linkSync, lstatSync } from "node:fs";
+
 import { dirname } from "pathe";
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
-import ensureDirSync from "./ensure-dir-sync";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "../utils/is-stats-identical";
 import toPath from "../utils/to-path";
+// eslint-disable-next-line unicorn/prevent-abbreviations
+import ensureDirSync from "./ensure-dir-sync";
 
 /**
  * Ensures that the hard link exists.
@@ -31,7 +32,7 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
         sourceStat = lstatSync(source);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         error.message = error.message.replace("lstat", "ensureLink");
 
         throw error;

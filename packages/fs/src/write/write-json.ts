@@ -20,7 +20,7 @@ const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOp
             const file = await readFile(path, "utf8");
 
             if (detectIndent) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+                 
                 const { indent: dIndent } = detectIndentFn(file);
 
                 indent = dIndent as string;

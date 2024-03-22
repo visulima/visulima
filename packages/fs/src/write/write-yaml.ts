@@ -31,10 +31,10 @@ async function writeYaml(
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     options?: Options | number | string,
 ): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+     
     const content = typeof replacer === "function" || Array.isArray(replacer) ? stringify(data, replacer, options) : stringify(data, replacer as YamlReplacer);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+     
     await writeFile(path, content);
 }
 

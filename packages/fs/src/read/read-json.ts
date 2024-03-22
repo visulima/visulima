@@ -1,9 +1,9 @@
 import type { JsonValue } from "type-fest";
 
-import readFile from "./read-file";
 import type { JsonReviver, ReadJsonOptions } from "../types";
 import parseJson from "../utils/parse-json";
 import toPath from "../utils/to-path";
+import readFile from "./read-file";
 
 async function readJson<T extends JsonValue>(path: URL | string, options?: ReadJsonOptions): Promise<T>;
 
@@ -31,7 +31,7 @@ async function readJson<T extends JsonValue>(path: URL | string, reviver: JsonRe
         data = beforeParse(data);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+     
     return parseJson<T>(data, reviver, toPath(path), { color });
 }
 

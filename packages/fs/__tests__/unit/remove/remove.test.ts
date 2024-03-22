@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { symlink, writeFile } from "node:fs/promises";
-import { join } from "pathe";
 
+import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 

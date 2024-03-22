@@ -69,10 +69,10 @@ describe.each([["ensureDir", ensureDir], ["ensureDirSync", ensureDirSync]])("%s"
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureDir") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(filePath)).rejects.toThrow("Ensure path exists, expected 'dir', got 'file'");
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(filePath)).toThrow("Ensure path exists, expected 'dir', got 'file'");
         }
     });

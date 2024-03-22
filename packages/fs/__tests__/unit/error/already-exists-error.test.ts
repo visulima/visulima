@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
 import { AlreadyExistsError } from "../../../src/error";
 
-describe("AlreadyExistsError", () => {
+describe("alreadyExistsError", () => {
     it("should set the message as the error message when creating a new instance with a message", () => {
         expect.assertions(1);
 
@@ -35,14 +36,16 @@ describe("AlreadyExistsError", () => {
 
         expect(() => {
             error.name = "CustomError";
-        }).toThrow();
+        }).toThrow("Cannot overwrite name of AlreadyExistsError");
     });
 
     it("should be read-only when accessing the code property", () => {
+        expect.assertions(1);
+
         const error = new AlreadyExistsError("Invalid operation");
 
         expect(() => {
             error.code = "EEXIST";
-        }).toThrowError("Cannot overwrite code EEXIST");
+        }).toThrow("Cannot overwrite code EEXIST");
     });
 });

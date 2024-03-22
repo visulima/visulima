@@ -1,6 +1,6 @@
-import { dirname, join } from "pathe";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import JsonError from "../../../src/error/json-error";
@@ -34,7 +34,7 @@ describe.each([
     it("should read a valid JSON file with custom options", async () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+         
         const reviver = (_, value) => value;
         const options = {
             color: {
@@ -74,10 +74,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(null)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(null)).toThrow("Path must be a non-empty string or URL.");
         }
     });
@@ -120,10 +120,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
         }
     });

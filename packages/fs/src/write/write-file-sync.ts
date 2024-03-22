@@ -1,5 +1,6 @@
 import type { Stats } from "node:fs";
 import { chmodSync, chownSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync as nodeWriteFileSync } from "node:fs";
+
 import { dirname } from "pathe";
 
 import { F_OK } from "../constants";

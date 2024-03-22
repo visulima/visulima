@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import PermissionError from "../../../src/error/permission-error";
 
-describe("PermissionError", () => {
+describe("permissionError", () => {
     it("should set the error message and code correctly when creating a new instance with a message", () => {
         expect.assertions(2);
 
@@ -28,14 +28,16 @@ describe("PermissionError", () => {
 
         expect(() => {
             error.name = "NewName";
-        }).toThrowError("Cannot overwrite name of PermissionError");
+        }).toThrow("Cannot overwrite name of PermissionError");
     });
 
     it("should be read-only when accessing the code property", () => {
+        expect.assertions(1);
+
         const error = new PermissionError("Invalid operation");
 
         expect(() => {
             error.code = "EACCES";
-        }).toThrowError("Cannot overwrite code EPERM");
+        }).toThrow("Cannot overwrite code EPERM");
     });
 });

@@ -17,11 +17,13 @@ class WalkError extends Error {
         this.root = root;
     }
 
-    override get name() {
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    public override get name(): string {
         return "WalkError";
     }
 
-    override set name(_name) {
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
+    public override set name(_name) {
         throw new Error("Cannot overwrite name of WalkError");
     }
 }

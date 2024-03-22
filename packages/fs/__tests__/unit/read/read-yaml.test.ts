@@ -1,6 +1,6 @@
-import { dirname, join } from "pathe";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "pathe";
 import { describe, expect, it } from "vitest";
 import { YAMLError } from "yaml";
 
@@ -49,10 +49,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readYaml") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(path)).rejects.toThrow(YAMLError);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(path)).toThrow(YAMLError);
         }
     });
