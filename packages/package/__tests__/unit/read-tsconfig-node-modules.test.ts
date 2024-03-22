@@ -15,7 +15,8 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import readTsConfig from "../../src/read-tsconfig";
-import { getTscTsconfig } from "../helpers";
+import { esc, getTscTsconfig } from "../helpers";
+import stripAnsi from "strip-ansi";
 
 describe("node_modules", () => {
     let distribution: string;
@@ -428,15 +429,17 @@ describe("node_modules", () => {
             reject: false,
         });
 
-        expect(stdout).toBe(
-            [
-                "{ compilerOptions: { strict: true, jsx: 'react' } }",
-                "{ compilerOptions: { strict: true, jsx: 'react' } }",
-                "{ compilerOptions: { strict: true, jsx: 'react' } }",
-                "{ compilerOptions: { strict: true, jsx: 'react' } }",
-                "Error: ENOENT: No such file or directory, for 'non-existent-package' found.",
-                "Error: ENOENT: No such file or directory, for 'fs/promises' found.",
-            ].join("\n"),
+        expect(esc(stripAnsi(stdout))).toBe(
+            esc(
+                [
+                    "{ compilerOptions: { strict: true, jsx: 'react' } }",
+                    "{ compilerOptions: { strict: true, jsx: 'react' } }",
+                    "{ compilerOptions: { strict: true, jsx: 'react' } }",
+                    "{ compilerOptions: { strict: true, jsx: 'react' } }",
+                    "Error: ENOENT: No such file or directory, for 'non-existent-package' found.",
+                    "Error: ENOENT: No such file or directory, for 'fs/promises' found.",
+                ].join("\n"),
+            ),
         );
     });
 

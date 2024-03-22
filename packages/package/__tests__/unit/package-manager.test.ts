@@ -49,7 +49,7 @@ describe("package-manager", () => {
             });
         });
 
-        it.skipIf(platform() === "win32" || package_.devDependencies.bun === undefined)("should detect bun", async () => {
+        it("should detect bun", async () => {
             expect.assertions(1);
 
             await expect(findPackageManager(join(whichPMFixturePath, "bun"))).resolves.toStrictEqual({
