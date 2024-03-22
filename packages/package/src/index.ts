@@ -1,3 +1,4 @@
+export { findCacheDirectory, findCacheDirectorySync } from "./find-cache-dir";
 export type { RootMonorepo, Strategy } from "./monorepo";
 export { findMonorepoRoot } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
