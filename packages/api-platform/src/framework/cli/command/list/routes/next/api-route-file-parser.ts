@@ -40,7 +40,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
                 }
 
                 routes.push({
-                    file: apiRouteFile.replace(process.cwd(), ""),
+                    file: apiRouteFile.replace(`${process.cwd()}/`, ""),
                     method: method as string,
                     path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
@@ -50,7 +50,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
         if (routes.length === 0) {
             routes.push({
-                file: apiRouteFile.replace(process.cwd(), ""),
+                file: apiRouteFile.replace(`${process.cwd()}/`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                 path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
@@ -68,7 +68,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    file: apiRouteFile.replace(process.cwd(), ""),
+                    file: apiRouteFile.replace(`${process.cwd()}/`, ""),
                     method: method.toUpperCase(),
                     path: path.replaceAll("\\", "/"),
                     tags: methodSpec.tags,
