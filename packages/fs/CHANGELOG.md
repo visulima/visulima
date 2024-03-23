@@ -1,3 +1,16 @@
+## @visulima/fs [2.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.1...@visulima/fs@2.0.0) (2024-03-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **fs:** moved node:path to pathe and changed NotFoundError message
+
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **fs:** moved node:path to pathe, changed NotFoundError message ([0557a18](https://github.com/visulima/visulima/commit/0557a18d97af6061ba9cb1581c420c2bc72965ef))
+
 ## @visulima/fs [1.11.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.0...@visulima/fs@1.11.1) (2024-03-22)
 
 
