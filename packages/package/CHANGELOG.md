@@ -1,3 +1,16 @@
+## @visulima/package [1.4.2](https://github.com/visulima/visulima/compare/@visulima/package@1.4.1...@visulima/package@1.4.2) (2024-03-23)
+
+
+### Bug Fixes
+
+* **package:** adjusted error message ([a9a38b6](https://github.com/visulima/visulima/commit/a9a38b602c56b87d2cef700d5d55e46e873f0ef6))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.0.0
+
 ## @visulima/package [1.4.1](https://github.com/visulima/visulima/compare/@visulima/package@1.4.0...@visulima/package@1.4.1) (2024-03-22)
 
 
