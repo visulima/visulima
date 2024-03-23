@@ -1,3 +1,24 @@
+## @visulima/api-platform [2.1.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.39...@visulima/api-platform@2.1.0) (2024-03-23)
+
+
+### Features
+
+* **api-platform:** added pathe ([96099b8](https://github.com/visulima/visulima/commit/96099b885ebf0947f544cfadfecd99c95310995e))
+
+
+### Bug Fixes
+
+* **api-platform:** added missing slash ([8376862](https://github.com/visulima/visulima/commit/8376862da5efa2aabbbe7c9983515edbcb24aa0c))
+* **api-platform:** fixed windows test ([43ee590](https://github.com/visulima/visulima/commit/43ee59005b43981479b33f7df5ddbe279ce88513))
+* **api-platform:** fixed windows test ([45b50f5](https://github.com/visulima/visulima/commit/45b50f5535aa18861ab359017efc5b7525c3d3c4))
+
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.32
+* **@visulima/fs:** upgraded to 2.0.0
+
 ## @visulima/api-platform [2.0.39](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.0.38...@visulima/api-platform@2.0.39) (2024-03-22)
 
 
