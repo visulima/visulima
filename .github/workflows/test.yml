@@ -118,7 +118,7 @@ jobs:
 
             - name: "test"
               # TODO: Fix this when Github Actions supports better conditions
-              if: "${{ (matrix.os != 'ubuntu-latest' && matrix.node_version != '18') == true }}"
+              if: "${{ (matrix.os != 'ubuntu-latest' && matrix.node_version != '18') == 'true' }}"
               shell: "bash"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
