@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prevent-abbreviations
 import { chmodSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
