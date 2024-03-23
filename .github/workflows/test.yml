@@ -116,7 +116,15 @@ jobs:
                   files="${{ steps.files.outputs.all_changed_files }}";
                   pnpm run build:affected:packages --files=${files//\\/\/}
 
+            - name: "test"
+              if: "fromJSON(${{ matrix.os != 'ubuntu-latest' && matrix.node_version != '18' }})"
+              shell: "bash"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+                  pnpm run test:affected --files=${files//\\/\/}
+
             - name: "test and coverage"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
               shell: "bash"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
