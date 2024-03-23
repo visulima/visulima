@@ -30,6 +30,10 @@ inputs:
         description: "Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)"
         required: false
         default: "true"
+    install-bun:
+        description: "Install Bun for tests"
+        required: false
+        default: "false"
 
 runs:
     using: "composite"
@@ -90,9 +94,7 @@ runs:
           shell: "powershell"
           run: |
               Invoke-WebRequest https://github.com/lz4/lz4/releases/download/v1.9.4/lz4_win64_v1_9_4.zip -OutFile lz4-1.9.4.zip
-              Expand-Archive -Path ".\lz4-1.9.4.zip" -DestinationPath ".\lz4-tmp" -Force
-              mv .\lz4-tmp\lz4-1.9.4\ .
-              rmdir .\lz4-tmp\
+              Expand-Archive -Path ".\lz4-1.9.4.zip" -DestinationPath ".\lz4-1.9.4" -Force
               ls .\lz4-1.9.4
               echo "$((Get-Item .).FullName)\lz4-1.9.4" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
@@ -138,6 +140,10 @@ runs:
               "CYPRESS_INSTALL_BINARY": 0
               "SKIP_CHECK": "true"
               "HUSKY": 0
+
+        - name: "Install Bun for tests"
+          if: "inputs.install-bun == 'true'"
+          run: "pnpm i -D bun --filter=package"
 
         - name: "Prepare node_modules cache"
           if: "inputs.cache-node-modules == 'true'"

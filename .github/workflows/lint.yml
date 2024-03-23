@@ -234,7 +234,7 @@ jobs:
               run: |
                   bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
                   # The -ignore flag is used to ignore a specific error for a working solution in test.yml
-                  ./actionlint -color -shellcheck="" -ignore="is always evaluated to true because extra characters are around"
+                  ./actionlint -color -shellcheck=""
 
     markdown-lint:
         if: "needs.files-changed.outputs.markdown_lintable == 'true'"
