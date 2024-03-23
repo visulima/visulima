@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import process from "node:process";
+import { cwd as nodeCwd } from "node:process";
 
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
 import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
@@ -10,11 +10,11 @@ import type { Route } from "../types";
 // eslint-disable-next-line regexp/no-unused-capturing-group
 const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
 
-const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = false): Route[] => {
+const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false): Route[] => {
     // eslint-disable-next-line no-param-reassign
     apiRouteFile = toNamespacedPath(apiRouteFile);
 
-    const cwd = toNamespacedPath(process.cwd());
+    const cwdPath = toNamespacedPath(nodeCwd());
 
     let specs: OpenApiObject[] = [];
 
@@ -42,9 +42,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
                 }
 
                 routes.push({
-                    file: apiRouteFile.replace(`${cwd}/`, ""),
+                    file: apiRouteFile.replace(`${cwdPath}/`, ""),
                     method: method as string,
-                    path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                    path: toNamespacedPath(apiRouteFile.replace(cwd, "").replace(extensionRegex, "")),
                     tags: [],
                 });
             }
@@ -52,9 +52,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
         if (routes.length === 0) {
             routes.push({
-                file: apiRouteFile.replace(`${cwd}/`, ""),
+                file: apiRouteFile.replace(`${cwdPath}/`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
-                path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
+                path: toNamespacedPath(apiRouteFile.replace(cwd, "").replace(extensionRegex, "")),
                 tags: [],
             });
         }
@@ -70,9 +70,9 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    file: apiRouteFile.replace(`${cwd}/`, ""),
+                    file: apiRouteFile.replace(`${cwdPath}/`, ""),
                     method: method.toUpperCase(),
-                    path: path.replaceAll("\\", "/"),
+                    path: toNamespacedPath(path),
                     tags: methodSpec.tags,
                 });
             });

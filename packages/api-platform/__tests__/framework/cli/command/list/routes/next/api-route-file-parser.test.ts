@@ -22,10 +22,8 @@ describe("api-route-file-parser", () => {
             [
                 {
                     file: "__fixtures__/pages/api/[customerId].js",
-
                     method: "GET|HEAD",
                     path: "/pages/api/[customerId]",
-
                     tags: [],
                 },
                 {
