@@ -91,8 +91,15 @@ runs:
           shell: "powershell"
           run: |
               Invoke-WebRequest https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.zip -OutFile lz4-1.9.4.zip
-              Expand-Archive ".\lz4-1.9.4.zip" -DestinationPath ".\lz4" -Force
-              echo "$((Get-Item .).FullName)\lz4" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+              Expand-Archive -Path ".\lz4-1.9.4.zip" -DestinationPath ".\lz4-tmp" -Force
+              mv .\lz4-tmp\lz4-1.9.4\ .
+              rmdir .\lz4-tmp\
+              echo "$((Get-Item .).FullName)\lz4-1.9.4" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+        - name: "Try lz4 from cache"
+          if: "runner.os == 'Windows'"
+          shell: "powershell"
+          run: lz4 --version
 
         - name: "Check for node_modules cache"
           if: "inputs.cache-node-modules == 'true'"
