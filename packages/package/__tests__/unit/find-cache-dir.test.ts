@@ -24,15 +24,21 @@ describe.each([
     it("should return the cache directory path if it exists and is writeable", async () => {
         expect.assertions(1);
 
-        ensureDirSync(join(distribution, "node_modules", ".cache", "test"));
-        writeJsonSync(join(distribution, "package.json"), {
+        const testCachePath = join(distribution, "package", "node_modules", ".cache", "test");
+
+        ensureDirSync(testCachePath);
+        writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test"
         })
 
-        const result = await findCacheDirectory("test", {
-            cwd: distribution,
+        let result = function_("test", {
+            cwd: join(distribution, "package"),
         });
 
-        expect(result).toEqual(expect.any(String));
+        if (name === "findCacheDirectory") {
+            result = await result;
+        }
+
+        expect(result).toStrictEqual(testCachePath);
     });
 });
