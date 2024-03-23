@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 
+import { JSONError } from "@visulima/fs/error";
 import { dirname, join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
@@ -68,7 +69,7 @@ describe("monorepo", () => {
         it("should throw error when package.json is broken", async () => {
             expect.assertions(1);
 
-            await expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow("Unexpected token");
+            await expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow(JSONError);
         });
     });
 });
