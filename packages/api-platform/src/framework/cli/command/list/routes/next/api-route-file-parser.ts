@@ -3,7 +3,7 @@ import process from "node:process";
 
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
 import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
-import { normalize } from "pathe";
+import { toNamespacedPath } from "pathe";
 
 import type { Route } from "../types";
 
@@ -12,7 +12,9 @@ const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
 
 const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = false): Route[] => {
     // eslint-disable-next-line no-param-reassign
-    apiRouteFile = normalize(apiRouteFile);
+    apiRouteFile = toNamespacedPath(apiRouteFile);
+
+    const cwd = toNamespacedPath(process.cwd());
 
     let specs: OpenApiObject[] = [];
 
@@ -40,7 +42,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
                 }
 
                 routes.push({
-                    file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                    file: apiRouteFile.replace(`${cwd}/`, ""),
                     method: method as string,
                     path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                     tags: [],
@@ -50,7 +52,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
         if (routes.length === 0) {
             routes.push({
-                file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                file: apiRouteFile.replace(`${cwd}/`, ""),
                 method: "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS",
                 path: apiRouteFile.replace(cwdPath, "").replace(extensionRegex, "").replaceAll("\\", "/"),
                 tags: [],
@@ -68,7 +70,7 @@ const apiRouteFileParser = (apiRouteFile: string, cwdPath: string, verbose = fal
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({
-                    file: apiRouteFile.replace(`${process.cwd()}/`, ""),
+                    file: apiRouteFile.replace(`${cwd}/`, ""),
                     method: method.toUpperCase(),
                     path: path.replaceAll("\\", "/"),
                     tags: methodSpec.tags,
