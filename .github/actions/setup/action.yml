@@ -86,15 +86,18 @@ runs:
               restore-keys: |
                   ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
 
-        - name: "Restore node_modules"
+        - name: "Check for node_modules cache"
           if: "inputs.cache-node-modules == 'true'"
-          id: "pnpm-nm-cache"
+          id: "node-modules-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: "${{ inputs.cwd }}/**/node_modules"
-              key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
-              restore-keys: |
-                  pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-
+              path: "/tmp/node_modules"
+              key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+
+        - name: "Restore node_modules"
+          if: "inputs.cache-node-modules == 'true' && steps.node-modules-cache.outputs.cache-hit == 'true'"
+          shell: "bash"
+          run: "lz4 -d /tmp/node_modules.tar.lz4 | tar -xf - ;" # decompress node_modules
 
         - name: "Cache Nx"
           if: "inputs.enable-nx-cache == 'true'"
@@ -118,3 +121,8 @@ runs:
               "CYPRESS_INSTALL_BINARY": 0
               "SKIP_CHECK": "true"
               "HUSKY": 0
+
+        - name: "Prepare node_modules cache"
+          if: "inputs.cache-node-modules == 'true'"
+          shell: "bash"
+          run: "tar -cf - node_modules | lz4 > /tmp/node_modules.tar.lz4" # compress node_modules

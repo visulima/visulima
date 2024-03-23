@@ -117,7 +117,7 @@ jobs:
                   pnpm run build:affected:packages --files=${files//\\/\/}
 
             - name: "test"
-              if: "(matrix.os != 'ubuntu-latest' && matrix.node_version != '18') == 'true'"
+              if: "${{ matrix.os != 'ubuntu-latest' && matrix.node_version != '18' }}"
               shell: "bash"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
