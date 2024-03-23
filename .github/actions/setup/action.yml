@@ -86,13 +86,20 @@ runs:
               restore-keys: |
                   ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
 
+        - name: "Install lz4"
+          if: "runner.os == 'Windows'"
+          shell: "powershell"
+          run: "choco install -y lz4"
+
         - name: "Check for node_modules cache"
           if: "inputs.cache-node-modules == 'true'"
           id: "node-modules-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
               path: "/tmp/node_modules"
-              key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              restore-keys: |
+                  pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ steps.pnpm-config.outputs.CURRENT_BRANCH }}-
 
         - name: "Restore node_modules"
           if: "inputs.cache-node-modules == 'true' && steps.node-modules-cache.outputs.cache-hit == 'true'"
