@@ -97,7 +97,7 @@
         "@visulima/colorize": "1.3.0",
         "@visulima/pail": "1.1.2",
         "camelcase": "8.0.0",
-        "cli-table3": "^0.6.3",
+        "cli-table3": "^0.6.4",
         "command-line-args": "^5.2.1",
         "fastest-levenshtein": "^1.0.16",
         "find-cache-dir": "^5.0.0"
