@@ -43,11 +43,11 @@ describe("parse-json", () => {
         const jsonString = '{"name": "John", "age": 30}';
         const reviver = (key, value) => {
             if (key === "age") {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                 
                 return value + 10;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+             
             return value;
         };
 

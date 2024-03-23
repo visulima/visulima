@@ -5,7 +5,8 @@
 
 import type { Stats } from "node:fs";
 import { readdirSync, realpathSync, statSync } from "node:fs";
-import { basename, join, normalize, resolve } from "node:path";
+
+import { basename, join, normalize, resolve } from "pathe";
 
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
@@ -19,7 +20,6 @@ import walkInclude from "../utils/walk-include";
 const _createWalkEntry = (path: string): WalkEntry => {
     const normalizePath: string = normalize(path as string);
 
-    const name = basename(normalizePath);
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     const info: Stats = statSync(normalizePath);
 
@@ -30,7 +30,7 @@ const _createWalkEntry = (path: string): WalkEntry => {
         isFile: info.isFile,
         // eslint-disable-next-line @typescript-eslint/unbound-method
         isSymbolicLink: info.isSymbolicLink,
-        name,
+        name: basename(normalizePath),
         path: normalizePath,
     };
 };
@@ -90,7 +90,7 @@ export default function* walkSync(
                         // eslint-disable-next-line @typescript-eslint/unbound-method
                         isSymbolicLink: entry.isSymbolicLink,
                         name: entry.name,
-                        path,
+                        path: normalize(path),
                     };
                 } else {
                     // eslint-disable-next-line no-continue
@@ -118,7 +118,7 @@ export default function* walkSync(
                     // eslint-disable-next-line @typescript-eslint/unbound-method
                     isSymbolicLink: entry.isSymbolicLink,
                     name: entry.name,
-                    path,
+                    path: normalize(path),
                 };
             }
         }

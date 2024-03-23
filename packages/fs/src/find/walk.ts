@@ -5,7 +5,8 @@
 
 import type { Stats } from "node:fs";
 import { readdir, realpath, stat } from "node:fs/promises";
-import { basename, join, normalize, resolve } from "node:path";
+
+import { basename, join, normalize, resolve } from "pathe";
 
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";

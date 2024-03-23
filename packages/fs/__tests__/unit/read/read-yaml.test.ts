@@ -1,16 +1,16 @@
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "pathe";
 import { describe, expect, it } from "vitest";
 import { YAMLError } from "yaml";
 
-import readYaml from "../../src/read/read-yaml";
-import readYamlSync from "../../src/read/read-yaml-sync";
+import readYaml from "../../../src/read/read-yaml";
+import readYamlSync from "../../../src/read/read-yaml-sync";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const fixturePath = join(__dirname, "..", "..", "__fixtures__", "read-yaml");
+const fixturePath = join(__dirname, "..", "..", "..", "__fixtures__", "read-yaml");
 
 describe.each([
     ["readYaml", readYaml],
@@ -49,10 +49,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readYaml") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(path)).rejects.toThrow(YAMLError);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(path)).toThrow(YAMLError);
         }
     });

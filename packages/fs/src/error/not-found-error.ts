@@ -3,24 +3,31 @@
  */
 class NotFoundError extends Error {
     /**
-     * Name of the error class.
-     * @type {string}
-     */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
-    override readonly name = "NotFoundError";
-
-    /**
-     * Error code.
-     * @type {string}
-     */
-    public code = "ENOENT";
-
-    /**
      * Creates a new instance.
      * @param {string} message The error message.
      */
     public constructor(message: string) {
-        super(`ENOENT: No such file or directory, ${message}`);
+        super(`ENOENT: ${message}`);
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    public get code(): string {
+        return "ENOENT";
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
+    public set code(_name) {
+        throw new Error("Cannot overwrite code ENOENT");
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    public override get name(): string {
+        return "NotFoundError";
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
+    public override set name(_name) {
+        throw new Error("Cannot overwrite name of NotFoundError");
     }
 }
 

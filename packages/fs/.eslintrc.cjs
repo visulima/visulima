@@ -16,10 +16,13 @@ module.exports = {
     ignorePatterns: ["!**/*"],
     overrides: [
         {
-            files: ["*.ts", "*.tsx", "*.mts", "*.cts", "*.js", "*.jsx"],
-            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
-            parserOptions: {},
-            rules: {},
+            files: ["*.ts"],
+            rules: {
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-return": "off"
+            },
         },
         {
             files: ["*.test.ts"],

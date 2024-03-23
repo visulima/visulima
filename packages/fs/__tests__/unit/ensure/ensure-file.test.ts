@@ -4,8 +4,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ensureFile from "../../src/ensure/ensure-file";
-import ensureFileSync from "../../src/ensure/ensure-file-sync";
+import ensureFile from "../../../src/ensure/ensure-file";
+import ensureFileSync from "../../../src/ensure/ensure-file-sync";
 
 describe.each([
     ["ensureFile", ensureFile],
@@ -82,10 +82,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureFile") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(path)).rejects.toThrow("Ensure path exists, expected 'file', got 'dir'");
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(path)).toThrow("Ensure path exists, expected 'file', got 'dir'");
         }
     });

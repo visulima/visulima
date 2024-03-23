@@ -1,6 +1,7 @@
 import type { Stats } from "node:fs";
 import { chmodSync, chownSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync as nodeWriteFileSync } from "node:fs";
-import { dirname } from "node:path";
+
+import { dirname } from "pathe";
 
 import { F_OK } from "../constants";
 import isAccessibleSync from "../is-accessible-sync";
