@@ -218,9 +218,9 @@
         "textlint": "^14.0.4",
         "tsup": "^8.0.2",
         "typescript": "^5.4.3",
-        "vite": "^5.2.3"
+        "vite": "^5.2.4"
     },
-    "packageManager": "pnpm@8.15.4",
+    "packageManager": "pnpm@8.15.5",
     "engines": {
         "node": ">=18.* <=21.*"
     },
