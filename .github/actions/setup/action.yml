@@ -143,6 +143,7 @@ runs:
 
         - name: "Install Bun for tests"
           if: "inputs.install-bun == 'true'"
+          shell: "bash"
           run: "pnpm i -D bun --filter=package"
 
         - name: "Prepare node_modules cache"
