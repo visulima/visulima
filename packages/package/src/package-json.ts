@@ -37,7 +37,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     });
 
     if (!filePath) {
-        throw new NotFoundError("for package.json found.");
+        throw new NotFoundError("No such file or directory, for package.json found.");
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
@@ -68,7 +68,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     });
 
     if (!filePath) {
-        throw new NotFoundError("for package.json found.");
+        throw new NotFoundError("No such file or directory, for package.json found.");
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;

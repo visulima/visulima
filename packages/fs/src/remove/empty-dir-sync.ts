@@ -1,6 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+
+import { join } from "pathe";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import type { EmptyDirOptions } from "../types";

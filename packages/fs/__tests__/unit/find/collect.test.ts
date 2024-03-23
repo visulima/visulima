@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import collect from "../../src/find/collect";
-import collectSync from "../../src/find/collect-sync";
+import collect from "../../../src/find/collect";
+import collectSync from "../../../src/find/collect-sync";
 
 describe.each([
     ["collect", collect],

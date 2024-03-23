@@ -1,13 +1,13 @@
 import { mkdir, rm } from "node:fs/promises";
-import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 
-import { walk } from "../../src";
-import type { WalkEntry, WalkOptions } from "../../src/types";
+import { walk } from "../../../src";
+import type { WalkEntry, WalkOptions } from "../../../src/types";
 
-const fixture = resolve(fileURLToPath(import.meta.url), "../../../__fixtures__/walk");
+const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk");
 
 const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];
@@ -24,7 +24,7 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
     const root = resolve(fixture, rootPath);
     const entries = await getEntries(root, options);
 
-    const result = expectedPaths.map((path) => resolve(root, path));
+    const result = expectedPaths.map((path) => resolve(root, path) as string);
 
     expect(entries).toHaveLength(result.length);
     expect(entries.map(({ path }) => path)).toStrictEqual(expect.arrayContaining(result));
@@ -38,6 +38,7 @@ describe("walk", () => {
 
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const emptyDir = resolve(fixture, "empty_dir");
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         await mkdir(emptyDir);
 
         try {

@@ -1,16 +1,16 @@
 import { readFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
-import { join } from "node:path";
 
+import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { F_OK } from "../../src/constants";
-import isAccessible from "../../src/is-accessible";
-import isAccessibleSync from "../../src/is-accessible-sync";
-import type { WriteFileOptions } from "../../src/types";
-import writeFile from "../../src/write/write-file";
-import writeFileSync from "../../src/write/write-file-sync";
+import { F_OK } from "../../../src/constants";
+import isAccessible from "../../../src/is-accessible";
+import isAccessibleSync from "../../../src/is-accessible-sync";
+import type { WriteFileOptions } from "../../../src/types";
+import writeFile from "../../../src/write/write-file";
+import writeFileSync from "../../../src/write/write-file-sync";
 
 const assertWriteFile = async (path: URL | string, content: string, options?: WriteFileOptions) => {
     await writeFile(path, content, options);

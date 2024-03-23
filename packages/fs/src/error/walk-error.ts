@@ -14,8 +14,17 @@ class WalkError extends Error {
         super(`${cause instanceof Error ? cause.message : cause} for path "${root}"`);
 
         this.cause = cause;
-        this.name = "WalkError";
         this.root = root;
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    public override get name(): string {
+        return "WalkError";
+    }
+
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
+    public override set name(_name) {
+        throw new Error("Cannot overwrite name of WalkError");
     }
 }
 
