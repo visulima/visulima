@@ -86,10 +86,13 @@ runs:
               restore-keys: |
                   ${{ runner.os }}-pnpm-store-cache-${{ steps.cache-rotation.outputs.YEAR_MONTH }}-
 
-        - name: "Install lz4"
+        - name: "Download and build lz4"
           if: "runner.os == 'Windows'"
           shell: "powershell"
-          run: "choco install -y lz4"
+          run: |
+              Invoke-WebRequest https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.zip -OutFile lz4.zip
+              Expand-Archive -Path lz4.zip -DestinationPath .
+              echo "$((Get-Item .).FullName)/lz4" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
         - name: "Check for node_modules cache"
           if: "inputs.cache-node-modules == 'true'"
