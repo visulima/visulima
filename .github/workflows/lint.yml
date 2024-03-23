@@ -212,6 +212,30 @@ jobs:
                   file_or_dir: "."
                   strict: true
 
+    lint-workflows:
+        if: "needs.files-changed.outputs.yaml_lintable == 'true'"
+        needs: "files-changed"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
+            - name: "Lint github workflows"
+              run: |
+                  bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+                  # The -ignore flag is used to ignore a specific error for a working solution in test.yml
+                  ./actionlint -color -shellcheck="" -ignore="is always evaluated to true because extra characters are around"
+
     markdown-lint:
         if: "needs.files-changed.outputs.markdown_lintable == 'true'"
         needs: "files-changed"
