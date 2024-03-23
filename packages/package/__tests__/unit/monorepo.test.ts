@@ -2,33 +2,13 @@ import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "pathe";
 import { temporaryDirectory } from "tempy";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { findMonorepoRoot } from "../../src/monorepo";
 
 const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "workspaces");
 const packages = ["package-a", "package-b", "package-c"];
 const scenarios = ["pnpm", "yarn", "turbo-pnpm", "turbo-yarn", "turbo-npm", "yarn-packageManager", "npm", "lerna", "lerna-sub-yarn-packageManager"];
-
-vi.mock("find-up", async (importOriginal) => {
-    const module = await importOriginal();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return {
-        // @ts-expect-error - types are wrong
-        ...module,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        findUp: async (path: string | (() => any), options?: { cwd?: string }) => {
-            if (options?.cwd.includes("noMatch")) {
-                return undefined;
-            }
-
-            // @ts-expect-error - types are wrong
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return module.findUp(path, options);
-        },
-    };
-});
 
 describe("monorepo", () => {
     describe("findMonorepoRoot", () => {
