@@ -1,6 +1,6 @@
-import { identifyInitiatingPackageManager } from "../../../dist/package-manager";
+import { identifyInitiatingPackageManager } from "../../../dist/package-manager.js";
 
-const pm = identifyInitiatingPackageManager();
+const pm = await identifyInitiatingPackageManager();
 
 if (pm.name !== "cnpm" || !pm.version) {
     process.exit(1);

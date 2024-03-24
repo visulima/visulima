@@ -5,6 +5,7 @@ packages:
     - "!packages/error/__fixtures__/**"
     - "!packages/jsdoc-open-api/__fixtures__/**"
     - "!packages/package/__fixtures__/package-json/**"
+    - "!packages/package/__fixtures__/read-tsconfig/**"
     - "!packages/package/__fixtures__/which-package-manager/**"
     - "!packages/package/__fixtures__/workspaces/**"
     - "!packages/readdir/__fixtures__/**"

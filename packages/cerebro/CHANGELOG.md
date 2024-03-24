@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.0.11](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.10...@visulima/cerebro@1.0.11) (2024-03-23)
+
+
+### Bug Fixes
+
+* **cerebro:** updated cli-table3 ([b626292](https://github.com/visulima/visulima/commit/b626292dbda362a96870ef62ba2fe6166cca9268))
+
+## @visulima/cerebro [1.0.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.9...@visulima/cerebro@1.0.10) (2024-03-22)
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.19
+
 ## @visulima/cerebro [1.0.9](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.8...@visulima/cerebro@1.0.9) (2024-03-19)
 
 

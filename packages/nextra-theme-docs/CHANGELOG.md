@@ -1,3 +1,16 @@
+## @visulima/nextra-theme-docs [4.0.19](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.18...@visulima/nextra-theme-docs@4.0.19) (2024-03-22)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** tailwind-merge ([c3dae67](https://github.com/visulima/visulima/commit/c3dae672f662cf8586df45eea4152f202def5bf0))
+
+
+### Miscellaneous Chores
+
+* better code-coverage ([51d8efb](https://github.com/visulima/visulima/commit/51d8efb36b20fb878e128cdbb25d3ac5c81f79f4))
+* updated dev dependencies ([130b82c](https://github.com/visulima/visulima/commit/130b82c07879326db4975c7073137a24fc8b5e7a))
+
 ## @visulima/nextra-theme-docs [4.0.18](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.17...@visulima/nextra-theme-docs@4.0.18) (2024-03-16)
 
 

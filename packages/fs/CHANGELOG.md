@@ -1,3 +1,36 @@
+## @visulima/fs [2.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.0...@visulima/fs@2.0.1) (2024-03-24)
+
+
+### Bug Fixes
+
+* changed parse back to node:path ([#371](https://github.com/visulima/visulima/issues/371)) ([675dd0a](https://github.com/visulima/visulima/commit/675dd0a39b6cd3c4559472608b23c55196df12a0))
+
+## @visulima/fs [2.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.1...@visulima/fs@2.0.0) (2024-03-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **fs:** moved node:path to pathe and changed NotFoundError message
+
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **fs:** moved node:path to pathe, changed NotFoundError message ([0557a18](https://github.com/visulima/visulima/commit/0557a18d97af6061ba9cb1581c420c2bc72965ef))
+
+## @visulima/fs [1.11.1](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.0...@visulima/fs@1.11.1) (2024-03-22)
+
+
+### Bug Fixes
+
+* **fs:** updated type-fest ([aa84569](https://github.com/visulima/visulima/commit/aa84569aca39f2b3af3508fbae9a56ea2da33b9e))
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.2
+
 ## @visulima/fs [1.11.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.10.0...@visulima/fs@1.11.0) (2024-03-20)
 
 

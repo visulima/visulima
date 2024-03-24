@@ -1,7 +1,7 @@
 import { join } from "path";
 import { readFileSync, writeFileSync } from "fs";
 
-import { createConfig } from "../../tsup.config";
+import { createConfig } from "../../tools/get-tsup-config";
 
 const replaceCjsExports = () => {
     return {

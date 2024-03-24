@@ -1,3 +1,44 @@
+## @visulima/package [1.4.3](https://github.com/visulima/visulima/compare/@visulima/package@1.4.2...@visulima/package@1.4.3) (2024-03-24)
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.0.1
+
+## @visulima/package [1.4.2](https://github.com/visulima/visulima/compare/@visulima/package@1.4.1...@visulima/package@1.4.2) (2024-03-23)
+
+
+### Bug Fixes
+
+* **package:** adjusted error message ([a9a38b6](https://github.com/visulima/visulima/commit/a9a38b602c56b87d2cef700d5d55e46e873f0ef6))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.0.0
+
+## @visulima/package [1.4.1](https://github.com/visulima/visulima/compare/@visulima/package@1.4.0...@visulima/package@1.4.1) (2024-03-22)
+
+
+### Bug Fixes
+
+* **package:** updated type-fest ([1c63351](https://github.com/visulima/visulima/commit/1c63351b019265f9ea85356c543945c48f5e641e))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 1.11.1
+
+## @visulima/package [1.4.0](https://github.com/visulima/visulima/compare/@visulima/package@1.3.5...@visulima/package@1.4.0) (2024-03-22)
+
+
+### Features
+
+* switched get-tsconfig with internal code, add cache ([#360](https://github.com/visulima/visulima/issues/360)) ([3cdd387](https://github.com/visulima/visulima/commit/3cdd38793f6413edfbbc1af48a5a27fc8d4a9172))
+
 ## @visulima/package [1.3.5](https://github.com/visulima/visulima/compare/@visulima/package@1.3.4...@visulima/package@1.3.5) (2024-03-20)
 
 
