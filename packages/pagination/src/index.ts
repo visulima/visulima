@@ -8,3 +8,5 @@ export const paginate = <Result>(page: number, perPage: number, total: number, r
     new Paginator(total, Number(perPage), Number(page), ...rows);
 
 export type { PaginationMeta, PaginationResult, Paginator as PaginatorInterface } from "./types.d";
+
+
