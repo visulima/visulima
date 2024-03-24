@@ -79,8 +79,10 @@ jobs:
               uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
-              uses: "./.github/actions/setup"
               id: "setup"
+              uses: "./.github/actions/setup"
+              with:
+                  cache-prefix: "eslint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -96,6 +98,10 @@ jobs:
 
             - name: "lint eslint"
               run: "pnpm run lint:affected:eslint --files=${{ steps.files.outputs.all_changed_files }}"
+
+            - name: "Prepare nx cache"
+              shell: "bash"
+              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
@@ -124,8 +130,10 @@ jobs:
               uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
-              uses: "./.github/actions/setup"
               id: "setup"
+              uses: "./.github/actions/setup"
+              with:
+                  cache-prefix: "package-json"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -141,6 +149,10 @@ jobs:
 
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json --files=${{ steps.files.outputs.all_changed_files }}"
+
+            - name: "Prepare nx cache"
+              shell: "bash"
+              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
     types-lint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
@@ -169,8 +181,10 @@ jobs:
               uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
-              uses: "./.github/actions/setup"
               id: "setup"
+              uses: "./.github/actions/setup"
+              with:
+                  cache-prefix: "types"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -186,6 +200,10 @@ jobs:
 
             - name: "lint typescript files"
               run: "pnpm run lint:affected:types --files=${{ steps.files.outputs.all_changed_files }}"
+
+            - name: "Prepare nx cache"
+              shell: "bash"
+              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
