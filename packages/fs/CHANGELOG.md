@@ -1,3 +1,10 @@
+## @visulima/fs [2.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.0...@visulima/fs@2.0.1) (2024-03-24)
+
+
+### Bug Fixes
+
+* changed parse back to node:path ([#371](https://github.com/visulima/visulima/issues/371)) ([675dd0a](https://github.com/visulima/visulima/commit/675dd0a39b6cd3c4559472608b23c55196df12a0))
+
 ## @visulima/fs [2.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@1.11.1...@visulima/fs@2.0.0) (2024-03-23)
 
 
