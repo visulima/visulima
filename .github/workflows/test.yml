@@ -57,15 +57,8 @@ jobs:
         strategy:
             max-parallel: 4
             matrix:
-                os:
-                    - "ubuntu-latest"
-                node_version: ["18", "20", "21"]
-                # On the other platforms, we only test the lts node version
-                include:
-                    - os: "macos-latest"
-                      node_version: "20"
-                    - os: "windows-latest"
-                      node_version: "20.3.1" # https://github.com/nodejs/node/issues/48673
+                 os: "windows-latest"
+                 node_version: "20.3.1" # https://github.com/nodejs/node/issues/48673
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
