@@ -1,10 +1,10 @@
 import { stat } from "node:fs/promises";
+import { parse } from "node:path";
 
-import { dirname, isAbsolute, parse, resolve } from "pathe";
+import { dirname, isAbsolute, resolve } from "pathe";
 
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpOptions, Match } from "../types";
-import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import toPath from "../utils/to-path";
 
 const findUp = async (
@@ -18,14 +18,10 @@ const findUp = async (
 
     const cwd = options.cwd ? toPath(options.cwd) : process.cwd();
 
-    assertValidFileOrDirectoryPath(cwd);
-
     let directory = resolve(cwd);
 
     const { root } = parse(directory);
     const stopPath = toPath(options.stopAt ?? root);
-
-    assertValidFileOrDirectoryPath(stopPath);
 
     const stopAt = resolve(directory, stopPath);
     const type = options.type ?? "file";
