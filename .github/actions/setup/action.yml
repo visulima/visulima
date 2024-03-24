@@ -14,6 +14,14 @@ inputs:
         description: "Enable nx cache"
         required: false
         default: "true"
+    enable-node-modules-cache:
+        description: "Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)"
+        required: false
+        default: "true"
+    cache-prefix:
+        description: "Add a specific cache-prefix"
+        required: false
+        default: "default"
     node-version:
         description: "The node.js version to use"
         required: false
@@ -22,16 +30,16 @@ inputs:
         description: "The npm version to use"
         required: false
         default: "9.6.x"
-    cache-prefix:
-        description: "Add a specific cache-prefix"
-        required: false
-        default: "default"
-    cache-node-modules:
-        description: "Cache node_modules, might speed up link step (invalidated lock/os/node-version/branch)"
-        required: false
-        default: "true"
     install-bun:
         description: "Install Bun for tests"
+        required: false
+        default: "false"
+    skip-playwright:
+        description: "Skip Playwright installation"
+        required: false
+        default: "true"
+    install-cypress-binary:
+        description: "Install Cypress Binary"
         required: false
         default: "false"
 
@@ -99,29 +107,35 @@ runs:
               echo "$((Get-Item .).FullName)\lz4-1.9.4" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
         - name: "Check for node_modules cache"
-          if: "inputs.cache-node-modules == 'true'"
+          if: "inputs.enable-node-modules-cache == 'true'"
           id: "node-modules-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: "/tmp/node_modules"
+              path: "/tmp/node_modules.tar.lz4"
               key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
               restore-keys: |
                   pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-
 
         - name: "Restore node_modules"
-          if: "inputs.cache-node-modules == 'true' && steps.node-modules-cache.outputs.cache-hit == 'true'"
+          if: "inputs.enable-node-modules-cache == 'true' && steps.node-modules-cache.outputs.cache-hit == 'true'"
           shell: "bash"
           run: "lz4 -d /tmp/node_modules.tar.lz4 | tar -xf - ;" # decompress node_modules
 
-        - name: "Cache Nx"
+        - name: "Check for Nx cache"
           if: "inputs.enable-nx-cache == 'true'"
+          id: "nx-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: ".nx/cache"
-              key: "cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
+              path: "/tmp/nx_cache.tar.lz4"
+              key: "cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
               restore-keys: |
-                  cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-
-                  cache-nx-${{ runner.os }}-node-${{ inputs.node-version }}-${{ github.ref_name }}-
+                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('pnpm-lock.yaml') }}-
+                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-
+
+        - name: "Restore node_modules"
+          if: "inputs.enable-node-modules-cache == 'true' && steps.nx-cache.outputs.cache-hit == 'true'"
+          shell: "bash"
+          run: "lz4 -d /tmp/nx_cache.tar.lz4 | tar -xf - ;" # decompress nx cache
 
         - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
           shell: "bash"
@@ -131,10 +145,10 @@ runs:
           shell: "bash"
           run: "pnpm install --frozen-lockfile --prefer-offline"
           env:
-              "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": 1
-              "CYPRESS_INSTALL_BINARY": 0
-              "SKIP_CHECK": "true"
-              "HUSKY": 0
+              "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "${{ inputs.skip-playwright }}"
+              "CYPRESS_INSTALL_BINARY": "${{ inputs.install-cypress-binary }}"
+              "SKIP_CHECK": "true" # is used to skip the check for the node version
+              "HUSKY": 0 # disable husky hooks on ci
 
         - name: "Install Bun for tests"
           if: "inputs.install-bun == 'true'"
@@ -142,6 +156,6 @@ runs:
           run: "pnpm i -D bun --filter=package"
 
         - name: "Prepare node_modules cache"
-          if: "inputs.cache-node-modules == 'true'"
+          if: "inputs.enable-node-modules-cache == 'true'"
           shell: "bash"
           run: "tar -cf - node_modules | lz4 > /tmp/node_modules.tar.lz4" # compress node_modules
