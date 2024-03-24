@@ -5,9 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { execScriptSync } from "../helpers";
 
-const isWindows = process.platform === "win32";
-
-describe("usage `@visulima/package` npm package", () => {
+describe("usage `@visulima/fs` npm package", () => {
     it(`should work as CommonJS package`, () => {
         expect.assertions(1);
 
@@ -15,7 +13,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes(`packages${isWindows ? "\\\\" : "/"}fs`)).toBeTruthy();
+        expect(received.includes("packages/fs")).toBeTruthy();
     });
 
     it(`should work as ESM package`, async () => {
@@ -25,6 +23,6 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received.includes(`packages${isWindows ? "\\\\" : "/"}fs`)).toBeTruthy();
+        expect(received.includes("packages/fs")).toBeTruthy();
     });
 });
