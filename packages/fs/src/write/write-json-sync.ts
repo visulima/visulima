@@ -20,7 +20,6 @@ const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOpti
             const file = readFileSync(path, "utf8");
 
             if (detectIndent) {
-                 
                 const { indent: dIndent } = detectIndentFn(file);
 
                 indent = dIndent as string;

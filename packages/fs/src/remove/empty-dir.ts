@@ -32,6 +32,6 @@ const emptyDir = async (dir: URL | string, options?: EmptyDirOptions): Promise<v
     for await (const item of await readdir(dir)) {
         await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }
-}
+};
 
 export default emptyDir;

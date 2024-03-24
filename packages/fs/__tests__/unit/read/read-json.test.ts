@@ -34,7 +34,6 @@ describe.each([
     it("should read a valid JSON file with custom options", async () => {
         expect.assertions(1);
 
-         
         const reviver = (_, value) => value;
         const options = {
             color: {

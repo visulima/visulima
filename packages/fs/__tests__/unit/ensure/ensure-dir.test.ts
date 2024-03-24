@@ -10,7 +10,10 @@ import ensureDir from "../../../src/ensure/ensure-dir";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "../../../src/ensure/ensure-dir-sync";
 
-describe.each([["ensureDir", ensureDir], ["ensureDirSync", ensureDirSync]])("%s", (name, function_) => {
+describe.each([
+    ["ensureDir", ensureDir],
+    ["ensureDirSync", ensureDirSync],
+])("%s", (name, function_) => {
     let distribution: string;
 
     beforeEach(async () => {
@@ -37,7 +40,7 @@ describe.each([["ensureDir", ensureDir], ["ensureDirSync", ensureDirSync]])("%s"
         expect(existsSync(path)).toBeTruthy();
     });
 
-    it('should ensure existing dir exists', async () => {
+    it("should ensure existing dir exists", async () => {
         expect.assertions(1);
 
         const path = `${distribution}/ensure_dir_exist/dir`;
@@ -56,7 +59,7 @@ describe.each([["ensureDir", ensureDir], ["ensureDirSync", ensureDirSync]])("%s"
         expect(existsSync(path)).toBeTruthy();
     });
 
-    it('should throw a error if input is a file', async () => {
+    it("should throw a error if input is a file", async () => {
         expect.assertions(1);
 
         const path = `${distribution}/ensure_dir_file`;

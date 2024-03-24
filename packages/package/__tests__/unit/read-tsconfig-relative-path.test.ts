@@ -144,7 +144,6 @@ describe("relative path", () => {
             extends: "./directory",
         });
 
-
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './directory' found.");
     });
 
@@ -162,7 +161,6 @@ describe("relative path", () => {
         writeJsonSync(join(distribution, "tsconfig.json"), {
             extends: "./directory",
         });
-
 
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './directory' found.");
     });

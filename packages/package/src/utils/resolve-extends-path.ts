@@ -133,19 +133,22 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         }
     }
 
-    const packagePath = findUpSync((directory) => {
-        const path = join(directory, "node_modules", packageName);
+    const packagePath = findUpSync(
+        (directory) => {
+            const path = join(directory, "node_modules", packageName);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (existsSync(path)) {
-            return join("node_modules", packageName);
-        }
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            if (existsSync(path)) {
+                return join("node_modules", packageName);
+            }
 
-        return undefined;
-    }, {
-        cwd: directoryPath,
-        type: "directory"
-    });
+            return undefined;
+        },
+        {
+            cwd: directoryPath,
+            type: "directory",
+        },
+    );
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!packagePath || !statSync(packagePath).isDirectory()) {

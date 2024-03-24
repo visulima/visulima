@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { getFileInfoType } from "../../../src/utils/get-file-info-type";
 
 describe("getFileInfoType", () => {
-    it('should return undefined if type is not found', () => {
+    it("should return undefined if type is not found", () => {
         expect.assertions(1);
 
         const fileInfo = {

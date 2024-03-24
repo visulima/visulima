@@ -17,19 +17,10 @@ async function readYaml<R = Record<string, unknown>>(
     reviver?: ReadYamlOptions<"brotli" | "gzip" | "none"> | YamlReviver,
     options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
 ): Promise<R> {
-     
-    const {
-        buffer,
-        compression,
-        encoding = "utf8",
-        flag,
-        ...parseOptions
-    } = options ?? {};
+    const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = options ?? {};
 
-     
     const content = await readFile(path, { buffer, compression, encoding, flag });
 
-     
     return (typeof reviver === "function" ? parse(content, reviver, parseOptions) : parse(content, parseOptions)) as R;
 }
 
