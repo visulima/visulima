@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { chmodSync } from "node:fs";
 import { rm } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join } from "pathe";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
 import { temporaryDirectory } from "tempy";
