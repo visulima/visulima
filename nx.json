@@ -42,11 +42,11 @@
             "cache": true
         },
         "test": {
-            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts"],
+            "dependsOn": ["default", "^default", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "build-storybook": {
