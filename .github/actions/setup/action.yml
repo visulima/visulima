@@ -159,8 +159,3 @@ runs:
           if: "inputs.enable-node-modules-cache == 'true'"
           shell: "bash"
           run: "tar -cf - node_modules | lz4 > /tmp/node_modules.tar.lz4" # compress node_modules
-
-        - name: "Prepare nx cache"
-          if: "inputs.enable-nx-cache == 'true'"
-          shell: "bash"
-          run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
