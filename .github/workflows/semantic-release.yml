@@ -72,7 +72,6 @@ jobs:
                   TEST_PROD_BUILD: "true"
 
             - name: "Prepare nx cache"
-              if: "inputs.enable-nx-cache == 'true'"
               shell: "bash"
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
