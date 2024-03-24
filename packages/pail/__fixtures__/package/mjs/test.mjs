@@ -6,5 +6,3 @@ const pail = createPail({
 });
 
 pail.success("esm");
-
-

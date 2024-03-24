@@ -43,11 +43,9 @@ describe("parse-json", () => {
         const jsonString = '{"name": "John", "age": 30}';
         const reviver = (key, value) => {
             if (key === "age") {
-                 
                 return value + 10;
             }
 
-             
             return value;
         };
 

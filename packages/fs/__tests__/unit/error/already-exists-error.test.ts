@@ -28,7 +28,6 @@ describe("alreadyExistsError", () => {
         expect(error.code).toBe("EEXIST");
     });
 
-
     it("should throw an error when overriding the name property", () => {
         expect.assertions(1);
 

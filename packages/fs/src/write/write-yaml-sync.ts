@@ -31,10 +31,8 @@ function writeYamlSync(
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     options?: number | string | (CreateNodeOptions & DocumentOptions & ParseOptions & SchemaOptions & ToStringOptions),
 ): void {
-     
     const content = typeof replacer === "function" || Array.isArray(replacer) ? stringify(data, replacer, options) : stringify(data, replacer as YamlReplacer);
 
-     
     writeFileSync(path, content);
 }
 

@@ -24,7 +24,7 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (error.code !== 'ENOENT') {
+        if (error.code !== "ENOENT") {
             throw error;
         }
     }
@@ -37,7 +37,7 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (error.code !== 'EEXIST') {
+        if (error.code !== "EEXIST") {
             throw error;
         }
 
@@ -48,6 +48,6 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
             throw new Error(`Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`);
         }
     }
-}
+};
 
 export default ensureDir;

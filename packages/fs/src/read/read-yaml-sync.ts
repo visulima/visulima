@@ -12,19 +12,10 @@ function readYamlSync<R = Record<string, unknown>>(
     reviver?: ReadYamlOptions<"brotli" | "gzip" | "none"> | YamlReviver,
     options?: ReadYamlOptions<"brotli" | "gzip" | "none">,
 ): R {
-     
-    const {
-        buffer,
-        compression,
-        encoding = "utf8",
-        flag,
-        ...parseOptions
-    } = options ?? {};
+    const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = options ?? {};
 
-     
     const content = readFileSync(path, { buffer, compression, encoding, flag });
 
-     
     return (typeof reviver === "function" ? parse(content, reviver, parseOptions) : parse(content, parseOptions)) as R;
 }
 

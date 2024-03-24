@@ -22,4 +22,4 @@ export const getFileInfoType = (fileInfo: Stats): PathType | undefined => {
     }
 
     return undefined;
-}
+};

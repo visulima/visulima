@@ -21,7 +21,7 @@ describe.each([
 
         const path = join(fixturePath, "file.yaml");
 
-        const content: string = name === "readYaml" ? (await function_(path)) as string : function_(path) as string;
+        const content: string = name === "readYaml" ? ((await function_(path)) as string) : (function_(path) as string);
 
         expect(content).toStrictEqual({
             YAML: ["A human-readable data serialization language", "https://en.wikipedia.org/wiki/YAML"],
@@ -34,7 +34,7 @@ describe.each([
 
         const path = join(fixturePath, "file.yml");
 
-        const content: string = name === "readYaml" ? (await function_(path)) as string : function_(path) as string;
+        const content: string = name === "readYaml" ? ((await function_(path)) as string) : (function_(path) as string);
 
         expect(content).toStrictEqual({
             YAML: ["A human-readable data serialization language", "https://en.wikipedia.org/wiki/YAML"],

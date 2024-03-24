@@ -31,6 +31,6 @@ const emptyDir = (dir: URL | string, options?: EmptyDirOptions): void => {
     for (const item of readdirSync(dir)) {
         rmSync(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }
-}
+};
 
 export default emptyDir;

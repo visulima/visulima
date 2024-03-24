@@ -14,7 +14,6 @@ import type { CodeFrameLocation, CodeFrameOptions, JsonReviver } from "../types"
 const getCodePoint = (character: string): string => `\\u{${(character.codePointAt(0) as number).toString(16)}}`;
 
 const generateCodeFrame = (source: string, location: CodeFrameLocation, options?: CodeFrameOptions) =>
-     
     codeFrame(
         source,
         { start: location },
@@ -46,7 +45,6 @@ const getErrorLocation = (source: string, message: string): CodeFrameLocation | 
         index = source.length - 1;
     }
 
-     
     return indexToLineColumn(source, index);
 };
 
@@ -55,7 +53,7 @@ const addCodePointToUnexpectedToken = (message: string): string =>
         // TODO[engine:node@>=20]: The token always quoted after Node.js 20
         // eslint-disable-next-line regexp/no-potentially-useless-backreference
         /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/,
-         
+
         (_, _quote, token) => `"${token}"(${getCodePoint(token)})`,
     );
 
@@ -78,7 +76,6 @@ function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string
     let message: string;
 
     try {
-         
         return JSON.parse(string, reviver);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -100,7 +97,6 @@ function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string
     jsonError.fileName = fileName as string;
 
     if (location) {
-         
         jsonError.codeFrame = generateCodeFrame(string, location, options);
     }
 
