@@ -58,7 +58,7 @@ jobs:
               uses: "./.github/actions/setup"
               with:
                   node-version: "18.x"
-                  enable-nx-cache: 'false'
+                  enable-nx-cache: "false"
 
             - name: "Build Production"
               run: "pnpm run build:prod:packages"
