@@ -2823,9 +2823,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.22
         version: 18.2.22
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.4)
       '@vitest/coverage-v8':
         specifier: ^1.4.0
         version: 1.4.0(vitest@1.4.0)
@@ -3079,22 +3076,6 @@ importers:
       '@visulima/package':
         specifier: workspace:*
         version: link:../../..
-
-  packages/package/__fixtures__/read-tsconfig/org-tsconfig-package: {}
-
-  packages/package/__fixtures__/read-tsconfig/tsconfig-package: {}
-
-  packages/package/__fixtures__/read-tsconfig/yarn-pnp:
-    dependencies:
-      '@org/tsconfig-package':
-        specifier: ../org-tsconfig-package
-        version: link:../org-tsconfig-package
-      '@visulima/package':
-        specifier: link:../../..
-        version: link:../../..
-      tsconfig-package:
-        specifier: ../tsconfig-package
-        version: link:../tsconfig-package
 
   packages/pagination:
     dependencies:

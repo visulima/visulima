@@ -11,7 +11,7 @@ export const esc = (string_: string): string => string_.replaceAll("", "\\x1b")
  */
 export const execScriptSync = (file: string, flags: string[] = [], environment: string[] = []): string => {
     const environmentVariables = environment.length > 0 ? `${environment.join(" ")} ` : "";
-    const cmd = `cross-env ${environmentVariables}node ${file} ${flags.join(" ")}`;
+    const cmd = `cross-env ${environmentVariables}node "${file}" ${flags.join(" ")}`;
     const result = execSync(cmd);
 
     // replace last newline in result
