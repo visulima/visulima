@@ -111,7 +111,7 @@ runs:
           id: "node-modules-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: "/tmp/node_modules"
+              path: "/tmp/node_modules.tar.lz4"
               key: "pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}"
               restore-keys: |
                   pnpm-nm-cache-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-
@@ -126,11 +126,11 @@ runs:
           id: "nx-cache"
           uses: "actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319" # v4.0.1
           with:
-              path: "/tmp/nx_cache"
-              key: "cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
+              path: "/tmp/nx_cache.tar.lz4"
+              key: "cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}"
               restore-keys: |
-                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-
-                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ github.ref_name }}-
+                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('pnpm-lock.yaml') }}-
+                  cache-nx-${{ inputs.cache-prefix }}-${{ runner.os }}-${{ inputs.node-version }}-
 
         - name: "Restore node_modules"
           if: "inputs.enable-node-modules-cache == 'true' && steps.nx-cache.outputs.cache-hit == 'true'"
