@@ -11,3 +11,5 @@ export const W_OK = 2; // constants?.W_OK
 export const X_OK = 1; // constants?.X_OK
 
 export const FIND_UP_STOP = Symbol("findUpStop");
+
+
