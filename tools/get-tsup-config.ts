@@ -6,7 +6,7 @@ import { readPackageSync } from "read-pkg";
 import type { Options } from "tsup";
 import { defineConfig as baseDefineConfig } from "tsup";
 
-import tsconfig from "./tsconfig.base.json";
+import tsconfig from "../tsconfig.base.json";
 
 // This is a tsup plugin that convert exports.default to modules.exports for CommonJS modules.
 const fixCjsExports = () => {
@@ -106,7 +106,7 @@ export const createConfig = (
             clean: true,
             splitting: true,
             shims: true,
-            target: tsconfig.compilerOptions.target as "es2022",
+            target: [tsconfig.compilerOptions.target as "es2022", 'node18'],
             env: (config as Options)?.env ?? {
                 NODE_ENV: process.env["NODE_ENV"],
             },
