@@ -92,11 +92,11 @@ jobs:
               uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
+              id: "setup"
               uses: "./.github/actions/setup"
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
-              id: "setup"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
