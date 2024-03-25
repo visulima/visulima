@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { findCacheDirectory, findCacheDirectorySync } from "../../src";
 
+// Windows does not support chmod in the same way as Unix
 const isWindows = platform === "win32";
 
 describe.each([
