@@ -52,7 +52,7 @@ describe("package", () => {
             expect(result).toBe(distribution);
         });
 
-        it.only("should find package.json", async () => {
+        it("should find package.json", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "package.json"), {
