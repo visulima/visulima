@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 
+import { JSONError } from "@visulima/fs/error";
 import { dirname, join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
@@ -60,8 +61,7 @@ describe("monorepo", () => {
         it(`should throw error when no match is found`, async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect
-            expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
+            await expect(async () => await findMonorepoRoot(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
                 /No monorepo root could be found upwards/,
             );
         });
@@ -69,8 +69,7 @@ describe("monorepo", () => {
         it("should throw error when package.json is broken", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises,vitest/valid-expect,vitest/require-to-throw-message
-            expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow();
+            await expect(async () => await findMonorepoRoot(join(cwd, "bad"))).rejects.toThrow(JSONError);
         });
     });
 });
