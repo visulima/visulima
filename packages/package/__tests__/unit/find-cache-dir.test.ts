@@ -1,9 +1,9 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { chmodSync } from "node:fs";
 import { rm } from "node:fs/promises";
-import { dirname, join } from "pathe";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
+import { dirname, join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -112,6 +112,10 @@ describe.each([
         }
 
         expect(result).toBeUndefined();
+
+        // Make cacheNameDirectory writeable
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        chmodSync(testCachePath, 0o777);
     });
 
     it("should return undefined if the .cache directory exists but is not writeable", async () => {
@@ -138,6 +142,10 @@ describe.each([
         }
 
         expect(result).toBeUndefined();
+
+        // Make cacheNameDirectory writeable
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        chmodSync(testCachePath, 0o777);
     });
 
     it("should return undefined if the path directory exists but is not writeable", async () => {
@@ -164,6 +172,10 @@ describe.each([
         }
 
         expect(result).toBeUndefined();
+
+        // Make cacheNameDirectory writeable
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        chmodSync(testCachePath, 0o777);
     });
 
     it("should support CACHE_DIR environment variable", async () => {
