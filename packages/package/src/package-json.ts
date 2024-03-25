@@ -6,7 +6,7 @@ import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
-import { join, normalize } from "pathe";
+import { join } from "pathe";
 import type { JsonObject } from "type-fest";
 
 import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
@@ -52,8 +52,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
-        // @TODO Remove this after @visulima/fs use pathe
-        path: normalize(filePath),
+        path: filePath,
     };
 
     cache.set(filePath, output);

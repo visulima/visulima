@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, readJson } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
 import { dirname, join } from "pathe";
 
 import { findPackageManager } from "./package-manager";
@@ -74,8 +75,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // Skip this error to show the error message from the next block
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        if (!error.message.includes("Could not find lock file")) {
+        if (!(error instanceof NotFoundError)) {
             throw error;
         }
     }
