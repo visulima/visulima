@@ -173,7 +173,7 @@
         "npm": "^10.5.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
-        "semantic-release": "^23.0.5",
+        "semantic-release": "^23.0.6",
         "sort-package-json": "^2.8.0",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",

@@ -130,7 +130,7 @@
         "mock-stdin": "1.0.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
-        "semantic-release": "^23.0.5",
+        "semantic-release": "^23.0.6",
         "sort-package-json": "^2.8.0",
         "temp-write": "^5.0.0",
         "tsup": "^8.0.2",
