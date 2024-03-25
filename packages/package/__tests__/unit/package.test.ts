@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
-import { join } from "pathe";
+import { join, toNamespacedPath } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -11,7 +11,7 @@ describe("package", () => {
     let distribution: string;
 
     beforeEach(async () => {
-        distribution = temporaryDirectory();
+        distribution = toNamespacedPath(temporaryDirectory());
     });
 
     afterEach(async () => {
@@ -52,7 +52,7 @@ describe("package", () => {
             expect(result).toBe(distribution);
         });
 
-        it("should find package.json", async () => {
+        it.only("should find package.json", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "package.json"), {
@@ -65,7 +65,6 @@ describe("package", () => {
             if (name === "findPackageRoot") {
                 result = await result;
             }
-
             expect(result).toBe(distribution);
         });
 

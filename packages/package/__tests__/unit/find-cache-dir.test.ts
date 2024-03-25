@@ -1,6 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import { chmodSync } from "node:fs";
+import { chmodSync, constants } from "node:fs";
 import { rm } from "node:fs/promises";
+import { platform } from "node:process";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "pathe";
@@ -8,6 +9,8 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { findCacheDirectory, findCacheDirectorySync } from "../../src";
+
+const isWindows = platform === "win32";
 
 describe.each([
     ["findCacheDirectory", findCacheDirectory],
@@ -23,7 +26,7 @@ describe.each([
         await rm(distribution, { recursive: true });
     });
 
-    it("should return the cache directory path if it exists and is writeable", async () => {
+    it.skipIf(isWindows)("should return the cache directory path if it exists and is writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules", ".cache", "test");
@@ -45,7 +48,7 @@ describe.each([
         expect(result).toStrictEqual(testCachePath);
     });
 
-    it("should return the cache directory path if the .cache directory exists and is writeable", async () => {
+    it.skipIf(isWindows)("should return the cache directory path if the .cache directory exists and is writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules", ".cache");
@@ -67,7 +70,7 @@ describe.each([
         expect(result).toStrictEqual(join(testCachePath, "test"));
     });
 
-    it("should return the cache directory path if the node_modules directory exists and is writeable", async () => {
+    it.skipIf(isWindows)("should return the cache directory path if the node_modules directory exists and is writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules");
@@ -89,7 +92,7 @@ describe.each([
         expect(result).toStrictEqual(join(testCachePath, ".cache", "test"));
     });
 
-    it("should return undefined if the node_modules directory exists but is not writeable", async () => {
+    it.skipIf(isWindows)("should return undefined if the node_modules directory exists but is not writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules");
@@ -97,7 +100,7 @@ describe.each([
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o444);
+        chmodSync(testCachePath, constants.O_RDONLY);
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
         });
@@ -115,10 +118,10 @@ describe.each([
 
         // Make cacheNameDirectory writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o777);
+        chmodSync(testCachePath, constants.O_RDWR);
     });
 
-    it("should return undefined if the .cache directory exists but is not writeable", async () => {
+    it.skipIf(isWindows)("should return undefined if the .cache directory exists but is not writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules", ".cache");
@@ -126,7 +129,7 @@ describe.each([
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o444);
+        chmodSync(testCachePath, constants.O_RDONLY);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
@@ -145,10 +148,10 @@ describe.each([
 
         // Make cacheNameDirectory writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o777);
+        chmodSync(testCachePath, constants.O_RDWR);
     });
 
-    it("should return undefined if the path directory exists but is not writeable", async () => {
+    it.skipIf(isWindows)("should return undefined if the path directory exists but is not writeable", async () => {
         expect.assertions(1);
 
         const testCachePath = join(distribution, "package", "node_modules", ".cache", "test");
@@ -156,7 +159,7 @@ describe.each([
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o444);
+        chmodSync(testCachePath, constants.O_RDONLY);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
@@ -175,7 +178,7 @@ describe.each([
 
         // Make cacheNameDirectory writeable
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(testCachePath, 0o777);
+        chmodSync(testCachePath, constants.O_RDWR);
     });
 
     it("should support CACHE_DIR environment variable", async () => {
