@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
-import { findUp } from "@visulima/fs";
+import { findUp, findUpSync } from "@visulima/fs";
+import { NotFoundError } from "@visulima/fs/error";
 import { dirname, join } from "pathe";
 
 import { parsePackageJson } from "./package-json";
@@ -19,6 +20,19 @@ const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-
  */
 export const findLockFile = async (cwd?: URL | string): Promise<string> => {
     const filePath = await findUp(lockFileNames, {
+        type: "file",
+        ...(cwd && { cwd }),
+    });
+
+    if (!filePath) {
+        throw new Error("Could not find lock file");
+    }
+
+    return filePath;
+};
+
+export const findLockFileSync = (cwd?: URL | string): string => {
+    const filePath = findUpSync(lockFileNames, {
         type: "file",
         ...(cwd && { cwd }),
     });
@@ -84,7 +98,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
     );
 
     if (!foundFile) {
-        throw new Error("Could not find lock file");
+        throw new NotFoundError("Could not find a package manager");
     }
 
     if (foundFile.endsWith("package.json")) {
@@ -131,7 +145,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
         };
     }
 
-    throw new Error("Could not find lock file");
+    throw new Error("Could not find a package manager");
 };
 
 /**

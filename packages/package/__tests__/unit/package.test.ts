@@ -1,82 +1,98 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { rm } from "node:fs/promises";
 
-import { findPackageRoot } from "../../src/package";
+import { writeFileSync, writeJsonSync } from "@visulima/fs";
+import { join, toNamespacedPath } from "pathe";
+import { temporaryDirectory } from "tempy";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const { findUp } = vi.hoisted(() => {
-    return {
-        findUp: vi.fn(),
-    };
-});
-
-vi.mock("@visulima/fs", async (importOriginal) => {
-    const module = await importOriginal();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return {
-        // @ts-expect-error - types are wrong
-        ...module,
-
-        findUp,
-    };
-});
+import { findPackageRoot, findPackageRootSync } from "../../src/package";
 
 describe("package", () => {
-    describe("findPackageRoot", () => {
-        beforeEach(() => {
-            vi.clearAllMocks();
-        });
+    let distribution: string;
 
-        it("should find LockFile", async () => {
+    beforeEach(async () => {
+        distribution = toNamespacedPath(temporaryDirectory());
+    });
+
+    afterEach(async () => {
+        await rm(distribution, { recursive: true });
+    });
+
+    describe.each([
+        ["findPackageRoot", findPackageRoot],
+        ["findPackageRootSync", findPackageRootSync],
+    ])("%s", (name, function_) => {
+        it.each(["yarn.lock", "package-lock.json"])(`should find "%s" lock file`, async (fileName) => {
             expect.assertions(1);
 
-            findUp.mockResolvedValueOnce("/user/project/package-lock.json");
+            writeJsonSync(join(distribution, fileName), {});
 
-            const result = await findPackageRoot();
+            let result = function_(distribution);
 
-            expect(result).toBe("/user/project");
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
+                result = await result;
+            }
+
+            expect(result).toBe(distribution);
         });
 
-        it("should find Git Config", async () => {
+        it("should find git config", async () => {
             expect.assertions(1);
 
-            // This is used for the lock file lookup
-            findUp.mockResolvedValueOnce(undefined);
-            findUp.mockResolvedValueOnce("/user/project/.git/config");
+            writeFileSync(join(distribution, ".git", "config"), "");
 
-            const result = await findPackageRoot();
+            let result = function_(distribution);
 
-            expect(result).toBe("/user/project");
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
+                result = await result;
+            }
+
+            expect(result).toBe(distribution);
         });
 
-        it("should find Package.json", async () => {
+        it("should find package.json", async () => {
             expect.assertions(1);
 
-            // This is used for the lock file lookup
-            findUp.mockResolvedValueOnce(undefined);
-            // This is used for the git config lookup
-            findUp.mockResolvedValueOnce(undefined);
-            findUp.mockResolvedValueOnce("/user/project/package.json");
+            writeJsonSync(join(distribution, "package.json"), {
+                name: "test",
+            });
 
-            const result = await findPackageRoot();
+            let result = function_(distribution);
 
-            expect(result).toBe("/user/project");
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
+                result = await result;
+            }
+            expect(result).toBe(distribution);
         });
 
-        it("throws error when no root directory is found", async () => {
+        it("should throw a error when the found package.json has no name", async () => {
             expect.assertions(1);
 
-            // This is used for the lock file lookup
-            findUp.mockResolvedValueOnce(undefined);
-            // This is used for the git config lookup
-            findUp.mockResolvedValueOnce(undefined);
-            findUp.mockResolvedValueOnce(undefined);
+            writeJsonSync(join(distribution, "package.json"), {});
 
-            try {
-                await findPackageRoot();
-                expect(true).toBeFalsy(); // This is to make sure error is thrown.
-            } catch {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(true).toBeTruthy();
+                await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
+            } else {
+                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
+                expect(() => function_(distribution)).toThrow("Could not find root directory");
+            }
+        });
+
+        it("should throw a error when no root directory is found", async () => {
+            expect.assertions(1);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
+                // eslint-disable-next-line vitest/no-conditional-expect
+                await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
+            } else {
+                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
+                expect(() => function_(distribution)).toThrow("Could not find root directory");
             }
         });
     });
