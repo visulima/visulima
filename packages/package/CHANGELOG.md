@@ -1,3 +1,10 @@
+## @visulima/package [1.5.0](https://github.com/visulima/visulima/compare/@visulima/package@1.4.3...@visulima/package@1.5.0) (2024-03-25)
+
+
+### Features
+
+* **package:** added findCacheDirectory, findCacheDirectorySync and findPackageRootSync ([#366](https://github.com/visulima/visulima/issues/366)) ([b96f8bf](https://github.com/visulima/visulima/commit/b96f8bf66540dc88b4479dae9e9dfbd1e21296ca))
+
 ## @visulima/package [1.4.3](https://github.com/visulima/visulima/compare/@visulima/package@1.4.2...@visulima/package@1.4.3) (2024-03-24)
 
 
