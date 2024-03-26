@@ -1,0 +1,8 @@
+{
+    "name": "boxen-cjs",
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/boxen": "workspace:*"
+    }
+}

@@ -1,7 +1,7 @@
 import { blue, red, yellow } from "@visulima/colorize";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { boxen } from "../src";
+import { boxen } from "../../src";
 
 const longText =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas id erat arcu. Integer urna mauris, sodales vel egestas eu, consequat id turpis. Vivamus faucibus est mattis tincidunt lobortis. In aliquam placerat nunc eget viverra. Duis aliquet faucibus diam, blandit tincidunt magna congue eu. Sed vel ante vestibulum, maximus risus eget, iaculis velit. Quisque id dapibus purus, ut sodales lorem. Aenean laoreet iaculis tellus at malesuada. Donec imperdiet eu lacus vitae fringilla.";
