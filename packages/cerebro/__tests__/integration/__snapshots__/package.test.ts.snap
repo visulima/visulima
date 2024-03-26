@@ -2,56 +2,56 @@
 
 exports[`usage \`@visulima/cerebro\` npm package > should work as CommonJS package 1`] = `
 "cerebro
-\\x1b[1m\\x1b[7m\\x1b[36m Usage \\x1b[39m\\x1b[27m\\x1b[22m
+ Usage 
 
-   \\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m [positional arguments] \\x1b[33m[options]\\x1b[39m                            
+   cerebro <command> [positional arguments] [options]                            
 
-\\x1b[1m\\x1b[7m\\x1b[32m Available Commands \\x1b[39m\\x1b[27m\\x1b[22m
+ Available Commands 
 
-   \\x1b[32mversion\\x1b[39m  [v, V]                          Output the version number                                 
-   \\x1b[32mhelp\\x1b[39m                                                                                               
+   version  [v, V]                          Output the version number                                 
+   help                                                                                               
 
-\\x1b[1m\\x1b[7m\\x1b[33m Command Options \\x1b[39m\\x1b[27m\\x1b[22m
+ Command Options 
 
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--group\\x1b[39m\\x1b[22m \\x1b[4mstring\\x1b[24m                        \\x1b[90m \\x1b[39m  Display only the specified group      
+   --group string                           Display only the specified group      
 
-\\x1b[1m\\x1b[7m\\x1b[33m Global Options \\x1b[39m\\x1b[27m\\x1b[22m
+ Global Options 
 
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--verbose\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                     \\x1b[90m \\x1b[39m  Turn on verbose output                
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--debug\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Turn on debugging output              
-\\x1b[90m \\x1b[39m  \\x1b[1m-h\\x1b[22m, \\x1b[1m\\x1b[33m--help\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Print out helpful usage information   
-\\x1b[90m \\x1b[39m  \\x1b[1m-q\\x1b[22m, \\x1b[1m\\x1b[33m--quiet\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                   \\x1b[90m \\x1b[39m  Silence output                        
-\\x1b[90m \\x1b[39m  \\x1b[1m-V\\x1b[22m, \\x1b[1m\\x1b[33m--version\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                 \\x1b[90m \\x1b[39m  Print version info                    
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--no-color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Turn off colored output               
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Force colored output                  
+   --verbose boolean                        Turn on verbose output                
+   --debug boolean                          Turn on debugging output              
+   -h, --help boolean                       Print out helpful usage information   
+   -q, --quiet boolean                      Silence output                        
+   -V, --version boolean                    Print version info                    
+   --no-color boolean                       Turn off colored output               
+   --color boolean                          Force colored output                  
 
-Run "\\x1b[36mcerebro\\x1b[39m \\x1b[32mhelp <command>\\x1b[39m" or "\\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m \\x1b[33m--help\\x1b[39m" for help with a specific command."
+Run "cerebro help <command>" or "cerebro <command> --help" for help with a specific command."
 `;
 
 exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`] = `
 "cerebro
-\\x1b[1m\\x1b[7m\\x1b[36m Usage \\x1b[39m\\x1b[27m\\x1b[22m
+ Usage 
 
-   \\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m [positional arguments] \\x1b[33m[options]\\x1b[39m                            
+   cerebro <command> [positional arguments] [options]                            
 
-\\x1b[1m\\x1b[7m\\x1b[32m Available Commands \\x1b[39m\\x1b[27m\\x1b[22m
+ Available Commands 
 
-   \\x1b[32mversion\\x1b[39m  [v, V]                          Output the version number                                 
-   \\x1b[32mhelp\\x1b[39m                                                                                               
+   version  [v, V]                          Output the version number                                 
+   help                                                                                               
 
-\\x1b[1m\\x1b[7m\\x1b[33m Command Options \\x1b[39m\\x1b[27m\\x1b[22m
+ Command Options 
 
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--group\\x1b[39m\\x1b[22m \\x1b[4mstring\\x1b[24m                        \\x1b[90m \\x1b[39m  Display only the specified group      
+   --group string                           Display only the specified group      
 
-\\x1b[1m\\x1b[7m\\x1b[33m Global Options \\x1b[39m\\x1b[27m\\x1b[22m
+ Global Options 
 
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--verbose\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                     \\x1b[90m \\x1b[39m  Turn on verbose output                
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--debug\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Turn on debugging output              
-\\x1b[90m \\x1b[39m  \\x1b[1m-h\\x1b[22m, \\x1b[1m\\x1b[33m--help\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Print out helpful usage information   
-\\x1b[90m \\x1b[39m  \\x1b[1m-q\\x1b[22m, \\x1b[1m\\x1b[33m--quiet\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                   \\x1b[90m \\x1b[39m  Silence output                        
-\\x1b[90m \\x1b[39m  \\x1b[1m-V\\x1b[22m, \\x1b[1m\\x1b[33m--version\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                 \\x1b[90m \\x1b[39m  Print version info                    
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--no-color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Turn off colored output               
-\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Force colored output                  
+   --verbose boolean                        Turn on verbose output                
+   --debug boolean                          Turn on debugging output              
+   -h, --help boolean                       Print out helpful usage information   
+   -q, --quiet boolean                      Silence output                        
+   -V, --version boolean                    Print version info                    
+   --no-color boolean                       Turn off colored output               
+   --color boolean                          Force colored output                  
 
-Run "\\x1b[36mcerebro\\x1b[39m \\x1b[32mhelp <command>\\x1b[39m" or "\\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m \\x1b[33m--help\\x1b[39m" for help with a specific command."
+Run "cerebro help <command>" or "cerebro <command> --help" for help with a specific command."
 `;

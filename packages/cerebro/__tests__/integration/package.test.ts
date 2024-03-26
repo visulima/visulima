@@ -1,9 +1,12 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import stripAnsi from "strip-ansi";
 import { describe, expect, it } from "vitest";
 
 import { esc, execScriptSync } from "../helpers";
+
+const strip = (string: string): string => esc(stripAnsi(string)).replaceAll('\r\n', "\n").trimEnd();
 
 describe("usage `@visulima/cerebro` npm package", () => {
     it(`should work as CommonJS package`, () => {
@@ -13,7 +16,7 @@ describe("usage `@visulima/cerebro` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(esc(received).replaceAll("\r\n", "\n")).toMatchSnapshot();
+        expect(strip(received)).toMatchSnapshot();
     });
 
     it(`should work as ESM package`, async () => {
@@ -23,6 +26,6 @@ describe("usage `@visulima/cerebro` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(esc(received).replaceAll("\r\n", "\n")).toMatchSnapshot();
+        expect(strip(received)).toMatchSnapshot();
     });
 });

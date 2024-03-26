@@ -132,6 +132,7 @@
         "rimraf": "^5.0.5",
         "semantic-release": "^23.0.5",
         "sort-package-json": "^2.8.0",
+        "strip-ansi": "^7.1.0",
         "temp-write": "^5.0.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.3",

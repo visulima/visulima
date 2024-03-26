@@ -1630,6 +1630,9 @@ importers:
       sort-package-json:
         specifier: ^2.8.0
         version: 2.8.0
+      strip-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       temp-write:
         specifier: ^5.0.0
         version: 5.0.0
