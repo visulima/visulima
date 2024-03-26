@@ -2,18 +2,8 @@ import MagicString from "magic-string";
 import { findStaticImports } from "mlly";
 import type { Plugin } from "rollup";
 
-export const cjsPlugin = (_options?: any): Plugin => ({
-        name: "pack-cjs",
-        renderChunk(code, _chunk, options) {
-            if (options.format === "es") {
-                return CJSToESM(code);
-            }
-            return null;
-        },
-    } as Plugin)
-
 const CJSyntaxRe = /__filename|__dirname|require\(|require\.resolve\(/;
-
+// TODO: since node 20.11 import.meta.dirname and import.meta.filename are available
 const CJSShim = `
 
 // -- pack CommonJS Shims --
@@ -26,7 +16,7 @@ const require = __cjs_mod__.createRequire(import.meta.url);
 `;
 
 // Shim __dirname, __filename and require
-function CJSToESM(code: string) {
+const CJSToESM = (code: string) => {
     if (code.includes(CJSShim) || !CJSyntaxRe.test(code)) {
         return null;
     }
@@ -34,6 +24,7 @@ function CJSToESM(code: string) {
     const lastESMImport = findStaticImports(code).pop();
     const indexToAppend = lastESMImport ? lastESMImport.end : 0;
     const s = new MagicString(code);
+
     s.appendRight(indexToAppend, CJSShim);
 
     return {
@@ -41,3 +32,16 @@ function CJSToESM(code: string) {
         map: s.generateMap(),
     };
 }
+
+const cjsPlugin = (): Plugin =>
+    ({
+        name: "packem-cjs",
+        renderChunk(code, _chunk, options) {
+            if (options.format === "es") {
+                return CJSToESM(code);
+            }
+            return null;
+        },
+    }) as Plugin;
+
+export default cjsPlugin;

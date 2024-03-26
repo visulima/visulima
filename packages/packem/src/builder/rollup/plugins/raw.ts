@@ -12,11 +12,13 @@ const defaults: RawLoaderOptions = {
     include: [/\.(md|txt|css|htm|html)$/],
 };
 
-export function rawPlugin(options: RawLoaderOptions = {}): Plugin {
+export const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
     options = { ...options, ...defaults };
+
     const filter = createFilter(options.include, options.exclude);
+
     return {
-        name: "pack-raw",
+        name: "packem-raw",
         transform(code, id) {
             if (filter(id)) {
                 return {
@@ -26,4 +28,4 @@ export function rawPlugin(options: RawLoaderOptions = {}): Plugin {
             }
         },
     };
-}
+};

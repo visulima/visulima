@@ -11,12 +11,14 @@ import { arrayIncludes } from "../../utils/array-includes";
 import { getPackageName } from "../../utils/get-package-name";
 import warn from "../../utils/warn";
 import getChunkFilename from "./get-chunk-filename";
-import { cjsPlugin } from "./plugins/cjs";
-import { JSONPlugin } from "./plugins/json";
-import { rawPlugin } from "./plugins/raw";
+import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
+import JSONPlugin from "./plugins/json";
+import { rawPlugin } from "./plugins/raw";
+import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
+import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 
 const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{
@@ -79,6 +81,8 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
         ].filter(Boolean),
 
         plugins: [
+            externalizeNodeBuiltins({ target: context.options.rollup.externalizeNodeBuiltins }),
+            resolveTypescriptMjsCts(),
             // externalizeNodeBuiltins(ctx.options.rollup.externalizeNodeBuiltins),
             // resolveTypescriptMjsCts(),
             context.options.rollup.replace &&
@@ -113,6 +117,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 esbuildPlugin({
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.esbuild,
+                    tsconfig: context.tsconfig,
                 }),
 
             context.options.rollup.commonjs &&

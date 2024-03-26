@@ -13,7 +13,7 @@ cli.addCommand({
     execute: async ({ options }): Promise<void> => {
         // const rootDir = resolve(process.cwd(), args.dir || ".");
 
-        await createBundler(options.dir, false, {});
+        await createBundler(options["dir"], false, {});
     },
     name: "build",
     options: [

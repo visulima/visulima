@@ -1,63 +1,74 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+
+import { findCacheDirectory } from "@visulima/package";
+import { init, parse } from "es-module-lexer";
 import { build } from "esbuild";
-import * as esModuleLexer from "es-module-lexer";
+import { join } from "pathe";
+
 import type { Optimized, OptimizeDepsOptions, OptimizeDepsResult } from "./types";
 
-const slash = (p: string) => p.replace(/\\/g, "/");
+const slash = (p: string) => p.replaceAll('\\', "/");
 
 export const optimizeDeps = async (options: OptimizeDepsOptions): Promise<OptimizeDepsResult> => {
-    const cacheDir = path.join(options.cwd, "node_modules/.optimize_deps");
+    // eslint-disable-next-line unicorn/prevent-abbreviations
+    const cacheDir = await findCacheDirectory("packem/optimize_deps", {
+        create: true,
+        cwd: options.cwd,
+    });
 
-    await fs.promises.mkdir(cacheDir, { recursive: true });
-    await esModuleLexer.init;
+    await init;
     await build({
-        entryPoints: options.include,
         absWorkingDir: options.cwd,
         bundle: true,
+        entryPoints: options.include,
         format: "esm",
         ignoreAnnotations: true,
         metafile: true,
-        splitting: true,
         outdir: cacheDir,
         sourcemap: options.sourceMap,
+        splitting: true,
         ...options.esbuildOptions,
         plugins: [
             {
                 name: "optimize-deps",
                 async setup(build) {
-                    build.onResolve({ filter: /.*/ }, async (args) => {
-                        if (options.exclude?.includes(args.path)) {
+                    build.onResolve({ filter: /.*/ }, async (arguments_) => {
+                        if (options.exclude?.includes(arguments_.path)) {
                             return {
                                 external: true,
                             };
                         }
-                        if (args.pluginData?.__resolving_dep_path__) {
+
+                        if (arguments_.pluginData?.__resolving_dep_path__) {
                             return; // use default resolve algorithm
                         }
-                        if (options.include.includes(args.path)) {
-                            const resolved = await build.resolve(args.path, {
-                                resolveDir: args.resolveDir,
+
+                        if (options.include.includes(arguments_.path)) {
+                            const resolved = await build.resolve(arguments_.path, {
                                 kind: "import-statement",
                                 pluginData: { __resolving_dep_path__: true },
+                                resolveDir: arguments_.resolveDir,
                             });
+
                             if (resolved.errors.length > 0 || resolved.warnings.length > 0) {
                                 return resolved;
                             }
+
                             return {
-                                path: args.path,
                                 namespace: "optimize-deps",
+                                path: arguments_.path,
                                 pluginData: {
-                                    resolveDir: args.resolveDir,
                                     absolute: resolved.path,
+                                    resolveDir: arguments_.resolveDir,
                                 },
                             };
                         }
                     });
-                    build.onLoad({ filter: /.*/, namespace: "optimize-deps" }, async (args) => {
-                        const { absolute, resolveDir } = args.pluginData;
-                        const contents = await fs.promises.readFile(absolute, "utf-8");
-                        const [, exported] = esModuleLexer.parse(contents);
+                    build.onLoad({ filter: /.*/, namespace: "optimize-deps" }, async (arguments_) => {
+                        const { absolute, resolveDir } = arguments_.pluginData;
+                        const contents = await fs.promises.readFile(absolute, "utf8");
+                        const [, exported] = parse(contents);
+
                         return {
                             contents: exported.length > 0 ? `export * from '${slash(absolute)}'` : `module.exports = require('${slash(absolute)}')`,
                             resolveDir,
@@ -71,12 +82,13 @@ export const optimizeDeps = async (options: OptimizeDepsOptions): Promise<Optimi
 
     const optimized: Optimized = new Map();
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const id of options.include) {
-        optimized.set(id, { file: path.join(cacheDir, `${id}.js`) });
+        optimized.set(id, { file: join(cacheDir, `${id}.js`) });
     }
 
     return {
-        optimized,
         cacheDir,
+        optimized,
     };
 };

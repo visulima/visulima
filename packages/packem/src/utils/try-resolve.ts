@@ -1,5 +1,7 @@
 import jiti from "jiti";
 
+import logger from "../logger";
+
 export function tryResolve(id: string, rootDir: string = process.cwd()) {
     const _require = jiti(rootDir, { esmResolve: true, interopDefault: true });
 
@@ -7,7 +9,7 @@ export function tryResolve(id: string, rootDir: string = process.cwd()) {
         return _require.resolve(id);
     } catch (error: any) {
         if (error.code !== "MODULE_NOT_FOUND") {
-            console.error(`Error trying import ${id} from ${rootDir}`, error);
+            logger.error(`Error trying import ${id} from ${rootDir}`, error);
         }
 
         return id;

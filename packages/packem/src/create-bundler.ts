@@ -36,8 +36,6 @@ const build = async (
 ): Promise<void> => {
     const preset = resolvePreset(buildConfig.preset ?? package_?.packem?.preset ?? inputConfig.preset ?? "auto", rootDir);
 
-    // Merge options
-
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
         clean: true,
@@ -69,7 +67,7 @@ const build = async (
                 loaders: {
                     // Add .json files support
                     // require @rollup/plugin-commonjs
-                    ".json": "json",
+                    // ".json": "json",
                 },
             },
             inlineDependencies: false,
@@ -77,7 +75,6 @@ const build = async (
                 preferConst: true,
             },
             preserveDynamicImports: true,
-            // Plugins
             replace: {
                 preventAssignment: true,
             },
@@ -106,7 +103,6 @@ const build = async (
     // Build context
     const context: BuildContext = {
         buildEntries: [],
-
         hooks: createHooks(),
         options,
         pkg: package_,

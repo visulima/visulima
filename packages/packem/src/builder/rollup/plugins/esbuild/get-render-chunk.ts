@@ -35,15 +35,3 @@ export const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugi
         }
         return null;
     };
-
-export const minify = ({ sourceMap = true, ...options }: Options = {}): Plugin => {
-    return {
-        name: "esbuild-minify",
-
-        renderChunk: getRenderChunk({
-            minify: true,
-            ...options,
-            sourceMap,
-        }),
-    };
-};

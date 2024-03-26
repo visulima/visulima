@@ -98,22 +98,6 @@ export interface BuildContext {
     warnings: Set<string>;
 }
 
-export interface BuildContext {
-    buildEntries: {
-        bytes?: number;
-        chunk?: boolean;
-        chunks?: string[];
-        exports?: string[];
-        modules?: { bytes: number; id: string }[];
-        path: string;
-    }[];
-    hooks: Hookable<BuildHooks>;
-    options: BuildOptions;
-    pkg: PackageJson;
-    usedImports: Set<string>;
-    warnings: Set<string>;
-}
-
 export type BuildPreset = BuildConfig | (() => BuildConfig);
 
 export interface BuildConfig extends DeepPartial<Omit<BuildOptions, "entries">> {

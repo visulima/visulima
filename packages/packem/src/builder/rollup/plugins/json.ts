@@ -4,19 +4,22 @@ import type { Plugin } from "rollup";
 
 const EXPORT_DEFAULT = "export default ";
 
-export function JSONPlugin(options: RollupJsonOptions): Plugin {
+const JSONPlugin = (options: RollupJsonOptions): Plugin => {
     const plugin = rollupJSONPlugin(options);
+
     return <Plugin>{
         ...plugin,
-        name: "pack-json",
+        name: "packem-json",
         transform(code, id) {
-            const res = plugin.transform!.call(this, code, id);
+            const result = plugin.transform?.call(this, code, id);
 
-            if (res && typeof res !== "string" && "code" in res && res.code?.startsWith(EXPORT_DEFAULT)) {
-                res.code = res.code.replace(EXPORT_DEFAULT, "module.exports = ");
+            if (result && typeof result !== "string" && "code" in result && result.code?.startsWith(EXPORT_DEFAULT)) {
+                result.code = result.code.replace(EXPORT_DEFAULT, "module.exports = ");
             }
 
-            return res;
+            return result;
         },
     };
-}
+};
+
+export default JSONPlugin;

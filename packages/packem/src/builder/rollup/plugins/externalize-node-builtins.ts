@@ -13,17 +13,18 @@ const compareSemver = (semverA: Semver, semverB: Semver) => semverA[0] - semverB
  * Alternatively, we can create a mapping via output.paths
  * but this seems cleaner
  */
-export const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
+const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
     /**
      * Only remove protocol if a Node.js version that doesn't
      * support it is specified.
      */
-    const stripNodeProtocol = target.some((platform) => {
+    const stripNodeProtocol = target.some((platform): boolean | undefined => {
+        // eslint-disable-next-line no-param-reassign
         platform = platform.trim();
 
         // Ignore non Node platforms
         if (!platform.startsWith("node")) {
-            return;
+            return undefined;
         }
 
         const parsedVersion = platform.slice(4).split(".").map(Number);
@@ -40,8 +41,8 @@ export const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugi
     });
 
     return {
-        name: "pack-externalize-node-builtins",
-        resolveId: (id) => {
+        name: "packem-externalize-node-builtins",
+        resolveId: (id: string) => {
             const hasNodeProtocol = id.startsWith("node:");
 
             if (stripNodeProtocol && hasNodeProtocol) {
@@ -57,3 +58,5 @@ export const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugi
         },
     };
 };
+
+export default externalizeNodeBuiltins;

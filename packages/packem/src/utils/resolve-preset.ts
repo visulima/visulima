@@ -1,6 +1,6 @@
 import { autoPreset } from "../preset/auto";
 import type { BuildConfig, BuildPreset } from "../types";
-import { tryRequire } from "./try-require";
+import tryRequire from "./try-require";
 
 const resolvePreset = (preset: BuildPreset | string, rootDirectory: string): BuildConfig => {
     if (preset === "auto") {
@@ -17,6 +17,6 @@ const resolvePreset = (preset: BuildPreset | string, rootDirectory: string): Bui
     }
 
     return preset as BuildConfig;
-}
+};
 
 export default resolvePreset;

@@ -4,16 +4,12 @@ import type { Plugin as RollupPlugin } from "rollup";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
 import { createFilter } from "@rollup/pluginutils";
-import createDebug from "debug";
-import { minify, getRenderChunk } from "./minify";
+import { getRenderChunk } from "./get-render-chunk";
 import { optimizeDeps as doOptimizeDeps } from "./optmize-deps";
 import { findTSConfigSync } from "@visulima/package";
 import warn from "./warn";
 import type { Options, OptimizeDepsResult } from "./types";
-
-export { minify };
-
-const debugOptimizeDeps = createDebug("rpe:optimize-deps");
+import logger from "../../../../logger";
 
 const defaultLoaders: { [ext: string]: Loader } = {
     ".js": "js",
@@ -22,7 +18,7 @@ const defaultLoaders: { [ext: string]: Loader } = {
     ".tsx": "tsx",
 };
 
-export default ({ include, exclude, sourceMap = true, optimizeDeps, tsconfig, loaders: _loaders, ...esbuildOptions }: Options = {}): RollupPlugin => {
+export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap = true, tsconfig, ...esbuildOptions }: Options = {}): RollupPlugin => {
     const loaders = {
         ...defaultLoaders,
     };
@@ -47,10 +43,15 @@ export default ({ include, exclude, sourceMap = true, optimizeDeps, tsconfig, lo
 
     const resolveFile = (resolved: string, index: boolean = false) => {
         const fileWithoutExt = resolved.replace(/\.[jt]sx?$/, "");
+
         for (const ext of extensions) {
             const file = index ? join(resolved, `index${ext}`) : `${fileWithoutExt}${ext}`;
-            if (existsSync(file)) return file;
+
+            if (existsSync(file)) {
+                return file;
+            }
         }
+
         return null;
     };
 
@@ -76,14 +77,14 @@ export default ({ include, exclude, sourceMap = true, optimizeDeps, tsconfig, lo
                 ...optimizeDeps,
             });
 
-            debugOptimizeDeps("optimized %O", optimizeDepsResult.optimized);
+            logger.debug("optimized %O", optimizeDepsResult.optimized);
         },
 
         async resolveId(id, importer): Promise<undefined | string> {
             if (optimizeDepsResult?.optimized.has(id)) {
                 const m = optimizeDepsResult.optimized.get(id)!;
 
-                debugOptimizeDeps("resolved %s to %s", id, m.file);
+                logger.debug("resolved %s to %s", id, m.file);
 
                 return m.file;
             }
@@ -99,6 +100,7 @@ export default ({ include, exclude, sourceMap = true, optimizeDeps, tsconfig, lo
 
                 if (!file && existsSync(resolved) && statSync(resolved).isDirectory()) {
                     file = resolveFile(resolved, true);
+
                     if (file) {
                         return file;
                     }
@@ -120,18 +122,11 @@ export default ({ include, exclude, sourceMap = true, optimizeDeps, tsconfig, lo
                 return null;
             }
 
-            const tsconfigRaw =
-                tsconfig === false
-                    ? undefined
-                    : findTSConfigSync(id, {
-                          configFileName: tsconfig,
-                      });
-
             const result = await transform(code, {
                 loader,
                 sourcemap: sourceMap,
                 sourcefile: id,
-                tsconfigRaw,
+                tsconfigRaw: tsconfig,
                 target: "es2020",
                 format: (["base64", "binary", "dataurl", "text", "json"] satisfies Loader[] as Loader[]).includes(loader) ? "esm" : undefined,
                 ...esbuildOptions,
