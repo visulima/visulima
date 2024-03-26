@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import findCacheDirectory from "find-cache-dir";
+import { findCacheDirectorySync } from "@visulima/package";
 
 const FILE_NAME = "last-update-check.json";
 
@@ -13,7 +13,7 @@ const FILE_NAME = "last-update-check.json";
  * @returns {string} - The absolute path to the configuration file.
  */
 const getConfigFile = (packageName: string): string => {
-    const cacheDirectory = findCacheDirectory({ name: packageName });
+    const cacheDirectory = findCacheDirectorySync(packageName);
 
     if (cacheDirectory === undefined) {
         throw new Error("Could not find cache directory");

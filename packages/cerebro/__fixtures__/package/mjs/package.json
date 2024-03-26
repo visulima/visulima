@@ -1,0 +1,8 @@
+{
+    "name": "cerebro-esm",
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*"
+    }
+}

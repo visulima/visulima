@@ -3,14 +3,11 @@
   <p>
   Cerebro is a delightful toolkit for building Node-based command-line interfaces (CLIs) built on top of
 
-[boxen](https://github.com/sindresorhus/boxen),
-[chalk](https://github.com/chalk/chalk),
-[chalk-template](https://github.com/chalk/chalk-template),
+[boxen](https://github.com/visulima/visulima/tree/main/packages/boxen),
+[colorize](https://github.com/visulima/visulima/tree/main/packages/colorize),
 [cli-table3](https://github.com/cli-table/cli-table3),
-[command-line-args](https://github.com/75lb/command-line-args),
-[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein),
-[strip-ansi](https://github.com/chalk/strip-ansi) and
-[term-size](https://github.com/sindresorhus/term-size)
+[command-line-args](https://github.com/75lb/command-line-args) and
+[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)
 
 <br />
 
