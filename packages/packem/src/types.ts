@@ -2,13 +2,13 @@ import type { RollupAliasOptions } from "@rollup/plugin-alias";
 import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
+import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { PackageJson } from "@visulima/package";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
-import type { Options as EsbuildOptions } from "rollup-plugin-esbuild";
-import type { RollupCommonJSOptions } from "vite";
+import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 

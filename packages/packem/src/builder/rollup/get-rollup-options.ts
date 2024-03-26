@@ -19,6 +19,7 @@ import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
+import { arrayify } from "../../utils/arrayify";
 
 const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{
@@ -81,7 +82,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
         ].filter(Boolean),
 
         plugins: [
-            externalizeNodeBuiltins({ target: context.options.rollup.externalizeNodeBuiltins }),
+            externalizeNodeBuiltins({ target: arrayify(context.options.rollup.esbuild.target) }),
             resolveTypescriptMjsCts(),
             // externalizeNodeBuiltins(ctx.options.rollup.externalizeNodeBuiltins),
             // resolveTypescriptMjsCts(),

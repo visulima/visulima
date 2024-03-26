@@ -1,5 +1,6 @@
 import { stat } from "node:fs/promises";
 import Module from "node:module";
+import { versions, env, cwd, exit } from "node:process"
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
 import { ensureDir, remove, walk } from "@visulima/fs";
@@ -62,8 +63,8 @@ const build = async (
             },
             emitCJS: false,
             esbuild: {
-                minify: process.env.NODE_ENV === "production",
-                target: "esnext",
+                minify: env["NODE_ENV"] === "production",
+                target: [`node${versions.node}`],
                 loaders: {
                     // Add .json files support
                     // require @rollup/plugin-commonjs
@@ -184,7 +185,7 @@ const build = async (
 
             cleanedDirectories.push(dir);
 
-            logger.info(`Cleaning dist directory: \`./${relative(process.cwd(), dir)}\``);
+            logger.info(`Cleaning dist directory: \`./${relative(cwd(), dir)}\``);
 
             await remove(dir);
             await ensureDir(dir);
@@ -220,7 +221,7 @@ const build = async (
         }
     }
 
-    const rPath = (p: string) => relative(process.cwd(), resolve(options.outDir, p));
+    const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
 
     for (const entry of context.buildEntries.filter((e) => !e.chunk)) {
         let totalBytes = entry.bytes || 0;
@@ -275,7 +276,7 @@ const build = async (
         if (context.options.failOnWarn) {
             logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
             // eslint-disable-next-line unicorn/no-process-exit
-            process.exit(1);
+            exit(1);
         }
     }
 };
@@ -283,7 +284,7 @@ const build = async (
 export const createBundler = async (rootDir: string, stub: boolean, inputConfig: BuildConfig = {}): Promise<void> => {
     // Determine rootDir
     // eslint-disable-next-line no-param-reassign
-    rootDir = resolve(process.cwd(), rootDir);
+    rootDir = resolve(cwd(), rootDir);
 
     let tsConfig: TsConfigResult | undefined;
 
