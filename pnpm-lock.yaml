@@ -1414,15 +1414,6 @@ importers:
       cli-boxes:
         specifier: ^3.0.0
         version: 3.0.0
-      string-width:
-        specifier: ^7.1.0
-        version: 7.1.0
-      terminal-size:
-        specifier: ^4.0.0
-        version: 4.0.0
-      wrap-ansi:
-        specifier: ^9.0.0
-        version: 9.0.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -1490,6 +1481,12 @@ importers:
       sort-package-json:
         specifier: ^2.8.0
         version: 2.8.0
+      string-width:
+        specifier: ^7.1.0
+        version: 7.1.0
+      terminal-size:
+        specifier: ^4.0.0
+        version: 4.0.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(postcss@8.4.38)(typescript@5.4.3)
@@ -1499,6 +1496,9 @@ importers:
       vitest:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@18.18.14)(@vitest/ui@1.4.0)(jsdom@24.0.0)
+      wrap-ansi:
+        specifier: ^9.0.0
+        version: 9.0.0
 
   packages/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -31251,6 +31251,7 @@ packages:
   /terminal-size@4.0.0:
     resolution: {integrity: sha512-rcdty1xZ2/BkWa4ANjWRp4JGpda2quksXIHgn5TMjNBPZfwzJIgR68DKfSYiTL+CZWowDX/sbOo5ME/FRURvYQ==}
     engines: {node: '>=18'}
+    dev: true
 
   /terser-webpack-plugin@5.3.10(webpack@5.91.0):
     resolution: {integrity: sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==}

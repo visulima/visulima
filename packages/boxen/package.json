@@ -83,10 +83,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "cli-boxes": "^3.0.0",
-        "string-width": "^7.1.0",
-        "terminal-size": "^4.0.0",
-        "wrap-ansi": "^9.0.0"
+        "cli-boxes": "^3.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -111,13 +108,21 @@
         "rimraf": "^5.0.5",
         "semantic-release": "^23.0.5",
         "sort-package-json": "^2.8.0",
+        "string-width": "^7.1.0",
+        "terminal-size": "^4.0.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.3",
-        "vitest": "^1.4.0"
+        "vitest": "^1.4.0",
+        "wrap-ansi": "^9.0.0"
     },
     "engines": {
         "node": ">=18.* <=21.*"
     },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
