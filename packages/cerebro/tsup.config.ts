@@ -1,5 +1,5 @@
 import { createConfig } from "../../tools/get-tsup-config";
 
-const config = createConfig({});
+const config = createConfig();
 
 export default config;

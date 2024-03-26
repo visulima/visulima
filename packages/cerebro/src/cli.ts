@@ -4,6 +4,7 @@ import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
 import type { ConstructorOptions, Pail } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
 import type { CommandLineOptions } from "command-line-args";
 import commandLineArgs from "command-line-args";
@@ -42,7 +43,15 @@ const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
-class Cli implements ICli {
+export type CliOptions = {
+    argv?: string[];
+    cwd?: string;
+    logger?: ConstructorOptions<string, string>;
+    packageName?: string;
+    packageVersion?: string;
+};
+
+export class Cli implements ICli {
     private readonly logger: Pail<never, string>;
 
     private readonly argv: string[];
@@ -73,16 +82,7 @@ class Cli implements ICli {
      *        - packageName    The packageJson name.
      *        - packageVersion The packageJson version.
      */
-    public constructor(
-        cliName: string,
-        options: {
-            argv?: string[];
-            cwd?: string;
-            logger?: ConstructorOptions<string, string>;
-            packageName?: string;
-            packageVersion?: string;
-        } = {},
-    ) {
+    public constructor(cliName: string, options: CliOptions = {}) {
         const { argv, cwd, packageName, packageVersion } = {
             argv: process_argv,
             cwd: process_cwd(),
@@ -700,5 +700,3 @@ class Cli implements ICli {
         });
     }
 }
-
-export default Cli;

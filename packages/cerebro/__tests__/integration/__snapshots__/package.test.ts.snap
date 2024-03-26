@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`usage \`@visulima/cerebro\` npm package > should work as CommonJS package 1`] = `
+"cerebro
+[1m[7m[36m Usage [39m[27m[22m
+
+   [36mcerebro[39m [32m<command>[39m [positional arguments] [33m[options][39m                            
+
+[1m[7m[32m Available Commands [39m[27m[22m
+
+   [32mversion[39m  [v, V]                          Output the version number                                 
+   [32mhelp[39m                                                                                               
+
+[1m[7m[33m Command Options [39m[27m[22m
+
+[90m [39m  [1m[33m--group[39m[22m [4mstring[24m                        [90m [39m  Display only the specified group      
+
+[1m[7m[33m Global Options [39m[27m[22m
+
+[90m [39m  [1m[33m--verbose[39m[22m [4mboolean[24m                     [90m [39m  Turn on verbose output                
+[90m [39m  [1m[33m--debug[39m[22m [4mboolean[24m                       [90m [39m  Turn on debugging output              
+[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Print out helpful usage information   
+[90m [39m  [1m-q[22m, [1m[33m--quiet[39m[22m [4mboolean[24m                   [90m [39m  Silence output                        
+[90m [39m  [1m-V[22m, [1m[33m--version[39m[22m [4mboolean[24m                 [90m [39m  Print version info                    
+[90m [39m  [1m[33m--no-color[39m[22m [4mboolean[24m                    [90m [39m  Turn off colored output               
+[90m [39m  [1m[33m--color[39m[22m [4mboolean[24m                       [90m [39m  Force colored output                  
+
+Run "[36mcerebro[39m [32mhelp <command>[39m" or "[36mcerebro[39m [32m<command>[39m [33m--help[39m" for help with a specific command."
+`;
+
+exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`] = `
+"cerebro
+[1m[7m[36m Usage [39m[27m[22m
+
+   [36mcerebro[39m [32m<command>[39m [positional arguments] [33m[options][39m                            
+
+[1m[7m[32m Available Commands [39m[27m[22m
+
+   [32mversion[39m  [v, V]                          Output the version number                                 
+   [32mhelp[39m                                                                                               
+
+[1m[7m[33m Command Options [39m[27m[22m
+
+[90m [39m  [1m[33m--group[39m[22m [4mstring[24m                        [90m [39m  Display only the specified group      
+
+[1m[7m[33m Global Options [39m[27m[22m
+
+[90m [39m  [1m[33m--verbose[39m[22m [4mboolean[24m                     [90m [39m  Turn on verbose output                
+[90m [39m  [1m[33m--debug[39m[22m [4mboolean[24m                       [90m [39m  Turn on debugging output              
+[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Print out helpful usage information   
+[90m [39m  [1m-q[22m, [1m[33m--quiet[39m[22m [4mboolean[24m                   [90m [39m  Silence output                        
+[90m [39m  [1m-V[22m, [1m[33m--version[39m[22m [4mboolean[24m                 [90m [39m  Print version info                    
+[90m [39m  [1m[33m--no-color[39m[22m [4mboolean[24m                    [90m [39m  Turn off colored output               
+[90m [39m  [1m[33m--color[39m[22m [4mboolean[24m                       [90m [39m  Force colored output                  
+
+Run "[36mcerebro[39m [32mhelp <command>[39m" or "[36mcerebro[39m [32m<command>[39m [33m--help[39m" for help with a specific command."
+`;
