@@ -1,7 +1,7 @@
 import { bold, cyan, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { alignAnsi } from "../src/align";
+import { alignAnsi } from "../../src/align";
 
 describe("align", () => {
     it("aligns center, splits line feed, and pads with space by default", () => {

@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2016, Contributors
  */
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import stringWidth from "string-width";
 
 const halfDiff = (maxWidth: number, currentWidth: number): number => Math.floor((maxWidth - currentWidth) / 2);

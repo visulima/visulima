@@ -1,7 +1,7 @@
 import { blue, green, red, yellow } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { boxen } from "../src";
+import { boxen } from "../../src";
 
 describe("border option", () => {
     it("should support border color (red)", () => {
