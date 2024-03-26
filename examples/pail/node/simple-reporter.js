@@ -1,12 +1,9 @@
-import { join } from "path";
-import Stream from "node:stream";
-import { Buffer } from "node:buffer";
+import { createPail } from "@visulima/pail";
+import { SimpleReporter } from "@visulima/pail/reporter";
 
-import { pail, createPail } from "@visulima/pail";
-import { CallerProcessor } from "@visulima/pail/processor";
-import { JsonReporter, JsonFileReporter } from "@visulima/pail/reporter";
-
-const __dirname = new URL(".", import.meta.url).pathname;
+const pail = createPail({
+    reporter: new SimpleReporter(),
+});
 
 console.log("------------------ DEFAULT ------------------", "\n");
 
@@ -79,38 +76,6 @@ for (let i = 0; i < 10; i++) {
 
 await wait(300);
 
-console.log("------------------ JSON ------------------", "\n");
-
-const jsonLogger = createPail({
-    processors: [new CallerProcessor()],
-    reporters: [
-        new JsonReporter(),
-        new JsonFileReporter({
-            filePath: join(__dirname, "test.log"),
-        }),
-    ],
-});
-
-jsonLogger.info("Hello Json!");
-
-jsonLogger.info({
-    message: "Hello Json!",
-    suffix: "suffix",
-    prefix: "prefix",
-    context: {
-        test: new ArrayBuffer(1),
-        stream: new Stream.Stream(),
-        buffer: Buffer.alloc(1),
-    },
-});
-
-jsonLogger.error(
-    new Error("Hello Json!", {
-        cause: newError,
-    }),
-);
-jsonLogger.warn(new TypeError("Hello Json!"));
-
 class TestFunctionCall {
     getParams() {
         return Array.from(arguments);
@@ -143,43 +108,3 @@ newLogger3.groupEnd();
 newLogger3.log("Back to level 2");
 newLogger3.groupEnd();
 newLogger3.log("Back to the outer level");
-
-console.log("------------------ INTERACTIVE ------------------\n");
-
-const interactive = createPail({ interactive: true, scope: "interactive" });
-
-const TICKS = 60;
-const TIMEOUT = 80;
-const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-const messages = ["Swapping time and space...", "Have a good day.", "Don't panic...", "Updating Updater...", "42"];
-let ticks = TICKS;
-let i = 0;
-
-const interactiveManager = interactive.getInteractiveManager();
-
-interactiveManager.hook();
-
-// eslint-disable-next-line no-console
-console.log(" - log message");
-// eslint-disable-next-line no-console
-console.error(" - error message");
-// eslint-disable-next-line no-console
-console.warn(" - warn message");
-
-const id = setInterval(() => {
-    if (--ticks < 0) {
-        clearInterval(id);
-
-        interactiveManager.update(["✔ Success", "", "Messages:", "this line is be deleted!!!"]);
-        interactiveManager.erase(1);
-        interactiveManager.unhook(false);
-    } else {
-        const frame = frames[(i = ++i % frames.length)];
-        const index = Math.round(ticks / 10) % messages.length;
-        const message = messages[index];
-
-        if (message) {
-            interactiveManager.update([`${frame} Some process...`, message]);
-        }
-    }
-}, TIMEOUT);

@@ -12,12 +12,12 @@ import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, LiteralUnion,
 import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
-import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 
-export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+export class SimpleReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -130,11 +130,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             const fileMessage = file.name + (file.line ? ":" + file.line : "");
             const fileMessageSize = stringLength(fileMessage);
 
-            if (fileMessageSize + titleSize + 2 > size) {
-                items.push(grey(" " + fileMessage));
-            } else {
-                items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
-            }
+            items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
         } else {
             items.push(grey(".".repeat(size - titleSize - 1)));
         }
@@ -156,24 +152,13 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             );
 
             if (context) {
-                let hasError = false;
-
                 items.push(
                     ...context.map((value) => {
-                        if (value instanceof Error) {
-                            hasError = true;
-                            return "\n\n" + this._formatError(value, size, groupSpaces);
-                        }
-
                         if (typeof value === "object") {
                             return " " + (this._stringify as typeof stringify)(value);
                         }
 
-                        const newValue = (hasError ? "\n\n" : " ") + value;
-
-                        hasError = false;
-
-                        return newValue;
+                        return " " + value;
                     }),
                 );
             }
