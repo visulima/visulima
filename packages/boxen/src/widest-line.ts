@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import stringWidth from "string-width";
 
 // eslint-disable-next-line import/prefer-default-export
