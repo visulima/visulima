@@ -2,56 +2,56 @@
 
 exports[`usage \`@visulima/cerebro\` npm package > should work as CommonJS package 1`] = `
 "cerebro
-[1m[7m[36m Usage [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[36m Usage \\x1b[39m\\x1b[27m\\x1b[22m
 
-   [36mcerebro[39m [32m<command>[39m [positional arguments] [33m[options][39m                            
+   \\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m [positional arguments] \\x1b[33m[options]\\x1b[39m                            
 
-[1m[7m[32m Available Commands [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[32m Available Commands \\x1b[39m\\x1b[27m\\x1b[22m
 
-   [32mversion[39m  [v, V]                          Output the version number                                 
-   [32mhelp[39m                                                                                               
+   \\x1b[32mversion\\x1b[39m  [v, V]                          Output the version number                                 
+   \\x1b[32mhelp\\x1b[39m                                                                                               
 
-[1m[7m[33m Command Options [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[33m Command Options \\x1b[39m\\x1b[27m\\x1b[22m
 
-[90m [39m  [1m[33m--group[39m[22m [4mstring[24m                        [90m [39m  Display only the specified group      
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--group\\x1b[39m\\x1b[22m \\x1b[4mstring\\x1b[24m                        \\x1b[90m \\x1b[39m  Display only the specified group      
 
-[1m[7m[33m Global Options [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[33m Global Options \\x1b[39m\\x1b[27m\\x1b[22m
 
-[90m [39m  [1m[33m--verbose[39m[22m [4mboolean[24m                     [90m [39m  Turn on verbose output                
-[90m [39m  [1m[33m--debug[39m[22m [4mboolean[24m                       [90m [39m  Turn on debugging output              
-[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Print out helpful usage information   
-[90m [39m  [1m-q[22m, [1m[33m--quiet[39m[22m [4mboolean[24m                   [90m [39m  Silence output                        
-[90m [39m  [1m-V[22m, [1m[33m--version[39m[22m [4mboolean[24m                 [90m [39m  Print version info                    
-[90m [39m  [1m[33m--no-color[39m[22m [4mboolean[24m                    [90m [39m  Turn off colored output               
-[90m [39m  [1m[33m--color[39m[22m [4mboolean[24m                       [90m [39m  Force colored output                  
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--verbose\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                     \\x1b[90m \\x1b[39m  Turn on verbose output                
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--debug\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Turn on debugging output              
+\\x1b[90m \\x1b[39m  \\x1b[1m-h\\x1b[22m, \\x1b[1m\\x1b[33m--help\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Print out helpful usage information   
+\\x1b[90m \\x1b[39m  \\x1b[1m-q\\x1b[22m, \\x1b[1m\\x1b[33m--quiet\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                   \\x1b[90m \\x1b[39m  Silence output                        
+\\x1b[90m \\x1b[39m  \\x1b[1m-V\\x1b[22m, \\x1b[1m\\x1b[33m--version\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                 \\x1b[90m \\x1b[39m  Print version info                    
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--no-color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Turn off colored output               
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Force colored output                  
 
-Run "[36mcerebro[39m [32mhelp <command>[39m" or "[36mcerebro[39m [32m<command>[39m [33m--help[39m" for help with a specific command."
+Run "\\x1b[36mcerebro\\x1b[39m \\x1b[32mhelp <command>\\x1b[39m" or "\\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m \\x1b[33m--help\\x1b[39m" for help with a specific command."
 `;
 
 exports[`usage \`@visulima/cerebro\` npm package > should work as ESM package 1`] = `
 "cerebro
-[1m[7m[36m Usage [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[36m Usage \\x1b[39m\\x1b[27m\\x1b[22m
 
-   [36mcerebro[39m [32m<command>[39m [positional arguments] [33m[options][39m                            
+   \\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m [positional arguments] \\x1b[33m[options]\\x1b[39m                            
 
-[1m[7m[32m Available Commands [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[32m Available Commands \\x1b[39m\\x1b[27m\\x1b[22m
 
-   [32mversion[39m  [v, V]                          Output the version number                                 
-   [32mhelp[39m                                                                                               
+   \\x1b[32mversion\\x1b[39m  [v, V]                          Output the version number                                 
+   \\x1b[32mhelp\\x1b[39m                                                                                               
 
-[1m[7m[33m Command Options [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[33m Command Options \\x1b[39m\\x1b[27m\\x1b[22m
 
-[90m [39m  [1m[33m--group[39m[22m [4mstring[24m                        [90m [39m  Display only the specified group      
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--group\\x1b[39m\\x1b[22m \\x1b[4mstring\\x1b[24m                        \\x1b[90m \\x1b[39m  Display only the specified group      
 
-[1m[7m[33m Global Options [39m[27m[22m
+\\x1b[1m\\x1b[7m\\x1b[33m Global Options \\x1b[39m\\x1b[27m\\x1b[22m
 
-[90m [39m  [1m[33m--verbose[39m[22m [4mboolean[24m                     [90m [39m  Turn on verbose output                
-[90m [39m  [1m[33m--debug[39m[22m [4mboolean[24m                       [90m [39m  Turn on debugging output              
-[90m [39m  [1m-h[22m, [1m[33m--help[39m[22m [4mboolean[24m                    [90m [39m  Print out helpful usage information   
-[90m [39m  [1m-q[22m, [1m[33m--quiet[39m[22m [4mboolean[24m                   [90m [39m  Silence output                        
-[90m [39m  [1m-V[22m, [1m[33m--version[39m[22m [4mboolean[24m                 [90m [39m  Print version info                    
-[90m [39m  [1m[33m--no-color[39m[22m [4mboolean[24m                    [90m [39m  Turn off colored output               
-[90m [39m  [1m[33m--color[39m[22m [4mboolean[24m                       [90m [39m  Force colored output                  
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--verbose\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                     \\x1b[90m \\x1b[39m  Turn on verbose output                
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--debug\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Turn on debugging output              
+\\x1b[90m \\x1b[39m  \\x1b[1m-h\\x1b[22m, \\x1b[1m\\x1b[33m--help\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Print out helpful usage information   
+\\x1b[90m \\x1b[39m  \\x1b[1m-q\\x1b[22m, \\x1b[1m\\x1b[33m--quiet\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                   \\x1b[90m \\x1b[39m  Silence output                        
+\\x1b[90m \\x1b[39m  \\x1b[1m-V\\x1b[22m, \\x1b[1m\\x1b[33m--version\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                 \\x1b[90m \\x1b[39m  Print version info                    
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--no-color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                    \\x1b[90m \\x1b[39m  Turn off colored output               
+\\x1b[90m \\x1b[39m  \\x1b[1m\\x1b[33m--color\\x1b[39m\\x1b[22m \\x1b[4mboolean\\x1b[24m                       \\x1b[90m \\x1b[39m  Force colored output                  
 
-Run "[36mcerebro[39m [32mhelp <command>[39m" or "[36mcerebro[39m [32m<command>[39m [33m--help[39m" for help with a specific command."
+Run "\\x1b[36mcerebro\\x1b[39m \\x1b[32mhelp <command>\\x1b[39m" or "\\x1b[36mcerebro\\x1b[39m \\x1b[32m<command>\\x1b[39m \\x1b[33m--help\\x1b[39m" for help with a specific command."
 `;

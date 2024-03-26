@@ -12,3 +12,9 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     // replace last newline in result
     return result.toString().replace(/\n$/, "");
 };
+
+/**
+ * Escape the slash `\` in ESC-symbol.
+ * Use it to show by an error the received ESC sequence string in console output.
+ */
+export const esc = (string_: string): string => string_.replaceAll("", "\\x1b");

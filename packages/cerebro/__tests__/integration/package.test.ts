@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { execScriptSync } from "../helpers";
+import { execScriptSync, esc } from "../helpers";
 
 describe("usage `@visulima/cerebro` npm package", () => {
     it(`should work as CommonJS package`, () => {
@@ -13,7 +13,7 @@ describe("usage `@visulima/cerebro` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received).toMatchSnapshot();
+        expect(esc(received)).toMatchSnapshot();
     });
 
     it(`should work as ESM package`, async () => {
@@ -23,6 +23,6 @@ describe("usage `@visulima/cerebro` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received).toMatchSnapshot();
+        expect(esc(received)).toMatchSnapshot();
     });
 });
