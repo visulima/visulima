@@ -1500,6 +1500,18 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@18.18.14)(@vitest/ui@1.4.0)(jsdom@24.0.0)
 
+  packages/boxen/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/boxen':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/boxen/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/boxen':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/cerebro:
     dependencies:
       '@visulima/boxen':

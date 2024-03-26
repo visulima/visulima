@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { boxen } from "../src";
+import { boxen } from "../../src";
 
 describe("margin option", () => {
     it("margin option works", () => {

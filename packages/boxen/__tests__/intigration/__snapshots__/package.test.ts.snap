@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`usage \`@visulima/fs\` npm package > should work as ESM package 1`] = `
+"┌─────────────┐
+│Hello, world!│
+└─────────────┘"
+`;

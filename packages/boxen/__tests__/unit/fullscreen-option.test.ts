@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { boxen } from "../src";
+import { boxen } from "../../src";
 
 vi.mock("terminal-size", () => {
     return {
