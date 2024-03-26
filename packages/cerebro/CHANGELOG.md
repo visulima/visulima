@@ -1,3 +1,10 @@
+## @visulima/cerebro [1.0.13](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.12...@visulima/cerebro@1.0.13) (2024-03-26)
+
+
+### Bug Fixes
+
+* **cerebro:** fixed cjs version of cerebro ([#383](https://github.com/visulima/visulima/issues/383)) ([8ac3c88](https://github.com/visulima/visulima/commit/8ac3c88a14b27bf108296a051907ff0ba156f3b2))
+
 ## @visulima/cerebro [1.0.12](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.11...@visulima/cerebro@1.0.12) (2024-03-26)
 
 
