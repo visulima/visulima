@@ -1,3 +1,10 @@
+## @visulima/health-check [2.0.13](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.12...@visulima/health-check@2.0.13) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
 ## @visulima/health-check [2.0.12](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.11...@visulima/health-check@2.0.12) (2024-03-04)
 
 
