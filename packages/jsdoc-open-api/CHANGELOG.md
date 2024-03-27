@@ -1,3 +1,16 @@
+## @visulima/jsdoc-open-api [2.0.34](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.33...@visulima/jsdoc-open-api@2.0.34) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.0.2
+
 ## @visulima/jsdoc-open-api [2.0.33](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.32...@visulima/jsdoc-open-api@2.0.33) (2024-03-24)
 
 
