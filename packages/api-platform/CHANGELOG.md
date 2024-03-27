@@ -1,3 +1,19 @@
+## @visulima/api-platform [2.1.2](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.1...@visulima/api-platform@2.1.2) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.5
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.34
+* **@visulima/crud:** upgraded to 2.0.18
+* **@visulima/fs:** upgraded to 2.0.2
+
 ## @visulima/api-platform [2.1.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.0...@visulima/api-platform@2.1.1) (2024-03-24)
 
 
