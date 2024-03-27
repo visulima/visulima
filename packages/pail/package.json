@@ -206,7 +206,7 @@
         "rimraf": "^5.0.5",
         "rotating-file-stream": "^3.2.1",
         "secretlint": "8.1.2",
-        "semantic-release": "^23.0.5",
+        "semantic-release": "^23.0.6",
         "sort-package-json": "^2.8.0",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",

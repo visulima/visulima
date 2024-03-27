@@ -106,7 +106,7 @@
         "prettier": "^3.2.5",
         "quick-format-unescaped": "^4.0.4",
         "rimraf": "^5.0.5",
-        "semantic-release": "^23.0.5",
+        "semantic-release": "^23.0.6",
         "sort-package-json": "^2.8.0",
         "string-width": "^7.1.0",
         "terminal-size": "^4.0.0",

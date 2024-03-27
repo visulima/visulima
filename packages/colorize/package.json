@@ -170,7 +170,7 @@
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "secretlint": "8.1.2",
-        "semantic-release": "^23.0.5",
+        "semantic-release": "^23.0.6",
         "sort-package-json": "^2.8.0",
         "tsup": "^8.0.2",
         "type-fest": "^4.13.1",
