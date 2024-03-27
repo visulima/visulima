@@ -1525,7 +1525,7 @@ importers:
         specifier: 1.3.0
         version: link:../colorize
       '@visulima/package':
-        specifier: ^1.5.0
+        specifier: 1.5.0
         version: link:../package
       '@visulima/pail':
         specifier: 1.1.2
@@ -1579,12 +1579,6 @@ importers:
       '@types/node':
         specifier: 18.18.5
         version: 18.18.5
-      '@types/which':
-        specifier: ^3.0.3
-        version: 3.0.3
-      '@types/wordwrap':
-        specifier: ^1.0.3
-        version: 1.0.3
       '@visulima/nextra-theme-docs':
         specifier: 4.0.19
         version: link:../nextra-theme-docs
@@ -1615,9 +1609,6 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
-      mock-stdin:
-        specifier: 1.0.0
-        version: 1.0.0
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -1633,9 +1624,6 @@ importers:
       strip-ansi:
         specifier: ^7.1.0
         version: 7.1.0
-      temp-write:
-        specifier: ^5.0.0
-        version: 5.0.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(postcss@8.4.38)(typescript@5.4.3)
@@ -13175,14 +13163,6 @@ packages:
       - esbuild
       - uglify-js
       - webpack-cli
-    dev: true
-
-  /@types/which@3.0.3:
-    resolution: {integrity: sha512-2C1+XoY0huExTbs8MQv1DuS5FS86+SEjdM9F/+GS61gg5Hqbtj8ZiDSx8MfWcyei907fIPbfPGCOrNUTnVHY1g==}
-    dev: true
-
-  /@types/wordwrap@1.0.3:
-    resolution: {integrity: sha512-jx39cOYWJxZxVOZeNHvLVoDLRUFcYtIJaurC6C0qzCovIB3GPDbMDbYvoWi9D1B2PtIE16rElQOFR4Y+8QbUgw==}
     dev: true
 
   /@types/yargs-parser@21.0.0:
@@ -25464,10 +25444,6 @@ packages:
   /mobx@6.12.1:
     resolution: {integrity: sha512-HN5/fmWCnePVI4u3Y487x3G0LIQ+qnQjowylhVxXPvBmbwottKm8R7GrsYAqljzekZUj+LoBcAUp3l8/3EPCGQ==}
 
-  /mock-stdin@1.0.0:
-    resolution: {integrity: sha512-tukRdb9Beu27t6dN+XztSRHq9J0B/CoAOySGzHfn8UTfmqipA5yNT/sDUEyYdAV3Hpka6Wx6kOMxuObdOex60Q==}
-    dev: true
-
   /moment@2.29.4:
     resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
     dev: false
@@ -31094,16 +31070,6 @@ packages:
     resolution: {integrity: sha512-nHc6S/bwIilKHNRgK/3jlhDoIHcp45YgyiwcAk46Tr0LfEqGBVpmiAyuiuxeVE44m3mXnEeVhaipLOEWmH+Njw==}
     engines: {node: '>=14.16'}
 
-  /temp-write@5.0.0:
-    resolution: {integrity: sha512-cJhnzBW7DjNox7VcZDXeNlQSkIh3mX/h+M0n0Fh+zgT7YAHwI9c+OngKx4MCiQCVx9iXxV104xYlJgDBCCtawA==}
-    engines: {node: '>=12'}
-    dependencies:
-      graceful-fs: 4.2.11
-      is-stream: 2.0.1
-      temp-dir: 2.0.0
-      uuid: 8.3.2
-    dev: true
-
   /temp@0.8.4:
     resolution: {integrity: sha512-s0ZZzd0BzYv5tLSptZooSjK8oj6C+c19p7Vqta9+6NPOf7r+fxq0cJe6/oN4LTC79sy5NY8ucOJNgwsKCSbfqg==}
     engines: {node: '>=6.0.0'}
@@ -34063,6 +34029,7 @@ packages:
     resolution: {directory: packages/package, type: directory}
     name: '@visulima/package'
     engines: {node: '>=18.* <=21.*'}
+    os: [darwin, linux, win32]
     dependencies:
       '@visulima/fs': 2.0.1
       detect-indent: 7.0.1

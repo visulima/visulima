@@ -107,6 +107,11 @@
     "engines": {
         "node": ">=18.* <=21.*"
     },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
