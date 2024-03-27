@@ -1,3 +1,10 @@
+## @visulima/deep-clone [2.1.2](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.1...@visulima/deep-clone@2.1.2) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
 ## @visulima/deep-clone [2.1.1](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.0...@visulima/deep-clone@2.1.1) (2024-03-04)
 
 
