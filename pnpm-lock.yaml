@@ -1144,10 +1144,10 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.4
+        specifier: 3.0.5
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.33
+        specifier: 2.0.34
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1190,7 +1190,7 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.17
+        specifier: 2.0.18
         version: link:../crud
       '@visulima/readdir':
         specifier: 2.0.12
@@ -1305,7 +1305,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1438,7 +1438,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/colorize':
-        specifier: 1.3.0
+        specifier: 1.3.1
         version: link:../colorize
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1519,16 +1519,16 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.2
+        specifier: 1.0.3
         version: link:../boxen
       '@visulima/colorize':
-        specifier: 1.3.0
+        specifier: 1.3.1
         version: link:../colorize
       '@visulima/package':
-        specifier: 1.5.0
+        specifier: 1.5.1
         version: link:../package
       '@visulima/pail':
-        specifier: 1.1.2
+        specifier: 1.1.3
         version: link:../pail
       cli-table3:
         specifier: ^0.6.4
@@ -1649,7 +1649,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -1900,10 +1900,10 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 3.0.13
+        specifier: 3.0.14
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.15
+        specifier: 2.0.16
         version: link:../prisma-dmmf-transformer
       http-errors:
         specifier: ^2.0.0
@@ -2338,7 +2338,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/error':
-        specifier: 3.2.2
+        specifier: 3.2.3
         version: link:../error
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2609,7 +2609,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -2969,7 +2969,7 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.0.1
+        specifier: 2.0.2
         version: link:../fs
       jsonc-parser:
         specifier: ^3.2.1
@@ -3184,10 +3184,10 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.3.0
+        specifier: 1.3.1
         version: link:../colorize
       '@visulima/fmt':
-        specifier: 1.1.3
+        specifier: 1.1.4
         version: link:../fmt
       safe-stable-stringify:
         specifier: ^2.4.3
@@ -6321,6 +6321,7 @@ packages:
   /@commitlint/config-validator@19.0.3:
     resolution: {integrity: sha512-2D3r4PKjoo59zBc2auodrSCaUnCSALCx54yveOFwwP/i2kfEAQrygwOleFWswLqK0UL/F9r07MFi5ev2ohyM4Q==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dependencies:
       '@commitlint/types': 19.0.3
       ajv: 8.12.0
@@ -6371,6 +6372,7 @@ packages:
   /@commitlint/execute-rule@19.0.0:
     resolution: {integrity: sha512-mtsdpY1qyWgAO/iOK0L6gSGeR7GFcdW7tIjcNFxcWkfLDF5qVbPHKuGATFqRMsxcO8OUKNj0+3WOHB7EHm4Jdw==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dev: false
 
   /@commitlint/format@18.6.0:
@@ -6528,6 +6530,7 @@ packages:
   /@commitlint/resolve-extends@19.1.0:
     resolution: {integrity: sha512-z2riI+8G3CET5CPgXJPlzftH+RiWYLMYv4C9tSLdLXdr6pBNimSKukYP9MS27ejmscqCTVA4almdLh0ODD2KYg==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dependencies:
       '@commitlint/config-validator': 19.0.3
       '@commitlint/types': 19.0.3
@@ -13799,9 +13802,10 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
-  /@visulima/fs@2.0.1:
-    resolution: {integrity: sha512-/jzd0MQxGRjEkvo8l7+53ySDpRI1FktMbMMv0OmkAFANgUQ+55vqtmNt1ynk5XOZ09kTgl+1ur5JR3cdLvbjvw==}
+  /@visulima/fs@2.0.2:
+    resolution: {integrity: sha512-WiwLpCuBKGew1dyj1FiH8IEusHLKd38sOrEIIqHairr2o+REgwD1XlkL9F3PxWktf9uO+YBVbQpVVzVxTC4oig==}
     engines: {node: '>=18.* <=21.*'}
+    os: [darwin, linux, win32]
     peerDependencies:
       yaml: ^2.4.0
     peerDependenciesMeta:
@@ -18267,7 +18271,7 @@ packages:
       debug: 3.2.7
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -20558,6 +20562,7 @@ packages:
   /global-directory@4.0.1:
     resolution: {integrity: sha512-wHTUcDUoZ1H5/0iVqEudYW4/kAlN5cZ3j/bXn0Dpbizl9iaUVeWSHqiOjsgk6OW2bkLclbBjzewBz6weQ1zA2Q==}
     engines: {node: '>=18'}
+    requiresBuild: true
     dependencies:
       ini: 4.1.1
     dev: false
@@ -28537,6 +28542,7 @@ packages:
   /readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+    requiresBuild: true
     dependencies:
       picomatch: 2.3.1
 
@@ -34031,7 +34037,7 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     dependencies:
-      '@visulima/fs': 2.0.1
+      '@visulima/fs': 2.0.2
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3
