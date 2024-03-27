@@ -1,3 +1,19 @@
+## @visulima/cerebro [1.0.14](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.13...@visulima/cerebro@1.0.14) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.3
+* **@visulima/colorize:** upgraded to 1.3.1
+* **@visulima/package:** upgraded to 1.5.1
+* **@visulima/pail:** upgraded to 1.1.3
+
 ## @visulima/cerebro [1.0.13](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.12...@visulima/cerebro@1.0.13) (2024-03-26)
 
 
