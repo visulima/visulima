@@ -1,3 +1,17 @@
+## @visulima/pail [1.1.3](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.2...@visulima/pail@1.1.3) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.3.1
+* **@visulima/fmt:** upgraded to 1.1.4
+
 ## @visulima/pail [1.1.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.1...@visulima/pail@1.1.2) (2024-03-19)
 
 
