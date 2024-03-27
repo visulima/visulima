@@ -1,3 +1,16 @@
+## @visulima/colorize [1.3.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.0...@visulima/colorize@1.3.1) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.0.2
+
 ## @visulima/colorize [1.3.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.2.2...@visulima/colorize@1.3.0) (2024-03-04)
 
 
