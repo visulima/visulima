@@ -1,3 +1,17 @@
+## @visulima/crud [2.0.18](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.17...@visulima/crud@2.0.18) (2024-03-27)
+
+
+### Bug Fixes
+
+* added missing os key to package.json ([4ad1268](https://github.com/visulima/visulima/commit/4ad1268ed12cbdcf60aeb46d4c052ed1696bc150))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.14
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.16
+
 ## @visulima/crud [2.0.17](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.16...@visulima/crud@2.0.17) (2024-03-16)
 
 
