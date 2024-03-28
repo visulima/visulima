@@ -24,8 +24,8 @@ export interface DurationLanguage {
   m: DurationUnit;
   s: DurationUnit;
   ms: DurationUnit;
-  future: string;
-  past: string;
+  future?: string;
+  past?: string;
   decimal?: string;
   delimiter?: string;
   _digitReplacements?: DurationDigitReplacements;

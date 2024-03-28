@@ -41,7 +41,80 @@ pnpm add @visulima/humanizer
 
 ## Usage
 
+## Supported languages
+
+Humanize Duration supports the following languages:
+
+| Language             | Code     |
+| -------------------- | -------- |
+| Afrikaans            | `af`     |
+| Albanian             | `sq`     |
+| Arabic               | `ar`     |
+| Basque               | `eu`     |
+| Bengali              | `bn`     |
+| Bulgarian            | `bg`     |
+| Catalan              | `ca`     |
+| Central Kurdish      | `ckb`    |
+| Chinese, simplified  | `zh_CN`  |
+| Chinese, traditional | `zh_TW`  |
+| Croatian             | `hr`     |
+| Czech                | `cs`     |
+| Danish               | `da`     |
+| Dutch                | `nl`     |
+| English              | `en`     |
+| Esperanto            | `eo`     |
+| Estonian             | `et`     |
+| Faroese              | `fo`     |
+| Farsi/Persian        | `fa`     |
+| Finnish              | `fi`     |
+| French               | `fr`     |
+| German               | `de`     |
+| Greek                | `el`     |
+| Hebrew               | `he`     |
+| Hindi                | `hi`     |
+| Hungarian            | `hu`     |
+| Icelandic            | `is`     |
+| Indonesian           | `id`     |
+| Italian              | `it`     |
+| Japanese             | `ja`     |
+| Kannada              | `kn`     |
+| Khmer                | `km`     |
+| Korean               | `ko`     |
+| Kurdish              | `ku`     |
+| Lao                  | `lo`     |
+| Latvian              | `lv`     |
+| Lithuanian           | `lt`     |
+| Macedonian           | `mk`     |
+| Mongolian            | `mn`     |
+| Malay                | `ms`     |
+| Marathi              | `mr`     |
+| Norwegian            | `no`     |
+| Polish               | `pl`     |
+| Portuguese           | `pt`     |
+| Romanian             | `ro`     |
+| Russian              | `ru`     |
+| Serbian              | `sr`     |
+| Slovak               | `sk`     |
+| Slovenian            | `sl`     |
+| Spanish              | `es`     |
+| Swahili              | `sw`     |
+| Swedish              | `sv`     |
+| Tamil                | `ta`     |
+| Telugu               | `te`     |
+| Thai                 | `th`     |
+| Turkish              | `tr`     |
+| Ukrainian            | `uk`     |
+| Urdu                 | `ur`     |
+| Uzbek                | `uz`     |
+| Uzbek (Cyrillic)     | `uz_CYR` |
+| Vietnamese           | `vi`     |
+| Welsh                | `cy`     |
+
 ## Related
+
+### Duration
+-   [HumanizeDuration](https://github.com/EvanHahn/HumanizeDuration.js) - 361000 becomes "6 minutes, 1 second"
+-   [pretty-ms](https://github.com/sindresorhus/pretty-ms) - Convert milliseconds to a human readable string: `1337000000` → `15d 11h 23m 20s`
 
 ## Supported Node.js Versions
 

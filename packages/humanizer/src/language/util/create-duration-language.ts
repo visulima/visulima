@@ -9,8 +9,8 @@ const createDurationLanguage = (
     m: DurationUnit,
     s: DurationUnit,
     ms: DurationUnit,
-    future: string,
-    past: string,
+    future?: string,
+    past?: string,
     decimal?: string,
 ): DurationLanguage => {
     var result: DurationLanguage = {
@@ -22,9 +22,15 @@ const createDurationLanguage = (
         m: m,
         s: s,
         ms: ms,
-        future: future,
-        past: past,
     };
+
+    if (typeof future !== "undefined") {
+        result.future = future;
+    }
+
+    if (typeof past !== "undefined") {
+        result.past = past;
+    }
 
     if (typeof decimal !== "undefined") {
         result.decimal = decimal;

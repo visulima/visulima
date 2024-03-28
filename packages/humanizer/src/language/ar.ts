@@ -10,7 +10,7 @@ const getArabicForm = (counter: number): number => {
     }
 
     return 0;
-}
+};
 
 export const durationLanguage = createDurationLanguage(
     function (counter) {

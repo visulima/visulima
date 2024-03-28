@@ -188,10 +188,10 @@ const formatPieces = (pieces: DurationPiece[], options: Required<DurationOptions
     let adverb = "";
 
     if (options.timeAdverb && ms != 0) {
-        adverb = language.future;
+        adverb = language.future ?? "";
 
         if (ms < 0) {
-            adverb = language.past;
+            adverb = language.past ?? "";
         }
     }
 
