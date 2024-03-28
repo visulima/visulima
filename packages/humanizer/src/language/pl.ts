@@ -17,14 +17,14 @@ const getPolishForm = (counter: number): number => {
 };
 
 export const durationLanguage = createDurationLanguage(
-    (c) => ["rok", "roku", "lata", "lat"][getPolishForm(c)],
-    (c) => ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(c)],
-    (c) => ["tydzień", "tygodnia", "tygodnie", "tygodni"][getPolishForm(c)],
-    (c) => ["dzień", "dnia", "dni", "dni"][getPolishForm(c)],
-    (c) => ["godzina", "godziny", "godziny", "godzin"][getPolishForm(c)],
-    (c) => ["minuta", "minuty", "minuty", "minut"][getPolishForm(c)],
-    (c) => ["sekunda", "sekundy", "sekundy", "sekund"][getPolishForm(c)],
-    (c) => ["milisekunda", "milisekundy", "milisekundy", "milisekund"][getPolishForm(c)],
+    (counter) => ["rok", "roku", "lata", "lat"][getPolishForm(counter)] as string,
+    (counter) => ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(counter)] as string,
+    (counter) => ["tydzień", "tygodnia", "tygodnie", "tygodni"][getPolishForm(counter)] as string,
+    (counter) => ["dzień", "dnia", "dni", "dni"][getPolishForm(counter)] as string,
+    (counter) => ["godzina", "godziny", "godziny", "godzin"][getPolishForm(counter)] as string,
+    (counter) => ["minuta", "minuty", "minuty", "minut"][getPolishForm(counter)] as string,
+    (counter) => ["sekunda", "sekundy", "sekundy", "sekund"][getPolishForm(counter)] as string,
+    (counter) => ["milisekunda", "milisekundy", "milisekundy", "milisekund"][getPolishForm(counter)] as string,
     "za %s",
     "%s temu",
     ",",

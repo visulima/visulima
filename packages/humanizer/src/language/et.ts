@@ -1,14 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => `aasta${c === 1 ? "" : "t"}`,
-    (c) => `kuu${c === 1 ? "" : "d"}`,
-    (c) => `nädal${c === 1 ? "" : "at"}`,
-    (c) => `päev${c === 1 ? "" : "a"}`,
-    (c) => `tund${c === 1 ? "" : "i"}`,
-    (c) => `minut${c === 1 ? "" : "it"}`,
-    (c) => `sekund${c === 1 ? "" : "it"}`,
-    (c) => `millisekund${c === 1 ? "" : "it"}`,
+    (counter) => `aasta${counter === 1 ? "" : "t"}`,
+    (counter) => `kuu${counter === 1 ? "" : "d"}`,
+    (counter) => `nädal${counter === 1 ? "" : "at"}`,
+    (counter) => `päev${counter === 1 ? "" : "a"}`,
+    (counter) => `tund${counter === 1 ? "" : "i"}`,
+    (counter) => `minut${counter === 1 ? "" : "it"}`,
+    (counter) => `sekund${counter === 1 ? "" : "it"}`,
+    (counter) => `millisekund${counter === 1 ? "" : "it"}`,
     "%s pärast",
     "%s tagasi",
     ",",

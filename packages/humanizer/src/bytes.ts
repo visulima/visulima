@@ -38,11 +38,11 @@ const BYTE_SIZES = [
         short: "YB",
     },
 ] as const;
+
 type ByteSize = (typeof BYTE_SIZES)[number]["short"];
 type LongByteSize = (typeof BYTE_SIZES)[number]["long"];
 
 type Unit = ByteSize | LongByteSize;
-type UnitAnyCase = Lowercase<Unit> | Unit | Uppercase<Unit>;
 
 /**
  * Parse a localized number to a float.
@@ -61,10 +61,12 @@ const fromBase = (base: 2 | 10) => {
         return 1024;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (base === 10) {
         return 1000;
     }
 
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new TypeError(`Unsupported base. base=${base}`);
 };
 
@@ -91,6 +93,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     }
 
     const match =
+        // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group
         /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
             value,
         );
@@ -114,7 +117,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
         .replace(/^ZEBI/, "ZETTA")
         .replace(/^YIBI/, "YOTTA")
         .replace(/^(.)IB$/, "$1B") as Uppercase<Unit> | "B";
-    const level = BYTE_SIZES.findIndex((unit) => unit.short[0].toUpperCase() === type[0]);
+    const level = BYTE_SIZES.findIndex((unit) => (unit.short[0] as string).toUpperCase() === type[0]);
     const base = fromBase(config.base);
 
     return localizedNumber * base ** level;

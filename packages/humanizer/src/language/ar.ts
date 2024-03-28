@@ -5,7 +5,7 @@ const getArabicForm = (counter: number): number => {
         return 1;
     }
 
-    if (counter > 2 && c < 11) {
+    if (counter > 2 && counter < 11) {
         return 2;
     }
 
@@ -13,14 +13,14 @@ const getArabicForm = (counter: number): number => {
 };
 
 export const durationLanguage = createDurationLanguage(
-    (counter) => ["سنة", "سنتان", "سنوات"][getArabicForm(counter)],
-    (counter) => ["شهر", "شهران", "أشهر"][getArabicForm(counter)],
-    (counter) => ["أسبوع", "أسبوعين", "أسابيع"][getArabicForm(counter)],
-    (counter) => ["يوم", "يومين", "أيام"][getArabicForm(counter)],
-    (counter) => ["ساعة", "ساعتين", "ساعات"][getArabicForm(counter)],
-    (counter) => ["دقيقة", "دقيقتان", "دقائق"][getArabicForm(counter)],
-    (counter) => ["ثانية", "ثانيتان", "ثواني"][getArabicForm(counter)],
-    (counter) => ["جزء من الثانية", "جزآن من الثانية", "أجزاء من الثانية"][getArabicForm(counter)],
+    (counter) => ["سنة", "سنتان", "سنوات"][getArabicForm(counter)] as string,
+    (counter) => ["شهر", "شهران", "أشهر"][getArabicForm(counter)] as string,
+    (counter) => ["أسبوع", "أسبوعين", "أسابيع"][getArabicForm(counter)] as string,
+    (counter) => ["يوم", "يومين", "أيام"][getArabicForm(counter)] as string,
+    (counter) => ["ساعة", "ساعتين", "ساعات"][getArabicForm(counter)] as string,
+    (counter) => ["دقيقة", "دقيقتان", "دقائق"][getArabicForm(counter)] as string,
+    (counter) => ["ثانية", "ثانيتان", "ثواني"][getArabicForm(counter)] as string,
+    (counter) => ["جزء من الثانية", "جزآن من الثانية", "أجزاء من الثانية"][getArabicForm(counter)] as string,
     "بعد %s",
     "منذ %s",
     ",",

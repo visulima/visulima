@@ -3,11 +3,11 @@ import createDurationLanguage from "./util/create-duration-language";
 export const durationLanguage = {
     _numberFirst: true,
     ...createDurationLanguage(
-        (c) => (c === 1 ? "mwaka" : "miaka"),
-        (c) => (c === 1 ? "mwezi" : "miezi"),
+        (counter) => (counter === 1 ? "mwaka" : "miaka"),
+        (counter) => (counter === 1 ? "mwezi" : "miezi"),
         "wiki",
-        (c) => (c === 1 ? "siku" : "masiku"),
-        (c) => (c === 1 ? "saa" : "masaa"),
+        (counter) => (counter === 1 ? "siku" : "masiku"),
+        (counter) => (counter === 1 ? "saa" : "masaa"),
         "dakika",
         "sekunde",
         "milisekunde",

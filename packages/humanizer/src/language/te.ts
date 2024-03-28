@@ -1,14 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => `సంవత్స${c === 1 ? "రం" : "రాల"}`,
-    (c) => `నెల${c === 1 ? "" : "ల"}`,
-    (c) => (c === 1 ? "వారం" : "వారాలు"),
-    (c) => `రోజు${c === 1 ? "" : "లు"}`,
-    (c) => `గంట${c === 1 ? "" : "లు"}`,
-    (c) => (c === 1 ? "నిమిషం" : "నిమిషాలు"),
-    (c) => (c === 1 ? "సెకను" : "సెకన్లు"),
-    (c) => (c === 1 ? "మిల్లీసెకన్" : "మిల్లీసెకన్లు"),
+    (counter) => `సంవత్స${counter === 1 ? "రం" : "రాల"}`,
+    (counter) => `నెల${counter === 1 ? "" : "ల"}`,
+    (counter) => (counter === 1 ? "వారం" : "వారాలు"),
+    (counter) => `రోజు${counter === 1 ? "" : "లు"}`,
+    (counter) => `గంట${counter === 1 ? "" : "లు"}`,
+    (counter) => (counter === 1 ? "నిమిషం" : "నిమిషాలు"),
+    (counter) => (counter === 1 ? "సెకను" : "సెకన్లు"),
+    (counter) => (counter === 1 ? "మిల్లీసెకన్" : "మిల్లీసెకన్లు"),
     "%s లో",
     "%s క్రితం",
 );

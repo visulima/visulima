@@ -2,14 +2,14 @@ import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => ["років", "рік", "роки"][getSlavicForm(c)],
-    (c) => ["місяців", "місяць", "місяці"][getSlavicForm(c)],
-    (c) => ["тижнів", "тиждень", "тижні"][getSlavicForm(c)],
-    (c) => ["днів", "день", "дні"][getSlavicForm(c)],
-    (c) => ["годин", "година", "години"][getSlavicForm(c)],
-    (c) => ["хвилин", "хвилина", "хвилини"][getSlavicForm(c)],
-    (c) => ["секунд", "секунда", "секунди"][getSlavicForm(c)],
-    (c) => ["мілісекунд", "мілісекунда", "мілісекунди"][getSlavicForm(c)],
+    (counter) => ["років", "рік", "роки"][getSlavicForm(counter)] as string,
+    (counter) => ["місяців", "місяць", "місяці"][getSlavicForm(counter)] as string,
+    (counter) => ["тижнів", "тиждень", "тижні"][getSlavicForm(counter)] as string,
+    (counter) => ["днів", "день", "дні"][getSlavicForm(counter)] as string,
+    (counter) => ["годин", "година", "години"][getSlavicForm(counter)] as string,
+    (counter) => ["хвилин", "хвилина", "хвилини"][getSlavicForm(counter)] as string,
+    (counter) => ["секунд", "секунда", "секунди"][getSlavicForm(counter)] as string,
+    (counter) => ["мілісекунд", "мілісекунда", "мілісекунди"][getSlavicForm(counter)] as string,
     "за %s",
     "%s тому",
     ",",

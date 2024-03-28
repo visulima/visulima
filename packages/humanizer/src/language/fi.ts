@@ -1,14 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => (c === 1 ? "vuosi" : "vuotta"),
-    (c) => (c === 1 ? "kuukausi" : "kuukautta"),
-    (c) => `viikko${c === 1 ? "" : "a"}`,
-    (c) => `päivä${c === 1 ? "" : "ä"}`,
-    (c) => `tunti${c === 1 ? "" : "a"}`,
-    (c) => `minuutti${c === 1 ? "" : "a"}`,
-    (c) => `sekunti${c === 1 ? "" : "a"}`,
-    (c) => `millisekunti${c === 1 ? "" : "a"}`,
+    (counter) => (counter === 1 ? "vuosi" : "vuotta"),
+    (counter) => (counter === 1 ? "kuukausi" : "kuukautta"),
+    (counter) => `viikko${counter === 1 ? "" : "a"}`,
+    (counter) => `päivä${counter === 1 ? "" : "ä"}`,
+    (counter) => `tunti${counter === 1 ? "" : "a"}`,
+    (counter) => `minuutti${counter === 1 ? "" : "a"}`,
+    (counter) => `sekunti${counter === 1 ? "" : "a"}`,
+    (counter) => `millisekunti${counter === 1 ? "" : "a"}`,
     "%s päästä",
     "%s sitten",
     ",",

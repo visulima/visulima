@@ -1,14 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => (c === 1 ? "שנה" : "שנים"),
-    (c) => (c === 1 ? "חודש" : "חודשים"),
-    (c) => (c === 1 ? "שבוע" : "שבועות"),
-    (c) => (c === 1 ? "יום" : "ימים"),
-    (c) => (c === 1 ? "שעה" : "שעות"),
-    (c) => (c === 1 ? "דקה" : "דקות"),
-    (c) => (c === 1 ? "שניה" : "שניות"),
-    (c) => (c === 1 ? "מילישנייה" : "מילישניות"),
+    (counter) => (counter === 1 ? "שנה" : "שנים"),
+    (counter) => (counter === 1 ? "חודש" : "חודשים"),
+    (counter) => (counter === 1 ? "שבוע" : "שבועות"),
+    (counter) => (counter === 1 ? "יום" : "ימים"),
+    (counter) => (counter === 1 ? "שעה" : "שעות"),
+    (counter) => (counter === 1 ? "דקה" : "דקות"),
+    (counter) => (counter === 1 ? "שניה" : "שניות"),
+    (counter) => (counter === 1 ? "מילישנייה" : "מילישניות"),
     "בעוד %s",
     "לפני %s",
 );

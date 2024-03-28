@@ -66,11 +66,20 @@
                 "default": "./dist/index.js"
             }
         },
+        "./duration/language/af": {
+            "require": {
+                "types": "./dist/language/af.d.cts",
+                "default": "./dist/language/af.cjs"
+            },
+            "import": {
+                "types": "./dist/language/af.d.ts",
+                "default": "./dist/language/af.js"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.js",
-    "source": "src/index.ts",
     "browser": "./dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -122,6 +131,13 @@
         "typescript": "^5.4.3",
         "vitest": "^1.4.0"
     },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "anolilab": {
         "eslint-config": {
             "plugin": {
@@ -134,11 +150,68 @@
             "info_on_disabling_etc_no_deprecated": false
         }
     },
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    }
+    "sources": [
+        "src/index.ts",
+        "src/language/af.ts",
+        "src/language/ar.ts",
+        "src/language/bn.ts",
+        "src/language/ca.ts",
+        "src/language/ckb.ts",
+        "src/language/cs.ts",
+        "src/language/cy.ts",
+        "src/language/da.ts",
+        "src/language/de.ts",
+        "src/language/el.ts",
+        "src/language/en.ts",
+        "src/language/eo.ts",
+        "src/language/es.ts",
+        "src/language/et.ts",
+        "src/language/eu.ts",
+        "src/language/fa.ts",
+        "src/language/fi.ts",
+        "src/language/fo.ts",
+        "src/language/fr.ts",
+        "src/language/he.ts",
+        "src/language/hi.ts",
+        "src/language/hr.ts",
+        "src/language/hu.ts",
+        "src/language/id.ts",
+        "src/language/is.ts",
+        "src/language/it.ts",
+        "src/language/ja.ts",
+        "src/language/km.ts",
+        "src/language/kn.ts",
+        "src/language/ko.ts",
+        "src/language/ku.ts",
+        "src/language/lo.ts",
+        "src/language/lt.ts",
+        "src/language/lv.ts",
+        "src/language/mk.ts",
+        "src/language/mn.ts",
+        "src/language/mr.ts",
+        "src/language/ms.ts",
+        "src/language/nl.ts",
+        "src/language/no.ts",
+        "src/language/pl.ts",
+        "src/language/pt.ts",
+        "src/language/ro.ts",
+        "src/language/ru.ts",
+        "src/language/sk.ts",
+        "src/language/sl.ts",
+        "src/language/sq.ts",
+        "src/language/sr.ts",
+        "src/language/sv.ts",
+        "src/language/sw.ts",
+        "src/language/ta.ts",
+        "src/language/te.ts",
+        "src/language/th.ts",
+        "src/language/tr.ts",
+        "src/language/uk.ts",
+        "src/language/ur.ts",
+        "src/language/uz.ts",
+        "src/language/uz_CYR.ts",
+        "src/language/vi.ts",
+        "src/language/zh_CN.ts",
+        "src/language/zh_TW.ts"
+    ]
 }

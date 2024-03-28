@@ -1,14 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    (c) => `Jahr${c === 1 ? "" : "e"}`,
-    (c) => `Monat${c === 1 ? "" : "e"}`,
-    (c) => `Woche${c === 1 ? "" : "n"}`,
-    (c) => `Tag${c === 1 ? "" : "e"}`,
-    (c) => `Stunde${c === 1 ? "" : "n"}`,
-    (c) => `Minute${c === 1 ? "" : "n"}`,
-    (c) => `Sekunde${c === 1 ? "" : "n"}`,
-    (c) => `Millisekunde${c === 1 ? "" : "n"}`,
+    (counter) => `Jahr${counter === 1 ? "" : "e"}`,
+    (counter) => `Monat${counter === 1 ? "" : "e"}`,
+    (counter) => `Woche${counter === 1 ? "" : "n"}`,
+    (counter) => `Tag${counter === 1 ? "" : "e"}`,
+    (counter) => `Stunde${counter === 1 ? "" : "n"}`,
+    (counter) => `Minute${counter === 1 ? "" : "n"}`,
+    (counter) => `Sekunde${counter === 1 ? "" : "n"}`,
+    (counter) => `Millisekunde${counter === 1 ? "" : "n"}`,
     "in %s",
     "vor %s",
     ",",

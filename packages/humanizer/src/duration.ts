@@ -150,6 +150,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
                     const smallerUnitName = units[index_] as DurationUnitName;
                     const smallerUnitCount = unitCounts[smallerUnitName] as number;
 
+                    // @ts-expect-error unitCounts[unitName] is defined
                     // eslint-disable-next-line security/detect-object-injection
                     unitCounts[unitName] += (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
                     unitCounts[smallerUnitName] = 0;
@@ -188,6 +189,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
             const amountOfPreviousUnit = Math.floor((rounded * unitMeasures[unitName]) / previousUnitMs);
 
             if (amountOfPreviousUnit) {
+                // @ts-expect-error unitCounts[previousUnitName] is defined
                 // eslint-disable-next-line security/detect-object-injection
                 unitCounts[previousUnitName] += amountOfPreviousUnit;
                 unitCounts[unitName] = 0;
@@ -257,7 +259,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     // timeAdverb part
     let adverb = "";
 
-    if (options.timeAdverb && ms != 0) {
+    if (options.timeAdverb && ms !== 0) {
         adverb = language.future ?? "";
 
         if (ms < 0) {
@@ -291,19 +293,14 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     return result;
 };
 
-const duration = (milliseconds: bigint | number, options?: DurationOptions): string => {
+const duration = (milliseconds: number, options?: DurationOptions): string => {
     if (Number.isNaN(milliseconds)) {
         throw new TypeError("Expected a valid number");
     }
 
-    if (typeof milliseconds !== "number" && typeof milliseconds !== "bigint") {
-        throw new TypeError("Expected a number or BigInt");
+    if (typeof milliseconds !== "number") {
+        throw new TypeError("Expected a number");
     }
-
-    const isBigInt = typeof milliseconds === "bigint";
-
-    // eslint-disable-next-line no-param-reassign
-    milliseconds = isBigInt ? Number(milliseconds) : milliseconds;
 
     const config = {
         conjunction: "",
