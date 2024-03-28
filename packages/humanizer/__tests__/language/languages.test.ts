@@ -1,5 +1,6 @@
 import { createReadStream, readdirSync } from "node:fs";
-import { basename, extname, join } from "node:path";
+import { basename, dirname,extname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { parse as parseCSV } from "csv-parse";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -7,6 +8,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import duration from "../../src/duration";
 import { durationLanguage as af } from "../../src/language/af";
 import { durationLanguage as ar } from "../../src/language/ar";
+import { durationLanguage as bg } from "../../src/language/bg";
 import { durationLanguage as bn } from "../../src/language/bn";
 import { durationLanguage as ca } from "../../src/language/ca";
 import { durationLanguage as ckb } from "../../src/language/ckb";
@@ -68,11 +70,12 @@ import { durationLanguage as vi } from "../../src/language/vi";
 import { durationLanguage as zh_CN } from "../../src/language/zh_CN";
 import { durationLanguage as zh_TW } from "../../src/language/zh_TW";
 
-const fixturePath = join(__dirname, "..", "..", "__fixtures__", "duration");
+const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "duration");
 
 const importedLanguages = {
     af,
     ar,
+    bg,
     bn,
     ca,
     ckb,
@@ -148,8 +151,10 @@ describe("localized duration", () => {
             /** @type {Array<[number, string]>} */
             const result = [];
 
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const parser = createReadStream(filePath).pipe(parseCSV({ delimiter: "\t" }));
 
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for await (const [msString, expectedResult] of parser) {
                 result.push([Number.parseFloat(msString), expectedResult]);
             }
@@ -175,13 +180,14 @@ describe("localized duration", () => {
     });
 
     it("humanizes all languages correctly with the top-level function", () => {
-        expect.assertions(languages.size);
+        expect.assertions(3239);
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const [language, pairs] of languages) {
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [milliseconds, expectedResult] of pairs) {
                 expect(
+                    // eslint-disable-next-line security/detect-object-injection
                     duration(milliseconds, { delimiter: "+", language: importedLanguages[language], units: ["y", "mo", "w", "d", "h", "m", "s", "ms"] }),
                     `${language} localization error for ${milliseconds} milliseconds`,
                 ).toStrictEqual(expectedResult);
