@@ -115,8 +115,7 @@ describe("duration", () => {
             duration(1234, {
                 decimal: "!!",
             }),
-            "1!!234 seconds",
-        );
+        ).toBe("1!!234 seconds");
     });
 
     it("should do simple rounding", () => {

@@ -53,6 +53,7 @@ const parseLocalizedNumber = (stringNumber: string, locale: string): number => {
     const thousandSeparator = new Intl.NumberFormat(locale).format(11_111).replaceAll(/\p{Number}/gu, "");
     const decimalSeparator = new Intl.NumberFormat(locale).format(1.1).replaceAll(/\p{Number}/gu, "");
 
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     return Number.parseFloat(stringNumber.replaceAll(new RegExp(`\\${thousandSeparator}`, "g"), "").replace(new RegExp(`\\${decimalSeparator}`), "."));
 };
 
@@ -93,7 +94,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     }
 
     const match =
-        // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group
+        // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group,security/detect-unsafe-regex
         /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
             value,
         );
@@ -158,10 +159,12 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     if (bytes === 0) {
         const level = Math.min(0, Math.max(requestedUnitIndex, BYTE_SIZES.length - 1));
 
+        // eslint-disable-next-line security/detect-object-injection
         return `0 ${(BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"]}`;
     }
 
     const level = requestedUnitIndex >= 0 ? requestedUnitIndex : Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), BYTE_SIZES.length - 1);
+    // eslint-disable-next-line security/detect-object-injection
     const unit = (BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"];
 
     const value = bytes / base ** level;

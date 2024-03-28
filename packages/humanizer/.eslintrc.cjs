@@ -28,8 +28,13 @@ module.exports = {
             rules: {},
         },
         {
-            files: ["*.js", "*.jsx"],
-            rules: {},
+            files: ["src/language/*.ts"],
+            rules: {
+                "import/no-unused-modules": "off",
+                "import/prefer-default-export": "off",
+                "unicorn/filename-case": "off",
+                "unicorn/prevent-abbreviations": "off",
+            },
         },
         {
             files: ["*.mdx"],

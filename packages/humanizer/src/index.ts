@@ -9,5 +9,6 @@ export type {
     DurationUnitMeasures,
     DurationUnitName,
     FormateByteOptions,
+    IntlLocale,
     ParseByteOptions,
 } from "./types";

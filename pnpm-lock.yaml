@@ -2560,6 +2560,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      csv-parse:
+        specifier: ^5.5.5
+        version: 5.5.5
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -16575,6 +16578,10 @@ packages:
 
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  /csv-parse@5.5.5:
+    resolution: {integrity: sha512-erCk7tyU3yLWAhk6wvKxnyPtftuy/6Ak622gOO7BCJ05+TYffnPCJF905wmOQm+BpkX54OdAl8pveJwUdpnCXQ==}
+    dev: true
 
   /cuss@2.2.0:
     resolution: {integrity: sha512-3hlHOhMiZ6YdHY5LPUhfxlx1Pj14eGttv2l9ADB1Lkv7e/us5XD798wrVLJ9DHmDO8SzCDuA+ItByFZ3M1dIYg==}
