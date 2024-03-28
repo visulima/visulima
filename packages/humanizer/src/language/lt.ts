@@ -13,30 +13,14 @@ const getLithuanianForm = (counter: number): number => {
 };
 
 export const durationLanguage = createDurationLanguage(
-    function (c) {
-        return c % 10 === 0 || (c % 100 >= 10 && c % 100 <= 20) ? "metų" : "metai";
-    },
-    function (c) {
-        return ["mėnuo", "mėnesiai", "mėnesių"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["savaitė", "savaitės", "savaičių"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["diena", "dienos", "dienų"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["valanda", "valandos", "valandų"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["minutė", "minutės", "minučių"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["sekundė", "sekundės", "sekundžių"][getLithuanianForm(c)];
-    },
-    function (c) {
-        return ["milisekundė", "milisekundės", "milisekundžių"][getLithuanianForm(c)];
-    },
+    (c) => (c % 10 === 0 || (c % 100 >= 10 && c % 100 <= 20) ? "metų" : "metai"),
+    (c) => ["mėnuo", "mėnesiai", "mėnesių"][getLithuanianForm(c)],
+    (c) => ["savaitė", "savaitės", "savaičių"][getLithuanianForm(c)],
+    (c) => ["diena", "dienos", "dienų"][getLithuanianForm(c)],
+    (c) => ["valanda", "valandos", "valandų"][getLithuanianForm(c)],
+    (c) => ["minutė", "minutės", "minučių"][getLithuanianForm(c)],
+    (c) => ["sekundė", "sekundės", "sekundžių"][getLithuanianForm(c)],
+    (c) => ["milisekundė", "milisekundės", "milisekundžių"][getLithuanianForm(c)],
     "po %s",
     "prieš %s",
     ",",

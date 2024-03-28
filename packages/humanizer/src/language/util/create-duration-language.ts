@@ -1,4 +1,4 @@
-import type { DurationUnit, DurationLanguage } from "../../types";
+import type { DurationLanguage,DurationUnit } from "../../types";
 
 const createDurationLanguage = (
     y: DurationUnit,
@@ -13,26 +13,26 @@ const createDurationLanguage = (
     past?: string,
     decimal?: string,
 ): DurationLanguage => {
-    var result: DurationLanguage = {
-        y: y,
-        mo: mo,
-        w: w,
-        d: d,
-        h: h,
-        m: m,
-        s: s,
-        ms: ms,
+    const result: DurationLanguage = {
+        d,
+        h,
+        m,
+        mo,
+        ms,
+        s,
+        w,
+        y,
     };
 
-    if (typeof future !== "undefined") {
+    if (future !== undefined) {
         result.future = future;
     }
 
-    if (typeof past !== "undefined") {
+    if (past !== undefined) {
         result.past = past;
     }
 
-    if (typeof decimal !== "undefined") {
+    if (decimal !== undefined) {
         result.decimal = decimal;
     }
 

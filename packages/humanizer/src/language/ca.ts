@@ -1,30 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    function (c) {
-        return "any" + (c === 1 ? "" : "s");
-    },
-    function (c) {
-        return "mes" + (c === 1 ? "" : "os");
-    },
-    function (c) {
-        return "setman" + (c === 1 ? "a" : "es");
-    },
-    function (c) {
-        return "di" + (c === 1 ? "a" : "es");
-    },
-    function (c) {
-        return "hor" + (c === 1 ? "a" : "es");
-    },
-    function (c) {
-        return "minut" + (c === 1 ? "" : "s");
-    },
-    function (c) {
-        return "segon" + (c === 1 ? "" : "s");
-    },
-    function (c) {
-        return "milisegon" + (c === 1 ? "" : "s");
-    },
+    (c) => `any${c === 1 ? "" : "s"}`,
+    (c) => `mes${c === 1 ? "" : "os"}`,
+    (c) => `setman${c === 1 ? "a" : "es"}`,
+    (c) => `di${c === 1 ? "a" : "es"}`,
+    (c) => `hor${c === 1 ? "a" : "es"}`,
+    (c) => `minut${c === 1 ? "" : "s"}`,
+    (c) => `segon${c === 1 ? "" : "s"}`,
+    (c) => `milisegon${c === 1 ? "" : "s"}`,
     "d'aquí %s",
     "fa %s",
     ",",

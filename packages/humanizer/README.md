@@ -42,8 +42,11 @@ pnpm add @visulima/humanizer
 ## Usage
 
 ## Supported languages
+> Language for unit display. Accepts an [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) from one of the supported languages.
+>
+> Default: "en".
 
-Humanize Duration supports the following languages:
+`duration` supports the following languages:
 
 | Language             | Code     |
 | -------------------- | -------- |
@@ -111,6 +114,10 @@ Humanize Duration supports the following languages:
 | Welsh                | `cy`     |
 
 ## Related
+
+### Bytes
+
+-   [pretty-bytes](https://github.com/sindresorhus/pretty-bytes) - Convert bytes to a human readable string: `1337` → `1.34 kB`
 
 ### Duration
 -   [HumanizeDuration](https://github.com/EvanHahn/HumanizeDuration.js) - 361000 becomes "6 minutes, 1 second"

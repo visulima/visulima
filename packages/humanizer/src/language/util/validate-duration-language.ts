@@ -1,11 +1,11 @@
 import type { DurationLanguage } from "../../types";
 
-const validateDurationLanguage = (language: DurationLanguage, strict: boolean = false): void => {
-    const requiredProps = ["y", "mo", "w", "d", "h", "m", "s", "ms", "future", "past"];
+const validateDurationLanguage = (language: DurationLanguage, strict = false): void => {
+    const requiredProperties = ["y", "mo", "w", "d", "h", "m", "s", "ms", "future", "past"];
 
-    for (const prop of requiredProps) {
-        if (!language.hasOwnProperty(prop)) {
-            throw new TypeError(`Missing required property: ${prop}`);
+    for (const property of requiredProperties) {
+        if (!language.hasOwnProperty(property)) {
+            throw new TypeError(`Missing required property: ${property}`);
         }
     }
 
@@ -13,9 +13,9 @@ const validateDurationLanguage = (language: DurationLanguage, strict: boolean = 
         throw new TypeError("Properties future and past must be of type string");
     }
 
-    for (const prop of ["y", "mo", "w", "d", "h", "m", "s", "ms"]) {
-        if (typeof language[prop] !== "string" && typeof language[prop] !== "function") {
-            throw new TypeError(`Property ${prop} must be of type string or function`);
+    for (const property of ["y", "mo", "w", "d", "h", "m", "s", "ms"]) {
+        if (typeof language[property] !== "string" && typeof language[property] !== "function") {
+            throw new TypeError(`Property ${property} must be of type string or function`);
         }
     }
 

@@ -17,30 +17,14 @@ const getPolishForm = (counter: number): number => {
 };
 
 export const durationLanguage = createDurationLanguage(
-    function (c) {
-        return ["rok", "roku", "lata", "lat"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["tydzień", "tygodnia", "tygodnie", "tygodni"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["dzień", "dnia", "dni", "dni"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["godzina", "godziny", "godziny", "godzin"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["minuta", "minuty", "minuty", "minut"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["sekunda", "sekundy", "sekundy", "sekund"][getPolishForm(c)];
-    },
-    function (c) {
-        return ["milisekunda", "milisekundy", "milisekundy", "milisekund"][getPolishForm(c)];
-    },
+    (c) => ["rok", "roku", "lata", "lat"][getPolishForm(c)],
+    (c) => ["miesiąc", "miesiąca", "miesiące", "miesięcy"][getPolishForm(c)],
+    (c) => ["tydzień", "tygodnia", "tygodnie", "tygodni"][getPolishForm(c)],
+    (c) => ["dzień", "dnia", "dni", "dni"][getPolishForm(c)],
+    (c) => ["godzina", "godziny", "godziny", "godzin"][getPolishForm(c)],
+    (c) => ["minuta", "minuty", "minuty", "minut"][getPolishForm(c)],
+    (c) => ["sekunda", "sekundy", "sekundy", "sekund"][getPolishForm(c)],
+    (c) => ["milisekunda", "milisekundy", "milisekundy", "milisekund"][getPolishForm(c)],
     "za %s",
     "%s temu",
     ",",

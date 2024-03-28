@@ -1,30 +1,14 @@
 import createDurationLanguage from "./util/create-duration-language";
 
 export const durationLanguage = createDurationLanguage(
-    function (c) {
-        return c === 1 ? "година" : "години";
-    },
-    function (c) {
-        return c === 1 ? "месец" : "месеци";
-    },
-    function (c) {
-        return c === 1 ? "недела" : "недели";
-    },
-    function (c) {
-        return c === 1 ? "ден" : "дена";
-    },
-    function (c) {
-        return c === 1 ? "час" : "часа";
-    },
-    function (c) {
-        return c === 1 ? "минута" : "минути";
-    },
-    function (c) {
-        return c === 1 ? "секунда" : "секунди";
-    },
-    function (c) {
-        return c === 1 ? "милисекунда" : "милисекунди";
-    },
+    (c) => (c === 1 ? "година" : "години"),
+    (c) => (c === 1 ? "месец" : "месеци"),
+    (c) => (c === 1 ? "недела" : "недели"),
+    (c) => (c === 1 ? "ден" : "дена"),
+    (c) => (c === 1 ? "час" : "часа"),
+    (c) => (c === 1 ? "минута" : "минути"),
+    (c) => (c === 1 ? "секунда" : "секунди"),
+    (c) => (c === 1 ? "милисекунда" : "милисекунди"),
     "за %s",
     "пред %s",
     ",",

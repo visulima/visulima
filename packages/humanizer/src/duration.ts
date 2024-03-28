@@ -1,11 +1,41 @@
-import type { DurationDigitReplacements, DurationOptions, DurationLanguage, DurationPiece, DurationUnitName } from "./types";
 import { durationLanguage } from "./language/en";
 import validateDurationLanguage from "./language/util/validate-duration-language";
+import type { DurationDigitReplacements, DurationLanguage, DurationOptions, DurationPiece, DurationUnitMeasures, DurationUnitName } from "./types";
 
-const renderPiece = ({ unitName, unitCount }: DurationPiece, language: DurationLanguage, options: Required<DurationOptions>): string => {
-    const { spacer, maxDecimalPoints } = options;
+interface InternalOptions {
+    conjunction: string;
+    decimal?: string;
+    delimiter?: string;
+    digitReplacements?: DurationDigitReplacements;
+    fallbacks?: string[];
+    language: DurationLanguage;
+    largest?: number;
+    maxDecimalPoints?: number;
+    round: boolean;
+    serialComma: boolean;
+    spacer: string;
+    timeAdverb: boolean;
+    unitMeasures: DurationUnitMeasures;
+    units: DurationUnitName[];
+}
 
-    let decimal: string = ".";
+const toFixed = (number_: number, fixed: number): number => {
+    // eslint-disable-next-line no-param-reassign
+    fixed = fixed || -1;
+
+    const matches = new RegExp(`^-?\\d+(?:.\\d{0,${fixed}})?`).exec(number_.toString());
+
+    if (matches === null) {
+        return number_; // can be undefined when num is Number.POSITIVE_INFINITY
+    }
+
+    return Number.parseFloat(matches[0]);
+};
+
+const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationLanguage, options: InternalOptions): string => {
+    const { maxDecimalPoints, spacer } = options;
+
+    let decimal = ".";
 
     if (options.decimal !== undefined) {
         decimal = options.decimal;
@@ -13,35 +43,36 @@ const renderPiece = ({ unitName, unitCount }: DurationPiece, language: DurationL
         decimal = language.decimal;
     }
 
-    let digitReplacements: undefined | DurationDigitReplacements;
+    let digitReplacements: DurationDigitReplacements | undefined;
 
     if ("digitReplacements" in options) {
         digitReplacements = options.digitReplacements;
     } else if ("_digitReplacements" in language) {
+        // eslint-disable-next-line no-underscore-dangle
         digitReplacements = language._digitReplacements;
     }
 
     let formattedCount: string;
 
-    const normalizedUnitCount =
-        maxDecimalPoints === void 0 ? unitCount : Math.floor(unitCount * Math.pow(10, maxDecimalPoints)) / Math.pow(10, maxDecimalPoints);
-    const countStr = normalizedUnitCount.toString();
+    let normalizedUnitCount = unitCount;
+
+    if (maxDecimalPoints !== undefined) {
+        // normalizedUnitCount = Math.floor(unitCount * 10 ** maxDecimalPoints) / 10 ** maxDecimalPoints;
+        normalizedUnitCount = toFixed(unitCount, maxDecimalPoints);
+    }
+
+    const countString = normalizedUnitCount.toString();
 
     if (digitReplacements) {
         formattedCount = "";
 
-        for (var i = 0; i < countStr.length; i++) {
-            const char = countStr[i];
-
-            if (char === ".") {
-                formattedCount += decimal;
-            } else {
-                // @ts-ignore because `char` should always be 0-9 at this point.
-                formattedCount += digitReplacements[char];
-            }
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const char of countString) {
+            // @ts-expect-error because `char` should always be 0-9 at this point.
+            formattedCount += char === "." ? decimal : digitReplacements[char];
         }
     } else {
-        formattedCount = countStr.replace(".", decimal);
+        formattedCount = countString.replace(".", decimal);
     }
 
     const languageWord = language[unitName];
@@ -51,6 +82,7 @@ const renderPiece = ({ unitName, unitCount }: DurationPiece, language: DurationL
         word = languageWord(unitCount);
     }
 
+    // eslint-disable-next-line no-underscore-dangle
     if (language._numberFirst) {
         return word + spacer + formattedCount;
     }
@@ -58,30 +90,32 @@ const renderPiece = ({ unitName, unitCount }: DurationPiece, language: DurationL
     return formattedCount + spacer + word;
 };
 
-const getPieces = (ms: number, options: Required<DurationOptions>): DurationPiece[] => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
     const { units } = options;
 
-    if (!units.length) {
+    if (units.length === 0) {
         return [];
     }
 
     const { unitMeasures } = options;
-    var largest = options?.largest !== undefined ? options.largest : Infinity;
+    const largest = options.largest ?? Number.POSITIVE_INFINITY;
 
     // Get the counts for each unit. Doesn't round or truncate anything.
     // For example, might create an object like `{ y: 7, m: 6, w: 0, d: 5, h: 23.99 }`.
-    var unitCounts: Partial<Record<DurationUnitName, number>> = {};
+    const unitCounts: Partial<Record<DurationUnitName, number>> = {};
 
     let unitName: DurationUnitName;
-    let i: number;
+    let index: number;
     let unitCount: number;
     let msRemaining: number = ms;
 
-    for (i = 0; i < units.length; i++) {
-        unitName = units[i] as DurationUnitName;
+    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    for (index = 0; index < units.length; index++) {
+        unitName = units[index] as DurationUnitName;
 
         const unitMs = unitMeasures[unitName];
-        const isLast = i === units.length - 1;
+        const isLast = index === units.length - 1;
 
         unitCount = isLast ? msRemaining / unitMs : Math.floor(msRemaining / unitMs);
         unitCounts[unitName] = unitCount;
@@ -95,25 +129,32 @@ const getPieces = (ms: number, options: Required<DurationOptions>): DurationPiec
         // updates to something like `{ y: 7, m: 6.2 }`.
         let unitsRemainingBeforeRound = largest;
 
-        for (i = 0; i < units.length; i++) {
-            unitName = units[i] as DurationUnitName;
+        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        for (index = 0; index < units.length; index++) {
+            unitName = units[index] as DurationUnitName;
             unitCount = unitCounts[unitName] as number;
 
             if (unitCount === 0) {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
+            // eslint-disable-next-line no-plusplus
             unitsRemainingBeforeRound--;
 
             // "Take" the rest of the units into this one.
             if (unitsRemainingBeforeRound === 0) {
-                for (let j = i + 1; j < units.length; j++) {
-                    let smallerUnitName = units[j];
-                    let smallerUnitCount = unitCounts[smallerUnitName];
+                // eslint-disable-next-line @typescript-eslint/naming-convention,no-loops/no-loops,no-underscore-dangle,no-plusplus
+                for (let index_ = index + 1; index_ < units.length; index_++) {
+                    // eslint-disable-next-line no-underscore-dangle
+                    const smallerUnitName = units[index_] as DurationUnitName;
+                    const smallerUnitCount = unitCounts[smallerUnitName] as number;
 
+                    // eslint-disable-next-line security/detect-object-injection
                     unitCounts[unitName] += (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
                     unitCounts[smallerUnitName] = 0;
                 }
+
                 break;
             }
         }
@@ -124,26 +165,30 @@ const getPieces = (ms: number, options: Required<DurationOptions>): DurationPiec
         // unit. For example, "3 days, 23.99 hours" should be rounded to "4 days".
         // It can also require multiple passes. For example, "6 days, 23.99 hours"
         // should become "1 week".
-        for (i = units.length - 1; i >= 0; i--) {
-            unitName = units[i] as DurationUnitName;
+        // eslint-disable-next-line no-plusplus,no-loops/no-loops
+        for (index = units.length - 1; index >= 0; index--) {
+            unitName = units[index] as DurationUnitName;
             unitCount = unitCounts[unitName] as number;
 
             if (unitCount === 0) {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
-            var rounded = Math.round(unitCount);
+            const rounded = Math.round(unitCount);
+
             unitCounts[unitName] = rounded;
 
-            if (i === 0) {
+            if (index === 0) {
                 break;
             }
 
-            const previousUnitName: DurationUnitName = units[i - 1] as DurationUnitName;
+            const previousUnitName: DurationUnitName = units[index - 1] as DurationUnitName;
             const previousUnitMs = unitMeasures[previousUnitName];
             const amountOfPreviousUnit = Math.floor((rounded * unitMeasures[unitName]) / previousUnitMs);
 
             if (amountOfPreviousUnit) {
+                // eslint-disable-next-line security/detect-object-injection
                 unitCounts[previousUnitName] += amountOfPreviousUnit;
                 unitCounts[unitName] = 0;
             } else {
@@ -154,24 +199,49 @@ const getPieces = (ms: number, options: Required<DurationOptions>): DurationPiec
 
     const result: DurationPiece[] = [];
 
-    for (i = 0; i < units.length && result.length < largest; i++) {
-        unitName = units[i] as DurationUnitName;
+    // eslint-disable-next-line no-plusplus,no-loops/no-loops
+    for (index = 0; index < units.length && result.length < largest; index++) {
+        unitName = units[index] as DurationUnitName;
         unitCount = unitCounts[unitName] as number;
 
+        // If the result is not rounded, and `largest` option has been set, aggregate the rest and apply the
+        // `maxDecimalPoints` to truncate the decimals
+        if (unitCount && !options.round && result.length === largest - 1) {
+            // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+            let index_;
+            let remainder = 0;
+
+            // eslint-disable-next-line no-loops/no-loops,no-plusplus
+            for (index_ = index + 1, units.length; index_ < units.length; index_++) {
+                // eslint-disable-next-line no-underscore-dangle
+                const remainderUnitName = units[index_] as DurationUnitName;
+
+                remainder += (unitCounts[remainderUnitName] as number) * (options.unitMeasures[remainderUnitName] / options.unitMeasures[unitName]);
+            }
+
+            unitCount += remainder;
+
+            if (options.maxDecimalPoints !== undefined) {
+                unitCount = toFixed(unitCount, options.maxDecimalPoints);
+            }
+        }
+
         if (unitCount) {
-            result.push({ unitName: unitName, unitCount: unitCount });
+            result.push({ unitCount, unitName });
         }
     }
+
     return result;
 };
 
-const formatPieces = (pieces: DurationPiece[], options: Required<DurationOptions>, ms: number): string => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: number): string => {
     const { language, units } = options;
 
-    if (!pieces.length) {
-        const smallestUnitName = units[units.length - 1] as DurationUnitName;
+    if (pieces.length === 0) {
+        const smallestUnitName = units.at(-1) as DurationUnitName;
 
-        return renderPiece({ unitName: smallestUnitName, unitCount: 0 }, language, options);
+        return renderPiece({ unitCount: 0, unitName: smallestUnitName }, language, options);
     }
 
     const { conjunction, serialComma } = options;
@@ -197,8 +267,11 @@ const formatPieces = (pieces: DurationPiece[], options: Required<DurationOptions
 
     const renderedPieces: string[] = [];
 
-    for (let i = 0; i < pieces.length; i++) {
-        renderedPieces.push(renderPiece(pieces[i] as DurationPiece, language, options));
+    // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-restricted-syntax,no-underscore-dangle
+    for (const piece_ of pieces) {
+        const piece = piece_ as DurationPiece;
+
+        renderedPieces.push(renderPiece(piece, language, options));
     }
 
     let result: string;
@@ -218,47 +291,50 @@ const formatPieces = (pieces: DurationPiece[], options: Required<DurationOptions
     return result;
 };
 
-const duration = (milliseconds: number | bigint, options?: DurationOptions) => {
-    const isBigInt = typeof milliseconds === "bigint";
-
-    if (!isBigInt && !Number.isFinite(milliseconds)) {
-        throw new TypeError("Expected a finite number or bigint");
+const duration = (milliseconds: bigint | number, options?: DurationOptions): string => {
+    if (Number.isNaN(milliseconds)) {
+        throw new TypeError("Expected a valid number");
     }
 
+    if (typeof milliseconds !== "number" && typeof milliseconds !== "bigint") {
+        throw new TypeError("Expected a number or BigInt");
+    }
+
+    const isBigInt = typeof milliseconds === "bigint";
+
+    // eslint-disable-next-line no-param-reassign
     milliseconds = isBigInt ? Number(milliseconds) : milliseconds;
 
     const config = {
-        language: durationLanguage,
-        spacer: " ",
         conjunction: "",
-        serialComma: true,
-        units: ["y", "mo", "w", "d", "h", "m", "s"],
+        language: durationLanguage,
         round: false,
-        unitMeasures: {
-            y: 31557600000,
-            mo: 2629800000,
-            w: 604800000,
-            d: 86400000,
-            h: 3600000,
-            m: 60000,
-            s: 1000,
-            ms: 1,
-        },
+        serialComma: true,
+        spacer: " ",
         timeAdverb: false,
+        unitMeasures: {
+            d: 86_400_000,
+            h: 3_600_000,
+            m: 60_000,
+            mo: 2_629_746_000, // 365.2425 / 12 = 30.436875 days
+            ms: 1,
+            s: 1000,
+            w: 604_800_000,
+            y: 31_556_952_000, // 365 + 1/4 - 1/100 + 1/400 (actual leap day rules) = 365.2425 days
+        },
+        units: ["w", "d", "h", "m", "s"],
         ...options,
-    } as Required<DurationOptions>;
-
-    if (!config.language) {
-        throw new Error("No language provided");
-    }
+    } as InternalOptions;
 
     validateDurationLanguage(config.language);
 
-    const absTime = Math.abs(milliseconds);
+    // Has the nice side-effect of converting things to numbers. For example,
+    // converts `"123"` and `Number(123)` to `123`.
+    const absTime = Math.abs(milliseconds as number);
 
     const pieces = getPieces(absTime, config);
 
-    return formatPieces(pieces, config, absTime);
+    return formatPieces(pieces, config, milliseconds as number);
 };
 
 export default duration;
