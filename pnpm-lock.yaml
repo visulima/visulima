@@ -2612,6 +2612,18 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(@types/node@18.18.14)(@vitest/ui@1.4.0)(jsdom@24.0.0)
 
+  packages/humanizer/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/humanizer':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/humanizer/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/humanizer':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/is-ansi-color-supported:
     devDependencies:
       '@anolilab/eslint-config':

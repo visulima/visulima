@@ -1,9 +1,9 @@
 import ms from "ms";
 import { describe, expect, it } from "vitest";
 
-import duration from "../src/duration";
-import { durationLanguage as trDurationLanguage } from "../src/language/tr";
-import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../src/types";
+import duration from "../../src/duration";
+import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
+import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
 
 describe("duration", () => {
     it("should throw a error on invalid input", () => {

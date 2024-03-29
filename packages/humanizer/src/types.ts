@@ -94,6 +94,13 @@ export interface FormateByteOptions<ByteSize>
     long?: boolean;
 
     /**
+     * Whether to include a space between the number and the unit.
+     *
+     * @default true
+     */
+    space?: boolean;
+
+    /**
      * Specify the unit to use for the output.
      *
      * Uses the closest unit to the given value per default.

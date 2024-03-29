@@ -67,8 +67,7 @@ const fromBase = (base: 2 | 10) => {
         return 1000;
     }
 
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    throw new TypeError(`Unsupported base. base=${base}`);
+    throw new TypeError(`Unsupported base.`);
 };
 
 /**
@@ -86,11 +85,11 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     } as Required<ParseByteOptions>;
 
     if (typeof value !== "string" || value.length === 0) {
-        throw new TypeError(`Value is not a string or is empty. value=${JSON.stringify(value)}`);
+        throw new TypeError("Value is not a string or is empty.");
     }
 
     if (value.length > 100) {
-        throw new TypeError(`Value exceeds the maximum length of 100 characters. value=${JSON.stringify(value)}`);
+        throw new TypeError("Value exceeds the maximum length of 100 characters.");
     }
 
     const match =
@@ -122,7 +121,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     const base = fromBase(config.base);
 
     return localizedNumber * base ** level;
-}
+};
 
 /**
  * Formats the given bytes into a human-readable string.
@@ -133,7 +132,7 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
  */
 export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize>): string => {
     if (typeof bytes !== "number" || !Number.isFinite(bytes)) {
-        throw new TypeError(`Bytesize is not a number. bytes=${Number.isNaN(bytes) ? "NaN" : JSON.stringify(bytes)}`);
+        throw new TypeError("Bytesize is not a number.");
     }
 
     const {
@@ -153,14 +152,15 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const base = fromBase(givenBase as 2 | 10);
 
     const absoluteBytes = Math.abs(bytes);
+    const space = options?.space ?? true ? " " : "";
 
     const requestedUnitIndex = BYTE_SIZES.findIndex((unit) => unit.short === requestedUnit);
 
     if (bytes === 0) {
         const level = Math.min(0, Math.max(requestedUnitIndex, BYTE_SIZES.length - 1));
 
-        // eslint-disable-next-line security/detect-object-injection
-        return `0 ${(BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"]}`;
+        // eslint-disable-next-line security/detect-object-injection,prefer-template
+        return "0" + space + (BYTE_SIZES[level] as { long: string; short: string })[long ? "long" : "short"];
     }
 
     const level = requestedUnitIndex >= 0 ? requestedUnitIndex : Math.min(Math.floor(Math.log(absoluteBytes) / Math.log(base)), BYTE_SIZES.length - 1);
@@ -175,5 +175,5 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
         ...l10nOptions,
     }).format(value);
 
-    return `${formattedValue} ${unit}`;
-}
+    return formattedValue + space + unit;
+};

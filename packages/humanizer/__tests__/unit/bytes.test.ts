@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatBytes, parseBytes } from "../src/bytes";
+import { formatBytes, parseBytes } from "../../src/bytes";
 
 describe("formatBytes", () => {
     it("should use the closest unit without any decimals in a short format", () => {
@@ -19,13 +19,20 @@ describe("formatBytes", () => {
         expect.assertions(1);
 
         // @ts-expect-error - Testing invalid input
-        expect(() => formatBytes(50, { base: 3 })).toThrow("Unsupported base. base=3");
+        expect(() => formatBytes(50, { base: 3 })).toThrow("Unsupported base.");
     });
 
     it("should use the specified unit", () => {
         expect.assertions(1);
 
         expect(formatBytes(50.4 * 1024 * 1024, { unit: "KB" })).toBe("51,610 KB");
+    });
+
+    it('should dont display a space between number and unit if space option is false', () => {
+        expect.assertions(2);
+
+        expect(formatBytes(50.4 * 1024 * 1024, { space: false })).toBe("50MB");
+        expect(formatBytes(0, { space: false })).toBe("0Bytes");
     });
 
     it("should use the specified number of decimals", () => {
@@ -62,13 +69,13 @@ describe("formatBytes", () => {
         expect.assertions(1);
 
         // @ts-expect-error - Testing invalid input
-        expect(() => formatBytes("50")).toThrow('Bytesize is not a number. bytes="50"');
+        expect(() => formatBytes("50")).toThrow('Bytesize is not a number.');
     });
 
     it("should throw an error when passing an invalid value", () => {
         expect.assertions(1);
 
-        expect(() => formatBytes(Number.NaN)).toThrow("Bytesize is not a number. bytes=NaN");
+        expect(() => formatBytes(Number.NaN)).toThrow("Bytesize is not a number.");
     });
 
     it("should return 0 Bytes", () => {
@@ -118,19 +125,19 @@ describe("parseBytes", () => {
     it("should throw an error with an empty string", () => {
         expect.assertions(1);
 
-        expect(() => parseBytes("")).toThrow('Value is not a string or is empty. value=""');
+        expect(() => parseBytes("")).toThrow('Value is not a string or is empty.');
     });
 
     it("should throw an error with a number", () => {
         expect.assertions(1);
 
         // @ts-expect-error - Testing invalid input
-        expect(() => parseBytes(50)).toThrow("Value is not a string or is empty. value=50");
+        expect(() => parseBytes(50)).toThrow("Value is not a string or is empty.");
     });
 
     it("should throw an error with a string that exceeds 100 characters", () => {
         expect.assertions(1);
 
-        expect(() => parseBytes("x".repeat(101))).toThrow(`Value exceeds the maximum length of 100 characters. value="${"x".repeat(101)}"`);
+        expect(() => parseBytes("x".repeat(101))).toThrow("Value exceeds the maximum length of 100 characters.");
     });
 });
