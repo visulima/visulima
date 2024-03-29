@@ -671,7 +671,7 @@ duration(97320000);
 
 You can change the settings by passing options as the second argument.
 
-##### `units`
+##### units
 
 Array of possible units to use. Units are `y`, `mo`, `w`, `d`, `h`, `m`, `s`, and `ms`.
 
@@ -869,11 +869,26 @@ duration(2629800000, {
 // => "1 month, 10 hours, 30 minutes"
 ```
 
-##### Supported languages
+#### language
 
-> Language for unit display. Accepts an [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) from one of the supported languages.
->
-> Default: "en".
+Language for unit display.
+Accepts an [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) from one of the [supported languages](#supported-languages).
+
+Default: `"en"`.
+
+```js
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+import { durationLanguage as ko } from "@visulima/humanizer/language/ko";
+
+duration(3000, { language: es });
+// => "3 segundos"
+
+duration(5000, { language: ko });
+// => "5 초"
+```
+
+###### Supported languages
 
 `duration` supports the following languages:
 
