@@ -1,0 +1,8 @@
+{
+    "name": "humanizer-esm",
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/humanizer": "workspace:*"
+    }
+}
