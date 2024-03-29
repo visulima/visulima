@@ -66,14 +66,14 @@
                 "default": "./dist/index.js"
             }
         },
-        "./duration/language/af": {
+        "./language/*": {
             "require": {
-                "types": "./dist/language/af.d.cts",
-                "default": "./dist/language/af.cjs"
+                "types": "./dist/language/*.d.cts",
+                "default": "./dist/language/*.cjs"
             },
             "import": {
-                "types": "./dist/language/af.d.ts",
-                "default": "./dist/language/af.js"
+                "types": "./dist/language/*.d.ts",
+                "default": "./dist/language/*.js"
             }
         },
         "./package.json": "./package.json"
