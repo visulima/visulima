@@ -1,15 +1,16 @@
 import { stat } from "node:fs/promises";
 import Module from "node:module";
-import { versions, env, cwd, exit } from "node:process"
+import { cwd, env, exit, versions } from "node:process";
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
-import { ensureDir, remove, walk } from "@visulima/fs";
-import type { PackageJson, TsConfigResult } from "@visulima/package";
-import { findPackageJson, findTSConfig } from "@visulima/package";
+import { ensureDir, isAccessible, remove, walk } from "@visulima/fs";
+import { formatBytes } from "@visulima/humanizer";
+import type { PackageJson } from "@visulima/package";
+import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
+import type { TsConfigJsonResolved } from "@visulima/package/src";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
-import prettyBytes from "pretty-bytes";
 
 import rollupBuild from "./builder/rollup";
 import logger from "./logger";
@@ -31,7 +32,7 @@ const build = async (
     inputConfig: BuildConfig,
     buildConfig: BuildConfig,
     package_: PackEmPackageJson,
-    tsConfig: TsConfigResult | undefined,
+    tsConfigContent: TsConfigJsonResolved | undefined,
     cleanedDirectories: string[],
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
@@ -65,11 +66,7 @@ const build = async (
             esbuild: {
                 minify: env["NODE_ENV"] === "production",
                 target: [`node${versions.node}`],
-                loaders: {
-                    // Add .json files support
-                    // require @rollup/plugin-commonjs
-                    // ".json": "json",
-                },
+                tsconfigRaw: tsConfigContent,
             },
             inlineDependencies: false,
             json: {
@@ -107,6 +104,8 @@ const build = async (
         hooks: createHooks(),
         options,
         pkg: package_,
+        rootDir,
+        tsconfig: tsConfigContent,
         usedImports: new Set(),
         warnings: new Set(),
     };
@@ -224,26 +223,27 @@ const build = async (
     const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
 
     for (const entry of context.buildEntries.filter((e) => !e.chunk)) {
-        let totalBytes = entry.bytes || 0;
+        let totalBytes = entry.bytes ?? 0;
 
-        for (const chunk of entry.chunks || []) {
-            totalBytes += context.buildEntries.find((e) => e.path === chunk)?.bytes || 0;
+        for (const chunk of entry.chunks ?? []) {
+            totalBytes += context.buildEntries.find((e) => e.path === chunk)?.bytes ?? 0;
         }
 
         let line = `  ${bold(rPath(entry.path))} (${[
-            totalBytes && `total size: ${cyan(prettyBytes(totalBytes))}`,
-            entry.bytes && `chunk size: ${cyan(prettyBytes(entry.bytes))}`,
-            entry.exports?.length && `exports: ${gray(entry.exports.join(", "))}`,
+            totalBytes && `total size: ${cyan(formatBytes(totalBytes))}`,
+            entry.bytes && `chunk size: ${cyan(formatBytes(entry.bytes))}`,
         ]
             .filter(Boolean)
             .join(", ")})`;
+
+        line += entry.exports?.length ? `\n  exports: ${gray(entry.exports.join(", "))}` : "";
 
         if (entry.chunks?.length) {
             line += `\n${entry.chunks
                 .map((p) => {
                     const chunk = context.buildEntries.find((e) => e.path === p) || ({} as any);
 
-                    return gray(`  └─ ${rPath(p)}${bold(chunk.bytes ? ` (${prettyBytes(chunk?.bytes)})` : "")}`);
+                    return gray(`  └─ ${rPath(p)}${bold(chunk.bytes ? ` (${formatBytes(chunk?.bytes)})` : "")}`);
                 })
                 .join("\n")}`;
         }
@@ -252,14 +252,14 @@ const build = async (
             line += `\n${entry.modules
                 .filter((m) => m.id.includes("node_modules"))
                 .sort((a, b) => (b.bytes || 0) - (a.bytes || 0))
-                .map((m) => gray(`  📦 ${rPath(m.id)}${bold(m.bytes ? ` (${prettyBytes(m.bytes)})` : "")}`))
+                .map((m) => gray(`  📦 ${rPath(m.id)}${bold(m.bytes ? ` (${formatBytes(m.bytes)})` : "")}`))
                 .join("\n")}`;
         }
 
-        logger.raw(entry.chunk ? gray(line) : line);
+        logger.raw(entry.chunk ? gray(line + "\n") : line + "\n");
     }
 
-    logger.info("Σ Total dist size (byte size):", cyan(prettyBytes(context.buildEntries.reduce((a, e) => a + (e.bytes || 0), 0))));
+    logger.raw("\nΣ Total dist size (byte size):", cyan(formatBytes(context.buildEntries.reduce((index, entry) => index + (entry.bytes ?? 0), 0))));
 
     // Validate
     validateDependencies(context);
@@ -275,31 +275,52 @@ const build = async (
 
         if (context.options.failOnWarn) {
             logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
-            // eslint-disable-next-line unicorn/no-process-exit
+
             exit(1);
         }
     }
 };
 
-export const createBundler = async (rootDir: string, stub: boolean, inputConfig: BuildConfig = {}): Promise<void> => {
-    // Determine rootDir
+export const createBundler = async (
+    rootDirectory: string,
+    stub: boolean,
+    inputConfig: BuildConfig & {
+        tsconfigPath?: string;
+    } = {},
+): Promise<void> => {
+    const { tsconfigPath, ...otherInputConfig } = inputConfig;
+    // Determine rootDirectory
     // eslint-disable-next-line no-param-reassign
-    rootDir = resolve(cwd(), rootDir);
+    rootDirectory = resolve(cwd(), rootDirectory);
 
-    let tsConfig: TsConfigResult | undefined;
+    let tsConfigContent: TsConfigJsonResolved | undefined;
 
-    try {
-        tsConfig = await findTSConfig(rootDir);
+    if (tsconfigPath) {
+        if (! await isAccessible(tsconfigPath)) {
+            logger.error("tsconfig.json not found at", tsconfigPath);
 
-        logger.debug("Using tsconfig.json found at", (tsConfig as TsConfigResult).path);
-    } catch {
-        logger.info("No tsconfig.json found. Using default settings.");
+            exit(1);
+        }
+
+        tsConfigContent = readTsConfig(tsconfigPath);
+
+        logger.debug("Using tsconfig.json found at", tsconfigPath);
+    } else {
+        try {
+            const foundTsconfig = await findTSConfig(rootDirectory);
+
+            tsConfigContent = foundTsconfig.config;
+
+            logger.debug("Using tsconfig.json found at", foundTsconfig.path);
+        } catch {
+            logger.info("No tsconfig.json found. Using default settings.");
+        }
     }
 
-    const { packageJson } = await findPackageJson(rootDir);
+    const { packageJson } = await findPackageJson(rootDirectory);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _buildConfig: BuildConfig | BuildConfig[] = tryRequire("./packem.config", rootDir) || {};
+    const _buildConfig: BuildConfig | BuildConfig[] = tryRequire("./packem.config", rootDirectory) || {};
 
     const buildConfigs = (Array.isArray(_buildConfig) ? _buildConfig : [_buildConfig]).filter(Boolean);
 
@@ -309,6 +330,6 @@ export const createBundler = async (rootDir: string, stub: boolean, inputConfig:
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const buildConfig of buildConfigs) {
         // eslint-disable-next-line no-await-in-loop
-        await build(rootDir, stub, inputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfig, cleanedDirectories);
+        await build(rootDirectory, stub, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfigContent, cleanedDirectories);
     }
 };

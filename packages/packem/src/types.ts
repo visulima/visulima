@@ -1,13 +1,14 @@
 import type { RollupAliasOptions } from "@rollup/plugin-alias";
+import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
-import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
-import type { PackageJson } from "@visulima/package";
+import type { PackageJson, TsConfigJsonResolved } from "@visulima/package";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
+
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -94,12 +95,18 @@ export interface BuildContext {
     hooks: Hookable<BuildHooks>;
     options: BuildOptions;
     pkg: PackageJson;
+    rootDir: string;
+    tsconfig?: TsConfigJsonResolved;
     usedImports: Set<string>;
     warnings: Set<string>;
 }
 
 export type BuildPreset = BuildConfig | (() => BuildConfig);
 
+/**
+ * In addition to basic `entries`, `presets`, and `hooks`,
+ * there are also all the properties of `BuildOptions` except for BuildOptions's `entries`.
+ */
 export interface BuildConfig extends DeepPartial<Omit<BuildOptions, "entries">> {
     entries?: (BuildEntry | string)[];
     hooks?: Partial<BuildHooks>;
@@ -107,8 +114,8 @@ export interface BuildConfig extends DeepPartial<Omit<BuildOptions, "entries">> 
 }
 
 export type InferEntriesResult = {
-  cjs?: boolean;
-  dts?: boolean;
-  entries: BuildEntry[];
-  warnings: string[];
+    cjs?: boolean;
+    dts?: boolean;
+    entries: BuildEntry[];
+    warnings: string[];
 };

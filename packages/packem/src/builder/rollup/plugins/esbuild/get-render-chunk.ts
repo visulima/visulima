@@ -1,5 +1,7 @@
-import { Plugin, InternalModuleFormat } from "rollup";
-import { transform, TransformOptions, Format } from "esbuild";
+import type { Format, TransformOptions } from "esbuild";
+import {transform } from "esbuild";
+import type { InternalModuleFormat,Plugin } from "rollup";
+
 import warn from "./warn";
 
 const getEsbuildFormat = (rollupFormat: InternalModuleFormat): Format | undefined => {

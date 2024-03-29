@@ -7,23 +7,24 @@ import type { OutputOptions, PreRenderedChunk, RollupOptions } from "rollup";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
-import { arrayIncludes } from "../../utils/array-includes";
-import { getPackageName } from "../../utils/get-package-name";
+import arrayIncludes from "../../utils/array-includes";
+import arrayify from "../../utils/arrayify";
+import getPackageName from "../../utils/get-package-name";
 import warn from "../../utils/warn";
 import getChunkFilename from "./get-chunk-filename";
 import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
+import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
 import { rawPlugin } from "./plugins/raw";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
-import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
-import { arrayify } from "../../utils/arrayify";
 
 const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{
         external(id) {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const package_ = getPackageName(id);
             const isExplicitExternal: boolean = arrayIncludes(context.options.externals, package_) || arrayIncludes(context.options.externals, id);
 
@@ -31,7 +32,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 return true;
             }
 
-            if (context.options.rollup.inlineDependencies || id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(context.pkg.name!)) {
+            if (context.options.rollup.inlineDependencies || id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(context.pkg.name)) {
                 return false;
             }
 
@@ -84,8 +85,6 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
         plugins: [
             externalizeNodeBuiltins({ target: arrayify(context.options.rollup.esbuild.target) }),
             resolveTypescriptMjsCts(),
-            // externalizeNodeBuiltins(ctx.options.rollup.externalizeNodeBuiltins),
-            // resolveTypescriptMjsCts(),
             context.options.rollup.replace &&
                 replace({
                     ...context.options.rollup.replace,
@@ -133,7 +132,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 },
             },
 
-            context.options.rollup.cjsBridge && cjsPlugin({}),
+            context.options.rollup.cjsBridge && cjsPlugin(),
 
             // patchBinary(executablePaths),
 

@@ -1,17 +1,19 @@
-import { existsSync, statSync } from "fs";
-import { extname, resolve, dirname, join } from "pathe";
-import type { Plugin as RollupPlugin } from "rollup";
+import { existsSync, statSync } from "node:fs";
+
+import { createFilter } from "@rollup/pluginutils";
+import { findTSConfigSync } from "@visulima/package";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
-import { createFilter } from "@rollup/pluginutils";
+import { dirname, extname, join,resolve } from "pathe";
+import type { Plugin as RollupPlugin } from "rollup";
+
+import logger from "../../../../logger";
 import { getRenderChunk } from "./get-render-chunk";
 import { optimizeDeps as doOptimizeDeps } from "./optmize-deps";
-import { findTSConfigSync } from "@visulima/package";
+import type { OptimizeDepsResult,Options } from "./types";
 import warn from "./warn";
-import type { Options, OptimizeDepsResult } from "./types";
-import logger from "../../../../logger";
 
-const defaultLoaders: { [ext: string]: Loader } = {
+const defaultLoaders: Record<string, Loader> = {
     ".js": "js",
     ".jsx": "jsx",
     ".ts": "ts",
@@ -25,7 +27,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
 
     if (_loaders) {
         for (let [key, value] of Object.entries(_loaders)) {
-            key = key[0] === "." ? key : `.${key}`;
+            key = key.startsWith(".") ? key : `.${key}`;
 
             if (typeof value === "string") {
                 loaders[key] = value;
@@ -36,16 +38,16 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
     }
 
     const extensions: string[] = Object.keys(loaders);
-    const INCLUDE_REGEXP = new RegExp(`\\.(${extensions.map((ext) => ext.slice(1)).join("|")})$`);
+    const INCLUDE_REGEXP = new RegExp(`\\.(${extensions.map((extension) => extension.slice(1)).join("|")})$`);
     const EXCLUDE_REGEXP = /node_modules/;
 
     const filter = createFilter(include || INCLUDE_REGEXP, exclude || EXCLUDE_REGEXP);
 
-    const resolveFile = (resolved: string, index: boolean = false) => {
-        const fileWithoutExt = resolved.replace(/\.[jt]sx?$/, "");
+    const resolveFile = (resolved: string, index = false) => {
+        const fileWithoutExtension = resolved.replace(/\.[jt]sx?$/, "");
 
-        for (const ext of extensions) {
-            const file = index ? join(resolved, `index${ext}`) : `${fileWithoutExt}${ext}`;
+        for (const extension of extensions) {
+            const file = index ? join(resolved, `index${extension}`) : `${fileWithoutExtension}${extension}`;
 
             if (existsSync(file)) {
                 return file;
@@ -59,17 +61,9 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
     let cwd = process.cwd();
 
     return {
-        name: "esbuild",
-
-        options({ context }) {
-            if (context) {
-                cwd = context;
-            }
-            return null;
-        },
-
         async buildStart() {
-            if (!optimizeDeps || optimizeDepsResult) return;
+            if (!optimizeDeps || optimizeDepsResult)
+return;
 
             optimizeDepsResult = await doOptimizeDeps({
                 cwd,
@@ -80,7 +74,21 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             logger.debug("optimized %O", optimizeDepsResult.optimized);
         },
 
-        async resolveId(id, importer): Promise<undefined | string> {
+        name: "esbuild",
+
+        options({ context }) {
+            if (context) {
+                cwd = context;
+            }
+            return null;
+        },
+
+        renderChunk: getRenderChunk({
+            ...esbuildOptions,
+            sourceMap,
+        }),
+
+        async resolveId(id, importer): Promise<string | undefined> {
             if (optimizeDepsResult?.optimized.has(id)) {
                 const m = optimizeDepsResult.optimized.get(id)!;
 
@@ -115,20 +123,20 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 return null;
             }
 
-            const ext = extname(id);
-            const loader = loaders[ext];
+            const extension = extname(id);
+            const loader = loaders[extension];
 
             if (!loader) {
                 return null;
             }
 
             const result = await transform(code, {
-                loader,
-                sourcemap: sourceMap,
-                sourcefile: id,
-                tsconfigRaw: tsconfig,
-                target: "es2020",
                 format: (["base64", "binary", "dataurl", "text", "json"] satisfies Loader[] as Loader[]).includes(loader) ? "esm" : undefined,
+                loader,
+                sourcefile: id,
+                sourcemap: sourceMap,
+                target: "es2020",
+                tsconfigRaw: tsconfig,
                 ...esbuildOptions,
             });
 
@@ -141,10 +149,5 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 }
             );
         },
-
-        renderChunk: getRenderChunk({
-            ...esbuildOptions,
-            sourceMap,
-        }),
     };
 };

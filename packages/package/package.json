@@ -137,7 +137,7 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development packem",
+        "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",

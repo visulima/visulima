@@ -31,9 +31,6 @@
     },
     "sideEffects": false,
     "type": "module",
-    "bin": {
-        "packem": "./dist/cli.cjs"
-    },
     "exports": {
         ".": {
             "require": {
@@ -50,6 +47,9 @@
     "main": "./dist/create-bundler.cjs",
     "module": "./dist/create-bundler.mjs",
     "types": "./dist/create-bundler.d.ts",
+    "bin": {
+        "packem": "./dist/cli.cjs"
+    },
     "files": [
         "dist/**",
         "README.md",
@@ -72,47 +72,31 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "hookable": "^5.5.3",
-        "jiti": "^1.21.0",
-        "mlly": "^1.6.1",
-        "pathe": "^1.1.2",
-        "pretty-bytes": "^6.1.1",
-        "defu": "6.1.4",
-        "@visulima/package": "workspace:*",
-        "@visulima/colorize": "workspace:*",
-        "@visulima/pail": "workspace:*",
-        "@visulima/cerebro": "workspace:*",
-        "@visulima/fs": "workspace:*",
         "@rollup/plugin-alias": "^5.1.0",
-        "@rollup/plugin-inject": "^5.0.5",
         "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-inject": "^5.0.5",
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-replace": "^5.0.5",
         "@rollup/pluginutils": "^5.1.0",
+        "@visulima/cerebro": "workspace:*",
+        "@visulima/colorize": "workspace:*",
+        "@visulima/fs": "workspace:*",
+        "@visulima/humanizer": "workspace:*",
+        "@visulima/package": "workspace:*",
+        "@visulima/pail": "workspace:*",
+        "defu": "6.1.4",
         "es-module-lexer": "^1.3.1",
-        "magic-string": "^0.30.5",
         "esbuild": "^0.20.1",
+        "hookable": "^5.5.3",
+        "jiti": "^1.21.0",
+        "magic-string": "^0.30.5",
+        "mlly": "^1.6.1",
+        "pathe": "^1.1.2",
         "rollup": "^4.12.0",
         "rollup-plugin-dts": "^6.1.0"
     },
-    "peerDependencies": {
-        "postcss": "^8.4.12",
-        "typescript": "^5.3.3"
-    },
-    "peerDependenciesMeta": {
-        "typescript": {
-            "optional": true
-        },
-        "postcss": {
-            "optional": true
-        },
-        "@swc/core": {
-            "optional": true
-        }
-    },
     "devDependencies": {
-        "ts-essentials": "^9.4.1",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
@@ -136,8 +120,24 @@
         "secretlint": "8.1.2",
         "semantic-release": "^23.0.2",
         "sort-package-json": "^2.7.0",
+        "ts-essentials": "^9.4.1",
         "typescript": "^5.3.3",
         "vitest": "^1.3.1"
+    },
+    "peerDependencies": {
+        "postcss": "^8.4.12",
+        "typescript": "^5.3.3"
+    },
+    "peerDependenciesMeta": {
+        "@swc/core": {
+            "optional": true
+        },
+        "postcss": {
+            "optional": true
+        },
+        "typescript": {
+            "optional": true
+        }
     },
     "engines": {
         "node": ">=18.* <=21.*"

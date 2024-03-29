@@ -1,5 +1,6 @@
-import { PluginContext } from 'rollup'
-import { formatMessages, Message } from 'esbuild'
+import type { Message } from 'esbuild';
+import { formatMessages } from 'esbuild'
+import type { PluginContext } from 'rollup'
 
 const warn = async (
   pluginContext: PluginContext,
@@ -7,8 +8,8 @@ const warn = async (
 ) => {
   if (messages.length > 0) {
     const warnings = await formatMessages(messages, {
-      kind: 'warning',
       color: true,
+      kind: 'warning',
     })
     warnings.forEach((warning) => pluginContext.warn(warning))
   }

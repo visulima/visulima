@@ -32,6 +32,7 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-member-access": "off",
 
                 "compat/compat": "off",
+                "prefer-template": "off",
             },
         },
         {

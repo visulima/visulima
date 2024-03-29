@@ -11,9 +11,15 @@ const cli = new Cli("packem", {
 cli.addCommand({
     description: "Demonstrate options required",
     execute: async ({ options }): Promise<void> => {
-        // const rootDir = resolve(process.cwd(), args.dir || ".");
-
-        await createBundler(options.dir, false, {});
+        await createBundler(options.dir ?? ".", false, {
+            rollup: {
+                esbuild: {
+                    minify: options.minify,
+                    target: options.target,
+                },
+            },
+            sourcemap: options.sourcemap,
+        });
     },
     name: "build",
     options: [
@@ -28,7 +34,36 @@ cli.addCommand({
             description: "Environments to support. `target` in tsconfig.json is automatically added. Defaults to the current Node.js version.",
             name: "target",
         },
+        {
+            description: "Path to the tsconfig.json file",
+            name: "tsconfig",
+            type: String,
+        },
+        {
+            description: "Minify the output",
+            name: "minify",
+            type: Boolean,
+        },
+        {
+            description: "Generate sourcemaps (experimental)",
+            name: "sourcemap",
+            type: Boolean,
+        },
+        {
+            description: "Compile-time environment variables (eg. --env.NODE_ENV=production)",
+            name: "env",
+            type: (input: string) => {
+                const [key, value] = input.split("=");
+
+                return {
+                    key,
+                    value,
+                };
+            },
+        },
     ],
 });
+
+cli.setDefaultCommand("build");
 
 cli.run();
