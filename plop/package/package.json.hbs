@@ -1,94 +1,108 @@
 {
-    "name": "@visulima/{{name}}",
-    "version": "2.1.0",
+    "name": "@visulima/{{packageName}}",
+    "version": "0.0.0",
     "description": "{{description}}",
     "keywords": [
-        "anolilab",
         "visulima",
-        "thehoneybee",
-        "react",
-        "blitz",
-        "blitzjs"
+        "{{packageName}}"
     ],
-    "homepage": "https://visulima.com/packages/{{name}}",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/{{path}}/{{name}}"
-    },
-    "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://visulima.io",
+    "license": "MIT",
+    "main": "src/index.ts",
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
-            "types": "./dist/index-server.d.ts",
-            "require": "./dist/index-server.js",
-            "import": "./dist/index-server.mjs"
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index-server.js",
-    "module": "dist/index-server.mjs",
-    "browser": "./dist/index-browser.mjs",
-    "types": "dist/index-server.d.ts",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "browser": "./dist/index.js",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
     "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
+        "dist"
     ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/{{packageName}}"
+    },
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
-        "clean": "rm -rf node_modules && rm -rf dist",
-        "dev": "pnpm predev && pnpm run build --watch",
-        "lint:eslint": "eslint . --ext js,jsx,ts,tsx --max-warnings=0 --config .eslintrc.js --cache --cache-strategy content . --cache --cache-strategy content .",
-        "lint:eslint:fix": "pnpm run lint:eslint --fix"
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
     },
-    "dependencies": {
-    },
-    "devDependencies": {
-        "@total-typescript/ts-reset": "^0.4.2",
-        "type-fest": "^3.12.0",
-        "@anolilab/eslint-config": "^6.1.0",
-        "@anolilab/semantic-release-preset": "^2.0.7",
-        "@rushstack/eslint-plugin-security": "^0.3.1",
-        "@testing-library/react": "^13.3.0",
-        "@testing-library/react-hooks": "^8.0.1",
-        "@types/node": "18.18.14",
-        "@types/react": "^18.0.15",
-        "@types/react-dom": "^18.0.6",
-        "@typescript-eslint/eslint-plugin": "^5.30.6",
-        "@typescript-eslint/parser": "^5.30.6",
-        "cross-env": "^7.0.3",
-        "eslint": "^8.20.0",
-        "prettier": "^2.7.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "read-pkg": "^7.1.0",
-        "semantic-release": "^19.0.3",
-        "tsup": "^6.1.3",
-        "typescript": "^4.7.4",
-        "unbuild": "^0.7.4"
-    },
-    "peerDependencies": {
-        "react": "^17.0.0 || ^18.0.0",
-        "react-dom": "^17.0.0 || ^18.0.0"
+    "engines": {
+        "node": ">=18.* <=21.*"
     },
     "publishConfig": {
         "access": "public",
         "provenance": true
     },
-    "engines": {
-        "node": ">=16.18.0 <=21.*"
-    },
-    "pnpm": {
-        "overrides": {
-            "got@<11.8.5": ">=11.8.5",
-            "moment@>=2.18.0 <2.29.4": ">=2.29.4"
-        }
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-preset": "^8.0.3",
+        "@babel/core": "^7.24.3",
+        "@rushstack/eslint-plugin-security": "^0.8.1",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
+        "@types/micromatch": "^4.0.6",
+        "@types/node": "18.18.14",
+        "@vitest/coverage-v8": "^1.4.0",
+        "@vitest/ui": "^1.4.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.57.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.3.26",
+        "eslint-plugin-vitest-globals": "^1.5.0",
+        "prettier": "^3.2.5",
+        "rimraf": "^5.0.5",
+        "secretlint": "8.1.2",
+        "semantic-release": "^23.0.5",
+        "sort-package-json": "^2.8.0",
+        "tsup": "^8.0.2",
+        "typescript": "^5.4.3",
+        "vitest": "^1.4.0"
     }
 }
