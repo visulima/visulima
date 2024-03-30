@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.4](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.3...@visulima/pail@1.1.4) (2024-03-30)
+
+
+### Bug Fixes
+
+* **pail:** fixed wrong function call on wrapConsole ([0ae24cf](https://github.com/visulima/visulima/commit/0ae24cf287723e1ca108846d4bef4377974f8ad9))
+
 ## @visulima/pail [1.1.3](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.2...@visulima/pail@1.1.3) (2024-03-27)
 
 
