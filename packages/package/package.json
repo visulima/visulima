@@ -147,7 +147,7 @@
         "normalize-package-data": "^6.0.0",
         "pathe": "^1.1.2",
         "resolve-pkg-maps": "^1.0.0",
-        "type-fest": "^4.13.1"
+        "type-fest": "^4.14.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -167,14 +167,14 @@
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
-        "eslint-plugin-vitest": "^0.3.26",
+        "eslint-plugin-vitest": "^0.4.0",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "execa": "^8.0.1",
         "npm": "^10.5.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
-        "semantic-release": "^23.0.5",
-        "sort-package-json": "^2.8.0",
+        "semantic-release": "^23.0.6",
+        "sort-package-json": "^2.10.0",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
         "tsup": "^8.0.2",
