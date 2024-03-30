@@ -144,9 +144,8 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
             }
             // Override
             // @TODO: Fix typings
-            // @ts-expect-error - dynamic property
             // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-            (console as any)[type] = (this as unknown as PailBrowserImpl<T, L>)[type as keyof PailBrowserImpl<T, L>].log;
+            (console as any)[type] = (this as unknown as PailBrowserImpl<T, L>)[type as keyof PailBrowserImpl<T, L>];
         }
     }
 
