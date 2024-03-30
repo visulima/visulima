@@ -372,6 +372,9 @@ const createBundler = async (
         // eslint-disable-next-line no-await-in-loop
         await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfigContent, cleanedDirectories);
     }
+
+    // Restore all wrapped console methods
+    logger.restoreAll();
 };
 
 export default createBundler;

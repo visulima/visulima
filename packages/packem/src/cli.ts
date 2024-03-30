@@ -14,20 +14,20 @@ cli.addCommand({
     execute: async ({ options }): Promise<void> => {
         let mode: Mode = "build";
 
-        if (options.watch) {
+        if (options["watch"]) {
             mode = "watch";
-        } else if (options.jit) {
+        } else if (options["jit"]) {
             mode = "jit";
         }
 
-        await createBundler(options.dir ?? ".", mode, {
+        await createBundler(options["dir"] ?? ".", mode, {
             rollup: {
                 esbuild: {
-                    minify: options.minify,
-                    target: options.target,
+                    minify: options["minify"],
+                    target: options["target"],
                 },
             },
-            sourcemap: options.sourcemap,
+            sourcemap: options["sourcemap"],
         });
     },
     name: "build",
@@ -73,6 +73,7 @@ cli.addCommand({
         {
             description: "Compile-time environment variables (eg. --env.NODE_ENV=production)",
             name: "env",
+            // @ts-expect-error -- wrong type
             type: (input: string) => {
                 const [key, value] = input.split("=");
 
