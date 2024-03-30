@@ -1,3 +1,21 @@
+## @visulima/nextra-theme-docs [4.0.20](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.19...@visulima/nextra-theme-docs@4.0.20) (2024-03-30)
+
+
+### Bug Fixes
+
+* updated dev dependencies and react-medium-image-zoom ([2bba6a9](https://github.com/visulima/visulima/commit/2bba6a90670b6e12a1c273442d207a320978b448))
+
+
+### Miscellaneous Chores
+
+* fixed found issues on windows ([#370](https://github.com/visulima/visulima/issues/370)) ([93c0807](https://github.com/visulima/visulima/commit/93c0807b2b7e71c50b28077f8c4d74acaceec56c))
+* updated dev dependencies ([702df73](https://github.com/visulima/visulima/commit/702df73d5e973cc7499a7782160411a96604ee4d))
+
+
+### Continuous Integration
+
+* improved vitest and tsup config ([#367](https://github.com/visulima/visulima/issues/367)) ([82fb585](https://github.com/visulima/visulima/commit/82fb585da639c916b770afe6617d735d15a4195c))
+
 ## @visulima/nextra-theme-docs [4.0.19](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.18...@visulima/nextra-theme-docs@4.0.19) (2024-03-22)
 
 
