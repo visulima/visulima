@@ -1,22 +1,70 @@
-import { resolve } from "pathe";
-import type { OutputChunk, OutputOptions } from "rollup";
-import { rollup } from "rollup";
+import { cyan, gray, red } from "@visulima/colorize";
+import { relative, resolve } from "pathe";
+import type { OutputChunk, OutputOptions, RollupWatcherEvent } from "rollup";
+import { rollup, watch as rollupWatch } from "rollup";
 import dts from "rollup-plugin-dts";
 
+import logger from "../../logger";
 import type { BuildContext } from "../../types";
-import createStub from "./create-stub";
 import getChunkFilename from "./get-chunk-filename";
 import getRollupOptions from "./get-rollup-options";
 import { removeShebangPlugin } from "./plugins/shebang";
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const rollupBuild = async (context: BuildContext): Promise<void> => {
-    if (context.options.stub) {
-        await createStub(context);
+export const watch = async (context: BuildContext): Promise<void> => {
+    const rollupOptions = getRollupOptions(context);
 
+    await context.hooks.callHook("rollup:options", context, rollupOptions);
+
+    if (Object.keys(rollupOptions.input as any).length === 0) {
         return;
     }
 
+    if (context.options.declaration) {
+        rollupOptions.plugins = [rollupOptions.plugins, dts(context.options.rollup.dts), removeShebangPlugin()];
+
+        await context.hooks.callHook("rollup:dts:options", context, rollupOptions);
+    }
+
+    const watcher = rollupWatch(rollupOptions);
+
+    await context.hooks.callHook("rollup:watch", context, watcher);
+
+    const inputs: string[] = [
+        ...(Array.isArray(rollupOptions.input)
+            ? rollupOptions.input
+            : typeof rollupOptions.input === "string"
+              ? [rollupOptions.input]
+              : Object.keys(rollupOptions.input || {})),
+    ];
+
+    let infoMessage = `Starting watchers for entries:`;
+
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const input of inputs) {
+        infoMessage += gray(`\n  └─ ${relative(process.cwd(), input)}`);
+    }
+
+    logger.info(infoMessage);
+
+    watcher.on("change", (id, { event }) => {
+        logger.info(`${cyan(relative(".", id))} was ${event}d`);
+    });
+    watcher.on("restart", () => {
+        logger.info("Rebuilding bundle");
+    });
+    watcher.on("event", (event: RollupWatcherEvent) => {
+        if (event.code === "END") {
+            logger.success("Rebuild finished");
+        }
+
+        if (event.code === "ERROR") {
+            logger.raw(red("Rebuild failed:"), event.error.message, "\n\n");
+        }
+    });
+};
+
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const build = async (context: BuildContext): Promise<void> => {
     const rollupOptions = getRollupOptions(context);
 
     await context.hooks.callHook("rollup:options", context, rollupOptions);
@@ -106,5 +154,3 @@ const rollupBuild = async (context: BuildContext): Promise<void> => {
 
     await context.hooks.callHook("rollup:done", context);
 };
-
-export default rollupBuild;

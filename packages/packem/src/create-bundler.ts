@@ -11,9 +11,10 @@ import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
 
-import rollupBuild from "./builder/rollup";
+import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
+import createStub from "./builder/rollup/create-stub";
 import logger from "./logger";
-import type { BuildConfig, BuildContext, BuildOptions } from "./types";
+import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
 import dumpObject from "./utils/dump-object";
 import removeExtension from "./utils/remove-extension";
 import resolvePreset from "./utils/resolve-preset";
@@ -25,9 +26,21 @@ import validatePackage from "./validator/validate-package";
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
+const logErrors = (context: BuildContext): void => {
+    if (context.warnings.size > 0) {
+        warn(context, `Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
+
+        if (context.options.failOnWarn) {
+            logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
+
+            exit(1);
+        }
+    }
+};
+
 const build = async (
     rootDirectory: string,
-    stub: boolean,
+    mode: Mode,
     inputConfig: BuildConfig,
     buildConfig: BuildConfig,
     package_: PackEmPackageJson,
@@ -78,10 +91,11 @@ const build = async (
             resolve: {
                 preferBuiltins: true,
             },
+            watch: false,
         },
         rootDir: rootDirectory,
         sourcemap: false,
-        stub,
+        stub: mode === "jit",
         stubOptions: {
             /**
              * See https://github.com/unjs/jiti#options
@@ -92,10 +106,17 @@ const build = async (
                 interopDefault: true,
             },
         },
+        watch: {
+            clearScreen: true,
+            exclude: ["node_modules/**"],
+        },
     }) as BuildOptions;
 
     // Resolve dirs relative to rootDir
     options.outDir = resolve(options.rootDir, options.outDir);
+
+    if (mode === "watch") {
+    }
 
     // Build context
     const context: BuildContext = {
@@ -163,7 +184,15 @@ const build = async (
     // Call build:before
     await context.hooks.callHook("build:before", context);
 
-    logger.info(cyan(`${options.stub ? "Stubbing" : "Building"} ${options.name}`));
+    let modeName = "Building";
+
+    if (mode === "watch") {
+        modeName = "Watching";
+    } else if (mode === "jit") {
+        modeName = "Stubbing";
+    }
+
+    logger.info(cyan(`${modeName} ${options.name}`));
 
     logger.debug(`${bold("Root dir:")} ${options.rootDir}\n  ${bold("Entries:")}\n  ${options.entries.map((entry) => `  ${dumpObject(entry)}`).join("\n  ")}`);
 
@@ -194,21 +223,31 @@ const build = async (
         }
     }
 
-    await rollupBuild(context);
-
     // Skip rest for stub
     if (options.stub) {
+        await createStub(context);
+
         await context.hooks.callHook("build:done", context);
 
         return;
     }
+
+    if (mode === "watch") {
+        await rollupWatch(context);
+
+        logErrors(context);
+
+        return;
+    }
+
+    await rollupBuild(context);
 
     logger.success(green(`Build succeeded for ${options.name}`));
 
     // Find all dist files and add missing entries as chunks
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for await (const file of walk(options.outDir)) {
-        let entry = context.buildEntries.find((e) => e.path === file.path);
+        let entry = context.buildEntries.find((bEntry) => bEntry.path === file.path);
 
         if (!entry) {
             entry = {
@@ -225,13 +264,15 @@ const build = async (
 
     const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
 
+    let loggedEntries = false;
+
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const entry of context.buildEntries.filter((e) => !e.chunk)) {
+    for (const entry of context.buildEntries.filter((bEntry) => !bEntry.chunk)) {
         let totalBytes = entry.bytes ?? 0;
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const chunk of entry.chunks ?? []) {
-            totalBytes += context.buildEntries.find((e) => e.path === chunk)?.bytes ?? 0;
+            totalBytes += context.buildEntries.find((bEntry) => bEntry.path === chunk)?.bytes ?? 0;
         }
 
         let line = `  ${bold(rPath(entry.path))} (${[
@@ -261,10 +302,14 @@ const build = async (
                 .join("\n")}`;
         }
 
+        loggedEntries = true;
+
         logger.raw(entry.chunk ? gray(line + "\n") : line + "\n");
     }
 
-    logger.raw("\nΣ Total dist size (byte size):", cyan(formatBytes(context.buildEntries.reduce((index, entry) => index + (entry.bytes ?? 0), 0))));
+    if (loggedEntries) {
+        logger.raw("\nΣ Total dist size (byte size):", cyan(formatBytes(context.buildEntries.reduce((index, entry) => index + (entry.bytes ?? 0), 0))), "\n");
+    }
 
     // Validate
     validateDependencies(context);
@@ -273,22 +318,12 @@ const build = async (
     // Call build:done
     await context.hooks.callHook("build:done", context);
 
-    logger.raw("");
-
-    if (context.warnings.size > 0) {
-        warn(context, `Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
-
-        if (context.options.failOnWarn) {
-            logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
-
-            exit(1);
-        }
-    }
+    logErrors(context);
 };
 
-export const createBundler = async (
+const createBundler = async (
     rootDirectory: string,
-    stub: boolean,
+    mode: Mode,
     inputConfig: BuildConfig & {
         tsconfigPath?: string;
     } = {},
@@ -335,6 +370,8 @@ export const createBundler = async (
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const buildConfig of buildConfigs) {
         // eslint-disable-next-line no-await-in-loop
-        await build(rootDirectory, stub, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfigContent, cleanedDirectories);
+        await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfigContent, cleanedDirectories);
     }
 };
+
+export default createBundler;

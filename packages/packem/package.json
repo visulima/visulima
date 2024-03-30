@@ -1,12 +1,21 @@
 {
     "name": "@visulima/packem",
     "version": "0.0.0",
-    "description": "Detect whether a terminal or browser supports ansi colors.",
+    "description": "Bundle your library with no config.",
     "keywords": [
         "anolilab",
         "visulima",
         "esbuild",
-        "rollup"
+        "rollup",
+        "zero config",
+        "rollup",
+        "package.json",
+        "exports",
+        "esm",
+        "cjs",
+        "commonjs",
+        "typescript",
+        "declaration"
     ],
     "homepage": "https://www.visulima.com/docs/package/packem",
     "repository": {

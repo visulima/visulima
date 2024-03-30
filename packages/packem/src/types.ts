@@ -6,7 +6,7 @@ import type { RollupReplaceOptions } from "@rollup/plugin-replace";
 import type { PackageJson, TsConfigJsonResolved } from "@visulima/package";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
-import type { OutputOptions, RollupBuild, RollupOptions } from "rollup";
+import type { OutputOptions, RollupBuild, RollupOptions, RollupWatcher } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
 
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
@@ -82,6 +82,7 @@ export interface BuildHooks {
     "rollup:dts:build": (context: BuildContext, build: RollupBuild) => Promise<void> | void;
     "rollup:dts:options": (context: BuildContext, options: RollupOptions) => Promise<void> | void;
     "rollup:options": (context: BuildContext, options: RollupOptions) => Promise<void> | void;
+    "rollup:watch": (context: BuildContext, watcher: RollupWatcher) => Promise<void> | void;
 }
 
 export interface BuildContext {
@@ -120,3 +121,5 @@ export type InferEntriesResult = {
     entries: BuildEntry[];
     warnings: string[];
 };
+
+export type Mode = "build" | "jit" | "watch";

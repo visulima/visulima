@@ -1,7 +1,8 @@
 import Cli from "@visulima/cerebro";
 
 import { name, version } from "../package.json";
-import { createBundler } from "./create-bundler";
+import createBundler from "./create-bundler";
+import type { Mode } from "./types";
 
 const cli = new Cli("packem", {
     packageName: name,
@@ -11,7 +12,15 @@ const cli = new Cli("packem", {
 cli.addCommand({
     description: "Demonstrate options required",
     execute: async ({ options }): Promise<void> => {
-        await createBundler(options.dir ?? ".", false, {
+        let mode: Mode = "build";
+
+        if (options.watch) {
+            mode = "watch";
+        } else if (options.jit) {
+            mode = "jit";
+        }
+
+        await createBundler(options.dir ?? ".", mode, {
             rollup: {
                 esbuild: {
                     minify: options.minify,
@@ -47,6 +56,18 @@ cli.addCommand({
         {
             description: "Generate sourcemaps (experimental)",
             name: "sourcemap",
+            type: Boolean,
+        },
+        {
+            // conflicts: "jit",
+            description: "Watch for changes",
+            name: "watch",
+            type: Boolean,
+        },
+        {
+            // conflicts: "watch",
+            description: "Stub the package for JIT compilation",
+            name: "jit",
             type: Boolean,
         },
         {
