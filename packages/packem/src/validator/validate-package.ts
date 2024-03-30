@@ -2,14 +2,13 @@ import { existsSync } from "node:fs";
 
 import { cyan } from "@visulima/colorize";
 import type { PackageJson } from "@visulima/package";
-import type { BuildContext } from "esbuild";
 import { resolve } from "pathe";
 
-import logger from "../logger";
-import { extractExportFilenames } from "../utils/extract-export-filenames";
+import type { BuildContext } from "../types";
+import extractExportFilenames from "../utils/extract-export-filenames";
 import warn from "../utils/warn";
 
-const validatePackage = (package_: PackageJson, rootDir: string, context: BuildContext) => {
+const validatePackage = (package_: PackageJson, context: BuildContext): void => {
     if (!package_) {
         return;
     }
@@ -24,15 +23,16 @@ const validatePackage = (package_: PackageJson, rootDir: string, context: BuildC
             ...extractExportFilenames(package_.exports, package_.type ?? "commonjs").map((index) => index.file),
         ].map(
             (index) =>
-                index && resolve(rootDir, index.replace(/\/[^*/]*\*[^\n\r/\u2028\u2029]*(?:[\n\r\u2028\u2029][^*/]*\*[^\n\r/\u2028\u2029]*)*(?:\/.*)?$/, "")),
+                index && resolve(context.rootDir, index.replace(/\/[^*/]*\*[^\n\r/\u2028\u2029]*(?:[\n\r\u2028\u2029][^*/]*\*[^\n\r/\u2028\u2029]*)*(?:\/.*)?$/, "")),
         ),
     );
 
     const missingOutputs = [];
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const filename of filenames) {
         if (filename && !filename.includes("*") && !existsSync(filename)) {
-            missingOutputs.push(filename.replace(`${rootDir}/`, ""));
+            missingOutputs.push(filename.replace(`${context.rootDir}/`, ""));
         }
     }
 

@@ -6,7 +6,7 @@ import logger from "../logger";
 import type { BuildPreset } from "../types";
 import inferEntries from "./utils/infer-entries";
 
-export const autoPreset: BuildPreset = {
+const autoPreset: BuildPreset = {
     hooks: {
         "build:prepare": function (context) {
             // Disable auto if entries already provided of pkg not available
@@ -18,6 +18,7 @@ export const autoPreset: BuildPreset = {
 
             const result = inferEntries(context.pkg, sourceFiles, context.options.rootDir);
 
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const message of result.warnings) {
                 logger.warn(context, message);
             }
@@ -44,3 +45,5 @@ export const autoPreset: BuildPreset = {
         },
     },
 };
+
+export default autoPreset;

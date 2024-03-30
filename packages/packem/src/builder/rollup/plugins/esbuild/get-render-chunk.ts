@@ -1,6 +1,6 @@
 import type { Format, TransformOptions } from "esbuild";
-import {transform } from "esbuild";
-import type { InternalModuleFormat,Plugin } from "rollup";
+import { transform } from "esbuild";
+import type { InternalModuleFormat, Plugin } from "rollup";
 
 import warn from "./warn";
 
@@ -8,12 +8,15 @@ const getEsbuildFormat = (rollupFormat: InternalModuleFormat): Format | undefine
     if (rollupFormat === "es") {
         return "esm";
     }
+
     if (rollupFormat === "cjs") {
         return rollupFormat;
     }
+
+    return undefined;
 };
 
-export type Options = Omit<TransformOptions, "sourcemap"> & {
+type Options = Omit<TransformOptions, "sourcemap"> & {
     sourceMap?: boolean;
 };
 
@@ -27,7 +30,9 @@ export const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugi
                 sourcemap: sourceMap,
                 ...options,
             });
+
             await warn(this, result.warnings);
+
             if (result.code) {
                 return {
                     code: result.code,
@@ -35,5 +40,6 @@ export const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugi
                 };
             }
         }
+
         return null;
     };

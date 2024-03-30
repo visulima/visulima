@@ -1,4 +1,4 @@
-import { autoPreset } from "../preset/auto";
+import autoPreset from "../preset/auto";
 import type { BuildConfig, BuildPreset } from "../types";
 import tryRequire from "./try-require";
 

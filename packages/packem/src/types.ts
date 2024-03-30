@@ -14,9 +14,10 @@ import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 export interface BaseBuildEntry {
-    builder?: "rollup";
+    builder?: string;
     declaration?: boolean | "compatible" | "node16";
     input: string;
+    isExecutable?: boolean;
     name?: string;
     outDir?: string;
 }

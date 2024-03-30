@@ -8,8 +8,6 @@ import createStub from "./create-stub";
 import getChunkFilename from "./get-chunk-filename";
 import getRollupOptions from "./get-rollup-options";
 import { removeShebangPlugin } from "./plugins/shebang";
-// import { externalizeNodeBuiltins } from "./plugins/externalize-node-builtins";
-// import { patchBinary } from "./plugins/patch-binary";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const rollupBuild = async (context: BuildContext): Promise<void> => {
@@ -31,16 +29,20 @@ const rollupBuild = async (context: BuildContext): Promise<void> => {
 
     await context.hooks.callHook("rollup:build", context, buildResult);
 
-    const allOutputOptions = rollupOptions.output! as OutputOptions[];
+    const allOutputOptions = rollupOptions.output as OutputOptions[];
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const outputOptions of allOutputOptions) {
+        // eslint-disable-next-line no-await-in-loop
         const { output } = await buildResult.write(outputOptions);
         const chunkFileNames = new Set<string>();
         const outputChunks = output.filter((e) => e.type === "chunk") as OutputChunk[];
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const entry of outputChunks) {
             chunkFileNames.add(entry.fileName);
 
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const id of entry.imports) {
                 context.usedImports.add(id);
             }
@@ -61,6 +63,7 @@ const rollupBuild = async (context: BuildContext): Promise<void> => {
             }
         }
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const chunkFileName of chunkFileNames) {
             context.usedImports.delete(chunkFileName);
         }

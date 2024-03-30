@@ -85,6 +85,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
         plugins: [
             externalizeNodeBuiltins({ target: arrayify(context.options.rollup.esbuild.target) }),
             resolveTypescriptMjsCts(),
+
             context.options.rollup.replace &&
                 replace({
                     ...context.options.rollup.replace,
@@ -111,7 +112,7 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.json,
                 }),
 
-            shebangPlugin(),
+            shebangPlugin(context.options.entries.filter((entry) => entry.isExecutable).map((entry) => entry.name).filter(Boolean) as string[]),
 
             context.options.rollup.esbuild &&
                 esbuildPlugin({
@@ -133,8 +134,6 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
             },
 
             context.options.rollup.cjsBridge && cjsPlugin(),
-
-            // patchBinary(executablePaths),
 
             rawPlugin(),
         ].filter(Boolean),

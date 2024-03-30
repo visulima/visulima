@@ -2,9 +2,9 @@ import type { PackageJson } from "read-pkg";
 
 import { inferExportType } from "./infer-export-type";
 
-export type OutputDescriptor = { file: string; type?: "cjs" | "esm" };
+type OutputDescriptor = { file: string; isExecutable?: true, type?: "cjs" | "esm" };
 
-export const extractExportFilenames = (exports: PackageJson["exports"], type: PackageJson["type"], conditions: string[] = []): OutputDescriptor[] => {
+const extractExportFilenames = (exports: PackageJson["exports"], type: PackageJson["type"], conditions: string[] = []): OutputDescriptor[] => {
     if (!exports) {
         return [];
     }
@@ -17,13 +17,15 @@ export const extractExportFilenames = (exports: PackageJson["exports"], type: Pa
         Object.entries(exports)
             // Filter out .json subpaths such as package.json
             .filter(([subpath]) => !subpath.endsWith(".json"))
-            .flatMap(([condition, exports]) =>
-                (typeof exports === "string"
+            .flatMap(([condition, packageExport]) =>
+                (typeof packageExport === "string"
                     ? {
-                          file: exports,
-                          type: inferExportType(condition, conditions, type, exports),
+                          file: packageExport,
+                          type: inferExportType(condition, conditions, type, packageExport),
                       }
-                    : extractExportFilenames(exports, type, [...conditions, condition])),
+                    : extractExportFilenames(packageExport, type, [...conditions, condition])),
             )
     );
 };
+
+export default extractExportFilenames;

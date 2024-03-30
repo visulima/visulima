@@ -1,7 +1,6 @@
 import { existsSync, statSync } from "node:fs";
 
 import { createFilter } from "@rollup/pluginutils";
-import { findTSConfigSync } from "@visulima/package";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
 import { dirname, extname, join,resolve } from "pathe";

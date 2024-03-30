@@ -4,43 +4,45 @@ import type { PackageJson } from "@visulima/package";
 import { resolve } from "pathe";
 
 import type { BuildEntry, InferEntriesResult } from "../../types";
-import { extractExportFilenames } from "../../utils/extract-export-filenames";
+import extractExportFilenames from "../../utils/extract-export-filenames";
 import getEntrypointPaths from "./get-entrypoint-paths";
 
 /**
- * @param {PackageJson} pkg The contents of a package.json file to serve as the source for inferred entries.
+ * @param {PackageJson} packageJson The contents of a package.json file to serve as the source for inferred entries.
  * @param {string[]} sourceFiles A list of source files to use for inferring entries.
- * @param {string | undefined} rootDir The root directory of the project.
+ * @param {string | undefined} rootDirectory The root directory of the project.
  */
-const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: string): InferEntriesResult => {
+const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirectory = "."): InferEntriesResult => {
     const warnings = [];
 
     // Sort files so least-nested files are first
     sourceFiles.sort((a, b) => a.split("/").length - b.split("/").length);
 
     // Come up with a list of all output files & their formats
-    const outputs = extractExportFilenames(package_.exports, package_.type || "commonjs");
+    const outputs = extractExportFilenames(packageJson.exports, packageJson.type || "commonjs");
 
-    if (package_.bin) {
-        const binaries = typeof package_.bin === "string" ? [package_.bin] : Object.values(package_.bin);
+    if (packageJson.bin) {
+        const binaries = typeof packageJson.bin === "string" ? [packageJson.bin] : Object.values(packageJson.bin);
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const file of binaries) {
-            outputs.push({ file });
+            outputs.push({ isExecutable: true, file });
         }
     }
-    if (package_.main) {
-        outputs.push({ file: package_.main });
+    if (packageJson.main) {
+        outputs.push({ file: packageJson.main });
     }
-    if (package_.module) {
-        outputs.push({ file: package_.module, type: "esm" });
+    if (packageJson.module) {
+        outputs.push({ file: packageJson.module, type: "esm" });
     }
-    if (package_.types || package_.typings) {
-        outputs.push({ file: package_.types || package_.typings! });
+    if (packageJson.types || packageJson.typings) {
+        outputs.push({ file: packageJson.types || packageJson.typings });
     }
 
     // Try to detect output types
-    const isESMPackage = package_.type === "module";
+    const isESMPackage = packageJson.type === "module";
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const output of outputs.filter((o) => !o.type)) {
         const isJS = output.file.endsWith(".js");
 
@@ -57,6 +59,7 @@ const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: st
     // Infer entries from package files
     const entries: BuildEntry[] = [];
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const output of outputs) {
         // Supported output file extensions are `.d.ts`, `.cjs` and `.mjs`
         // But we support any file extension here in case user has extended rollup options
@@ -65,6 +68,7 @@ const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: st
 
         // Skip top level directory
         if (isDirectory && ["./", "/"].includes(outputSlug)) {
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -81,10 +85,11 @@ const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: st
         }, undefined as any);
 
         if (!input) {
-            if (!existsSync(resolve(rootDir || ".", output.file))) {
+            if (!existsSync(resolve(rootDirectory, output.file))) {
                 warnings.push(`Could not find entrypoint for \`${output.file}\``);
             }
 
+            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -92,15 +97,19 @@ const inferEntries = (package_: PackageJson, sourceFiles: string[], rootDir?: st
             cjs = true;
         }
 
-        const entry = entries.find((index) => index.input === input) || entries[entries.push({ builder: "rollup", input }) - 1];
+        const entry = entries.find((index) => index.input === input) ?? entries[entries.push({ builder: "rollup", input }) - 1];
 
-        if (/\.d\.(m|c)?ts$/.test(output.file)) {
+        if (/\.d\.(?:m|c)?ts$/.test(output.file)) {
             dts = true;
         }
 
         if (isDirectory) {
             entry.outDir = outputSlug;
-            (entry as MkdistBuildEntry).format = output.type;
+            entry.format = output.type;
+        }
+
+        if (output.isExecutable) {
+            entry.isExecutable = true;
         }
     }
 

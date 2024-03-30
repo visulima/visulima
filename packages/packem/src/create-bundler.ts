@@ -3,11 +3,10 @@ import Module from "node:module";
 import { cwd, env, exit, versions } from "node:process";
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
-import { ensureDir, isAccessible, remove, walk } from "@visulima/fs";
+import { emptyDir, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
-import type { PackageJson } from "@visulima/package";
+import type { PackageJson, TsConfigJsonResolved } from "@visulima/package";
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
-import type { TsConfigJsonResolved } from "@visulima/package/src";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
@@ -27,7 +26,7 @@ import validatePackage from "./validator/validate-package";
 type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
 const build = async (
-    rootDir: string,
+    rootDirectory: string,
     stub: boolean,
     inputConfig: BuildConfig,
     buildConfig: BuildConfig,
@@ -36,7 +35,7 @@ const build = async (
     cleanedDirectories: string[],
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
-    const preset = resolvePreset(buildConfig.preset ?? package_?.packem?.preset ?? inputConfig.preset ?? "auto", rootDir);
+    const preset = resolvePreset(buildConfig.preset ?? package_?.packem?.preset ?? inputConfig.preset ?? "auto", rootDirectory);
 
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
@@ -80,7 +79,7 @@ const build = async (
                 preferBuiltins: true,
             },
         },
-        rootDir,
+        rootDir: rootDirectory,
         sourcemap: false,
         stub,
         stubOptions: {
@@ -104,7 +103,7 @@ const build = async (
         hooks: createHooks(),
         options,
         pkg: package_,
-        rootDir,
+        rootDir: rootDirectory,
         tsconfig: tsConfigContent,
         usedImports: new Set(),
         warnings: new Set(),
@@ -129,13 +128,15 @@ const build = async (
     // Normalize entries
     options.entries = options.entries.map((entry) => (typeof entry === "string" ? { input: entry } : entry));
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const entry of options.entries) {
         if (typeof entry.name !== "string") {
-            let relativeInput = isAbsolute(entry.input) ? relative(rootDir, entry.input) : normalize(entry.input);
+            let relativeInput = isAbsolute(entry.input) ? relative(rootDirectory, entry.input) : normalize(entry.input);
 
             if (relativeInput.startsWith("./")) {
                 relativeInput = relativeInput.slice(2);
             }
+
             entry.name = removeExtension(relativeInput.replace(/^src\//, ""));
         }
 
@@ -168,26 +169,28 @@ const build = async (
 
     // Clean dist dirs
     if (options.clean) {
-        for (const dir of new Set(
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const directory of new Set(
             options.entries
                 .map((entry) => entry.outDir)
                 .filter(Boolean)
                 .sort() as unknown as Set<string>,
         )) {
             if (
-                dir === options.rootDir ||
-                options.rootDir.startsWith(dir.endsWith("/") ? dir : `${dir}/`) ||
-                cleanedDirectories.some((c) => dir.startsWith(c))
+                directory === options.rootDir ||
+                options.rootDir.startsWith(directory.endsWith("/") ? directory : `${directory}/`) ||
+                cleanedDirectories.some((c) => directory.startsWith(c))
             ) {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
-            cleanedDirectories.push(dir);
+            cleanedDirectories.push(directory);
 
-            logger.info(`Cleaning dist directory: \`./${relative(cwd(), dir)}\``);
+            logger.info(`Cleaning dist directory: \`./${relative(cwd(), directory)}\``);
 
-            await remove(dir);
-            await ensureDir(dir);
+            // eslint-disable-next-line no-await-in-loop
+            await emptyDir(directory);
         }
     }
 
@@ -203,7 +206,7 @@ const build = async (
     logger.success(green(`Build succeeded for ${options.name}`));
 
     // Find all dist files and add missing entries as chunks
-    // eslint-disable-next-line no-loops/no-loops
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for await (const file of walk(options.outDir)) {
         let entry = context.buildEntries.find((e) => e.path === file.path);
 
@@ -222,9 +225,11 @@ const build = async (
 
     const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const entry of context.buildEntries.filter((e) => !e.chunk)) {
         let totalBytes = entry.bytes ?? 0;
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const chunk of entry.chunks ?? []) {
             totalBytes += context.buildEntries.find((e) => e.path === chunk)?.bytes ?? 0;
         }
@@ -263,7 +268,7 @@ const build = async (
 
     // Validate
     validateDependencies(context);
-    validatePackage(package_, rootDir, context);
+    validatePackage(package_, context);
 
     // Call build:done
     await context.hooks.callHook("build:done", context);
@@ -296,7 +301,7 @@ export const createBundler = async (
     let tsConfigContent: TsConfigJsonResolved | undefined;
 
     if (tsconfigPath) {
-        if (! await isAccessible(tsconfigPath)) {
+        if (!(await isAccessible(tsconfigPath))) {
             logger.error("tsconfig.json not found at", tsconfigPath);
 
             exit(1);
