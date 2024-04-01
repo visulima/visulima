@@ -6,7 +6,7 @@ import { dirname, join } from "pathe";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
-import { findPackageManager, getPackageManagerVersion } from "../../src/package-manager";
+import { findPackageManager, findPackageManagerSync, getPackageManagerVersion } from "../../src/package-manager";
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
@@ -38,11 +38,20 @@ describe("package-manager", () => {
         });
     });
 
-    describe("findPackageManager", () => {
+    describe.each([
+        ["findPackageManager", findPackageManager],
+        ["findPackageManagerSync", findPackageManagerSync],
+    ])("%s", (name, function_) => {
         it("detects yarn", async () => {
             expect.assertions(1);
 
-            await expect(findPackageManager(join(whichPMFixturePath, "yarn"))).resolves.toStrictEqual({
+            let result = function_(join(whichPMFixturePath, "yarn"));
+
+            if (result instanceof Promise) {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
                 packageManager: "yarn",
                 path: join(whichPMFixturePath, "yarn"),
             });
@@ -51,7 +60,13 @@ describe("package-manager", () => {
         it("should detect bun", async () => {
             expect.assertions(1);
 
-            await expect(findPackageManager(join(whichPMFixturePath, "bun"))).resolves.toStrictEqual({
+            let result = function_(join(whichPMFixturePath, "bun"));
+
+            if (result instanceof Promise) {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
                 packageManager: "bun",
                 path: join(whichPMFixturePath, "bun"),
             });
@@ -60,7 +75,13 @@ describe("package-manager", () => {
         it("should detect npm", async () => {
             expect.assertions(1);
 
-            await expect(findPackageManager(join(whichPMFixturePath, "npm"))).resolves.toStrictEqual({
+            let result = function_(join(whichPMFixturePath, "npm"));
+
+            if (result instanceof Promise) {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
                 packageManager: "npm",
                 path: join(whichPMFixturePath, "npm"),
             });
@@ -69,7 +90,13 @@ describe("package-manager", () => {
         it("should detect pnpm", async () => {
             expect.assertions(1);
 
-            await expect(findPackageManager(join(whichPMFixturePath, "pnpm"))).resolves.toStrictEqual({
+            let result = function_(join(whichPMFixturePath, "pnpm"));
+
+            if (result instanceof Promise) {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
                 packageManager: "pnpm",
                 path: join(whichPMFixturePath, "pnpm"),
             });
@@ -78,9 +105,15 @@ describe("package-manager", () => {
         it("should detect cnpm", async () => {
             expect.assertions(1);
 
-            await expect(findPackageManager(join(whichPMFixturePath, "npm"))).resolves.toStrictEqual({
+            let result = function_(join(whichPMFixturePath, "cnpm"));
+
+            if (result instanceof Promise) {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
                 packageManager: "npm",
-                path: join(whichPMFixturePath, "npm"),
+                path: join(whichPMFixturePath, "cnpm"),
             });
         });
     });

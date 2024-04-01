@@ -10,6 +10,7 @@
         "find-cache-directory",
         "find-monorepo-root",
         "find-up-pkg",
+        "find-package-manager",
         "get-tsconfig",
         "mono-repo",
         "monorepo",
@@ -114,6 +115,16 @@
                 "default": "./dist/tsconfig.js"
             }
         },
+        "./error": {
+            "require": {
+                "types": "./dist/error.d.cts",
+                "default": "./dist/error.cjs"
+            },
+            "import": {
+                "types": "./dist/error.d.ts",
+                "default": "./dist/error.js"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
@@ -208,6 +219,7 @@
         }
     },
     "sources": [
+        "src/error.ts",
         "src/index.ts",
         "src/monorepo.ts",
         "src/package.ts",
