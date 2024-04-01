@@ -1,3 +1,10 @@
+## @visulima/package [1.5.3](https://github.com/visulima/visulima/compare/@visulima/package@1.5.2...@visulima/package@1.5.3) (2024-04-01)
+
+
+### Bug Fixes
+
+* **package:** added missing export ([fa6a9f2](https://github.com/visulima/visulima/commit/fa6a9f2d0d2c4eead9389f937d36efab7d5263fd))
+
 ## @visulima/package [1.5.2](https://github.com/visulima/visulima/compare/@visulima/package@1.5.1...@visulima/package@1.5.2) (2024-03-30)
 
 
