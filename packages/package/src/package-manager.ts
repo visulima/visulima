@@ -9,6 +9,86 @@ import { parsePackageJson } from "./package-json";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
+const packageMangerFindUpMatcher = (directory: string) => {
+    let lockFile: string | undefined;
+
+    lockFileNames.forEach((lockFileName) => {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        if (!lockFile && existsSync(join(directory, lockFileName))) {
+            lockFile = join(directory, lockFileName);
+        }
+    });
+
+    if (lockFile) {
+        return lockFile;
+    }
+
+    const packageJsonFilePath = join(directory, "package.json");
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    if (existsSync(packageJsonFilePath)) {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const packageJson = parsePackageJson(readFileSync(packageJsonFilePath, "utf8"));
+
+        if (packageJson.packageManager !== undefined) {
+            return packageJsonFilePath;
+        }
+    }
+
+    return undefined;
+};
+
+const findPackageManagerOnFile = (foundFile: string | undefined): PackageManagerResult => {
+    if (!foundFile) {
+        throw new NotFoundError("Could not find a package manager");
+    }
+
+    if (foundFile.endsWith("package.json")) {
+        const packageJson = parsePackageJson(foundFile);
+
+        if (packageJson.packageManager) {
+            const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
+            const foundPackageManager = packageManagerNames.find((prefix) => (packageJson.packageManager as string).startsWith(prefix));
+
+            if (foundPackageManager) {
+                return {
+                    packageManager: foundPackageManager,
+                    path: dirname(foundFile),
+                };
+            }
+        }
+    }
+
+    if (foundFile.endsWith("yarn.lock")) {
+        return {
+            packageManager: "yarn",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("package-lock.json") || foundFile.endsWith("npm-shrinkwrap.json")) {
+        return {
+            packageManager: "npm",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("pnpm-lock.yaml")) {
+        return {
+            packageManager: "pnpm",
+            path: dirname(foundFile),
+        };
+    }
+
+    if (foundFile.endsWith("bun.lockb")) {
+        return {
+            packageManager: "bun",
+            path: dirname(foundFile),
+        };
+    }
+
+    throw new NotFoundError("Could not find a package manager");
+};
+
 /**
  * An asynchronous function that finds a lock file in the specified directory or any of its parent directories.
  *
@@ -62,90 +142,32 @@ export type PackageManagerResult = {
  * The return type of the function is `Promise<PackageManagerResult>`.
  * @throws An `Error` if no lock file or package.json is found.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
-    const foundFile = await findUp(
-        (directory: string) => {
-            let lockFile: string | undefined;
+    const foundFile = await findUp(packageMangerFindUpMatcher, {
+        ...(cwd && { cwd }),
+    });
 
-            lockFileNames.forEach((lockFileName) => {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                if (!lockFile && existsSync(join(directory, lockFileName))) {
-                    lockFile = join(directory, lockFileName);
-                }
-            });
+    return findPackageManagerOnFile(foundFile);
+};
 
-            if (lockFile) {
-                return lockFile;
-            }
+/**
+ * An function that finds the package manager used in a project based on the presence of lock files
+ * or package.json configuration. If found, it returns the package manager and the path to the lock file or package.json.
+ * Throws an error if no lock file or package.json is found.
+ *
+ * @param cwd - Optional. The current working directory to start the search from. The type of `cwd` is part of an `Options`
+ * type, specifically `URL | string`.
+ * @returns A `Promise` that resolves to an object containing the package manager and path.
+ * The return type of the function is `Promise<PackageManagerResult>`.
+ * @throws An `Error` if no lock file or package.json is found.
+ */
 
-            const packageJsonFilePath = join(directory, "package.json");
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            if (existsSync(packageJsonFilePath)) {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                const packageJson = parsePackageJson(readFileSync(packageJsonFilePath, "utf8"));
+export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult => {
+    const foundFile = findUpSync(packageMangerFindUpMatcher, {
+        ...(cwd && { cwd }),
+    });
 
-                if (packageJson.packageManager !== undefined) {
-                    return packageJsonFilePath;
-                }
-            }
-
-            return undefined;
-        },
-        {
-            ...(cwd && { cwd }),
-        },
-    );
-
-    if (!foundFile) {
-        throw new NotFoundError("Could not find a package manager");
-    }
-
-    if (foundFile.endsWith("package.json")) {
-        const packageJson = parsePackageJson(foundFile);
-
-        if (packageJson.packageManager) {
-            const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
-            const foundPackageManager = packageManagerNames.find((prefix) => (packageJson.packageManager as string).startsWith(prefix));
-
-            if (foundPackageManager) {
-                return {
-                    packageManager: foundPackageManager,
-                    path: dirname(foundFile),
-                };
-            }
-        }
-    }
-
-    if (foundFile.endsWith("yarn.lock")) {
-        return {
-            packageManager: "yarn",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("package-lock.json") || foundFile.endsWith("npm-shrinkwrap.json")) {
-        return {
-            packageManager: "npm",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("pnpm-lock.yaml")) {
-        return {
-            packageManager: "pnpm",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("bun.lockb")) {
-        return {
-            packageManager: "bun",
-            path: dirname(foundFile),
-        };
-    }
-
-    throw new Error("Could not find a package manager");
+    return findPackageManagerOnFile(foundFile);
 };
 
 /**

@@ -1,3 +1,4 @@
+export { default as PackageNotFoundError } from "./error/package-not-found-error";
 export { findCacheDirectory, findCacheDirectorySync } from "./find-cache-dir";
 export type { RootMonorepo, Strategy } from "./monorepo";
 export { findMonorepoRoot } from "./monorepo";
@@ -5,7 +6,7 @@ export { findPackageRoot, findPackageRootSync } from "./package";
 export type { NormalizedReadResult } from "./package-json";
 export { findPackageJson, findPackageJsonSync, parsePackageJson, writePackageJson, writePackageJsonSync } from "./package-json";
 export type { PackageManager, PackageManagerResult } from "./package-manager";
-export { findLockFile, findLockFileSync, findPackageManager, getPackageManagerVersion, identifyInitiatingPackageManager } from "./package-manager";
+export { findLockFile, findLockFileSync, findPackageManager, findPackageManagerSync, getPackageManagerVersion, identifyInitiatingPackageManager } from "./package-manager";
 export { default as readTsConfig } from "./read-tsconfig";
 export type { TsConfigResult } from "./tsconfig";
 export { findTSConfig, findTsConfig, findTSConfigSync, findTsConfigSync, writeTSConfig } from "./tsconfig";
