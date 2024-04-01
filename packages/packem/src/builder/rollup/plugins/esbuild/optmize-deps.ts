@@ -9,7 +9,7 @@ import type { Optimized, OptimizeDepsOptions, OptimizeDepsResult } from "./types
 
 const slash = (p: string) => p.replaceAll('\\', "/");
 
-export const optimizeDeps = async (options: OptimizeDepsOptions): Promise<OptimizeDepsResult> => {
+const optimizeDeps = async (options: OptimizeDepsOptions): Promise<OptimizeDepsResult> => {
     // eslint-disable-next-line unicorn/prevent-abbreviations
     const cacheDir = await findCacheDirectory("packem/optimize_deps", {
         create: true,
@@ -92,3 +92,5 @@ export const optimizeDeps = async (options: OptimizeDepsOptions): Promise<Optimi
         optimized,
     };
 };
+
+export default optimizeDeps;

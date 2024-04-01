@@ -8,8 +8,8 @@ import type { Plugin as RollupPlugin } from "rollup";
 
 import logger from "../../../../logger";
 import { getRenderChunk } from "./get-render-chunk";
-import { optimizeDeps as doOptimizeDeps } from "./optmize-deps";
-import type { OptimizeDepsResult,Options } from "./types";
+import doOptimizeDeps from "./optmize-deps";
+import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
 
 const defaultLoaders: Record<string, Loader> = {

@@ -1,8 +1,8 @@
 import jiti from "jiti";
 
-import logger from "../logger";
+import logger from "../../logger";
 
-export function tryResolve(id: string, rootDir: string = process.cwd()) {
+const tryResolve = (id: string, rootDir: string = process.cwd()) => {
     const _require = jiti(rootDir, { esmResolve: true, interopDefault: true });
 
     try {
@@ -14,4 +14,6 @@ export function tryResolve(id: string, rootDir: string = process.cwd()) {
 
         return id;
     }
-}
+};
+
+export default tryResolve;

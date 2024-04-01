@@ -10,6 +10,7 @@ import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
+import { ScriptTarget } from "typescript";
 
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
 import createStub from "./builder/rollup/create-stub";
@@ -70,8 +71,38 @@ const build = async (
                 ignoreTryCatch: true,
             },
             dts: {
-                // https://github.com/Swatinem/rollup-plugin-dts/issues/143
-                compilerOptions: { preserveSymlinks: false },
+                compilerOptions: {
+                    baseUrl: ".",
+                    // Avoid extra work
+                    checkJs: false,
+                    /**
+                     * https://github.com/privatenumber/pkgroll/pull/54
+                     *
+                     * I think this is necessary because TypeScript's composite requires
+                     * that all files are passed in via `include`. However, it seems that
+                     * rollup-plugin-dts doesn't read or relay the `include` option in tsconfig.
+                     *
+                     * For now, simply disabling composite does the trick since it doesn't seem
+                     * necessary for dts bundling.
+                     *
+                     * One concern here is that this overwrites the compilerOptions. According to
+                     * the rollup-plugin-dts docs, it reads from baseUrl and paths.
+                     */
+                    composite: false,
+                    // Ensure ".d.ts" modules are generated
+                    declaration: true,
+                    declarationMap: false,
+                    emitDeclarationOnly: true,
+                    // Skip ".js" generation
+                    noEmit: false,
+                    // Skip code generation when error occurs
+                    noEmitOnError: true,
+                    // https://github.com/Swatinem/rollup-plugin-dts/issues/143
+                    preserveSymlinks: false,
+                    skipLibCheck: true,
+                    // Ensure we can parse the latest code
+                    target: ScriptTarget.ESNext,
+                },
                 respectExternal: true,
             },
             emitCJS: false,
@@ -86,6 +117,11 @@ const build = async (
             },
             preserveDynamicImports: true,
             replace: {
+                /**
+                 * Seems this currently doesn't work:
+                 * https://github.com/rollup/plugins/pull/1084#discussion_r861447543
+                 */
+                objectGuards: true,
                 preventAssignment: true,
             },
             resolve: {
@@ -114,9 +150,6 @@ const build = async (
 
     // Resolve dirs relative to rootDir
     options.outDir = resolve(options.rootDir, options.outDir);
-
-    if (mode === "watch") {
-    }
 
     // Build context
     const context: BuildContext = {

@@ -6,8 +6,8 @@ import { dirname, extname, normalize, resolve } from "pathe";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
-import { tryResolve } from "../../utils/try-resolve";
 import warn from "../../utils/warn";
+import tryResolve from "../jit/try-resolve";
 import { getShebang, makeExecutable } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 
@@ -28,8 +28,11 @@ const createStub = async (context: BuildContext) => {
     for (const entry of context.options.entries.filter((entry) => entry.builder === "rollup")) {
         const output = resolve(context.options.rootDir, context.options.outDir, entry.name!);
 
+        const isESM = ctx.pkg.type === "module";
         const resolvedEntry = normalize(tryResolve(entry.input, context.options.rootDir) || entry.input);
         const resolvedEntryWithoutExtension = resolvedEntry.slice(0, Math.max(0, resolvedEntry.length - extname(resolvedEntry).length));
+        const resolvedEntryForTypeImport = isESM ? `${resolvedEntry.replace(/(\.m?)(ts)$/, "$1js")}` : resolvedEntryWithoutExtension;
+        // eslint-disable-next-line no-await-in-loop
         const code = await readFile(resolvedEntry, "utf8");
         const shebang = getShebang(code);
 
@@ -45,7 +48,7 @@ const createStub = async (context: BuildContext) => {
                         "",
                         `const _jiti = jiti(null, ${serializedJitiOptions})`,
                         "",
-                        `/** @type {import(${JSON.stringify(resolvedEntryWithoutExtension)})} */`,
+                        `/** @type {import(${JSON.stringify(resolvedEntryForTypeImport)})} */`,
                         `module.exports = _jiti(${JSON.stringify(resolvedEntry)})`,
                     ].join("\n"),
             );
@@ -75,7 +78,7 @@ const createStub = async (context: BuildContext) => {
                     "",
                     `const _jiti = jiti(null, ${serializedJitiOptions})`,
                     "",
-                    `/** @type {import(${JSON.stringify(resolvedEntryWithoutExtension)})} */`,
+                    `/** @type {import(${JSON.stringify(resolvedEntryForTypeImport)})} */`,
                     `const _module = await _jiti.import(${JSON.stringify(resolvedEntry)});`,
                     hasDefaultExport ? "\nexport default _module;" : "",
                     ...namedExports.filter((name) => name !== "default").map((name) => `export const ${name} = _module.${name};`),
@@ -86,8 +89,8 @@ const createStub = async (context: BuildContext) => {
         await writeFile(
             `${output}.d.ts`,
             [
-                `export * from ${JSON.stringify(resolvedEntryWithoutExtension)};`,
-                hasDefaultExport ? `export { default } from ${JSON.stringify(resolvedEntryWithoutExtension)};` : "",
+                `export * from ${JSON.stringify(resolvedEntryForTypeImport)};`,
+                hasDefaultExport ? `export { default } from ${JSON.stringify(resolvedEntryForTypeImport)};` : "",
             ].join("\n"),
         );
 
