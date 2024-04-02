@@ -1,3 +1,10 @@
+## @visulima/fs [2.0.4](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.3...@visulima/fs@2.0.4) (2024-04-02)
+
+
+### Bug Fixes
+
+* **fs:** fixed default behavior of collect ([#387](https://github.com/visulima/visulima/issues/387)) ([172baa9](https://github.com/visulima/visulima/commit/172baa9ebd724c1d145e78f926ec12d068ef73bb))
+
 ## @visulima/fs [2.0.3](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.2...@visulima/fs@2.0.3) (2024-03-30)
 
 
