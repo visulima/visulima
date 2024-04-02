@@ -8,17 +8,34 @@ class PackageNotFoundError extends Error {
      * @param {string} packageName - The name of the package that was not found.
      * @param {string} packageManager - The package manager used to install the package.
      */
-    public constructor(packageName: string, packageManager = "npm") {
-        try {
-            const foundManager = findPackageManagerSync();
-
+    public constructor(packageName: string[] | string, packageManager?: string) {
+        if (typeof packageName === "string") {
             // eslint-disable-next-line no-param-reassign
-            packageManager = foundManager.packageManager;
-        } catch {
-            // Do nothing
+            packageName = [packageName];
         }
 
-        super(`Package '${packageName}' was not found. Please install it using '${packageManager}'`);
+        if (packageName.length === 0) {
+            super("Package was not found.");
+            return;
+        }
+
+        if (packageManager === undefined) {
+            try {
+                const foundManager = findPackageManagerSync();
+
+                // eslint-disable-next-line no-param-reassign
+                packageManager = foundManager.packageManager;
+            } catch {
+                // Empty
+            }
+        }
+
+        if (packageManager === undefined) {
+            // eslint-disable-next-line no-param-reassign
+            packageManager = "npm";
+        }
+
+        super(`Package '${packageName.join(" ")}' was not found. Please install it using '${packageManager} install ${packageName.join(" ")}'`);
     }
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
