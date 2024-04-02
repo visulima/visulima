@@ -9,7 +9,7 @@ const DISPLAY_NAME = "Node Environment Check";
 const nodeEnvironmentCheck =
     (expectedEnvironment?: string): Checker =>
     async () => {
-        const environment: string | undefined = process.env["NODE_ENV"];
+        const environment: string | undefined = process.env.NODE_ENV;
 
         let errorMessage: string | undefined;
 

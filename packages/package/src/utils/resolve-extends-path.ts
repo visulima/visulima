@@ -49,8 +49,8 @@ const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ig
             // Block
             return false;
         }
-    } else if (!subpath && (packageJson as PackageJson)["tsconfig"]) {
-        resolvedPath = (packageJson as PackageJson)["tsconfig"] as string;
+    } else if (!subpath && (packageJson as PackageJson).tsconfig) {
+        resolvedPath = (packageJson as PackageJson).tsconfig as string;
     }
 
     resolvedPath = join(packageJsonPath, "..", resolvedPath);

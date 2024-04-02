@@ -28,7 +28,7 @@ const isColorSupported = (): ColorSupportLevel =>
         // when Next.JS runtime is `edge`, process.stdout is undefined, but colors output is supported
         // runtime values supported colors: `nodejs`, `edge`, `experimental-edge`
         if (typeof process !== "undefined") {
-            const isNextJS = (process.env["NEXT_RUNTIME"] ?? "").includes("edge");
+            const isNextJS = (process.env.NEXT_RUNTIME ?? "").includes("edge");
 
             return isNextJS ? 1 : 0;
         }

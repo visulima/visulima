@@ -32,10 +32,10 @@ const Pre = ({
         const hasWordWrap = "nextraWordWrap" in htmlDataset;
 
         if (hasWordWrap) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete htmlDataset["nextraWordWrap"];
+             
+            delete htmlDataset.nextraWordWrap;
         } else {
-            htmlDataset["nextraWordWrap"] = "";
+            htmlDataset.nextraWordWrap = "";
         }
     }, []);
 

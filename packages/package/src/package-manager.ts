@@ -194,11 +194,11 @@ export const identifyInitiatingPackageManager = async (): Promise<
       }
     | undefined
 > => {
-    if (!process.env["npm_config_user_agent"]) {
+    if (!process.env.npm_config_user_agent) {
         return undefined;
     }
 
-    const pmSpec = process.env["npm_config_user_agent"].split(" ")[0] as string;
+    const pmSpec = process.env.npm_config_user_agent.split(" ")[0] as string;
     const separatorPos = pmSpec.lastIndexOf("/");
     const name = pmSpec.slice(0, Math.max(0, separatorPos));
 

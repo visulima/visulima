@@ -26,7 +26,8 @@
         "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noUncheckedIndexedAccess": true,
-        "noPropertyAccessFromIndexSignature": true,
+        // We using dot notation for accessing properties
+        "noPropertyAccessFromIndexSignature": false,
         "noFallthroughCasesInSwitch": true,
         "exactOptionalPropertyTypes": false,
         "useUnknownInCatchVariables": true,

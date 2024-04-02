@@ -39,7 +39,7 @@ import registerExceptionHandler from "./util/register-exception-handler";
 const isCI = "CI" in env && ("GITHUB_ACTIONS" in env || "GITLAB_CI" in env || "CIRCLECI" in env);
 
 /** Detect if `NODE_ENV` environment variable is `test` */
-const isTest = env["NODE_ENV"] === "test" || env["TEST"] !== "false";
+const isTest = env.NODE_ENV === "test" || env.TEST !== "false";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
@@ -94,16 +94,16 @@ export class Cli implements ICli {
         // If the "--quiet"/"-q" flag is ever present, set our global logging
         // to quiet mode. Also set the level on the logger we've already created.
         if (this.argv.includes("--quiet") || this.argv.includes("-q")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_QUIET);
+            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_QUIET);
 
             // If the "--verbose"/"-v" flag is ever present, set our global logging
             // to verbose mode. Also set the level on the logger we've already created.
         } else if (this.argv.includes("--verbose") || this.argv.includes("-v")) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_VERBOSE);
+            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_VERBOSE);
         } else if (this.argv.includes("--debug") || this.argv.includes("-vvv") || "DEBUG" in env) {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_DEBUG);
+            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_DEBUG);
         } else {
-            env["CEREBRO_OUTPUT_LEVEL"] = String(VERBOSITY_NORMAL);
+            env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
         }
 
         const cerebroLevelToPailLevel: Record<string, string> = {
@@ -113,13 +113,13 @@ export class Cli implements ICli {
         };
 
         this.logger = createPail({
-            logLevel: env["CEREBRO_OUTPUT_LEVEL"]
-                ? cerebroLevelToPailLevel[env["CEREBRO_OUTPUT_LEVEL"] as keyof typeof cerebroLevelToPailLevel] ?? "informational"
+            logLevel: env.CEREBRO_OUTPUT_LEVEL
+                ? cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational"
                 : "informational",
             ...options.logger,
         });
 
-        if (env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_QUIET)) {
+        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_QUIET)) {
             this.logger.disable();
         }
 
@@ -250,7 +250,7 @@ export class Cli implements ICli {
 
         this.updateNotifierOptions = {
             alwaysRun: false,
-            debug: env["CEREBRO_OUTPUT_LEVEL"] === String(VERBOSITY_DEBUG),
+            debug: env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG),
             distTag: "latest",
             pkg: {
                 name: this.packageName,
@@ -369,8 +369,8 @@ export class Cli implements ICli {
 
         const booleanValues = getBooleanValues(commandArguments, command.options ?? []);
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations
-        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs["_all"], ...booleanValues } } as typeof parsedArgs;
+        // eslint-disable-next-line unicorn/prevent-abbreviations,no-underscore-dangle
+        const commandArgs = { ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.validateCommandOptions<any>(arguments_, commandArgs, command);
@@ -481,7 +481,7 @@ export class Cli implements ICli {
         // Help is a special argument for displaying help for the given command.
         // If found, run the help command instead, with the given command name as
         // an option.
-        if (commandArgs["global"]?.help) {
+        if (commandArgs.global?.help) {
             this.logger.debug("'--help' option found, running 'help' for given command...");
             const helpCommand = this.commands.get("help");
 
@@ -494,7 +494,7 @@ export class Cli implements ICli {
             return;
         }
 
-        if (commandArgs["global"]?.version || commandArgs["global"]?.V) {
+        if (commandArgs.global?.version || commandArgs.global?.V) {
             this.logger.debug("'--version' option found, running 'version' for given command...");
             const helpCommand = this.commands.get("version");
 
@@ -513,7 +513,7 @@ export class Cli implements ICli {
     private async updateNotifier({ logger }: IToolbox) {
         if (
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
-            (!(env["NO_UPDATE_NOTIFIER"] || env["NODE_ENV"] === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
+            (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger
             logger.raw("Checking for updates...");

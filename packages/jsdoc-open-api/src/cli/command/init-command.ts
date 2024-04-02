@@ -22,8 +22,7 @@ const initCommand = (configName: string, packageJsonPath = process.cwd()): void 
         // eslint-disable-next-line no-console
         console.info(`Found package.json at "${packagePath}"`);
 
-        // eslint-disable-next-line @typescript-eslint/dot-notation
-        if (package_["type"] === "module") {
+        if (package_.type === "module") {
             // eslint-disable-next-line no-console
             console.info("Found package.json with type: module, using ES6 as export for the config file");
 
