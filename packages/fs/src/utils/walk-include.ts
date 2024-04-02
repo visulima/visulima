@@ -1,5 +1,5 @@
 const walkInclude = (path: string, extensions?: string[], match?: RegExp[], skip?: RegExp[]): boolean => {
-    if (extensions && !extensions.some((extension): boolean => path.endsWith(extension))) {
+    if (Array.isArray(extensions) && extensions.length > 0 && !extensions.some((extension): boolean => path.endsWith(extension))) {
         return false;
     }
 
