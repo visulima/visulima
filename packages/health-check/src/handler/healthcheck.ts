@@ -18,8 +18,8 @@ export default (healthCheck: HealthCheck, sendHeader: boolean | undefined = true
         const { healthy, report } = await healthCheck.getReport();
 
         const payload: HealthCheckApiPayload = {
-            appName: process.env["APP_NAME"] ?? "unknown",
-            appVersion: process.env["APP_VERSION"] ?? "unknown",
+            appName: process.env.APP_NAME ?? "unknown",
+            appVersion: process.env.APP_VERSION ?? "unknown",
             message: healthy ? "Health check successful" : "Health check failed",
             reports: report,
             status: healthy ? "ok" : "error",

@@ -21,8 +21,8 @@ const useDirectory = (directory: string, options?: Options): string => {
 };
 
 export const findCacheDirectory = async (name: string, options?: Options): Promise<string | undefined> => {
-    if (env["CACHE_DIR"] && !["0", "1", "false", "true"].includes(env["CACHE_DIR"])) {
-        return useDirectory(join(env["CACHE_DIR"], name), options);
+    if (env.CACHE_DIR && !["0", "1", "false", "true"].includes(env.CACHE_DIR)) {
+        return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
     const rootDirectory = await findPackageRoot(options?.cwd ?? cwd());
@@ -57,8 +57,8 @@ export const findCacheDirectory = async (name: string, options?: Options): Promi
 };
 
 export const findCacheDirectorySync = (name: string, options?: Options): string | undefined => {
-    if (env["CACHE_DIR"] && !["0", "1", "false", "true"].includes(env["CACHE_DIR"])) {
-        return useDirectory(join(env["CACHE_DIR"], name), options);
+    if (env.CACHE_DIR && !["0", "1", "false", "true"].includes(env.CACHE_DIR)) {
+        return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
     const rootDirectory = findPackageRootSync(options?.cwd ?? cwd());

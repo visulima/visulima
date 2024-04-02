@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from "vitest";
 import { codeFrame } from "../../src/code-frame";
 import process from "../../src/util/process";
 
-const POINTER = process.platform === "win32" && !process.env?.["WT_SESSION"] ? ">" : "❯";
+const POINTER = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
 
 vi.mock("./utils", () => {
     return {

@@ -35,18 +35,15 @@ export const getFrameworkName = (directory: string): "express" | "fastify" | "ha
 
     const { dependencies } = JSON.parse(readFileSync(packageJSONFilePath).toString()) as PackageJson;
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    if (dependencies?.["express"]) {
+    if (dependencies?.express) {
         return "express";
     }
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    if (dependencies?.["koa"] && (dependencies["@koa/router"] || dependencies["koa-router"])) {
+    if (dependencies?.koa && (dependencies["@koa/router"] || dependencies["koa-router"])) {
         return "koa";
     }
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    if (dependencies?.["next"]) {
+    if (dependencies?.next) {
         return "next";
     }
 
@@ -54,8 +51,7 @@ export const getFrameworkName = (directory: string): "express" | "fastify" | "ha
         return "hapi";
     }
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    if (dependencies?.["fastify"]) {
+    if (dependencies?.fastify) {
         return "fastify";
     }
 

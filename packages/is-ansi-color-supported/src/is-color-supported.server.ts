@@ -16,7 +16,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
     const proc: Record<string, any> = _this.process ?? _this.Deno ?? {};
     // Node -> `argv`, Deno -> `args`
-    const argv: string[] = (proc["argv"] ?? proc["args"] ?? []) as string[];
+    const argv: string[] = (proc.argv ?? proc.args ?? []) as string[];
 
     /**
      * Detect whether flags exist with `-` or `--` prefix in command-line arguments.
@@ -37,7 +37,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     try {
         // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        environment = isDeno ? proc["env"].toObject() : proc["env"] ?? {};
+        environment = isDeno ? proc.env.toObject() : proc.env ?? {};
     } catch {
         // Deno: if interactive permission is not granted, do nothing, no colors
     }
@@ -93,21 +93,21 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return 1;
     }
 
-    const isDumbTerminal: boolean = environment["TERM"] === "dumb";
+    const isDumbTerminal: boolean = environment.TERM === "dumb";
 
     if (isDumbTerminal) {
         return minColorLevel;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if ((isDeno ? _this.Deno.build.os : proc["platform"]) === "win32") {
+    if ((isDeno ? _this.Deno.build.os : proc.platform) === "win32") {
         try {
             // Deno requires the permission for the access to the operating system, use the `--allow-sys` flag: deno run --allow-sys ./app.js
 
             // Windows 10 build 10586 is the first Windows release that supports 256 colors.
             // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-            const osRelease = (isDeno ? _this.Deno.osRelease() : proc["os"].release()).split(".");
+            const osRelease = (isDeno ? _this.Deno.osRelease() : proc.os.release()).split(".");
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10_586) {
@@ -128,7 +128,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 
         if (
             ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE", "GITLAB_CI"].some((sign) => sign in environment) ||
-            environment["CI_NAME"] === "codeship"
+            environment.CI_NAME === "codeship"
         ) {
             return 1;
         }
@@ -139,32 +139,32 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     if ("TEAMCITY_VERSION" in environment) {
         // https://www.jetbrains.com/help/teamcity/build-script-interaction-with-teamcity.html#BuildScriptInteractionwithTeamCity-ReportingMessages
         // eslint-disable-next-line regexp/no-unused-capturing-group
-        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(environment["TEAMCITY_VERSION"] as string) ? 1 : 0;
+        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(environment.TEAMCITY_VERSION as string) ? 1 : 0;
     }
 
-    if (environment["COLORTERM"] === "truecolor") {
+    if (environment.COLORTERM === "truecolor") {
         return 3;
     }
 
-    if (environment["TERM"] === "xterm-kitty") {
+    if (environment.TERM === "xterm-kitty") {
         return 3;
     }
 
     if ("TERM_PROGRAM" in environment) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const version = Number.parseInt(((environment["TERM_PROGRAM_VERSION"] as string) ?? "").split(".")[0] as string, 10);
+        const version = Number.parseInt(((environment.TERM_PROGRAM_VERSION as string) ?? "").split(".")[0] as string, 10);
 
-        if (environment["TERM_PROGRAM"] === "iTerm.app") {
+        if (environment.TERM_PROGRAM === "iTerm.app") {
             return version >= 3 ? 3 : 2;
         }
 
-        if (environment["TERM_PROGRAM"] === "Apple_Terminal") {
+        if (environment.TERM_PROGRAM === "Apple_Terminal") {
             return 2;
         }
     }
 
     // eslint-disable-next-line regexp/no-unused-capturing-group
-    if (/-256(color)?$/i.test(<string>environment["TERM"])) {
+    if (/-256(color)?$/i.test(<string>environment.TERM)) {
         return 2;
     }
 
@@ -183,7 +183,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         isTTY = proc["std" + stdName] && "isTTY" in proc["std" + stdName];
     }
 
-    if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment["TERM"])) {
+    if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment.TERM)) {
         return 1;
     }
 
