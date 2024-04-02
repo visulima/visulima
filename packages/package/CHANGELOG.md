@@ -1,3 +1,16 @@
+## @visulima/package [1.6.0](https://github.com/visulima/visulima/compare/@visulima/package@1.5.3...@visulima/package@1.6.0) (2024-04-02)
+
+
+### Features
+
+* **package:** added new findPackageManagerSync and NotFoundPackageError ([8648de4](https://github.com/visulima/visulima/commit/8648de4f4ce1fa4b083646eb1245821a7465e55b))
+
+
+### Bug Fixes
+
+* extended PackageNotFoundError, added missing tests ([63223c2](https://github.com/visulima/visulima/commit/63223c2cae1e6cefece97c8988c27da3d259a6ec))
+* fixed broken commit ([8917816](https://github.com/visulima/visulima/commit/89178166ff5d18717fd2afb3c1c5d6c2bfb09602))
+
 ## @visulima/package [1.5.3](https://github.com/visulima/visulima/compare/@visulima/package@1.5.2...@visulima/package@1.5.3) (2024-04-01)
 
 
