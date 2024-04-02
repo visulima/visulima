@@ -1,10 +1,11 @@
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import collect from "../../../src/find/collect";
 import collectSync from "../../../src/find/collect-sync";
-import { resolve } from "pathe";
-import { fileURLToPath } from "node:url";
-import { join } from "node:path";
 
 const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__");
 
