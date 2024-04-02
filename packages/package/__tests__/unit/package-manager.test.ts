@@ -47,7 +47,8 @@ describe("package-manager", () => {
 
             let result = function_(join(whichPMFixturePath, "yarn"));
 
-            if (result instanceof Promise) {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
                 result = await result;
             }
 
@@ -62,7 +63,8 @@ describe("package-manager", () => {
 
             let result = function_(join(whichPMFixturePath, "bun"));
 
-            if (result instanceof Promise) {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
                 result = await result;
             }
 
@@ -77,7 +79,8 @@ describe("package-manager", () => {
 
             let result = function_(join(whichPMFixturePath, "npm"));
 
-            if (result instanceof Promise) {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
                 result = await result;
             }
 
@@ -92,7 +95,8 @@ describe("package-manager", () => {
 
             let result = function_(join(whichPMFixturePath, "pnpm"));
 
-            if (result instanceof Promise) {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
                 result = await result;
             }
 
@@ -107,7 +111,8 @@ describe("package-manager", () => {
 
             let result = function_(join(whichPMFixturePath, "cnpm"));
 
-            if (result instanceof Promise) {
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
                 result = await result;
             }
 

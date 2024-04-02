@@ -7,11 +7,11 @@ import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
-    if (process.env["NODE_ENV"] === "debug" || process.env["DEBUG"] !== undefined) {
+    if (process.env.NODE_ENV === "debug" || process.env.DEBUG !== undefined) {
         return "debug";
     }
 
-    if (process.env["NODE_ENV"] === "test") {
+    if (process.env.NODE_ENV === "test") {
         return "warning";
     }
 

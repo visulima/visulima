@@ -147,8 +147,8 @@ for (const name in styleMethods) {
     };
 }
 
-styles["ansi256"] = styles["fg"] as object;
-styles["bgAnsi256"] = styles["bg"] as object;
+styles.ansi256 = styles.fg as object;
+styles.bgAnsi256 = styles.bg as object;
 
 // eslint-disable-next-line import/no-default-export
 export default WebColorize;

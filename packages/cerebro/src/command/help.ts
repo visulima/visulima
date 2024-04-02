@@ -164,8 +164,7 @@ class HelpCommand implements ICommand {
         }
 
         if (commandName === "help") {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            printGeneralHelp(logger, runtime, this.commands, options?.["group"]);
+            printGeneralHelp(logger, runtime, this.commands, options?.group);
         } else {
             printCommandHelp(logger, runtime, this.commands, commandName as string);
         }

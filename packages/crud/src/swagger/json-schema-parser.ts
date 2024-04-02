@@ -372,12 +372,12 @@ class PrismaJsonSchemaParser {
                             // eslint-disable-next-line prefer-destructuring
                             fieldData = anyOf[0];
                         } else {
-                            fieldData["anyOf"] = anyOf;
+                            fieldData.anyOf = anyOf;
                         }
 
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         if (nullable) {
-                            fieldData["nullable"] = true;
+                            fieldData.nullable = true;
                         }
                     } else {
                         const inputType = field.inputTypes[0];

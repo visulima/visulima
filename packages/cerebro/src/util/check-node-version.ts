@@ -3,7 +3,7 @@
  * version support policy. The CEREBRO_MIN_NODE_VERSION is used for testing only.
  */
 const checkNodeVersion = (): void => {
-    const minNodeVersion = process.env["CEREBRO_MIN_NODE_VERSION"] ? Number(process.env["CEREBRO_MIN_NODE_VERSION"]) : 18;
+    const minNodeVersion = process.env.CEREBRO_MIN_NODE_VERSION ? Number(process.env.CEREBRO_MIN_NODE_VERSION) : 18;
 
     const nodeVersion = process.version.replace("v", "");
 

@@ -47,7 +47,7 @@ describe("health check route", () => {
                 },
             },
             status: "ok",
-            timestamp: jsonResponse["timestamp"],
+            timestamp: jsonResponse.timestamp,
         });
     });
 
@@ -89,7 +89,7 @@ describe("health check route", () => {
                 },
             },
             status: "ok",
-            timestamp: jsonResponse["timestamp"],
+            timestamp: jsonResponse.timestamp,
         });
 
         process.env.APP_NAME = undefined;
