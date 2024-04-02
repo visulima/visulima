@@ -13,7 +13,7 @@ export const makeExecutable = async (filePath: string): Promise<void> => {
 
 export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/env node\n"): Plugin => {
     return {
-        name: "packem-shebang",
+        name: "packem:shebang",
 
         renderChunk(code, chunk, outputOptions) {
             if (!chunk.isEntry || !chunk.facadeModuleId) {
@@ -54,7 +54,7 @@ export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/e
 
 export const removeShebangPlugin = (): Plugin => {
     return {
-        name: "packem-remove-shebang",
+        name: "packem:remove-shebang",
         renderChunk(code) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return code.replace(SHEBANG_RE, "");

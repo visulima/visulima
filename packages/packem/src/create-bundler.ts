@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises";
 import Module from "node:module";
-import { cwd, env, exit, versions } from "node:process";
+import { cwd, env, exit } from "node:process";
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
 import { emptyDir, isAccessible, walk } from "@visulima/fs";
@@ -108,8 +108,8 @@ const build = async (
             emitCJS: false,
             esbuild: {
                 minify: env["NODE_ENV"] === "production",
-                target: [`node${versions.node}`],
-                tsconfigRaw: tsConfigContent,
+                target: tsConfigContent?.compilerOptions?.target,
+                tsconfigRaw: tsConfigContent
             },
             inlineDependencies: false,
             json: {
@@ -399,6 +399,10 @@ const createBundler = async (
 
     // Invoke build for every build config defined in packem.config.ts
     const cleanedDirectories: string[] = [];
+
+    if (otherInputConfig.target) {
+
+    }
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const buildConfig of buildConfigs) {

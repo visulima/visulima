@@ -7,7 +7,7 @@ import { dirname, extname, join,resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
 import logger from "../../../../logger";
-import { getRenderChunk } from "./get-render-chunk";
+import getRenderChunk from "./get-render-chunk";
 import doOptimizeDeps from "./optmize-deps";
 import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
@@ -45,6 +45,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
     const resolveFile = (resolved: string, index = false) => {
         const fileWithoutExtension = resolved.replace(/\.[jt]sx?$/, "");
 
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const extension of extensions) {
             const file = index ? join(resolved, `index${extension}`) : `${fileWithoutExtension}${extension}`;
 
@@ -61,8 +62,9 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
 
     return {
         async buildStart() {
-            if (!optimizeDeps || optimizeDepsResult)
-return;
+            if (!optimizeDeps || optimizeDepsResult) {
+                return;
+            }
 
             optimizeDepsResult = await doOptimizeDeps({
                 cwd,
@@ -79,6 +81,7 @@ return;
             if (context) {
                 cwd = context;
             }
+
             return null;
         },
 

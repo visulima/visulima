@@ -13,7 +13,7 @@ import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
-export interface BaseBuildEntry {
+interface BaseBuildEntry {
     builder?: string;
     declaration?: boolean | "compatible" | "node16";
     input: string;
@@ -22,27 +22,32 @@ export interface BaseBuildEntry {
     outDir?: string;
 }
 
-export interface RollupBuildEntry extends BaseBuildEntry {
+interface RollupBuildEntry extends BaseBuildEntry {
     builder: "rollup";
 }
 
-export type BuildEntry = BaseBuildEntry | RollupBuildEntry;
-
 export interface RollupBuildOptions {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     alias: RollupAliasOptions | false;
     cjsBridge?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;
     dts: RollupDtsOptions;
     emitCJS?: boolean;
     esbuild: EsbuildOptions | false;
     inlineDependencies?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     json: RollupJsonOptions | false;
+    metafile?: boolean;
     output?: OutputOptions;
     preserveDynamicImports?: boolean;
-    // Plugins
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     replace: RollupReplaceOptions | false;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     resolve: RollupNodeResolveOptions | false;
 }
+
+export type BuildEntry = BaseBuildEntry | RollupBuildEntry;
 
 export interface BuildOptions {
     alias: Record<string, string>;

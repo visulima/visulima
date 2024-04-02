@@ -20,7 +20,7 @@ type Options = Omit<TransformOptions, "sourcemap"> & {
     sourceMap?: boolean;
 };
 
-export const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugin["renderChunk"] =>
+const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugin["renderChunk"] =>
     async function (code, _, rollupOptions) {
         if (options.minify || options.minifyWhitespace || options.minifyIdentifiers || options.minifySyntax) {
             const format = getEsbuildFormat(rollupOptions.format);
@@ -43,3 +43,5 @@ export const getRenderChunk = ({ sourceMap = true, ...options }: Options): Plugi
 
         return null;
     };
+
+export default getRenderChunk;

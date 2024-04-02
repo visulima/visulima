@@ -515,7 +515,7 @@ export class Cli implements ICli {
             (this.updateNotifierOptions && this.updateNotifierOptions.alwaysRun) ||
             (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
-            // @TODO add a stream logger
+            // @:TODO add a stream logger
             logger.raw("Checking for updates...");
 
             const hasNewVersion = await import("./update-notifier/has-new-version").then((m) => m.default);

@@ -16,6 +16,7 @@ import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
 import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
+import { metafilePlugin } from "./plugins/metafile";
 import { rawPlugin } from "./plugins/raw";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { shebangPlugin } from "./plugins/shebang";
@@ -112,7 +113,12 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.json,
                 }),
 
-            shebangPlugin(context.options.entries.filter((entry) => entry.isExecutable).map((entry) => entry.name).filter(Boolean) as string[]),
+            shebangPlugin(
+                context.options.entries
+                    .filter((entry) => entry.isExecutable)
+                    .map((entry) => entry.name)
+                    .filter(Boolean) as string[],
+            ),
 
             context.options.rollup.esbuild &&
                 esbuildPlugin({
@@ -136,6 +142,12 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
             context.options.rollup.cjsBridge && cjsPlugin(),
 
             rawPlugin(),
+
+            context.options.rollup.metafile &&
+                metafilePlugin({
+                    outDir: resolve(context.options.rootDir, context.options.outDir),
+                    rootDir: context.options.rootDir,
+                }),
         ].filter(Boolean),
     }) as RollupOptions;
 

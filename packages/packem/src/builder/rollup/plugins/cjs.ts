@@ -35,7 +35,7 @@ const CJSToESM = (code: string) => {
 
 const cjsPlugin = (): Plugin =>
     ({
-        name: "packem-cjs",
+        name: "packem:cjs",
         renderChunk(code, _chunk, options) {
             if (options.format === "es") {
                 return CJSToESM(code);

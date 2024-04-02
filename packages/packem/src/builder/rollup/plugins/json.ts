@@ -9,7 +9,7 @@ const JSONPlugin = (options: RollupJsonOptions): Plugin => {
 
     return <Plugin>{
         ...plugin,
-        name: "packem-json",
+        name: "packem:json",
         transform(code, id) {
             const result = plugin.transform?.call(this, code, id);
 

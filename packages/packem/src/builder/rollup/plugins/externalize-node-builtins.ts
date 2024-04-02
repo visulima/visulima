@@ -41,7 +41,7 @@ const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
     });
 
     return {
-        name: "packem-externalize-node-builtins",
+        name: "packem:externalize-node-builtins",
         resolveId: (id: string) => {
             const hasNodeProtocol = id.startsWith("node:");
 

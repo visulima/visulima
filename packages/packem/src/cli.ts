@@ -14,20 +14,21 @@ cli.addCommand({
     execute: async ({ options }): Promise<void> => {
         let mode: Mode = "build";
 
-        if (options["watch"]) {
+        if (options.watch) {
             mode = "watch";
-        } else if (options["jit"]) {
+        } else if (options.jit) {
             mode = "jit";
         }
 
-        await createBundler(options["dir"] ?? ".", mode, {
+        await createBundler(options.dir ?? ".", mode, {
             rollup: {
                 esbuild: {
-                    minify: options["minify"],
-                    target: options["target"],
+                    minify: options.minify,
+                    target: options.target,
                 },
+                metafile: options.metafile,
             },
-            sourcemap: options["sourcemap"],
+            sourcemap: options.sourcemap,
         });
     },
     name: "build",
@@ -82,6 +83,12 @@ cli.addCommand({
                     value,
                 };
             },
+        },
+        {
+            defaultValue: false,
+            description: "Generate meta file (experimental)",
+            name: "metafile",
+            type: Boolean,
         },
     ],
 });
