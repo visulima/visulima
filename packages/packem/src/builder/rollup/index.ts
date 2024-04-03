@@ -1,14 +1,47 @@
-import { cyan, gray, red } from "@visulima/colorize";
+import { cyan, gray } from "@visulima/colorize";
 import { relative, resolve } from "pathe";
-import type { OutputChunk, OutputOptions, RollupWatcherEvent } from "rollup";
+import type { OutputChunk, OutputOptions, RollupWatcher, RollupWatcherEvent } from "rollup";
 import { rollup, watch as rollupWatch } from "rollup";
 
-// import dts from "rollup-plugin-dts";
 import logger from "../../logger";
 import type { BuildContext } from "../../types";
-import dumpObject from "../../utils/dump-object";
 import getChunkFilename from "./get-chunk-filename";
 import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
+
+const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types") => {
+    const prefix = "watcher:" + mode;
+
+    watcher.on("change", (id, { event }) => {
+        logger.info({
+            message: `${cyan(relative(".", id))} was ${event}d`,
+            prefix,
+        });
+    });
+
+    watcher.on("restart", () => {
+        logger.info({
+            message: "Rebuilding " + mode + "...",
+            prefix,
+        });
+    });
+
+    watcher.on("event", (event: RollupWatcherEvent) => {
+        if (event.code === "END") {
+            logger.success({
+                message: "Rebuild " + mode + " finished",
+                prefix,
+            });
+        }
+
+        if (event.code === "ERROR") {
+            logger.error({
+                context: [event.error],
+                message: "Rebuild " + mode + " failed: " + event.error.message,
+                prefix,
+            });
+        }
+    });
+};
 
 export const watch = async (context: BuildContext): Promise<void> => {
     const rollupOptions = getRollupOptions(context);
@@ -18,12 +51,6 @@ export const watch = async (context: BuildContext): Promise<void> => {
     if (Object.keys(rollupOptions.input as any).length === 0) {
         return;
     }
-
-    // if (context.options.declaration) {
-    //     rollupOptions.plugins = declarationsPlugins(rollupOptions, context);
-    //
-    //     await context.hooks.callHook("rollup:dts:options", context, rollupOptions);
-    // }
 
     const watcher = rollupWatch(rollupOptions);
 
@@ -46,21 +73,19 @@ export const watch = async (context: BuildContext): Promise<void> => {
 
     logger.info(infoMessage);
 
-    watcher.on("change", (id, { event }) => {
-        logger.info(`${cyan(relative(".", id))} was ${event}d`);
-    });
-    watcher.on("restart", () => {
-        logger.info("Rebuilding bundle");
-    });
-    watcher.on("event", (event: RollupWatcherEvent) => {
-        if (event.code === "END") {
-            logger.success("Rebuild finished");
-        }
+    watchHandler(watcher, "bundle");
 
-        if (event.code === "ERROR") {
-            logger.raw(red("Rebuild failed:"), event.error.message, "\n\n");
-        }
-    });
+    if (context.options.declaration) {
+        const rollupDtsOptions = getRollupDtsOptions(context);
+
+        await context.hooks.callHook("rollup:dts:options", context, rollupDtsOptions);
+
+        const dtsWatcher = rollupWatch(rollupDtsOptions);
+
+        await context.hooks.callHook("rollup:watch", context, dtsWatcher);
+
+        watchHandler(dtsWatcher, "types");
+    }
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -128,12 +153,13 @@ export const build = async (context: BuildContext): Promise<void> => {
         }
 
         await context.hooks.callHook("rollup:dts:options", context, rollupTypeOptions);
+
         const typesBuild = await rollup(rollupTypeOptions);
+
         await context.hooks.callHook("rollup:dts:build", context, typesBuild);
 
-        logger.info("Writing types...")
+        logger.info("Writing types...");
 
-        // #region cjs
         if (context.options.rollup.emitCJS) {
             await typesBuild.write({
                 chunkFileNames: (chunk) => getChunkFilename(context, chunk, "d.cts"),
@@ -141,15 +167,14 @@ export const build = async (context: BuildContext): Promise<void> => {
                 entryFileNames: "[name].d.cts",
             });
         }
-        // #endregion
-        // #region mjs
+
         await typesBuild.write({
             chunkFileNames: (chunk) => getChunkFilename(context, chunk, "d.mts"),
             dir: resolve(context.options.rootDir, context.options.outDir),
             entryFileNames: "[name].d.mts",
         });
-        // #endregion
-        // #region .d.ts for node10 compatibility (TypeScript version < 4.7)
+
+        // .d.ts for node10 compatibility (TypeScript version < 4.7)
         if (context.options.declaration === true || context.options.declaration === "compatible") {
             await typesBuild.write({
                 chunkFileNames: (chunk) => getChunkFilename(context, chunk, "d.ts"),
@@ -157,7 +182,6 @@ export const build = async (context: BuildContext): Promise<void> => {
                 entryFileNames: "[name].d.ts",
             });
         }
-        // #endregion
     }
 
     await context.hooks.callHook("rollup:done", context);

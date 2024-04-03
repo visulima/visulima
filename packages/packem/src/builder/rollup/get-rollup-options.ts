@@ -14,7 +14,6 @@ import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import arrayIncludes from "../../utils/array-includes";
 import getPackageName from "../../utils/get-package-name";
-import warn from "../../utils/warn";
 import getChunkFilename from "./get-chunk-filename";
 import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
@@ -71,6 +70,11 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
                 rollupWarn(warning);
             }
         },
+    };
+
+export const getRollupOptions = (context: BuildContext): RollupOptions =>
+    (<RollupOptions>{
+        ...baseRollupOptions(context),
 
         output: [
             context.options.rollup.emitCJS &&
@@ -100,11 +104,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
                 ...context.options.rollup.output,
             },
         ].filter(Boolean),
-    };
 
-export const getRollupOptions = (context: BuildContext): RollupOptions =>
-    (<RollupOptions>{
-        ...baseRollupOptions(context),
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
             resolveTypescriptMjsCts(),
@@ -182,7 +182,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
     const ignoreFiles: Plugin = {
         load(id) {
-            if (!/\.(js|cjs|mjs|jsx|ts|tsx|mts|json)$/.test(id)) {
+            if (!/\.(?:js|cjs|mjs|jsx|ts|tsx|mts|json)$/.test(id)) {
                 return "";
             }
 
@@ -197,6 +197,7 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
     return <RollupOptions>{
         ...baseRollupOptions(context),
+
         onwarn(warning, handler) {
             if (warning.code === "UNRESOLVED_IMPORT" || warning.code === "CIRCULAR_DEPENDENCY" || warning.code === "EMPTY_BUNDLE") {
                 return;
@@ -204,6 +205,37 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
             handler(warning);
         },
+
+        output: [
+            context.options.rollup.emitCJS &&
+                <OutputOptions>{
+                    chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "d.cts"),
+                    dir: resolve(context.options.rootDir, context.options.outDir),
+                    entryFileNames: "[name].d.cts",
+                    format: "cjs",
+                    sourcemap: context.options.sourcemap,
+                    ...context.options.rollup.output,
+                },
+            <OutputOptions>{
+                chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "d.mts"),
+                dir: resolve(context.options.rootDir, context.options.outDir),
+                entryFileNames: "[name].d.mts",
+                format: "esm",
+                sourcemap: context.options.sourcemap,
+                ...context.options.rollup.output,
+            },
+            // .d.ts for node10 compatibility (TypeScript version < 4.7)
+            (context.options.declaration === true || context.options.declaration === "compatible") &&
+                <OutputOptions>{
+                    chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "d.ts"),
+                    dir: resolve(context.options.rootDir, context.options.outDir),
+                    entryFileNames: "[name].d.ts",
+                    format: "cjs",
+                    sourcemap: context.options.sourcemap,
+                    ...context.options.rollup.output,
+                },
+        ].filter(Boolean),
+
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
             resolveTypescriptMjsCts(),
