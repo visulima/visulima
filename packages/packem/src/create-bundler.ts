@@ -14,8 +14,8 @@ import { isAbsolute, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
 import { ScriptTarget } from "typescript";
 
+import createStub from "./builder/jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
-import createStub from "./builder/rollup/create-stub";
 import { DEFAULT_EXTENSIONS } from "./constants";
 import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";

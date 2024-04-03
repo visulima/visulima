@@ -7,9 +7,9 @@ import { dirname, extname, normalize, resolve } from "pathe";
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
 import warn from "../../utils/warn";
-import tryResolve from "../jit/try-resolve";
-import { getShebang, makeExecutable } from "./plugins/shebang";
-import resolveAliases from "./resolve-aliases";
+import tryResolve from "./try-resolve";
+import { getShebang, makeExecutable } from "../rollup/plugins/shebang";
+import resolveAliases from "../rollup/utils/resolve-aliases";
 
 const createStub = async (context: BuildContext) => {
     const jitiPath = await resolvePath("jiti", { url: import.meta.url });

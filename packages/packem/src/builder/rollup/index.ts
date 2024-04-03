@@ -5,8 +5,8 @@ import { rollup, watch as rollupWatch } from "rollup";
 
 import logger from "../../logger";
 import type { BuildContext } from "../../types";
-import getChunkFilename from "./get-chunk-filename";
 import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
+import getChunkFilename from "./utils/get-chunk-filename";
 
 const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types") => {
     const prefix = "watcher:" + mode;

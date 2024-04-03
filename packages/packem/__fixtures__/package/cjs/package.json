@@ -1,0 +1,8 @@
+{
+    "name": "packem-cjs",
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/packem": "workspace:*"
+    }
+}

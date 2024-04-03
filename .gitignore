@@ -64,3 +64,5 @@ storybook-static/
 
 # Package build output
 dist
+
+!packages/packem/__fixtures__/error-cases-package/node_modules

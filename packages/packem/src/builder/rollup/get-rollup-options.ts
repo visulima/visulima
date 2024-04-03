@@ -14,7 +14,6 @@ import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import arrayIncludes from "../../utils/array-includes";
 import getPackageName from "../../utils/get-package-name";
-import getChunkFilename from "./get-chunk-filename";
 import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
 import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
@@ -23,7 +22,8 @@ import metafilePlugin from "./plugins/metafile";
 import rawPlugin from "./plugins/raw";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
-import resolveAliases from "./resolve-aliases";
+import getChunkFilename from "./utils/get-chunk-filename";
+import resolveAliases from "./utils/resolve-aliases";
 
 const baseRollupOptions = (context: BuildContext): RollupOptions =>
     <RollupOptions>{
