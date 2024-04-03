@@ -31,10 +31,12 @@ const validateDependencies = (context: BuildContext) => {
             implicitDependencies.add(id);
         }
     }
+
     if (unusedDependencies.size > 0) {
         warn(context, `Potential unused dependencies found: ${[...unusedDependencies].map((id) => cyan(id)).join(", ")}`);
     }
-    if (implicitDependencies.size > 0 && !context.options.rollup.inlineDependencies) {
+
+    if (implicitDependencies.size > 0) {
         warn(context, `Potential implicit dependencies found: ${[...implicitDependencies].map((id) => cyan(id)).join(", ")}`);
     }
 }

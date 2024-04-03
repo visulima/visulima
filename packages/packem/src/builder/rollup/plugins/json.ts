@@ -11,12 +11,14 @@ const JSONPlugin = (options: RollupJsonOptions): Plugin => {
         ...plugin,
         name: "packem:json",
         transform(code, id) {
+            // @ts-expect-error - `transform` is not defined in the Rollup plugin interface
             const result = plugin.transform?.call(this, code, id);
 
             if (result && typeof result !== "string" && "code" in result && result.code?.startsWith(EXPORT_DEFAULT)) {
                 result.code = result.code.replace(EXPORT_DEFAULT, "module.exports = ");
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return result;
         },
     };

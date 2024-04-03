@@ -2,24 +2,27 @@ import { writeJsonSync } from "@visulima/fs";
 import { resolve } from "pathe";
 import type { Plugin } from "rollup";
 
-export interface MetafileOptions {
+interface MetafileOptions {
     outDir: string;
     rootDir: string;
 }
 
-export interface MetaInfo {
+interface MetaInfo {
     source: string;
     target: string;
 }
 
-export const metafilePlugin = (options: MetafileOptions): Plugin => ({
+const metafilePlugin = (options: MetafileOptions): Plugin =>
+    ({
         async buildEnd() {
             const deps: MetaInfo[] = [];
 
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const id of this.getModuleIds()) {
                 const m = this.getModuleInfo(id);
 
                 if (m != null && !m.isExternal) {
+                    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
                     for (const target of m.importedIds) {
                         deps.push({
                             source: id,
@@ -38,4 +41,6 @@ export const metafilePlugin = (options: MetafileOptions): Plugin => ({
             writeJsonSync(outPath, deps);
         },
         name: "packem:metafile",
-    } as Plugin);
+    }) as Plugin;
+
+export default metafilePlugin;

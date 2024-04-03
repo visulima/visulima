@@ -11,6 +11,7 @@ const warn = async (
       color: true,
       kind: 'warning',
     })
+
     warnings.forEach((warning) => pluginContext.warn(warning))
   }
 }

@@ -1,26 +1,29 @@
 import { stat } from "node:fs/promises";
 import Module from "node:module";
-import { cwd, env, exit } from "node:process";
+import { cwd, env, exit, versions } from "node:process";
 
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { bold, cyan, gray, green } from "@visulima/colorize";
 import { emptyDir, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
-import type { PackageJson, TsConfigJsonResolved } from "@visulima/package";
+import type { PackageJson, TsConfigResult } from "@visulima/package";
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
+import { minVersion } from "semver";
 import { ScriptTarget } from "typescript";
 
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
 import createStub from "./builder/rollup/create-stub";
+import { DEFAULT_EXTENSIONS } from "./constants";
 import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
+import arrayify from "./utils/arrayify";
 import dumpObject from "./utils/dump-object";
 import removeExtension from "./utils/remove-extension";
 import resolvePreset from "./utils/resolve-preset";
 import tryRequire from "./utils/try-require";
-import warn from "./utils/warn";
 import validateDependencies from "./validator/validate-dependencies";
 import validatePackage from "./validator/validate-package";
 
@@ -29,7 +32,7 @@ type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
 const logErrors = (context: BuildContext): void => {
     if (context.warnings.size > 0) {
-        warn(context, `Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
+        logger.warn(`\nBuild is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
 
         if (context.options.failOnWarn) {
             logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
@@ -45,11 +48,21 @@ const build = async (
     inputConfig: BuildConfig,
     buildConfig: BuildConfig,
     package_: PackEmPackageJson,
-    tsConfigContent: TsConfigJsonResolved | undefined,
+    tsconfig: TsConfigResult | undefined,
     cleanedDirectories: string[],
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
     const preset = resolvePreset(buildConfig.preset ?? package_?.packem?.preset ?? inputConfig.preset ?? "auto", rootDirectory);
+
+    let nodeTarget = `node${versions.node.split(".")[0]}`;
+
+    if (package_?.engines?.node) {
+        const minNodeVersion = minVersion(package_.engines.node);
+
+        if (minNodeVersion) {
+            nodeTarget = `node${minNodeVersion.major}`;
+        }
+    }
 
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
@@ -65,14 +78,23 @@ const build = async (
         peerDependencies: [],
         replace: {},
         rollup: {
-            alias: {},
+            alias: {
+                // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
+                customResolver: nodeResolve({
+                    // We remove json from the list of extensions
+                    extensions: DEFAULT_EXTENSIONS.slice(0, -1),
+                }),
+            },
             cjsBridge: false,
             commonjs: {
                 ignoreTryCatch: true,
+                preserveSymlinks: true,
+                // https://github.com/rollup/plugins/tree/master/packages/commonjs#transformmixedesmodules
+                transformMixedEsModules: false,
             },
             dts: {
                 compilerOptions: {
-                    baseUrl: ".",
+                    baseUrl: tsconfig?.config?.compilerOptions?.baseUrl || ".",
                     // Avoid extra work
                     checkJs: false,
                     /**
@@ -107,14 +129,18 @@ const build = async (
             },
             emitCJS: false,
             esbuild: {
-                minify: env["NODE_ENV"] === "production",
-                target: tsConfigContent?.compilerOptions?.target,
-                tsconfigRaw: tsConfigContent
+                include: /\.[jt]sx?$/,
+                // https://esbuild.github.io/api/#keep-names
+                keepNames: true,
+                minify: env.NODE_ENV === "production",
+                target: tsconfig?.config?.compilerOptions?.target,
+                // Optionally preserve symbol names during minification
+                tsconfigRaw: tsconfig?.config,
             },
-            inlineDependencies: false,
             json: {
                 preferConst: true,
             },
+            polyfillNode: {},
             preserveDynamicImports: true,
             replace: {
                 /**
@@ -125,7 +151,10 @@ const build = async (
                 preventAssignment: true,
             },
             resolve: {
-                preferBuiltins: true,
+                // old behavior node 14 and removed in node 17
+                allowExportsFolderMapping: false,
+                // Following option must be *false* for polyfill to work
+                preferBuiltins: false,
             },
             watch: false,
         },
@@ -142,6 +171,7 @@ const build = async (
                 interopDefault: true,
             },
         },
+        target: nodeTarget,
         watch: {
             clearScreen: true,
             exclude: ["node_modules/**"],
@@ -151,6 +181,25 @@ const build = async (
     // Resolve dirs relative to rootDir
     options.outDir = resolve(options.rootDir, options.outDir);
 
+    // Add node target to esbuild target
+    if (options.rollup.esbuild) {
+        if (options.rollup.esbuild.target) {
+            const targets = arrayify(options.rollup.esbuild.target);
+
+            if (!targets.some((t) => t.startsWith("node"))) {
+                options.rollup.esbuild.target = [options.target, ...targets];
+            }
+        } else {
+            options.rollup.esbuild.target = [options.target];
+        }
+    }
+
+    if (options.rollup.resolve && options.rollup.resolve.preferBuiltins === true) {
+        options.rollup.polyfillNode = false;
+
+        logger.debug("Disabling polyfillNode because preferBuiltins is set to true");
+    }
+
     // Build context
     const context: BuildContext = {
         buildEntries: [],
@@ -158,7 +207,7 @@ const build = async (
         options,
         pkg: package_,
         rootDir: rootDirectory,
-        tsconfig: tsConfigContent,
+        tsconfig,
         usedImports: new Set(),
         warnings: new Set(),
     };
@@ -341,7 +390,7 @@ const build = async (
     }
 
     if (loggedEntries) {
-        logger.raw("\nΣ Total dist size (byte size):", cyan(formatBytes(context.buildEntries.reduce((index, entry) => index + (entry.bytes ?? 0), 0))), "\n");
+        logger.raw("Σ Total dist size (byte size):", cyan(formatBytes(context.buildEntries.reduce((index, entry) => index + (entry.bytes ?? 0), 0))), "\n");
     }
 
     // Validate
@@ -366,7 +415,7 @@ const createBundler = async (
     // eslint-disable-next-line no-param-reassign
     rootDirectory = resolve(cwd(), rootDirectory);
 
-    let tsConfigContent: TsConfigJsonResolved | undefined;
+    let tsconfig: TsConfigResult | undefined;
 
     if (tsconfigPath) {
         if (!(await isAccessible(tsconfigPath))) {
@@ -375,16 +424,17 @@ const createBundler = async (
             exit(1);
         }
 
-        tsConfigContent = readTsConfig(tsconfigPath);
+        tsconfig = {
+            config: await readTsConfig(tsconfigPath),
+            path: tsconfigPath,
+        };
 
         logger.debug("Using tsconfig.json found at", tsconfigPath);
     } else {
         try {
-            const foundTsconfig = await findTSConfig(rootDirectory);
+            tsconfig = await findTSConfig(rootDirectory);
 
-            tsConfigContent = foundTsconfig.config;
-
-            logger.debug("Using tsconfig.json found at", foundTsconfig.path);
+            logger.debug("Using tsconfig.json found at", tsconfig.path);
         } catch {
             logger.info("No tsconfig.json found. Using default settings.");
         }
@@ -400,14 +450,10 @@ const createBundler = async (
     // Invoke build for every build config defined in packem.config.ts
     const cleanedDirectories: string[] = [];
 
-    if (otherInputConfig.target) {
-
-    }
-
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const buildConfig of buildConfigs) {
         // eslint-disable-next-line no-await-in-loop
-        await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsConfigContent, cleanedDirectories);
+        await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsconfig, cleanedDirectories);
     }
 
     // Restore all wrapped console methods

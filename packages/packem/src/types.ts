@@ -3,11 +3,12 @@ import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
-import type { PackageJson, TsConfigJsonResolved } from "@visulima/package";
+import type { PackageJson, TsConfigResult } from "@visulima/package";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions, RollupWatcher } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
+import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
 
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 
@@ -35,11 +36,12 @@ export interface RollupBuildOptions {
     dts: RollupDtsOptions;
     emitCJS?: boolean;
     esbuild: EsbuildOptions | false;
-    inlineDependencies?: boolean;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     json: RollupJsonOptions | false;
     metafile?: boolean;
     output?: OutputOptions;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    polyfillNode?: NodePolyfillsOptions | false;
     preserveDynamicImports?: boolean;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     replace: RollupReplaceOptions | false;
@@ -75,6 +77,7 @@ export interface BuildOptions {
     sourcemap: boolean;
     stub: boolean;
     stubOptions: { jiti: Omit<JITIOptions, "onError" | "transform"> };
+    target: string;
 }
 
 export interface BuildHooks {
@@ -103,7 +106,7 @@ export interface BuildContext {
     options: BuildOptions;
     pkg: PackageJson;
     rootDir: string;
-    tsconfig?: TsConfigJsonResolved;
+    tsconfig?: TsConfigResult;
     usedImports: Set<string>;
     warnings: Set<string>;
 }

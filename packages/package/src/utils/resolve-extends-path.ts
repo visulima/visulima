@@ -19,6 +19,7 @@ import type { Cache } from "../types";
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) as unknown;
 
 const getPnpApi = () => {
+    // @ts-expect-error
     const { findPnpApi } = Module;
 
     // https://yarnpkg.com/advanced/pnpapi/#requirepnpapi

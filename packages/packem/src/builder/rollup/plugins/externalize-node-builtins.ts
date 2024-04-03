@@ -1,10 +1,7 @@
 import { builtinModules } from "node:module";
 
 import type { Plugin } from "rollup";
-
-type Semver = [number, number, number];
-
-const compareSemver = (semverA: Semver, semverB: Semver) => semverA[0] - semverB[0] || semverA[1] - semverB[1] || semverA[2] - semverB[2];
+import { compare } from "semver";
 
 /**
  * Implemented as a plugin instead of the external API
@@ -13,7 +10,7 @@ const compareSemver = (semverA: Semver, semverB: Semver) => semverA[0] - semverB
  * Alternatively, we can create a mapping via output.paths
  * but this seems cleaner
  */
-const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
+const externalizeNodeBuiltins = (target: string[]): Plugin => {
     /**
      * Only remove protocol if a Node.js version that doesn't
      * support it is specified.
@@ -28,14 +25,14 @@ const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
         }
 
         const parsedVersion = platform.slice(4).split(".").map(Number);
-        const semver: Semver = [parsedVersion[0], parsedVersion[1] ?? 0, parsedVersion[2] ?? 0];
+        const semver = parsedVersion[0] + "." + (parsedVersion[1] ?? 0) + "." + (parsedVersion[2] ?? 0);
 
         return !(
             // 12.20.0 <= x < 13.0.0
             (
-                (compareSemver(semver, [12, 20, 0]) >= 0 && compareSemver(semver, [13, 0, 0]) < 0) ||
+                (compare(semver, "12.20.0") >= 0 && compare(semver, "13.0.0") < 0) ||
                 // 14.13.1 <= x
-                compareSemver(semver, [14, 13, 1]) >= 0
+                compare(semver, "14.13.1") >= 0
             )
         );
     });
@@ -46,6 +43,7 @@ const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
             const hasNodeProtocol = id.startsWith("node:");
 
             if (stripNodeProtocol && hasNodeProtocol) {
+                // eslint-disable-next-line no-param-reassign
                 id = id.slice(5);
             }
 
@@ -55,6 +53,8 @@ const externalizeNodeBuiltins = ({ target }: { target: string[] }): Plugin => {
                     id,
                 };
             }
+
+            return null;
         },
     };
 };

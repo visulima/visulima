@@ -7,3 +7,7 @@ const mayAppLogger = createPail({
 });
 
 mayAppLogger.info("Hello from my app");
+
+const mayAppLogger2 = mayAppLogger.scope("my-app-2");
+
+mayAppLogger2.info("Hello from my app");

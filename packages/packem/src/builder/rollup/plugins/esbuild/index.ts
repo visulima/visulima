@@ -3,7 +3,7 @@ import { existsSync, statSync } from "node:fs";
 import { createFilter } from "@rollup/pluginutils";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
-import { dirname, extname, join,resolve } from "pathe";
+import { dirname, extname, join, resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
 import logger from "../../../../logger";
@@ -13,18 +13,24 @@ import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
 
 const defaultLoaders: Record<string, Loader> = {
+    // CSS/SASS modules
+    ".css": "css",
     ".js": "js",
+    // Add .json files support - require @rollup/plugin-json
+    ".json": "json",
     ".jsx": "jsx",
+    ".svg": "text",
     ".ts": "ts",
     ".tsx": "tsx",
 };
 
-export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap = true, tsconfig, ...esbuildOptions }: Options = {}): RollupPlugin => {
+export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap = true, ...esbuildOptions }: Options = {}): RollupPlugin => {
     const loaders = {
         ...defaultLoaders,
     };
 
     if (_loaders) {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (let [key, value] of Object.entries(_loaders)) {
             key = key.startsWith(".") ? key : `.${key}`;
 
@@ -117,7 +123,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 }
             }
 
-            return undefined;
+            return null;
         },
 
         async transform(code, id) {
@@ -137,8 +143,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 loader,
                 sourcefile: id,
                 sourcemap: sourceMap,
-                target: "es2020",
-                tsconfigRaw: tsconfig,
+
                 ...esbuildOptions,
             });
 

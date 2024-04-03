@@ -7,12 +7,13 @@ const defaults: RawLoaderOptions = {
     include: [/\.(md|txt|css|htm|html)$/],
 };
 
-export interface RawLoaderOptions {
+interface RawLoaderOptions {
     exclude?: FilterPattern;
     include?: FilterPattern;
 }
 
-export const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
+const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
+    // eslint-disable-next-line no-param-reassign
     options = { ...options, ...defaults };
 
     const filter = createFilter(options.include, options.exclude);
@@ -26,6 +27,10 @@ export const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
                     map: null,
                 };
             }
+
+            return null;
         },
     };
 };
+
+export default rawPlugin;

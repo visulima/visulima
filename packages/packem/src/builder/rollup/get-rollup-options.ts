@@ -1,14 +1,18 @@
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { DEFAULTS as RESOLVE_DEFAULTS, nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
-import { isAbsolute, resolve } from "pathe";
-import type { OutputOptions, PreRenderedChunk, RollupOptions } from "rollup";
+import { cyan } from "@visulima/colorize";
+import { isAbsolute, relative, resolve } from "pathe";
+import type { OutputOptions, Plugin, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
+import { dts } from "rollup-plugin-dts";
+import polifill from "rollup-plugin-polyfill-node";
 
+// import ts from "rollup-plugin-ts";
 import { DEFAULT_EXTENSIONS } from "../../constants";
+import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import arrayIncludes from "../../utils/array-includes";
-import arrayify from "../../utils/arrayify";
 import getPackageName from "../../utils/get-package-name";
 import warn from "../../utils/warn";
 import getChunkFilename from "./get-chunk-filename";
@@ -16,14 +20,14 @@ import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
 import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
-import { metafilePlugin } from "./plugins/metafile";
-import { rawPlugin } from "./plugins/raw";
+import metafilePlugin from "./plugins/metafile";
+import rawPlugin from "./plugins/raw";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
-import { shebangPlugin } from "./plugins/shebang";
+import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import resolveAliases from "./resolve-aliases";
 
-const getRollupOptions = (context: BuildContext): RollupOptions =>
-    (<RollupOptions>{
+const baseRollupOptions = (context: BuildContext): RollupOptions =>
+    <RollupOptions>{
         external(id) {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const package_ = getPackageName(id);
@@ -33,12 +37,13 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 return true;
             }
 
-            if (context.options.rollup.inlineDependencies || id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(context.pkg.name)) {
+            if (id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(context.pkg.name)) {
                 return false;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!isExplicitExternal) {
-                warn(context, `Inlined implicit external ${id}`);
+                logger.info(`Inlined implicit external ${id}. If this is incorrect, add it to the "externals" option.`);
             }
 
             return isExplicitExternal;
@@ -48,7 +53,20 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
             context.options.entries.filter((entry) => entry.builder === "rollup").map((entry) => [entry.name, resolve(context.options.rootDir, entry.input)]),
         ),
 
-        onwarn(warning, rollupWarn) {
+        onwarn(warning: RollupLog, rollupWarn) {
+            // eslint-disable-next-line no-secrets/no-secrets
+            // @see https:// github.com/rollup/rollup/blob/5abe71bd5bae3423b4e2ee80207c871efde20253/cli/run/batchWarnings.ts#L236
+            if (warning.code === "UNRESOLVED_IMPORT") {
+                logger.warn(
+                    `Failed to resolve the module "${warning.exporter}" imported by "${cyan(relative(resolve(), warning.id as string))}"` +
+                        `\nIs the module installed? Note:` +
+                        `\n ↳ to inline a module into your bundle, install it to "devDependencies".` +
+                        `\n ↳ to depend on a module via import/require, install it to "dependencies".`,
+                );
+
+                return;
+            }
+
             if (!warning.code || !["CIRCULAR_DEPENDENCY"].includes(warning.code)) {
                 rollupWarn(warning);
             }
@@ -82,9 +100,13 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 ...context.options.rollup.output,
             },
         ].filter(Boolean),
+    };
 
+export const getRollupOptions = (context: BuildContext): RollupOptions =>
+    (<RollupOptions>{
+        ...baseRollupOptions(context),
         plugins: [
-            externalizeNodeBuiltins({ target: arrayify(context.options.rollup.esbuild.target) }),
+            externalizeNodeBuiltins([context.options.target]),
             resolveTypescriptMjsCts(),
 
             context.options.rollup.replace &&
@@ -104,8 +126,14 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
 
             context.options.rollup.resolve &&
                 nodeResolve({
-                    extensions: DEFAULT_EXTENSIONS,
+                    extensions: [...RESOLVE_DEFAULTS.extensions, ".ts", ".tsx", ".cjs", ".jsx"],
                     ...context.options.rollup.resolve,
+                }),
+
+            context.options.rollup.polyfillNode &&
+                polifill({
+                    sourceMap: context.options.sourcemap,
+                    ...context.options.rollup.polyfillNode,
                 }),
 
             context.options.rollup.json &&
@@ -124,12 +152,12 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
                 esbuildPlugin({
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.esbuild,
-                    tsconfig: context.tsconfig,
                 }),
 
             context.options.rollup.commonjs &&
                 commonjs({
                     extensions: DEFAULT_EXTENSIONS,
+                    sourceMap: context.options.sourcemap,
                     ...context.options.rollup.commonjs,
                 }),
 
@@ -151,4 +179,73 @@ const getRollupOptions = (context: BuildContext): RollupOptions =>
         ].filter(Boolean),
     }) as RollupOptions;
 
-export default getRollupOptions;
+export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
+    const ignoreFiles: Plugin = {
+        load(id) {
+            if (!/\.(js|cjs|mjs|jsx|ts|tsx|mts|json)$/.test(id)) {
+                return "";
+            }
+
+            return null;
+        },
+        name: "packem:ignore-files",
+    };
+
+    const compilerOptions = context.tsconfig?.config?.compilerOptions;
+
+    delete compilerOptions?.lib;
+
+    return <RollupOptions>{
+        ...baseRollupOptions(context),
+        onwarn(warning, handler) {
+            if (warning.code === "UNRESOLVED_IMPORT" || warning.code === "CIRCULAR_DEPENDENCY" || warning.code === "EMPTY_BUNDLE") {
+                return;
+            }
+
+            handler(warning);
+        },
+        plugins: [
+            externalizeNodeBuiltins([context.options.target]),
+            resolveTypescriptMjsCts(),
+
+            context.options.rollup.replace &&
+                replace({
+                    ...context.options.rollup.replace,
+                    values: {
+                        ...context.options.replace,
+                        ...context.options.rollup.replace.values,
+                    },
+                }),
+
+            context.options.rollup.alias &&
+                alias({
+                    ...context.options.rollup.alias,
+                    entries: resolveAliases(context),
+                }),
+
+            context.options.rollup.resolve &&
+                nodeResolve({
+                    extensions: [...RESOLVE_DEFAULTS.extensions, ".ts", ".tsx", ".cjs", ".jsx"],
+                    ...context.options.rollup.resolve,
+                }),
+
+            context.options.rollup.json &&
+                JSONPlugin({
+                    ...context.options.rollup.json,
+                }),
+
+            ignoreFiles,
+
+            context.options.rollup.dts &&
+                dts({
+                    compilerOptions: {
+                        ...context.options.rollup.dts.compilerOptions,
+                    },
+                    respectExternal: context.options.rollup.dts.respectExternal,
+                    tsconfig: context.tsconfig?.path,
+                }),
+
+            removeShebangPlugin(),
+        ].filter(Boolean),
+    };
+};

@@ -1,5 +1,4 @@
 import type { FilterPattern } from "@rollup/pluginutils";
-import type { TsConfigResult } from "@visulima/package";
 import type { BuildOptions as EsbuildOptions, Loader, TransformOptions } from "esbuild";
 import type { MarkOptional } from "ts-essentials";
 
@@ -13,7 +12,6 @@ export type Options = Omit<TransformOptions, "loader" | "sourcemap"> & {
     loaders?: Record<string, Loader | false>;
     optimizeDeps?: MarkOptional<OptimizeDepsOptions, "cwd" | "sourceMap">;
     sourceMap?: boolean;
-    tsconfig?: TsConfigResult["config"];
 };
 
 export type OptimizeDepsOptions = {

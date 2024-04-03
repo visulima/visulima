@@ -26,7 +26,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const file of binaries) {
-            outputs.push({ isExecutable: true, file });
+            outputs.push({ file, isExecutable: true });
         }
     }
     if (packageJson.main) {
@@ -105,7 +105,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
         if (isDirectory) {
             entry.outDir = outputSlug;
-            entry.format = output.type;
+            // entry.format = output.type;
         }
 
         if (output.isExecutable) {

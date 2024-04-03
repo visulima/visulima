@@ -1,12 +1,9 @@
 import { bold, cyan, gray } from "@visulima/colorize";
 import { collectSync } from "@visulima/fs";
 import { join } from "pathe";
-import { minVersion } from "semver";
 
-import type { Options as EsbuildOptions } from "../builder/rollup/plugins/esbuild/types";
 import logger from "../logger";
 import type { BuildPreset } from "../types";
-import arrayify from "../utils/arrayify";
 import inferEntries from "./utils/infer-entries";
 
 const autoPreset: BuildPreset = {
@@ -45,18 +42,6 @@ const autoPreset: BuildPreset = {
                         .join(" "),
                 ),
             );
-
-            const esbuildTarget = arrayify<string>((context.options.rollup.esbuild as EsbuildOptions).target ?? []);
-
-            if (!esbuildTarget.some((target) => target.startsWith("node")) && context.pkg.engines?.node) {
-                const nodeTarget = minVersion(context.pkg.engines.node);
-
-                if (nodeTarget) {
-                    (context.options.rollup.esbuild as EsbuildOptions).target = [`node${nodeTarget.major}`, ...esbuildTarget];
-
-                    logger.info("Automatically detected node target:", cyan(nodeTarget.version));
-                }
-            }
         },
     },
 };

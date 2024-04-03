@@ -2,13 +2,13 @@ import { cyan, gray, red } from "@visulima/colorize";
 import { relative, resolve } from "pathe";
 import type { OutputChunk, OutputOptions, RollupWatcherEvent } from "rollup";
 import { rollup, watch as rollupWatch } from "rollup";
-import dts from "rollup-plugin-dts";
 
+// import dts from "rollup-plugin-dts";
 import logger from "../../logger";
 import type { BuildContext } from "../../types";
+import dumpObject from "../../utils/dump-object";
 import getChunkFilename from "./get-chunk-filename";
-import getRollupOptions from "./get-rollup-options";
-import { removeShebangPlugin } from "./plugins/shebang";
+import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
 
 export const watch = async (context: BuildContext): Promise<void> => {
     const rollupOptions = getRollupOptions(context);
@@ -19,11 +19,11 @@ export const watch = async (context: BuildContext): Promise<void> => {
         return;
     }
 
-    if (context.options.declaration) {
-        rollupOptions.plugins = [rollupOptions.plugins, dts(context.options.rollup.dts), removeShebangPlugin()];
-
-        await context.hooks.callHook("rollup:dts:options", context, rollupOptions);
-    }
+    // if (context.options.declaration) {
+    //     rollupOptions.plugins = declarationsPlugins(rollupOptions, context);
+    //
+    //     await context.hooks.callHook("rollup:dts:options", context, rollupOptions);
+    // }
 
     const watcher = rollupWatch(rollupOptions);
 
@@ -119,11 +119,19 @@ export const build = async (context: BuildContext): Promise<void> => {
 
     // Types
     if (context.options.declaration) {
-        rollupOptions.plugins = [rollupOptions.plugins, dts(context.options.rollup.dts), removeShebangPlugin()];
+        const rollupTypeOptions = getRollupDtsOptions(context);
 
-        await context.hooks.callHook("rollup:dts:options", context, rollupOptions);
-        const typesBuild = await rollup(rollupOptions);
+        await context.hooks.callHook("rollup:options", context, rollupTypeOptions);
+
+        if (Object.keys(rollupTypeOptions.input as any).length === 0) {
+            return;
+        }
+
+        await context.hooks.callHook("rollup:dts:options", context, rollupTypeOptions);
+        const typesBuild = await rollup(rollupTypeOptions);
         await context.hooks.callHook("rollup:dts:build", context, typesBuild);
+
+        logger.info("Writing types...")
 
         // #region cjs
         if (context.options.rollup.emitCJS) {

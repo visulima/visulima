@@ -25,10 +25,11 @@ const createStub = async (context: BuildContext) => {
         2,
     );
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const entry of context.options.entries.filter((entry) => entry.builder === "rollup")) {
         const output = resolve(context.options.rootDir, context.options.outDir, entry.name!);
 
-        const isESM = ctx.pkg.type === "module";
+        const isESM = context.pkg.type === "module";
         const resolvedEntry = normalize(tryResolve(entry.input, context.options.rootDir) || entry.input);
         const resolvedEntryWithoutExtension = resolvedEntry.slice(0, Math.max(0, resolvedEntry.length - extname(resolvedEntry).length));
         const resolvedEntryForTypeImport = isESM ? `${resolvedEntry.replace(/(\.m?)(ts)$/, "$1js")}` : resolvedEntryWithoutExtension;
