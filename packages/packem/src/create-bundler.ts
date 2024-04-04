@@ -141,6 +141,20 @@ const build = async (
             json: {
                 preferConst: true,
             },
+            license: {
+                dtsTemplate: (licenses, dependencyLicenseTexts, pName) =>
+                    `\n# Licenses of bundled types\n` +
+                    `The published ${pName} artifact additionally contains code with the following licenses:\n` +
+                    `${licenses.join(", ")}\n\n` +
+                    `# Bundled types:\n` +
+                    dependencyLicenseTexts,
+                template: (licenses, dependencyLicenseTexts, pName) =>
+                    `\n# Licenses of bundled dependencies\n` +
+                    `The published ${pName} artifact additionally contains code with the following licenses:\n` +
+                    `${licenses.join(", ")}\n\n` +
+                    `# Bundled dependencies:\n` +
+                    dependencyLicenseTexts,
+            },
             patchTypes: {},
             polyfillNode: {},
             preserveDynamicImports: true,

@@ -5,7 +5,6 @@
  *
  * Copyright (c) 2017 these people -> https://github.com/rollup/rollup/graphs/contributors
  */
-import { yellow } from "@visulima/colorize";
 import { readFileSync, writeFileSync } from "@visulima/fs";
 import type { Plugin } from "rollup";
 import licensePlugin from "rollup-plugin-license";
@@ -33,44 +32,35 @@ const replaceContentWithin = (content: string, marker: string, replacement: stri
     const regex = new RegExp(`(<!-- ${marker} -->)[\\s\\S]*?(<!-- ${marker} -->)`, "g");
 
     if (!regex.test(content)) {
-      return undefined
+        return undefined;
     }
 
     return content.replace(regex, `$1\n${replacement}\n$2`);
 };
 
-const license = (
+export interface LicenseOptions {
+    dtsMarker?: string;
+    dtsTemplate?: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string;
+    marker?: string;
+    path?: string;
+    template?: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string;
+}
+
+export const license = (
     licenseFilePath: string,
     marker: string,
     packageName: string | undefined,
-    licenseTemplate?: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string,
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-): Plugin => {
-    if (typeof licenseTemplate !== "function") {
-        // eslint-disable-next-line no-param-reassign
-        licenseTemplate = (licenses, dependencyLicenseTexts, pName) =>
-            `\n# Licenses of bundled dependencies\n` +
-            `The published ${pName} artifact additionally contains code with the following licenses:\n` +
-            `${licenses.join(", ")}\n\n` +
-            `# Bundled dependencies:\n` +
-            dependencyLicenseTexts;
-    }
-
-    return licensePlugin({
+    licenseTemplate: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string,
+    mode: "dependencies" | "types",
+): Plugin =>
+    licensePlugin({
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         thirdParty(dependencies) {
             const licenses = new Set<string>();
 
             const dependencyLicenseTexts = dependencies
                 .sort(({ name: nameA }, { name: nameB }) => (nameA! > nameB! ? 1 : nameB! > nameA! ? -1 : 0))
-                .map(({
-                          author,
-                          contributors,
-                          license: dependencylicense,
-                          licenseText,
-                          maintainers,
-                          name,
-                          repository
-                      }) => {
+                .map(({ author, contributors, license: dependencylicense, licenseText, maintainers, name, repository }) => {
                     let text = `## ${name}\n`;
 
                     if (dependencylicense) {
@@ -129,14 +119,16 @@ const license = (
                     return;
                 }
 
-                writeFileSync(licenseFilePath, content);
+                if (existingLicenseText !== content) {
+                    writeFileSync(licenseFilePath, content);
 
-                logger.info(yellow(`\n${licenseFilePath} updated.`));
+                    logger.info({
+                        message: `${licenseFilePath} updated.`,
+                        prefix: `license:${mode}`,
+                    });
+                }
             } catch (error) {
                 logger.error(error);
             }
         },
     });
-};
-
-export default license;

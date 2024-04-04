@@ -50,6 +50,16 @@
                 "default": "./dist/create-bundler.mjs"
             }
         },
+        "./config": {
+            "require": {
+                "types": "./dist/config.d.cts",
+                "default": "./dist/config.cjs"
+            },
+            "import": {
+                "types": "./dist/config.d.mts",
+                "default": "./dist/config.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "./dist/create-bundler.cjs",

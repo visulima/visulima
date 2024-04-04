@@ -18,14 +18,14 @@ import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
 import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
+import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import rawPlugin from "./plugins/raw";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
+import { patchTypes } from "./plugins/typescript/patch-types";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
-import { patchTypes } from "./plugins/typescript/patch-types";
-import license from "./plugins/license";
 
 const calledImplicitExternals = new Map<string, boolean>();
 
@@ -183,8 +183,16 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     rootDir: context.options.rootDir,
                 }),
 
-            context.options.rollup.license && context.options.rollup.license.path &&
-                license(context.options.rollup.license.path, context.options.rollup.license.marker ?? "DEPENDENCIES", context.pkg.name, context.options.rollup.license.template),
+            context.options.rollup.license &&
+                context.options.rollup.license.path &&
+                typeof context.options.rollup.license.template === "function" &&
+                license(
+                    context.options.rollup.license.path,
+                    context.options.rollup.license.marker ?? "DEPENDENCIES",
+                    context.pkg.name,
+                    context.options.rollup.license.template,
+                    "dependencies",
+                ),
         ].filter(Boolean),
     }) as RollupOptions;
 
@@ -290,8 +298,16 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
             removeShebangPlugin(),
 
-            context.options.rollup.license && context.options.rollup.license.path &&
-                license(context.options.rollup.license.path, context.options.rollup.license.dtsMarker ?? "TYPE_DEPENDENCIES", context.pkg.name, context.options.rollup.license.dtsTemplate),
+            context.options.rollup.license &&
+                context.options.rollup.license.path &&
+                typeof context.options.rollup.license.dtsTemplate === "function" &&
+                license(
+                    context.options.rollup.license.path,
+                    context.options.rollup.license.dtsMarker ?? "TYPE_DEPENDENCIES",
+                    context.pkg.name,
+                    context.options.rollup.license.dtsTemplate,
+                    "types",
+                ),
         ].filter(Boolean),
     };
 };

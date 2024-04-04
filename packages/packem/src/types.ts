@@ -11,6 +11,7 @@ import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
 import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
 
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
+import type { LicenseOptions } from "./builder/rollup/plugins/license";
 import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -39,14 +40,7 @@ export interface RollupBuildOptions {
     esbuild: EsbuildOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     json: RollupJsonOptions | false;
-    license?:
-        false | {
-              dtsMarker?: string;
-              dtsTemplate?: (licenses: string[], dependencyLicenseTexts: string) => string;
-              marker?: string;
-              path: string;
-              template?: (licenses: string[], dependencyLicenseTexts: string) => string;
-          };
+    license?: LicenseOptions | false;
     metafile?: boolean;
     output?: OutputOptions;
     patchTypes: PatchTypesOptions | false;
