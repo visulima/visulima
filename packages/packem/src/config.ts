@@ -1,5 +1,9 @@
-import type { BuildConfig } from "./types";
+import type { BuildConfig, BuildPreset } from "./types";
 
 export const defineConfig = (config: BuildConfig | BuildConfig[]): BuildConfig[] => {
     return (Array.isArray(config) ? config : [config]).filter(Boolean);
+}
+
+export const definePreset = (preset: BuildPreset): BuildPreset => {
+  return preset;
 }

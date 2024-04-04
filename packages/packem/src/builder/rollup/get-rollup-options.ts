@@ -21,6 +21,7 @@ import JSONPlugin from "./plugins/json";
 import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import rawPlugin from "./plugins/raw";
+import resolveFileUrl from "./plugins/resolve-file-url";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import { patchTypes } from "./plugins/typescript/patch-types";
@@ -113,6 +114,9 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
+
+            resolveFileUrl(),
+
             resolveTypescriptMjsCts(),
 
             context.options.rollup.replace &&
@@ -255,6 +259,9 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
+
+            resolveFileUrl(),
+
             resolveTypescriptMjsCts(),
 
             context.options.rollup.replace &&

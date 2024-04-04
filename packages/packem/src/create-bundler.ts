@@ -423,8 +423,6 @@ const build = async (
     await context.hooks.callHook("build:done", context);
 
     logErrors(context);
-
-    exit(0);
 };
 
 const createBundler = async (
@@ -482,6 +480,8 @@ const createBundler = async (
 
     // Restore all wrapped console methods
     logger.restoreAll();
+
+    exit(0);
 };
 
 export default createBundler;
