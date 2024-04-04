@@ -38,9 +38,13 @@ cli.addCommand({
                     minify: options.minify,
                     target: options.target,
                 },
-                metafile: options.metafile,
+                license: {
+                    path: options.license,
+                },
+                metafile: options.metafile
             },
             sourcemap: options.sourcemap,
+            tsconfigPath: options.tsconfig ?? undefined,
         });
     },
     name: "build",
@@ -103,6 +107,11 @@ cli.addCommand({
             name: "metafile",
             type: Boolean,
         },
+        {
+            description: "Path to the license file",
+            name: "license",
+            type: String,
+        }
     ],
 });
 

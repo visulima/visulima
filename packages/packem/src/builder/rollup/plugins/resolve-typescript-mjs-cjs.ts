@@ -1,3 +1,10 @@
+/**
+ * Modified copy of https://github.com/privatenumber/pkgroll/blob/develop/src/utils/rollup-plugins/resolve-typescript-mjs-cjs.ts
+ *
+ * MIT License
+ *
+ * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ */
 import type { Plugin } from "rollup";
 
 const resolveTypescriptMjsCts = (): Plugin => {

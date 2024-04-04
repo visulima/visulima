@@ -141,6 +141,7 @@ const build = async (
             json: {
                 preferConst: true,
             },
+            patchTypes: {},
             polyfillNode: {},
             preserveDynamicImports: true,
             replace: {
@@ -341,7 +342,9 @@ const build = async (
         }
 
         if (!entry.bytes) {
-            entry.bytes = (await stat(resolve(options.outDir, file.path))).size;
+            const awaitedStat = await stat(resolve(options.outDir, file.path));
+
+            entry.bytes = awaitedStat.size;
         }
     }
 
@@ -371,24 +374,27 @@ const build = async (
         if (entry.chunks?.length) {
             line += `\n${entry.chunks
                 .map((p) => {
-                    const chunk = context.buildEntries.find((e) => e.path === p) || ({} as any);
+                    const chunk = context.buildEntries.find((e) => e.path === p) ?? ({} as any);
 
                     return gray(`  └─ ${rPath(p)}${bold(chunk.bytes ? ` (${formatBytes(chunk?.bytes)})` : "")}`);
                 })
                 .join("\n")}`;
         }
 
-        if (entry.modules?.length) {
-            line += `\n${entry.modules
+        if (entry.modules && entry.modules.length > 0) {
+            const moduleList = entry.modules
                 .filter((m) => m.id.includes("node_modules"))
                 .sort((a, b) => (b.bytes || 0) - (a.bytes || 0))
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 .map((m) => gray(`  📦 ${rPath(m.id)}${bold(m.bytes ? ` (${formatBytes(m.bytes)})` : "")}`))
-                .join("\n")}`;
+                .join("\n");
+
+            line += moduleList.length > 0 ? `\n  inlined modules:\n${moduleList}\n\n` : "\n\n";
         }
 
         loggedEntries = true;
 
-        logger.raw(entry.chunk ? gray(line + "\n") : line + "\n");
+        logger.raw(entry.chunk ? gray(line) : line);
     }
 
     if (loggedEntries) {

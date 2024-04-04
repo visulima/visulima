@@ -17,26 +17,97 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
         await rm(distribution, { recursive: true });
     });
 
-    it("should resolve .jsx -> .tsx", async () => {
-        expect.assertions(3);
+    describe("resolve-typescript-mjs-cjs plugin", () => {
+        it("should resolve .jsx -> .tsx", async () => {
+            expect.assertions(3);
 
-        writeFileSync(`${distribution}/src/index.ts`, 'import "./file.jsx";');
-        writeFileSync(`${distribution}/src/file.tsx`, "console.log(1);");
-        writeJsonSync(`${distribution}/package.json`, {
-            main: "./dist/index.mjs",
-            type: "module",
+            writeFileSync(`${distribution}/src/index.ts`, 'import "./file.jsx";');
+            writeFileSync(`${distribution}/src/file.tsx`, "console.log(1);");
+            writeJsonSync(`${distribution}/package.json`, {
+                main: "./dist/index.mjs",
+                type: "module",
+            });
+
+            const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+                cwd: distribution,
+                nodePath,
+            });
+
+            await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+            expect(binProcess.exitCode).toBe(0);
+
+            const content = readFileSync(`${distribution}/dist/index.mjs`);
+
+            expect(content).toBe("console.log(1);\n");
         });
 
-        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
-            cwd: distribution,
-            nodePath,
+        it("should resolve .jsx -> .js", async () => {
+            expect.assertions(3);
+
+            writeFileSync(`${distribution}/src/index.js`, 'import "./file.jsx";');
+            writeFileSync(`${distribution}/src/file.jsx`, "console.log(1);");
+            writeJsonSync(`${distribution}/package.json`, {
+                main: "./dist/index.mjs",
+                type: "module",
+            });
+
+            const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+                cwd: distribution,
+                nodePath,
+            });
+
+            await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+            expect(binProcess.exitCode).toBe(0);
+
+            const content = readFileSync(`${distribution}/dist/index.mjs`);
+
+            expect(content).toBe("console.log(1);\n");
         });
 
-        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
-        expect(binProcess.exitCode).toBe(0);
+        it("should resolve .mjs -> .ts", async () => {
+            expect.assertions(3);
 
-        const content = readFileSync(`${distribution}/dist/index.mjs`);
+            writeFileSync(`${distribution}/src/index.ts`, 'import "./file.mjs";');
+            writeFileSync(`${distribution}/src/file.mjs`, "console.log(1);");
+            writeJsonSync(`${distribution}/package.json`, {
+                main: "./dist/index.mjs",
+                type: "module",
+            });
 
-        expect(content).toBe("console.log(1);\n");
+            const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+                cwd: distribution,
+                nodePath,
+            });
+
+            await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+            expect(binProcess.exitCode).toBe(0);
+
+            const content = readFileSync(`${distribution}/dist/index.mjs`);
+
+            expect(content).toBe("console.log(1);\n");
+        });
+
+        it("should resolve .cjs -> .ts", async () => {
+            expect.assertions(3);
+
+            writeFileSync(`${distribution}/src/index.ts`, 'import "./file.cjs";');
+            writeFileSync(`${distribution}/src/file.cjs`, "console.log(1);");
+            writeJsonSync(`${distribution}/package.json`, {
+                main: "./dist/index.mjs",
+                type: "module",
+            });
+
+            const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+                cwd: distribution,
+                nodePath,
+            });
+
+            await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+            expect(binProcess.exitCode).toBe(0);
+
+            const content = readFileSync(`${distribution}/dist/index.mjs`);
+
+            expect(content).toBe("console.log(1);\n");
+        });
     });
 });

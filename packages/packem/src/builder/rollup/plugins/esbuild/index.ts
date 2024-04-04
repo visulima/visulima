@@ -24,19 +24,21 @@ const defaultLoaders: Record<string, Loader> = {
     ".tsx": "tsx",
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap = true, ...esbuildOptions }: Options = {}): RollupPlugin => {
     const loaders = {
         ...defaultLoaders,
     };
 
     if (_loaders) {
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,prefer-const
         for (let [key, value] of Object.entries(_loaders)) {
             key = key.startsWith(".") ? key : `.${key}`;
 
             if (typeof value === "string") {
                 loaders[key] = value;
             } else if (value === false) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete loaders[key];
             }
         }
@@ -56,7 +58,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             const file = index ? join(resolved, `index${extension}`) : `${fileWithoutExtension}${extension}`;
 
             if (existsSync(file)) {
-                return file;
+                return file as string;
             }
         }
 
@@ -98,11 +100,13 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
 
         async resolveId(id, importer): Promise<string | undefined> {
             if (optimizeDepsResult?.optimized.has(id)) {
-                const m = optimizeDepsResult.optimized.get(id)!;
+                const m = optimizeDepsResult.optimized.get(id);
 
-                logger.debug("resolved %s to %s", id, m.file);
+                if (m) {
+                    logger.debug("resolved %s to %s", id, m.file);
 
-                return m.file;
+                    return m.file;
+                }
             }
 
             if (importer && id[0] === ".") {
@@ -111,19 +115,19 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 let file = resolveFile(resolved);
 
                 if (file) {
-                    return file;
+                    return file as string;
                 }
 
                 if (!file && existsSync(resolved) && statSync(resolved).isDirectory()) {
                     file = resolveFile(resolved, true);
 
                     if (file) {
-                        return file;
+                        return file as string;
                     }
                 }
             }
 
-            return null;
+            return undefined;
         },
 
         async transform(code, id) {
@@ -141,7 +145,8 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             const result = await transform(code, {
                 format: (["base64", "binary", "dataurl", "text", "json"] satisfies Loader[] as Loader[]).includes(loader) ? "esm" : undefined,
                 loader,
-                sourcefile: id,
+                // @see https://github.com/evanw/esbuild/issues/1932#issuecomment-1013380565
+                sourcefile: id.replace(/\.[cm]ts/, ".ts"),
                 sourcemap: sourceMap,
 
                 ...esbuildOptions,
@@ -149,12 +154,14 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
 
             await warn(this, result.warnings);
 
-            return (
-                result.code && {
+            if (result.code) {
+                return {
                     code: result.code,
                     map: result.map || null,
-                }
-            );
+                };
+            }
+
+            return null;
         },
     };
 };

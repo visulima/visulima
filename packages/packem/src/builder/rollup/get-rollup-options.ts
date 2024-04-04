@@ -24,6 +24,10 @@ import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
+import { patchTypes } from "./plugins/typescript/patch-types";
+import license from "./plugins/license";
+
+const calledImplicitExternals = new Map<string, boolean>();
 
 const baseRollupOptions = (context: BuildContext): RollupOptions =>
     <RollupOptions>{
@@ -41,9 +45,11 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (!isExplicitExternal) {
+            if (!isExplicitExternal && calledImplicitExternals.has(id)) {
                 logger.info(`Inlined implicit external ${id}. If this is incorrect, add it to the "externals" option.`);
             }
+
+            calledImplicitExternals.set(id, true);
 
             return isExplicitExternal;
         },
@@ -176,6 +182,9 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     outDir: resolve(context.options.rootDir, context.options.outDir),
                     rootDir: context.options.rootDir,
                 }),
+
+            context.options.rollup.license && context.options.rollup.license.path &&
+                license(context.options.rollup.license.path, context.options.rollup.license.marker ?? "DEPENDENCIES", context.pkg.name, context.options.rollup.license.template),
         ].filter(Boolean),
     }) as RollupOptions;
 
@@ -277,7 +286,12 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     tsconfig: context.tsconfig?.path,
                 }),
 
+            context.options.rollup.patchTypes && patchTypes(context.options.rollup.patchTypes),
+
             removeShebangPlugin(),
+
+            context.options.rollup.license && context.options.rollup.license.path &&
+                license(context.options.rollup.license.path, context.options.rollup.license.dtsMarker ?? "TYPE_DEPENDENCIES", context.pkg.name, context.options.rollup.license.dtsTemplate),
         ].filter(Boolean),
     };
 };

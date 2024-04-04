@@ -1,3 +1,10 @@
+/**
+ * Modified copy of https://github.com/privatenumber/pkgroll/blob/develop/src/utils/rollup-plugins/externalize-node-builtins.ts
+ *
+ * MIT License
+ *
+ * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ */
 import { builtinModules } from "node:module";
 
 import type { Plugin } from "rollup";
