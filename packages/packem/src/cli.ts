@@ -20,7 +20,19 @@ cli.addCommand({
             mode = "jit";
         }
 
+        const environments: Record<string, string> = {};
+
+        if (options.env) {
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const environment of options.env) {
+                environments[environment.key] = environment.value;
+            }
+        }
+
         await createBundler(options.dir ?? ".", mode, {
+            replace: {
+                ...environments,
+            },
             rollup: {
                 esbuild: {
                     minify: options.minify,
@@ -73,6 +85,7 @@ cli.addCommand({
         },
         {
             description: "Compile-time environment variables (eg. --env.NODE_ENV=production)",
+            multiple: true,
             name: "env",
             // @ts-expect-error -- wrong type
             type: (input: string) => {

@@ -28,6 +28,7 @@ const autoPreset: BuildPreset = {
             if (result.cjs) {
                 context.options.rollup.emitCJS = true;
             }
+
             if (result.dts) {
                 context.options.declaration = result.dts;
             }

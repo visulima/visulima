@@ -12,7 +12,7 @@ import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
-import { ScriptTarget } from "typescript";
+import ts from "typescript";
 
 import createStub from "./builder/jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
@@ -123,7 +123,8 @@ const build = async (
                     preserveSymlinks: false,
                     skipLibCheck: true,
                     // Ensure we can parse the latest code
-                    target: ScriptTarget.ESNext,
+                    // eslint-disable-next-line import/no-named-as-default-member
+                    target: ts.ScriptTarget.ESNext,
                 },
                 respectExternal: true,
             },
@@ -344,6 +345,7 @@ const build = async (
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
 
     let loggedEntries = false;
@@ -401,6 +403,8 @@ const build = async (
     await context.hooks.callHook("build:done", context);
 
     logErrors(context);
+
+    exit(0);
 };
 
 const createBundler = async (
