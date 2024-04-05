@@ -34,12 +34,10 @@ import listMissingArguments from "./util/list-missing-arguments";
 import mergeArguments from "./util/merge-arguments";
 import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
+import type { CliRunOptions } from "./@types/cli";
 
 /** Detect if `CI` environment variable is set */
 const isCI = "CI" in env && ("GITHUB_ACTIONS" in env || "GITLAB_CI" in env || "CIRCLECI" in env);
-
-/** Detect if `NODE_ENV` environment variable is `test` */
-const isTest = env.NODE_ENV === "test" || env.TEST !== "false";
 
 const lowerFirstChar = (string_: string): string => string_.charAt(0).toLowerCase() + string_.slice(1);
 
@@ -284,7 +282,9 @@ export class Cli implements ICli {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async run(extraOptions: IOptions = {}): Promise<void> {
+    public async run(extraOptions: CliRunOptions = {}): Promise<void> {
+        const { shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
+
         const commandNames = [...this.commands.keys()];
 
         let parsedArguments: { argv: string[]; command: string | null | undefined };
@@ -314,7 +314,7 @@ export class Cli implements ICli {
                 this.logger.error(error as object);
             }
 
-            return isTest ? undefined : exit(1);
+            return shouldExitProcess ? exit(1) : undefined;
         }
 
         const commandName = parsedArguments.command ?? this.defaultCommand;
@@ -323,7 +323,7 @@ export class Cli implements ICli {
         if (typeof command.execute !== "function") {
             this.logger.error(`Command "${command.name}" has no function to execute.`);
 
-            return isTest ? undefined : exit(1);
+            return shouldExitProcess ? exit(1) : undefined;
         }
 
         const commandArguments = parsedArguments.argv;
@@ -398,7 +398,7 @@ export class Cli implements ICli {
         // eslint-disable-next-line security/detect-object-injection
         toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
         toolbox.argv = this.argv;
-        toolbox.options = { ..._all, ...extraOptions };
+        toolbox.options = { ..._all, ...otherExtraOptions };
 
         this.mapNegatableOptions(toolbox as IToolbox, command);
         this.mapImpliesOptions(toolbox as IToolbox, command);
@@ -412,7 +412,7 @@ export class Cli implements ICli {
 
         await this.prepareToolboxResult(commandArgs, toolbox as IToolbox, command);
 
-        return isTest ? undefined : exit(0);
+        return shouldExitProcess ? exit(0) : undefined;
     }
 
     // eslint-disable-next-line class-methods-use-this
