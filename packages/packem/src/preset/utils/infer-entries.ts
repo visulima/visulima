@@ -26,17 +26,19 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const file of binaries) {
-            outputs.push({ file, isExecutable: true });
+            outputs.push({ file: file as string, isExecutable: true });
         }
     }
     if (packageJson.main) {
         outputs.push({ file: packageJson.main });
     }
+
     if (packageJson.module) {
         outputs.push({ file: packageJson.module, type: "esm" });
     }
+
     if (packageJson.types || packageJson.typings) {
-        outputs.push({ file: packageJson.types || packageJson.typings });
+        outputs.push({ file: (packageJson.types || packageJson.typings) as string });
     }
 
     // Try to detect output types
@@ -97,7 +99,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
             cjs = true;
         }
 
-        const entry = entries.find((index) => index.input === input) ?? entries[entries.push({ builder: "rollup", input }) - 1];
+        const entry = entries.find((index) => index.input === input) ?? entries[entries.push({ builder: "rollup", input }) - 1] as BuildEntry;
 
         if (/\.d\.(?:m|c)?ts$/.test(output.file)) {
             dts = true;

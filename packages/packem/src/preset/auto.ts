@@ -5,6 +5,8 @@ import { join } from "pathe";
 import logger from "../logger";
 import type { BuildPreset } from "../types";
 import inferEntries from "./utils/infer-entries";
+import overwriteWithPublishConfig from "./utils/overwrite-with-publish-config";
+import type { NormalizedPackageJson } from "read-pkg";
 
 const autoPreset: BuildPreset = {
     hooks: {
@@ -16,7 +18,14 @@ const autoPreset: BuildPreset = {
 
             const sourceFiles = collectSync(join(context.options.rootDir, "src"), { includeDirs: false, includeSymlinks: false });
 
-            const result = inferEntries(context.pkg, sourceFiles, context.options.rootDir);
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            let package_ = { ...context.pkg } as NormalizedPackageJson;
+
+            if (package_.publishConfig) {
+                package_ = overwriteWithPublishConfig(package_);
+            }
+
+            const result = inferEntries(package_, sourceFiles, context.options.rootDir);
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const message of result.warnings) {
