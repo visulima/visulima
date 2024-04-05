@@ -1,3 +1,16 @@
+## @visulima/cerebro [1.0.20](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.19...@visulima/cerebro@1.0.20) (2024-04-05)
+
+
+### Bug Fixes
+
+* **cerebro:** fixed exit handling on cli run ([e3f86a9](https://github.com/visulima/visulima/commit/e3f86a91074d0bcc452e821eecacc78d2f580dca))
+
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.6.2
+
 ## @visulima/cerebro [1.0.19](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.18...@visulima/cerebro@1.0.19) (2024-04-02)
 
 
