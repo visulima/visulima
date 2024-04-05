@@ -1,9 +1,14 @@
 import type { UpdateNotifierOptions } from "../update-notifier/has-new-version";
 import type { Command as ICommand } from "./command";
 import type { Extension as IExtension } from "./extension";
-import type { Options as IOptions } from "./options";
 
 export type CommandSection = { footer?: string; header?: string };
+
+export type CliRunOptions = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+     shouldExitProcess?: boolean;
+}
 
 export interface Cli {
     /**
@@ -41,7 +46,7 @@ export interface Cli {
 
     getPackageVersion: () => string | undefined;
 
-    run: (extraOptions: IOptions) => Promise<void>;
+    run: (extraOptions: CliRunOptions) => Promise<void>;
 
     setCommandSection: (commandSection: CommandSection) => this;
 
