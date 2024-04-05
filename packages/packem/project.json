@@ -4,5 +4,5 @@
     "sourceRoot": "packages/pack/src",
     "projectType": "library",
     "tags": ["type:package", "packem"],
-    "implicitDependencies": []
+    "implicitDependencies": ["cerebro", "fs", "package", "colorize", "pail", "humanizer"]
 }

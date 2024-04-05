@@ -1,6 +1,6 @@
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
-import { DEFAULTS as RESOLVE_DEFAULTS, nodeResolve } from "@rollup/plugin-node-resolve";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import { cyan } from "@visulima/colorize";
 import { isAbsolute, relative, resolve } from "pathe";
@@ -8,7 +8,6 @@ import type { OutputOptions, Plugin, PreRenderedChunk, RollupLog, RollupOptions 
 import { dts } from "rollup-plugin-dts";
 import polifill from "rollup-plugin-polyfill-node";
 
-// import ts from "rollup-plugin-ts";
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import logger from "../../logger";
 import type { BuildContext } from "../../types";
@@ -28,6 +27,25 @@ import { patchTypes } from "./plugins/typescript/patch-types";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
 
+const sharedOnWarn = (warning: RollupLog): boolean => {
+    // eslint-disable-next-line no-secrets/no-secrets
+    // @see https:// github.com/rollup/rollup/blob/5abe71bd5bae3423b4e2ee80207c871efde20253/cli/run/batchWarnings.ts#L236
+    if (warning.code === "UNRESOLVED_IMPORT") {
+        logger.error(
+            `Failed to resolve the module "${warning.exporter}" imported by "${cyan(relative(resolve(), warning.id as string))}"` +
+                `\nIs the module installed? Note:` +
+                `\n ↳ to inline a module into your bundle, install it to "devDependencies".` +
+                `\n ↳ to depend on a module via import/require, install it to "dependencies".`,
+        );
+
+        process.exitCode = 1;
+
+        return true;
+    }
+
+    return false;
+};
+
 const calledImplicitExternals = new Map<string, boolean>();
 
 const baseRollupOptions = (context: BuildContext): RollupOptions =>
@@ -41,7 +59,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
                 return true;
             }
 
-            if (id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || id.startsWith(context.pkg.name)) {
+            if (id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || (context.pkg.name && id.startsWith(context.pkg.name))) {
                 return false;
             }
 
@@ -60,16 +78,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
         ),
 
         onwarn(warning: RollupLog, rollupWarn) {
-            // eslint-disable-next-line no-secrets/no-secrets
-            // @see https:// github.com/rollup/rollup/blob/5abe71bd5bae3423b4e2ee80207c871efde20253/cli/run/batchWarnings.ts#L236
-            if (warning.code === "UNRESOLVED_IMPORT") {
-                logger.warn(
-                    `Failed to resolve the module "${warning.exporter}" imported by "${cyan(relative(resolve(), warning.id as string))}"` +
-                        `\nIs the module installed? Note:` +
-                        `\n ↳ to inline a module into your bundle, install it to "devDependencies".` +
-                        `\n ↳ to depend on a module via import/require, install it to "dependencies".`,
-                );
-
+            if (sharedOnWarn(warning)) {
                 return;
             }
 
@@ -130,13 +139,18 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 
             context.options.rollup.alias &&
                 alias({
+                    // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
+                    customResolver: nodeResolve({
+                        extensions: DEFAULT_EXTENSIONS,
+                        ...context.options.rollup.resolve,
+                    }),
                     ...context.options.rollup.alias,
                     entries: resolveAliases(context),
                 }),
 
             context.options.rollup.resolve &&
                 nodeResolve({
-                    extensions: [...RESOLVE_DEFAULTS.extensions, ".ts", ".tsx", ".cjs", ".jsx"],
+                    extensions: DEFAULT_EXTENSIONS,
                     ...context.options.rollup.resolve,
                 }),
 
@@ -219,12 +233,16 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
     return <RollupOptions>{
         ...baseRollupOptions(context),
 
-        onwarn(warning, handler) {
-            if (warning.code === "UNRESOLVED_IMPORT" || warning.code === "CIRCULAR_DEPENDENCY" || warning.code === "EMPTY_BUNDLE") {
+        onwarn(warning, rollupWarn) {
+            if (sharedOnWarn(warning)) {
                 return;
             }
 
-            handler(warning);
+            if (warning.code === "CIRCULAR_DEPENDENCY" || warning.code === "EMPTY_BUNDLE") {
+                return;
+            }
+
+            rollupWarn(warning);
         },
 
         output: [
@@ -275,13 +293,18 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
             context.options.rollup.alias &&
                 alias({
+                    // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
+                    customResolver: nodeResolve({
+                        extensions: DEFAULT_EXTENSIONS,
+                        ...context.options.rollup.resolve,
+                    }),
                     ...context.options.rollup.alias,
                     entries: resolveAliases(context),
                 }),
 
             context.options.rollup.resolve &&
                 nodeResolve({
-                    extensions: [...RESOLVE_DEFAULTS.extensions, ".ts", ".tsx", ".cjs", ".jsx"],
+                    extensions: DEFAULT_EXTENSIONS,
                     ...context.options.rollup.resolve,
                 }),
 

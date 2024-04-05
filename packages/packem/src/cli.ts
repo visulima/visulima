@@ -1,3 +1,5 @@
+import { exit } from "node:process";
+
 import Cli from "@visulima/cerebro";
 
 import { name, version } from "../package.json";
@@ -29,7 +31,7 @@ cli.addCommand({
             }
         }
 
-        await createBundler(options.dir ?? ".", mode, {
+        await createBundler(options.dir, mode, {
             replace: {
                 ...environments,
             },
@@ -41,7 +43,7 @@ cli.addCommand({
                 license: {
                     path: options.license,
                 },
-                metafile: options.metafile
+                metafile: options.metafile,
             },
             sourcemap: options.sourcemap,
             tsconfigPath: options.tsconfig ?? undefined,
@@ -111,10 +113,15 @@ cli.addCommand({
             description: "Path to the license file",
             name: "license",
             type: String,
-        }
+        },
     ],
 });
 
 cli.setDefaultCommand("build");
 
-cli.run();
+// eslint-disable-next-line unicorn/prefer-top-level-await,@typescript-eslint/no-explicit-any
+cli.run().catch((error: any) => {
+    // eslint-disable-next-line no-console
+    console.error(error.message);
+    exit(1);
+});

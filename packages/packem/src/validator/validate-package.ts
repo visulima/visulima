@@ -1,11 +1,12 @@
 import { existsSync } from "node:fs";
 
-import { cyan } from "@visulima/colorize";
+import { cyan, grey } from "@visulima/colorize";
 import type { PackageJson } from "@visulima/package";
-import { resolve } from "pathe";
+import { relative, resolve } from "pathe";
 
 import type { BuildContext } from "../types";
 import extractExportFilenames from "../utils/extract-export-filenames";
+import levenstein from "../utils/levenstein";
 import warn from "../utils/warn";
 
 const validatePackage = (package_: PackageJson, context: BuildContext): void => {
@@ -23,7 +24,9 @@ const validatePackage = (package_: PackageJson, context: BuildContext): void => 
             ...extractExportFilenames(package_.exports, package_.type ?? "commonjs").map((index) => index.file),
         ].map(
             (index) =>
-                index && resolve(context.rootDir, index.replace(/\/[^*/]*\*[^\n\r/\u2028\u2029]*(?:[\n\r\u2028\u2029][^*/]*\*[^\n\r/\u2028\u2029]*)*(?:\/.*)?$/, "")),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                index &&
+                resolve(context.rootDir, index.replace(/\/[^*/]*\*[^\n\r/\u2028\u2029]*(?:[\n\r\u2028\u2029][^*/]*\*[^\n\r/\u2028\u2029]*)*(?:\/.*)?$/, "")),
         ),
     );
 
@@ -37,8 +40,24 @@ const validatePackage = (package_: PackageJson, context: BuildContext): void => 
     }
 
     if (missingOutputs.length > 0) {
-        warn(context, `Potential missing package.json files: ${missingOutputs.map((o) => cyan(o)).join(", ")}`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        const rPath = (p: string) => relative(context.rootDir, resolve(context.options.outDir, p));
+        const listOfGeneratedFiles = context.buildEntries.filter((bEntry) => !bEntry.chunk).map((bEntry) => rPath(bEntry.path));
+
+        let message = "Potential missing or wrong package.json files:";
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const missingOutput of missingOutputs) {
+            const levensteinOutput = levenstein(missingOutput, listOfGeneratedFiles);
+
+            message +=
+                "\n  - " +
+                cyan(missingOutput) +
+                (levensteinOutput.length > 0 ? grey` (did you mean ${levensteinOutput.map((output) => `"${output}"`).join(", ")}?)` : "");
+        }
+
+        warn(context, message);
     }
-}
+};
 
 export default validatePackage;

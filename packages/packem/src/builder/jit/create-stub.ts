@@ -9,7 +9,7 @@ import type { BuildContext } from "../../types";
 import warn from "../../utils/warn";
 import { getShebang, makeExecutable } from "../rollup/plugins/shebang";
 import resolveAliases from "../rollup/utils/resolve-aliases";
-import tryResolve from "./try-resolve";
+import tryResolve from "../../utils/try-resolve";
 
 const createStub = async (context: BuildContext) => {
     const jitiPath = await resolvePath("jiti", { url: import.meta.url });
@@ -37,10 +37,12 @@ const createStub = async (context: BuildContext) => {
         const code = await readFile(resolvedEntry, "utf8");
         const shebang = getShebang(code);
 
+        // eslint-disable-next-line no-await-in-loop
         await mkdir(dirname(output), { recursive: true });
 
         // CJS Stub
         if (context.options.rollup.emitCJS) {
+            // eslint-disable-next-line no-await-in-loop
             await writeFile(
                 `${output}.cjs`,
                 shebang +

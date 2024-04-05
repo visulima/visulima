@@ -2,7 +2,6 @@ import { stat } from "node:fs/promises";
 import Module from "node:module";
 import { cwd, env, exit, versions } from "node:process";
 
-import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { bold, cyan, gray, green } from "@visulima/colorize";
 import { emptyDir, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
@@ -16,7 +15,6 @@ import ts from "typescript";
 
 import createStub from "./builder/jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
-import { DEFAULT_EXTENSIONS } from "./constants";
 import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
 import arrayify from "./utils/arrayify";
@@ -32,7 +30,8 @@ type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
 const logErrors = (context: BuildContext): void => {
     if (context.warnings.size > 0) {
-        logger.warn(`\nBuild is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
+        logger.raw("\n");
+        logger.warn(`Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
 
         if (context.options.failOnWarn) {
             logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
@@ -78,13 +77,7 @@ const build = async (
         peerDependencies: [],
         replace: {},
         rollup: {
-            alias: {
-                // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
-                customResolver: nodeResolve({
-                    // We remove json from the list of extensions
-                    extensions: DEFAULT_EXTENSIONS.slice(0, -1),
-                }),
-            },
+            alias: {},
             cjsBridge: false,
             commonjs: {
                 ignoreTryCatch: true,
@@ -314,7 +307,7 @@ const build = async (
 
             cleanedDirectories.push(directory);
 
-            logger.info(`Cleaning dist directory: \`./${relative(cwd(), directory)}\``);
+            logger.info(`Cleaning dist directory: \`./${relative(options.rootDir, directory)}\``);
 
             // eslint-disable-next-line no-await-in-loop
             await emptyDir(directory);
@@ -363,7 +356,7 @@ const build = async (
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    const rPath = (p: string) => relative(cwd(), resolve(options.outDir, p));
+    const rPath = (p: string) => relative(context.rootDir, resolve(options.outDir, p));
 
     let loggedEntries = false;
 
@@ -462,26 +455,38 @@ const createBundler = async (
         }
     }
 
-    const { packageJson } = await findPackageJson(rootDirectory);
+    try {
+        const { packageJson, path: packageJsonPath } = await findPackageJson(rootDirectory);
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _buildConfig: BuildConfig | BuildConfig[] = tryRequire("./packem.config", rootDirectory) || {};
+        logger.debug("Using package.json found at", packageJsonPath);
 
-    const buildConfigs = (Array.isArray(_buildConfig) ? _buildConfig : [_buildConfig]).filter(Boolean);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const _buildConfig: BuildConfig | BuildConfig[] = tryRequire("./packem.config", rootDirectory, []);
 
-    // Invoke build for every build config defined in packem.config.ts
-    const cleanedDirectories: string[] = [];
+        const buildConfigs = (Array.isArray(_buildConfig) ? _buildConfig : [_buildConfig]).filter(Boolean);
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const buildConfig of buildConfigs) {
-        // eslint-disable-next-line no-await-in-loop
-        await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsconfig, cleanedDirectories);
+        if (buildConfigs.length === 0) {
+            await build(rootDirectory, mode, otherInputConfig, {}, packageJson as PackEmPackageJson, tsconfig, []);
+        } else {
+            // Invoke build for every build config defined in packem.config.ts
+            const cleanedDirectories: string[] = [];
+
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const buildConfig of buildConfigs) {
+                // eslint-disable-next-line no-await-in-loop
+                await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsconfig, cleanedDirectories);
+            }
+        }
+
+        // Restore all wrapped console methods
+        logger.restoreAll();
+
+        exit(0);
+    } catch (error) {
+        logger.error("An error occurred while building:", error);
+
+        exit(1);
     }
-
-    // Restore all wrapped console methods
-    logger.restoreAll();
-
-    exit(0);
 };
 
 export default createBundler;

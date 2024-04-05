@@ -8,7 +8,7 @@ const resolvePreset = (preset: BuildPreset | string, rootDirectory: string): Bui
         preset = autoPreset;
     } else if (typeof preset === "string") {
         // eslint-disable-next-line no-param-reassign
-        preset = tryRequire(preset, rootDirectory) || {};
+        preset = tryRequire(preset, rootDirectory, {});
     }
 
     if (typeof preset === "function") {
