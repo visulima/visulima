@@ -1,3 +1,16 @@
+## @visulima/package [1.6.2](https://github.com/visulima/visulima/compare/@visulima/package@1.6.1...@visulima/package@1.6.2) (2024-04-05)
+
+
+### Bug Fixes
+
+* updated type-fest and dev deps ([d7f648d](https://github.com/visulima/visulima/commit/d7f648debdb10eeeb4b8942c45b2e6f6ead560e2))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.0.5
+
 ## @visulima/package [1.6.1](https://github.com/visulima/visulima/compare/@visulima/package@1.6.0...@visulima/package@1.6.1) (2024-04-02)
 
 
