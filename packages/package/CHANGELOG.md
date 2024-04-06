@@ -1,3 +1,10 @@
+## @visulima/package [1.7.0](https://github.com/visulima/visulima/compare/@visulima/package@1.6.2...@visulima/package@1.7.0) (2024-04-06)
+
+
+### Features
+
+* **package:** added new implicitBaseUrlSymbol export ([#388](https://github.com/visulima/visulima/issues/388)) ([6a14166](https://github.com/visulima/visulima/commit/6a14166508ce34ac4f5e6ab202d3a881f9ed4860))
+
 ## @visulima/package [1.6.2](https://github.com/visulima/visulima/compare/@visulima/package@1.6.1...@visulima/package@1.6.2) (2024-04-05)
 
 
