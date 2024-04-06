@@ -5,7 +5,7 @@ import { toPath } from "@visulima/fs/utils";
 import { join } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
-import readTsConfig from "./read-tsconfig";
+import { readTsConfig } from "./read-tsconfig";
 import type { TsConfigJsonResolved } from "./types";
 
 type Options = {
@@ -129,3 +129,5 @@ export const writeTsConfig = async (data: TsConfigJson, options: WriteJsonOption
 
 // @deprecate Please use `writeTsconfig` instead.
 export const writeTSConfig = writeTsConfig;
+// eslint-disable-next-line import/no-unused-modules
+export { implicitBaseUrlSymbol } from "./read-tsconfig";
