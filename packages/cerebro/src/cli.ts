@@ -17,6 +17,7 @@ import type {
     Options as IOptions,
     Toolbox as IToolbox,
 } from "./@types";
+import type { CliRunOptions } from "./@types/cli";
 import type { OptionDefinition, PossibleOptionDefinition } from "./@types/command";
 import HelpCommand from "./command/help";
 import VersionCommand from "./command/version";
@@ -34,7 +35,6 @@ import listMissingArguments from "./util/list-missing-arguments";
 import mergeArguments from "./util/merge-arguments";
 import parseRawCommand from "./util/parse-raw-command";
 import registerExceptionHandler from "./util/register-exception-handler";
-import type { CliRunOptions } from "./@types/cli";
 
 /** Detect if `CI` environment variable is set */
 const isCI = "CI" in env && ("GITHUB_ACTIONS" in env || "GITLAB_CI" in env || "CIRCLECI" in env);
