@@ -21,6 +21,7 @@ import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import rawPlugin from "./plugins/raw";
 import resolveFileUrl from "./plugins/resolve-file-url";
+import resolveTsconfigPaths from "./plugins/resolve-tsconfig-paths";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import { patchTypes } from "./plugins/typescript/patch-types";
@@ -54,7 +55,6 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
     const findAlias = (id: string): string | undefined => {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const [key, replacement] of Object.entries(resolvedAliases)) {
-            console.log(id, key)
             if (id.startsWith(key)) {
                 return id.replace(key, replacement);
             }
@@ -149,6 +149,12 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
             resolveFileUrl(),
 
             resolveTypescriptMjsCts(),
+
+            context.tsconfig &&
+                resolveTsconfigPaths(context.tsconfig, {
+                    // ...context.options.replace,
+                    // ...(context.options.rollup.replace ? context.options.rollup.replace.values : {}),
+                }),
 
             context.options.rollup.replace &&
                 replace({
