@@ -19,8 +19,6 @@ type Options = {
     tscCompatible?: boolean;
 };
 
-const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
-
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) as unknown;
 // eslint-disable-next-line security/detect-unsafe-regex
 const normalizePath = (path: string): string => toNamespacedPath(/^\.{1,2}(?:\/.*)?$/.test(path) ? path : `./${path}`);
@@ -109,9 +107,10 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         const { compilerOptions } = config;
         if (compilerOptions.paths && !compilerOptions.baseUrl) {
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 [implicitBaseUrlSymbol]: string;
             };
-            // eslint-disable-next-line security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-use-before-define
             (compilerOptions as WithImplicitBaseUrl)[implicitBaseUrlSymbol] = directoryPath;
         }
     }
@@ -231,6 +230,5 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     return config;
 };
 
-const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath, options);
-
-export default readTsConfig;
+export const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
+export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath, options);
