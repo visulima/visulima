@@ -48,9 +48,30 @@ const sharedOnWarn = (warning: RollupLog): boolean => {
 
 const calledImplicitExternals = new Map<string, boolean>();
 
-const baseRollupOptions = (context: BuildContext): RollupOptions =>
-    <RollupOptions>{
+const baseRollupOptions = (context: BuildContext): RollupOptions => {
+    const resolvedAliases = resolveAliases(context);
+
+    const findAlias = (id: string): string | undefined => {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const [key, replacement] of Object.entries(resolvedAliases)) {
+            console.log(id, key)
+            if (id.startsWith(key)) {
+                return id.replace(key, replacement);
+            }
+        }
+
+        return undefined;
+    };
+
+    return <RollupOptions>{
         external(id) {
+            const foundAlias = findAlias(id);
+
+            if (foundAlias) {
+                // eslint-disable-next-line no-param-reassign
+                id = foundAlias;
+            }
+
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const package_ = getPackageName(id);
             const isExplicitExternal: boolean = arrayIncludes(context.options.externals, package_) || arrayIncludes(context.options.externals, id);
@@ -87,6 +108,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions =>
             }
         },
     };
+};
 
 export const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{

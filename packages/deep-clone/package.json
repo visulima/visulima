@@ -68,7 +68,7 @@
             },
             "import": {
                 "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "default": "./dist/index.mjs"
             }
         },
         "./handler": {
@@ -78,7 +78,7 @@
             },
             "import": {
                 "types": "./dist/handler.d.ts",
-                "default": "./dist/handler.js"
+                "default": "./dist/handler.mjs"
             }
         },
         "./utils": {
@@ -88,13 +88,13 @@
             },
             "import": {
                 "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "default": "./dist/utils.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -183,6 +183,7 @@
             "info_on_disabling_etc_no_deprecated": false
         }
     },
+
     "sources": [
         "src/index.ts",
         "src/handler.ts",

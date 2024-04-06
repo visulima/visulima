@@ -7,8 +7,8 @@ import copyError from "./handler/copy-error";
 import { copyMapLoose, copyMapStrict } from "./handler/copy-map";
 import { copyObjectLoose, copyObjectStrict } from "./handler/copy-object";
 import { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";
-import { copySetLoose, copySetStrict } from "./handler/copy-set";
-import type { Options, State } from "./types";
+import { copySetLoose, copySetStrict } from "@/handler/copy-set";
+import type { Options, State } from "@/types";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>

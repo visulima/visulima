@@ -124,9 +124,32 @@ const build = async (
             emitCJS: false,
             esbuild: {
                 include: /\.[jt]sx?$/,
-                // https://esbuild.github.io/api/#keep-names
+                // eslint-disable-next-line no-secrets/no-secrets
+                /**
+                 * esbuild renames variables even if minification is not enabled
+                 * https://esbuild.github.io/try/#dAAwLjE5LjUAAGNvbnN0IGEgPSAxOwooZnVuY3Rpb24gYSgpIHt9KTs
+                 */
                 keepNames: true,
                 minify: env.NODE_ENV === "production",
+                // eslint-disable-next-line no-secrets/no-secrets
+                /**
+                 * Smaller output for cache and marginal performance improvement:
+                 * https://twitter.com/evanwallace/status/1396336348366180359?s=20
+                 *
+                 * minifyIdentifiers is disabled because debuggers don't use the
+                 * `names` property from the source map
+                 *
+                 * minifySyntax is disabled because it does some tree-shaking
+                 * eg. unused try-catch error variable
+                 */
+                minifyWhitespace: true,
+                /**
+                 * Improve performance by generating smaller source maps
+                 * that doesn't include the original source code
+                 *
+                 * https://esbuild.github.io/api/#sources-content
+                 */
+                sourcesContent: false,
                 target: tsconfig?.config?.compilerOptions?.target,
                 // Optionally preserve symbol names during minification
                 tsconfigRaw: tsconfig?.config,
