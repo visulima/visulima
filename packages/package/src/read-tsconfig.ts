@@ -107,9 +107,10 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         const { compilerOptions } = config;
         if (compilerOptions.paths && !compilerOptions.baseUrl) {
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 [implicitBaseUrlSymbol]: string;
             };
-            // eslint-disable-next-line security/detect-object-injection
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-use-before-define
             (compilerOptions as WithImplicitBaseUrl)[implicitBaseUrlSymbol] = directoryPath;
         }
     }
