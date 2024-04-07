@@ -150,13 +150,24 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             );
 
             if (context) {
+                let hasError = false;
+
                 items.push(
                     ...context.map((value) => {
+                        if (value instanceof Error) {
+                            hasError = true;
+                            return "\n\n" + this._formatError(value, size, groupSpaces);
+                        }
+
                         if (typeof value === "object") {
                             return " " + (this._stringify as typeof stringify)(value);
                         }
 
-                        return " " + value;
+                        const newValue = (hasError ? "\n\n" : " ") + value;
+
+                        hasError = false;
+
+                        return newValue;
                     }),
                 );
             }
