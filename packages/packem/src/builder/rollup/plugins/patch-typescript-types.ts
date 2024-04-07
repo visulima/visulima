@@ -7,7 +7,7 @@ import MagicString from "magic-string";
 import { findStaticImports } from "mlly";
 import type { Plugin, PluginContext, RenderedChunk } from "rollup";
 import { exit } from "node:process";
-import logger from "../../../../logger";
+import logger from "../../../logger";
 
 // Taken from https://stackoverflow.com/a/36328890
 const multilineCommentsRE = /\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\//g;
@@ -165,7 +165,7 @@ export interface PatchTypesOptions {
  * 4. Strip leftover internal types
  * 5. Clean unnecessary comments
  */
-export const patchTypes = (options: PatchTypesOptions): Plugin => {
+export const patchTypescriptTypes = (options: PatchTypesOptions): Plugin => {
     return {
         name: "packem:patch-types",
         renderChunk(code, chunk) {

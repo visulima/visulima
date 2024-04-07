@@ -24,7 +24,7 @@ import resolveFileUrl from "./plugins/resolve-file-url";
 import resolveTsconfigPaths from "./plugins/resolve-tsconfig-paths";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
-import { patchTypes } from "./plugins/typescript/patch-types";
+import { patchTypescriptTypes } from "./plugins/patch-typescript-types";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
 
@@ -352,7 +352,7 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     tsconfig: context.tsconfig?.path,
                 }),
 
-            context.options.rollup.patchTypes && patchTypes(context.options.rollup.patchTypes),
+            context.options.rollup.patchTypes && patchTypescriptTypes(context.options.rollup.patchTypes),
 
             removeShebangPlugin(),
 

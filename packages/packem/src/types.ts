@@ -12,7 +12,7 @@ import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
 
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 import type { LicenseOptions } from "./builder/rollup/plugins/license";
-import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-types";
+import type { PatchTypesOptions } from "./builder/rollup/plugins/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
