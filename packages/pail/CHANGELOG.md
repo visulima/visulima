@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.5](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.4...@visulima/pail@1.1.5) (2024-04-07)
+
+
+### Bug Fixes
+
+* **pail:** fixed error handling as context ([#389](https://github.com/visulima/visulima/issues/389)) ([f24e3a0](https://github.com/visulima/visulima/commit/f24e3a03594b3fdc2fcdab832cf887462fd98024))
+
 ## @visulima/pail [1.1.4](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.3...@visulima/pail@1.1.4) (2024-03-30)
 
 
