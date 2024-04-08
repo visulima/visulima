@@ -135,6 +135,13 @@ const build = async (
                 },
                 respectExternal: true,
             },
+            dynamicVars: {
+                errorWhenNoFilesFound: true,
+                // fast path to check if source contains a dynamic import. we check for a
+                // trailing slash too as a dynamic import statement can have comments between
+                // the `import` and the `(`.
+                include: /\bimport\s*[(/]/,
+            },
             emitCJS: false,
             esbuild: {
                 charset: "utf8",

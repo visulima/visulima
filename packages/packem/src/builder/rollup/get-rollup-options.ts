@@ -1,5 +1,6 @@
 import aliasPlugin from "@rollup/plugin-alias";
 import commonjsPlugin from "@rollup/plugin-commonjs";
+import dynamicImportVarsPlugin from "@rollup/plugin-dynamic-import-vars";
 import { nodeResolve as nodeResolvePlugin } from "@rollup/plugin-node-resolve";
 import replacePlugin from "@rollup/plugin-replace";
 import { cyan } from "@visulima/colorize";
@@ -51,6 +52,7 @@ const sharedOnWarn = (warning: RollupLog): boolean => {
 
 const calledImplicitExternals = new Map<string, boolean>();
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const baseRollupOptions = (context: BuildContext): RollupOptions => {
     const resolvedAliases = resolveAliases(context);
 
@@ -127,6 +129,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
     };
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const getRollupOptions = (context: BuildContext): RollupOptions =>
     (<RollupOptions>{
         ...baseRollupOptions(context),
@@ -218,6 +221,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.esbuild,
                 }),
 
+            context.options.rollup.dynamicVars && dynamicImportVarsPlugin(),
+
             context.options.rollup.commonjs &&
                 commonjsPlugin({
                     extensions: DEFAULT_EXTENSIONS,
@@ -252,15 +257,16 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     "dependencies",
                 ),
 
-            context.options.rollup.visualizer && visualizerPlugin({
-                brotliSize: true,
-                filename: "packem-bundle-analyze.html",
-                gzipSize: true,
-                projectRoot: context.options.rootDir,
-                sourcemap: context.options.sourcemap,
-                title: "Packem Visualizer",
-                ...context.options.rollup.visualizer,
-            }),
+            context.options.rollup.visualizer &&
+                visualizerPlugin({
+                    brotliSize: true,
+                    filename: "packem-bundle-analyze.html",
+                    gzipSize: true,
+                    projectRoot: context.options.rootDir,
+                    sourcemap: context.options.sourcemap,
+                    title: "Packem Visualizer",
+                    ...context.options.rollup.visualizer,
+                }),
         ].filter(Boolean),
     }) as RollupOptions;
 

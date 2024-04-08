@@ -3,6 +3,7 @@ import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
+import type { FilterPattern } from "@rollup/pluginutils";
 import type { PackageJson, TsConfigResult } from "@visulima/package";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
@@ -16,6 +17,33 @@ import type { LicenseOptions } from "./builder/rollup/plugins/license";
 import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
+
+interface RollupDynamicImportVariablesOptions {
+  /**
+   * By default, the plugin will not throw errors when target files are not found.
+   * Setting this option to true will result in errors thrown when encountering files which don't exist.
+   * @default false
+   */
+  errorWhenNoFilesFound?: boolean;
+  /**
+   * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
+   * should _ignore_.
+   * By default no files are ignored.
+   */
+  exclude?: FilterPattern;
+  /**
+   * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
+   * should operate on.
+   * By default all files are targeted.
+   */
+  include?: FilterPattern;
+  /**
+   * By default, the plugin quits the build process when it encounters an error.
+   * If you set this option to true, it will throw a warning instead and leave the code untouched.
+   * @default false
+   */
+  warnOnError?: boolean;
+}
 
 interface BaseBuildEntry {
     builder?: string;
@@ -37,6 +65,8 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;
     dts: RollupDtsOptions;
+
+    dynamicVars?: RollupDynamicImportVariablesOptions | false;
     emitCJS?: boolean;
     esbuild: EsbuildOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
