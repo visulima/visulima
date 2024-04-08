@@ -1,12 +1,13 @@
 import { bold, cyan, gray } from "@visulima/colorize";
 import { collectSync } from "@visulima/fs";
 import { join } from "pathe";
+import type { NormalizedPackageJson } from "read-pkg";
 
 import logger from "../logger";
 import type { BuildPreset } from "../types";
+import warn from "../utils/warn";
 import inferEntries from "./utils/infer-entries";
 import overwriteWithPublishConfig from "./utils/overwrite-with-publish-config";
-import type { NormalizedPackageJson } from "read-pkg";
 
 const autoPreset: BuildPreset = {
     hooks: {
@@ -29,7 +30,7 @@ const autoPreset: BuildPreset = {
 
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const message of result.warnings) {
-                logger.warn(context, message);
+                warn(context, message);
             }
 
             context.options.entries.push(...result.entries);
@@ -42,16 +43,20 @@ const autoPreset: BuildPreset = {
                 context.options.declaration = result.dts;
             }
 
-            logger.info(
-                "Automatically detected entries:",
-                cyan(context.options.entries.map((e) => bold(e.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
-                gray(
-                    ["esm", result.cjs && "cjs", result.dts && "dts"]
-                        .filter(Boolean)
-                        .map((tag) => `[${tag}]`)
-                        .join(" "),
-                ),
-            );
+            if (context.options.entries.length === 0) {
+                warn(context, "No entries detected. Please provide entries manually.");
+            } else {
+                logger.info(
+                    "Automatically detected entries:",
+                    cyan(context.options.entries.map((e) => bold(e.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
+                    gray(
+                        ["esm", result.cjs && "cjs", result.dts && "dts"]
+                            .filter(Boolean)
+                            .map((tag) => `[${tag}]`)
+                            .join(" "),
+                    ),
+                );
+            }
         },
     },
 };

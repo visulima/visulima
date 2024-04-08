@@ -74,8 +74,5 @@ module.exports = {
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,
-    root: true,
-    rules: {
-        // Customize your rules
-    },
+    root: true
 };

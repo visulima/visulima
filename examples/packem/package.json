@@ -1,0 +1,14 @@
+{
+    "name": "example_packem",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "scripts": {
+        "build": "packem"
+    },
+    "dependencies": {
+        "@visulima/packem": "workspace:*"
+    }
+}

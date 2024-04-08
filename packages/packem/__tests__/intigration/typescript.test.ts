@@ -24,7 +24,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
             writeFileSync(`${distribution}/src/index.ts`, 'import "./file.jsx";');
             writeFileSync(`${distribution}/src/file.tsx`, "console.log(1);");
             writeJsonSync(`${distribution}/package.json`, {
-                main: "./dist/index.mjs",
+                main: "./dist/index.cjs",
                 type: "module",
             });
 
@@ -47,7 +47,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
             writeFileSync(`${distribution}/src/index.js`, 'import "./file.jsx";');
             writeFileSync(`${distribution}/src/file.jsx`, "console.log(1);");
             writeJsonSync(`${distribution}/package.json`, {
-                main: "./dist/index.mjs",
+                main: "./dist/index.cjs",
                 type: "module",
             });
 
@@ -70,7 +70,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
             writeFileSync(`${distribution}/src/index.ts`, 'import "./file.mjs";');
             writeFileSync(`${distribution}/src/file.mjs`, "console.log(1);");
             writeJsonSync(`${distribution}/package.json`, {
-                main: "./dist/index.mjs",
+                main: "./dist/index.cjs",
                 type: "module",
             });
 
@@ -93,7 +93,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
             writeFileSync(`${distribution}/src/index.ts`, 'import "./file.cjs";');
             writeFileSync(`${distribution}/src/file.cjs`, "console.log(1);");
             writeJsonSync(`${distribution}/package.json`, {
-                main: "./dist/index.mjs",
+                main: "./dist/index.cjs",
                 type: "module",
             });
 
@@ -230,5 +230,113 @@ const b = 2;
 console.log(b);
 `);
         });
+    });
+
+    it("should support typescript decorator", async () => {
+        expect.assertions(4);
+
+        writeFileSync(
+            `${distribution}/src/index.ts`,
+            `
+function first() {
+  console.log("first(): factory evaluated");
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    console.log("first(): called");
+  };
+}
+
+export class ExampleClass {
+  @first()
+  public readonly value!: string;
+}`,
+        );
+        writeJsonSync(`${distribution}/package.json`, {
+            main: "./dist/index.cjs",
+            module: "./dist/index.mjs",
+            type: "module",
+        });
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                experimentalDecorators: true,
+            },
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const mjs = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjs).toBe(`var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result)
+    __defProp(target, key, result);
+  return result;
+};
+function first() {
+  console.log("first(): factory evaluated");
+  return function(target, propertyKey, descriptor) {
+    console.log("first(): called");
+  };
+}
+__name(first, "first");
+class ExampleClass {
+  static {
+    __name(this, "ExampleClass");
+  }
+  value;
+}
+__decorateClass([
+  first()
+], ExampleClass.prototype, "value", 2);
+
+export { ExampleClass };
+`);
+
+        const cjs = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjs).toBe(`'use strict';
+
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result)
+    __defProp(target, key, result);
+  return result;
+};
+function first() {
+  console.log("first(): factory evaluated");
+  return function(target, propertyKey, descriptor) {
+    console.log("first(): called");
+  };
+}
+__name(first, "first");
+class ExampleClass {
+  static {
+    __name(this, "ExampleClass");
+  }
+  value;
+}
+__decorateClass([
+  first()
+], ExampleClass.prototype, "value", 2);
+
+exports.ExampleClass = ExampleClass;
+`);
     });
 });

@@ -2,6 +2,7 @@ import { normalizePath } from "@rollup/pluginutils";
 import type { TsConfigResult } from "@visulima/package";
 import { dirname, resolve } from "pathe";
 import type { Plugin } from "rollup";
+
 import logger from "../../../../logger";
 
 type Alias = {

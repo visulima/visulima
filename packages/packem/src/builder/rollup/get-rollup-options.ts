@@ -121,6 +121,8 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
                 rollupWarn(warning);
             }
         },
+
+        watch: context.mode === "watch" ? context.options.rollup.watch : false,
     };
 };
 
@@ -231,6 +233,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
             context.options.rollup.cjsBridge && shimCjsPlugin(context.pkg),
 
             rawPlugin(),
+
+            // sideEffectsResolver(context),
 
             context.options.rollup.metafile &&
                 metafilePlugin({

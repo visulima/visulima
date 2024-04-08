@@ -6,10 +6,10 @@ import { dirname, extname, normalize, resolve } from "pathe";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import type { BuildContext } from "../../types";
+import tryResolve from "../../utils/try-resolve";
 import warn from "../../utils/warn";
 import { getShebang, makeExecutable } from "../rollup/plugins/shebang";
 import resolveAliases from "../rollup/utils/resolve-aliases";
-import tryResolve from "../../utils/try-resolve";
 
 const createStub = async (context: BuildContext) => {
     const jitiPath = await resolvePath("jiti", { url: import.meta.url });

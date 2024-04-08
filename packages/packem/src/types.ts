@@ -51,6 +51,8 @@ export interface RollupBuildOptions {
     replace: RollupReplaceOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     resolve: RollupNodeResolveOptions | false;
+    treeshake?: RollupOptions["treeshake"];
+    watch?: RollupOptions["watch"];
 }
 
 export type BuildEntry = BaseBuildEntry | RollupBuildEntry;
@@ -72,6 +74,7 @@ export interface BuildOptions {
     externals: (RegExp | string)[];
     failOnWarn?: boolean;
     name: string;
+    optionalDependencies: string[];
     outDir: string;
     peerDependencies: string[];
     replace: Record<string, string>;
@@ -107,6 +110,7 @@ export interface BuildContext {
         path: string;
     }[];
     hooks: Hookable<BuildHooks>;
+    mode: Mode;
     options: BuildOptions;
     pkg: PackageJson;
     rootDir: string;

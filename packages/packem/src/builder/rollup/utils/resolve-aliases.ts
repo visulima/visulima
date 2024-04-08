@@ -1,8 +1,8 @@
 import type { PackageJson } from "@visulima/package";
 import { join } from "pathe";
 
-import type { BuildContext } from "../../../types";
 import logger from "../../../logger";
+import type { BuildContext } from "../../../types";
 
 const resolveAliases = (context: BuildContext): Record<string, string> => {
     let aliases: Record<string, string> = {};

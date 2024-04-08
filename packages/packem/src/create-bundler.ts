@@ -19,6 +19,7 @@ import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
 import arrayify from "./utils/arrayify";
 import dumpObject from "./utils/dump-object";
+import getPackageSideEffect from "./utils/get-package-side-effect";
 import removeExtension from "./utils/remove-extension";
 import resolvePreset from "./utils/resolve-preset";
 import tryRequire from "./utils/try-require";
@@ -85,6 +86,7 @@ const build = async (
         externals: [...Module.builtinModules, ...Module.builtinModules.map((m) => `node:${m}`)],
         failOnWarn: true,
         name: (package_?.name || "").split("/").pop() || "default",
+        optionalDependencies: [],
         outDir: "dist",
         peerDependencies: [],
         replace: {},
@@ -209,7 +211,14 @@ const build = async (
                 // Following option must be *false* for polyfill to work
                 preferBuiltins: false,
             },
-            watch: false,
+            treeshake: {
+                moduleSideEffects: getPackageSideEffect(rootDirectory, package_),
+                preset: "recommended",
+            },
+            watch: {
+                clearScreen: true,
+                exclude: ["node_modules/**"],
+            },
         },
         rootDir: rootDirectory,
         sourcemap: false,
@@ -225,10 +234,6 @@ const build = async (
             },
         },
         target: nodeTarget,
-        watch: {
-            clearScreen: true,
-            exclude: ["node_modules/**"],
-        },
     }) as BuildOptions;
 
     // Resolve dirs relative to rootDir
@@ -259,6 +264,7 @@ const build = async (
     const context: BuildContext = {
         buildEntries: [],
         hooks: createHooks(),
+        mode,
         options,
         pkg: package_,
         rootDir: rootDirectory,
@@ -314,9 +320,10 @@ const build = async (
     options.dependencies = Object.keys(package_.dependencies || {});
     options.peerDependencies = Object.keys(package_.peerDependencies || {});
     options.devDependencies = Object.keys(package_.devDependencies || {});
+    options.optionalDependencies = Object.keys(package_.optionalDependencies || {});
 
     // Add all dependencies as externals
-    options.externals.push(...options.dependencies, ...options.peerDependencies);
+    options.externals.push(...options.dependencies, ...options.peerDependencies, ...options.optionalDependencies);
 
     // Call build:before
     await context.hooks.callHook("build:before", context);
@@ -337,6 +344,7 @@ const build = async (
     if (options.clean) {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const directory of new Set(
+            // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
             options.entries
                 .map((entry) => entry.outDir)
                 .filter(Boolean)
