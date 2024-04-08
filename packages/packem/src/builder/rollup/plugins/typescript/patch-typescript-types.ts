@@ -9,7 +9,7 @@ import MagicString from "magic-string";
 import { findStaticImports } from "mlly";
 import type { Plugin, PluginContext, RenderedChunk } from "rollup";
 
-import logger from "../../../logger";
+import logger from "../../../../logger";
 
 // Taken from https://stackoverflow.com/a/36328890
 // eslint-disable-next-line security/detect-unsafe-regex

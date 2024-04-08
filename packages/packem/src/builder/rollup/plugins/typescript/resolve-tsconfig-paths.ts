@@ -2,6 +2,7 @@ import { normalizePath } from "@rollup/pluginutils";
 import type { TsConfigResult } from "@visulima/package";
 import { dirname, resolve } from "pathe";
 import type { Plugin } from "rollup";
+import logger from "../../../../logger";
 
 type Alias = {
     find: RegExp;
@@ -98,7 +99,7 @@ export const resolveTsconfigPaths = (tsconfig?: TsConfigResult): Plugin => {
     const configAlias = getConfigAlias(tsconfig);
 
     return {
-        name: "packem:tsconfig-paths",
+        name: "packem:resolve-tsconfig-paths",
         async resolveId(id, importer, options) {
             if (!configAlias || id.includes("\0")) {
                 return null;
@@ -114,6 +115,10 @@ export const resolveTsconfigPaths = (tsconfig?: TsConfigResult): Plugin => {
                     const resolved = await this.resolve(updatedId, importer, { skipSelf: true, ...options });
 
                     if (resolved) {
+                        logger.debug({
+                            message: `Resolved ${id} to ${resolved.id} using paths from tsconfig.json.`,
+                            prefix: "resolve-tsconfig-paths",
+                        });
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         return resolved.id;
                     }

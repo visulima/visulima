@@ -18,7 +18,7 @@ describe.each(await getNodePathList())("node %s - resolve-file-url", (_, nodePat
     });
 
     it("should resolve import with file:// annotation", async () => {
-        expect.assertions(4);
+        expect.assertions(3);
 
         writeFileSync(
             `${distribution}/src/importee.mjs`,
@@ -44,10 +44,22 @@ export default log`,
 
         const mjsContent = readFileSync(`${distribution}/dist/importer.mjs`);
 
-        expect(mjsContent).toMatchSnapshot();
+        expect(mjsContent).toBe(`function log() {
+  return 'this should be in final bundle'
+}
+
+export { log as effect };
+`)
 
         const cjsContent = readFileSync(`${distribution}/dist/importer.cjs`);
 
-        expect(cjsContent).toMatchSnapshot();
+        expect(cjsContent).toBe(`'use strict';
+
+function log() {
+  return 'this should be in final bundle'
+}
+
+exports.effect = log;
+`)
     });
 });
