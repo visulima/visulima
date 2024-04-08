@@ -1,31 +1,31 @@
-import alias from "@rollup/plugin-alias";
-import commonjs from "@rollup/plugin-commonjs";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-import replace from "@rollup/plugin-replace";
+import aliasPlugin from "@rollup/plugin-alias";
+import commonjsPlugin from "@rollup/plugin-commonjs";
+import { nodeResolve as nodeResolvePlugin } from "@rollup/plugin-node-resolve";
+import replacePlugin from "@rollup/plugin-replace";
 import { cyan } from "@visulima/colorize";
 import { isAbsolute, relative, resolve } from "pathe";
 import type { OutputOptions, Plugin, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
-import { dts } from "rollup-plugin-dts";
-import polifill from "rollup-plugin-polyfill-node";
+import { dts as dtsPlugin } from "rollup-plugin-dts";
+import polifillPlugin from "rollup-plugin-polyfill-node";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import arrayIncludes from "../../utils/array-includes";
 import getPackageName from "../../utils/get-package-name";
-import cjsPlugin from "./plugins/cjs";
 import esbuildPlugin from "./plugins/esbuild";
-import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
+import externalizeNodeBuiltinsPlugin from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
 import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import rawPlugin from "./plugins/raw";
-import resolveFileUrl from "./plugins/resolve-file-url";
+import resolveFileUrlPlugin from "./plugins/resolve-file-url";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
-import { patchTypescriptTypes } from "./plugins/typescript/patch-typescript-types";
-import { getConfigAlias, resolveTsconfigPaths } from "./plugins/typescript/resolve-tsconfig-paths";
-import resolveTsconfigRootDirectories from "./plugins/typescript/resolve-tsconfig-root-dirs";
-import resolveTypescriptMjsCts from "./plugins/typescript/resolve-typescript-mjs-cjs";
+import shimCjsPlugin from "./plugins/shim-cjs";
+import { patchTypescriptTypes as patchTypescriptTypesPlugin } from "./plugins/typescript/patch-typescript-types";
+import { getConfigAlias, resolveTsconfigPaths as resolveTsconfigPathsPlugin } from "./plugins/typescript/resolve-tsconfig-paths";
+import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-tsconfig-root-dirs";
+import resolveTypescriptMjsCtsPlugin from "./plugins/typescript/resolve-typescript-mjs-cjs";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
 
@@ -158,15 +158,15 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
         ].filter(Boolean),
 
         plugins: [
-            externalizeNodeBuiltins([context.options.target]),
-            resolveFileUrl(),
-            resolveTypescriptMjsCts(),
+            externalizeNodeBuiltinsPlugin([context.options.target]),
+            resolveFileUrlPlugin(),
+            resolveTypescriptMjsCtsPlugin(),
 
-            context.tsconfig && resolveTsconfigRootDirectories(context.options.rootDir, context.tsconfig),
-            context.tsconfig && resolveTsconfigPaths(context.tsconfig),
+            context.tsconfig && resolveTsconfigRootDirectoriesPlugin(context.options.rootDir, context.tsconfig),
+            context.tsconfig && resolveTsconfigPathsPlugin(context.tsconfig),
 
             context.options.rollup.replace &&
-                replace({
+                replacePlugin({
                     ...context.options.rollup.replace,
                     values: {
                         ...context.options.replace,
@@ -175,9 +175,9 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                 }),
 
             context.options.rollup.alias &&
-                alias({
+                aliasPlugin({
                     // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
-                    customResolver: nodeResolve({
+                    customResolver: nodeResolvePlugin({
                         extensions: DEFAULT_EXTENSIONS,
                         ...context.options.rollup.resolve,
                     }),
@@ -186,13 +186,13 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                 }),
 
             context.options.rollup.resolve &&
-                nodeResolve({
+                nodeResolvePlugin({
                     extensions: DEFAULT_EXTENSIONS,
                     ...context.options.rollup.resolve,
                 }),
 
             context.options.rollup.polyfillNode &&
-                polifill({
+                polifillPlugin({
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.polyfillNode,
                 }),
@@ -216,7 +216,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                 }),
 
             context.options.rollup.commonjs &&
-                commonjs({
+                commonjsPlugin({
                     extensions: DEFAULT_EXTENSIONS,
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.commonjs,
@@ -228,7 +228,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                 },
             },
 
-            context.options.rollup.cjsBridge && cjsPlugin(),
+            context.options.rollup.cjsBridge && shimCjsPlugin(context.pkg),
 
             rawPlugin(),
 
@@ -313,9 +313,9 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
         ].filter(Boolean),
 
         plugins: [
-            externalizeNodeBuiltins([context.options.target]),
-            resolveFileUrl(),
-            resolveTypescriptMjsCts(),
+            externalizeNodeBuiltinsPlugin([context.options.target]),
+            resolveFileUrlPlugin(),
+            resolveTypescriptMjsCtsPlugin(),
 
             context.options.rollup.json &&
                 JSONPlugin({
@@ -324,11 +324,11 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
             ignoreFiles,
 
-            context.tsconfig && resolveTsconfigRootDirectories(context.options.rootDir, context.tsconfig),
-            context.tsconfig && resolveTsconfigPaths(context.tsconfig),
+            context.tsconfig && resolveTsconfigRootDirectoriesPlugin(context.options.rootDir, context.tsconfig),
+            context.tsconfig && resolveTsconfigPathsPlugin(context.tsconfig),
 
             context.options.rollup.replace &&
-                replace({
+                replacePlugin({
                     ...context.options.rollup.replace,
                     values: {
                         ...context.options.replace,
@@ -337,9 +337,9 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                 }),
 
             context.options.rollup.alias &&
-                alias({
+                aliasPlugin({
                     // https://github.com/rollup/plugins/tree/master/packages/alias#custom-resolvers
-                    customResolver: nodeResolve({
+                    customResolver: nodeResolvePlugin({
                         extensions: DEFAULT_EXTENSIONS,
                         ...context.options.rollup.resolve,
                     }),
@@ -348,13 +348,13 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                 }),
 
             context.options.rollup.resolve &&
-                nodeResolve({
+                nodeResolvePlugin({
                     extensions: DEFAULT_EXTENSIONS,
                     ...context.options.rollup.resolve,
                 }),
 
             context.options.rollup.dts &&
-                dts({
+                dtsPlugin({
                     compilerOptions: {
                         ...context.options.rollup.dts.compilerOptions,
                         incremental: undefined,
@@ -366,7 +366,7 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     tsconfig: context.tsconfig?.path,
                 }),
 
-            context.options.rollup.patchTypes && patchTypescriptTypes(context.options.rollup.patchTypes),
+            context.options.rollup.patchTypes && patchTypescriptTypesPlugin(context.options.rollup.patchTypes),
 
             removeShebangPlugin(),
 

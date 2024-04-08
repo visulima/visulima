@@ -63,6 +63,18 @@ const build = async (
         }
     }
 
+    if (tsconfig?.config?.compilerOptions?.target?.toLowerCase() === "es3") {
+        logger.warn(
+            [
+                "ES3 target is not supported by esbuild, so ES5 will be used instead..",
+                "Please set 'target' option in tsconfig to at least ES5 to disable this error",
+            ].join(" "),
+        );
+
+        // eslint-disable-next-line no-param-reassign
+        tsconfig.config.compilerOptions.target = "es5";
+    }
+
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
         clean: true,
@@ -123,7 +135,15 @@ const build = async (
             },
             emitCJS: false,
             esbuild: {
+                charset: "utf8",
                 include: /\.[jt]sx?$/,
+
+                jsx: tsconfig?.config?.compilerOptions?.jsx,
+                jsxDev: tsconfig?.config?.compilerOptions?.jsx === "react-jsxdev",
+                jsxFactory: tsconfig?.config?.compilerOptions?.jsxFactory,
+                jsxFragment: tsconfig?.config?.compilerOptions?.jsxFragmentFactory,
+                jsxImportSource: tsconfig?.config?.compilerOptions?.jsxImportSource,
+                jsxSideEffects: true,
                 // eslint-disable-next-line no-secrets/no-secrets
                 /**
                  * esbuild renames variables even if minification is not enabled
@@ -143,6 +163,7 @@ const build = async (
                  * eg. unused try-catch error variable
                  */
                 minifyWhitespace: env.NODE_ENV === "production",
+
                 /**
                  * Improve performance by generating smaller source maps
                  * that doesn't include the original source code
@@ -225,6 +246,8 @@ const build = async (
             options.rollup.esbuild.target = [options.target];
         }
     }
+
+    // validate
 
     if (options.rollup.resolve && options.rollup.resolve.preferBuiltins === true) {
         options.rollup.polyfillNode = false;
