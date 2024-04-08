@@ -142,7 +142,7 @@ const build = async (
                  * minifySyntax is disabled because it does some tree-shaking
                  * eg. unused try-catch error variable
                  */
-                minifyWhitespace: true,
+                minifyWhitespace: env.NODE_ENV === "production",
                 /**
                  * Improve performance by generating smaller source maps
                  * that doesn't include the original source code

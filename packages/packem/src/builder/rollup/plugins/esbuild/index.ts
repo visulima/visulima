@@ -98,7 +98,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             sourceMap,
         }),
 
-        async resolveId(id, importer): Promise<string | undefined> {
+        async resolveId(id, importer): Promise<string | null> {
             if (optimizeDepsResult?.optimized.has(id)) {
                 const m = optimizeDepsResult.optimized.get(id);
 
@@ -118,6 +118,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                     return file as string;
                 }
 
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 if (!file && existsSync(resolved) && statSync(resolved).isDirectory()) {
                     file = resolveFile(resolved, true);
 
@@ -127,7 +128,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
                 }
             }
 
-            return undefined;
+            return null;
         },
 
         async transform(code, id) {

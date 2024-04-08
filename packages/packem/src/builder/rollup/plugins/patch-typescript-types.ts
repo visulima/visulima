@@ -1,15 +1,18 @@
 /**
  * Modified copy of https://github.com/vitejs/vite/blob/main/packages/vite/rollup.dts.config.ts#L64
  */
+import { exit } from "node:process";
+
 import { parse } from "@babel/parser";
 import { walk } from "estree-walker";
 import MagicString from "magic-string";
 import { findStaticImports } from "mlly";
 import type { Plugin, PluginContext, RenderedChunk } from "rollup";
-import { exit } from "node:process";
+
 import logger from "../../../logger";
 
 // Taken from https://stackoverflow.com/a/36328890
+// eslint-disable-next-line security/detect-unsafe-regex
 const multilineCommentsRE = /\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\//g;
 const licenseCommentsRE = /MIT License|MIT license|BSD license/;
 const consecutiveNewlinesRE = /\n{2,}/g;
@@ -22,7 +25,6 @@ const unique = <T>(array: T[]): T[] => [...new Set(array)];
 
 const cleanUnnecessaryComments = (code: string) =>
     code.replaceAll(multilineCommentsRE, (m) => (licenseCommentsRE.test(m) ? "" : m)).replaceAll(consecutiveNewlinesRE, "\n\n");
-
 
 const calledDtsFiles = new Map<string, boolean>();
 
@@ -49,6 +51,7 @@ function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: Ren
             continue;
         }
 
+        // eslint-disable-next-line security/detect-object-injection
         const replacements = identifierReplacements[moduleName];
 
         // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
@@ -60,6 +63,7 @@ function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: Ren
                 exit(1);
             }
 
+            // eslint-disable-next-line security/detect-object-injection
             const betterId = replacements[id] as string;
             const regexEscapedId = escapeRegex(id);
 
@@ -67,11 +71,11 @@ function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: Ren
             // named import cannot be replaced with `Foo as Namespace.Foo`, so we
             // pre-emptively remove the whole named import
             if (betterId.includes(".")) {
-                // eslint-disable-next-line no-param-reassign
+                // eslint-disable-next-line no-param-reassign,@rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
                 code = code.replace(new RegExp(`\\b\\w+\\b as ${regexEscapedId},?\\s?`), "");
             }
 
-            // eslint-disable-next-line no-param-reassign
+            // eslint-disable-next-line no-param-reassign,@rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
             code = code.replaceAll(new RegExp(`\\b${regexEscapedId}\\b`, "g"), betterId);
         }
     }
@@ -101,8 +105,9 @@ function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: Ren
  * Remove `@internal` comments not handled by `compilerOptions.stripInternal`
  * Reference: https://github.com/vuejs/core/blob/main/rollup.dts.config.js
  */
-// eslint-disable-next-line func-style
+// eslint-disable-next-line func-style,@typescript-eslint/no-explicit-any
 function removeInternal(s: MagicString, node: any): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-return
     if (node.leadingComments?.some((c: any) => c.type === "CommentBlock" && c.value.includes("@internal"))) {
         // Examples:
         // function a(foo: string, /* @internal */ bar: number)
@@ -132,7 +137,9 @@ function stripInternalTypes(this: PluginContext, code: string, chunk: RenderedCh
             sourceType: "module",
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         walk(ast as any, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             enter(node: any) {
                 if (removeInternal(s, node)) {
                     this.skip();

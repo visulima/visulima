@@ -19,12 +19,12 @@ import externalizeNodeBuiltins from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
 import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
+import { patchTypescriptTypes } from "./plugins/patch-typescript-types";
 import rawPlugin from "./plugins/raw";
 import resolveFileUrl from "./plugins/resolve-file-url";
-import resolveTsconfigPaths from "./plugins/resolve-tsconfig-paths";
+import { getConfigAlias, resolveTsconfigPaths } from "./plugins/resolve-tsconfig-paths";
 import resolveTypescriptMjsCts from "./plugins/resolve-typescript-mjs-cjs";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
-import { patchTypescriptTypes } from "./plugins/patch-typescript-types";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
 
@@ -63,6 +63,8 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
         return undefined;
     };
 
+    const configAlias = getConfigAlias(context.tsconfig, false);
+
     return <RollupOptions>{
         external(id) {
             const foundAlias = findAlias(id);
@@ -82,6 +84,17 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
 
             if (id[0] === "." || isAbsolute(id) || /src[/\\]/.test(id) || (context.pkg.name && id.startsWith(context.pkg.name))) {
                 return false;
+            }
+
+            if (configAlias) {
+                // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+                for (const { find } of configAlias) {
+                    if (find.test(id)) {
+                        logger.debug(`Resolved alias ${id} to ${find.source}`);
+
+                        return false;
+                    }
+                }
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -145,16 +158,10 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
-
             resolveFileUrl(),
-
             resolveTypescriptMjsCts(),
 
-            context.tsconfig &&
-                resolveTsconfigPaths(context.tsconfig, {
-                    // ...context.options.replace,
-                    // ...(context.options.rollup.replace ? context.options.rollup.replace.values : {}),
-                }),
+            context.tsconfig && resolveTsconfigPaths(context.tsconfig),
 
             context.options.rollup.replace &&
                 replace({
@@ -305,10 +312,10 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
 
         plugins: [
             externalizeNodeBuiltins([context.options.target]),
-
             resolveFileUrl(),
-
             resolveTypescriptMjsCts(),
+
+            context.tsconfig && resolveTsconfigPaths(context.tsconfig),
 
             context.options.rollup.replace &&
                 replace({

@@ -158,7 +158,10 @@ export const build = async (context: BuildContext): Promise<void> => {
 
         await context.hooks.callHook("rollup:dts:build", context, typesBuild);
 
-        logger.info("Writing types...");
+        logger.info({
+            message: "Building declaration files...",
+            prefix: "dts",
+        });
 
         if (context.options.rollup.emitCJS) {
             await typesBuild.write({
