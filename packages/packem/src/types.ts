@@ -9,6 +9,7 @@ import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions, RollupWatcher } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
 import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
+import type { PluginVisualizerOptions } from "rollup-plugin-visualizer"
 
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 import type { LicenseOptions } from "./builder/rollup/plugins/license";
@@ -52,6 +53,8 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     resolve: RollupNodeResolveOptions | false;
     treeshake?: RollupOptions["treeshake"];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    visualizer?: PluginVisualizerOptions | false
     watch?: RollupOptions["watch"];
 }
 

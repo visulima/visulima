@@ -7,6 +7,7 @@ import { isAbsolute, relative, resolve } from "pathe";
 import type { OutputOptions, Plugin, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
 import { dts as dtsPlugin } from "rollup-plugin-dts";
 import polifillPlugin from "rollup-plugin-polyfill-node";
+import { visualizer as visualizerPlugin } from "rollup-plugin-visualizer";
 
 import { DEFAULT_EXTENSIONS } from "../../constants";
 import logger from "../../logger";
@@ -234,8 +235,6 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 
             rawPlugin(),
 
-            // sideEffectsResolver(context),
-
             context.options.rollup.metafile &&
                 metafilePlugin({
                     outDir: resolve(context.options.rootDir, context.options.outDir),
@@ -252,6 +251,16 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     context.options.rollup.license.template,
                     "dependencies",
                 ),
+
+            context.options.rollup.visualizer && visualizerPlugin({
+                brotliSize: true,
+                filename: "packem-bundle-analyze.html",
+                gzipSize: true,
+                projectRoot: context.options.rootDir,
+                sourcemap: context.options.sourcemap,
+                title: "Packem Visualizer",
+                ...context.options.rollup.visualizer,
+            }),
         ].filter(Boolean),
     }) as RollupOptions;
 

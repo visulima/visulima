@@ -66,3 +66,5 @@ storybook-static/
 dist
 
 !packages/packem/__fixtures__/error-cases-package/node_modules
+
+packem-bundle-analyze.html

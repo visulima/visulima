@@ -44,6 +44,7 @@ cli.addCommand({
                     path: options.license,
                 },
                 metafile: options.metafile,
+                ...(options.analyze ? { visualizer: {} } : { visualizer: false }),
             },
             sourcemap: options.sourcemap,
             tsconfigPath: options.tsconfig ?? undefined,
@@ -113,6 +114,12 @@ cli.addCommand({
             description: "Path to the license file",
             name: "license",
             type: String,
+        },
+        {
+            conflicts: "watch",
+            description: "Visualize and analyze the bundle",
+            name: "analyze",
+            type: Boolean,
         },
     ],
 });
