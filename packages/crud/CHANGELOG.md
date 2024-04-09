@@ -1,3 +1,10 @@
+## @visulima/crud [2.0.20](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.19...@visulima/crud@2.0.20) (2024-04-09)
+
+
+### Bug Fixes
+
+* **crud:** update path-to-regexp dep ([3cbcd4e](https://github.com/visulima/visulima/commit/3cbcd4e8396edb3984f57ab7b5e8164a735db01f))
+
 ## @visulima/crud [2.0.19](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.18...@visulima/crud@2.0.19) (2024-04-05)
 
 
