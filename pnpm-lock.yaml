@@ -1145,10 +1145,10 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.6
+        specifier: 3.0.7
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.37
+        specifier: 2.0.38
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1191,7 +1191,7 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.19
+        specifier: 2.0.20
         version: link:../crud
       '@visulima/readdir':
         specifier: 2.0.12
@@ -1306,7 +1306,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1526,7 +1526,7 @@ importers:
         specifier: 1.3.1
         version: link:../colorize
       '@visulima/package':
-        specifier: 1.7.0
+        specifier: 1.7.1
         version: link:../package
       '@visulima/pail':
         specifier: 1.1.5
@@ -1581,7 +1581,7 @@ importers:
         specifier: 18.18.5
         version: 18.18.5
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1829,7 +1829,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2185,7 +2185,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2339,7 +2339,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/error':
-        specifier: 3.2.4
+        specifier: 3.2.5
         version: link:../error
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2712,7 +2712,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -3072,7 +3072,7 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       jsonc-parser:
         specifier: ^3.2.1
@@ -14142,8 +14142,8 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
-  /@visulima/fs@2.0.5:
-    resolution: {integrity: sha512-Md4aKS3tnVx9+Fhw0tyRwl7glUHig7KZ30Zt7wr6wQKOymyL4PGo1qblJ3UYHA77E+YtaNyz0Kje8qAGQQ+Ufg==}
+  /@visulima/fs@2.0.6:
+    resolution: {integrity: sha512-2+7XURIH+5FTSpvY4eBB1wYQs7qCAln9UODPN+ANJvUNvObI7oYVSRQ57Kl09vx6lh0yD3bd752432V711A02A==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -34109,7 +34109,7 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     dependencies:
-      '@visulima/fs': 2.0.5
+      '@visulima/fs': 2.0.6
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3
