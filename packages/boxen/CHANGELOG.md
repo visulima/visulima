@@ -1,3 +1,24 @@
+## @visulima/boxen [1.0.4](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.3...@visulima/boxen@1.0.4) (2024-04-09)
+
+
+### Styles
+
+* disabled noPropertyAccessFromIndexSignature ([#386](https://github.com/visulima/visulima/issues/386)) ([2250c02](https://github.com/visulima/visulima/commit/2250c02b870a5b37d78d01365105a0777c5728e2))
+
+
+### Miscellaneous Chores
+
+* downgrade eslint-plugin-vitest ([0162771](https://github.com/visulima/visulima/commit/0162771e6022e4594486a796bc41e91a2d87bcd8))
+* updated dev dependencies ([87dee15](https://github.com/visulima/visulima/commit/87dee156e797b5dee2557a09ad32c935d851847c))
+* updated dev dependencies ([bf2c635](https://github.com/visulima/visulima/commit/bf2c635859601cc97858226e70f47219eabc213e))
+* updated dev dependencies ([f67c7f1](https://github.com/visulima/visulima/commit/f67c7f14ecc328ed91d06d01ac6514e8bce72cb4))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.3.2
+
 ## @visulima/boxen [1.0.3](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.2...@visulima/boxen@1.0.3) (2024-03-27)
 
 
