@@ -277,8 +277,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1145,10 +1145,10 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.6
+        specifier: 3.0.7
         version: link:../connect
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.37
+        specifier: 2.0.38
         version: link:../jsdoc-open-api
       accepts:
         specifier: ^1.3.8
@@ -1191,7 +1191,7 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.19
+        specifier: 2.0.20
         version: link:../crud
       '@visulima/readdir':
         specifier: 2.0.12
@@ -1306,7 +1306,7 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1354,8 +1354,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1466,8 +1466,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1526,7 +1526,7 @@ importers:
         specifier: 1.3.1
         version: link:../colorize
       '@visulima/package':
-        specifier: 1.7.0
+        specifier: 1.7.1
         version: link:../package
       '@visulima/pail':
         specifier: 1.1.5
@@ -1581,7 +1581,7 @@ importers:
         specifier: 18.18.5
         version: 18.18.5
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1605,8 +1605,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1708,8 +1708,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1829,7 +1829,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1856,8 +1856,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1977,8 +1977,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2085,8 +2085,8 @@ importers:
         specifier: ^0.2.17
         version: 0.2.17
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2185,7 +2185,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.20
+        specifier: 4.0.21
         version: link:../nextra-theme-docs
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2209,8 +2209,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2281,8 +2281,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2339,7 +2339,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/error':
-        specifier: 3.2.4
+        specifier: 3.2.5
         version: link:../error
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -2369,8 +2369,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2487,8 +2487,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2580,8 +2580,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2676,8 +2676,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2712,7 +2712,7 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       comment-parser:
         specifier: ^1.4.1
@@ -2792,8 +2792,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -2994,8 +2994,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3072,7 +3072,7 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.0.5
+        specifier: 2.0.6
         version: link:../fs
       jsonc-parser:
         specifier: ^3.2.1
@@ -3142,8 +3142,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3254,8 +3254,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3345,8 +3345,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3494,8 +3494,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
-        specifier: ^0.5.0
-        version: 0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -14142,8 +14142,8 @@ packages:
       yoga-wasm-web: 0.3.3
     dev: false
 
-  /@visulima/fs@2.0.5:
-    resolution: {integrity: sha512-Md4aKS3tnVx9+Fhw0tyRwl7glUHig7KZ30Zt7wr6wQKOymyL4PGo1qblJ3UYHA77E+YtaNyz0Kje8qAGQQ+Ufg==}
+  /@visulima/fs@2.0.6:
+    resolution: {integrity: sha512-2+7XURIH+5FTSpvY4eBB1wYQs7qCAln9UODPN+ANJvUNvObI7oYVSRQ57Kl09vx6lh0yD3bd752432V711A02A==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -19328,12 +19328,12 @@ packages:
     resolution: {integrity: sha512-ZSsVOaOIig0oVLzRTyk8lUfBfqzWxr/J3/NFMfGGRIkGQPejJYmDH3gXmSJxAojts77uzAGB/UmVrwi2DC4LYA==}
     dev: true
 
-  /eslint-plugin-vitest@0.5.0(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0):
-    resolution: {integrity: sha512-zaXzIjNUJgAkDUODagPNOcm9tO+CxlB0tnmKMkH3eRioXZ9YGuwr6eQzv9Vodot0qfPwqb5+SMjy7KfwJBd8tw==}
+  /eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.4.4)(vitest@1.4.0):
+    resolution: {integrity: sha512-+PnZ2u/BS+f5FiuHXz4zKsHPcMKHie+K+1Uvu/x91ovkCMEOJqEI8E9Tw1Wzx2QRz4MHOBHYf1ypO8N1K0aNAA==}
     engines: {node: ^18.0.0 || >= 20.0.0}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': '*'
-      eslint: ^8.57.0 || ^9.0.0
+      eslint: '>=8.0.0'
       vitest: '*'
     peerDependenciesMeta:
       '@typescript-eslint/eslint-plugin':
@@ -34109,7 +34109,7 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     dependencies:
-      '@visulima/fs': 2.0.5
+      '@visulima/fs': 2.0.6
       detect-indent: 7.0.1
       find-up: 7.0.0
       get-tsconfig: 4.7.3
