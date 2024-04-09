@@ -319,6 +319,40 @@ describe("node.JS", () => {
         expect(received).toBe(0);
     });
 
+    it("should CLI color flags precede other color support checks", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: ["--color=256"],
+            env: { COLORTERM: "truecolor" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(2);
+    })
+
+    it('should `FORCE_COLOR` environment variable precedes other color support checks', () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { COLORTERM: "truecolor", FORCE_COLOR: "2" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(2);
+    });
+
     it(`should disable colors via FORCE_COLOR=0`, () => {
         expect.assertions(1);
 
@@ -462,7 +496,7 @@ describe("node.JS", () => {
 
         vi.unstubAllGlobals();
 
-        expect(received2).toBe(2);
+        expect(received2).toBe(1);
     });
 
     it("should return 0 if `TEAMCITY_VERSION` is in env and is < 9.1", () => {
