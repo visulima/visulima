@@ -1,3 +1,19 @@
+## @visulima/api-platform [2.1.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.5...@visulima/api-platform@2.1.6) (2024-04-09)
+
+
+### Bug Fixes
+
+* **api-platform:** update ts-japi dep ([9000785](https://github.com/visulima/visulima/commit/900078549e13009907b75e2b691c731bd203cb9a))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.7
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.38
+* **@visulima/crud:** upgraded to 2.0.20
+* **@visulima/fs:** upgraded to 2.0.6
+
 ## @visulima/api-platform [2.1.5](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.4...@visulima/api-platform@2.1.5) (2024-04-05)
 
 
