@@ -1,3 +1,20 @@
+## @visulima/nextra-theme-docs [4.0.21](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.20...@visulima/nextra-theme-docs@4.0.21) (2024-04-09)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updated react-medium-image-zoom dep ([a754b78](https://github.com/visulima/visulima/commit/a754b789e7e47da9bf44763d82e9f86e93d4dc4f))
+
+
+### Styles
+
+* disabled noPropertyAccessFromIndexSignature ([#386](https://github.com/visulima/visulima/issues/386)) ([2250c02](https://github.com/visulima/visulima/commit/2250c02b870a5b37d78d01365105a0777c5728e2))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([bf2c635](https://github.com/visulima/visulima/commit/bf2c635859601cc97858226e70f47219eabc213e))
+
 ## @visulima/nextra-theme-docs [4.0.20](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.19...@visulima/nextra-theme-docs@4.0.20) (2024-03-30)
 
 
