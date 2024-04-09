@@ -71,6 +71,22 @@ describe("node.JS", () => {
         expect(received).toBe(3);
     });
 
+    it(`should return 3 if JetBrains IDEA is in env`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERMINAL_EMULATOR: "JetBrains-JediTerm" },
+            platform: "linux",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
     it(`should return 1 if Codeship is in env`, () => {
         expect.assertions(1);
 
