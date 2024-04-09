@@ -86,7 +86,7 @@ const baseColors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan"
 
 let fixture = [];
 
-log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
+console.log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
 
 // Colorette bench
 // https://github.com/jorgebucaran/colorette/blob/main/bench/index.js
