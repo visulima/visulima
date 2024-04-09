@@ -27,6 +27,7 @@ overrides:
   katex@>=0.15.4 <0.16.10: '>=0.16.10'
   katex@>=0.10.0-beta <0.16.10: '>=0.16.10'
   vite@>=5.1.0 <=5.1.6: '>=5.1.7'
+  tar@<6.2.1: '>=6.2.1'
 
 importers:
 
@@ -1439,7 +1440,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1520,16 +1521,16 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.3
+        specifier: 1.0.4
         version: link:../boxen
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@visulima/package':
         specifier: 1.7.1
         version: link:../package
       '@visulima/pail':
-        specifier: 1.1.5
+        specifier: 1.1.6
         version: link:../pail
       cli-table3:
         specifier: ^0.6.4
@@ -1650,7 +1651,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.0.2
+        specifier: 2.1.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -3287,7 +3288,7 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@visulima/fmt':
         specifier: 1.1.4
@@ -20685,7 +20686,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 1.4.0
       pathe: 1.1.2
-      tar: 6.1.15
+      tar: 6.2.1
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -31270,8 +31271,8 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.2
 
-  /tar@6.1.15:
-    resolution: {integrity: sha512-/zKt9UyngnxIT/EAGYuxaMYgOIJiP81ab9ZfkILq4oNLPFX50qyYmu7jRj9qeXoxmJHjGlbH0+cm2uy1WCs10A==}
+  /tar@6.2.1:
+    resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
