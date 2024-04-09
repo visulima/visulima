@@ -2,6 +2,7 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
+import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
 /**
@@ -48,14 +49,14 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     const forceColorValue = environment[FORCE_COLOR] ? String(environment[FORCE_COLOR]) : undefined;
     const forceColorValueIsString = Object.prototype.toString.call(forceColorValue).slice(8, -1) === "String";
 
-    let forceColor: ColorSupportLevel = 0;
+    let forceColor: ColorSupportLevel = SPACE_MONO;
 
     if (forceColorValue === "true") {
-        forceColor = 1;
+        forceColor = SPACE_16_COLORS;
     } else if (forceColorValue === "false") {
-        forceColor = 0;
+        forceColor = SPACE_MONO;
     } else if (forceColorValueIsString && (forceColorValue as string).length === 0) {
-        forceColor = 1;
+        forceColor = SPACE_16_COLORS;
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
         forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
     }
@@ -65,35 +66,39 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(/^-{1,2}(no-color|no-colors|color=false|color=never)$/);
 
     if (isForceDisabled) {
-        return 0;
+        return SPACE_MONO;
     }
 
     // eslint-disable-next-line regexp/no-unused-capturing-group
     if (oneOfFlags(/^-{1,2}(color=256)$/)) {
-        return 2;
+        return SPACE_256_COLORS;
     }
 
     // eslint-disable-next-line regexp/no-unused-capturing-group
     if (oneOfFlags(/^-{1,2}(color=16m|color=full|color=truecolor)$/)) {
-        return 3;
+        return SPACE_TRUE_COLORS;
     }
 
     // eslint-disable-next-line regexp/no-unused-capturing-group
     const isForceEnabled = oneOfFlags(/^-{1,2}(color|colors|color=true|color=always)$/);
 
     if (isForceEnabled) {
-        return 1;
+        return SPACE_16_COLORS;
     }
 
-    const minColorLevel = forceColor || 0;
+    // note: the order of checks is important
+    // many terminals that support truecolor have TERM as `xterm-256colors` but do not set COLORTERM to `truecolor`
+    // therefore they can be detected by specific EVN variables
+
+    const minColorLevel = forceColor || SPACE_MONO;
 
     // Check for Azure DevOps pipelines.
     // Has to be above the `stream isTTY` check.
     if ("TF_BUILD" in environment && "AGENT_NAME" in environment) {
-        return 1;
+        return SPACE_16_COLORS;
     }
 
-    const isDumbTerminal: boolean = environment.TERM === "dumb";
+    const isDumbTerminal: boolean = (environment.TERM && /-mono|dumb/i.test(environment.TERM)) as boolean;
 
     if (isDumbTerminal) {
         return minColorLevel;
@@ -112,10 +117,10 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10_586) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                return Number(osRelease[2]) >= 14_931 ? 3 : 2;
+                return Number(osRelease[2]) >= 14_931 ? SPACE_TRUE_COLORS : SPACE_256_COLORS;
             }
 
-            return 1;
+            return SPACE_16_COLORS;
         } catch {
             // Deno: if interactive permission is not granted, do nothing, no colors
         }
@@ -123,31 +128,37 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 
     if ("CI" in environment) {
         if ("GITHUB_ACTIONS" in environment || "GITHUB_WORKFLOW" in environment || "GITEA_ACTIONS" in environment) {
-            return 3;
+            return SPACE_TRUE_COLORS;
         }
 
         if (
             ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "BUILDKITE", "DRONE", "GITLAB_CI"].some((sign) => sign in environment) ||
             environment.CI_NAME === "codeship"
         ) {
-            return 1;
+            return SPACE_16_COLORS;
         }
 
         return minColorLevel;
     }
 
+    // JetBrains IDEA: JetBrains-JediTerm
+    if (environment.TERMINAL_EMULATOR?.includes("JediTerm")) {
+        return SPACE_TRUE_COLORS;
+    }
+
     if ("TEAMCITY_VERSION" in environment) {
         // https://www.jetbrains.com/help/teamcity/build-script-interaction-with-teamcity.html#BuildScriptInteractionwithTeamCity-ReportingMessages
         // eslint-disable-next-line regexp/no-unused-capturing-group
-        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(environment.TEAMCITY_VERSION as string) ? 1 : 0;
+        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(environment.TEAMCITY_VERSION as string) ? SPACE_16_COLORS : SPACE_MONO;
     }
 
     if (environment.COLORTERM === "truecolor") {
-        return 3;
+        return SPACE_TRUE_COLORS;
     }
 
+    // kitty is GPU based terminal emulator
     if (environment.TERM === "xterm-kitty") {
-        return 3;
+        return SPACE_TRUE_COLORS;
     }
 
     if ("TERM_PROGRAM" in environment) {
@@ -155,17 +166,17 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         const version = Number.parseInt(((environment.TERM_PROGRAM_VERSION as string) ?? "").split(".")[0] as string, 10);
 
         if (environment.TERM_PROGRAM === "iTerm.app") {
-            return version >= 3 ? 3 : 2;
+            return version >= 3 ? SPACE_TRUE_COLORS : SPACE_256_COLORS;
         }
 
         if (environment.TERM_PROGRAM === "Apple_Terminal") {
-            return 2;
+            return SPACE_256_COLORS;
         }
     }
 
     // eslint-disable-next-line regexp/no-unused-capturing-group
     if (/-256(color)?$/i.test(<string>environment.TERM)) {
-        return 2;
+        return SPACE_256_COLORS;
     }
 
     let isTTY = false;
@@ -184,11 +195,11 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     }
 
     if (isTTY && /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i.test(<string>environment.TERM)) {
-        return 1;
+        return SPACE_16_COLORS;
     }
 
     if ("COLORTERM" in environment) {
-        return 1;
+        return SPACE_16_COLORS;
     }
 
     return minColorLevel;
@@ -197,6 +208,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedFactory("out");
 
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
-
+// eslint-disable-next-line import/no-unused-modules
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";
