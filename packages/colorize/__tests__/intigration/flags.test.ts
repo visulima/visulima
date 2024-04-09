@@ -66,7 +66,7 @@ describe("disable colors", () => {
         expect.assertions(1);
 
         // flags has priority over env variable
-        const received = execScriptSync(filename, ["--no-color"], ["FORCE_COLOR=1"]);
+        const received = execScriptSync(filename, ["--no-color"], ["COLORTERM=truecolor"]);
         const expected = "red|rgb|bgRgb|hex|bgHex";
 
         expect(esc(received)).toStrictEqual(esc(expected));
@@ -76,7 +76,7 @@ describe("disable colors", () => {
         expect.assertions(1);
 
         // flags has priority over env variable
-        const received = execScriptSync(filename, ["--color=false"], ["FORCE_COLOR=1"]);
+        const received = execScriptSync(filename, ["--color=false"], ["COLORTERM=truecolor"]);
         const expected = "red|rgb|bgRgb|hex|bgHex";
 
         expect(esc(received)).toStrictEqual(esc(expected));
@@ -86,7 +86,7 @@ describe("disable colors", () => {
         expect.assertions(1);
 
         // flags has priority over env variable
-        const received = execScriptSync(filename, ["--color=never"], ["FORCE_COLOR=1"]);
+        const received = execScriptSync(filename, ["--color=never"], ["COLORTERM=truecolor"]);
         const expected = "red|rgb|bgRgb|hex|bgHex";
 
         expect(esc(received)).toStrictEqual(esc(expected));
