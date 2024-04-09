@@ -2,8 +2,8 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
+import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
-import { SPACE_TRUE_COLORS, SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO } from "./color-spaces";
 
 /**
  * @param {string} stdName The standard name of the stream, either "err" or "out".
@@ -208,7 +208,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
 export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedFactory("out");
 
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
-
+// eslint-disable-next-line import/no-unused-modules
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";
-export { SPACE_TRUE_COLORS, SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO } from "./color-spaces";
