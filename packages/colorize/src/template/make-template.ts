@@ -8,7 +8,7 @@
  */
 
 import type { ColorizeType, ColorValueHex } from "../types";
-import { hexToRgb } from "../util/hex-to-rgb";
+import { convertHexToRgb } from "../util/convert-hex-to-rgb.ts";
 import { unescape } from "../util/unescape";
 
 const TEMPLATE_REGEX =
@@ -57,11 +57,11 @@ const parseStyle: (style: string) => (number | string | undefined)[][] = (style:
             results.push([name, ...parseArguments(name as string, matches[2])]);
         } else if (matches[3] || matches[4]) {
             if (matches[3]) {
-                results.push(["rgb", ...hexToRgb(matches[3] as ColorValueHex)]);
+                results.push(["rgb", ...convertHexToRgb(matches[3] as ColorValueHex)]);
             }
 
             if (matches[4]) {
-                results.push(["bgRgb", ...hexToRgb(matches[4] as ColorValueHex)]);
+                results.push(["bgRgb", ...convertHexToRgb(matches[4] as ColorValueHex)]);
             }
         } else {
             results.push([name]);

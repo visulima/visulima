@@ -35,6 +35,7 @@ import {
     yellow,
     yellowBright,
 } from "@visulima/colorize";
+import { convertHexToRgb } from "@visulima/colorize/utils"
 
 const out =
     `${bold`bold`} ${dim`dim`} ${italic`italic`} ${underline`underline`} ${strikethrough`strikethrough`} ${inverse`inverse`} ${bold.italic.underline
@@ -53,6 +54,20 @@ const out =
         (out, hex) => out + black.hex(hex)(hex),
         "",
     ) +
+    "\n" +
+    [
+        "#d93611",
+        "#d9d609",
+        "#18d911",
+        "#099dd9",
+        "#7a09f6",
+        "#c509d9",
+        "#f10794",
+    ].reduce((out, hex) => {
+        let [r, g, b] = convertHexToRgb(hex);
+
+        return out + black.hex(hex)(`[${r},${g},${b}]`);
+    }, "") +
     "\n" +
     [" 197 ", " 203 ", " 209 ", " 215 ", " 221 ", " 227 ", " 191 ", " 156  ", " 120  ", " 123 ", " 117 ", " 147 ", " 141 ", "  98 ", "  92 "].reduce(
         (out, code) => out + black.bgAnsi256(parseInt(code, 10))(code),

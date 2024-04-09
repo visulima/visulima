@@ -6,28 +6,56 @@
  * Copyright (c) 2023, webdiscus
  */
 
+import type { ColorSupportLevel } from "@visulima/is-ansi-color-supported";
 import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
 
 import type { AnsiColors, AnsiStyles, ColorData, ColorValueHex } from "./types";
 import { clamp } from "./util/clamp";
-import { hexToRgb } from "./util/hex-to-rgb";
+import { convertHexToRgb } from "./util/convert-hex-to-rgb";
+import { ansi256To16, rgbToAnsi16, rgbToAnsi256 } from "./util/convert-rgb-to-ansi";
+
+const closeCode = 39;
+const bgCloseCode = 49;
+
+const supportedColor: ColorSupportLevel = isStdoutColorSupported();
+
+const mono = { close: "", open: "" };
 
 const esc: (open: number | string, close: number | string) => ColorData =
-    isStdoutColorSupported() > 0
+    supportedColor > 0
         ? (open: number | string, close: number | string): ColorData => {
               return { close: "\u001B[" + close + "m", open: "\u001B[" + open + "m" };
           }
-        : (): ColorData => {
-              return { close: "", open: "" };
-          };
+        : (): ColorData => mono;
 
-const createAnsi256 = (code: number | string): ColorData => esc("38;5;" + code, 39);
+const createRgbFunction = (function_: (code: number | string) => ColorData) => (r: number | string, g: number | string, b: number | string) =>
+    function_(rgbToAnsi256(Number(r), Number(g), Number(b)));
 
-const createBgAnsi256 = (code: number | string): ColorData => esc("48;5;" + code, 49);
+const createHexFunction = (function_:  (r: number | string, g: number | string, b: number | string) => ColorData) => (hex: ColorValueHex) => {
+    const [r, g, b] = convertHexToRgb(hex);
 
-const createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("38;2;" + r + ";" + g + ";" + b, 39);
+    return function_(r, g, b);
+};
 
-const createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("48;2;" + r + ";" + g + ";" + b, 49);
+let createAnsi256 = (code: number | string): ColorData => esc("38;5;" + code, closeCode);
+
+let createBgAnsi256 = (code: number | string): ColorData => esc("48;5;" + code, bgCloseCode);
+
+let createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("38;2;" + r + ";" + g + ";" + b, closeCode);
+
+let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc("48;2;" + r + ";" + g + ";" + b, bgCloseCode);
+
+if (supportedColor === 1) {
+    // ANSI 16 colors
+    createAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)), closeCode);
+    createBgAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)) + 10, bgCloseCode);
+    createRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)), closeCode);
+    createBgRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)) + 10, bgCloseCode);
+} else if (supportedColor === 2) {
+    // ANSI 256 colors
+    createRgb = createRgbFunction(createAnsi256);
+    createBgRgb = createRgbFunction(createBgAnsi256);
+}
 
 export const baseStyles: Required<Record<AnsiStyles, ColorData>> = {
     // 21 isn't widely supported and 22 does the same thing
@@ -41,46 +69,46 @@ export const baseStyles: Required<Record<AnsiStyles, ColorData>> = {
     strike: esc(9, 29), // alias for strikethrough
     strikethrough: esc(9, 29),
     underline: esc(4, 24),
-    visible: { close: "", open: "" },
+    visible: mono,
 };
 
 export const baseColors: Required<Record<AnsiColors, ColorData>> = {
-    bgBlack: esc(40, 49),
-    bgBlackBright: esc(100, 49),
-    bgBlue: esc(44, 49),
-    bgBlueBright: esc(104, 49),
-    bgCyan: esc(46, 49),
-    bgCyanBright: esc(106, 49),
-    bgGray: esc(100, 49), // US spelling alias for bgBlackBright
-    bgGreen: esc(42, 49),
-    bgGreenBright: esc(102, 49),
-    bgGrey: esc(100, 49), // UK spelling alias for bgBlackBright
-    bgMagenta: esc(45, 49),
-    bgMagentaBright: esc(105, 49),
-    bgRed: esc(41, 49),
-    bgRedBright: esc(101, 49),
-    bgWhite: esc(47, 49),
-    bgWhiteBright: esc(107, 49),
-    bgYellow: esc(43, 49),
-    bgYellowBright: esc(103, 49),
-    black: esc(30, 39),
-    blackBright: esc(90, 39),
-    blue: esc(34, 39),
-    blueBright: esc(94, 39),
-    cyan: esc(36, 39),
-    cyanBright: esc(96, 39),
-    gray: esc(90, 39), // US spelling alias for blackBright
-    green: esc(32, 39),
-    greenBright: esc(92, 39),
-    grey: esc(90, 39), // UK spelling alias for blackBright
-    magenta: esc(35, 39),
-    magentaBright: esc(95, 39),
-    red: esc(31, 39),
-    redBright: esc(91, 39),
-    white: esc(37, 39),
-    whiteBright: esc(97, 39),
-    yellow: esc(33, 39),
-    yellowBright: esc(93, 39),
+    bgBlack: esc(40, bgCloseCode),
+    bgBlackBright: esc(100, bgCloseCode),
+    bgBlue: esc(44, bgCloseCode),
+    bgBlueBright: esc(104, bgCloseCode),
+    bgCyan: esc(46, bgCloseCode),
+    bgCyanBright: esc(106, bgCloseCode),
+    bgGray: esc(100, bgCloseCode), // US spelling alias for bgBlackBright
+    bgGreen: esc(42, bgCloseCode),
+    bgGreenBright: esc(102, bgCloseCode),
+    bgGrey: esc(100, bgCloseCode), // UK spelling alias for bgBlackBright
+    bgMagenta: esc(45, bgCloseCode),
+    bgMagentaBright: esc(105, bgCloseCode),
+    bgRed: esc(41, bgCloseCode),
+    bgRedBright: esc(101, bgCloseCode),
+    bgWhite: esc(47, bgCloseCode),
+    bgWhiteBright: esc(107, bgCloseCode),
+    bgYellow: esc(43, bgCloseCode),
+    bgYellowBright: esc(103, bgCloseCode),
+    black: esc(30, closeCode),
+    blackBright: esc(90, closeCode),
+    blue: esc(34, closeCode),
+    blueBright: esc(94, closeCode),
+    cyan: esc(36, closeCode),
+    cyanBright: esc(96, closeCode),
+    gray: esc(90, closeCode), // US spelling alias for blackBright
+    green: esc(32, closeCode),
+    greenBright: esc(92, closeCode),
+    grey: esc(90, closeCode), // UK spelling alias for blackBright
+    magenta: esc(35, closeCode),
+    magentaBright: esc(95, closeCode),
+    red: esc(31, closeCode),
+    redBright: esc(91, closeCode),
+    white: esc(37, closeCode),
+    whiteBright: esc(97, closeCode),
+    yellow: esc(33, closeCode),
+    yellowBright: esc(93, closeCode),
 };
 
 export const styleMethods: {
@@ -93,13 +121,13 @@ export const styleMethods: {
 } = {
     bg: (code) => createBgAnsi256(clamp(code, 0, 255)),
 
-    bgHex: (hex) => createBgRgb(...hexToRgb(hex)),
+    bgHex: createHexFunction(createBgRgb),
 
     bgRgb: (r, g, b) => createBgRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
 
     fg: (code) => createAnsi256(clamp(code, 0, 255)),
 
-    hex: (hex) => createRgb(...hexToRgb(hex)),
+    hex: createHexFunction(createRgb),
 
     rgb: (r, g, b) => createRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
 };

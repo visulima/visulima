@@ -120,7 +120,6 @@ for (const name in styleMethods) {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
-
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };
