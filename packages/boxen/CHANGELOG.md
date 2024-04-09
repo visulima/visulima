@@ -1,3 +1,11 @@
+## @visulima/boxen [1.0.5](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.4...@visulima/boxen@1.0.5) (2024-04-09)
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.3.3
+
 ## @visulima/boxen [1.0.4](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.3...@visulima/boxen@1.0.4) (2024-04-09)
 
 
