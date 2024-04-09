@@ -49,7 +49,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     const forceColorValue = environment[FORCE_COLOR] ? String(environment[FORCE_COLOR]) : undefined;
     const forceColorValueIsString = Object.prototype.toString.call(forceColorValue).slice(8, -1) === "String";
 
-    let forceColor: ColorSupportLevel = SPACE_MONO;
+    let forceColor: ColorSupportLevel | undefined;
 
     if (forceColorValue === "true") {
         forceColor = SPACE_16_COLORS;
@@ -60,6 +60,10 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
         forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
     }
+
+    if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
+            return forceColor;
+        }
 
     const isForceDisabled =
         // eslint-disable-next-line regexp/no-unused-capturing-group
@@ -89,7 +93,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     // note: the order of checks is important
     // many terminals that support truecolor have TERM as `xterm-256colors` but do not set COLORTERM to `truecolor`
     // therefore they can be detected by specific EVN variables
-
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const minColorLevel = forceColor || SPACE_MONO;
 
     // Check for Azure DevOps pipelines.
