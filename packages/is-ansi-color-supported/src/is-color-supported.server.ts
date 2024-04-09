@@ -2,7 +2,7 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
-import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
 /**
@@ -62,8 +62,8 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     }
 
     if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
-            return forceColor;
-        }
+        return forceColor;
+    }
 
     const isForceDisabled =
         // eslint-disable-next-line regexp/no-unused-capturing-group
@@ -194,6 +194,9 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
             isTTY = _this.Deno.stderr.isTerminal();
         }
+    } else if ("PM2_HOME" in environment && "pm_id" in environment) {
+        // PM2 does not set process.stdout.isTTY, but colors may be supported (depends on actual terminal)
+        isTTY = true;
     } else {
         isTTY = proc["std" + stdName] && "isTTY" in proc["std" + stdName];
     }
@@ -213,6 +216,6 @@ export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedF
 
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
 // eslint-disable-next-line import/no-unused-modules
-export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";

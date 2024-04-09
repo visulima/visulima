@@ -334,9 +334,51 @@ describe("node.JS", () => {
         vi.unstubAllGlobals();
 
         expect(received).toBe(2);
-    })
+    });
 
-    it('should `FORCE_COLOR` environment variable precedes other color support checks', () => {
+    it(`should support pM2: no isTTY but COLORTERM: 'truecolor'`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: {
+                COLORTERM: "truecolor",
+                PM2_HOME: "/var/www/",
+                pm_id: "1",
+            },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
+    it(`pM2: no isTTY and unsupported terminal`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: {
+                PM2_HOME: "/var/www/",
+                TERM: "dumb",
+                pm_id: "1",
+            },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(0);
+    });
+
+    it("should `FORCE_COLOR` environment variable precedes other color support checks", () => {
         expect.assertions(1);
 
         vi.stubGlobal("process", {
