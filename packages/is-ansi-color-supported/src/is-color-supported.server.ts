@@ -2,7 +2,7 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
-import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
 /**
@@ -49,7 +49,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     const forceColorValue = environment[FORCE_COLOR] ? String(environment[FORCE_COLOR]) : undefined;
     const forceColorValueIsString = Object.prototype.toString.call(forceColorValue).slice(8, -1) === "String";
 
-    let forceColor: ColorSupportLevel = SPACE_MONO;
+    let forceColor: ColorSupportLevel | undefined;
 
     if (forceColorValue === "true") {
         forceColor = SPACE_16_COLORS;
@@ -59,6 +59,10 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         forceColor = SPACE_16_COLORS;
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
         forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
+    }
+
+    if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
+        return forceColor;
     }
 
     const isForceDisabled =
@@ -89,7 +93,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     // note: the order of checks is important
     // many terminals that support truecolor have TERM as `xterm-256colors` but do not set COLORTERM to `truecolor`
     // therefore they can be detected by specific EVN variables
-
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const minColorLevel = forceColor || SPACE_MONO;
 
     // Check for Azure DevOps pipelines.
@@ -190,6 +194,9 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
             isTTY = _this.Deno.stderr.isTerminal();
         }
+    } else if ("PM2_HOME" in environment && "pm_id" in environment) {
+        // PM2 does not set process.stdout.isTTY, but colors may be supported (depends on actual terminal)
+        isTTY = true;
     } else {
         isTTY = proc["std" + stdName] && "isTTY" in proc["std" + stdName];
     }
@@ -209,6 +216,6 @@ export const isStdoutColorSupported = (): ColorSupportLevel => isColorSupportedF
 
 export const isStderrColorSupported = (): ColorSupportLevel => isColorSupportedFactory("err");
 // eslint-disable-next-line import/no-unused-modules
-export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";

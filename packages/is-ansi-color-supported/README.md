@@ -56,6 +56,45 @@ console.log(isStdoutColorSupported()); // 3
 console.log(isStderrColorSupported()); // 3
 ```
 
+## Color support
+
+Ansis automatically detects the supported color space:
+
+- TrueColor
+- ANSI 256 colors
+- ANSI 16 colors
+- black & white (no color)
+
+There is no standard way to detect which color space is supported.
+The most common way to detect color support is to check the `TERM` and `COLORTERM` environment variables.
+CI systems can be detected by checking for the existence of the `CI` and other specifically environment variables.
+Combine that with the knowledge about which operating system the program is running on, and we have a decent enough way to detect colors.
+
+| Terminal                         | ANSI 16<br>colors | ANSI 256<br>colors | True<br>Color |  env.<br>TERM  | env.<br>COLORTERM | Specifically ENV variables             |
+|:---------------------------------|-------------------|:-------------------|:--------------|:--------------:|:-----------------:|:---------------------------------------|
+| Azure CI                         | ✅                 | ❌                  | ❌             |      dumb      |                   | TF_BUILD<br>AGENT_NAME                 |
+| GitHub CI                        | ✅                 | ✅                  | ✅             |      dumb      |                   | CI<br>GITHUB_ACTIONS                   |
+| GitTea CI                        | ✅                 | ✅                  | ✅             |      dumb      |                   | CI<br>GITEA_ACTIONS                    |
+| GitLab CI                        | ✅                 | ❌                  | ❌             |      dumb      |                   | CI<br>GITLAB_CI                        |
+| Travis CI                        | ✅                 | ❌                  | ❌             |      dumb      |                   | TRAVIS                                 |
+| PM2<br>not isTTY                 | ✅[^1]             | ✅[^1]              | ✅[^1]         |      dumb      |                   | PM2_HOME<br>pm_id                      |
+| JetBrains TeamCity<br>>=2020.1.1 | ✅                 | ✅                  | ❌             |                |                   | TEAMCITY_VERSION                       |
+| JetBrains IDEA                   | ✅                 | ✅                  | ✅             | xterm-256color |                   | TERMINAL_EMULATOR='JetBrains-JediTerm' |
+| VS Code                          | ✅                 | ✅                  | ✅             | xterm-256color |     truecolor     |                                        |
+| Windows<br>Terminal              | ✅                 | ✅                  | ✅[^2]         |                |                   |                                        |
+| Windows<br>PowerShell            | ✅                 | ✅                  | ✅[^2]         |                |                   |                                        |
+| macOS Terminal                   | ✅                 | ✅                  | ❌             | xterm-256color |                   |                                        |
+| iTerm                            | ✅                 | ✅                  | ✅             | xterm-256color |     truecolor     |                                        |
+| Terminal emulator Kitty          | ✅                 | ✅                  | ✅             |  xterm-kitty   |                   |                                        |
+
+[^1]: Colors supported depends on actual terminal.
+[^2]: The Windows terminal supports true color since Windows 10 revision 14931 (2016-09-21).
+
+See also:
+
+- [Truecolor Support in Output Devices](https://github.com/termstandard/colors#truecolor-support-in-output-devices).
+- [So you want to render colors in your terminal](https://marvinh.dev/blog/terminal-colors/).
+
 ## Environment variables
 
 To force disable or enable colored output use environment variables `NO_COLOR` and `FORCE_COLOR`.
