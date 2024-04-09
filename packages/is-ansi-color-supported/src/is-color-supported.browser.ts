@@ -2,6 +2,7 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
+import { SPACE_16_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
 const isColorSupported = (): ColorSupportLevel =>
@@ -15,13 +16,13 @@ const isColorSupported = (): ColorSupportLevel =>
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (brand?.version > 93) {
-                    return 3;
+                    return SPACE_TRUE_COLORS;
                 }
             }
 
             // eslint-disable-next-line regexp/no-unused-capturing-group
             if (/\b(Chrome|Chromium)\//.test(navigator.userAgent)) {
-                return 1;
+                return SPACE_16_COLORS;
             }
         }
 
@@ -30,15 +31,16 @@ const isColorSupported = (): ColorSupportLevel =>
         if (typeof process !== "undefined") {
             const isNextJS = (process.env.NEXT_RUNTIME ?? "").includes("edge");
 
-            return isNextJS ? 1 : 0;
+            return isNextJS ? SPACE_16_COLORS : SPACE_MONO;
         }
 
-        return 0;
+        return SPACE_MONO;
     })();
 
 export const isStdoutColorSupported = isColorSupported;
 
 export const isStderrColorSupported = isColorSupported;
-
+// eslint-disable-next-line import/no-unused-modules
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";
