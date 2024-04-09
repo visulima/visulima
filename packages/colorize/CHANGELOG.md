@@ -1,3 +1,11 @@
+## @visulima/colorize [1.3.2](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.1...@visulima/colorize@1.3.2) (2024-04-09)
+
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.1.0
+
 ## @visulima/colorize [1.3.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.0...@visulima/colorize@1.3.1) (2024-03-27)
 
 
