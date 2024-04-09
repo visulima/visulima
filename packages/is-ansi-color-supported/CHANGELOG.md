@@ -1,3 +1,10 @@
+## @visulima/is-ansi-color-supported [2.1.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.0.2...@visulima/is-ansi-color-supported@2.1.0) (2024-04-09)
+
+
+### Features
+
+* **is-ansi-color-supported:** added new const exports, added check f… ([#390](https://github.com/visulima/visulima/issues/390)) ([167f5b3](https://github.com/visulima/visulima/commit/167f5b3936a9fadcb30c748bf0533c89fed8c6ab))
+
 ## @visulima/is-ansi-color-supported [2.0.2](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.0.1...@visulima/is-ansi-color-supported@2.0.2) (2024-03-27)
 
 
