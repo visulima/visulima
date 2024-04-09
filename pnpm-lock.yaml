@@ -1439,7 +1439,7 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@vitest/coverage-v8':
         specifier: ^1.4.0
@@ -1520,16 +1520,16 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.3
+        specifier: 1.0.4
         version: link:../boxen
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@visulima/package':
         specifier: 1.7.1
         version: link:../package
       '@visulima/pail':
-        specifier: 1.1.5
+        specifier: 1.1.6
         version: link:../pail
       cli-table3:
         specifier: ^0.6.4
@@ -1650,7 +1650,7 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.0.2
+        specifier: 2.1.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -3287,7 +3287,7 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.3.1
+        specifier: 1.3.2
         version: link:../colorize
       '@visulima/fmt':
         specifier: 1.1.4
