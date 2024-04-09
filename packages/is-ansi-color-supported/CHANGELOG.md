@@ -1,3 +1,16 @@
+## @visulima/is-ansi-color-supported [2.2.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.1.0...@visulima/is-ansi-color-supported@2.2.0) (2024-04-09)
+
+
+### Features
+
+* **is-ansi-color-supported:** add support for PM2 process manager ([dd8bb6f](https://github.com/visulima/visulima/commit/dd8bb6f93a9abff12f2a89fd06651559010d586a))
+* **is-ansi-color-support:** updated readme ([38ca0a0](https://github.com/visulima/visulima/commit/38ca0a0fcf2d644bdfa80a324c6b4e16dc5e4afa))
+
+
+### Bug Fixes
+
+* fixed CLI flags and FORCE_COLOR should precede other color support checks ([d8b524e](https://github.com/visulima/visulima/commit/d8b524e27a28b8818bb306f032e8eb17f1dfb237))
+
 ## @visulima/is-ansi-color-supported [2.1.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.0.2...@visulima/is-ansi-color-supported@2.1.0) (2024-04-09)
 
 
