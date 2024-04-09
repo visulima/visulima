@@ -30,6 +30,7 @@ import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-t
 import resolveTypescriptMjsCtsPlugin from "./plugins/typescript/resolve-typescript-mjs-cjs";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
+import cjsInterop from "./plugins/cjs-interop";
 
 const sharedOnWarn = (warning: RollupLog): boolean => {
     // eslint-disable-next-line no-secrets/no-secrets
@@ -221,6 +222,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.esbuild,
                 }),
 
+            context.options.cjsInterop && cjsInterop(),
+
             context.options.rollup.dynamicVars && dynamicImportVarsPlugin(),
 
             context.options.rollup.commonjs &&
@@ -384,6 +387,8 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     respectExternal: context.options.rollup.dts.respectExternal,
                     tsconfig: context.tsconfig?.path,
                 }),
+
+            context.options.cjsInterop && cjsInterop(),
 
             context.options.rollup.patchTypes && patchTypescriptTypesPlugin(context.options.rollup.patchTypes),
 

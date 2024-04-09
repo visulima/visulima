@@ -92,6 +92,7 @@ export type BuildEntry = BaseBuildEntry | RollupBuildEntry;
 
 export interface BuildOptions {
     alias: Record<string, string>;
+    cjsInterop?: boolean;
     clean: boolean;
     /**
      * * `compatible` means "src/index.ts" will generate "dist/index.d.mts", "dist/index.d.cts" and "dist/index.d.ts".

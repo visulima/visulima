@@ -32,6 +32,7 @@ cli.addCommand({
         }
 
         await createBundler(options.dir, mode, {
+            cjsInterop: options.cjsInterop,
             replace: {
                 ...environments,
             },
@@ -121,6 +122,11 @@ cli.addCommand({
             name: "analyze",
             type: Boolean,
         },
+        {
+            description: "Enable CommonJS interop",
+            name: "cjsInterop",
+            type: Boolean,
+        }
     ],
 });
 

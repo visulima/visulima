@@ -1092,11 +1092,17 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
 
-  examples/packem:
+  examples/packem/cjs-interop:
     dependencies:
       '@visulima/packem':
         specifier: workspace:*
-        version: link:../../packages/packem
+        version: link:../../../packages/packem
+
+  examples/packem/css:
+    dependencies:
+      '@visulima/packem':
+        specifier: workspace:*
+        version: link:../../../packages/packem
 
   examples/pail/next14:
     dependencies:
