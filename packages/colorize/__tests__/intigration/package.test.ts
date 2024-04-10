@@ -17,7 +17,7 @@ describe("usage `@visulima/colorize` npm package", () => {
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (process.env.TEST_PROD_BUILD === "true") {
-            functionName = "z";
+            functionName = "j";
         }
 
         const expected =
