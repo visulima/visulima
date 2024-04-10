@@ -123,6 +123,7 @@ export const build = async (context: BuildContext): Promise<void> => {
             if (entry.isEntry) {
                 context.buildEntries.push({
                     bytes: Buffer.byteLength(entry.code, "utf8"),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     chunks: entry.imports.filter((index) => outputChunks.find((c) => c.fileName === index)),
                     exports: entry.exports,
                     modules: Object.entries(entry.modules).map(([id, module_]) => {
@@ -171,11 +172,13 @@ export const build = async (context: BuildContext): Promise<void> => {
             });
         }
 
-        await typesBuild.write({
-            chunkFileNames: (chunk) => getChunkFilename(context, chunk, "d.mts"),
-            dir: resolve(context.options.rootDir, context.options.outDir),
-            entryFileNames: "[name].d.mts",
-        });
+        if (context.options.rollup.emitESM) {
+            await typesBuild.write({
+                chunkFileNames: (chunk) => getChunkFilename(context, chunk, "d.mts"),
+                dir: resolve(context.options.rootDir, context.options.outDir),
+                entryFileNames: "[name].d.mts",
+            });
+        }
 
         // .d.ts for node10 compatibility (TypeScript version < 4.7)
         if (context.options.declaration === true || context.options.declaration === "compatible") {

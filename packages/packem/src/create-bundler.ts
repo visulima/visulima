@@ -93,6 +93,7 @@ const build = async (
         rollup: {
             alias: {},
             cjsBridge: false,
+            cjsInterop: { addDefaultProperty: false },
             commonjs: {
                 ignoreTryCatch: true,
                 preserveSymlinks: true,
@@ -143,6 +144,7 @@ const build = async (
                 include: /\bimport\s*[(/]/,
             },
             emitCJS: false,
+            emitESM: true,
             esbuild: {
                 charset: "utf8",
                 include: /\.[jt]sx?$/,
@@ -243,6 +245,12 @@ const build = async (
         target: nodeTarget,
     }) as BuildOptions;
 
+    if (options.rollup.emitESM === false && options.rollup.emitCJS === false) {
+        logger.error("Both emitESM and emitCJS are disabled. At least one of them must be enabled.");
+
+        return;
+    }
+
     // Resolve dirs relative to rootDir
     options.outDir = resolve(options.rootDir, options.outDir);
 
@@ -260,7 +268,6 @@ const build = async (
     }
 
     // validate
-
     if (options.rollup.resolve && options.rollup.resolve.preferBuiltins === true) {
         options.rollup.polyfillNode = false;
 

@@ -123,10 +123,10 @@ cli.addCommand({
             type: Boolean,
         },
         {
-            description: "Enable CommonJS interop",
+            description: "CJS interop mode, can export default and named export, (experimental).",
             name: "cjsInterop",
             type: Boolean,
-        }
+        },
     ],
 });
 

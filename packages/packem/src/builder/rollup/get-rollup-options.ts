@@ -15,6 +15,7 @@ import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import arrayIncludes from "../../utils/array-includes";
 import getPackageName from "../../utils/get-package-name";
+import { cjsInterop as cjsInteropPlugin } from "./plugins/cjs-interop";
 import esbuildPlugin from "./plugins/esbuild";
 import externalizeNodeBuiltinsPlugin from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
@@ -30,9 +31,8 @@ import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-t
 import resolveTypescriptMjsCtsPlugin from "./plugins/typescript/resolve-typescript-mjs-cjs";
 import getChunkFilename from "./utils/get-chunk-filename";
 import resolveAliases from "./utils/resolve-aliases";
-import cjsInterop from "./plugins/cjs-interop";
 
-const sharedOnWarn = (warning: RollupLog): boolean => {
+const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
     // eslint-disable-next-line no-secrets/no-secrets
     // @see https:// github.com/rollup/rollup/blob/5abe71bd5bae3423b4e2ee80207c871efde20253/cli/run/batchWarnings.ts#L236
     if (warning.code === "UNRESOLVED_IMPORT") {
@@ -45,6 +45,11 @@ const sharedOnWarn = (warning: RollupLog): boolean => {
 
         process.exitCode = 1;
 
+        return true;
+    }
+
+    // eslint-disable-next-line sonarjs/prefer-single-boolean-return
+    if (warning.code === "MIXED_EXPORTS" && context.options.cjsInterop) {
         return true;
     }
 
@@ -117,7 +122,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
         ),
 
         onwarn(warning: RollupLog, rollupWarn) {
-            if (sharedOnWarn(warning)) {
+            if (sharedOnWarn(warning, context)) {
                 return;
             }
 
@@ -150,7 +155,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     sourcemap: context.options.sourcemap,
                     ...context.options.rollup.output,
                 },
-            <OutputOptions>{
+            context.options.rollup.emitESM && <OutputOptions>{
                 chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "mjs"),
                 dir: resolve(context.options.rootDir, context.options.outDir),
                 entryFileNames: "[name].mjs",
@@ -222,7 +227,12 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.esbuild,
                 }),
 
-            context.options.cjsInterop && context.options.rollup.emitCJS && cjsInterop(),
+            context.options.cjsInterop &&
+                context.options.rollup.emitCJS &&
+                cjsInteropPlugin({
+                    type: context.pkg.type ?? "commonjs",
+                    ...context.options.rollup.cjsInterop,
+                }),
 
             context.options.rollup.dynamicVars && dynamicImportVarsPlugin(),
 
@@ -388,7 +398,12 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     tsconfig: context.tsconfig?.path,
                 }),
 
-            context.options.cjsInterop && context.options.rollup.emitCJS && cjsInterop(),
+            context.options.cjsInterop &&
+                context.options.rollup.emitCJS &&
+                cjsInteropPlugin({
+                    type: context.pkg.type ?? "commonjs",
+                    ...context.options.rollup.cjsInterop,
+                }),
 
             context.options.rollup.patchTypes && patchTypescriptTypesPlugin(context.options.rollup.patchTypes),
 

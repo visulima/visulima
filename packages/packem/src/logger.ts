@@ -4,6 +4,6 @@ const logger = createPail({
     scope: "packem",
 });
 
-logger.wrapAll();
+// logger.wrapAll();
 
 export default logger;

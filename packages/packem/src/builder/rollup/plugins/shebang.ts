@@ -22,6 +22,7 @@ export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/e
 
             if (executablePaths.includes(chunk.name)) {
                 const transformed = new MagicString(code);
+
                 transformed.prepend(shebang);
 
                 return {

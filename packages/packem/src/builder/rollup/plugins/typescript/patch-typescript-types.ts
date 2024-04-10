@@ -4,6 +4,7 @@
 import { exit } from "node:process";
 
 import { parse } from "@babel/parser";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { walk } from "estree-walker";
 import MagicString from "magic-string";
 import { findStaticImports } from "mlly";

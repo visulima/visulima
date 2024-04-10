@@ -10,8 +10,9 @@ import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions, RollupWatcher } from "rollup";
 import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
 import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
-import type { PluginVisualizerOptions } from "rollup-plugin-visualizer"
+import type { PluginVisualizerOptions } from "rollup-plugin-visualizer";
 
+import type { CJSInteropOptions } from "./builder/rollup/plugins/cjs-interop";
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 import type { LicenseOptions } from "./builder/rollup/plugins/license";
 import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-typescript-types";
@@ -19,30 +20,30 @@ import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patc
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
 interface RollupDynamicImportVariablesOptions {
-  /**
-   * By default, the plugin will not throw errors when target files are not found.
-   * Setting this option to true will result in errors thrown when encountering files which don't exist.
-   * @default false
-   */
-  errorWhenNoFilesFound?: boolean;
-  /**
-   * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
-   * should _ignore_.
-   * By default no files are ignored.
-   */
-  exclude?: FilterPattern;
-  /**
-   * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
-   * should operate on.
-   * By default all files are targeted.
-   */
-  include?: FilterPattern;
-  /**
-   * By default, the plugin quits the build process when it encounters an error.
-   * If you set this option to true, it will throw a warning instead and leave the code untouched.
-   * @default false
-   */
-  warnOnError?: boolean;
+    /**
+     * By default, the plugin will not throw errors when target files are not found.
+     * Setting this option to true will result in errors thrown when encountering files which don't exist.
+     * @default false
+     */
+    errorWhenNoFilesFound?: boolean;
+    /**
+     * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
+     * should _ignore_.
+     * By default no files are ignored.
+     */
+    exclude?: FilterPattern;
+    /**
+     * A picomatch pattern, or array of patterns, which specifies the files in the build the plugin
+     * should operate on.
+     * By default all files are targeted.
+     */
+    include?: FilterPattern;
+    /**
+     * By default, the plugin quits the build process when it encounters an error.
+     * If you set this option to true, it will throw a warning instead and leave the code untouched.
+     * @default false
+     */
+    warnOnError?: boolean;
 }
 
 interface BaseBuildEntry {
@@ -62,12 +63,13 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     alias: RollupAliasOptions | false;
     cjsBridge?: boolean;
+    cjsInterop?: CJSInteropOptions;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;
     dts: RollupDtsOptions;
-
     dynamicVars?: RollupDynamicImportVariablesOptions | false;
     emitCJS?: boolean;
+    emitESM?: boolean;
     esbuild: EsbuildOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     json: RollupJsonOptions | false;
@@ -84,7 +86,7 @@ export interface RollupBuildOptions {
     resolve: RollupNodeResolveOptions | false;
     treeshake?: RollupOptions["treeshake"];
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    visualizer?: PluginVisualizerOptions | false
+    visualizer?: PluginVisualizerOptions | false;
     watch?: RollupOptions["watch"];
 }
 
