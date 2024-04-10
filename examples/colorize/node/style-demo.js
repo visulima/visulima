@@ -35,6 +35,7 @@ import {
     yellow,
     yellowBright,
 } from "@visulima/colorize";
+import { convertHexToRgb } from "@visulima/colorize/utils";
 
 const out =
     `${bold`bold`} ${dim`dim`} ${italic`italic`} ${underline`underline`} ${strikethrough`strikethrough`} ${inverse`inverse`} ${bold.italic.underline
@@ -53,6 +54,63 @@ const out =
         (out, hex) => out + black.hex(hex)(hex),
         "",
     ) +
+    "\n" +
+    ["#d93611", "#d9d609", "#18d911", "#099dd9", "#7a09f6", "#c509d9", "#f10794"].reduce((out, hex) => {
+        let [r, g, b] = convertHexToRgb(hex);
+
+        return out + black.hex(hex)(`[${r},${g},${b}]`);
+    }, "") +
+    "\n" +
+    [
+        "#ff0000",
+        "#ff0021",
+        "#ff0041",
+        "#ff0062",
+        "#ff0082",
+        "#ff00a3",
+        "#ff00c3",
+        "#ff00e4",
+        "#fa00ff",
+        "#d900ff",
+        "#b900ff",
+        "#9800ff",
+        "#7800ff",
+        "#5700ff",
+        "#3700ff",
+        "#1600ff",
+        "#000bff",
+        "#002bff",
+        "#004cff",
+        "#006cff",
+        "#008dff",
+        "#00adff",
+        "#00ceff",
+        "#00eeff",
+        "#00ffef",
+        "#00ffcf",
+        "#00ffae",
+        "#00ff8e",
+        "#00ff6d",
+        "#00ff4d",
+        "#00ff2c",
+        "#00ff0c",
+        "#15ff00",
+        "#36ff00",
+        "#56ff00",
+        "#77ff00",
+        "#97ff00",
+        "#b8ff00",
+        "#d8ff00",
+        "#f9ff00",
+        "#ffe500",
+        "#ffc400",
+        "#ffa400",
+        "#ff8300",
+        "#ff6300",
+        "#ff4200",
+        "#ff2200",
+        "#ff0100",
+    ].reduce((out, hex) => out + black.hex(hex)("█"), "") +
     "\n" +
     [" 197 ", " 203 ", " 209 ", " 215 ", " 221 ", " 227 ", " 191 ", " 156  ", " 120  ", " 123 ", " 117 ", " 147 ", " 141 ", "  98 ", "  92 "].reduce(
         (out, code) => out + black.bgAnsi256(parseInt(code, 10))(code),

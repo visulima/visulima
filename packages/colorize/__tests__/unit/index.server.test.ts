@@ -1,10 +1,20 @@
 import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-styles";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach,describe, expect, it, vi } from "vitest";
 
 import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.server.mts";
 import { esc } from "../helpers.js";
 
 describe("style tests", () => {
+    beforeEach(() => {
+        vi.stubGlobal("process", {
+            env: { FORCE_COLOR: "3" },
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it(`should colorize visible('foo')`, () => {
         expect.assertions(1);
 
@@ -137,6 +147,16 @@ describe("style tests", () => {
 });
 
 describe("functional tests", () => {
+    beforeEach(() => {
+        vi.stubGlobal("process", {
+            env: { FORCE_COLOR: "3" },
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it(`should colorize 'OK'`, () => {
         expect.assertions(1);
 
@@ -193,6 +213,16 @@ describe("functional tests", () => {
 });
 
 describe("alias tests", () => {
+    beforeEach(() => {
+        vi.stubGlobal("process", {
+            env: { FORCE_COLOR: "3" },
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it(`should be the same strike == strikethrough`, () => {
         expect.assertions(1);
 
@@ -322,6 +352,16 @@ describe("colorize ansi-styles", () => {
 });
 
 describe("handling numbers", () => {
+    beforeEach(() => {
+        vi.stubGlobal("process", {
+            env: { FORCE_COLOR: "3" },
+        });
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it(`should colorize a number 123`, () => {
         expect.assertions(1);
 
@@ -389,6 +429,299 @@ describe("handling numbers", () => {
         const number_ = 123;
         const received = red`size: ${number_ as unknown as string}px`;
         const expected = "\u001B[31msize: 123px\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+});
+
+describe("base ANSI 16 colors", () => {
+    // foreground colors
+    it(`colorize.black('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.black("foo");
+        const expected = "\u001B[30mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.red('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.red("foo");
+        const expected = "\u001B[31mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.green('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.green("foo");
+        const expected = "\u001B[32mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.yellow('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.yellow("foo");
+        const expected = "\u001B[33mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.blue('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.blue("foo");
+        const expected = "\u001B[34mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.magenta('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.magenta("foo");
+        const expected = "\u001B[35mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.cyan('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.cyan("foo");
+        const expected = "\u001B[36mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.white('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.white("foo");
+        const expected = "\u001B[37mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.blackBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.blackBright("foo");
+        const expected = "\u001B[90mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.redBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.redBright("foo");
+        const expected = "\u001B[91mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.greenBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.greenBright("foo");
+        const expected = "\u001B[92mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.yellowBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.yellowBright("foo");
+        const expected = "\u001B[93mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.blueBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.blueBright("foo");
+        const expected = "\u001B[94mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.magentaBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.magentaBright("foo");
+        const expected = "\u001B[95mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.cyanBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.cyanBright("foo");
+        const expected = "\u001B[96mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.whiteBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.whiteBright("foo");
+        const expected = "\u001B[97mfoo\u001B[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    // background colors
+
+    it(`colorize.bgBlack('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgBlack("foo");
+        const expected = "\u001B[40mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgRed('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgRed("foo");
+        const expected = "\u001B[41mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgGreen('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgGreen("foo");
+        const expected = "\u001B[42mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgYellow('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgYellow("foo");
+        const expected = "\u001B[43mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgBlue('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgBlue("foo");
+        const expected = "\u001B[44mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgMagenta('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgMagenta("foo");
+        const expected = "\u001B[45mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgCyan('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgCyan("foo");
+        const expected = "\u001B[46mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgWhite('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgWhite("foo");
+        const expected = "\u001B[47mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgBlackBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgBlackBright("foo");
+        const expected = "\u001B[100mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgRedBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgRedBright("foo");
+        const expected = "\u001B[101mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgGreenBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgGreenBright("foo");
+        const expected = "\u001B[102mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgYellowBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgYellowBright("foo");
+        const expected = "\u001B[103mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgBlueBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgBlueBright("foo");
+        const expected = "\u001B[104mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgMagentaBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgMagentaBright("foo");
+        const expected = "\u001B[105mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgCyanBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgCyanBright("foo");
+        const expected = "\u001B[106mfoo\u001B[49m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`colorize.bgWhiteBright('foo')`, () => {
+        expect.assertions(1);
+
+        const received = colorize.bgWhiteBright("foo");
+        const expected = "\u001B[107mfoo\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });

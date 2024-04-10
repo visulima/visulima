@@ -26,9 +26,10 @@
 "use strict";
 
 import { Colorize, green, red, yellow } from "@visulima/colorize";
+import { isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
+// vendor libraries for benchmark
 import ansiColors from "ansi-colors";
 import { Ansis } from "ansis";
-// vendor libraries for benchmark
 import chalk from "chalk";
 import cliColor from "cli-color";
 import * as colorette from "colorette";
@@ -41,7 +42,12 @@ import picocolors from "picocolors";
 import Bench from "./lib/bench.js";
 import { createFixture } from "./lib/utils.js";
 
-const { log } = console;
+const colorSpace = isStdoutColorSupported();
+
+if (colorSpace < 3) {
+    console.warn(red.inverse` WARNING `, yellow`Your terminal don't support TrueColor!`);
+    console.warn("The result of some tests can be NOT correct! Choose a modern terminal, e.g. iTerm.\n");
+}
 
 // create a new instance of Ansis for correct measure in benchmark
 const ansis = new Ansis();
@@ -80,7 +86,7 @@ const baseColors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan"
 
 let fixture = [];
 
-log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
+console.log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
 
 // Colorette bench
 // https://github.com/jorgebucaran/colorette/blob/main/bench/index.js
@@ -208,6 +214,24 @@ bench("HEX colors")
     .add("@visulima/colorize", () => colorize.hex("#FBA")("foo"))
     .add("ansis", () => ansis.hex("#FBA")("foo"))
     .add("chalk", () => chalk.hex("#FBA")("foo"))
+    .run();
+
+// Spectrum HEX colors
+bench("Spectrum HEX colors")
+    .add("chalk", () => {
+        let str = "";
+        spectrum.forEach((color) => {
+            str += chalk.hex(color)("█");
+        });
+        return str;
+    })
+    .add("ansis", () => {
+        let str = "";
+        spectrum.forEach((color) => {
+            str += hex(color)("█");
+        });
+        return str;
+    })
     .run();
 
 // Template literals

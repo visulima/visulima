@@ -22,17 +22,27 @@ import type { ColorValueHex } from "../types";
  * @param {string} hex A string that contains the hexadecimal RGB color representation.
  * @return {[number, number, number]} The red, green, blue values in range [0, 255] .
  */
-export const hexToRgb = (hex: ColorValueHex): [number, number, number] => {
-    let color: string = hex.replace("#", "");
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export const convertHexToRgb = (hex: ColorValueHex | string): [number, number, number] => {
+    let [, color] = /([a-f\d]{3,6})/i.exec(hex) ?? [];
 
-    if (color.length === 3) {
-        color = (color[0] as string) + (color[0] as string) + (color[1] as string) + (color[1] as string) + (color[2] as string) + (color[2] as string);
-    } else if (color.length !== 6) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const length_ = color ? color.length : 0;
+
+    if (length_ === 3) {
+        color =
+            ((color as string)[0] as string) +
+            ((color as string)[0] as string) +
+            ((color as string)[1] as string) +
+            ((color as string)[1] as string) +
+            ((color as string)[2] as string) +
+            ((color as string)[2] as string);
+    } else if (length_ !== 6) {
         return [0, 0, 0];
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const number_ = Number.parseInt(color, 16);
+    const number_ = Number.parseInt(color as string, 16);
 
     // eslint-disable-next-line no-bitwise
     return [(number_ >> 16) & 255, (number_ >> 8) & 255, number_ & 255];

@@ -33,7 +33,19 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 ## Why Colorize?
 
 -   Supports both **ESM** and **CommonJS**
--   [Standard API](#base-colors) like **chalk**
+-   **TypeScript** support out of the box
+-   Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
+-   [Standard API](#base-colors) compatible with **Chalk**, switch from **Chalk** to **Colorize** without changing your code
+
+```diff
+- import chalk from 'chalk';
++ import chalk, { red } from '@visulima/colorize';
+
+chalk.red.bold('Error!'); // <- Chalk like syntax works fine with Colorize
+red.bold('Error!');       // <- the same result with Colorize
+red.bold`Error!`;         // <- the same result with Colorize
+```
+
 -   Default import
     -   `import colorize from '@visulima/colorize'` or `const colorize = require('@visulima/colorize')`
 -   [Named import](#named-import)
@@ -42,17 +54,19 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 -   [Template literals](#template-literals) `` red`text` ``
 -   String styling with [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), see [template-literals](#tagged-template-literals)
 -   [Nested **template strings**](#nested-syntax) `` red`R ${green`G`} R` ``
--   [ANSI 256 colors](#256-colors) and [Truecolor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
+-   [Base ANSI styles](#base-colors) `dim` **`bold`** _`italic`_ <u>`underline`</u> <s>`strikethrough`</s>
+-   [Base ANSI 16 colors](#base-colors) `` red`Error!` `` `` redBright`Error!` `` `` bgRed`Error!` `` `` bgRedBright`Error!` ``
+-   [ANSI 256 colors](#256-colors) and [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
+-   [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
+-   [Fallback](#fallback) to supported [color space](#color-support): TrueColor → 256 colors → 16 colors → no colors
 -   [ANSI codes](#escape-codes) as `open` and `close` property for each style `` `Hello ${red.open}World${red.close}!` ``
 -   [Strip ANSI codes](#strip) method `colorize.strip()`
 -   [Correct style break](#new-line) at the `end of line` when used `\n` in string
 -   Supports the [environment variables](#cli-vars) `NO_COLOR` `FORCE_COLOR` and flags `--no-color` `--color`
--   Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
 -   Expressive API
 -   Doesn't extend `String.prototype`
 -   Up to **x3 faster** than **chalk**, [see benchmarks](#benchmark)
 -   **Auto detects** color support
--   **TypeScript** support out of the box
 -   Clean and focused
 -   [String Gradient´s](#gradient)
 
@@ -166,31 +180,6 @@ if (typeof navigator !== "undefined" && typeof window !== "undefined" && !consol
     consoleOverwritten = true;
 }
 ```
-
-### API
-
-Colors and styles have standard names used by many popular libraries, such
-as [chalk][chalk], [colorette][colorette], [kleur][kleur].
-
-| Foreground colors     | Background colors         | Styles                                                                  |
-| :-------------------- | :------------------------ | ----------------------------------------------------------------------- |
-| `black`               | `bgBlack`                 | `dim`                                                                   |
-| `red`                 | `bgRed`                   | **`bold`**                                                              |
-| `green`               | `bgGreen`                 | _`italic`_                                                              |
-| `yellow`              | `bgYellow`                | <u>`underline`</u>                                                      |
-| `blue`                | `bgBlue`                  | <s>`strikethrough`</s> (alias `strike`)                                 |
-| `magenta`             | `bgMagenta`               | <s>`doubleUnderline`</s> (_not included, because not widely supported_) |
-| `cyan`                | `bgCyan`                  | <s>`overline`</s> (_not included, because not widely supported_)        |
-| `white`               | `bgWhite`                 | <s>`frame`</s> (_not included, because not widely supported_)           |
-| `gray` (alias `grey`) | `bgGray` (alias `bgGrey`) | <s>`encircle`</s> (_not included, because not widely supported_)        |
-| `blackBright`         | `bgBlackBright`           | `inverse`                                                               |
-| `redBright`           | `bgRedBright`             | `visible`                                                               |
-| `greenBright`         | `bgGreenBright`           | `hidden`                                                                |
-| `yellowBright`        | `bgYellowBright`          | `reset`                                                                 |
-| `blueBright`          | `bgBlueBright`            |                                                                         |
-| `magentaBright`       | `bgMagentaBright`         |                                                                         |
-| `cyanBright`          | `bgCyanBright`            |                                                                         |
-| `whiteBright`         | `bgWhiteBright`           |                                                                         |
 
 ### Named import
 
@@ -346,7 +335,7 @@ Multiline nested template strings:
 ```typescript
 import { red, green, hex, visible, inverse } from "@visulima/colorize";
 
-// defined a truecolor as the constant
+// defined a TrueColor as the constant
 const orange = hex("#FFAB40");
 
 // normal colors
@@ -366,6 +355,32 @@ DISK: ${orange`${(disk.used / disk.total) * 100}%`}
 
 Output:\
 ![multiline nested](__assets__/multi-nested.png)
+
+<a id="base-colors" name="base-colors"></a>
+## Base ANSI 16 colors and styles
+
+Colors and styles have standard names used by many popular libraries, such
+as [chalk][chalk], [colorette][colorette], [kleur][kleur].
+
+| Foreground colors     | Background colors         | Styles                                                                  |
+| :-------------------- | :------------------------ | ----------------------------------------------------------------------- |
+| `black`               | `bgBlack`                 | `dim`                                                                   |
+| `red`                 | `bgRed`                   | **`bold`**                                                              |
+| `green`               | `bgGreen`                 | _`italic`_                                                              |
+| `yellow`              | `bgYellow`                | <u>`underline`</u>                                                      |
+| `blue`                | `bgBlue`                  | <s>`strikethrough`</s> (alias `strike`)                                 |
+| `magenta`             | `bgMagenta`               | <s>`doubleUnderline`</s> (_not included, because not widely supported_) |
+| `cyan`                | `bgCyan`                  | <s>`overline`</s> (_not included, because not widely supported_)        |
+| `white`               | `bgWhite`                 | <s>`frame`</s> (_not included, because not widely supported_)           |
+| `gray` (alias `grey`) | `bgGray` (alias `bgGrey`) | <s>`encircle`</s> (_not included, because not widely supported_)        |
+| `blackBright`         | `bgBlackBright`           | `inverse`                                                               |
+| `redBright`           | `bgRedBright`             | `visible`                                                               |
+| `greenBright`         | `bgGreenBright`           | `hidden`                                                                |
+| `yellowBright`        | `bgYellowBright`          | `reset`                                                                 |
+| `blueBright`          | `bgBlueBright`            |                                                                         |
+| `magentaBright`       | `bgMagentaBright`         |                                                                         |
+| `cyanBright`          | `bgCyanBright`            |                                                                         |
+| `whiteBright`         | `bgWhiteBright`           |                                                                         |
 
 ## ANSI 256 colors
 
@@ -394,6 +409,34 @@ Background function: `bgAnsi256(code)` has short alias `bg(code)`
 > The `ansi256()` and `bgAnsi256()` methods are implemented for compatibility with the `chalk` API.
 
 See [ANSI color codes](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit).
+
+### Fallback
+
+If a terminal supports only 16 colors then ANSI 256 colors will be interpolated into base 16 colors.
+
+#### Usage Example
+
+```typescript
+import { bold, ansi256, fg, bgAnsi256, bg } from "@visulima/colorize";
+
+// foreground color
+ansi256(96)`Bright Cyan`;
+fg(96)`Bright Cyan`; // alias for ansi256
+
+// background color
+bgAnsi256(105)`Bright Magenta`;
+bg(105)`Bright Magenta`; // alias for bgAnsi256
+
+// function is chainable
+ansi256(96).bold`bold Bright Cyan`;
+
+// function is avaliable in each style
+bold.ansi256(96).underline`bold underline Bright Cyan`;
+
+// you can combine the functions and styles in any order
+bgAnsi256(105).ansi256(96)`cyan text on magenta background`;
+bg(105).fg(96)`cyan text on magenta background`;
+```
 
 ```typescript
 import { bold, ansi256, fg, bgAnsi256, bg } from "@visulima/colorize";
@@ -440,6 +483,14 @@ bgRgb(224, 17, 95)`Ruby`;
 // you can combine the functions and styles in any order
 bold.hex("#E0115F").bgHex("#96C")`ruby bold text on amethyst background`;
 ```
+
+## Fallback
+
+If a terminal does not support ANSI colors, the library will automatically fall back to the next supported color space.
+
+> TrueColor —> 256 colors —> 16 colors —> no colors (black & white)
+
+If you use the `hex()`, `rgb()` or `ansis256()` functions in a terminal not supported TrueColor or 256 colors, then colors will be interpolated.
 
 <!--
 Copy of a readme example from https://github.com/webdiscus/ansis
@@ -517,18 +568,18 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 
 ## Comparison of most popular libraries
 
-| Library<br>**\*\***\_\_**\*\***<br> - name<br> - named import     | Code size                                                                      |               Naming colors                | ANSI 256<br>colors | True-<br>color | Chained<br>syntax | Nested<br>template strings | New<br>Line |                  Supports<br>CLI params                  |
-| :---------------------------------------------------------------- | :----------------------------------------------------------------------------- | :----------------------------------------: | :----------------: | :------------: | :---------------: | :------------------------: | :---------: | :------------------------------------------------------: |
-| [`@visulima/colorize`][npm-url]<br><nobr>`✅ named import`</nobr> | ![npm bundle size](https://img.shields.io/bundlephobia/min/@visulima/colorize) |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` |
-| [`ansi-colors`][ansi-colors]<br><nobr>`❌ named import`</nobr>    | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansi-colors)        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |                  only<br>`FORCE_COLOR`                   |
-| [`ansis`][ansis]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansis)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` |
-| [`chalk`][chalk]<br><nobr>`❌ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/chalk)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ❌             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` |
-| [`cli-color`][cli-color]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/cli-color)          |        **standard**<br>`16` colors         |         ✅         |       ❌       |        ✅         |             ❌             |     ❌      |                    only<br>`NO_COLOR`                    |
-| [`colorette`][colorette]<br><nobr>`✅ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colorette)          |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` |
-| [`colors-cli`][colors-cli]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors-cli)         | <nobr>_non-standard_</nobr><br>`16` colors |         ✅         |       ❌       |        ✅         |             ❌             |     ✅      |            only<br>`--no-color`<br>`--color`             |
-| [`colors.js`][colors.js]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors.js)          | <nobr>_non-standard_</nobr><br>`16` colors |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |    only<br>`FORCE_COLOR`<br>`--no-color`<br>`--color`    |
-| [`kleur`][kleur]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/kleur)              |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ❌      |           only<br>`NO_COLOR`<br>`FORCE_COLOR`            |
-| [`picocolors`][picocolors]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/picocolors)         |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` |
+| Library<br>**\*\***\_\_**\*\***<br> - name<br> - named import     | Code size                                                                      |               Naming colors                | ANSI 256<br>colors | True-<br>color | Chained<br>syntax | Nested<br>template strings | New<br>Line |            Supports<br>CLI params<br>ENV vars            | Fallbacks                          |
+| :---------------------------------------------------------------- | :----------------------------------------------------------------------------- | :----------------------------------------: | :----------------: | :------------: | :---------------: | :------------------------: | :---------: | :------------------------------------------------------: | ---------------------------------- |
+| [`@visulima/colorize`][npm-url]<br><nobr>`✅ named import`</nobr> | ![npm bundle size](https://img.shields.io/bundlephobia/min/@visulima/colorize) |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`ansi-colors`][ansi-colors]<br><nobr>`❌ named import`</nobr>    | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansi-colors)        |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |                  only<br>`FORCE_COLOR`                   | ❌                                 |
+| [`ansis`][ansis]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/ansis)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ✅             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`chalk`][chalk]<br><nobr>`❌ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/chalk)              |        **standard**<br>`16` colors         |         ✅         |       ✅       |        ✅         |             ❌             |     ✅      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | 256 color<br>16 colors<br>no color |
+| [`cli-color`][cli-color]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/cli-color)          |        **standard**<br>`16` colors         |         ✅         |       ❌       |        ✅         |             ❌             |     ❌      |                    only<br>`NO_COLOR`                    | 16 colors<br>no color              |
+| [`colorette`][colorette]<br><nobr>`✅ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colorette)          |        **standard**<br>`16` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
+| [`colors-cli`][colors-cli]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors-cli)         | <nobr>_non-standard_</nobr><br>`16` colors |         ✅         |       ❌       |        ✅         |             ❌             |     ✅      |            only<br>`--no-color`<br>`--color`             | no color                           |
+| [`colors.js`][colors.js]<br><nobr>`❌ named import`</nobr>        | ![npm bundle size](https://img.shields.io/bundlephobia/min/colors.js)          | <nobr>_non-standard_</nobr><br>`16` colors |         ❌         |       ❌       |        ✅         |             ❌             |     ✅      |    only<br>`FORCE_COLOR`<br>`--no-color`<br>`--color`    | no color                           |
+| [`kleur`][kleur]<br><nobr>`✅ named import`</nobr>                | ![npm bundle size](https://img.shields.io/bundlephobia/min/kleur)              |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ✅         |             ❌             |     ❌      |           only<br>`NO_COLOR`<br>`FORCE_COLOR`            | no color                           |
+| [`picocolors`][picocolors]<br><nobr>`❌ named import`</nobr>      | ![npm bundle size](https://img.shields.io/bundlephobia/min/picocolors)         |         **standard**<br>`8` colors         |         ❌         |       ❌       |        ❌         |             ❌             |     ❌      | `NO_COLOR`<br>`FORCE_COLOR`<br>`--no-color`<br>`--color` | no color                           |
 
 > **Note**
 >
