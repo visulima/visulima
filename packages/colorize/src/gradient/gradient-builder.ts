@@ -1,5 +1,5 @@
 import type { ColorizeType, ColorValueHex, CssColorName, RGB, StopInput, StopOutput } from "../types";
-import { convertHexToRgb } from "../util/convert-hex-to-rgb.ts";
+import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { colorNames } from "./util/color-names";
 import { computeSubSteps } from "./util/compute";
 import { interpolateHsv, interpolateRgb } from "./util/interpolate";

@@ -8,7 +8,7 @@
  */
 
 import type { ColorizeType, ColorValueHex } from "../types";
-import { convertHexToRgb } from "../util/convert-hex-to-rgb.ts";
+import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { unescape } from "../util/unescape";
 
 const TEMPLATE_REGEX =

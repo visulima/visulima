@@ -50,8 +50,10 @@ export const ansi256To16 = (code: number): number => {
 
     if (code >= 232) {
         // greyscale
+        // eslint-disable-next-line no-multi-assign
         r = g = b = ((code - 232) * 10 + 8) / 255;
     } else {
+        // eslint-disable-next-line no-param-reassign
         code -= 16;
 
         const remainder = code % 36;
@@ -67,9 +69,10 @@ export const ansi256To16 = (code: number): number => {
         return 30;
     }
 
+    // eslint-disable-next-line no-bitwise
     const code16 = 30 + ((Math.round(b) << 2) | (Math.round(g) << 1) | Math.round(r));
 
     return value === 2 ? code16 + 60 : code16;
 };
 
-export const rgbToAnsi16 = (r: number, g: number, b: number) => ansi256To16(rgbToAnsi256(r, g, b));
+export const rgbToAnsi16 = (r: number, g: number, b: number): number => ansi256To16(rgbToAnsi256(r, g, b));
