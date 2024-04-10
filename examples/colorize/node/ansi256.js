@@ -6,7 +6,6 @@
  *
  * Copyright (c) 2023, webdiscus
  */
-
 "use strict";
 
 import colorize from "@visulima/colorize";
@@ -76,4 +75,5 @@ for (let i = 232; i <= 255; i++) {
     n++;
 }
 
+console.log();
 console.log(out);

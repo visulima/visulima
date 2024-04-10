@@ -1,5 +1,5 @@
 import type { ColorizeType, ColorValueHex, CssColorName, RGB, StopInput, StopOutput } from "../types";
-import { hexToRgb } from "../util/hex-to-rgb";
+import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { colorNames } from "./util/color-names";
 import { computeSubSteps } from "./util/compute";
 import { interpolateHsv, interpolateRgb } from "./util/interpolate";
@@ -53,7 +53,7 @@ export class GradientBuilder {
                     if (Array.isArray(stopInput.color)) {
                         color = stopInput.color as [number, number, number];
                     } else if (typeof stopInput.color === "string") {
-                        color = stopInput.color.includes("#") ? hexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
+                        color = stopInput.color.includes("#") ? convertHexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     } else if ((stopInput.color as RGB).r !== undefined && (stopInput.color as RGB).g !== undefined && (stopInput.color as RGB).b) {
                         color = [(stopInput.color as RGB).r, (stopInput.color as RGB).g, (stopInput.color as RGB).b];
@@ -80,7 +80,7 @@ export class GradientBuilder {
                 };
             } else if (typeof stop_ === "string") {
                 stop = {
-                    color: stop_.includes("#") ? hexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
+                    color: stop_.includes("#") ? convertHexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

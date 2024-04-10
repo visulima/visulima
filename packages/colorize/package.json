@@ -116,6 +116,16 @@
                 "default": "./dist/gradient.js"
             }
         },
+        "./utils": {
+            "require": {
+                "types": "./dist/utils.d.cts",
+                "default": "./dist/utils.cjs"
+            },
+            "import": {
+                "types": "./dist/utils.d.ts",
+                "default": "./dist/utils.js"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.server.cjs",
@@ -228,6 +238,14 @@
         },
         {
             "source": "src/gradient.ts",
+            "format": "cjs"
+        },
+        {
+            "source": "src/utils.ts",
+            "format": "esm"
+        },
+        {
+            "source": "src/utils.ts",
             "format": "cjs"
         }
     ]

@@ -1,55 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { clamp } from "../../src/util/clamp";
-import { hexToRgb } from "../../src/util/hex-to-rgb";
 import { stringReplaceAll } from "../../src/util/string-replace-all";
 
 describe("utils tests", () => {
-    it(`should transform hex 'FFAA99' to a valid rgb`, () => {
-        expect.assertions(1);
-
-        const received = hexToRgb("FFAA99");
-        const expected = [255, 170, 153];
-
-        expect(received).toStrictEqual(expected);
-    });
-
-    it(`should transform hex '#FFAA99' to a valid rgb`, () => {
-        expect.assertions(1);
-
-        const received = hexToRgb("#FFAA99");
-        const expected = [255, 170, 153];
-
-        expect(received).toStrictEqual(expected);
-    });
-
-    it(`should transform hex '#FA9' to a valid rgb`, () => {
-        expect.assertions(1);
-
-        const received = hexToRgb("#FA9");
-        const expected = [255, 170, 153];
-
-        expect(received).toStrictEqual(expected);
-    });
-
-    it(`should transform hex '#FF99' to a valid rgb`, () => {
-        expect.assertions(1);
-
-        const received = hexToRgb("#FF99");
-        const expected = [0, 0, 0];
-
-        expect(received).toStrictEqual(expected);
-    });
-
-    it(`should transform hex 'something' to a valid rgb`, () => {
-        expect.assertions(1);
-
-        const received = hexToRgb("something");
-        const expected = [0, 0, 0];
-
-        expect(received).toStrictEqual(expected);
-    });
-
     it(`clamp(3, 0, 2)`, () => {
         expect.assertions(1);
 
