@@ -222,7 +222,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.esbuild,
                 }),
 
-            context.options.cjsInterop && cjsInterop(),
+            context.options.cjsInterop && context.options.rollup.emitCJS && cjsInterop(),
 
             context.options.rollup.dynamicVars && dynamicImportVarsPlugin(),
 
@@ -388,7 +388,7 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
                     tsconfig: context.tsconfig?.path,
                 }),
 
-            context.options.cjsInterop && cjsInterop(),
+            context.options.cjsInterop && context.options.rollup.emitCJS && cjsInterop(),
 
             context.options.rollup.patchTypes && patchTypescriptTypesPlugin(context.options.rollup.patchTypes),
 

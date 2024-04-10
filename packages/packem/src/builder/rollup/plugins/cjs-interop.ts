@@ -1,23 +1,12 @@
 import type { Plugin } from "rollup";
 
-const searchFor = ["exports.", "exports['default']"];
-
-const findPos = (source: string) => {
-    for (const value of searchFor) {
-        const pos = source.indexOf(value);
-        if (pos !== -1) {
-            return pos;
-        }
-    }
-
-    return -1;
-};
+import logger from "../../../logger";
 
 const cjsInterop = (): Plugin => {
     return {
         name: "packem:cjs-interop",
         renderChunk(code: string, chunk, options): string | null {
-            if (options.format !== "cjs" || chunk.type !== "chunk" || !chunk.isEntry) {
+            if (options.format !== "cjs" || chunk.type !== "chunk" || !chunk.isEntry || options.exports !== "auto") {
                 return null;
             }
 
@@ -27,14 +16,19 @@ const cjsInterop = (): Plugin => {
                 return null;
             }
 
-            const pos = findPos(code);
+            // remove `__esModule` marker property
+            let interopCode = code.replace("Object.defineProperty(exports, '__esModule', { value: true });", "");
+            // replace `exports.default = ...; or exports['default'] = ...;` with `module.exports = ...;`
+            interopCode = interopCode.replaceAll(/(?:module\.)?exports\.default/g, "module.exports");
+            // replace `exports.* = ...;` with `module.exports.* = ...;`
+            interopCode = interopCode.replace(/exports\.(.*) = (.*);/i, "module.exports.$1 = $2;");
 
-            if (pos === -1) {
-                return null;
-            }
+            logger.debug({
+                message: "Applied CommonJS interop to entry chunk " + chunk.fileName + ".",
+                prefix: "cjs-interop",
+            })
 
-
-            return code.slice(0, Math.max(0, pos)) + `module.exports = exports = ${matches[2]};\n` + code.slice(Math.max(0, pos));
+            return interopCode;
         },
     };
 };
