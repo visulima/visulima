@@ -1,3 +1,10 @@
+## @visulima/colorize [1.4.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.3...@visulima/colorize@1.4.0) (2024-04-10)
+
+
+### Features
+
+* add detection of color spaces support: TrueColor, 256 colors, 16 colors, no color ([#391](https://github.com/visulima/visulima/issues/391)) ([f35525c](https://github.com/visulima/visulima/commit/f35525c2a23558405408977745dd59aba9c58a3f))
+
 ## @visulima/colorize [1.3.3](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.2...@visulima/colorize@1.3.3) (2024-04-09)
 
 
