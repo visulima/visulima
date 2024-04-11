@@ -25,6 +25,11 @@ export const inferExportType = (condition: string, previousConditions: string[],
         }
     }
 
+    // Defacto module entry-point for bundlers (not Node.js)
+    if (condition === "module") {
+        return "esm";
+    }
+
     if (condition === "import") {
         return "esm";
     }

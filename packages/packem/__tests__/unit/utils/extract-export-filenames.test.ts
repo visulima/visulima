@@ -1,3 +1,4 @@
+import type { PackageJson } from "@visulima/package";
 import { describe, expect, it } from "vitest";
 
 import extractExportFilenames from "../../../src/utils/extract-export-filenames";
@@ -126,5 +127,71 @@ describe("extractExportFilenames", () => {
         expect(() => {
             extractExportFilenames(packageExports, type, []);
         }).toThrow('Exported file "./src/index.cjs" has an extension that does not match the package.json type "module".');
+    });
+
+    it("should infer the correct export type", () => {
+        expect.assertions(1);
+
+        const packageExports: PackageJson["exports"] = {
+            ".": {
+                default: {
+                    types: "./dist/create-bundler.d.ts",
+                    // eslint-disable-next-line perfectionist/sort-objects
+                    default: "./dist/create-bundler.js",
+                },
+                import: {
+                    types: "./dist/create-bundler.d.mts",
+                    // eslint-disable-next-line perfectionist/sort-objects
+                    default: "./dist/create-bundler.mjs",
+                },
+                node: {
+                    module: "./dist/create-bundler.js",
+                    require: "./dist/create-bundler.cjs",
+                },
+                require: {
+                    types: "./dist/create-bundler.d.cts",
+                    // eslint-disable-next-line perfectionist/sort-objects
+                    default: "./dist/create-bundler.cjs",
+                },
+            },
+        };
+        const type = "commonjs";
+
+        const result = extractExportFilenames(packageExports, type, []);
+
+        expect(result).toStrictEqual([
+            {
+                file: "./dist/create-bundler.d.ts",
+                type: "esm",
+            },
+            {
+                file: "./dist/create-bundler.js",
+                type: "cjs",
+            },
+            {
+                file: "./dist/create-bundler.d.mts",
+                type: "esm",
+            },
+            {
+                file: "./dist/create-bundler.mjs",
+                type: "esm",
+            },
+            {
+                file: "./dist/create-bundler.js",
+                type: "esm",
+            },
+            {
+                file: "./dist/create-bundler.cjs",
+                type: "cjs",
+            },
+            {
+                file: "./dist/create-bundler.d.cts",
+                type: "cjs",
+            },
+            {
+                file: "./dist/create-bundler.cjs",
+                type: "cjs",
+            },
+        ]);
     });
 });

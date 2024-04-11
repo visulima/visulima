@@ -5,6 +5,7 @@ import { resolve } from "pathe";
 
 import type { BuildEntry, InferEntriesResult } from "../../types";
 import extractExportFilenames from "../../utils/extract-export-filenames";
+import { inferExportTypeFromFileName } from "../../utils/infer-export-type";
 import getEntrypointPaths from "./get-entrypoint-paths";
 
 /**
@@ -32,13 +33,16 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
     }
 
     if (packageJson.main) {
-        outputs.push({ file: packageJson.main, type: "cjs" });
+        outputs.push({ file: packageJson.main, type: inferExportTypeFromFileName(packageJson.main) ?? (packageJson.type === "module" ? "esm" : "cjs") });
     }
 
+    // Defacto module entry-point for bundlers (not Node.js)
+    // https://github.com/dherman/defense-of-dot-js/blob/master/proposal.md
     if (packageJson.module) {
         outputs.push({ file: packageJson.module, type: "esm" });
     }
 
+    // Entry point for TypeScript
     if (packageJson.types || packageJson.typings) {
         outputs.push({ file: (packageJson.types || packageJson.typings) as string });
     }
