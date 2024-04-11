@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import inferExportType from "../../../src/utils/infer-export-type";
+import { inferExportType } from "../../../src/utils/infer-export-type";
 
 describe("inferExportType", () => {
     it("should infers export type by condition", () => {

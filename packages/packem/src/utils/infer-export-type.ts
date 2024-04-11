@@ -1,17 +1,27 @@
 import type { PackageJson } from "read-pkg";
 
-const inferExportType = (condition: string, previousConditions: string[], filename?: string, type?: PackageJson["type"]): "cjs" | "esm" => {
+export const inferExportTypeFromFileName = (filename: string): "cjs" | "esm" | undefined => {
+    if (filename.endsWith(".d.ts")) {
+        return "esm";
+    }
+
+    if (filename.endsWith(".mjs")) {
+        return "esm";
+    }
+
+    if (filename.endsWith(".cjs")) {
+        return "cjs";
+    }
+
+    return undefined;
+};
+
+export const inferExportType = (condition: string, previousConditions: string[], filename?: string, type?: PackageJson["type"]): "cjs" | "esm" => {
     if (filename) {
-        if (filename.endsWith(".d.ts")) {
-            return "esm";
-        }
+        const inferredType = inferExportTypeFromFileName(filename);
 
-        if (filename.endsWith(".mjs")) {
-            return "esm";
-        }
-
-        if (filename.endsWith(".cjs")) {
-            return "cjs";
+        if (inferredType) {
+            return inferredType;
         }
     }
 
@@ -31,5 +41,3 @@ const inferExportType = (condition: string, previousConditions: string[], filena
 
     return inferExportType(newCondition as string, rest, filename, type);
 };
-
-export default inferExportType;

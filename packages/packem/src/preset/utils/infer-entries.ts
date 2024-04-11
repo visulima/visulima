@@ -30,8 +30,9 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
             outputs.push({ file: file as string, isExecutable: true });
         }
     }
+
     if (packageJson.main) {
-        outputs.push({ file: packageJson.main });
+        outputs.push({ file: packageJson.main, type: "cjs" });
     }
 
     if (packageJson.module) {
@@ -57,6 +58,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
     }
 
     let cjs = false;
+    let esm = false;
     let dts = false;
 
     // Infer entries from package files
@@ -101,7 +103,11 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
             cjs = true;
         }
 
-        const entry = entries.find((index) => index.input === input) ?? entries[entries.push({ builder: "rollup", input }) - 1] as BuildEntry;
+        if (output.type === "esm") {
+            esm = true;
+        }
+
+        const entry = entries.find((index) => index.input === input) ?? (entries[entries.push({ builder: "rollup", input }) - 1] as BuildEntry);
 
         if (/\.d\.(?:m|c)?ts$/.test(output.file)) {
             dts = true;
@@ -109,15 +115,16 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
         if (isDirectory) {
             entry.outDir = outputSlug;
-            entry.format = output.type;
         }
+
+        entry.format = output.type;
 
         if (output.isExecutable) {
             entry.isExecutable = true;
         }
     }
 
-    return { cjs, dts, entries, warnings };
+    return { cjs, dts, entries, esm, warnings };
 };
 
 export default inferEntries;

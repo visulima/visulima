@@ -172,6 +172,7 @@ export type InferEntriesResult = {
     cjs?: boolean;
     dts?: boolean;
     entries: BuildEntry[];
+    esm?: boolean;
     warnings: string[];
 };
 

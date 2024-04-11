@@ -29,12 +29,16 @@ import validatePackage from "./validator/validate-package";
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
-const logErrors = (context: BuildContext): void => {
+const logErrors = (context: BuildContext, hasOtherLogs: boolean): void => {
     if (context.warnings.size > 0) {
+        if (hasOtherLogs) {
+            logger.raw("\n");
+        }
+
         logger.warn(`Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
 
         if (context.options.failOnWarn) {
-            logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
+            logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false`.");
 
             exit(1);
         }
@@ -264,9 +268,7 @@ const build = async (
     }) as BuildOptions;
 
     if (options.rollup.emitESM === false && options.rollup.emitCJS === false) {
-        logger.error("Both emitESM and emitCJS are disabled. At least one of them must be enabled.");
-
-        return;
+        throw new Error("Both emitESM and emitCJS are disabled. At least one of them must be enabled.");
     }
 
     // Resolve dirs relative to rootDir
@@ -282,9 +284,7 @@ const build = async (
                 message = "Packem does not support '" + tsconfig.config.compilerOptions.jsx + "' jsx option. Please change it to 'react' or 'react-jsx' or 'react-jsxdev' instead."
             }
 
-            logger.error(message);
-
-            exit(1);
+            throw new Error(message);
         }
 
         // Add node target to esbuild target
@@ -426,7 +426,7 @@ const build = async (
     if (mode === "watch") {
         await rollupWatch(context);
 
-        logErrors(context);
+        logErrors(context, false);
 
         return;
     }
@@ -515,7 +515,7 @@ const build = async (
     // Call build:done
     await context.hooks.callHook("build:done", context);
 
-    logErrors(context);
+    logErrors(context, loggedEntries);
 };
 
 const createBundler = async (

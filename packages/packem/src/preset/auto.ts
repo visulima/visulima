@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+
 import { bold, cyan, gray } from "@visulima/colorize";
 import { collectSync } from "@visulima/fs";
 import { join } from "pathe";
@@ -17,7 +19,18 @@ const autoPreset: BuildPreset = {
                 return;
             }
 
-            const sourceFiles = collectSync(join(context.options.rootDir, "src"), { extensions: [], includeDirs: false, includeSymlinks: false });
+            const sourceDirectory = join(context.options.rootDir, "src");
+
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            if (!existsSync(sourceDirectory)) {
+                throw new Error("No 'src' directory found. Please provide entries manually.");
+            }
+
+            const sourceFiles = collectSync(sourceDirectory, { extensions: [], includeDirs: false, includeSymlinks: false });
+
+            if (sourceFiles.length === 0) {
+                throw new Error("No source files found in 'src' directory. Please provide entries manually.");
+            }
 
             // eslint-disable-next-line @typescript-eslint/naming-convention
             let package_ = { ...context.pkg } as NormalizedPackageJson;
@@ -39,19 +52,27 @@ const autoPreset: BuildPreset = {
                 context.options.rollup.emitCJS = true;
             }
 
+            if (result.esm) {
+                context.options.rollup.emitESM = true;
+            }
+
             if (result.dts) {
                 context.options.declaration = result.dts;
             }
 
             if (context.options.entries.length === 0) {
-                warn(context, "No entries detected. Please provide entries manually.");
+                throw new Error("No entries detected. Please provide entries manually.");
             } else {
                 logger.info(
                     "Automatically detected entries:",
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                    cyan(context.options.entries.map((buildEntry) => bold(buildEntry.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
+                    cyan(
+                        context.options.entries
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                            .map((buildEntry) => bold(buildEntry.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*")))
+                            .join(", "),
+                    ),
                     gray(
-                        ["esm", result.cjs && "cjs", result.dts && "dts"]
+                        [result.esm && "esm", result.cjs && "cjs", result.dts && "dts"]
                             .filter(Boolean)
                             .map((tag) => `[${tag}]`)
                             .join(" "),
