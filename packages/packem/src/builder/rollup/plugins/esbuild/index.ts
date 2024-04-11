@@ -36,15 +36,17 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             key = key.startsWith(".") ? key : `.${key}`;
 
             if (typeof value === "string") {
+                // eslint-disable-next-line security/detect-object-injection
                 loaders[key] = value;
             } else if (value === false) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete,security/detect-object-injection
                 delete loaders[key];
             }
         }
     }
 
     const extensions: string[] = Object.keys(loaders);
+    // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const INCLUDE_REGEXP = new RegExp(`\\.(${extensions.map((extension) => extension.slice(1)).join("|")})$`);
     const EXCLUDE_REGEXP = /node_modules/;
 
@@ -137,6 +139,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
             }
 
             const extension = extname(id);
+            // eslint-disable-next-line security/detect-object-injection
             const loader = loaders[extension];
 
             if (!loader) {

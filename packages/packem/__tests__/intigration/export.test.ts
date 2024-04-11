@@ -73,6 +73,77 @@ export { test as default };
 `);
     });
 
+    it("should correctly export tsx to js", async () => {
+        expect.assertions(7);
+
+        writeFileSync(
+            `${distribution}/src/index.tsx`,
+            `const Tr = () => (
+    <tr
+        // eslint-disable-next-line react/destructuring-assignment
+        className={"m-0 border-t border-gray-300 p-0 dark:border-gray-600 ", "even:bg-gray-100 even:dark:bg-gray-600/20"}
+    />
+);
+
+export default Tr;`,
+        );
+        writeJsonSync(`${distribution}/package.json`, {
+            main: "./dist/index.cjs",
+            module: "./dist/index.mjs",
+            type: "commonjs",
+            types: "./dist/index.d.ts",
+        });
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                jsx: "react-jsx"
+            },
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const mjsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjsContent).toBe(`const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjsContent).toBe(`'use strict';
+
+const test = "this should be in final bundle";
+
+module.exports = test;
+`);
+        const dCtsContent = readFileSync(`${distribution}/dist/index.d.cts`);
+
+        expect(dCtsContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const dContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+    });
+
     describe("cjs-interop", () => {
         it("should output 'default export' correctly and dont transform dts when cjsInterop", async () => {
             expect.assertions(7);

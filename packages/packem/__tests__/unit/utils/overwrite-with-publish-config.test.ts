@@ -1,7 +1,7 @@
 import type { NormalizedPackageJson } from "@visulima/package";
 import { describe, expect, it } from "vitest";
 
-import overwriteWithPublishConfig from "../../../../src/preset/utils/overwrite-with-publish-config";
+import overwriteWithPublishConfig from "../../../src/preset/utils/overwrite-with-publish-config";
 
 // eslint-disable-next-line no-secrets/no-secrets
 describe("overwriteWithPublishConfig", () => {
@@ -30,12 +30,12 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result.bin).toEqual(package_.publishConfig.bin);
-        expect(result.type).toEqual(package_.publishConfig.type);
-        expect(result.main).toEqual(package_.publishConfig.main);
-        expect(result.module).toEqual(package_.publishConfig.module);
-        expect(result.types).toEqual(package_.publishConfig.types);
-        expect(result.exports).toEqual(package_.publishConfig.exports);
+        expect(result.bin).toStrictEqual(package_.publishConfig.bin);
+        expect(result.type).toStrictEqual(package_.publishConfig.type);
+        expect(result.main).toStrictEqual(package_.publishConfig.main);
+        expect(result.module).toStrictEqual(package_.publishConfig.module);
+        expect(result.types).toStrictEqual(package_.publishConfig.types);
+        expect(result.exports).toStrictEqual(package_.publishConfig.exports);
     });
 
     it("should return the package object with updated properties", () => {
@@ -63,7 +63,7 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result).toEqual(package_);
+        expect(result).toStrictEqual(package_);
     });
 
     it("should not modify package.json properties when publishConfig properties do not exist", () => {
@@ -76,7 +76,7 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result).toEqual(package_);
+        expect(result).toStrictEqual(package_);
     });
 
     it("should handle empty publishConfig object", () => {
@@ -90,7 +90,7 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result).toEqual(package_);
+        expect(result).toStrictEqual(package_);
     });
 
     it("should handle publishConfig with empty properties", () => {
@@ -111,7 +111,7 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result).toEqual(package_);
+        expect(result).toStrictEqual(package_);
     });
 
     it("should handle package object with empty properties", () => {
@@ -139,6 +139,6 @@ describe("overwriteWithPublishConfig", () => {
 
         const result = overwriteWithPublishConfig(package_ as unknown as NormalizedPackageJson);
 
-        expect(result).toEqual(package_);
+        expect(result).toStrictEqual(package_);
     });
 });

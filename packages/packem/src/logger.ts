@@ -1,9 +1,13 @@
+import { env } from "node:process";
+
 import { createPail } from "@visulima/pail";
+import { CallerProcessor } from "@visulima/pail/processor";
 
 const logger = createPail({
-    scope: "packem",
+    processors: env.DEBUG === undefined ? [] : [new CallerProcessor()],
+    scope: "packem"
 });
 
-// logger.wrapAll();
+logger.wrapAll();
 
 export default logger;

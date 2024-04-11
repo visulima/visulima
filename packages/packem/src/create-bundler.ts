@@ -3,9 +3,9 @@ import Module from "node:module";
 import { cwd, env, exit, versions } from "node:process";
 
 import { bold, cyan, gray, green } from "@visulima/colorize";
-import { emptyDir, isAccessible, walk } from "@visulima/fs";
+import { emptyDir, ensureDirSync, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
-import type { PackageJson, TsConfigResult } from "@visulima/package";
+import type { PackageJson, TsConfigJson, TsConfigResult } from "@visulima/package";
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
 import { defu } from "defu";
 import { createHooks } from "hookable";
@@ -31,13 +31,31 @@ type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 
 const logErrors = (context: BuildContext): void => {
     if (context.warnings.size > 0) {
-        logger.raw("\n");
         logger.warn(`Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
 
         if (context.options.failOnWarn) {
             logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false` .");
 
             exit(1);
+        }
+    }
+};
+
+const resolveTsconfigJsxToEsbuildJsx = (jsx?: TsConfigJson.CompilerOptions.JSX): "automatic" | "preserve" | "transform" | undefined => {
+    switch (jsx) {
+        case "preserve":
+        case "react-native": {
+            return "preserve";
+        }
+        case "react": {
+            return "transform";
+        }
+        case "react-jsx":
+        case "react-jsxdev": {
+            return "automatic";
+        }
+        default: {
+            return undefined;
         }
     }
 };
@@ -149,7 +167,7 @@ const build = async (
                 charset: "utf8",
                 include: /\.[jt]sx?$/,
 
-                jsx: tsconfig?.config?.compilerOptions?.jsx,
+                jsx: resolveTsconfigJsxToEsbuildJsx(tsconfig?.config?.compilerOptions?.jsx),
                 jsxDev: tsconfig?.config?.compilerOptions?.jsx === "react-jsxdev",
                 jsxFactory: tsconfig?.config?.compilerOptions?.jsxFactory,
                 jsxFragment: tsconfig?.config?.compilerOptions?.jsxFragmentFactory,
@@ -254,8 +272,22 @@ const build = async (
     // Resolve dirs relative to rootDir
     options.outDir = resolve(options.rootDir, options.outDir);
 
-    // Add node target to esbuild target
+    ensureDirSync(options.outDir);
+
     if (options.rollup.esbuild) {
+        if (options.rollup.esbuild.jsx === "preserve") {
+            let message = "Packem does not support 'preserve' jsx option. Please use 'transform' or 'automatic' instead.";
+
+            if (tsconfig?.config?.compilerOptions?.jsx) {
+                message = "Packem does not support '" + tsconfig.config.compilerOptions.jsx + "' jsx option. Please change it to 'react' or 'react-jsx' or 'react-jsxdev' instead."
+            }
+
+            logger.error(message);
+
+            exit(1);
+        }
+
+        // Add node target to esbuild target
         if (options.rollup.esbuild.target) {
             const targets = arrayify(options.rollup.esbuild.target);
 
@@ -490,11 +522,11 @@ const createBundler = async (
     rootDirectory: string,
     mode: Mode,
     inputConfig: BuildConfig & {
-        tsconfigPath?: string;
         configPath?: string;
+        tsconfigPath?: string;
     } = {},
 ): Promise<void> => {
-    const { tsconfigPath, configPath, ...otherInputConfig } = inputConfig;
+    const { configPath, tsconfigPath, ...otherInputConfig } = inputConfig;
     // Determine rootDirectory
     // eslint-disable-next-line no-param-reassign
     rootDirectory = resolve(cwd(), rootDirectory);
@@ -552,7 +584,7 @@ const createBundler = async (
 
         exit(0);
     } catch (error) {
-        logger.error("An error occurred while building:", error);
+        logger.error("An error occurred while building", error);
 
         exit(1);
     }

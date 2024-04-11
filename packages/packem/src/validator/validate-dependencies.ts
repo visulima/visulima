@@ -36,10 +36,12 @@ const validateDependencies = (context: BuildContext): void => {
     }
 
     if (unusedDependencies.size > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         warn(context, `Potential unused dependencies found: ${[...unusedDependencies].map((id) => cyan(id)).join(", ")}`);
     }
 
     if (implicitDependencies.size > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         warn(context, `Potential implicit dependencies found: ${[...implicitDependencies].map((id) => cyan(id)).join(", ")}`);
     }
 };

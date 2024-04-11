@@ -49,6 +49,7 @@ interface RollupDynamicImportVariablesOptions {
 interface BaseBuildEntry {
     builder?: string;
     declaration?: boolean | "compatible" | "node16";
+    format?: string;
     input: string;
     isExecutable?: boolean;
     name?: string;

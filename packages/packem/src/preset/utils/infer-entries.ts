@@ -12,6 +12,7 @@ import getEntrypointPaths from "./get-entrypoint-paths";
  * @param {string[]} sourceFiles A list of source files to use for inferring entries.
  * @param {string | undefined} rootDirectory The root directory of the project.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirectory = "."): InferEntriesResult => {
     const warnings = [];
 
@@ -65,7 +66,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
     for (const output of outputs) {
         // Supported output file extensions are `.d.ts`, `.cjs` and `.mjs`
         // But we support any file extension here in case user has extended rollup options
-        const outputSlug = output.file.replace(/(\*[^/\\]*|\.d\.(m|c)?ts|\.\w+)$/, "");
+        const outputSlug = output.file.replace(/(?:\*[^/\\]*|\.d\.(?:m|c)?ts|\.\w+)$/, "");
         const isDirectory = outputSlug.endsWith("/");
 
         // Skip top level directory
@@ -83,10 +84,11 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
             const SOURCE_RE = new RegExp(`(?<=/|$)${d}${isDirectory ? "" : "\\.\\w+"}$`);
 
-            return sourceFiles.find((index) => SOURCE_RE.test(index))?.replace(/(\.d\.(m|c)?ts|\.\w+)$/, "");
-        }, undefined as any);
+            return sourceFiles.find((index) => SOURCE_RE.test(index))?.replace(/(?:\.d\.(?:m|c)?ts|\.\w+)$/, "");
+        }, undefined);
 
         if (!input) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (!existsSync(resolve(rootDirectory, output.file))) {
                 warnings.push(`Could not find entrypoint for \`${output.file}\``);
             }
@@ -107,7 +109,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
 
         if (isDirectory) {
             entry.outDir = outputSlug;
-            // entry.format = output.type;
+            entry.format = output.type;
         }
 
         if (output.isExecutable) {

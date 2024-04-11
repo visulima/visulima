@@ -1,5 +1,5 @@
 {
-    "name": "example_packem",
+    "name": "example_packem_cjs_interop",
     "version": "1.0.0",
     "private": true,
     "type": "commonjs",

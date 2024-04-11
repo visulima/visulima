@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import findAlternatives from "../../../../src/utils/levenstein";
+import findAlternatives from "../../../src/utils/levenstein";
 
 describe("findAlternatives", () => {
     it("should return an array of similar strings when input string has similar strings in the input array", () => {
@@ -19,11 +19,10 @@ describe("findAlternatives", () => {
 
         const string = "apple";
         const array = ["banana", "orange", "grape"];
-        const expected = [];
 
         const result = findAlternatives(string, array);
 
-        expect(result).toStrictEqual(expected);
+        expect(result).toStrictEqual([]);
     });
 
     it("should perform a case-insensitive search for similar strings", () => {
@@ -42,12 +41,9 @@ describe("findAlternatives", () => {
         expect.assertions(1);
 
         const string = "apple";
-        const array = [];
-        const expected = [];
+        const result = findAlternatives(string, []);
 
-        const result = findAlternatives(string, array);
-
-        expect(result).toStrictEqual(expected);
+        expect(result).toStrictEqual([]);
     });
 
     it("should return an empty array when the input string is empty", () => {
@@ -55,11 +51,10 @@ describe("findAlternatives", () => {
 
         const string = "";
         const array = ["banana", "orange", "pineapple", "grape"];
-        const expected = [];
 
         const result = findAlternatives(string, array);
 
-        expect(result).toStrictEqual(expected);
+        expect(result).toStrictEqual([]);
     });
 
     it("should return an empty array when the input string contains only whitespace characters", () => {
@@ -67,10 +62,9 @@ describe("findAlternatives", () => {
 
         const string = "   ";
         const array = ["banana", "orange", "pineapple", "grape"];
-        const expected = [];
 
         const result = findAlternatives(string, array);
 
-        expect(result).toStrictEqual(expected);
+        expect(result).toStrictEqual([]);
     });
 });

@@ -1,6 +1,6 @@
 import type { PackageJson } from "read-pkg";
 
-import { inferExportType } from "./infer-export-type";
+import inferExportType from "./infer-export-type";
 
 type OutputDescriptor = { file: string; isExecutable?: true, type?: "cjs" | "esm" };
 
@@ -21,7 +21,7 @@ const extractExportFilenames = (exports: PackageJson["exports"], type: PackageJs
                 (typeof packageExport === "string"
                     ? {
                           file: packageExport,
-                          type: inferExportType(condition, conditions, type, packageExport),
+                          type: inferExportType(condition, conditions, packageExport, type),
                       }
                     : extractExportFilenames(packageExport, type, [...conditions, condition])),
             )

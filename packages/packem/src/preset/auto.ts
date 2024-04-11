@@ -17,7 +17,7 @@ const autoPreset: BuildPreset = {
                 return;
             }
 
-            const sourceFiles = collectSync(join(context.options.rootDir, "src"), { includeDirs: false, includeSymlinks: false });
+            const sourceFiles = collectSync(join(context.options.rootDir, "src"), { extensions: [], includeDirs: false, includeSymlinks: false });
 
             // eslint-disable-next-line @typescript-eslint/naming-convention
             let package_ = { ...context.pkg } as NormalizedPackageJson;
@@ -48,7 +48,8 @@ const autoPreset: BuildPreset = {
             } else {
                 logger.info(
                     "Automatically detected entries:",
-                    cyan(context.options.entries.map((e) => bold(e.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                    cyan(context.options.entries.map((buildEntry) => bold(buildEntry.input.replace(`${context.options.rootDir}/`, "").replace(/\/$/, "/*"))).join(", ")),
                     gray(
                         ["esm", result.cjs && "cjs", result.dts && "dts"]
                             .filter(Boolean)

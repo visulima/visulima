@@ -26,6 +26,7 @@ const validatePackage = (package_: PackageJson, context: BuildContext): void => 
             (index) =>
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 index &&
+                // eslint-disable-next-line security/detect-unsafe-regex
                 resolve(context.rootDir, index.replace(/\/[^*/]*\*[^\n\r/\u2028\u2029]*(?:[\n\r\u2028\u2029][^*/]*\*[^\n\r/\u2028\u2029]*)*(?:\/.*)?$/, "")),
         ),
     );
@@ -34,6 +35,7 @@ const validatePackage = (package_: PackageJson, context: BuildContext): void => 
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const filename of filenames) {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         if (filename && !filename.includes("*") && !existsSync(filename)) {
             missingOutputs.push(filename.replace(`${context.rootDir}/`, ""));
         }
@@ -42,6 +44,7 @@ const validatePackage = (package_: PackageJson, context: BuildContext): void => 
     if (missingOutputs.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const rPath = (p: string) => relative(context.rootDir, resolve(context.options.outDir, p));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const listOfGeneratedFiles = context.buildEntries.filter((bEntry) => !bEntry.chunk).map((bEntry) => rPath(bEntry.path));
 
         let message = "Potential missing or wrong package.json files:";
