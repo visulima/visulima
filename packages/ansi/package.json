@@ -1,10 +1,10 @@
 {
-    "name": "@visulima/{{packageName}}",
+    "name": "@visulima/ansi",
     "version": "0.0.0",
-    "description": "{{description}}",
+    "description": "ANSI escape codes for some terminal swag.",
     "keywords": [
         "visulima",
-        "{{packageName}}"
+        "ansi"
     ],
     "homepage": "https://visulima.io",
     "bugs": {
@@ -13,7 +13,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/{{packageName}}"
+        "directory": "packages/ansi"
     },
     "funding": [
         {

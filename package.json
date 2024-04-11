@@ -122,7 +122,6 @@
         "lint:types:pail": "pnpm --filter \"pail\" run lint:types",
         "lint:types:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:types",
         "lint:types:root": "tsc --noEmit",
-        "update:deps": "taze",
         "nx": "nx",
         "plop": "plop",
         "prepare": "is-ci || husky install || exit 0",
@@ -187,7 +186,8 @@
         "test:ui:package": "pnpm --filter \"package\" run test:ui",
         "test:ui:pagination": "pnpm --filter \"pagination\" run test:ui",
         "test:ui:pail": "pnpm --filter \"pail\" run test:coverage",
-        "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui"
+        "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui",
+        "update:deps": "taze"
     },
     "browserslist": [
         "extends browserslist-config-anolilab"

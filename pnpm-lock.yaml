@@ -142,8 +142,8 @@ importers:
         specifier: ^0.9.0
         version: 0.9.0(react@18.2.0)
       '@next/env':
-        specifier: ^14.1.4
-        version: 14.1.4
+        specifier: ^14.2.0
+        version: 14.2.0
       '@t3-oss/env-nextjs':
         specifier: ^0.9.2
         version: 0.9.2(typescript@5.4.5)(zod@3.22.4)
@@ -215,8 +215,8 @@ importers:
         specifier: ^7.24.1
         version: 7.24.1(@babel/core@7.24.4)
       '@next/eslint-plugin-next':
-        specifier: ^14.1.4
-        version: 14.1.4
+        specifier: ^14.2.0
+        version: 14.2.0
       '@svgr/webpack':
         specifier: ^8.1.0
         version: 8.1.0(typescript@5.4.5)
@@ -1145,6 +1145,87 @@ importers:
       '@visulima/pail':
         specifier: workspace:*
         version: link:../../../packages/pail
+
+  packages/ansi:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.3
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.3.1)(@babel/core@7.24.4)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1)(eslint-plugin-jsx-a11y@6.8.0)(eslint-plugin-react-hooks@4.6.0)(eslint-plugin-react@7.34.1)(eslint-plugin-ssr-friendly@1.3.0)(eslint-plugin-storybook@0.8.0)(eslint-plugin-tailwindcss@3.15.1)(eslint-plugin-testing-library@6.2.0)(eslint-plugin-validate-jsx-nesting@0.1.1)(eslint@8.57.0)(typescript@5.4.5)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.14
+        version: 5.0.14(prettier@3.2.5)
+      '@anolilab/semantic-release-preset':
+        specifier: ^8.0.3
+        version: 8.0.3(semantic-release@23.0.8)
+      '@babel/core':
+        specifier: ^7.24.4
+        version: 7.24.4
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.8.1
+        version: 0.8.1(eslint@8.57.0)(typescript@5.4.5)
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: ^8.2.3
+        version: 8.2.3
+      '@types/micromatch':
+        specifier: ^4.0.6
+        version: 4.0.6
+      '@types/node':
+        specifier: 18.18.14
+        version: 18.18.14
+      '@vitest/coverage-v8':
+        specifier: ^1.5.0
+        version: 1.5.0(vitest@1.5.0)
+      '@vitest/ui':
+        specifier: ^1.5.0
+        version: 1.5.0(vitest@1.5.0)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-deprecation:
+        specifier: ^2.0.0
+        version: 2.0.0(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: /eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-mdx:
+        specifier: ^3.1.5
+        version: 3.1.5(eslint@8.57.0)
+      eslint-plugin-vitest:
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.5.0)
+      eslint-plugin-vitest-globals:
+        specifier: ^1.5.0
+        version: 1.5.0
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      secretlint:
+        specifier: 8.1.2
+        version: 8.1.2
+      semantic-release:
+        specifier: ^23.0.8
+        version: 23.0.8(typescript@5.4.5)
+      sort-package-json:
+        specifier: ^2.10.0
+        version: 2.10.0
+      tsup:
+        specifier: ^8.0.2
+        version: 8.0.2(postcss@8.4.38)(typescript@5.4.5)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vitest:
+        specifier: ^1.5.0
+        version: 1.5.0(@types/node@18.18.14)(@vitest/ui@1.5.0)(jsdom@24.0.0)
 
   packages/api-platform:
     dependencies:
@@ -7578,8 +7659,8 @@ packages:
     resolution: {integrity: sha512-VhgXTvrgeBRxNPjyfBsDIMvgsKDxjlpw4IAUsHCX8Gjl1vtHUYRT3+xfQ/wwvLPDd/6kqfLqk9Pt4+7gysuCKQ==}
     dev: false
 
-  /@next/env@14.1.4:
-    resolution: {integrity: sha512-e7X7bbn3Z6DWnDi75UWn+REgAbLEqxI8Tq2pkFOFAMpWAWApz/YCUhtWMWn410h8Q2fYiYL7Yg5OlxMOCfFjJQ==}
+  /@next/env@14.2.0:
+    resolution: {integrity: sha512-4+70ELtSbRtYUuyRpAJmKC8NHBW2x1HMje9KO2Xd7IkoyucmV9SjgO+qeWMC0JWkRQXgydv1O7yKOK8nu/rITQ==}
     dev: false
 
   /@next/eslint-plugin-next@13.5.4:
@@ -7593,8 +7674,8 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/eslint-plugin-next@14.1.4:
-    resolution: {integrity: sha512-n4zYNLSyCo0Ln5b7qxqQeQ34OZKXwgbdcx6kmkQbywr+0k6M3Vinft0T72R6CDAcDrne2IAgSud4uWCzFgc5HA==}
+  /@next/eslint-plugin-next@14.2.0:
+    resolution: {integrity: sha512-QkM01VPhwcupezVevy9Uyl1rmpg2PimhMjkb+ySmnPgSKUUM/PGGRQxdFgMpHv/JzQoC8kRySgKeM441GiizcA==}
     dependencies:
       glob: 10.3.10
     dev: true
@@ -20135,8 +20216,8 @@ packages:
     dependencies:
       foreground-child: 3.1.1
       jackspeak: 2.3.6
-      minimatch: 9.0.3
-      minipass: 7.0.3
+      minimatch: 9.0.4
+      minipass: 7.0.4
       path-scurry: 1.10.1
 
   /glob@6.0.4:
@@ -24973,7 +25054,7 @@ packages:
     resolution: {integrity: sha512-D7V8PO9oaz7PWGLbCACuI1qEOsq7UKfLotx/C0Aet43fCUB/wfQ7DYeq2oR/svFJGYDHPr38SHATeaj/ZoKHKw==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
-      minipass: 7.0.3
+      minipass: 7.0.4
     dev: false
 
   /minipass-fetch@3.0.4:
@@ -25029,6 +25110,7 @@ packages:
   /minipass@7.0.3:
     resolution: {integrity: sha512-LhbbwCfz3vsb12j/WkWQPZfKTsgqIe1Nf/ti1pKjYESGLHIVjWU96G9/ljLH4F9mWNVhlQOm0VySdAWzf05dpg==}
     engines: {node: '>=16 || 14 >=14.17'}
+    dev: false
 
   /minipass@7.0.4:
     resolution: {integrity: sha512-jYofLM5Dam9279rdkWzqHozUo4ybjdZmCsDHePy5V/PbBcVMiSZR97gmAy45aqi8CK1lG2ECd356FU86avfwUQ==}
@@ -26864,7 +26946,7 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       lru-cache: 10.0.1
-      minipass: 7.0.3
+      minipass: 7.0.4
 
   /path-to-glob-pattern@2.0.1:
     resolution: {integrity: sha512-tmciSlVyHnX0LC86+zSr+0LURw9rDPw8ilhXcmTpVUOnI6OsKdCzXQs5fTG10Bjz26IBdnKL3XIaP+QvGsk5YQ==}
@@ -29283,6 +29365,23 @@ packages:
       '@eslint-community/regexpp': 4.10.0
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
+    dev: true
+
+  /secretlint@8.1.2:
+    resolution: {integrity: sha512-YJf1WoIu+bevQdAwc1YnK9KdytOJ+5g9lRa90nmTyC2WlhIBK7s6CEVw46kUzxn4y+UVEF9POn7vDsyThqrQQQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+    hasBin: true
+    dependencies:
+      '@secretlint/config-creator': 8.2.3
+      '@secretlint/formatter': 8.2.3
+      '@secretlint/node': 8.2.3
+      '@secretlint/profiler': 8.2.3
+      debug: 4.3.4
+      globby: 14.0.1
+      meow: 12.1.1
+      read-pkg: 8.1.0
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /secretlint@8.2.3:
