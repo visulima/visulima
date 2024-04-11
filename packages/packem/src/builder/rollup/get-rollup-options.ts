@@ -21,6 +21,7 @@ import externalizeNodeBuiltinsPlugin from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
 import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
+import preserveDirectivesPlugin from "./plugins/preserve-directives";
 import rawPlugin from "./plugins/raw";
 import resolveFileUrlPlugin from "./plugins/resolve-file-url";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
@@ -252,6 +253,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
             context.options.rollup.cjsBridge && shimCjsPlugin(context.pkg),
 
             rawPlugin(),
+
+            // preserveDirectivesPlugin(),
 
             context.options.rollup.metafile &&
                 metafilePlugin({
