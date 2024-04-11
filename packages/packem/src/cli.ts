@@ -33,6 +33,7 @@ cli.addCommand({
 
         await createBundler(options.dir, mode, {
             cjsInterop: options.cjsInterop,
+            configPath: options.config ?? undefined,
             replace: {
                 ...environments,
             },
@@ -63,6 +64,11 @@ cli.addCommand({
             alias: "t",
             description: "Environments to support. `target` in tsconfig.json is automatically added. Defaults to the current Node.js version.",
             name: "target",
+        },
+        {
+            description: "Use a custom config file",
+            name: "config",
+            type: String,
         },
         {
             description: "Path to the tsconfig.json file",

@@ -1,4 +1,5 @@
-import type { NormalizedOutputOptions, Plugin, RenderedChunk } from "rollup";
+import MagicString from "magic-string";
+import type { NormalizedOutputOptions, Plugin, RenderedChunk, SourceMapInput } from "rollup";
 
 import logger from "../../../logger";
 
@@ -15,7 +16,7 @@ export const cjsInterop = ({
     return {
         name: "packem:cjs-interop",
         // eslint-disable-next-line sonarjs/cognitive-complexity
-        renderChunk(code: string, chunk: RenderedChunk, options: NormalizedOutputOptions): string | null {
+        renderChunk(code: string, chunk: RenderedChunk, options: NormalizedOutputOptions): { code: string; map: SourceMapInput } | null {
             if (chunk.type !== "chunk" || !chunk.isEntry) {
                 return null;
             }
@@ -27,24 +28,32 @@ export const cjsInterop = ({
                     return null;
                 }
 
+                const transformed = new MagicString(code);
+
                 // remove `__esModule` marker property
-                let interopCode = code.replace("Object.defineProperty(exports, '__esModule', { value: true });", "");
-                // replace `exports.default = ...; or exports['default'] = ...;` with `module.exports = ...;`
-                interopCode = interopCode.replaceAll(/(?:module\.)?exports\.default/g, "module.exports");
+                transformed.replace("Object.defineProperty(exports, '__esModule', { value: true });", "");
                 // replace `exports.* = ...;` with `module.exports.* = ...;`
-                interopCode = interopCode.replace(/exports\.(.*) = (.*);/i, "module.exports.$1 = $2;");
+                transformed.replaceAll(/exports\.(.*) = (.*);/g, "module.exports.$1 = $2;");
 
                 if (addDefaultProperty) {
                     // add `module.exports.default = module.exports;`
-                    interopCode += "\nmodule.exports.default = module.exports;";
+                    transformed.append("\nmodule.exports.default = " + matches[2] + ";");
                 }
+
+                let newCode = transformed.toString();
+                // @see https://github.com/Rich-Harris/magic-string/issues/208 why this is needed
+                // replace `exports.default = ...; or exports['default'] = ...;` with `module.exports = ...;`
+                newCode = newCode.replace(/(?:module\.)?exports(?:\['default'\]|\.default)/i, "module.exports");
 
                 logger.debug({
                     message: "Applied CommonJS interop to entry chunk " + chunk.fileName + ".",
                     prefix: "cjs-interop",
                 });
 
-                return interopCode;
+                return {
+                    code: newCode,
+                    map: transformed.generateMap({ hires: true }),
+                };
             }
 
             if (options.format === "es" && /\.d\.(?:ts|cts)$/.test(chunk.fileName)) {
@@ -60,9 +69,10 @@ export const cjsInterop = ({
                 }
 
                 const splitMatches = (matches[1] as string).split(", ");
+
                 const buildObjectEntries: string[] = [];
 
-                let defaultContent: string | undefined;
+                let defaultKey: string | undefined;
 
                 // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
                 for (const match of splitMatches) {
@@ -75,10 +85,12 @@ export const cjsInterop = ({
                         const [original, alias] = match.split(" as ");
 
                         if (alias === "default") {
-                            defaultContent = original;
+                            defaultKey = original;
 
-                            // eslint-disable-next-line no-continue
-                            continue;
+                            if (!addDefaultProperty) {
+                                // eslint-disable-next-line no-continue
+                                continue;
+                            }
                         }
 
                         buildObjectEntries.push(alias + ": typeof " + original + ";");
@@ -87,14 +99,28 @@ export const cjsInterop = ({
                     }
                 }
 
-                const mixedExport = `declare const defaultExport: {\n  ${buildObjectEntries.join("\n  ")}\n} & typeof ${defaultContent};\n\nexport default defaultExport;`;
+                const dtsTransformed = new MagicString(code);
+
+                dtsTransformed.replace(" " + defaultKey + " as default,", "");
+                dtsTransformed.append(
+                    "\n\n" +
+                        "declare const defaultExport: {\n" +
+                        (buildObjectEntries.length > 0 ? "  " : "") +
+                        buildObjectEntries.join("\n  ") +
+                        "\n} & typeof " +
+                        defaultKey +
+                        ";\n\nexport default defaultExport;",
+                );
 
                 logger.debug({
                     message: "Applied CommonJS interop to entry chunk " + chunk.fileName + ".",
                     prefix: "cjs-interop",
                 });
 
-                return code.replace(" " + defaultContent + " as default,", "") + "\n\n" + mixedExport;
+                return {
+                    code: dtsTransformed.toString(),
+                    map: dtsTransformed.generateMap({ hires: true }),
+                };
             }
 
             return null;

@@ -74,7 +74,7 @@ export { test as default };
     });
 
     describe("cjs-interop", () => {
-        it("should output 'default export' correctly when cjsInterop", async () => {
+        it("should output 'default export' correctly and dont transform dts when cjsInterop", async () => {
             expect.assertions(7);
 
             writeFileSync(`${distribution}/src/index.ts`, `const test = () => "this should be in final bundle";\nexport default test;`);
@@ -117,6 +117,12 @@ module.exports = test;
             expect(dCtsContent).toBe(`declare const test: () => string;
 
 export { test as default };
+
+declare const defaultExport: {
+
+} & typeof test;
+
+export default defaultExport;
 `);
 
             const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
@@ -131,6 +137,12 @@ export { test as default };
             expect(dContent).toBe(`declare const test: () => string;
 
 export { test as default };
+
+declare const defaultExport: {
+
+} & typeof test;
+
+export default defaultExport;
 `);
         });
 
@@ -221,6 +233,125 @@ export { test2 };
 
 declare const defaultExport: {
   test2: typeof test2;
+} & typeof test;
+
+export default defaultExport;
+`);
+        });
+
+        it("should output 'default export with multi named export' correctly when cjsInterop", async () => {
+            expect.assertions(7);
+
+            writeFileSync(
+                `${distribution}/src/index.ts`,
+                `const test = () => {
+    return "this should be in final bundle";
+};
+
+const test2 = "this should be in final bundle";
+const test3 = "this should be in final bundle";
+const test4 = "this should be in final bundle";
+const test5 = "this should be in final bundle";
+
+export { test2, test3, test4, test5, test as default };`,
+            );
+            writeJsonSync(`${distribution}/package.json`, {
+                main: "./dist/index.cjs",
+                module: "./dist/index.mjs",
+                type: "commonjs",
+                types: "./dist/index.d.ts",
+            });
+
+            const binProcess = execPackemSync(["--env NODE_ENV=development", "--cjsInterop"], {
+                cwd: distribution,
+                nodePath,
+            });
+
+            await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+            expect(binProcess.exitCode).toBe(0);
+
+            const mjsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+            expect(mjsContent).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const test = /* @__PURE__ */ __name(() => {
+  return "this should be in final bundle";
+}, "test");
+const test2 = "this should be in final bundle";
+const test3 = "this should be in final bundle";
+const test4 = "this should be in final bundle";
+const test5 = "this should be in final bundle";
+
+export { test as default, test2, test3, test4, test5 };
+`);
+
+            const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+            expect(cjsContent).toBe(`'use strict';
+
+
+
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const test = /* @__PURE__ */ __name(() => {
+  return "this should be in final bundle";
+}, "test");
+const test2 = "this should be in final bundle";
+const test3 = "this should be in final bundle";
+const test4 = "this should be in final bundle";
+const test5 = "this should be in final bundle";
+
+module.exports = test;
+module.exports.test2 = test2;
+module.exports.test3 = test3;
+module.exports.test4 = test4;
+module.exports.test5 = test5;
+`);
+
+            const dCtsContent = readFileSync(`${distribution}/dist/index.d.cts`);
+
+            expect(dCtsContent).toBe(`declare const test: () => string;
+declare const test2 = "this should be in final bundle";
+declare const test3 = "this should be in final bundle";
+declare const test4 = "this should be in final bundle";
+declare const test5 = "this should be in final bundle";
+
+export { test2, test3, test4, test5 };
+
+declare const defaultExport: {
+  test2: typeof test2;
+  test3: typeof test3;
+  test4: typeof test4;
+  test5: typeof test5;
+} & typeof test;
+
+export default defaultExport;
+`);
+            const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+            expect(dMtsContent).toBe(`declare const test: () => string;
+declare const test2 = "this should be in final bundle";
+declare const test3 = "this should be in final bundle";
+declare const test4 = "this should be in final bundle";
+declare const test5 = "this should be in final bundle";
+
+export { test as default, test2, test3, test4, test5 };
+`);
+            const dContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+            expect(dContent).toBe(`declare const test: () => string;
+declare const test2 = "this should be in final bundle";
+declare const test3 = "this should be in final bundle";
+declare const test4 = "this should be in final bundle";
+declare const test5 = "this should be in final bundle";
+
+export { test2, test3, test4, test5 };
+
+declare const defaultExport: {
+  test2: typeof test2;
+  test3: typeof test3;
+  test4: typeof test4;
+  test5: typeof test5;
 } & typeof test;
 
 export default defaultExport;

@@ -491,9 +491,10 @@ const createBundler = async (
     mode: Mode,
     inputConfig: BuildConfig & {
         tsconfigPath?: string;
+        configPath?: string;
     } = {},
 ): Promise<void> => {
-    const { tsconfigPath, ...otherInputConfig } = inputConfig;
+    const { tsconfigPath, configPath, ...otherInputConfig } = inputConfig;
     // Determine rootDirectory
     // eslint-disable-next-line no-param-reassign
     rootDirectory = resolve(cwd(), rootDirectory);
@@ -529,7 +530,7 @@ const createBundler = async (
         logger.debug("Using package.json found at", packageJsonPath);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const _buildConfig: BuildConfig | BuildConfig[] = tryRequire("./packem.config", rootDirectory, []);
+        const _buildConfig: BuildConfig | BuildConfig[] = tryRequire(configPath ?? "./packem.config", rootDirectory, []);
 
         const buildConfigs = (Array.isArray(_buildConfig) ? _buildConfig : [_buildConfig]).filter(Boolean);
 
