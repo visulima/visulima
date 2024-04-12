@@ -1202,6 +1202,9 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
+      is-fullwidth-code-point:
+        specifier: ^5.0.0
+        version: 5.0.0
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -21433,7 +21436,6 @@ packages:
     engines: {node: '>=18'}
     dependencies:
       get-east-asian-width: 1.2.0
-    dev: false
 
   /is-generator-fn@2.1.0:
     resolution: {integrity: sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==}
