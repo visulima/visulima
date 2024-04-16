@@ -1,0 +1,26 @@
+{
+  "name": "multi-entries",
+  "version": "0.0.0",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./dist/index.js",
+    "./lite": "./dist/lite.js",
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "require": "./dist/client/index.cjs",
+      "import": "./dist/client/index.mjs"
+    },
+    "./shared": {
+      "import": "./dist/shared/index.mjs",
+      "require": "./dist/shared/index.cjs",
+      "edge-light": "./dist/shared/edge-light.mjs"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "react-server": "./dist/server/react-server.mjs",
+      "edge-light": "./dist/server/edge.mjs",
+      "import": "./dist/server/index.mjs"
+    }
+  }
+}
