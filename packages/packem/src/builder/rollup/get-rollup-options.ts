@@ -5,7 +5,7 @@ import { nodeResolve as nodeResolvePlugin } from "@rollup/plugin-node-resolve";
 import replacePlugin from "@rollup/plugin-replace";
 import { cyan } from "@visulima/colorize";
 import { isAbsolute, relative, resolve } from "pathe";
-import type { OutputOptions, Plugin, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
+import type { OutputOptions, Plugin, PreRenderedAsset, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
 import { dts as dtsPlugin } from "rollup-plugin-dts";
 import polifillPlugin from "rollup-plugin-polyfill-node";
 import { visualizer as visualizerPlugin } from "rollup-plugin-visualizer";
@@ -17,12 +17,11 @@ import arrayIncludes from "../../utils/array-includes";
 import getPackageName from "../../utils/get-package-name";
 import { cjsInterop as cjsInteropPlugin } from "./plugins/cjs-interop";
 import esbuildPlugin from "./plugins/esbuild";
-import externalizeNodeBuiltinsPlugin from "./plugins/externalize-node-builtins";
 import JSONPlugin from "./plugins/json";
 import { license } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import preserveDirectivesPlugin from "./plugins/preserve-directives";
-import rawPlugin from "./plugins/raw";
+import { rawPlugin } from "./plugins/raw";
 import resolveFileUrlPlugin from "./plugins/resolve-file-url";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import shimCjsPlugin from "./plugins/shim-cjs";
@@ -31,9 +30,15 @@ import { getConfigAlias, resolveTsconfigPaths as resolveTsconfigPathsPlugin } fr
 import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-tsconfig-root-dirs";
 import resolveTypescriptMjsCtsPlugin from "./plugins/typescript/resolve-typescript-mjs-cjs";
 import getChunkFilename from "./utils/get-chunk-filename";
+import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
+    // If the circular dependency warning is from node_modules, ignore it
+    if (warning.code === "CIRCULAR_DEPENDENCY" && /Circular dependency:([\s\S])*node_modules/.test(warning.message)) {
+        return true;
+    }
+
     // eslint-disable-next-line no-secrets/no-secrets
     // @see https:// github.com/rollup/rollup/blob/5abe71bd5bae3423b4e2ee80207c871efde20253/cli/run/batchWarnings.ts#L236
     if (warning.code === "UNRESOLVED_IMPORT") {
@@ -127,7 +132,7 @@ const baseRollupOptions = (context: BuildContext): RollupOptions => {
                 return;
             }
 
-            if (!warning.code || !["CIRCULAR_DEPENDENCY"].includes(warning.code)) {
+            if (!warning.code) {
                 rollupWarn(warning);
             }
         },
@@ -146,32 +151,42 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                 <OutputOptions>{
                     chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "cjs"),
                     dir: resolve(context.options.rootDir, context.options.outDir),
-                    entryFileNames: "[name].cjs",
+                    entryFileNames: (chunkInfo: PreRenderedAsset) => getEntryFileNames(chunkInfo, "cjs"),
                     exports: "auto",
                     externalLiveBindings: false,
                     format: "cjs",
                     freeze: false,
                     generatedCode: { constBindings: true },
+                    // By default in rollup, when creating multiple chunks, transitive imports of entry chunks
+                    // will be added as empty imports to the entry chunks. Disable to avoid imports hoist outside of boundaries
+                    hoistTransitiveImports: false,
                     interop: "compat",
+                    preserveModules: true,
+                    preserveModulesRoot: "src",
                     sourcemap: context.options.sourcemap,
                     ...context.options.rollup.output,
                 },
-            context.options.rollup.emitESM && <OutputOptions>{
-                chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "mjs"),
-                dir: resolve(context.options.rootDir, context.options.outDir),
-                entryFileNames: "[name].mjs",
-                exports: "auto",
-                externalLiveBindings: false,
-                format: "esm",
-                freeze: false,
-                generatedCode: { constBindings: true },
-                sourcemap: context.options.sourcemap,
-                ...context.options.rollup.output,
-            },
+            context.options.rollup.emitESM &&
+                <OutputOptions>{
+                    chunkFileNames: (chunk: PreRenderedChunk) => getChunkFilename(context, chunk, "mjs"),
+                    dir: resolve(context.options.rootDir, context.options.outDir),
+                    entryFileNames: (chunkInfo: PreRenderedAsset) => getEntryFileNames(chunkInfo, "mjs"),
+                    exports: "auto",
+                    externalLiveBindings: false,
+                    format: "esm",
+                    freeze: false,
+                    generatedCode: { constBindings: true },
+                    // By default in rollup, when creating multiple chunks, transitive imports of entry chunks
+                    // will be added as empty imports to the entry chunks. Disable to avoid imports hoist outside of boundaries
+                    hoistTransitiveImports: false,
+                    preserveModules: true,
+                    preserveModulesRoot: "src",
+                    sourcemap: context.options.sourcemap,
+                    ...context.options.rollup.output,
+                },
         ].filter(Boolean),
 
         plugins: [
-            externalizeNodeBuiltinsPlugin([context.options.target]),
             resolveFileUrlPlugin(),
             resolveTypescriptMjsCtsPlugin(),
 
@@ -215,6 +230,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
                     ...context.options.rollup.json,
                 }),
 
+            preserveDirectivesPlugin(),
+
             shebangPlugin(
                 context.options.entries
                     .filter((entry) => entry.isExecutable)
@@ -252,9 +269,7 @@ export const getRollupOptions = (context: BuildContext): RollupOptions =>
 
             context.options.rollup.cjsBridge && shimCjsPlugin(context.pkg),
 
-            rawPlugin(),
-
-            // preserveDirectivesPlugin(),
+            context.options.rollup.raw && rawPlugin(context.options.rollup.raw),
 
             context.options.rollup.metafile &&
                 metafilePlugin({
@@ -306,11 +321,11 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
         ...baseRollupOptions(context),
 
         onwarn(warning, rollupWarn) {
-            if (sharedOnWarn(warning)) {
+            if (sharedOnWarn(warning, context)) {
                 return;
             }
 
-            if (warning.code === "CIRCULAR_DEPENDENCY" || warning.code === "EMPTY_BUNDLE") {
+            if (warning.code === "EMPTY_BUNDLE") {
                 return;
             }
 
@@ -348,7 +363,6 @@ export const getRollupDtsOptions = (context: BuildContext): RollupOptions => {
         ].filter(Boolean),
 
         plugins: [
-            externalizeNodeBuiltinsPlugin([context.options.target]),
             resolveFileUrlPlugin(),
             resolveTypescriptMjsCtsPlugin(),
 

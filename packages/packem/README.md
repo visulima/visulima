@@ -103,8 +103,10 @@ Explicit 256/Truecolor mode can be enabled using the `--color=256` and `--color=
 
 ## Related
 
--   [supports-color](https://github.com/chalk/supports-color) - Detect whether a terminal supports color
--   [supports-color-cli](https://github.com/chalk/supports-color-cli) - CLI for this module
+-   [bunchee](https://github.com/huozhi/bunchee) - Zero config bundler for ECMAScript and TypeScript packages
+-   [unbuild](https://github.com/unjs/unbuild) - 📦 An unified javascript build system
+-   [pkgroll](https://github.com/privatenumber/pkgroll) - 📦 Zero-config package bundler for Node.js + TypeScript
+-   [tsup](https://github.com/egoist/tsup) - The simplest and fastest way to bundle your TypeScript libraries
 
 ## Supported Node.js Versions
 

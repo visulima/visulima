@@ -13,12 +13,15 @@ import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
 
 const defaultLoaders: Record<string, Loader> = {
-    // CSS/SASS modules
+    ".cjs": "js",
     ".css": "css",
+    ".cts": "ts",
     ".js": "js",
     // Add .json files support - require @rollup/plugin-json
     ".json": "json",
     ".jsx": "jsx",
+    ".mjs": "js",
+    ".mts": "ts",
     ".svg": "text",
     ".ts": "ts",
     ".tsx": "tsx",
@@ -59,6 +62,7 @@ export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap =
         for (const extension of extensions) {
             const file = index ? join(resolved, `index${extension}`) : `${fileWithoutExtension}${extension}`;
 
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (existsSync(file)) {
                 return file as string;
             }

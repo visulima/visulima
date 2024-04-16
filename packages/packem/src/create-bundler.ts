@@ -228,6 +228,9 @@ const build = async (
             patchTypes: {},
             polyfillNode: {},
             preserveDynamicImports: true,
+            raw: {
+                exclude: /node_modules/,
+            },
             replace: {
                 /**
                  * Seems this currently doesn't work:

@@ -4,6 +4,7 @@ import type { InternalModuleFormat, Plugin } from "rollup";
 
 import warn from "./warn";
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const getEsbuildFormat = (rollupFormat: InternalModuleFormat): Format | undefined => {
     if (rollupFormat === "es") {
         return "esm";

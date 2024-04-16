@@ -7,12 +7,12 @@ const defaults: RawLoaderOptions = {
     include: [/\.(md|txt|css|htm|html)$/],
 };
 
-interface RawLoaderOptions {
+export interface RawLoaderOptions {
     exclude?: FilterPattern;
     include?: FilterPattern;
 }
 
-const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
+export const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
     // eslint-disable-next-line no-param-reassign
     options = { ...options, ...defaults };
 
@@ -32,5 +32,3 @@ const rawPlugin = (options: RawLoaderOptions = {}): Plugin => {
         },
     };
 };
-
-export default rawPlugin;

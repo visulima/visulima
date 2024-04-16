@@ -15,6 +15,7 @@ import type { PluginVisualizerOptions } from "rollup-plugin-visualizer";
 import type { CJSInteropOptions } from "./builder/rollup/plugins/cjs-interop";
 import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
 import type { LicenseOptions } from "./builder/rollup/plugins/license";
+import type { RawLoaderOptions } from "./builder/rollup/plugins/raw";
 import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -81,6 +82,7 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     polyfillNode?: NodePolyfillsOptions | false;
     preserveDynamicImports?: boolean;
+    raw?: RawLoaderOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     replace: RollupReplaceOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents

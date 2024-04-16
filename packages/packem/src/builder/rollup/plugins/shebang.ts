@@ -15,23 +15,26 @@ export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/e
     return {
         name: "packem:shebang",
 
-        renderChunk(code, chunk, outputOptions) {
-            if (!chunk.isEntry || !chunk.facadeModuleId) {
+        renderChunk: {
+            order: "post",
+            handler(code, chunk, outputOptions) {
+                if (!chunk.isEntry || !chunk.facadeModuleId) {
+                    return null;
+                }
+
+                if (executablePaths.includes(chunk.name)) {
+                    const transformed = new MagicString(code);
+
+                    transformed.prepend(shebang);
+
+                    return {
+                        code: transformed.toString(),
+                        map: outputOptions.sourcemap ? (transformed.generateMap({ hires: true }) as SourceMapInput) : undefined,
+                    };
+                }
+
                 return null;
-            }
-
-            if (executablePaths.includes(chunk.name)) {
-                const transformed = new MagicString(code);
-
-                transformed.prepend(shebang);
-
-                return {
-                    code: transformed.toString(),
-                    map: outputOptions.sourcemap ? (transformed.generateMap({ hires: true }) as SourceMapInput) : undefined,
-                };
-            }
-
-            return null;
+            },
         },
 
         async writeBundle(options, bundle) {
