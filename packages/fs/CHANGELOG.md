@@ -1,3 +1,11 @@
+## @visulima/fs [2.0.7](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.6...@visulima/fs@2.0.7) (2024-04-17)
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.6
+
 ## @visulima/fs [2.0.6](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.5...@visulima/fs@2.0.6) (2024-04-09)
 
 
