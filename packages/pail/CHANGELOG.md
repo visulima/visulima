@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.9](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.8...@visulima/pail@1.1.9) (2024-04-17)
+
+
+### Bug Fixes
+
+* **pail:** fixed log rendering for small terminal, exported error processor ([47afd8a](https://github.com/visulima/visulima/commit/47afd8a3777cb8d42ae9686d322f4a44f0315797))
+
 ## @visulima/pail [1.1.8](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.7...@visulima/pail@1.1.8) (2024-04-10)
 
 
