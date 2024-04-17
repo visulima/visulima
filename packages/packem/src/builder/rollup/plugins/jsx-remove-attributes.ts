@@ -93,7 +93,7 @@ export const jsxRemoveAttributes = ({ attributes, logger }: JSXRemoveAttributesP
                 return null;
             }
 
-            return { code: magicString.toString(), map: null };
+            return { code: magicString.toString(), map: magicString.generateMap({ hires: true }), };
         },
     };
 };
