@@ -14,7 +14,7 @@ import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
 
 type PluginConfig = Options & {
-    logger: Pail;
+    logger: Pail<never, string>;
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity

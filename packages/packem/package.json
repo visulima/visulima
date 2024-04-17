@@ -99,6 +99,7 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-replace": "^5.0.5",
         "@rollup/pluginutils": "^5.1.0",
+        "@rollup/plugin-wasm": "^6.2.2",
         "@visulima/cerebro": "workspace:*",
         "@visulima/colorize": "workspace:*",
         "@visulima/fs": "workspace:*",

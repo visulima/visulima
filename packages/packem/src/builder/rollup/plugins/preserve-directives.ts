@@ -7,7 +7,7 @@ import type { Plugin } from "rollup";
 const availableESExtensionsRegex = /\.(?:m|c)?(?:j|t)sx?$/;
 const directiveRegex = /^use \w+$/;
 
-const preserveDirectives = (logger: Pail): Plugin => {
+const preserveDirectives = (logger: Pail<never, string>): Plugin => {
     const directives: Record<string, Set<string>> = {};
     const shebangs: Record<string, string> = {};
 

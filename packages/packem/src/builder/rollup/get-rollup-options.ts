@@ -3,6 +3,7 @@ import commonjsPlugin from "@rollup/plugin-commonjs";
 import dynamicImportVarsPlugin from "@rollup/plugin-dynamic-import-vars";
 import { nodeResolve as nodeResolvePlugin } from "@rollup/plugin-node-resolve";
 import replacePlugin from "@rollup/plugin-replace";
+import { wasm as wasmPlugin } from '@rollup/plugin-wasm'
 import { cyan } from "@visulima/colorize";
 import { isAbsolute, relative, resolve } from "pathe";
 import type { OutputOptions, Plugin, PreRenderedAsset, PreRenderedChunk, RollupLog, RollupOptions } from "rollup";
@@ -237,6 +238,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     .map((entry) => entry.name)
                     .filter(Boolean) as string[],
             ),
+
+            context.options.rollup.wsam && wasmPlugin(context.options.rollup.wsam),
 
             context.options.rollup.esbuild &&
             esbuildPlugin({

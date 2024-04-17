@@ -95,7 +95,7 @@ export const getConfigAlias = (tsconfig?: TsConfigResult, addBaseUrl = true): Al
  *
  * import Test from 'components:Test';
  */
-export const resolveTsconfigPaths = (tsconfig: TsConfigResult, logger: Pail): Plugin => {
+export const resolveTsconfigPaths = (tsconfig: TsConfigResult, logger: Pail<never, string>): Plugin => {
     const configAlias = getConfigAlias(tsconfig);
 
     return {

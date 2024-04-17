@@ -55,7 +55,7 @@ export const license = ({
 }: {
     licenseFilePath: string;
     licenseTemplate: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string;
-    logger: Pail;
+    logger: Pail<never, string>;
     marker: string;
     mode: "dependencies" | "types";
     packageName: string | undefined;

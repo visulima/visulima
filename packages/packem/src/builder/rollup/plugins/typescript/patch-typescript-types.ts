@@ -33,7 +33,7 @@ const calledDtsFiles = new Map<string, boolean>();
  * confusing when showed in autocompletions. Try to replace with a better name
  */
 // eslint-disable-next-line func-style
-function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: RenderedChunk, { identifierReplacements }: PatchTypesOptions, logger: Pail) {
+function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: RenderedChunk, { identifierReplacements }: PatchTypesOptions, logger: Pail<never, string>) {
     const imports = findStaticImports(code);
 
     // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
@@ -172,7 +172,7 @@ export interface PatchTypesOptions {
  * 4. Strip leftover internal types
  * 5. Clean unnecessary comments
  */
-export const patchTypescriptTypes = (options: PatchTypesOptions, logger: Pail): Plugin => {
+export const patchTypescriptTypes = (options: PatchTypesOptions, logger: Pail<never, string>): Plugin => {
     return {
         name: "packem:patch-types",
         renderChunk(code, chunk) {

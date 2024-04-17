@@ -3,6 +3,7 @@ import type { RollupCommonJSOptions } from "@rollup/plugin-commonjs";
 import type { RollupJsonOptions } from "@rollup/plugin-json";
 import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
+import type { RollupWasmOptions } from "@rollup/plugin-wasm";
 import type { FilterPattern } from "@rollup/pluginutils";
 import type { PackageJson, TsConfigResult } from "@visulima/package";
 import type { Pail } from "@visulima/pail";
@@ -92,6 +93,8 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     visualizer?: PluginVisualizerOptions | false;
     watch?: RollupOptions["watch"];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    wsam?: RollupWasmOptions | false;
 }
 
 export type BuildEntry = BaseBuildEntry | RollupBuildEntry;

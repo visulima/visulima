@@ -11,7 +11,7 @@ export const cjsInterop = ({
     logger,
     type
 }: CJSInteropOptions & {
-    logger: Pail
+    logger: Pail<never, string>
     type: "commonjs" | "module";
 }): Plugin => {
     return {

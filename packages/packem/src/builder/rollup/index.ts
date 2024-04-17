@@ -8,7 +8,7 @@ import type { BuildContext } from "../../types";
 import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
 import getChunkFilename from "./utils/get-chunk-filename";
 
-const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types", logger: Pail) => {
+const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types", logger: Pail<never, string>) => {
     const prefix = "watcher:" + mode;
 
     watcher.on("change", (id, { event }) => {
