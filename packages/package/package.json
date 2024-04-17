@@ -165,7 +165,7 @@
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
         "@babel/core": "^7.24.4",
-        "@pnpm/exe": "^8.15.6",
+        "@pnpm/exe": "^8.15.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
