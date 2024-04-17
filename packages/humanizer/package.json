@@ -108,7 +108,7 @@
         "@babel/core": "^7.24.4",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.3",
-        "@types/micromatch": "^4.0.6",
+        "@types/micromatch": "^4.0.7",
         "@types/ms": "^0.7.34",
         "@types/node": "18.18.14",
         "@vitest/coverage-v8": "^1.5.0",
