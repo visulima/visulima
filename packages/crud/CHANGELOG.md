@@ -1,3 +1,11 @@
+## @visulima/crud [2.0.21](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.20...@visulima/crud@2.0.21) (2024-04-17)
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.15
+
 ## @visulima/crud [2.0.20](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.19...@visulima/crud@2.0.20) (2024-04-09)
 
 
