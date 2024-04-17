@@ -3120,6 +3120,9 @@ importers:
       '@types/node':
         specifier: 18.18.14
         version: 18.18.14
+      '@types/normalize-package-data':
+        specifier: ^2.4.4
+        version: 2.4.4
       '@vitest/coverage-v8':
         specifier: ^1.5.0
         version: 1.5.0(vitest@1.5.0(@types/node@18.18.14)(@vitest/ui@1.5.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -7811,8 +7814,8 @@ packages:
   '@types/node@20.11.5':
     resolution: {integrity: sha512-g557vgQjUUfN76MZAN/dt1z3dzcUsimuysco0KeluHgrPdJXkP/XdAURgyO2W9fZWHRtRBiVKzKn8vyOAwlG+w==}
 
-  '@types/normalize-package-data@2.4.3':
-    resolution: {integrity: sha512-ehPtgRgaULsFG8x0NeYJvmyH1hmlfsNLujHe9dQEia/7MAJYdzMSi19JtchUHjmBA6XC/75dK55mzZH+RyieSg==}
+  '@types/normalize-package-data@2.4.4':
+    resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
   '@types/pretty-hrtime@1.0.1':
     resolution: {integrity: sha512-VjID5MJb1eGKthz2qUerWT8+R4b9N+CHvGCzg9fn4kWZgaF9AhdYikQio3R7wV8YY1NsQKPaCwKz1Yff+aHNUQ==}
@@ -23657,7 +23660,7 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/normalize-package-data@2.4.3': {}
+  '@types/normalize-package-data@2.4.4': {}
 
   '@types/pretty-hrtime@1.0.1': {}
 
@@ -34055,28 +34058,28 @@ snapshots:
 
   read-pkg@5.2.0:
     dependencies:
-      '@types/normalize-package-data': 2.4.3
+      '@types/normalize-package-data': 2.4.4
       normalize-package-data: 2.5.0
       parse-json: 5.2.0
       type-fest: 0.6.0
 
   read-pkg@7.1.0:
     dependencies:
-      '@types/normalize-package-data': 2.4.3
+      '@types/normalize-package-data': 2.4.4
       normalize-package-data: 3.0.3
       parse-json: 5.2.0
       type-fest: 2.19.0
 
   read-pkg@8.1.0:
     dependencies:
-      '@types/normalize-package-data': 2.4.3
+      '@types/normalize-package-data': 2.4.4
       normalize-package-data: 6.0.0
       parse-json: 7.0.0
       type-fest: 4.15.0
 
   read-pkg@9.0.1:
     dependencies:
-      '@types/normalize-package-data': 2.4.3
+      '@types/normalize-package-data': 2.4.4
       normalize-package-data: 6.0.0
       parse-json: 8.0.0
       type-fest: 4.15.0
