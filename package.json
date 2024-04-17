@@ -234,6 +234,8 @@
     },
     "pnpm": {
         "overrides": {
+            "@types/react": "^18.2.79",
+            "@types/react-dom": "^18.2.25",
             "@babel/traverse@<7.23.2": ">=7.24.1",
             "chrono-node@<2.2.4": ">=2.7.5",
             "cosmiconfig-typescript-loader": "^5.0.0",
