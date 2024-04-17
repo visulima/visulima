@@ -486,6 +486,23 @@ const build = async (
             .filter(Boolean)
             .join(", ")})`;
 
+        // find types for entry
+        if (context.options.declaration) {
+            let dtsPath = entry.path.replace(".js", ".d.ts");
+
+            if (entry.path.endsWith(".cjs")) {
+                dtsPath = dtsPath.replace(".cjs", ".d.cts");
+            } else if (entry.path.endsWith(".mjs")) {
+                dtsPath = dtsPath.replace(".mjs", ".d.mts");
+            }
+
+            const foundDts = context.buildEntries.find((bEntry) => bEntry.path.endsWith(dtsPath));
+
+            if (foundDts) {
+                line += `\n  types: ${bold(rPath(foundDts.path))} (${cyan(formatBytes(foundDts.bytes ?? 0))})`;
+            }
+        }
+
         line += entry.exports?.length ? `\n  exports: ${gray(entry.exports.join(", "))}` : "";
 
         if (entry.chunks?.length) {
