@@ -32,12 +32,11 @@ console.log("Hello, world!");`,
             types: "./dist/index.d.ts",
         });
 
-        const binProcess = execPackemSync(["--env NODE_ENV=development", "--debug"], {
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
             cwd: distribution,
             nodePath,
         });
 
-        // await expect(streamToString(binProcess.stdout)).resolves.toBe("");
         await expect(streamToString(binProcess.stderr)).resolves.toBe("");
         expect(binProcess.exitCode).toBe(0);
 

@@ -9,7 +9,7 @@ const directiveRegex = /^use \w+$/;
 
 const preserveDirectives = (logger: Pail): Plugin => {
     const directives: Record<string, Set<string>> = {};
-    const shebangs: Record<string, string> = {}
+    const shebangs: Record<string, string> = {};
 
     return {
         name: "packem:preserve-directives",
@@ -26,7 +26,9 @@ const preserveDirectives = (logger: Pail): Plugin => {
             handler(code, chunk, { sourcemap }) {
                 const outputDirectives = chunk.moduleIds
                     .map((id) => {
+                        // eslint-disable-next-line security/detect-object-injection
                         if (directives[id]) {
+                            // eslint-disable-next-line security/detect-object-injection
                             return directives[id];
                         }
 
@@ -55,17 +57,23 @@ const preserveDirectives = (logger: Pail): Plugin => {
                     magicString.prepend(`${[...outputDirectives].map((directive) => `'${directive}';`).join("\n")}\n`);
                 }
 
+                let shebang = null;
+
                 if (chunk.facadeModuleId && typeof shebangs[chunk.facadeModuleId] === "string") {
+                    shebang = shebangs[chunk.facadeModuleId];
+                }
+
+                if (shebang) {
                     logger.debug({
                         message: `shebang for chunk "${chunk.fileName}" is preserved.`,
                         prefix: "preserve-directives",
                     });
 
-                    magicString.prepend(`${shebangs[chunk.facadeModuleId]}\n`);
+                    magicString.prepend(`${shebang}\n`);
                 }
 
                 // Neither outputDirectives is present, no change is needed
-                if (outputDirectives.size === 0) {
+                if (outputDirectives.size === 0 && shebang === null) {
                     return null;
                 }
 
@@ -118,6 +126,7 @@ const preserveDirectives = (logger: Pail): Plugin => {
                     }
 
                     if (firstNewLineIndex) {
+                        // eslint-disable-next-line security/detect-object-injection
                         shebangs[id] = code.slice(0, firstNewLineIndex);
 
                         magicString.remove(0, firstNewLineIndex + 1);

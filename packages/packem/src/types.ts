@@ -150,7 +150,7 @@ export interface BuildContext {
         path: string;
     }[];
     hooks: Hookable<BuildHooks>;
-    logger: Pail
+    logger: Pail<never, string>
     mode: Mode;
     options: BuildOptions;
     pkg: PackageJson;

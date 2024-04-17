@@ -7,7 +7,7 @@ import { emptyDir, ensureDirSync, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
 import type { PackageJson, TsConfigJson, TsConfigResult } from "@visulima/package";
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
-import type { Pail } from "@visulima/pail";
+import type { Pail, Processor } from "@visulima/pail";
 import { createPail } from "@visulima/pail";
 import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
 import { defu } from "defu";
@@ -67,7 +67,7 @@ const resolveTsconfigJsxToEsbuildJsx = (jsx?: TsConfigJson.CompilerOptions.JSX):
 };
 
 const build = async (
-    logger: Pail,
+    logger: Pail<never, string>,
     rootDirectory: string,
     mode: Mode,
     inputConfig: BuildConfig,
@@ -540,7 +540,7 @@ const createBundler = async (
     } = {},
 ): Promise<void> => {
     const { configPath, debug, tsconfigPath, ...otherInputConfig } = inputConfig;
-    const loggerProcessors = [new MessageFormatterProcessor<string>(), new ErrorProcessor<string>()];
+    const loggerProcessors: Processor<string>[] = [new MessageFormatterProcessor<string>(), new ErrorProcessor<string>()];
 
     if (debug) {
         loggerProcessors.push(new CallerProcessor());
