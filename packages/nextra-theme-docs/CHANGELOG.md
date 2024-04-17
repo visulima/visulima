@@ -1,3 +1,17 @@
+## @visulima/nextra-theme-docs [4.0.22](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.21...@visulima/nextra-theme-docs@4.0.22) (2024-04-17)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** fixed build error ([ac310a0](https://github.com/visulima/visulima/commit/ac310a077ac2a0dde0f1a3090d60af03b33ee40e))
+* **nextra-theme-docs:** updated headlessui to 1.7.19 ([dd5ebc3](https://github.com/visulima/visulima/commit/dd5ebc33e14d25d6eb934f65ec8e5b44cd515c06))
+
+
+### Miscellaneous Chores
+
+* downgrade eslint-plugin-vitest ([0162771](https://github.com/visulima/visulima/commit/0162771e6022e4594486a796bc41e91a2d87bcd8))
+* update dev dependencies ([09c4854](https://github.com/visulima/visulima/commit/09c4854e221fa8b808dfe66d7196d8db2a39b366))
+
 ## @visulima/nextra-theme-docs [4.0.21](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.20...@visulima/nextra-theme-docs@4.0.21) (2024-04-09)
 
 
