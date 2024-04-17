@@ -9,7 +9,7 @@ import type { PackageJson, TsConfigJson, TsConfigResult } from "@visulima/packag
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
 import type { Pail } from "@visulima/pail";
 import { createPail } from "@visulima/pail";
-import { CallerProcessor } from "@visulima/pail/processor";
+import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
@@ -540,9 +540,15 @@ const createBundler = async (
     } = {},
 ): Promise<void> => {
     const { configPath, debug, tsconfigPath, ...otherInputConfig } = inputConfig;
+    const loggerProcessors = [new MessageFormatterProcessor<string>(), new ErrorProcessor<string>()];
+
+    if (debug) {
+        loggerProcessors.push(new CallerProcessor());
+    }
+
     const logger = createPail({
         logLevel: debug ? "debug" : "informational",
-        processors: debug ? [new CallerProcessor()] : [],
+        processors: loggerProcessors,
         scope: "packem",
     });
 
