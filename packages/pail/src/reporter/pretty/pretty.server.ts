@@ -128,7 +128,11 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             const fileMessage = file.name + (file.line ? ":" + file.line : "");
             const fileMessageSize = stringLength(fileMessage);
 
-            items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
+            if (fileMessageSize + titleSize + 2 > size) {
+                items.push(grey(" " + fileMessage));
+            } else {
+                items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
+            }
         } else {
             items.push(grey(".".repeat(size - titleSize - 1)));
         }
