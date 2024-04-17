@@ -9,6 +9,7 @@ packages:
     - "!packages/package/__fixtures__/which-package-manager/**"
     - "!packages/package/__fixtures__/workspaces/**"
     - "!packages/readdir/__fixtures__/**"
+    - "!packages/packem/__fixtures__/cases/**"
     - "apps/**"
     - "examples/**"
     - "packages/**"
