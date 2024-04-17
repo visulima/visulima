@@ -3,7 +3,7 @@ import { join } from "pathe";
 
 import type { BuildContext } from "../../../types";
 
-const resolveAliases = (context: BuildContext, mode: "build" | "types"): Record<string, string> => {
+const resolveAliases = (context: BuildContext, mode: "build" | "jit" | "types"): Record<string, string> => {
     let aliases: Record<string, string> = {};
 
     if (context.pkg.name) {
