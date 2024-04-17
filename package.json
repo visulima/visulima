@@ -122,7 +122,6 @@
         "lint:types:pail": "pnpm --filter \"pail\" run lint:types",
         "lint:types:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run lint:types",
         "lint:types:root": "tsc --noEmit",
-        "update:deps": "taze",
         "nx": "nx",
         "plop": "plop",
         "prepare": "is-ci || husky install || exit 0",
@@ -187,7 +186,8 @@
         "test:ui:package": "pnpm --filter \"package\" run test:ui",
         "test:ui:pagination": "pnpm --filter \"pagination\" run test:ui",
         "test:ui:pail": "pnpm --filter \"pail\" run test:coverage",
-        "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui"
+        "test:ui:prisma-dmmf-transformer": "pnpm --filter \"prisma-dmmf-transformer\" run test:ui",
+        "update:deps": "taze"
     },
     "browserslist": [
         "extends browserslist-config-anolilab"
@@ -234,20 +234,20 @@
     },
     "pnpm": {
         "overrides": {
+            "@babel/traverse@<7.23.2": ">=7.24.1",
             "@types/react": "^18.2.79",
             "@types/react-dom": "^18.2.25",
-            "@babel/traverse@<7.23.2": ">=7.24.1",
             "chrono-node@<2.2.4": ">=2.7.5",
             "cosmiconfig-typescript-loader": "^5.0.0",
             "es5-ext@>=0.10.0 <0.10.63": ">=0.10.63",
             "estree-util-build-jsx": "^3.0.1",
             "express@<4.19.2": ">=4.19.2",
-            "follow-redirects@<=1.15.5": ">=1.15.6",
             "follow-redirects@<1.15.4": ">=1.15.6",
+            "follow-redirects@<=1.15.5": ">=1.15.6",
             "got@<11.8.5": ">=14.2.1",
-            "katex@>=0.10.0-beta <0.16.10": ">=0.16.10",
-            "katex@>=0.11.0 <0.16.10": ">=0.16.10",
             "katex@>=0.15.4 <0.16.10": ">=0.16.10",
+            "katex@>=0.11.0 <0.16.10": ">=0.16.10",
+            "katex@>=0.10.0-beta <0.16.10": ">=0.16.10",
             "load-tsconfig": "^0.2.5",
             "next@>=0.9.9 <13.4.20-canary.13": ">=13.4.20-canary.13",
             "postcss@<8.4.31": ">=8.4.38",
