@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error",
-    "version": "3.2.5",
+    "version": "3.2.6",
     "description": "Error with more than just a message, stacktrace parsing and sourcemap loading.",
     "keywords": [
         "anolilab",
@@ -124,7 +124,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.14",
-        "@visulima/nextra-theme-docs": "4.0.21",
+        "@visulima/nextra-theme-docs": "4.0.22",
         "@vitest/coverage-v8": "^1.5.0",
         "@vitest/ui": "^1.5.0",
         "cross-env": "^7.0.3",
