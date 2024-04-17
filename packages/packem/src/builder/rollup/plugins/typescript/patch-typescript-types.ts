@@ -4,13 +4,12 @@
 import { exit } from "node:process";
 
 import { parse } from "@babel/parser";
+import type { Pail } from "@visulima/pail";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { walk } from "estree-walker";
 import MagicString from "magic-string";
 import { findStaticImports } from "mlly";
 import type { Plugin, PluginContext, RenderedChunk } from "rollup";
-
-import logger from "../../../../logger";
 
 // Taken from https://stackoverflow.com/a/36328890
 // eslint-disable-next-line security/detect-unsafe-regex
@@ -34,7 +33,7 @@ const calledDtsFiles = new Map<string, boolean>();
  * confusing when showed in autocompletions. Try to replace with a better name
  */
 // eslint-disable-next-line func-style
-function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: RenderedChunk, { identifierReplacements }: PatchTypesOptions) {
+function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: RenderedChunk, { identifierReplacements }: PatchTypesOptions, logger: Pail) {
     const imports = findStaticImports(code);
 
     // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
@@ -173,12 +172,12 @@ export interface PatchTypesOptions {
  * 4. Strip leftover internal types
  * 5. Clean unnecessary comments
  */
-export const patchTypescriptTypes = (options: PatchTypesOptions): Plugin => {
+export const patchTypescriptTypes = (options: PatchTypesOptions, logger: Pail): Plugin => {
     return {
         name: "packem:patch-types",
         renderChunk(code, chunk) {
             // eslint-disable-next-line no-param-reassign
-            code = replaceConfusingTypeNames.call(this, code, chunk, options);
+            code = replaceConfusingTypeNames.call(this, code, chunk, options, logger);
             // eslint-disable-next-line no-param-reassign
             code = stripInternalTypes.call(this, code, chunk);
             // eslint-disable-next-line no-param-reassign

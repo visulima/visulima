@@ -5,6 +5,7 @@ import type { RollupNodeResolveOptions } from "@rollup/plugin-node-resolve";
 import type { RollupReplaceOptions } from "@rollup/plugin-replace";
 import type { FilterPattern } from "@rollup/pluginutils";
 import type { PackageJson, TsConfigResult } from "@visulima/package";
+import type { Pail } from "@visulima/pail";
 import type { Hookable } from "hookable";
 import type { JITIOptions } from "jiti";
 import type { OutputOptions, RollupBuild, RollupOptions, RollupWatcher } from "rollup";
@@ -149,6 +150,7 @@ export interface BuildContext {
         path: string;
     }[];
     hooks: Hookable<BuildHooks>;
+    logger: Pail
     mode: Mode;
     options: BuildOptions;
     pkg: PackageJson;

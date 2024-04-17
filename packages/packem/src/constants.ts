@@ -1,21 +1,27 @@
 import { DEFAULTS as RESOLVE_DEFAULTS } from "@rollup/plugin-node-resolve";
 import type { Loader } from "esbuild";
 
-export const DEFAULT_EXTENSIONS = [...RESOLVE_DEFAULTS.extensions, ".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"];
+export const NODE_RESOLVE_EXTENSIONS = [...RESOLVE_DEFAULTS.extensions, ".cjs"];
+export const DEFAULT_EXTENSIONS = [...NODE_RESOLVE_EXTENSIONS, ".ts", ".cts", ".mts", ".tsx", ".jsx"];
 
 export const DEFAULT_LOADERS: Record<string, Loader> = {
     ".aac": "file",
+    ".cjs": "js",
     ".css": "file",
+    ".cts": "ts",
     ".eot": "file",
     ".flac": "file",
     ".gif": "file",
     ".jpeg": "file",
     ".jpg": "file",
     ".js": "js",
+    // Add .json files support - require @rollup/plugin-json
     ".json": "json",
     ".jsx": "jsx",
+    ".mjs": "js",
     ".mp3": "file",
     ".mp4": "file",
+    ".mts": "ts",
     ".ogg": "file",
     ".otf": "file",
     ".png": "file",

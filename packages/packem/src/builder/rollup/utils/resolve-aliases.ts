@@ -1,10 +1,9 @@
 import type { PackageJson } from "@visulima/package";
 import { join } from "pathe";
 
-import logger from "../../../logger";
 import type { BuildContext } from "../../../types";
 
-const resolveAliases = (context: BuildContext): Record<string, string> => {
+const resolveAliases = (context: BuildContext, mode: "build" | "types"): Record<string, string> => {
     let aliases: Record<string, string> = {};
 
     if (context.pkg.name) {
@@ -45,7 +44,7 @@ const resolveAliases = (context: BuildContext): Record<string, string> => {
         }
     }
 
-    logger.debug("Resolved aliases", aliases);
+    context.logger.debug({message: "Resolved aliases: " + JSON.stringify(aliases), prefix: mode });
 
     return aliases;
 };

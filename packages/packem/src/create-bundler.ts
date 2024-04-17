@@ -7,6 +7,9 @@ import { emptyDir, ensureDirSync, isAccessible, walk } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
 import type { PackageJson, TsConfigJson, TsConfigResult } from "@visulima/package";
 import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
+import type { Pail } from "@visulima/pail";
+import { createPail } from "@visulima/pail";
+import { CallerProcessor } from "@visulima/pail/processor";
 import { defu } from "defu";
 import { createHooks } from "hookable";
 import { isAbsolute, normalize, relative, resolve } from "pathe";
@@ -15,7 +18,6 @@ import ts from "typescript";
 
 import createStub from "./builder/jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
-import logger from "./logger";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
 import arrayify from "./utils/arrayify";
 import dumpObject from "./utils/dump-object";
@@ -32,13 +34,13 @@ type PackEmPackageJson = PackageJson & { packem?: BuildConfig };
 const logErrors = (context: BuildContext, hasOtherLogs: boolean): void => {
     if (context.warnings.size > 0) {
         if (hasOtherLogs) {
-            logger.raw("\n");
+            context.logger.raw("\n");
         }
 
-        logger.warn(`Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
+        context.logger.warn(`Build is done with some warnings:\n\n${[...context.warnings].map((message) => `- ${message}`).join("\n")}`);
 
         if (context.options.failOnWarn) {
-            logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false`.");
+            context.logger.error("Exiting with code (1). You can change this behavior by setting `failOnWarn: false`.");
 
             exit(1);
         }
@@ -65,6 +67,7 @@ const resolveTsconfigJsxToEsbuildJsx = (jsx?: TsConfigJson.CompilerOptions.JSX):
 };
 
 const build = async (
+    logger: Pail,
     rootDirectory: string,
     mode: Mode,
     inputConfig: BuildConfig,
@@ -284,7 +287,10 @@ const build = async (
             let message = "Packem does not support 'preserve' jsx option. Please use 'transform' or 'automatic' instead.";
 
             if (tsconfig?.config?.compilerOptions?.jsx) {
-                message = "Packem does not support '" + tsconfig.config.compilerOptions.jsx + "' jsx option. Please change it to 'react' or 'react-jsx' or 'react-jsxdev' instead."
+                message =
+                    "Packem does not support '" +
+                    tsconfig.config.compilerOptions.jsx +
+                    "' jsx option. Please change it to 'react' or 'react-jsx' or 'react-jsxdev' instead.";
             }
 
             throw new Error(message);
@@ -313,6 +319,7 @@ const build = async (
     const context: BuildContext = {
         buildEntries: [],
         hooks: createHooks(),
+        logger,
         mode,
         options,
         pkg: package_,
@@ -484,8 +491,10 @@ const build = async (
         if (entry.chunks?.length) {
             line += `\n${entry.chunks
                 .map((p) => {
-                    const chunk = context.buildEntries.find((e) => e.path === p) ?? ({} as any);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const chunk = context.buildEntries.find((buildEntry) => buildEntry.path === p) ?? ({} as any);
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return gray(`  └─ ${rPath(p)}${bold(chunk.bytes ? ` (${formatBytes(chunk?.bytes)})` : "")}`);
                 })
                 .join("\n")}`;
@@ -526,10 +535,19 @@ const createBundler = async (
     mode: Mode,
     inputConfig: BuildConfig & {
         configPath?: string;
+        debug?: boolean;
         tsconfigPath?: string;
     } = {},
 ): Promise<void> => {
-    const { configPath, tsconfigPath, ...otherInputConfig } = inputConfig;
+    const { configPath, debug, tsconfigPath, ...otherInputConfig } = inputConfig;
+    const logger = createPail({
+        logLevel: debug ? "debug" : "informational",
+        processors: debug ? [new CallerProcessor()] : [],
+        scope: "packem",
+    });
+
+    logger.wrapAll();
+
     // Determine rootDirectory
     // eslint-disable-next-line no-param-reassign
     rootDirectory = resolve(cwd(), rootDirectory);
@@ -570,7 +588,7 @@ const createBundler = async (
         const buildConfigs = (Array.isArray(_buildConfig) ? _buildConfig : [_buildConfig]).filter(Boolean);
 
         if (buildConfigs.length === 0) {
-            await build(rootDirectory, mode, otherInputConfig, {}, packageJson as PackEmPackageJson, tsconfig, []);
+            await build(logger, rootDirectory, mode, otherInputConfig, {}, packageJson as PackEmPackageJson, tsconfig, []);
         } else {
             // Invoke build for every build config defined in packem.config.ts
             const cleanedDirectories: string[] = [];
@@ -578,7 +596,7 @@ const createBundler = async (
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const buildConfig of buildConfigs) {
                 // eslint-disable-next-line no-await-in-loop
-                await build(rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsconfig, cleanedDirectories);
+                await build(logger, rootDirectory, mode, otherInputConfig, buildConfig, packageJson as PackEmPackageJson, tsconfig, cleanedDirectories);
             }
         }
 

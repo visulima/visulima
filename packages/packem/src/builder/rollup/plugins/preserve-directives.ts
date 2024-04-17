@@ -1,16 +1,15 @@
+import type { Pail } from "@visulima/pail";
 import type { Node } from "estree";
 import MagicString from "magic-string";
 import { extname } from "pathe";
 import type { Plugin } from "rollup";
 
-import logger from "../../../logger";
-
 const availableESExtensionsRegex = /\.(?:m|c)?(?:j|t)sx?$/;
 const directiveRegex = /^use \w+$/;
 
-const preserveDirectives = (): Plugin => {
+const preserveDirectives = (logger: Pail): Plugin => {
     const directives: Record<string, Set<string>> = {};
-    let shebang: string | undefined;
+    const shebangs: Record<string, string> = {}
 
     return {
         name: "packem:preserve-directives",
@@ -24,7 +23,7 @@ const preserveDirectives = (): Plugin => {
         },
 
         renderChunk: {
-            handler(code, chunk, { sourcemap, format }) {
+            handler(code, chunk, { sourcemap }) {
                 const outputDirectives = chunk.moduleIds
                     .map((id) => {
                         if (directives[id]) {
@@ -47,16 +46,26 @@ const preserveDirectives = (): Plugin => {
 
                 const magicString = new MagicString(code);
 
-                if (outputDirectives.size) {
+                if (outputDirectives.size > 0) {
+                    logger.debug({
+                        message: `directives for chunk "${chunk.fileName}" are preserved.`,
+                        prefix: "preserve-directives",
+                    });
+
                     magicString.prepend(`${[...outputDirectives].map((directive) => `'${directive}';`).join("\n")}\n`);
                 }
 
-                if (shebang) {
-                    magicString.prepend(`${shebang}\n`);
+                if (chunk.facadeModuleId && typeof shebangs[chunk.facadeModuleId] === "string") {
+                    logger.debug({
+                        message: `shebang for chunk "${chunk.fileName}" is preserved.`,
+                        prefix: "preserve-directives",
+                    });
+
+                    magicString.prepend(`${shebangs[chunk.facadeModuleId]}\n`);
                 }
 
                 // Neither outputDirectives is present, no change is needed
-                if (outputDirectives.size === 0 && !shebang) {
+                if (outputDirectives.size === 0) {
                     return null;
                 }
 
@@ -98,8 +107,9 @@ const preserveDirectives = (): Plugin => {
                 if (code[0] === "#" && code[1] === "!") {
                     let firstNewLineIndex = 0;
 
+                    // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention,no-plusplus
                     for (let index = 2, length_ = code.length; index < length_; index++) {
-                        const charCode = code.charCodeAt(index);
+                        const charCode = code.codePointAt(index);
 
                         if (charCode === 10 || charCode === 13 || charCode === 0x20_28 || charCode === 0x20_29) {
                             firstNewLineIndex = index;
@@ -108,10 +118,15 @@ const preserveDirectives = (): Plugin => {
                     }
 
                     if (firstNewLineIndex) {
-                        shebang = code.slice(0, firstNewLineIndex);
+                        shebangs[id] = code.slice(0, firstNewLineIndex);
 
                         magicString.remove(0, firstNewLineIndex + 1);
                         hasChanged = true;
+
+                        logger.debug({
+                            message: `shebang for module "${id}" is preserved.`,
+                            prefix: "preserve-directives",
+                        });
                     }
                 }
 
@@ -122,6 +137,7 @@ const preserveDirectives = (): Plugin => {
 
                 try {
                     ast = this.parse(magicString.toString(), { allowReturnOutsideFunction: true }) as Node;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } catch (error: any) {
                     this.warn({
                         code: "PARSE_ERROR",
@@ -159,11 +175,12 @@ const preserveDirectives = (): Plugin => {
                     }
 
                     if (directive === "use strict") {
+                        // eslint-disable-next-line no-continue
                         continue;
                     }
 
                     if (directive) {
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,security/detect-object-injection
                         directives[id] ||= new Set<string>();
                         // eslint-disable-next-line security/detect-object-injection
                         (directives[id] as Set<string>).add(directive);
@@ -181,6 +198,11 @@ const preserveDirectives = (): Plugin => {
 
                             hasChanged = true;
                         }
+
+                        logger.debug({
+                            message: `directive "${directive}" for module "${id}" is preserved.`,
+                            prefix: "preserve-directives",
+                        });
                     }
                 }
 
@@ -196,7 +218,8 @@ const preserveDirectives = (): Plugin => {
                         preserveDirectives: {
                             // eslint-disable-next-line security/detect-object-injection
                             directives: [...(directives[id] ?? [])],
-                            shebang,
+                            // eslint-disable-next-line security/detect-object-injection
+                            shebang: shebangs[id] ?? null,
                         },
                     },
                 };

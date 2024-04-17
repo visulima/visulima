@@ -1,14 +1,14 @@
 import { cyan, gray } from "@visulima/colorize";
+import type { Pail } from "@visulima/pail";
 import { relative, resolve } from "pathe";
 import type { OutputChunk, OutputOptions, RollupWatcher, RollupWatcherEvent } from "rollup";
 import { rollup, watch as rollupWatch } from "rollup";
 
-import logger from "../../logger";
 import type { BuildContext } from "../../types";
 import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
 import getChunkFilename from "./utils/get-chunk-filename";
 
-const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types") => {
+const watchHandler = (watcher: RollupWatcher, mode: "bundle" | "types", logger: Pail) => {
     const prefix = "watcher:" + mode;
 
     watcher.on("change", (id, { event }) => {
@@ -47,7 +47,7 @@ export const watch = async (context: BuildContext): Promise<void> => {
     const rollupOptions = getRollupOptions(context);
 
     await context.hooks.callHook("rollup:options", context, rollupOptions);
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (Object.keys(rollupOptions.input as any).length === 0) {
         return;
     }
@@ -71,9 +71,9 @@ export const watch = async (context: BuildContext): Promise<void> => {
         infoMessage += gray(`\n  └─ ${relative(process.cwd(), input)}`);
     }
 
-    logger.info(infoMessage);
+    context.logger.info(infoMessage);
 
-    watchHandler(watcher, "bundle");
+    watchHandler(watcher, "bundle", context.logger);
 
     if (context.options.declaration) {
         const rollupDtsOptions = getRollupDtsOptions(context);
@@ -84,7 +84,7 @@ export const watch = async (context: BuildContext): Promise<void> => {
 
         await context.hooks.callHook("rollup:watch", context, dtsWatcher);
 
-        watchHandler(dtsWatcher, "types");
+        watchHandler(dtsWatcher, "types", context.logger);
     }
 };
 
@@ -93,7 +93,7 @@ export const build = async (context: BuildContext): Promise<void> => {
     const rollupOptions = getRollupOptions(context);
 
     await context.hooks.callHook("rollup:options", context, rollupOptions);
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (Object.keys(rollupOptions.input as any).length === 0) {
         return;
     }
@@ -109,7 +109,7 @@ export const build = async (context: BuildContext): Promise<void> => {
         // eslint-disable-next-line no-await-in-loop
         const { output } = await buildResult.write(outputOptions);
         const chunkFileNames = new Set<string>();
-        const outputChunks = output.filter((e) => e.type === "chunk") as OutputChunk[];
+        const outputChunks = output.filter((fOutput) => fOutput.type === "chunk") as OutputChunk[];
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const entry of outputChunks) {
@@ -149,6 +149,7 @@ export const build = async (context: BuildContext): Promise<void> => {
 
         await context.hooks.callHook("rollup:options", context, rollupTypeOptions);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (Object.keys(rollupTypeOptions.input as any).length === 0) {
             return;
         }
@@ -159,7 +160,7 @@ export const build = async (context: BuildContext): Promise<void> => {
 
         await context.hooks.callHook("rollup:dts:build", context, typesBuild);
 
-        logger.info({
+        context.logger.info({
             message: "Building declaration files...",
             prefix: "dts",
         });

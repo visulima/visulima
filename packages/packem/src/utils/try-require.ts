@@ -1,7 +1,5 @@
 import jiti from "jiti";
 
-import logger from "../logger";
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
 const tryRequire = (id: string, rootDirectory: string, errorReturn: any): any => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -12,9 +10,9 @@ const tryRequire = (id: string, rootDirectory: string, errorReturn: any): any =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         if (error.code !== "MODULE_NOT_FOUND") {
-            logger.error(new Error(`Error trying import ${id} from ${rootDirectory}`, {
+            throw new Error(`Error trying import ${id} from ${rootDirectory}`, {
                 cause: error,
-            }));
+            });
         }
 
         return errorReturn;

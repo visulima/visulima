@@ -1,37 +1,25 @@
 import { existsSync, statSync } from "node:fs";
 
 import { createFilter } from "@rollup/pluginutils";
+import type { Pail } from "@visulima/pail";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
 import { dirname, extname, join, resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
-import logger from "../../../../logger";
+import { DEFAULT_LOADERS } from "../../../../constants";
 import getRenderChunk from "./get-render-chunk";
 import doOptimizeDeps from "./optmize-deps";
 import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
 
-const defaultLoaders: Record<string, Loader> = {
-    ".cjs": "js",
-    ".css": "css",
-    ".cts": "ts",
-    ".js": "js",
-    // Add .json files support - require @rollup/plugin-json
-    ".json": "json",
-    ".jsx": "jsx",
-    ".mjs": "js",
-    ".mts": "ts",
-    ".svg": "text",
-    ".ts": "ts",
-    ".tsx": "tsx",
+type PluginConfig = Options & {
+    logger: Pail;
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export default ({ exclude, include, loaders: _loaders, optimizeDeps, sourceMap = true, ...esbuildOptions }: Options = {}): RollupPlugin => {
-    const loaders = {
-        ...defaultLoaders,
-    };
+export default ({ exclude, include, loaders: _loaders, logger, optimizeDeps, sourceMap = true, ...esbuildOptions }: PluginConfig): RollupPlugin => {
+    const loaders = DEFAULT_LOADERS;
 
     if (_loaders) {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,prefer-const

@@ -5,7 +5,6 @@ import { collectSync } from "@visulima/fs";
 import { join } from "pathe";
 import type { NormalizedPackageJson } from "read-pkg";
 
-import logger from "../logger";
 import type { BuildPreset } from "../types";
 import warn from "../utils/warn";
 import inferEntries from "./utils/infer-entries";
@@ -63,7 +62,7 @@ const autoPreset: BuildPreset = {
             if (context.options.entries.length === 0) {
                 throw new Error("No entries detected. Please provide entries manually.");
             } else {
-                logger.info(
+                context.logger.info(
                     "Automatically detected entries:",
                     cyan(
                         context.options.entries

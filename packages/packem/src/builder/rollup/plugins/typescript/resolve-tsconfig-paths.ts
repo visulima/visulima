@@ -1,9 +1,8 @@
 import { normalizePath } from "@rollup/pluginutils";
 import type { TsConfigResult } from "@visulima/package";
+import type { Pail } from "@visulima/pail";
 import { dirname, resolve } from "pathe";
 import type { Plugin } from "rollup";
-
-import logger from "../../../../logger";
 
 type Alias = {
     find: RegExp;
@@ -96,7 +95,7 @@ export const getConfigAlias = (tsconfig?: TsConfigResult, addBaseUrl = true): Al
  *
  * import Test from 'components:Test';
  */
-export const resolveTsconfigPaths = (tsconfig?: TsConfigResult): Plugin => {
+export const resolveTsconfigPaths = (tsconfig: TsConfigResult, logger: Pail): Plugin => {
     const configAlias = getConfigAlias(tsconfig);
 
     return {

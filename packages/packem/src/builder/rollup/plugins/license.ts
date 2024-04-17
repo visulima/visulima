@@ -6,10 +6,9 @@
  * Copyright (c) 2017 these people -> https://github.com/rollup/rollup/graphs/contributors
  */
 import { readFileSync, writeFileSync } from "@visulima/fs";
+import type { Pail } from "@visulima/pail";
 import type { Plugin } from "rollup";
 import licensePlugin from "rollup-plugin-license";
-
-import logger from "../../../logger";
 
 const sortLicenses = (licenses: Set<string>) => {
     const withParenthesis: string[] = [];
@@ -46,13 +45,21 @@ export interface LicenseOptions {
     template?: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string;
 }
 
-export const license = (
-    licenseFilePath: string,
-    marker: string,
-    packageName: string | undefined,
-    licenseTemplate: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string,
-    mode: "dependencies" | "types",
-): Plugin =>
+export const license = ({
+    licenseFilePath,
+    licenseTemplate,
+    logger,
+    marker,
+    mode,
+    packageName,
+}: {
+    licenseFilePath: string;
+    licenseTemplate: (licenses: string[], dependencyLicenseTexts: string, packageName: string | undefined) => string;
+    logger: Pail;
+    marker: string;
+    mode: "dependencies" | "types";
+    packageName: string | undefined;
+}): Plugin =>
     licensePlugin({
         // eslint-disable-next-line sonarjs/cognitive-complexity
         thirdParty(dependencies) {

@@ -34,6 +34,7 @@ cli.addCommand({
         await createBundler(options.dir, mode, {
             cjsInterop: options.cjsInterop,
             configPath: options.config ?? undefined,
+            debug: options.debug,
             replace: {
                 ...environments,
             },

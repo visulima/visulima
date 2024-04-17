@@ -16,7 +16,6 @@ export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/e
         name: "packem:shebang",
 
         renderChunk: {
-            order: "post",
             handler(code, chunk, outputOptions) {
                 if (!chunk.isEntry || !chunk.facadeModuleId) {
                     return null;
@@ -35,6 +34,7 @@ export const shebangPlugin = (executablePaths: string[], shebang = "#!/usr/bin/e
 
                 return null;
             },
+            order: "post",
         },
 
         async writeBundle(options, bundle) {
