@@ -8,7 +8,7 @@ import { MDXProvider } from "nextra/mdx";
 import type { PageTheme } from "nextra/normalize-pages";
 import { normalizePages } from "nextra/normalize-pages";
 import type { NextraThemeLayoutProps, PageOpts } from "nextra/types";
-import type { FC, MutableRefObject, PropsWithChildren, ReactNode, RefObject } from "react";
+import type { FC, MutableRefObject, ReactNode, RefObject } from "react";
 import { Fragment, useMemo, useRef } from "react";
 import { Toaster } from "react-hot-toast";
 import { Provider as WrapBalancerProvider } from "react-wrap-balancer";
@@ -98,8 +98,12 @@ const Body: FC<{
     );
 };
 
-const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
-    children = undefined,
+const InnerLayout: FC<
+    PageOpts & {
+        children: ReactNode;
+    }
+> = ({
+    children,
     filePath,
     frontMatter,
     headings,
@@ -321,7 +325,7 @@ const InnerLayout: FC<PropsWithChildren<PageOpts>> = ({
     );
 };
 
-const Index: FC<NextraThemeLayoutProps> = ({ children = undefined, ...context }) => (
+const Index: FC<NextraThemeLayoutProps> = ({ children, ...context }) => (
     <ConfigProvider value={context}>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <InnerLayout {...context.pageOpts}>{children}</InnerLayout>
