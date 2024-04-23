@@ -9,13 +9,13 @@
         "build": "packem"
     },
     "dependencies": {
+        "@visulima/packem": "workspace:*",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "@visulima/packem": "workspace:*"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "typescript": "^4.5.4"
+        "@types/react": "^18.2.79",
+        "@types/react-dom": "^18.2.25",
+        "typescript": "^4.9.5"
     }
 }

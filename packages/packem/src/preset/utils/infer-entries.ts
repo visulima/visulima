@@ -111,7 +111,7 @@ const inferEntries = (packageJson: PackageJson, sourceFiles: string[], rootDirec
             esm = true;
         }
 
-        const entry = entries.find((index) => index.input === input) ?? (entries[entries.push({ builder: "rollup", input }) - 1] as BuildEntry);
+        const entry = entries.find((index) => index.input === input) ?? (entries[entries.push({ input }) - 1] as BuildEntry);
 
         if (/\.d\.(?:m|c)?ts$/.test(output.file)) {
             dts = true;

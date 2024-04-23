@@ -35,3 +35,9 @@ export const DEFAULT_LOADERS: Record<string, Loader> = {
     ".woff": "file",
     ".woff2": "file",
 };
+
+export const RUNTIME_EXPORT_CONVENTIONS = [
+  'react-server',
+  'react-native',
+  'edge-light',
+];

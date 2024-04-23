@@ -14,12 +14,13 @@ import type { Options as RollupDtsOptions } from "rollup-plugin-dts";
 import type { NodePolyfillsOptions } from "rollup-plugin-polyfill-node";
 import type { PluginVisualizerOptions } from "rollup-plugin-visualizer";
 
-import type { CJSInteropOptions } from "./builder/rollup/plugins/cjs-interop";
-import type { Options as EsbuildOptions } from "./builder/rollup/plugins/esbuild/types";
-import type { JSXRemoveAttributesPlugin } from "./builder/rollup/plugins/jsx-remove-attributes";
-import type { LicenseOptions } from "./builder/rollup/plugins/license";
-import type { RawLoaderOptions } from "./builder/rollup/plugins/raw";
-import type { PatchTypesOptions } from "./builder/rollup/plugins/typescript/patch-typescript-types";
+import type { CJSInteropOptions } from "./rollup/plugins/cjs-interop";
+import type { CopyPluginOptions } from "./rollup/plugins/copy";
+import type { Options as EsbuildOptions } from "./rollup/plugins/esbuild/types";
+import type { JSXRemoveAttributesPlugin } from "./rollup/plugins/jsx-remove-attributes";
+import type { LicenseOptions } from "./rollup/plugins/license";
+import type { RawLoaderOptions } from "./rollup/plugins/raw";
+import type { PatchTypesOptions } from "./rollup/plugins/typescript/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
 
@@ -50,20 +51,6 @@ interface RollupDynamicImportVariablesOptions {
     warnOnError?: boolean;
 }
 
-interface BaseBuildEntry {
-    builder?: string;
-    declaration?: boolean | "compatible" | "node16";
-    format?: string;
-    input: string;
-    isExecutable?: boolean;
-    name?: string;
-    outDir?: string;
-}
-
-interface RollupBuildEntry extends BaseBuildEntry {
-    builder: "rollup";
-}
-
 export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     alias: RollupAliasOptions | false;
@@ -71,6 +58,7 @@ export interface RollupBuildOptions {
     cjsInterop?: CJSInteropOptions;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;
+    copy?: CopyPluginOptions | false;
     dts: RollupDtsOptions;
     dynamicVars?: RollupDynamicImportVariablesOptions | false;
     emitCJS?: boolean;
@@ -99,7 +87,14 @@ export interface RollupBuildOptions {
     wsam?: RollupWasmOptions | false;
 }
 
-export type BuildEntry = BaseBuildEntry | RollupBuildEntry;
+export type BuildEntry = {
+    declaration?: boolean | "compatible" | "node16";
+    format?: string;
+    input: string;
+    isExecutable?: boolean;
+    name?: string;
+    outDir?: string;
+};
 
 export interface BuildOptions {
     alias: Record<string, string>;
@@ -155,7 +150,7 @@ export interface BuildContext {
         path: string;
     }[];
     hooks: Hookable<BuildHooks>;
-    logger: Pail<never, string>
+    logger: Pail<never, string>;
     mode: Mode;
     options: BuildOptions;
     pkg: PackageJson;

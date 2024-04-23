@@ -7,7 +7,7 @@ import { transform } from "esbuild";
 import { dirname, extname, join, resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
-import { DEFAULT_LOADERS } from "../../../../constants";
+import { DEFAULT_LOADERS } from "../../../constants";
 import getRenderChunk from "./get-render-chunk";
 import doOptimizeDeps from "./optmize-deps";
 import type { OptimizeDepsResult, Options } from "./types";

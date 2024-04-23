@@ -4,12 +4,12 @@ import { readFile, writeFile } from "@visulima/fs";
 import { resolveModuleExportNames, resolvePath } from "mlly";
 import { extname, normalize, resolve } from "pathe";
 
-import { DEFAULT_EXTENSIONS } from "../../constants";
-import type { BuildContext } from "../../types";
-import tryResolve from "../../utils/try-resolve";
-import warn from "../../utils/warn";
+import { DEFAULT_EXTENSIONS } from "../constants";
 import { getShebang, makeExecutable } from "../rollup/plugins/shebang";
 import resolveAliases from "../rollup/utils/resolve-aliases";
+import type { BuildContext } from "../types";
+import tryResolve from "../utils/try-resolve";
+import warn from "../utils/warn";
 
 const createStub = async (context: BuildContext): Promise<void> => {
     const jitiPath = await resolvePath("jiti", { url: import.meta.url });
@@ -26,8 +26,8 @@ const createStub = async (context: BuildContext): Promise<void> => {
     );
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const entry of context.options.entries.filter((entry) => entry.builder === "rollup")) {
-        const output = resolve(context.options.rootDir, context.options.outDir, entry.name!);
+    for (const entry of context.options.entries) {
+        const output = resolve(context.options.rootDir, context.options.outDir, entry.name);
 
         const resolvedEntry = normalize(tryResolve(entry.input, context.options.rootDir) || entry.input);
         const resolvedEntryWithoutExtension = resolvedEntry.slice(0, Math.max(0, resolvedEntry.length - extname(resolvedEntry).length));

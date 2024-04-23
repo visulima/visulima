@@ -16,8 +16,8 @@ import { isAbsolute, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
 import ts from "typescript";
 
-import createStub from "./builder/jit/create-stub";
-import { build as rollupBuild, watch as rollupWatch } from "./builder/rollup";
+import createStub from "./jit/create-stub";
+import { build as rollupBuild, watch as rollupWatch } from "./rollup";
 import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
 import arrayify from "./utils/arrayify";
 import dumpObject from "./utils/dump-object";
@@ -486,23 +486,6 @@ const build = async (
             .filter(Boolean)
             .join(", ")})`;
 
-        // find types for entry
-        if (context.options.declaration) {
-            let dtsPath = entry.path.replace(".js", ".d.ts");
-
-            if (entry.path.endsWith(".cjs")) {
-                dtsPath = dtsPath.replace(".cjs", ".d.cts");
-            } else if (entry.path.endsWith(".mjs")) {
-                dtsPath = dtsPath.replace(".mjs", ".d.mts");
-            }
-
-            const foundDts = context.buildEntries.find((bEntry) => bEntry.path.endsWith(dtsPath));
-
-            if (foundDts) {
-                line += `\n  types: ${bold(rPath(foundDts.path))} (${cyan(formatBytes(foundDts.bytes ?? 0))})`;
-            }
-        }
-
         line += entry.exports?.length ? `\n  exports: ${gray(entry.exports.join(", "))}` : "";
 
         if (entry.chunks?.length) {
@@ -525,10 +508,29 @@ const build = async (
                 .map((m) => gray(`  📦 ${rPath(m.id)}${bold(m.bytes ? ` (${formatBytes(m.bytes)})` : "")}`))
                 .join("\n");
 
-            line += moduleList.length > 0 ? `\n  inlined modules:\n${moduleList}\n\n` : "\n\n";
+            line += moduleList.length > 0 ? `\n  inlined modules:\n${moduleList}` : "";
+        }
+
+        // find types for entry
+        if (context.options.declaration) {
+            let dtsPath = entry.path.replace(".js", ".d.ts");
+
+            if (entry.path.endsWith(".cjs")) {
+                dtsPath = dtsPath.replace(".cjs", ".d.cts");
+            } else if (entry.path.endsWith(".mjs")) {
+                dtsPath = dtsPath.replace(".mjs", ".d.mts");
+            }
+
+            const foundDts = context.buildEntries.find((bEntry) => bEntry.path.endsWith(dtsPath));
+
+            if (foundDts) {
+                line += `\n  types: ${bold(rPath(foundDts.path))} (${cyan(formatBytes(foundDts.bytes ?? 0))})`;
+            }
         }
 
         loggedEntries = true;
+
+        line += "\n\n";
 
         logger.raw(entry.chunk ? gray(line) : line);
     }

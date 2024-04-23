@@ -11,10 +11,10 @@ import { dts as dtsPlugin } from "rollup-plugin-dts";
 import polifillPlugin from "rollup-plugin-polyfill-node";
 import { visualizer as visualizerPlugin } from "rollup-plugin-visualizer";
 
-import { DEFAULT_EXTENSIONS } from "../../constants";
-import type { BuildContext } from "../../types";
-import arrayIncludes from "../../utils/array-includes";
-import getPackageName from "../../utils/get-package-name";
+import { DEFAULT_EXTENSIONS } from "../constants";
+import type { BuildContext } from "../types";
+import arrayIncludes from "../utils/array-includes";
+import getPackageName from "../utils/get-package-name";
 import { cjsInterop as cjsInteropPlugin } from "./plugins/cjs-interop";
 import esbuildPlugin from "./plugins/esbuild";
 import JSONPlugin from "./plugins/json";
@@ -33,6 +33,7 @@ import getChunkFilename from "./utils/get-chunk-filename";
 import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
 import { jsxRemoveAttributes } from "./plugins/jsx-remove-attributes";
+import { copyPlugin } from "./plugins/copy";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
     // If the circular dependency warning is from node_modules, ignore it
@@ -123,7 +124,7 @@ const baseRollupOptions = (context: BuildContext, resolvedAliases: Record<string
         },
 
         input: Object.fromEntries(
-            context.options.entries.filter((entry) => entry.builder === "rollup").map((entry) => [entry.name, resolve(context.options.rootDir, entry.input)]),
+            context.options.entries.map((entry) => [entry.name, resolve(context.options.rootDir, entry.input)]),
         ),
 
         onwarn(warning: RollupLog, rollupWarn) {
@@ -286,6 +287,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     outDir: resolve(context.options.rootDir, context.options.outDir),
                     rootDir: context.options.rootDir,
                 }),
+
+            context.options.rollup.copy && copyPlugin(context.options.rollup.copy, context.logger),
 
             context.options.rollup.license &&
                 context.options.rollup.license.path &&

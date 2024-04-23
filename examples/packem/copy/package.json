@@ -1,0 +1,22 @@
+{
+    "name": "example_packem_native_node_module",
+    "version": "1.0.0",
+    "private": true,
+    "type": "commonjs",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "packem"
+    },
+    "dependencies": {
+        "@visulima/packem": "workspace:*"
+    },
+    "packem": {
+        "rollup": {
+            "copy": {
+                "targets": "assets/*"
+            }
+        }
+    }
+}
