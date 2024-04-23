@@ -1,3 +1,10 @@
+/**
+ * Modified copy of https://github.com/egoist/rollup-plugin-esbuild/blob/dev/src/minify.ts
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020 EGOIST
+ */
 import type { Format, TransformOptions } from "esbuild";
 import { transform } from "esbuild";
 import type { InternalModuleFormat, Plugin } from "rollup";

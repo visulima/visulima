@@ -1,3 +1,10 @@
+/**
+ * Modified copy of https://github.com/egoist/rollup-plugin-esbuild/blob/dev/src/index.ts
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020 EGOIST
+ */
 import { existsSync, statSync } from "node:fs";
 
 import { createFilter } from "@rollup/pluginutils";
@@ -16,6 +23,8 @@ import warn from "./warn";
 type PluginConfig = Options & {
     logger: Pail<never, string>;
 };
+
+const EXCLUDE_REGEXP = /node_modules/;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default ({ exclude, include, loaders: _loaders, logger, optimizeDeps, sourceMap = true, ...esbuildOptions }: PluginConfig): RollupPlugin => {
@@ -39,7 +48,6 @@ export default ({ exclude, include, loaders: _loaders, logger, optimizeDeps, sou
     const extensions: string[] = Object.keys(loaders);
     // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
     const INCLUDE_REGEXP = new RegExp(`\\.(${extensions.map((extension) => extension.slice(1)).join("|")})$`);
-    const EXCLUDE_REGEXP = /node_modules/;
 
     const filter = createFilter(include || INCLUDE_REGEXP, exclude || EXCLUDE_REGEXP);
 

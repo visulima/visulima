@@ -1,3 +1,10 @@
+/**
+ * Modified copy of https://github.com/egoist/rollup-plugin-esbuild/blob/dev/src/optimizer/optmize-deps.ts
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020 EGOIST
+ */
 import { readFile } from "node:fs/promises";
 
 import { findCacheDirectory } from "@visulima/package";
