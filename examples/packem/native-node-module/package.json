@@ -10,7 +10,9 @@
         "build": "packem --cjsInterop"
     },
     "dependencies": {
-        "@visulima/packem": "workspace:*",
-        "nodejs-polars": "^0.10.0"
+        "@visulima/packem": "workspace:*"
+    },
+    "devDependencies": {
+        "nodehun": "^3.0.2"
     }
 }

@@ -34,6 +34,7 @@ import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
 import { jsxRemoveAttributes } from "./plugins/jsx-remove-attributes";
 import { copyPlugin } from "./plugins/copy";
+import nativeNodeModule from "./plugins/native-node-module";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
     // If the circular dependency warning is from node_modules, ignore it
@@ -214,6 +215,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     ...context.options.rollup.alias,
                     entries: resolvedAliases,
                 }),
+
+            nativeNodeModule(),
 
             context.options.rollup.resolve &&
                 nodeResolvePlugin({

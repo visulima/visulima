@@ -1,7 +1,7 @@
 <div align="center">
-  <h3>Visulima pack</h3>
+  <h3>Visulima packem</h3>
   <p>
-  Detect whether a terminal, browser or edge supports ansi colors.
+  A fast and modern bundler for Node.js and TypeScript.
   </p>
 </div>
 
@@ -28,78 +28,22 @@
 ## Install
 
 ```sh
-npm install @visulima/pack
+npm install @visulima/packem
 ```
 
 ```sh
-yarn add @visulima/pack
+yarn add @visulima/packem
 ```
 
 ```sh
-pnpm add @visulima/pack
+pnpm add @visulima/packem
 ```
 
 ## Usage
 
 ```typescript
-import { isColorSupported } from "@visulima/pack";
-
-/**
- * Levels:
- * - `0` - All colors disabled.
- * - `1` - Basic 16 colors support.
- * - `2` - ANSI 256 colors support.
- * - `3` - Truecolor 16 million colors support.
- */
-console.log(isColorSupported()); // 3
-```
-
-## Environment variables
-
-To force disable or enable colored output use environment variables `NO_COLOR` and `FORCE_COLOR`.
-
-The `NO_COLOR` variable should be presents with any not empty value.
-The value is not important, e.g., `NO_COLOR=1` `NO_COLOR=true` disable colors.
-See standard description by [NO_COLOR](https://no-color.org/).
-
-The `FORCE_COLOR` variable should be presents with one of values:\
-`FORCE_COLOR=0` force disable colors\
-`FORCE_COLOR=1` force enable colors
-
-## CLI arguments
-
-Use arguments `--no-color` or `--color=false` to disable colors and `--color` to enable ones.
-
-For example, an executable script _colors.js_:
-
-```js
-#!/usr/bin/env node
-import { isColorSupported } from "@visulima/pack";
-
-console.log(isColorSupported());
-```
-
-Execute the script in a terminal:
 
 ```
-$ ./colors.js                        # colored output in terminal
-$ ./colors.js --no-color             # non colored output in terminal
-$ ./colors.js --color=false          # non colored output in terminal
-
-$ ./colors.js > log.txt              # output in file without ANSI codes
-$ ./colors.js --color > log.txt      # output in file with ANSI codes
-$ ./colors.js --color=true > log.txt # output in file with ANSI codes
-```
-
-> **Warning**
->
-> The command line arguments have a higher priority than environment variable.
-
-## Info
-
-For situations where using `--color` is not possible, use the environment variable `FORCE_COLOR=1` (level 1), `FORCE_COLOR=2` (level 2), or `FORCE_COLOR=3` (level 3) to forcefully enable color, or `FORCE_COLOR=0` to forcefully disable. The use of `FORCE_COLOR` overrides all other color support checks.
-
-Explicit 256/Truecolor mode can be enabled using the `--color=256` and `--color=16m` flags, respectively.
 
 ## Related
 
