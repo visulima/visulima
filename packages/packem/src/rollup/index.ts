@@ -1,10 +1,10 @@
 import { cyan, gray } from "@visulima/colorize";
 import type { Pail } from "@visulima/pail";
 import { relative, resolve } from "pathe";
-import type { OutputChunk, OutputOptions, RollupWatcher, RollupWatcherEvent } from "rollup";
+import type { OutputAsset, OutputChunk, OutputOptions, RollupWatcher, RollupWatcherEvent } from "rollup";
 import { rollup, watch as rollupWatch } from "rollup";
 
-import type { BuildContext } from "../../types";
+import type { BuildContext, BuildContextBuildEntry } from "../types";
 import { getRollupDtsOptions, getRollupOptions } from "./get-rollup-options";
 import getChunkFilename from "./utils/get-chunk-filename";
 
@@ -104,6 +104,8 @@ export const build = async (context: BuildContext): Promise<void> => {
 
     const allOutputOptions = rollupOptions.output as OutputOptions[];
 
+    const assets = new Map<string, BuildContextBuildEntry>();
+
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const outputOptions of allOutputOptions) {
         // eslint-disable-next-line no-await-in-loop
@@ -133,8 +135,23 @@ export const build = async (context: BuildContext): Promise<void> => {
                         };
                     }),
                     path: entry.fileName,
+                    type: "entry",
                 });
             }
+        }
+
+        const outputAssets = output.filter((fOutput) => fOutput.type === "asset") as OutputAsset[];
+
+        for (const entry of outputAssets) {
+            if (assets.has(entry.fileName)) {
+                continue;
+            }
+
+            assets.set(entry.fileName, {
+                bytes: Buffer.byteLength(entry.source, "utf8"),
+                path: entry.fileName,
+                type: "asset",
+            });
         }
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -143,18 +160,18 @@ export const build = async (context: BuildContext): Promise<void> => {
         }
     }
 
+    context.buildEntries.push(...assets.values());
+
     // Types
     if (context.options.declaration) {
         const rollupTypeOptions = getRollupDtsOptions(context);
 
-        await context.hooks.callHook("rollup:options", context, rollupTypeOptions);
+        await context.hooks.callHook("rollup:dts:options", context, rollupTypeOptions);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (Object.keys(rollupTypeOptions.input as any).length === 0) {
             return;
         }
-
-        await context.hooks.callHook("rollup:dts:options", context, rollupTypeOptions);
 
         const typesBuild = await rollup(rollupTypeOptions);
 
@@ -191,5 +208,5 @@ export const build = async (context: BuildContext): Promise<void> => {
         }
     }
 
-    await context.hooks.callHook("rollup:done", context);
+    await context.hooks.callHook("rollup:dts:done", context);
 };

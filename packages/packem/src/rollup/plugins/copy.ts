@@ -112,8 +112,6 @@ export const copyPlugin = (options: CopyPluginOptions, logger: Pail<never, strin
                 prefix: "copy",
             });
 
-            let counter = 0;
-
             await Promise.all(
                 [...files].map(async ([fileName, fileDesc]) => {
                     let source: Buffer | undefined;
@@ -172,9 +170,6 @@ export const copyPlugin = (options: CopyPluginOptions, logger: Pail<never, strin
                                 prefix: "copy",
                             });
 
-                            // eslint-disable-next-line no-plusplus
-                            counter++;
-
                             fileDesc.copied.push(destination);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (error: any) {
@@ -187,8 +182,6 @@ export const copyPlugin = (options: CopyPluginOptions, logger: Pail<never, strin
                     }
                 }),
             );
-
-            logger.success(`Copied ${counter} files`);
         },
         name: "packem:copy",
     };

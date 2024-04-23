@@ -134,21 +134,27 @@ export interface BuildHooks {
 
     "rollup:build": (context: BuildContext, build: RollupBuild) => Promise<void> | void;
     "rollup:done": (context: BuildContext) => Promise<void> | void;
+
     "rollup:dts:build": (context: BuildContext, build: RollupBuild) => Promise<void> | void;
+    "rollup:dts:done": (context: BuildContext) => Promise<void> | void;
     "rollup:dts:options": (context: BuildContext, options: RollupOptions) => Promise<void> | void;
+
     "rollup:options": (context: BuildContext, options: RollupOptions) => Promise<void> | void;
     "rollup:watch": (context: BuildContext, watcher: RollupWatcher) => Promise<void> | void;
 }
 
+export type BuildContextBuildEntry = {
+    bytes?: number;
+    chunk?: boolean;
+    chunks?: string[];
+    exports?: string[];
+    modules?: { bytes: number; id: string }[];
+    path: string;
+    type?: "asset" | "chunk" | "entry";
+};
+
 export interface BuildContext {
-    buildEntries: {
-        bytes?: number;
-        chunk?: boolean;
-        chunks?: string[];
-        exports?: string[];
-        modules?: { bytes: number; id: string }[];
-        path: string;
-    }[];
+    buildEntries: BuildContextBuildEntry[];
     hooks: Hookable<BuildHooks>;
     logger: Pail<never, string>;
     mode: Mode;

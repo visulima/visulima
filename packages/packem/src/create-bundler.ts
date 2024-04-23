@@ -12,13 +12,13 @@ import { createPail } from "@visulima/pail";
 import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
 import { defu } from "defu";
 import { createHooks } from "hookable";
-import { isAbsolute, normalize, relative, resolve } from "pathe";
+import { isAbsolute, join, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
 import ts from "typescript";
 
 import createStub from "./jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./rollup";
-import type { BuildConfig, BuildContext, BuildOptions, Mode } from "./types";
+import type { BuildConfig, BuildContext, BuildContextBuildEntry, BuildOptions, Mode } from "./types";
 import arrayify from "./utils/arrayify";
 import dumpObject from "./utils/dump-object";
 import getPackageSideEffect from "./utils/get-package-side-effect";
@@ -448,13 +448,14 @@ const build = async (
     // Find all dist files and add missing entries as chunks
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for await (const file of walk(options.outDir)) {
-        let entry = context.buildEntries.find((bEntry) => bEntry.path === file.path);
+        let entry = context.buildEntries.find((bEntry) => join(context.options.outDir, bEntry.path) === file.path);
 
         if (!entry) {
             entry = {
                 chunk: true,
                 path: file.path,
             };
+
             context.buildEntries.push(entry);
         }
 
@@ -480,13 +481,13 @@ const build = async (
         }
 
         let line = `  ${bold(rPath(entry.path))} (${[
-            totalBytes && `total size: ${cyan(formatBytes(totalBytes))}`,
-            entry.bytes && `chunk size: ${cyan(formatBytes(entry.bytes))}`,
+            "total size: " + cyan(formatBytes(totalBytes)),
+            entry.type !== "asset" && entry.bytes && "chunk size: " + cyan(formatBytes(entry.bytes)),
         ]
             .filter(Boolean)
             .join(", ")})`;
 
-        line += entry.exports?.length ? `\n  exports: ${gray(entry.exports.join(", "))}` : "";
+        line += entry.exports?.length ? "\n  exports: " + gray(entry.exports.join(", ")) : "";
 
         if (entry.chunks?.length) {
             line += `\n${entry.chunks
@@ -495,7 +496,7 @@ const build = async (
                     const chunk = context.buildEntries.find((buildEntry) => buildEntry.path === p) ?? ({} as any);
 
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                    return gray(`  └─ ${rPath(p)}${bold(chunk.bytes ? ` (${formatBytes(chunk?.bytes)})` : "")}`);
+                    return gray("  └─ " + rPath(p) + bold(chunk.bytes ? " (" + formatBytes(chunk?.bytes) + ")" : ""));
                 })
                 .join("\n")}`;
         }
@@ -505,26 +506,45 @@ const build = async (
                 .filter((m) => m.id.includes("node_modules"))
                 .sort((a, b) => (b.bytes || 0) - (a.bytes || 0))
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                .map((m) => gray(`  📦 ${rPath(m.id)}${bold(m.bytes ? ` (${formatBytes(m.bytes)})` : "")}`))
+                .map((m) => gray("  📦 " + rPath(m.id) + bold(m.bytes ? " (" + formatBytes(m.bytes) + ")" : "")))
                 .join("\n");
 
-            line += moduleList.length > 0 ? `\n  inlined modules:\n${moduleList}` : "";
+            line += moduleList.length > 0 ? "\n  inlined modules:\n" + moduleList : "";
         }
 
         // find types for entry
-        if (context.options.declaration) {
-            let dtsPath = entry.path.replace(".js", ".d.ts");
+        if (context.options.declaration && entry.type === "entry") {
+            let dtsPath = entry.path.replace(/\.js$/, ".d.ts");
+            let type = "commonjs";
 
             if (entry.path.endsWith(".cjs")) {
-                dtsPath = dtsPath.replace(".cjs", ".d.cts");
+                dtsPath = entry.path.replace(/\.cjs$/, ".d.cts");
             } else if (entry.path.endsWith(".mjs")) {
-                dtsPath = dtsPath.replace(".mjs", ".d.mts");
+                type = "module";
+                dtsPath = entry.path.replace(/\.mjs$/, ".d.mts");
             }
 
             const foundDts = context.buildEntries.find((bEntry) => bEntry.path.endsWith(dtsPath));
 
             if (foundDts) {
-                line += `\n  types: ${bold(rPath(foundDts.path))} (${cyan(formatBytes(foundDts.bytes ?? 0))})`;
+                let foundCompatibleDts: BuildContextBuildEntry | undefined;
+
+                if ((context.options.declaration === true || context.options.declaration === "compatible") && !dtsPath.includes(".d.ts")) {
+                    dtsPath = (dtsPath as string).replace(type === "commonjs" ? ".d.c" : ".d.m", ".d.");
+
+                    foundCompatibleDts = context.buildEntries.find((bEntry) => bEntry.path.endsWith(dtsPath));
+                }
+
+                line +=
+                    foundCompatibleDts && type === package_.type
+                        ? "\n  types:\n" +
+                          [foundDts, foundCompatibleDts]
+                              .map(
+                                  (value: BuildContextBuildEntry) =>
+                                      gray("  └─ ") + bold(rPath(value.path)) + " (total size: " + cyan(formatBytes(value.bytes ?? 0)) + ")",
+                              )
+                              .join("\n")
+                        : "\n  types: " + bold(rPath(foundDts.path)) + " (total size: " + cyan(formatBytes(foundDts.bytes ?? 0)) + ")";
             }
         }
 
