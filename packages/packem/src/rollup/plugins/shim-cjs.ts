@@ -7,7 +7,6 @@ import { minVersion } from "semver";
 const CJSyntaxRe = /__filename|__dirname|require\(|require\.resolve\(/;
 
 const CJSShim = `
-
 // -- pack CommonJS Shims --
 import __cjs_url__ from "node:url";
 import __cjs_path__ from "node:path";
@@ -19,7 +18,6 @@ const require = __cjs_mod__.createRequire(import.meta.url);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CJSShimNode20_11 = `
-
 // -- pack CommonJS Shims Node 20.11 --
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;

@@ -54,7 +54,7 @@ interface RollupDynamicImportVariablesOptions {
 export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     alias: RollupAliasOptions | false;
-    cjsBridge?: boolean;
+    shim?: boolean;
     cjsInterop?: CJSInteropOptions;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;

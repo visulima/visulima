@@ -12,7 +12,7 @@ import { createPail } from "@visulima/pail";
 import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
 import { defu } from "defu";
 import { createHooks } from "hookable";
-import { isAbsolute, join, normalize, relative, resolve } from "pathe";
+import { basename, isAbsolute, join, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
 import ts from "typescript";
 
@@ -117,7 +117,6 @@ const build = async (
         replace: {},
         rollup: {
             alias: {},
-            cjsBridge: false,
             cjsInterop: { addDefaultProperty: false },
             commonjs: {
                 ignoreTryCatch: true,
@@ -148,6 +147,9 @@ const build = async (
                     declaration: true,
                     declarationMap: false,
                     emitDeclarationOnly: true,
+                    // error TS5074: Option '--incremental' can only be specified using tsconfig, emitting to single
+                    // file or when option '--tsBuildInfoFile' is specified.
+                    incremental: false,
                     // Skip ".js" generation
                     noEmit: false,
                     // Skip code generation when error occurs
@@ -248,6 +250,7 @@ const build = async (
                 // Following option must be *false* for polyfill to work
                 preferBuiltins: false,
             },
+            shim: true,
             treeshake: {
                 moduleSideEffects: getPackageSideEffect(rootDirectory, package_),
                 preset: "recommended",
@@ -347,6 +350,10 @@ const build = async (
 
     // Normalize entries
     options.entries = options.entries.map((entry) => (typeof entry === "string" ? { input: entry } : entry));
+
+    if (options.declaration && tsconfig === undefined) {
+        throw new Error("Cannot build declaration files without a tsconfig.json");
+    }
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const entry of options.entries) {
@@ -616,9 +623,9 @@ const createBundler = async (
         try {
             tsconfig = await findTSConfig(rootDirectory);
 
-            logger.debug("Using tsconfig.json found at", tsconfig.path);
+            logger.debug("Using " + basename(tsconfig.path) + " found at", tsconfig.path);
         } catch {
-            logger.info("No tsconfig.json found. Using default settings.");
+            logger.info("No tsconfig.json or jsconfig.json found.");
         }
     }
 
