@@ -11,13 +11,13 @@
     "dependencies": {
         "@visulima/pail": "workspace:*",
         "next": "14.0.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
         "@types/node": "^20",
-        "@types/react": "^18.2.79",
-        "@types/react-dom": "^18.2.25",
+        "@types/react": "^18.3.1",
+        "@types/react-dom": "^18.3.0",
         "eslint": "^8",
         "eslint-config-next": "14.0.1",
         "typescript": "^5.4.5"
