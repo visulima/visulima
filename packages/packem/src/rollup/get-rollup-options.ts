@@ -16,8 +16,10 @@ import type { BuildContext } from "../types";
 import arrayIncludes from "../utils/array-includes";
 import getPackageName from "../utils/get-package-name";
 import { cjsInterop as cjsInteropPlugin } from "./plugins/cjs-interop";
+import { copyPlugin } from "./plugins/copy";
 import esbuildPlugin from "./plugins/esbuild";
 import JSONPlugin from "./plugins/json";
+import { jsxRemoveAttributes } from "./plugins/jsx-remove-attributes";
 import { license as licensePlugin } from "./plugins/license";
 import metafilePlugin from "./plugins/metafile";
 import preserveDirectivesPlugin from "./plugins/preserve-directives";
@@ -29,11 +31,10 @@ import { patchTypescriptTypes as patchTypescriptTypesPlugin } from "./plugins/ty
 import { getConfigAlias, resolveTsconfigPaths as resolveTsconfigPathsPlugin } from "./plugins/typescript/resolve-tsconfig-paths";
 import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-tsconfig-root-dirs";
 import resolveTypescriptMjsCtsPlugin from "./plugins/typescript/resolve-typescript-mjs-cjs";
+import createSplitChunks from "./utils/chunks/create-split-chunks";
 import getChunkFilename from "./utils/get-chunk-filename";
 import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
-import { jsxRemoveAttributes } from "./plugins/jsx-remove-attributes";
-import { copyPlugin } from "./plugins/copy";
 // import nativeNodeModule from "./plugins/native-node-module";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
@@ -124,9 +125,7 @@ const baseRollupOptions = (context: BuildContext, resolvedAliases: Record<string
             return isExplicitExternal;
         },
 
-        input: Object.fromEntries(
-            context.options.entries.map((entry) => [entry.name, resolve(context.options.rootDir, entry.input)]),
-        ),
+        input: Object.fromEntries(context.options.entries.map((entry) => [entry.name, resolve(context.options.rootDir, entry.input)])),
 
         onwarn(warning: RollupLog, rollupWarn) {
             if (sharedOnWarn(warning, context)) {
@@ -164,10 +163,14 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     // will be added as empty imports to the entry chunks. Disable to avoid imports hoist outside of boundaries
                     hoistTransitiveImports: false,
                     interop: "compat",
-                    preserveModules: true,
-                    preserveModulesRoot: "src",
                     sourcemap: context.options.sourcemap,
                     ...context.options.rollup.output,
+                    ...(context.options.rollup.output?.preserveModules
+                        ? {
+                              preserveModules: true,
+                              preserveModulesRoot: context.options.rollup.output?.preserveModulesRoot || "src",
+                          }
+                        : { manualChunks: createSplitChunks(context.dependencyGraphMap, context.buildEntries), preserveModules: false }),
                 },
             context.options.rollup.emitESM &&
                 <OutputOptions>{
@@ -182,10 +185,14 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     // By default in rollup, when creating multiple chunks, transitive imports of entry chunks
                     // will be added as empty imports to the entry chunks. Disable to avoid imports hoist outside of boundaries
                     hoistTransitiveImports: false,
-                    preserveModules: true,
-                    preserveModulesRoot: "src",
                     sourcemap: context.options.sourcemap,
                     ...context.options.rollup.output,
+                    ...(context.options.rollup.output?.preserveModules
+                        ? {
+                              preserveModules: true,
+                              preserveModulesRoot: context.options.rollup.output?.preserveModulesRoot || "src",
+                          }
+                        : { manualChunks: createSplitChunks(context.dependencyGraphMap, context.buildEntries), preserveModules: false }),
                 },
         ].filter(Boolean),
 
@@ -280,10 +287,11 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
 
             context.options.rollup.raw && rawPlugin(context.options.rollup.raw),
 
-            context.options.rollup.jsxRemoveAttributes && jsxRemoveAttributes({
-                attributes: context.options.rollup.jsxRemoveAttributes.attributes,
-                logger: context.logger,
-            }),
+            context.options.rollup.jsxRemoveAttributes &&
+                jsxRemoveAttributes({
+                    attributes: context.options.rollup.jsxRemoveAttributes.attributes,
+                    logger: context.logger,
+                }),
 
             context.options.rollup.metafile &&
                 metafilePlugin({

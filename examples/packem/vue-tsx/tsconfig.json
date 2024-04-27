@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "include": ["src/**/*", "*.d.ts"],
+    "compilerOptions": {
+        "jsx": "preserve",
+        "jsxFactory": "Vue.h",
+        "jsxImportSource": "vue",
+        "module": "ESNext",
+        "moduleResolution": "Bundler"
+    }
+}

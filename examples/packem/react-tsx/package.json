@@ -1,0 +1,22 @@
+{
+    "name": "example_packem_react_tsx",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "packem"
+    },
+    "dependencies": {
+        "@visulima/packem": "workspace:*",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.79",
+        "@types/react-dom": "^18.2.25",
+        "typescript": "^4.9.5"
+    }
+}

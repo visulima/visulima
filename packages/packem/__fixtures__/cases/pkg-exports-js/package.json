@@ -1,8 +1,0 @@
-{
-  "name": "pkg-export-js",
-  "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.cjs",
-    "module": "./dist/index.esm.js"
-  }
-}

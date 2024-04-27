@@ -54,7 +54,6 @@ interface RollupDynamicImportVariablesOptions {
 export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     alias: RollupAliasOptions | false;
-    shim?: boolean;
     cjsInterop?: CJSInteropOptions;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     commonjs: RollupCommonJSOptions | false;
@@ -79,6 +78,7 @@ export interface RollupBuildOptions {
     replace: RollupReplaceOptions | false;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     resolve: RollupNodeResolveOptions | false;
+    shim?: boolean;
     treeshake?: RollupOptions["treeshake"];
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     visualizer?: PluginVisualizerOptions | false;
@@ -155,6 +155,7 @@ export type BuildContextBuildEntry = {
 
 export interface BuildContext {
     buildEntries: BuildContextBuildEntry[];
+    dependencyGraphMap: Map<string, Set<[string, string]>>;
     hooks: Hookable<BuildHooks>;
     logger: Pail<never, string>;
     mode: Mode;

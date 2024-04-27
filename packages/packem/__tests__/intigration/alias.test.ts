@@ -31,6 +31,7 @@ export default log();`,
             main: "./dist/index.cjs",
             type: "commonjs",
         });
+        writeJsonSync(`${distribution}/tsconfig.json`, { "compilerOptions": { "rootDir": "./src" } });
         writeFileSync(
             `${distribution}/packem.config.ts`,
             `import { resolve } from "path";
@@ -53,10 +54,10 @@ export default [{
 
         const mjsContent = readFileSync(`${distribution}/dist/importer.mjs`);
 
-        expect(mjsContent).toMatchSnapshot();
+        expect(mjsContent).toMatchSnapshot("mjs content");
 
         const cjsContent = readFileSync(`${distribution}/dist/importer.cjs`);
 
-        expect(cjsContent).toMatchSnapshot();
+        expect(cjsContent).toMatchSnapshot("cjs content");
     });
 });

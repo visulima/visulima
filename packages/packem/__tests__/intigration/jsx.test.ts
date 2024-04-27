@@ -148,8 +148,7 @@ export default Tr;`,
         });
 
         await expect(streamToString(binProcess.stderr)).resolves.toMatch(
-            esc(`Packem does not support 'preserve' jsx option. Please use 'transform' or
-'automatic' instead.`),
+            esc(`Packem does not support 'preserve' jsx option. Please use 'transform' or 'automatic' instead.`),
         );
         expect(binProcess.exitCode).toBe(1);
     });
@@ -194,8 +193,7 @@ export default Tr;`,
         });
 
         await expect(streamToString(binProcess.stderr)).resolves.toMatch(
-            esc(`Packem does not support 'preserve' jsx option. Please change it to 'react' or
-'react-jsx' or 'react-jsxdev' instead.`),
+            esc(`Packem does not support 'preserve' jsx option. Please change it to 'react' or 'react-jsx' or 'react-jsxdev' instead.`),
         );
         expect(binProcess.exitCode).toBe(1);
     });
@@ -312,11 +310,11 @@ export default Tr;`,
                 rollup: {
                     jsxRemoveAttributes: {
                         attributes: ["data-testid"],
-                    }
-                }
+                    },
+                },
             },
             type: "commonjs",
-            types: "./dist/index.d.ts"
+            types: "./dist/index.d.ts",
         });
         writeJsonSync(`${distribution}/tsconfig.json`, {
             compilerOptions: {
@@ -406,11 +404,11 @@ export default Tr;`,
                 rollup: {
                     jsxRemoveAttributes: {
                         attributes: ["data-testid", "data-test"],
-                    }
-                }
+                    },
+                },
             },
             type: "commonjs",
-            types: "./dist/index.d.ts"
+            types: "./dist/index.d.ts",
         });
         writeJsonSync(`${distribution}/tsconfig.json`, {
             compilerOptions: {
@@ -473,5 +471,69 @@ export { Tr as default };
 
 export { Tr as default };
 `);
+    });
+
+    it("should support custom jsx", async () => {
+        expect.assertions(7);
+
+        writeFileSync(
+            `${distribution}/src/index.tsx`,
+            `import * as Vue from 'vue'
+
+export const Spinner = Vue.defineComponent(() => () => {
+  return <div>loading</div>
+})`,
+        );
+        writeJsonSync(`${distribution}/package.json`, {
+            dependencies: {
+                vue: "^3.4.25",
+            },
+            devDependencies: {
+                typescript: "^5",
+            },
+            main: "./dist/index.cjs",
+            module: "./dist/index.mjs",
+            type: "commonjs",
+            types: "./dist/index.d.ts",
+        });
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                // Customized JSX for Vue
+                jsx: "preserve",
+                jsxFactory: "Vue.h",
+                jsxImportSource: "vue",
+                module: "ESNext",
+                moduleResolution: "Bundler",
+            },
+        });
+        await installPackage(distribution, "typescript");
+        await installPackage(distribution, "vue");
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const mjsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjsContent).toBe(``);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjsContent).toBe(``);
+        const dCtsContent = readFileSync(`${distribution}/dist/index.d.cts`);
+
+        expect(dCtsContent).toBe(``);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(``);
+
+        const dContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dContent).toBe(``);
     });
 });

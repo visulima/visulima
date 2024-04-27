@@ -235,6 +235,7 @@ const build = async (
             preserveDynamicImports: true,
             raw: {
                 exclude: /node_modules/,
+                include: ['**/*.data', '**/*.txt'],
             },
             replace: {
                 /**
@@ -330,6 +331,7 @@ const build = async (
         tsconfig,
         usedImports: new Set(),
         warnings: new Set(),
+        dependencyGraphMap: new Map(),
     };
 
     // Register hooks

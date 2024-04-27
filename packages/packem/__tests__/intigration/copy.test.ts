@@ -44,7 +44,9 @@ describe.each(await getNodePathList())("node %s - copy", (_, nodePath) => {
         await expect(streamToString(binProcess.stderr)).resolves.toBe("");
         expect(binProcess.exitCode).toBe(0);
 
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(`${distribution}/dist/style.css`)).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         expect(existsSync(`${distribution}/dist/data.csv`)).toBeTruthy();
     });
 });

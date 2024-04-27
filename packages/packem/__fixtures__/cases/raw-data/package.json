@@ -1,4 +1,0 @@
-{
-  "type": "module",
-  "exports": "./dist/index.js"
-}

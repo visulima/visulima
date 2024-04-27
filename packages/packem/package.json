@@ -111,6 +111,7 @@
         "esbuild": "^0.20.2",
         "fastest-levenshtein": "^1.0.16",
         "glob": "^10.3.12",
+        "vue": "^3.4.25",
         "glob-parent": "^6.0.2",
         "hookable": "^5.5.3",
         "magic-string": "^0.30.10",
@@ -184,7 +185,7 @@
         "postcss-modules-scope": "^3.0.0",
         "postcss-modules-values": "^4.0.0",
         "postcss-value-parser": "^4.2.0",
-        "typescript": "^5"
+        "typescript": "^4.5 || ^5.0"
     },
     "peerDependenciesMeta": {
         "cssnano": {
@@ -213,6 +214,9 @@
         },
         "postcss-value-parser": {
             "optional": true
+        },
+        "typescript": {
+            "optional": true
         }
     },
     "engines": {
@@ -225,7 +229,14 @@
     "anolilab": {
         "eslint-config": {
             "plugin": {
-                "tsdoc": false
+                "tsdoc": false,
+                "testing-library-react": false,
+                "react-usememo": false,
+                "react-hooks": false,
+                "jsx-a11y": false,
+                "react": false,
+                "validate-jsx-nesting": false,
+                "ssr-friendly": false
             },
             "warn_on_unsupported_typescript_version": false,
             "info_on_disabling_jsx_react_rule": false,
