@@ -81,8 +81,8 @@
         "@types/micromatch": "^4.0.7",
         "@types/node": "18.18.14",
         "@types/qs": "^6.9.15",
-        "@vitest/coverage-v8": "^1.5.0",
-        "@vitest/ui": "^1.5.0",
+        "@vitest/coverage-v8": "^1.5.2",
+        "@vitest/ui": "^1.5.2",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -98,7 +98,7 @@
         "sort-package-json": "^2.10.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "vitest": "^1.5.0"
+        "vitest": "^1.5.2"
     },
     "engines": {
         "node": ">=18.* <=21.*"
