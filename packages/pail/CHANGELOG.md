@@ -1,3 +1,10 @@
+## @visulima/pail [1.1.10](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.9...@visulima/pail@1.1.10) (2024-04-27)
+
+
+### Bug Fixes
+
+* **api-platform:** updated ts-japi dep ([4f4d29f](https://github.com/visulima/visulima/commit/4f4d29f5995c899926837edb1703f4ea262bba09))
+
 ## @visulima/pail [1.1.9](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.8...@visulima/pail@1.1.9) (2024-04-17)
 
 
