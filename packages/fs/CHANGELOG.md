@@ -1,3 +1,16 @@
+## @visulima/fs [2.0.8](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.7...@visulima/fs@2.0.8) (2024-04-27)
+
+
+### Bug Fixes
+
+* **deps:** updated type-fest dep ([93445aa](https://github.com/visulima/visulima/commit/93445aaa7c8a5431b3ecffe5bfb90a54f635d68d))
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.7
+
 ## @visulima/fs [2.0.7](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.6...@visulima/fs@2.0.7) (2024-04-17)
 
 
