@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [4.0.23](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.22...@visulima/nextra-theme-docs@4.0.23) (2024-04-27)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updated clsx dep and dev deps ([8f8504a](https://github.com/visulima/visulima/commit/8f8504a0f972394c0e72b3ebd578ceb2ba8ae74b))
+
 ## @visulima/nextra-theme-docs [4.0.22](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.21...@visulima/nextra-theme-docs@4.0.22) (2024-04-17)
 
 
