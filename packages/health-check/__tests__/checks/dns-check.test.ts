@@ -32,7 +32,7 @@ describe("dnsCheck", () => {
             displayName: "DNS check for example.com",
             health: {
                 healthy: false,
-                message: "DNS check for example.com returned address 93.184.216.34 instead of 93.122.1212.45.",
+                message: "DNS check for example.com returned address 93.184.215.14 instead of 93.122.1212.45.",
 
                 timestamp: expect.any(String),
             },
