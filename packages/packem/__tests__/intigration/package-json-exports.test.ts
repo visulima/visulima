@@ -314,4 +314,44 @@ export { IString };`,
 
         expect(content).toMatch("export const value = 'foo.bar';");
     });
+
+    it("should work with ESM package with CJS main field", async () => {
+        expect.assertions(4);
+
+        writeFileSync(`${distribution}/src/index.js`, `export const value = 'cjs';`);
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                ".": {
+                    import: "./dist/index.mjs",
+                    require: "./dist/index.cjs",
+                },
+            },
+            main: "./dist/index.cjs",
+            type: "module",
+        });
+
+        const binProcess = execPackemSync([], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const mjsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjsContent).toBe(`const value = "cjs";
+
+export { value };
+`);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjsContent).toBe(`'use strict';
+
+const value = "cjs";
+
+exports.value = value;
+`);
+    });
 });

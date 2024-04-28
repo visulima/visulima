@@ -420,4 +420,111 @@ export { test as default };
 export { test as default };
 `);
     });
+
+    it("should handle externals", async () => {
+        expect.assertions(7);
+
+        writeFileSync(
+            `${distribution}/src/index.ts`,
+            `import a from 'peer-dep'
+import b from 'peer-dep-meta'
+
+export default a + b
+`,
+        );
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.js",
+            peerDependencies: {
+                "peer-dep": "*",
+            },
+            peerDependenciesMeta: {
+                "peer-dep-meta": {
+                    optional: true,
+                },
+            },
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const mjsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjsContent).toBe(`const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjsContent).toBe(`'use strict';
+
+const test = "this should be in final bundle";
+
+module.exports = test;
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.d.cts`);
+
+        expect(dCtsContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+
+        const dContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dContent).toBe(`declare const test = "this should be in final bundle";
+
+export { test as default };
+`);
+    });
+
+    it("should split shared module into one chunk layer", async () => {
+        expect.assertions(3);
+
+        writeFileSync(
+            `${distribution}/src/index.js`,
+            `import { dep } from '#dep'
+
+export const value = dep
+`,
+        );
+        writeFileSync(`${distribution}/src/lib/polyfill.js`, `export const dep = 'polyfill-dep'`);
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.js",
+            imports: {
+                "#dep": "./src/lib/polyfill.js",
+            },
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.js`);
+
+        expect(cjsContent).toBe(`'use strict';
+
+const dep = "polyfill-dep";
+
+const value = dep;
+
+exports.value = value;
+`);
+    });
 });
