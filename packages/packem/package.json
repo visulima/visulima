@@ -111,7 +111,6 @@
         "esbuild": "^0.20.2",
         "fastest-levenshtein": "^1.0.16",
         "glob": "^10.3.12",
-        "vue": "^3.4.25",
         "glob-parent": "^6.0.2",
         "hookable": "^5.5.3",
         "magic-string": "^0.30.10",
@@ -123,7 +122,8 @@
         "rollup-plugin-polyfill-node": "^0.13.0",
         "rollup-plugin-postcss": "^4.0.2",
         "rollup-plugin-visualizer": "^5.12.0",
-        "semver": "^7.6.0"
+        "semver": "^7.6.0",
+        "vue": "^3.4.25"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -170,6 +170,7 @@
         "secretlint": "8.2.3",
         "semantic-release": "^23.0.8",
         "sort-package-json": "^2.10.0",
+        "sucrase": "^3.35.0",
         "tempy": "^3.1.0",
         "ts-essentials": "^9.4.2",
         "typescript": "^5.4.5",
@@ -185,6 +186,7 @@
         "postcss-modules-scope": "^3.0.0",
         "postcss-modules-values": "^4.0.0",
         "postcss-value-parser": "^4.2.0",
+        "sucrase": "^3.35.0",
         "typescript": "^4.5 || ^5.0"
     },
     "peerDependenciesMeta": {
@@ -213,6 +215,9 @@
             "optional": true
         },
         "postcss-value-parser": {
+            "optional": true
+        },
+        "sucrase": {
             "optional": true
         },
         "typescript": {

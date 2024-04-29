@@ -312,7 +312,12 @@ const build = async (
         }
     }
 
-    // validate
+    if (tsconfig?.config?.compilerOptions?.target === "es5" && options.rollup.esbuild) {
+        options.rollup.esbuild.keepNames = false;
+
+        logger.debug("Disabling keepNames because target is set to es5");
+    }
+
     if (options.rollup.resolve && options.rollup.resolve.preferBuiltins === true) {
         options.rollup.polyfillNode = false;
 

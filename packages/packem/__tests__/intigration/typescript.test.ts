@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 
 import { readFileSync, writeFileSync, writeJsonSync } from "@visulima/fs";
+import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -27,6 +29,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
                 main: "./dist/index.cjs",
                 type: "module",
             });
+            writeJsonSync(`${distribution}/tsconfig.json`, {});
 
             const binProcess = execPackemSync(["--env NODE_ENV=development"], {
                 cwd: distribution,
@@ -73,6 +76,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
                 main: "./dist/index.cjs",
                 type: "module",
             });
+            writeJsonSync(`${distribution}/tsconfig.json`, {});
 
             const binProcess = execPackemSync(["--env NODE_ENV=development"], {
                 cwd: distribution,
@@ -96,6 +100,7 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
                 main: "./dist/index.cjs",
                 type: "module",
             });
+            writeJsonSync(`${distribution}/tsconfig.json`, {});
 
             const binProcess = execPackemSync(["--env NODE_ENV=development"], {
                 cwd: distribution,
@@ -337,6 +342,261 @@ __decorateClass([
 ], ExampleClass.prototype, "value", 2);
 
 exports.ExampleClass = ExampleClass;
+`);
+    });
+
+    it('should allow support for "allowJs" and generate proper assets', async () => {
+        expect.assertions(4);
+
+        writeFileSync(`${distribution}/src/index.js`, `export default () => 'index';`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                allowJs: true,
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.js",
+            types: "./dist/index.d.ts",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const cjsContent = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjsContent).toBe(`'use strict';
+
+console.log(1);
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.d.cts`);
+
+        expect(dCtsContent).toBe(`declare function _default(): string;
+`);
+
+        const dTsContent = readFileSync(`${distribution}/dist/index.d.s`);
+
+        expect(dTsContent).toBe(`declare function _default(): string;
+`);
+    });
+
+    it("should output correct bundles and types import json with export condition", async () => {
+        expect.assertions(5);
+
+        writeFileSync(
+            `${distribution}/src/index.ts`,
+            `import pkgJson from '../package.json'
+
+export const version = pkgJson.version;
+`,
+        );
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                moduleResolution: "bundler",
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                ".": {
+                    default: "./dist/index.mjs",
+                    types: "./dist/index.d.mts",
+                },
+            },
+            type: "module",
+            version: "0.0.1",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const version: string;
+
+export { version };
+`);
+
+        const dTsContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dTsContent).toBe(`declare const version: string;
+
+export { version };
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(dCtsContent).toBe(`const exports = {
+	".": {
+		"default": "./dist/index.mjs",
+		types: "./dist/index.d.mts"
+	}
+};
+const type = "module";
+const version$1 = "0.0.1";
+const pkgJson = {
+	exports: exports,
+	type: type,
+	version: version$1
+};
+
+const version = pkgJson.version;
+
+export { version };
+`);
+    });
+
+    it("should work with tsconfig 'incremental' option", async () => {
+        expect.assertions(6);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export default () => 'index'`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                incremental: true,
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.cjs",
+            types: "./dist/index.d.ts",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dTsContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dTsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(dCtsContent).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+export { index as default };
+`);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(join(distribution, ".tsbuildinfo"))).toBeFalsy();
+    });
+
+    it("should work with tsconfig 'incremental' and 'tsBuildInfoFile' option", async () => {
+        expect.assertions(6);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export default () => 'index'`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                incremental: true,
+                tsBuildInfoFile: ".tsbuildinfo",
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.cjs",
+            types: "./dist/index.d.ts",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dTsContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dTsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(dCtsContent).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+export { index as default };
+`);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(join(distribution, ".tsbuildinfo"))).toBeFalsy();
+    });
+
+    it("should work with tsconfig 'noEmit' option", async () => {
+        expect.assertions(5);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export default () => 'index'`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                noEmit: true,
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: "./dist/index.cjs",
+            types: "./dist/index.d.ts",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
+
+        expect(dMtsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dTsContent = readFileSync(`${distribution}/dist/index.d.ts`);
+
+        expect(dTsContent).toBe(`declare const _default: () => string;
+
+export { _default as default };
+`);
+
+        const dCtsContent = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(dCtsContent).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+export { index as default };
 `);
     });
 });

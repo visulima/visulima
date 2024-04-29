@@ -1,5 +1,0 @@
-{
-  "name": "ts-incremental",
-  "types": "./dist/index.d.ts",
-  "exports": "./dist/index.js"
-}

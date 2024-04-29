@@ -1,5 +1,6 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { join } from "node:path";
 
 import { readFileSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { temporaryDirectory } from "tempy";
@@ -115,6 +116,7 @@ exports.method = method;
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const file of ["index.cjs", "index.esm.js", "index.mjs"]) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             expect(existsSync(`${distribution}/dist/${file}`)).toBeTruthy();
         }
     });
@@ -352,6 +354,166 @@ export { value };
 const value = "cjs";
 
 exports.value = value;
+`);
+    });
+
+    it("should deduplicate entries", async () => {
+        expect.assertions(3);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export const value = 'cjs';`);
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                import: {
+                    default: "./dist/index.mjs",
+                    types: "./dist/index.d.mts",
+                },
+                require: {
+                    default: "./dist/index.cjs",
+                    types: "./dist/index.d.cts",
+                },
+            },
+            main: "./dist/index.cjs",
+            module: "./dist/index.mjs",
+            types: "./dist/index.d.ts",
+        });
+        writeJsonSync(`${distribution}/tsconfig.json`, {});
+
+        const binProcess = execPackemSync([], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const files = readdirSync(join(distribution, "dist"));
+
+        expect(files).toHaveLength(5);
+    });
+
+    it("should work with index file inside index directory", async () => {
+        expect.assertions(3);
+
+        writeFileSync(`${distribution}/src/index/index.js`, `export const index = 'index';`);
+        writeFileSync(`${distribution}/src/index/index.react-server.js`, `export const index = 'react-server';`);
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                default: "./dist/index.js",
+                "react-server": "./dist/react-server.js",
+            },
+        });
+
+        const binProcess = execPackemSync([], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const [file, regex] of [
+            ["index.js", /'index'/],
+            ["react-server.js", /'react-server'/],
+        ]) {
+            const content = readFileSync(`${distribution}/dist/${file}`);
+
+            expect(content).toMatch(regex as RegExp);
+        }
+    });
+
+    it("should export dual package for type module", async () => {
+        expect.assertions(4);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export default () => 'index';`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                allowJs: true,
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                import: "./dist/index.mjs",
+                require: "./dist/index.cjs",
+            },
+            main: "./dist/index.mjs",
+            type: "module",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const cjs = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjs).toBe(`'use strict';
+
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+module.exports = index;
+`);
+
+        const mjs = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjs).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+export { index as default };
+`);
+    });
+
+    it("should export dual package for type commonjs", async () => {
+        expect.assertions(4);
+
+        writeFileSync(`${distribution}/src/index.ts`, `export default () => 'index';`);
+        writeJsonSync(`${distribution}/tsconfig.json`, {
+            compilerOptions: {
+                allowJs: true,
+            },
+        });
+        writeJsonSync(`${distribution}/package.json`, {
+            exports: {
+                import: "./dist/index.mjs",
+                require: "./dist/index.cjs",
+            },
+            main: "./dist/index.cjs",
+            type: "commonjs",
+        });
+
+        const binProcess = execPackemSync(["--env NODE_ENV=development"], {
+            cwd: distribution,
+            nodePath,
+        });
+
+        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
+        expect(binProcess.exitCode).toBe(0);
+
+        const cjs = readFileSync(`${distribution}/dist/index.cjs`);
+
+        expect(cjs).toBe(`'use strict';
+
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+module.exports = index;
+`);
+
+        const mjs = readFileSync(`${distribution}/dist/index.mjs`);
+
+        expect(mjs).toBe(`var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+const index = /* @__PURE__ */ __name(() => "index", "default");
+
+export { index as default };
 `);
     });
 });
