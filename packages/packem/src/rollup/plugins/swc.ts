@@ -2,21 +2,22 @@ import { existsSync, statSync } from "node:fs";
 
 import type { FilterPattern } from "@rollup/pluginutils";
 import { createFilter } from "@rollup/pluginutils";
+import type { Options } from "@swc/core";
+import { transform as swcTransform } from "@swc/core";
 import { dirname, resolve } from "pathe";
 import type { Plugin } from "rollup";
-import type { Options } from "sucrase";
-import { transform as sucraseTransform } from "sucrase";
 
 import { DEFAULT_EXTENSIONS, EXCLUDE_REGEXP } from "../../constants";
 import resolveFile from "../utils/resolve-file";
 
-export interface SucrasePluginConfig extends Options {
+// eslint-disable-next-line no-secrets/no-secrets
+export interface SwcPluginConfig extends Exclude<Options, "filename|exclude|configFile|swcrc|sourceMaps"> {
     exclude?: FilterPattern;
     extensions?: string[];
     include?: FilterPattern;
-};
+}
 
-export const sucrasePlugin = ({ exclude, extensions = DEFAULT_EXTENSIONS, include, ...transformOptions }: SucrasePluginConfig): Plugin => {
+export const swcPlugin = ({ exclude, extensions = DEFAULT_EXTENSIONS, include, ...transformOptions }: SwcPluginConfig): Plugin => {
     const filter = createFilter(include, exclude || EXCLUDE_REGEXP);
 
     // Initialize own resolution cache.
@@ -70,15 +71,17 @@ export const sucrasePlugin = ({ exclude, extensions = DEFAULT_EXTENSIONS, includ
                 return null;
             }
 
-            const { code, sourceMap: map } = sucraseTransform(sourcecode, {
+            const { code, map } = await swcTransform(sourcecode, {
                 ...transformOptions,
-                filePath: id,
-                sourceMapOptions: {
-                    compiledFilename: id,
-                },
+                configFile: false,
+                filename: id,
+                swcrc: false,
             });
 
-            return { code, map };
+            return {
+                code,
+                map
+            };
         },
     };
 };

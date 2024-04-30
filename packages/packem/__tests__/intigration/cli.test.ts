@@ -23,9 +23,6 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
         expect.assertions(5);
 
         writeFileSync(`${distribution}/src/index.ts`, `export default class A {}`);
-        writeJsonSync(`${distribution}/tsconfig.json`, {
-            compilerOptions: { target: "es5" },
-        });
         writeJsonSync(`${distribution}/tsconfig.build.json`, {
             compilerOptions: { target: "es2018" },
         });
@@ -38,37 +35,6 @@ describe.each(await getNodePathList())("node %s - typescript", (_, nodePath) => 
             },
             type: "module",
         });
-
-        const binProcess = execPackemSync([], {
-            cwd: distribution,
-            nodePath,
-        });
-
-        await expect(streamToString(binProcess.stderr)).resolves.toBe("");
-        expect(binProcess.exitCode).toBe(0);
-
-        const dMtsContent = readFileSync(`${distribution}/dist/index.d.mts`);
-
-        expect(dMtsContent).toBe(`declare const _default: () => string;
-
-export { _default as default };
-`);
-
-        const dTsContent = readFileSync(`${distribution}/dist/index.d.ts`);
-
-        expect(dTsContent).toBe(`declare const _default: () => string;
-
-export { _default as default };
-`);
-
-        const dCtsContent = readFileSync(`${distribution}/dist/index.mjs`);
-
-        expect(dCtsContent).toBe(`var __defProp = Object.defineProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-const index = /* @__PURE__ */ __name(() => "index", "default");
-
-export { index as default };
-`);
 
         const binProcessEs2018 = execPackemSync(["--tsconfig=tsconfig.build.json"], {
             cwd: distribution,

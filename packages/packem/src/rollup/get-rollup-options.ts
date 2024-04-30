@@ -1,3 +1,5 @@
+import { env } from "node:process";
+
 import aliasPlugin from "@rollup/plugin-alias";
 import commonjsPlugin from "@rollup/plugin-commonjs";
 import dynamicImportVarsPlugin from "@rollup/plugin-dynamic-import-vars";
@@ -27,6 +29,8 @@ import { rawPlugin } from "./plugins/raw";
 import resolveFileUrlPlugin from "./plugins/resolve-file-url";
 import { removeShebangPlugin, shebangPlugin } from "./plugins/shebang";
 import shimCjsPlugin from "./plugins/shim-cjs";
+import { sucrasePlugin } from "./plugins/sucrase";
+import { swcPlugin } from "./plugins/swc";
 import { patchTypescriptTypes as patchTypescriptTypesPlugin } from "./plugins/typescript/patch-typescript-types";
 import { getConfigAlias, resolveTsconfigPaths as resolveTsconfigPathsPlugin } from "./plugins/typescript/resolve-tsconfig-paths";
 import resolveTsconfigRootDirectoriesPlugin from "./plugins/typescript/resolve-tsconfig-root-dirs";
@@ -35,7 +39,6 @@ import createSplitChunks from "./utils/chunks/create-split-chunks";
 import getChunkFilename from "./utils/get-chunk-filename";
 import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
-import { sucrasePlugin } from "./plugins/sucrase";
 // import nativeNodeModule from "./plugins/native-node-module";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
@@ -59,12 +62,7 @@ const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
         return true;
     }
 
-    // eslint-disable-next-line sonarjs/prefer-single-boolean-return
-    if (warning.code === "MIXED_EXPORTS" && context.options.cjsInterop) {
-        return true;
-    }
-
-    return false;
+    return warning.code === "MIXED_EXPORTS" && context.options.cjsInterop === true;
 };
 
 const calledImplicitExternals = new Map<string, boolean>();
@@ -255,13 +253,39 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
             context.options.rollup.wsam && wasmPlugin(context.options.rollup.wsam),
 
             context.options.rollup.esbuild &&
+                context.options.transformer === "esbuild" &&
                 esbuildPlugin({
                     sourceMap: context.options.sourcemap,
                     ...context.options.rollup.esbuild,
                     logger: context.logger,
                 }),
 
-            context.options.rollup.sucrase && sucrasePlugin(context.options.rollup.sucrase),
+            context.options.rollup.sucrase && context.options.transformer === "sucrase" && sucrasePlugin(context.options.rollup.sucrase),
+            context.options.rollup.swc &&
+                context.options.transformer === "swc" &&
+                swcPlugin({
+                    ...context.options.rollup.swc,
+                    jsc: {
+                        ...(env.NODE_ENV === "production"
+                            ? {
+                                  minify: {
+                                      compress: {
+                                          directives: false,
+                                      },
+                                      format: {
+                                          comments: "some",
+                                      },
+                                      mangle: {
+                                          toplevel: true,
+                                      },
+                                      sourceMap: context.options.sourcemap,
+                                  },
+                              }
+                            : {}),
+                        ...context.options.rollup.swc.jsc,
+                    },
+                    sourceMaps: context.options.sourcemap,
+                }),
 
             context.options.cjsInterop &&
                 context.options.rollup.emitCJS &&

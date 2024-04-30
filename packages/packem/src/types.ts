@@ -21,6 +21,7 @@ import type { JSXRemoveAttributesPlugin } from "./rollup/plugins/jsx-remove-attr
 import type { LicenseOptions } from "./rollup/plugins/license";
 import type { RawLoaderOptions } from "./rollup/plugins/raw";
 import type { SucrasePluginConfig } from "./rollup/plugins/sucrase";
+import type { SwcPluginConfig } from "./rollup/plugins/swc";
 import type { PatchTypesOptions } from "./rollup/plugins/typescript/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -81,6 +82,7 @@ export interface RollupBuildOptions {
     resolve: RollupNodeResolveOptions | false;
     shim?: boolean;
     sucrase?: SucrasePluginConfig | false;
+    swc?: SwcPluginConfig | false;
     treeshake?: RollupOptions["treeshake"];
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     visualizer?: PluginVisualizerOptions | false;
@@ -127,6 +129,7 @@ export interface BuildOptions {
     stub: boolean;
     stubOptions: { jiti: Omit<JITIOptions, "onError" | "transform"> };
     target: string;
+    transformer: "esbuild" | "sucrase" | "swc";
 }
 
 export interface BuildHooks {

@@ -16,6 +16,7 @@ import { basename, isAbsolute, join, normalize, relative, resolve } from "pathe"
 import { minVersion } from "semver";
 import ts from "typescript";
 
+import { EXCLUDE_REGEXP } from "./constants";
 import createStub from "./jit/create-stub";
 import { build as rollupBuild, watch as rollupWatch } from "./rollup";
 import type { BuildConfig, BuildContext, BuildContextBuildEntry, BuildOptions, Mode } from "./types";
@@ -47,7 +48,7 @@ const logErrors = (context: BuildContext, hasOtherLogs: boolean): void => {
     }
 };
 
-const resolveTsconfigJsxToEsbuildJsx = (jsx?: TsConfigJson.CompilerOptions.JSX): "automatic" | "preserve" | "transform" | undefined => {
+const resolveTsconfigJsxToJsxRuntime = (jsx?: TsConfigJson.CompilerOptions.JSX): "automatic" | "preserve" | "transform" | undefined => {
     switch (jsx) {
         case "preserve":
         case "react-native": {
@@ -89,17 +90,7 @@ const build = async (
         }
     }
 
-    if (tsconfig?.config?.compilerOptions?.target?.toLowerCase() === "es3") {
-        logger.warn(
-            [
-                "ES3 target is not supported by esbuild, so ES5 will be used instead..",
-                "Please set 'target' option in tsconfig to at least ES5 to disable this error",
-            ].join(" "),
-        );
-
-        // eslint-disable-next-line no-param-reassign
-        tsconfig.config.compilerOptions.target = "es5";
-    }
+    const jsxRuntime = resolveTsconfigJsxToJsxRuntime(tsconfig?.config?.compilerOptions?.jsx);
 
     const options = defu(buildConfig, package_?.packem, inputConfig, preset, <BuildOptions>{
         alias: {},
@@ -175,8 +166,7 @@ const build = async (
             esbuild: {
                 charset: "utf8",
                 include: /\.[jt]sx?$/,
-
-                jsx: resolveTsconfigJsxToEsbuildJsx(tsconfig?.config?.compilerOptions?.jsx),
+                jsx: jsxRuntime,
                 jsxDev: tsconfig?.config?.compilerOptions?.jsx === "react-jsxdev",
                 jsxFactory: tsconfig?.config?.compilerOptions?.jsxFactory,
                 jsxFragment: tsconfig?.config?.compilerOptions?.jsxFragmentFactory,
@@ -234,8 +224,8 @@ const build = async (
             polyfillNode: {},
             preserveDynamicImports: true,
             raw: {
-                exclude: /node_modules/,
-                include: ['**/*.data', '**/*.txt'],
+                exclude: EXCLUDE_REGEXP,
+                include: ["**/*.data", "**/*.txt"],
             },
             replace: {
                 /**
@@ -252,13 +242,74 @@ const build = async (
                 preferBuiltins: false,
             },
             shim: true,
+            sucrase: {
+                disableESTransforms: true,
+                enableLegacyBabel5ModuleInterop: false,
+                enableLegacyTypeScriptModuleInterop: tsconfig?.config?.compilerOptions?.esModuleInterop === false,
+                include: /\.[jt]sx?$/,
+                injectCreateRequireForImportRequire: false,
+                preserveDynamicImport: true,
+                production: env.NODE_ENV === "production",
+                ...(tsconfig?.config?.compilerOptions?.jsx && ["react", "react-jsx", "react-jsxdev"].includes(tsconfig?.config?.compilerOptions?.jsx)
+                    ? {
+                          jsxFragmentPragma: tsconfig?.config?.compilerOptions?.jsxFragmentFactory,
+                          jsxImportSource: tsconfig?.config?.compilerOptions?.jsxImportSource,
+                          jsxPragma: tsconfig?.config?.compilerOptions?.jsxFactory,
+                          jsxRuntime,
+                          transforms: ["typescript", "jsx", ...(tsconfig?.config?.compilerOptions?.esModuleInterop ? ["imports"] : [])],
+                      }
+                    : {
+                          transforms: ["typescript", ...(tsconfig?.config?.compilerOptions?.esModuleInterop ? ["imports"] : [])],
+                      }),
+            },
+            swc: {
+                include: /\.[jt]sx?$/,
+                inlineSourcesContent: false,
+                inputSourceMap: false,
+                isModule: true,
+                jsc: {
+                    experimental: {
+                        keepImportAttributes: true,
+                    },
+                    externalHelpers: false,
+                    keepClassNames: true,
+                    loose: true, // Use loose mode
+                    parser: {
+                        decorators: tsconfig?.config?.compilerOptions?.experimentalDecorators,
+                        dynamicImport: true,
+                        syntax: tsconfig ? "typescript" : "ecmascript",
+                        [tsconfig ? "tsx" : "jsx"]: true,
+                    },
+                    target: tsconfig?.config?.compilerOptions?.target?.toLowerCase(),
+                    transform: {
+                        decoratorMetadata: tsconfig?.config?.compilerOptions?.emitDecoratorMetadata,
+                        legacyDecorator: true,
+                        react: {
+                            development: env.NODE_ENV !== "production",
+                            pragma: tsconfig?.config?.compilerOptions?.jsxFactory,
+                            pragmaFrag: tsconfig?.config?.compilerOptions?.jsxFragmentFactory,
+                            runtime: jsxRuntime,
+                            throwIfNamespace: true,
+                            useBuiltins: true,
+                        },
+                    },
+                },
+                module: {
+                    ignoreDynamic: true,
+                    importInterop: "none",
+                    preserveImportMeta: true,
+                    strict: false, // no __esModule
+                    strictMode: false, // no 'use strict';
+                    type: "es6",
+                },
+            },
             treeshake: {
                 moduleSideEffects: getPackageSideEffect(rootDirectory, package_),
                 preset: "recommended",
             },
             watch: {
                 clearScreen: true,
-                exclude: ["node_modules/**"],
+                exclude: EXCLUDE_REGEXP,
             },
         },
         rootDir: rootDirectory,
@@ -275,7 +326,14 @@ const build = async (
             },
         },
         target: nodeTarget,
+        transformer: "esbuild",
     }) as BuildOptions;
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (options.transformer !== "esbuild" && options.transformer !== "swc" && options.transformer !== "sucrase") {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        throw new Error(options.transformer ? `Unknown transformer ${JSON.stringify(options.transformer)}` : "Missing transformer name in options.");
+    }
 
     if (options.rollup.emitESM === false && options.rollup.emitCJS === false) {
         throw new Error("Both emitESM and emitCJS are disabled. At least one of them must be enabled.");
@@ -286,7 +344,20 @@ const build = async (
 
     ensureDirSync(options.outDir);
 
-    if (options.rollup.esbuild) {
+    if (options.transformer === "esbuild" && options.rollup.esbuild) {
+        if (tsconfig?.config?.compilerOptions?.target?.toLowerCase() === "es3") {
+            logger.warn(
+                [
+                    "ES3 target is not supported by esbuild, so ES5 will be used instead..",
+                    "Please set 'target' option in tsconfig to at least ES5 to disable this error",
+                ].join(" "),
+            );
+
+            // eslint-disable-next-line no-param-reassign
+            tsconfig.config.compilerOptions.target = "es5";
+            options.rollup.esbuild.target = "es5";
+        }
+
         if (options.rollup.esbuild.jsx === "preserve") {
             let message = "Packem does not support 'preserve' jsx option. Please use 'transform' or 'automatic' instead.";
 
@@ -310,13 +381,15 @@ const build = async (
         } else {
             options.rollup.esbuild.target = [options.target];
         }
+
+        if (tsconfig?.config?.compilerOptions?.target === "es5") {
+            options.rollup.esbuild.keepNames = false;
+
+            logger.debug("Disabling keepNames because target is set to es5");
+        }
     }
 
-    if (tsconfig?.config?.compilerOptions?.target === "es5" && options.rollup.esbuild) {
-        options.rollup.esbuild.keepNames = false;
-
-        logger.debug("Disabling keepNames because target is set to es5");
-    }
+    logger.info('Using "' + cyan(options.transformer) + '" as transformer.');
 
     if (options.rollup.resolve && options.rollup.resolve.preferBuiltins === true) {
         options.rollup.polyfillNode = false;
@@ -324,9 +397,16 @@ const build = async (
         logger.debug("Disabling polyfillNode because preferBuiltins is set to true");
     }
 
+    if (!tsconfig?.config?.compilerOptions?.isolatedModules) {
+        logger.warn(
+            `'compilerOptions.isolatedModules' is not enabled in tsconfig.\nBecause none of the third-party transpilers, packem uses under the hood is type-aware, some techniques or features often used in TypeScript are not properly checked and can cause mis-compilation or even runtime errors.\nTo mitigate this, you should set the isolatedModules option to true in tsconfig and let your IDE warn you when such incompatible constructs are used.`,
+        );
+    }
+
     // Build context
     const context: BuildContext = {
         buildEntries: [],
+        dependencyGraphMap: new Map(),
         hooks: createHooks(),
         logger,
         mode,
@@ -336,7 +416,6 @@ const build = async (
         tsconfig,
         usedImports: new Set(),
         warnings: new Set(),
-        dependencyGraphMap: new Map(),
     };
 
     // Register hooks
