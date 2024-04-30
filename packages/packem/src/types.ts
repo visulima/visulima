@@ -20,6 +20,7 @@ import type { Options as EsbuildOptions } from "./rollup/plugins/esbuild/types";
 import type { JSXRemoveAttributesPlugin } from "./rollup/plugins/jsx-remove-attributes";
 import type { LicenseOptions } from "./rollup/plugins/license";
 import type { RawLoaderOptions } from "./rollup/plugins/raw";
+import type { SucrasePluginConfig } from "./rollup/plugins/sucrase";
 import type { PatchTypesOptions } from "./rollup/plugins/typescript/patch-typescript-types";
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
@@ -79,6 +80,7 @@ export interface RollupBuildOptions {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     resolve: RollupNodeResolveOptions | false;
     shim?: boolean;
+    sucrase?: SucrasePluginConfig | false;
     treeshake?: RollupOptions["treeshake"];
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     visualizer?: PluginVisualizerOptions | false;

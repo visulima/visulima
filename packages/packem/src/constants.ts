@@ -41,3 +41,5 @@ export const RUNTIME_EXPORT_CONVENTIONS = [
   'react-native',
   'edge-light',
 ];
+
+export const EXCLUDE_REGEXP = /node_modules/;

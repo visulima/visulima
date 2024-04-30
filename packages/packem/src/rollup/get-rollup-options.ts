@@ -35,6 +35,7 @@ import createSplitChunks from "./utils/chunks/create-split-chunks";
 import getChunkFilename from "./utils/get-chunk-filename";
 import getEntryFileNames from "./utils/get-entry-file-names";
 import resolveAliases from "./utils/resolve-aliases";
+import { sucrasePlugin } from "./plugins/sucrase";
 // import nativeNodeModule from "./plugins/native-node-module";
 
 const sharedOnWarn = (warning: RollupLog, context: BuildContext): boolean => {
@@ -259,6 +260,8 @@ export const getRollupOptions = (context: BuildContext): RollupOptions => {
                     ...context.options.rollup.esbuild,
                     logger: context.logger,
                 }),
+
+            context.options.rollup.sucrase && sucrasePlugin(context.options.rollup.sucrase),
 
             context.options.cjsInterop &&
                 context.options.rollup.emitCJS &&

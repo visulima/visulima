@@ -108,7 +108,6 @@
         "@visulima/pail": "workspace:*",
         "defu": "6.1.4",
         "es-module-lexer": "^1.5.0",
-        "esbuild": "^0.20.2",
         "fastest-levenshtein": "^1.0.16",
         "glob": "^10.3.12",
         "glob-parent": "^6.0.2",
@@ -144,6 +143,7 @@
         "@vitest/ui": "^1.5.0",
         "cross-env": "^7.0.3",
         "cssnano": "^6.1.2",
+        "esbuild": "^0.20.2",
         "eslint": "^8.56.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -178,6 +178,7 @@
     },
     "peerDependencies": {
         "cssnano": "^6.0.1",
+        "esbuild": "^0.20.2",
         "icss-utils": "^5.1.0",
         "jiti": "^1.21.0",
         "postcss": "^8.4.12",
@@ -191,6 +192,9 @@
     },
     "peerDependenciesMeta": {
         "cssnano": {
+            "optional": true
+        },
+        "esbuild": {
             "optional": true
         },
         "icss-utils": {
