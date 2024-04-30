@@ -24,15 +24,24 @@ export default function (css, options) {
 
     function createStyleTag() {
         const styleTag = document.createElement("style");
+
         styleTag.setAttribute("type", "text/css");
+
         if (options.attributes) {
             const k = Object.keys(options.attributes);
             for (const element of k) {
                 styleTag.setAttribute(element, options.attributes[element]);
             }
         }
+
+        if (typeof __webpack_nonce__ !== "undefined") {
+            styleTag.setAttribute("nonce", __webpack_nonce__);
+        }
+
         const pos = position === "prepend" ? "afterbegin" : "beforeend";
+
         container.insertAdjacentElement(pos, styleTag);
+
         return styleTag;
     }
 
@@ -53,8 +62,9 @@ export default function (css, options) {
     }
 
     // strip potential UTF-8 BOM if css was read from a file
-    if (css.charCodeAt(0) === 0xfe_ff)
-css = css.slice(1);
+    if (css.charCodeAt(0) === 0xfe_ff) {
+        css = css.slice(1);
+    }
 
     if (styleTag.styleSheet) {
         styleTag.styleSheet.cssText += css;

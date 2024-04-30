@@ -114,7 +114,7 @@ export default (options: Options = {}): Plugin => {
         },
 
         async generateBundle(options_, bundle) {
-             
+
             if (extracted.length === 0 || !(options_.dir || options_.file)) {
                 return;
             }
@@ -280,7 +280,7 @@ export default (options: Options = {}): Plugin => {
                     res.map = resMin.map?.toString();
                 }
 
-                const cssFile = { name: res.name, source: res.css, type: "asset" as const };
+                const cssFile = { name: res.name, source: res.css, type: "asset" as const, fileName: res.name };
                 const cssFileId = this.emitFile(cssFile);
 
                 if (res.map && sourceMap) {
