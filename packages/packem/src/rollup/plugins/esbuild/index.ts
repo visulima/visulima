@@ -15,11 +15,11 @@ import { dirname, extname, resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
 import { DEFAULT_LOADERS, EXCLUDE_REGEXP } from "../../../constants";
+import resolveFile from "../../utils/resolve-file";
 import getRenderChunk from "./get-render-chunk";
 import doOptimizeDeps from "./optmize-deps";
 import type { OptimizeDepsResult, Options } from "./types";
 import warn from "./warn";
-import resolveFile from "../../utils/resolve-file";
 
 type PluginConfig = Options & {
     logger: Pail<never, string>;

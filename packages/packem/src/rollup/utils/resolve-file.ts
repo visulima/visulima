@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+
 import { join } from "pathe";
 
 const resolveFile = (extensions: string[], resolved: string, index = false) => {
