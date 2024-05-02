@@ -48,6 +48,6 @@ describe("resolveSymlinkTarget", () => {
         const result = resolveSymlinkTarget(target, linkName);
 
         // eslint-disable-next-line compat/compat
-        expect(result).toEqual(new URL(target, linkName));
+        expect(result).toStrictEqual(new URL(target, linkName));
     });
 });

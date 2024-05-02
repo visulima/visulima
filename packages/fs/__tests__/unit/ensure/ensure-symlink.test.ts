@@ -2,9 +2,11 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSyn
 import { rm } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 
+import { relative } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import ensureFile from "../../../src/ensure/ensure-file";
 import ensureSymlink from "../../../src/ensure/ensure-symlink";
 import ensureSymlinkSync from "../../../src/ensure/ensure-symlink-sync";
 
@@ -117,7 +119,7 @@ describe.each([
         ["../dir-foo/foo.txt", "./sym-symlink.txt"],
         ["./sym-missing.txt", "./sym-symlink.txt"],
         ["./sym-missing.txt", "./sym-missing-dir/symlink.txt"],
-        ['./sym-dir-foo/foo.txt', './sym-real-symlink.txt'],
+        ["./sym-dir-foo/foo.txt", "./sym-real-symlink.txt"],
         // error is thrown if destination path exists
         ["./sym-foo.txt", "./sym-dir-foo/foo.txt"],
         [resolve(join(distribution, "./sym-missing.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
@@ -222,5 +224,93 @@ describe.each([
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
 
         expect(destinationDirectoryExistsBefore).toStrictEqual(destinationDirectoryExistsAfter);
+    });
+
+    it("can create a symbolic link twice when the target exists", async () => {
+        expect.assertions(5);
+
+        // a directory with a file, as `destination` or `target`
+        const targetDirectory = join(distribution, "target-directory");
+        const targetFileName = "target-file";
+        const targetDirectoryFile = join(targetDirectory, targetFileName);
+        await ensureFile(targetDirectoryFile);
+        // a directory to put the symbolic link in (the `source`)
+        const linkDirectory = join(distribution, "link-directory");
+        const symbolicLinkPath = join(linkDirectory, "link");
+        const targetFileViaSymbolicLink = join(symbolicLinkPath, targetFileName);
+        const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetDirectoryFile)).toBeTruthy();
+
+        // first time, setting up with a relative reference
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "ensureSymlink") {
+            await function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        } else {
+            function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+
+        // second time, setting up with an absolute reference
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "ensureSymlink") {
+            await function_(targetDirectory, symbolicLinkPath);
+        } else {
+            function_(targetDirectory, symbolicLinkPath);
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+    });
+
+    it("can ensure a symbolic link a second time with a relative path", async () => {
+        expect.assertions(5);
+
+        // a directory with a file, as `destination` or `target`
+        const targetDirectory = join(distribution, "target-directory");
+        const targetFileName = "target-file";
+        const targetDirectoryFile = join(targetDirectory, targetFileName);
+        await ensureFile(targetDirectoryFile);
+        // a directory to put the symbolic link in (the `source`)
+        const linkDirectory = join(distribution, "link-directory");
+        const symbolicLinkPath = join(linkDirectory, "link");
+        const targetFileViaSymbolicLink = join(symbolicLinkPath, targetFileName);
+        const relativeSymbolicLinkReference = relative(dirname(symbolicLinkPath), targetDirectory);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetDirectoryFile)).toBeTruthy();
+
+        // first time, setting up with a relative reference
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "ensureSymlink") {
+            await function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        } else {
+            function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
+
+        // second time, setting up with an absolute reference
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "ensureSymlink") {
+            await function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        } else {
+            function_(relativeSymbolicLinkReference, symbolicLinkPath);
+        }
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(symbolicLinkPath)).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(targetFileViaSymbolicLink)).toBeTruthy();
     });
 });
