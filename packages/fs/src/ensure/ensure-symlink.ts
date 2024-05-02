@@ -1,16 +1,16 @@
 import { lstat, readlink, stat, symlink } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
+import { AlreadyExistsError } from "../error";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import { getFileInfoType } from "../utils/get-file-info-type";
+import isStatsIdentical from "../utils/is-stats-identical";
+import resolveSymlinkTarget from "../utils/resolve-symlink-target";
+import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
-import { AlreadyExistsError } from "./error";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import { getFileInfoType } from "./utils/get-file-info-type";
-import isStatsIdentical from "./utils/is-stats-identical";
-import resolveSymlinkTarget from "./utils/resolve-symlink-target";
-import toPath from "./utils/to-path";
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 /**
  * Ensures that the link exists, and points to a valid file.
@@ -19,6 +19,7 @@ const isWindows = process.platform === "win32";
  *
  * @param target the source file path
  * @param linkName the destination link path
+ * @returns A void promise that resolves once the link exists.
  */
 const ensureSymlink = async (target: URL | string, linkName: URL | string): Promise<void> => {
     assertValidFileOrDirectoryPath(target);
@@ -26,14 +27,15 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
 
     const targetRealPath = resolveSymlinkTarget(target, linkName);
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const sourceStatInfo = await lstat(targetRealPath);
-
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkStatInfo = await lstat(linkName);
 
-        if (linkStatInfo.isSymbolicLink()) {
+        if (
+            linkStatInfo.isSymbolicLink() &&
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            isStatsIdentical(await stat(targetRealPath), await stat(linkName))
+        ) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const [sourceStat, destinationStat] = await Promise.all([stat(targetRealPath), stat(linkName)]);
 
@@ -41,17 +43,25 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
                 return;
             }
         }
-    } catch { /* empty */ }
+    } catch {
+        /* empty */
+    }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const sourceStatInfo = await lstat(targetRealPath);
     const sourceFilePathType = getFileInfoType(sourceStatInfo);
 
-    await ensureDir(dirname(toPath(linkName)));
+    const pathLinkName = toPath(linkName);
 
-    const symlinkType: string | null = isWindows ? (sourceFilePathType === "dir" ? "dir" : "file") : null;
+    await ensureDir(dirname(pathLinkName));
+
+    // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
+    // lack permission to create them
+    const symlinkType: string | null = isWindows ? 'junction' : (sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        await symlink(target, linkName, symlinkType);
+        await symlink(targetRealPath, linkName, symlinkType);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -65,7 +75,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
         if (!linkStatInfo.isSymbolicLink()) {
             const type = getFileInfoType(linkStatInfo);
 
-            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${toPath(linkName)}`);
+            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${pathLinkName}`);
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -73,7 +83,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
         const linkRealPath = resolve(linkPath);
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${toPath(linkName)} -> ${linkRealPath}`);
+            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${pathLinkName} -> ${linkRealPath}`);
         }
     }
 };

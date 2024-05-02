@@ -1,8 +1,12 @@
-import { dirname, resolve } from "node:path";
+import { dirname, resolve } from "pathe";
 
 const resolveSymlinkTarget = (target: URL | string, linkName: URL | string): URL | string => {
     if (typeof target !== "string") {
         return target;
+    }
+
+    if (target.startsWith("./")) {
+        return resolve(target);
     }
 
     // URL is always absolute path

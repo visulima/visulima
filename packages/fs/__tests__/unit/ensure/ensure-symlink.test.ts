@@ -5,8 +5,8 @@ import { basename, dirname, join, resolve } from "node:path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import ensureSymlink from "../../src/ensure-symlink";
-import ensureSymlinkSync from "../../src/ensure-symlink-sync";
+import ensureSymlink from "../../../src/ensure/ensure-symlink";
+import ensureSymlinkSync from "../../../src/ensure/ensure-symlink-sync";
 
 const distribution: string = temporaryDirectory();
 
@@ -15,59 +15,73 @@ describe.each([
     ["ensureSymlinkSync", ensureSymlinkSync],
 ])("%s", (name, function_) => {
     beforeEach(async () => {
-        writeFileSync("./foo.txt", "foo\n");
+        writeFileSync("./sym-foo.txt", "foo\n");
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        writeFileSync(resolve(join(distribution, "./foo.txt")), "foo\n");
+        writeFileSync(resolve(join(distribution, "./sym-foo.txt")), "sym-foo\n");
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        mkdirSync(resolve(join(distribution, "./dir-foo")), { recursive: true });
+        mkdirSync(resolve(join(distribution, "./sym-dir-foo")), { recursive: true });
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        writeFileSync(resolve(join(distribution, "./dir-foo/foo.txt")), "foo\n");
+        writeFileSync(resolve(join(distribution, "./sym-dir-foo/foo.txt")), "sym-foo\n");
 
-        mkdirSync("empty-dir", { recursive: true });
+        mkdirSync("./sym-empty-dir", { recursive: true });
 
-        mkdirSync("dir-foo", { recursive: true });
-        writeFileSync("dir-foo/foo.txt", "dir-foo\n");
+        mkdirSync("./sym-dir-foo", { recursive: true });
+        writeFileSync("./sym-dir-foo/foo.txt", "sym-dir-foo\n");
 
-        mkdirSync("dir-bar", { recursive: true });
-        writeFileSync("dir-bar/bar.txt", "dir-bar\n");
+        mkdirSync("./sym-dir-bar", { recursive: true });
+        writeFileSync("./sym-dir-bar/bar.txt", "sym-dir-bar\n");
 
-        mkdirSync("real-alpha/real-beta/real-gamma", { recursive: true });
+        mkdirSync("./sym-real-alpha/real-beta/real-gamma", { recursive: true });
 
-        symlinkSync("foo.txt", "real-symsymlink.txt");
+        symlinkSync("./sym-foo.txt", "./sym-real-symlink.txt");
+        symlinkSync("./sym-dir-foo", "./sym-real-symlink-dir-foo");
     });
 
     afterEach(async () => {
-            await rm("foo.txt");
-            await rm("real-symsymlink.txt");
-            await rm("symsymlink.txt");
-            await rm("symsymlink-dir-foo", { recursive: true });
-            await rm("real-symsymlink-dir-foo", { recursive: true });
-            await rm("empty-dir", { recursive: true });
-            await rm("dir-foo", { recursive: true });
-            await rm("dir-bar", { recursive: true });
-            await rm("real-alpha", { recursive: true });
-
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for await (const directory of [
+            "./sym-foo.txt",
+            "./sym-link-foo.txt",
+            "./sym-real-symlink.txt",
+            "./sym-real-symlink-dir-foo",
+            "./sym-symlink-dir-foo",
+            "./sym-symlink.txt",
+            "./sym-empty-dir",
+            "./sym-dir-foo",
+            "./sym-dir-bar",
+            "./sym-real-alpha",
+            "./sym-alpha",
+        ]) {
+            try {
+                await rm(directory, { recursive: true });
+            } catch {
+                /* empty */
+            }
+        }
     });
 
     it.each([
-        ["./foo.txt", "./symlink.txt"],
-        // ["./foo.txt", "./dir-foo/symlink.txt"],
-        // ["./foo.txt", "./empty-dir/symlink.txt"],
-        // ["./foo.txt", "./real-alpha/symlink.txt"],
-        // ["./foo.txt", "./real-alpha/real-beta/symlink.txt"],
-        // ["./foo.txt", "./real-alpha/real-beta/real-gamma/symlink.txt"],
-        // ["./foo.txt", "./alpha/symlink.txt"],
-        // ["./foo.txt", "./alpha/beta/symlink.txt"],
-        // ["./foo.txt", "./alpha/beta/gamma/symlink.txt"],
-        // ["./foo.txt", "./link-foo.txt"],
-        // ["./foo.txt", "./symlink.txt"],
-        // ["./dir-foo/foo.txt", "./symlink.txt"],
-        // [resolve(join(distribution, "./foo.txt")), resolve(join(distribution, "./symlink.txt"))],
-        // [resolve(join(distribution, "./dir-foo/foo.txt")), resolve(join(distribution, "./symlink.txt"))],
+        ["./sym-foo.txt", "./sym-symlink.txt"],
+        ["./sym-foo.txt", "./sym-dir-foo/symlink.txt"],
+        ["./sym-foo.txt", "./sym-empty-dir/symlink.txt"],
+        ["./sym-foo.txt", "./sym-real-alpha/symlink.txt"],
+        ["./sym-foo.txt", "./sym-real-alpha/real-beta/symlink.txt"],
+        ["./sym-foo.txt", "./sym-real-alpha/real-beta/real-gamma/symlink.txt"],
+        ["./sym-foo.txt", "./sym-alpha/symlink.txt"],
+        ["./sym-foo.txt", "./sym-alpha/beta/symlink.txt"],
+        ["./sym-foo.txt", "./sym-alpha/beta/gamma/symlink.txt"],
+        ["./sym-foo.txt", "./sym-link-foo.txt"],
+        ["./sym-foo.txt", "./sym-symlink.txt"],
+        ["./sym-dir-foo/foo.txt", "./sym-symlink.txt"],
+        [resolve(join(distribution, "./sym-foo.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
+        [resolve(join(distribution, "./sym-dir-foo/foo.txt")), resolve(join(distribution, "./sym-symlink-2.txt"))],
     ])("should create symlink file using source %s and destination %s", async (sourcePath, destinationPath) => {
-        expect.assertions(3);
+        expect.assertions(4);
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(sourcePath)).toBeTruthy();
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureSymlink") {
@@ -82,29 +96,33 @@ describe.each([
         const destinationBasename = basename(destinationPath);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const isSymlink = lstatSync(destinationPath).isFile();
+        const isSymlink = lstatSync(destinationPath).isSymbolicLink();
+
+        expect(isSymlink).toBeTruthy();
+
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationContent = readFileSync(destinationPath, "utf8");
+
+        expect(sourceContent).toStrictEqual(destinationContent);
+
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryContents = readdirSync(destinationDirectory);
 
-        expect(isSymlink).toBeTruthy();
-        expect(sourceContent).toStrictEqual(destinationContent);
         expect(destinationDirectoryContents).contains(destinationBasename);
     });
 
     it.each([
-        ["./missing.txt", "./symlink.txt"],
-        ["../foo.txt", "./symlink.txt"],
-        ["../dir-foo/foo.txt", "./symlink.txt"],
-        ["./dir-foo/foo.txt", "./link-foo.txt"],
-        ["./missing.txt", "./symlink.txt"],
-        ["./missing.txt", "./missing-dir/symlink.txt"],
+        ["./sym-missing.txt", "./sym-symlink.txt"],
+        ["../foo.txt", "./sym-symlink.txt"],
+        ["../dir-foo/foo.txt", "./sym-symlink.txt"],
+        ["./sym-missing.txt", "./sym-symlink.txt"],
+        ["./sym-missing.txt", "./sym-missing-dir/symlink.txt"],
+        ['./sym-dir-foo/foo.txt', './sym-real-symlink.txt'],
         // error is thrown if destination path exists
-        ["./foo.txt", "./dir-foo/foo.txt"],
-        [resolve(join(distribution, "./missing.txt")), resolve(join(distribution, "./symlink.txt"))],
-        [resolve(join(distribution, "../foo.txt")), resolve(join(distribution, "./symlink.txt"))],
-        [resolve(join(distribution, "../dir-foo/foo.txt")), resolve(join(distribution, "./symlink.txt"))],
+        ["./sym-foo.txt", "./sym-dir-foo/foo.txt"],
+        [resolve(join(distribution, "./sym-missing.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
+        [resolve(join(distribution, "../foo.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
+        [resolve(join(distribution, "../dir-foo/foo.txt")), resolve(join(distribution, "./sym-symlink.txt"))],
     ])("should return error when creating symlink file using src %s and dst %s", async (sourcePath, destinationPath) => {
         expect.assertions(2);
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -112,10 +130,10 @@ describe.each([
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureSymlink") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 
@@ -126,17 +144,16 @@ describe.each([
     });
 
     it.each([
-        ["./dir-foo", "./symlink-dir-foo"],
-        ["../dir-bar", "./dir-foo/symlink-dir-bar"],
-        ["./dir-bar", "./dir-foo/symlink-dir-bar"],
-        ["./dir-bar", "./empty-dir/symlink-dir-bar"],
-        ["./dir-bar", "./real-alpha/symlink-dir-bar"],
-        ["./dir-bar", "./real-alpha/real-beta/symlink-dir-bar"],
-        ["./dir-bar", "./real-alpha/real-beta/real-gamma/symlink-dir-bar"],
-        ["./dir-foo", "./alpha/dir-foo"],
-        ["./dir-foo", "./alpha/beta/dir-foo"],
-        ["./dir-foo", "./alpha/beta/gamma/dir-foo"],
-        ["./dir-foo", "./real-symlink-dir-foo"],
+        ["./sym-dir-foo", "./sym-symlink-dir-foo"],
+        ["./sym-dir-bar", "./sym-dir-foo/symlink-dir-bar"],
+        ["./sym-dir-bar", "./sym-empty-dir/symlink-dir-bar"],
+        ["./sym-dir-bar", "./sym-real-alpha/symlink-dir-bar"],
+        ["./sym-dir-bar", "./sym-real-alpha/real-beta/symlink-dir-bar"],
+        ["./sym-dir-bar", "./sym-real-alpha/real-beta/real-gamma/symlink-dir-bar"],
+        ["./sym-dir-foo", "./sym-alpha/dir-foo"],
+        ["./sym-dir-foo", "./sym-alpha/beta/dir-foo"],
+        ["./sym-dir-foo", "./sym-alpha/beta/gamma/dir-foo"],
+        ["./sym-dir-foo", "./sym-real-symlink-dir-foo"],
     ])("should create symlink dir using source %s and destination %s", async (sourcePath, destinationPath) => {
         expect.assertions(3);
 
@@ -164,50 +181,40 @@ describe.each([
     });
 
     it.each([
-        ["./dir-bar", "./real-symlink-dir-foo"],
-        ["./missing", "./dir-foo/symlink-dir-missing"],
+        ["./sym-dir-bar", "./sym-real-symlink-dir-foo"],
+        ["./sym-missing", "./sym-dir-foo/symlink-dir-missing"],
         // error is thrown if destination path exists
-        ["./dir-foo", "./real-alpha/real-beta"],
+        ["./sym-dir-foo", "./sym-real-alpha/real-beta"],
     ])("should create broken symlink dir using source %s and destination %s", async (sourcePath, destinationPath) => {
-        expect.assertions(3);
+        expect.assertions(1);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureSymlink") {
-            await function_(sourcePath, destinationPath);
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
-            function_(sourcePath, destinationPath);
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
-
-        const destinationDirectory = dirname(destinationPath);
-        const destinationBasename = basename(destinationPath);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const isSymlink = lstatSync(destinationPath).isSymbolicLink();
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const destinationDirectoryContents = readdirSync(destinationDirectory);
-
-        expect(isSymlink).toBeTruthy();
-        expect(destinationDirectoryContents).include(destinationBasename);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(() => readdirSync(destinationPath)).toThrow(Error);
     });
 
     it.each([
-        ["./dir-bar", "./real-symlink-dir-foo"],
-        ["./missing", "./dir-foo/symlink-dir-missing"],
+        ["./sym-dir-bar", "./sym-real-symlink-dir-foo"],
+        ["./sym-missing", "./sym-dir-foo/symlink-dir-missing"],
         // error is thrown if destination path exists
-        ["./dir-foo", "./real-alpha/real-beta"],
+        ["./sym-dir-foo", "./sym-real-alpha/real-beta"],
     ])("should return error when creating symlink dir using source %s and destination %s", async (sourcePath, destinationPath) => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const destinationDirectoryExistsBefore = existsSync(dirname(destinationPath));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureSymlink") {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(sourcePath, destinationPath)).toThrow(Error);
         }
 

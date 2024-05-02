@@ -39,12 +39,12 @@ describe.each([
     });
 
     afterEach(async () => {
-        await rm("./foo.txt");
-        await rm("real-symlink.txt");
-        await rm("empty-dir", { recursive: true });
-        await rm("dir-foo", { recursive: true });
-        await rm("dir-bar", { recursive: true });
-        await rm("real-alpha", { recursive: true });
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for await (const directory of ["./foo.txt", "real-symlink.txt", "empty-dir", "dir-foo", "dir-bar", "real-alpha", "alpha"]) {
+            try {
+                await rm(directory, { recursive: true });
+            } catch { /* empty */ }
+        }
     });
 
     it.each([

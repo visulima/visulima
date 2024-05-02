@@ -1,14 +1,15 @@
+import type { symlink } from 'node:fs';
 import { lstatSync, readlinkSync, statSync, symlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
+import { AlreadyExistsError } from "../error";
+import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import { getFileInfoType } from "../utils/get-file-info-type";
+import isStatsIdentical from "../utils/is-stats-identical";
+import resolveSymlinkTarget from "../utils/resolve-symlink-target";
+import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "./ensure-dir-sync";
-import { AlreadyExistsError } from "./error";
-import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import { getFileInfoType } from "./utils/get-file-info-type";
-import isStatsIdentical from "./utils/is-stats-identical";
-import resolveSymlinkTarget from "./utils/resolve-symlink-target";
-import toPath from "./utils/to-path";
 
 const isWindows = process.platform === "win32";
 
@@ -25,8 +26,6 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
     assertValidFileOrDirectoryPath(linkName);
 
     const targetRealPath = resolveSymlinkTarget(target, linkName);
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const sourceStatInfo = lstatSync(targetRealPath);
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -43,15 +42,21 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
         /* empty */
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const sourceStatInfo = lstatSync(targetRealPath);
     const sourceFilePathType = getFileInfoType(sourceStatInfo);
 
-    ensureDirSync(dirname(toPath(linkName)));
+    const pathLinkName = toPath(linkName);
 
-    const symlinkType: "dir" | "file" | "junction" | null = isWindows ? (sourceFilePathType === "dir" ? "dir" : "file") : null;
+    ensureDirSync(dirname(pathLinkName));
+
+    // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
+    // lack permission to create them
+    const symlinkType: symlink.Type | null = isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file";
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        symlinkSync(target, linkName, symlinkType);
+        symlinkSync(targetRealPath, linkName, symlinkType);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -65,7 +70,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
         if (!linkStatInfo.isSymbolicLink()) {
             const type = getFileInfoType(linkStatInfo);
 
-            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${toPath(linkName)}`);
+            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${pathLinkName}`);
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -73,7 +78,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
         const linkRealPath = resolve(linkPath);
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${toPath(linkName)} -> ${linkRealPath}`);
+            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${pathLinkName} -> ${linkRealPath}`);
         }
     }
 };
