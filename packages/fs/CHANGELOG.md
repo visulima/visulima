@@ -1,3 +1,10 @@
+## @visulima/fs [2.0.9](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.8...@visulima/fs@2.0.9) (2024-05-03)
+
+
+### Bug Fixes
+
+* updated type-fest to version ^4.18.1 ([ab96053](https://github.com/visulima/visulima/commit/ab9605355b6d84d1662fa19ef919682c33e68b5b))
+
 ## @visulima/fs [2.0.8](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.7...@visulima/fs@2.0.8) (2024-04-27)
 
 
