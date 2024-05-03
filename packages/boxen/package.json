@@ -82,19 +82,16 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "dependencies": {
-        "cli-boxes": "^3.0.0"
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.24.4",
+        "@babel/core": "^7.24.5",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.18.14",
         "@visulima/colorize": "1.4.0",
-        "@vitest/coverage-v8": "^1.5.2",
-        "@vitest/ui": "^1.5.2",
+        "@vitest/coverage-v8": "^1.5.3",
+        "@vitest/ui": "^1.5.3",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -112,7 +109,7 @@
         "terminal-size": "^4.0.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "vitest": "^1.5.2",
+        "vitest": "^1.5.3",
         "wrap-ansi": "^9.0.0"
     },
     "engines": {

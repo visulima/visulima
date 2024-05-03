@@ -66,17 +66,3 @@ exports[`height option > height option works > height 5 1`] = `
 │   │
 └───┘"
 `;
-
-exports[`height option > height option works 1`] = `
-"┌───┐
-│foo│
-│   │
-│   │
-└───┘"
-`;
-
-exports[`height option > height option works 2`] = `
-"┌───────┐
-│foo bar│
-└───────┘"
-`;

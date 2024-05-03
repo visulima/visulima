@@ -6,7 +6,6 @@
  * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
-import cliBoxes from "cli-boxes";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import stringWidth from "string-width";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -16,6 +15,7 @@ import wrapAnsi from "wrap-ansi";
 
 import { alignAnsi } from "./align";
 import type { BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
+import cliBoxes from "./vendor/cli-boxes/boxes";
 import { widestLine } from "./widest-line";
 
 const NEWLINE = "\n";

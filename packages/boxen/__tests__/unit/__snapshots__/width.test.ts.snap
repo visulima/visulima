@@ -38,23 +38,3 @@ exports[`padding option > width option works > width 20 1`] = `
 │foo               │
 └──────────────────┘"
 `;
-
-exports[`padding option > width option works > width 66 1`] = `
-"┌────────┐
-│foo bar │
-│foo bar │
-└────────┘"
-`;
-
-exports[`padding option > width option works 1`] = `
-"┌──────────────────┐
-│foo               │
-└──────────────────┘"
-`;
-
-exports[`padding option > width option works 2`] = `
-"┌────────┐
-│foo bar │
-│foo bar │
-└────────┘"
-`;

@@ -20,26 +20,6 @@ exports[`text option > footerText + width option > width 20 1`] = `
 └─ very long title ┘"
 `;
 
-exports[`text option > footerText + width option 1`] = `
-"┌─┐
-│f│
-│o│
-│o│
-└ very long title ┘"
-`;
-
-exports[`text option > footerText + width option 2`] = `
-"┌───┐
-│foo│
-└ very long title ┘"
-`;
-
-exports[`text option > footerText + width option 3`] = `
-"┌──────────────────┐
-│foo               │
-└─ very long title ┘"
-`;
-
 exports[`text option > footerText align center 1`] = `
 "┌───────────────┐
 │foo bar foo bar│
@@ -90,26 +70,6 @@ exports[`text option > headerText + width option > width 5 1`] = `
 `;
 
 exports[`text option > headerText + width option > width 20 1`] = `
-"┌ very long title ─┐
-│foo               │
-└──────────────────┘"
-`;
-
-exports[`text option > headerText + width option 1`] = `
-"┌─┐
-│f│
-│o│
-│o│
-└─┘"
-`;
-
-exports[`text option > headerText + width option 2`] = `
-"┌ v ┐
-│foo│
-└───┘"
-`;
-
-exports[`text option > headerText + width option 3`] = `
 "┌ very long title ─┐
 │foo               │
 └──────────────────┘"
