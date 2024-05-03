@@ -6,13 +6,13 @@
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
         "consola": "^3.2.3",
-        "pino": "^8.21.0",
+        "pino": "^9.0.0",
         "tslog": "^4.9.2",
         "winston": "^3.13.0"
     },
     "devDependencies": {
         "typescript": "^5.4.5",
-        "vitest": "^1.5.2"
+        "vitest": "^1.5.3"
     },
     "scripts": {
         "test:bench": "vitest bench"
