@@ -1,3 +1,11 @@
+## @visulima/api-platform [2.1.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.6...@visulima/api-platform@2.1.7) (2024-05-03)
+
+
+### Bug Fixes
+
+* **api-platform:** updated ts-japi dep ([4f4d29f](https://github.com/visulima/visulima/commit/4f4d29f5995c899926837edb1703f4ea262bba09))
+* **api-platform:** updated yaml to 2.4.2 ([85823ab](https://github.com/visulima/visulima/commit/85823ab3d2b01eb2a51a8d86a3416e945dc7db0b))
+
 ## @visulima/api-platform [2.1.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.5...@visulima/api-platform@2.1.6) (2024-04-09)
 
 
