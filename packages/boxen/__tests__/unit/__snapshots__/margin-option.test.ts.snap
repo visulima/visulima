@@ -66,33 +66,3 @@ exports[`margin option > margin proportionally decreases when content <= columns
 
 "
 `;
-
-exports[`margin option > margin proportionally decreases when content <= columns 1`] = `
-"
-
-      ┌┐
-      ││
-      └┘
-
-"
-`;
-
-exports[`margin option > margin proportionally decreases when content <= columns 2`] = `
-"
-
-      ┌┐
-      ││
-      └┘
-
-"
-`;
-
-exports[`margin option > margin proportionally decreases when content <= columns 3`] = `
-"
-
-      ┌┐
-      ││
-      └┘
-
-"
-`;
