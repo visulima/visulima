@@ -90,8 +90,8 @@
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.18.14",
         "@visulima/colorize": "1.4.0",
-        "@vitest/coverage-v8": "^1.5.3",
-        "@vitest/ui": "^1.5.3",
+        "@vitest/coverage-v8": "^1.6.0",
+        "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -109,7 +109,7 @@
         "terminal-size": "^4.0.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "vitest": "^1.5.3",
+        "vitest": "^1.6.0",
         "wrap-ansi": "^9.0.0"
     },
     "engines": {
