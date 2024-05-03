@@ -116,7 +116,7 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
         "@visulima/nextra-theme-docs": "4.0.21",
-        "@vitest/coverage-v8": "^1.5.3",
+        "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
@@ -132,7 +132,7 @@
         "strip-ansi": "^7.1.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "vitest": "^1.5.3"
+        "vitest": "^1.6.0"
     },
     "engines": {
         "node": ">=18.* <=21.*"

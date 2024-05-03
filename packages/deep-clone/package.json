@@ -129,8 +129,8 @@
         "@types/lodash.clonedeep": "^4.5.9",
         "@types/node": "18.18.14",
         "@ungap/structured-clone": "^1.2.0",
-        "@vitest/coverage-v8": "^1.5.3",
-        "@vitest/ui": "^1.5.3",
+        "@vitest/coverage-v8": "^1.6.0",
+        "@vitest/ui": "^1.6.0",
         "clone-deep": "^4.0.1",
         "cross-env": "^7.0.3",
         "deep-copy": "^1.4.2",
@@ -157,7 +157,7 @@
         "standard": "^17.1.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "vitest": "^1.5.3"
+        "vitest": "^1.6.0"
     },
     "engines": {
         "node": ">=18.* <=21.*"
