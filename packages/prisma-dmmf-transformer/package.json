@@ -82,7 +82,7 @@
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.24.4",
+        "@babel/core": "^7.24.5",
         "@prisma/client": "4.16.2",
         "@prisma/internals": "5.12.1",
         "@rushstack/eslint-plugin-security": "^0.8.1",
