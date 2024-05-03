@@ -1,3 +1,17 @@
+## @visulima/boxen [1.0.7](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.6...@visulima/boxen@1.0.7) (2024-05-03)
+
+
+### Bug Fixes
+
+* **boxen:** moved cli-boxes into boxen ([25f2e83](https://github.com/visulima/visulima/commit/25f2e8336b6bbe8f0ebb5ce801c8b46f991b71a0))
+
+
+### Miscellaneous Chores
+
+* **deps:** updated dev deps ([d91ac38](https://github.com/visulima/visulima/commit/d91ac389cea85a6c6bdc8de97905252a6c467abc))
+* update dev dependencies ([09c4854](https://github.com/visulima/visulima/commit/09c4854e221fa8b808dfe66d7196d8db2a39b366))
+* updated dev dependencies ([d7791e3](https://github.com/visulima/visulima/commit/d7791e327917e438757636573b1e5549a97bba7b))
+
 ## @visulima/boxen [1.0.6](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.5...@visulima/boxen@1.0.6) (2024-04-10)
 
 
