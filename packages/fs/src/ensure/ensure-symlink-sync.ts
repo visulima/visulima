@@ -1,8 +1,7 @@
-import type { symlink } from 'node:fs';
+import type { symlink } from "node:fs";
 import { lstatSync, readlinkSync, statSync, symlinkSync } from "node:fs";
-import { dirname, resolve } from "node:path";
 
-import { toNamespacedPath } from "pathe";
+import { dirname, resolve,toNamespacedPath } from "pathe";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -13,7 +12,7 @@ import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDirSync from "./ensure-dir-sync";
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 /**
  * Ensures that the link exists, and points to a valid file.
@@ -22,8 +21,9 @@ const isWindows = process.platform === "win32";
  *
  * @param target the source file path
  * @param linkName the destination link path
+ * @param type the type of the symlink, or null to use automatic detection
  */
-const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void => {
+const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: symlink.Type): void => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
 
@@ -55,7 +55,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
 
     // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
     // lack permission to create them
-    const symlinkType: symlink.Type | null = isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file";
+    const symlinkType: symlink.Type | null = type || (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -78,7 +78,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string): void =
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkPath = readlinkSync(linkName);
-        const linkRealPath = resolve(linkPath);
+        const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
             throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}`);

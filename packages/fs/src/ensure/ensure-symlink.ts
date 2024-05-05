@@ -1,5 +1,6 @@
 import { lstat, readlink, stat, symlink } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+
+import { dirname, resolve,toNamespacedPath } from "pathe";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -9,7 +10,7 @@ import resolveSymlinkTarget from "../utils/resolve-symlink-target";
 import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
-import { toNamespacedPath } from "pathe";
+import type { symlink as symlinkSync } from "node:fs";
 
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
@@ -22,7 +23,7 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * @param linkName the destination link path
  * @returns A void promise that resolves once the link exists.
  */
-const ensureSymlink = async (target: URL | string, linkName: URL | string): Promise<void> => {
+const ensureSymlink = async (target: URL | string, linkName: URL | string, type?: symlinkSync.Type): Promise<void> => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
 
@@ -59,7 +60,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
 
     // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
     // lack permission to create them
-    const symlinkType: string | null = isWindows ? 'junction' : (sourceFilePathType === "dir" ? "dir" : "file");
+    const symlinkType: string | null = type || (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -82,7 +83,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string): Prom
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const linkPath = await readlink(linkName);
-        const linkRealPath = resolve(linkPath);
+        const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
             throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}`);
