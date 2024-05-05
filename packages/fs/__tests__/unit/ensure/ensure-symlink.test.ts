@@ -10,6 +10,7 @@ import ensureSymlink from "../../../src/ensure/ensure-symlink";
 import ensureSymlinkSync from "../../../src/ensure/ensure-symlink-sync";
 
 const distribution: string = temporaryDirectory();
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["ensureSymlink", ensureSymlink],
@@ -36,8 +37,8 @@ describe.each([
 
         mkdirSync("./sym-real-alpha/real-beta/real-gamma", { recursive: true });
 
-        symlinkSync("./sym-foo.txt", "./sym-real-symlink.txt");
-        symlinkSync("./sym-dir-foo", "./sym-real-symlink-dir-foo");
+        symlinkSync("./sym-foo.txt", "./sym-real-symlink.txt", isWindows ? "junction" : null);
+        symlinkSync("./sym-dir-foo", "./sym-real-symlink-dir-foo", isWindows ? "junction" : null);
     });
 
     afterEach(async () => {

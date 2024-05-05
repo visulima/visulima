@@ -9,6 +9,7 @@ import ensureLink from "../../../src/ensure/ensure-link";
 import ensureLinkSync from "../../../src/ensure/ensure-link-sync";
 
 const distribution: string = temporaryDirectory();
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["ensureLink", ensureLink],
@@ -35,7 +36,7 @@ describe.each([
 
         mkdirSync("real-alpha/real-beta/real-gamma", { recursive: true });
 
-        symlinkSync("foo.txt", "real-symlink.txt");
+        symlinkSync("foo.txt", "real-symlink.txt", isWindows ? "junction" : null);
     });
 
     afterEach(async () => {
