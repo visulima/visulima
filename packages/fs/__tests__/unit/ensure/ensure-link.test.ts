@@ -9,6 +9,7 @@ import ensureLink from "../../../src/ensure/ensure-link";
 import ensureLinkSync from "../../../src/ensure/ensure-link-sync";
 
 const distribution: string = temporaryDirectory();
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["ensureLink", ensureLink],
@@ -35,16 +36,35 @@ describe.each([
 
         mkdirSync("real-alpha/real-beta/real-gamma", { recursive: true });
 
-        symlinkSync("foo.txt", "real-symlink.txt");
+        symlinkSync("foo.txt", "real-symlink.txt", isWindows ? "junction" : null);
     });
 
     afterEach(async () => {
-        await rm("./foo.txt");
-        await rm("real-symlink.txt");
-        await rm("empty-dir", { recursive: true });
-        await rm("dir-foo", { recursive: true });
-        await rm("dir-bar", { recursive: true });
-        await rm("real-alpha", { recursive: true });
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for await (const directory of [
+            "./foo.txt",
+            "./real-symlink.txt",
+            "./empty-dir",
+            "./dir-foo",
+            "./dir-bar",
+            "./real-alpha",
+            "./alpha",
+            "./link-foo.txt",
+            "./link.txt",
+            resolve(join(distribution, "./foo.txt")),
+            resolve(join(distribution, "./dir-foo")),
+            resolve(join(distribution, "./dir-bar")),
+            resolve(join(distribution, "./real-alpha")),
+            resolve(join(distribution, "./alpha")),
+            resolve(join(distribution, "./link-foo.txt")),
+            resolve(join(distribution, "./link.txt")),
+        ]) {
+            try {
+                await rm(directory, { recursive: true });
+            } catch {
+                /* empty */
+            }
+        }
     });
 
     it.each([
@@ -76,18 +96,13 @@ describe.each([
         const sourceContent = readFileSync(sourcePath, "utf8");
         const destinationDirectory = dirname(destinationPath);
         const destinationBasename = basename(destinationPath);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const isSymlink = lstatSync(destinationPath).isFile();
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const destinationContent = readFileSync(destinationPath, "utf8");
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        const destinationDirectoryContents = readdirSync(destinationDirectory);
 
-        expect(isSymlink).toBeTruthy();
-        expect(sourceContent).toStrictEqual(destinationContent);
-        expect(destinationDirectoryContents).contains(destinationBasename);
-
-        await rm(destinationPath, { recursive: true });
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(lstatSync(destinationPath).isFile()).toBeTruthy();
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(sourceContent).toStrictEqual(readFileSync(destinationPath, "utf8"));
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(readdirSync(destinationDirectory)).contains(destinationBasename);
     });
 
     it.each([
@@ -127,10 +142,5 @@ describe.each([
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
 
         expect(destinationDirectoryExistsBefore).toStrictEqual(destinationDirectoryExistsAfter);
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (destinationPath === "./link-foo.txt") {
-            await rm(destinationPath);
-        }
     });
 });
