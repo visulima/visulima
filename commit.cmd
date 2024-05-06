@@ -1,1 +1,0 @@
-pnpx cz && exit
