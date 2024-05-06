@@ -1,6 +1,6 @@
 import { linkSync, lstatSync } from "node:fs";
 
-import { dirname } from "pathe";
+import { dirname, toNamespacedPath } from "pathe";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "../utils/is-stats-identical";
@@ -15,6 +15,11 @@ import ensureDirSync from "./ensure-dir-sync";
 const ensureLinkSync = (source: URL | string, destination: URL | string): void => {
     assertValidFileOrDirectoryPath(source);
     assertValidFileOrDirectoryPath(destination);
+
+    // eslint-disable-next-line no-param-reassign
+    source = toNamespacedPath(toPath(source));
+    // eslint-disable-next-line no-param-reassign
+    destination = toNamespacedPath(toPath(destination));
 
     let destinationStat;
 
@@ -42,7 +47,7 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
         return;
     }
 
-    ensureDirSync(dirname(toPath(destination)));
+    ensureDirSync(dirname(destination));
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     linkSync(source, destination);

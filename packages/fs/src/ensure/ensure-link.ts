@@ -1,6 +1,6 @@
 import { link, lstat } from "node:fs/promises";
 
-import { dirname } from "pathe";
+import { dirname, toNamespacedPath } from "pathe";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "../utils/is-stats-identical";
@@ -15,6 +15,11 @@ import ensureDir from "./ensure-dir";
 const ensureLink = async (source: URL | string, destination: URL | string): Promise<void> => {
     assertValidFileOrDirectoryPath(source);
     assertValidFileOrDirectoryPath(destination);
+
+    // eslint-disable-next-line no-param-reassign
+    source = toNamespacedPath(toPath(source));
+    // eslint-disable-next-line no-param-reassign
+    destination = toNamespacedPath(toPath(destination));
 
     let destinationStat;
 
@@ -42,7 +47,7 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
         return;
     }
 
-    await ensureDir(dirname(toPath(destination)));
+    await ensureDir(dirname(destination));
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     await link(source, destination);

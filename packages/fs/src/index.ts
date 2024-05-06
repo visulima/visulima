@@ -5,6 +5,8 @@ export { default as ensureFile } from "./ensure/ensure-file";
 export { default as ensureFileSync } from "./ensure/ensure-file-sync";
 export { default as ensureLink } from "./ensure/ensure-link";
 export { default as ensureLinkSync } from "./ensure/ensure-link-sync";
+export { default as ensureSymlink } from "./ensure/ensure-symlink";
+export { default as ensureSymlinkSync } from "./ensure/ensure-symlink-sync";
 export { CRLF, detect, EOL, format, LF } from "./eol";
 export { default as collect } from "./find/collect";
 export { default as collectSync } from "./find/collect-sync";

@@ -9,6 +9,7 @@ import remove from "../../../src/remove/remove";
 import removeSync from "../../../src/remove/remove-sync";
 
 const distribution = temporaryDirectory();
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["remove", remove],
@@ -26,7 +27,7 @@ describe.each([
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
                 await writeFile(join(distribution, "temp_file.txt"), "Hello, World!");
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
-                await symlink(join(distribution, "temp_file.txt"), path);
+                await symlink(join(distribution, "temp_file.txt"), path, isWindows ? "junction" : null);
             },
         ],
     ])("should remove a file (%s)", async (_, path, write) => {
