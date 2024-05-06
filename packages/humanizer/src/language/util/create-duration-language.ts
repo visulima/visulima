@@ -1,4 +1,4 @@
-import type { DurationLanguage,DurationUnit } from "../../types";
+import type { DurationLanguage, DurationUnit } from "../../types";
 
 const createDurationLanguage = (
     y: DurationUnit,

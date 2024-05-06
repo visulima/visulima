@@ -1,5 +1,5 @@
 import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-styles";
-import { afterEach, beforeEach,describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.server.mts";
 import { esc } from "../helpers.js";

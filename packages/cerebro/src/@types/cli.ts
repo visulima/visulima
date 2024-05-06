@@ -7,8 +7,8 @@ export type CommandSection = { footer?: string; header?: string };
 export type CliRunOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
-     shouldExitProcess?: boolean;
-}
+    shouldExitProcess?: boolean;
+};
 
 export interface Cli {
     /**

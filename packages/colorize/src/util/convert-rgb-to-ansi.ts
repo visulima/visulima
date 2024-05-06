@@ -38,7 +38,9 @@ export const rgbToAnsi256 = (r: number, g: number, b: number): number => {
  * Convert ANSI 256 color code to approximate code of ANSI 16 colors.
  */
 export const ansi256To16 = (code: number): number => {
-    let r; let g; let b;
+    let r;
+    let g;
+    let b;
 
     if (code < 8) {
         return 30 + code;

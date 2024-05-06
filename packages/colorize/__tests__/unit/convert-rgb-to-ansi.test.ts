@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { convertHexToRgb } from "../../src/util/convert-hex-to-rgb";
-import { ansi256To16, rgbToAnsi16,rgbToAnsi256 } from "../../src/util/convert-rgb-to-ansi";
+import { ansi256To16, rgbToAnsi16, rgbToAnsi256 } from "../../src/util/convert-rgb-to-ansi";
 
 describe("convert RGB to ANSI 256", () => {
     it(`rgbToAnsi256(7, 7, 7) lowest greyscale`, () => {

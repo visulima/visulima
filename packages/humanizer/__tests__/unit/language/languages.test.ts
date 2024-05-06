@@ -1,5 +1,5 @@
 import { createReadStream, readdirSync } from "node:fs";
-import { basename, dirname,extname, join } from "node:path";
+import { basename, dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseCSV } from "csv-parse";

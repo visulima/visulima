@@ -1,13 +1,6 @@
 import { durationLanguage } from "./language/en";
 import validateDurationLanguage from "./language/util/validate-duration-language";
-import type {
-    DurationDigitReplacements,
-    DurationLanguage,
-    DurationOptions,
-    DurationPiece,
-    DurationUnitMeasures,
-    DurationUnitName
-} from "./types";
+import type { DurationDigitReplacements, DurationLanguage, DurationOptions, DurationPiece, DurationUnitMeasures, DurationUnitName } from "./types";
 
 interface InternalOptions {
     conjunction: string;
@@ -309,7 +302,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     } else if (pieces.length === 2) {
         result = renderedPieces.join(conjunction);
     } else {
-        result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + (renderedPieces.at(-1));
+        result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + renderedPieces.at(-1);
     }
 
     if (adverb) {

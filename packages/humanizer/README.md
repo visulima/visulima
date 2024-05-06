@@ -826,18 +826,7 @@ duration(1234);
 // => "1.234 seconds"
 
 duration(1234, {
-  digitReplacements: [
-    "Zero",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-  ],
+    digitReplacements: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
 });
 // => "One.TwoThreeFour seconds"
 ```
@@ -855,16 +844,16 @@ duration(2629800000);
 // => "1 month"
 
 duration(2629800000, {
-  unitMeasures: {
-    y: 31557600000,
-    mo: 30 * 86400000,
-    w: 604800000,
-    d: 86400000,
-    h: 3600000,
-    m: 60000,
-    s: 1000,
-    ms: 1,
-  },
+    unitMeasures: {
+        y: 31557600000,
+        mo: 30 * 86400000,
+        w: 604800000,
+        d: 86400000,
+        h: 3600000,
+        m: 60000,
+        s: 1000,
+        ms: 1,
+    },
 });
 // => "1 month, 10 hours, 30 minutes"
 ```

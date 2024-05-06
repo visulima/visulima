@@ -357,6 +357,7 @@ Output:\
 ![multiline nested](__assets__/multi-nested.png)
 
 <a id="base-colors" name="base-colors"></a>
+
 ## Base ANSI 16 colors and styles
 
 Colors and styles have standard names used by many popular libraries, such

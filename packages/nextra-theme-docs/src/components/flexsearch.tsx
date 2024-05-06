@@ -53,7 +53,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
     const response = await fetch(`${basePath}/_next/static/chunks/nextra-data-${locale}.json`);
     const searchData = (await response.json()) as SearchData;
 
-    // eslint-disable-next-line import/no-named-as-default-member
+     
     const pageIndex: PageIndex = new FlexSearch.Document({
         cache: 100,
         context: {
@@ -69,7 +69,7 @@ const loadIndexesImpl = async (basePath: string, locale: string): Promise<void> 
         tokenize: "full",
     });
 
-    // eslint-disable-next-line import/no-named-as-default-member
+     
     const sectionIndex: SectionIndex = new FlexSearch.Document({
         cache: 100,
         context: {

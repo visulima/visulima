@@ -1,4 +1,4 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../../../src/types";
 import { getLongestBadge } from "../../../src/util/get-longest-badge";

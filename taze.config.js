@@ -19,5 +19,5 @@ export default defineConfig({
     write: true,
     ignorePaths: ["node_modules", "packages/**/dist", "packages/**/coverage", "packages/**/__fixtures__", "packages/**/__tests__"],
     recursive: true,
-    mode: "latest"
+    mode: "latest",
 });
