@@ -109,9 +109,9 @@ export const Tabs = ({
 
     let content = (
         <HeadlessTab.List className={cn("mt-4 flex w-max min-w-full border-b border-gray-400 pb-px dark:border-neutral-800", classes?.tabs)}>
+            {/* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */}
             {tabs.map((item, index) => (
                 <HeadlessTab
-                    /* eslint-disable-next-line @arthurgeron/react-usememo/require-usememo */
                     className={({ selected }) =>
                         cn(
                             "py-3 px-4 font-medium leading-5 transition-colors text-sm",

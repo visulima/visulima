@@ -32,7 +32,6 @@ const Pre = ({
         const hasWordWrap = "nextraWordWrap" in htmlDataset;
 
         if (hasWordWrap) {
-             
             delete htmlDataset.nextraWordWrap;
         } else {
             htmlDataset.nextraWordWrap = "";

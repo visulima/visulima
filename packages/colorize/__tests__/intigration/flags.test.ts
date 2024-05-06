@@ -14,8 +14,7 @@ describe("enable colors", () => {
         expect.assertions(1);
 
         const received = execScriptSync(filename, ["--color"]);
-        const expected =
-            "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
+        const expected = "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });
@@ -24,8 +23,7 @@ describe("enable colors", () => {
         expect.assertions(1);
 
         const received = execScriptSync(filename, ["--color=true"]);
-        const expected =
-            "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
+        const expected = "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });
@@ -34,8 +32,7 @@ describe("enable colors", () => {
         expect.assertions(1);
 
         const received = execScriptSync(filename, ["--color=always"]);
-        const expected =
-            "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
+        const expected = "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });
@@ -54,8 +51,7 @@ describe("enable colors", () => {
         expect.assertions(1);
 
         const received = execScriptSync(filename, [], ["FORCE_COLOR=1"]);
-        const expected =
-            "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
+        const expected = "\u001B[31mred\u001B[39m|\u001B[30mrgb\u001B[39m|\u001B[40mbgRgb\u001B[49m|\u001B[97mhex\u001B[39m|\u001B[107mbgHex\u001B[49m";
 
         expect(esc(received)).toStrictEqual(esc(expected));
     });

@@ -31,7 +31,7 @@ const esc: (open: number | string, close: number | string) => ColorData =
 const createRgbFunction = (function_: (code: number | string) => ColorData) => (r: number | string, g: number | string, b: number | string) =>
     function_(rgbToAnsi256(Number(r), Number(g), Number(b)));
 
-const createHexFunction = (function_:  (r: number | string, g: number | string, b: number | string) => ColorData) => (hex: ColorValueHex) => {
+const createHexFunction = (function_: (r: number | string, g: number | string, b: number | string) => ColorData) => (hex: ColorValueHex) => {
     const [r, g, b] = convertHexToRgb(hex);
 
     return function_(r, g, b);

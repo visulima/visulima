@@ -6,5 +6,4 @@ const pail = createPail({
     processors: [new MessageFormatterProcessor(), new ErrorProcessor(), new CallerProcessor()],
 });
 
-
 pail.debug("test");

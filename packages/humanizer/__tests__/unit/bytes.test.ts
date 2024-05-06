@@ -28,7 +28,7 @@ describe("formatBytes", () => {
         expect(formatBytes(50.4 * 1024 * 1024, { unit: "KB" })).toBe("51,610 KB");
     });
 
-    it('should dont display a space between number and unit if space option is false', () => {
+    it("should dont display a space between number and unit if space option is false", () => {
         expect.assertions(2);
 
         expect(formatBytes(50.4 * 1024 * 1024, { space: false })).toBe("50MB");
@@ -69,7 +69,7 @@ describe("formatBytes", () => {
         expect.assertions(1);
 
         // @ts-expect-error - Testing invalid input
-        expect(() => formatBytes("50")).toThrow('Bytesize is not a number.');
+        expect(() => formatBytes("50")).toThrow("Bytesize is not a number.");
     });
 
     it("should throw an error when passing an invalid value", () => {
@@ -125,7 +125,7 @@ describe("parseBytes", () => {
     it("should throw an error with an empty string", () => {
         expect.assertions(1);
 
-        expect(() => parseBytes("")).toThrow('Value is not a string or is empty.');
+        expect(() => parseBytes("")).toThrow("Value is not a string or is empty.");
     });
 
     it("should throw an error with a number", () => {

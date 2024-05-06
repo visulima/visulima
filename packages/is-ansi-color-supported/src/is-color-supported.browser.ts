@@ -2,7 +2,7 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
-import { SPACE_16_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+import { SPACE_16_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
 const isColorSupported = (): ColorSupportLevel =>
@@ -41,6 +41,6 @@ export const isStdoutColorSupported = isColorSupported;
 
 export const isStderrColorSupported = isColorSupported;
 // eslint-disable-next-line import/no-unused-modules
-export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO,SPACE_TRUE_COLORS } from "./color-spaces";
+export { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 // eslint-disable-next-line import/no-unused-modules
 export type { ColorSupportLevel } from "./types";

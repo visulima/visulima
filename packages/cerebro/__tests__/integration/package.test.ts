@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import { esc, execScriptSync } from "../helpers";
 
-const strip = (string: string): string => esc(stripAnsi(string)).replaceAll('\r\n', "\n").trimEnd();
+const strip = (string: string): string => esc(stripAnsi(string)).replaceAll("\r\n", "\n").trimEnd();
 
 describe("usage `@visulima/cerebro` npm package", () => {
     it(`should work as CommonJS package`, () => {
