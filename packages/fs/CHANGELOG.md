@@ -1,3 +1,10 @@
+## @visulima/fs [2.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.9...@visulima/fs@2.1.0) (2024-05-06)
+
+
+### Features
+
+* **fs:** adding ensure symlink ([#350](https://github.com/visulima/visulima/issues/350)) ([3e2fd19](https://github.com/visulima/visulima/commit/3e2fd191c4de13a2a6ebf599cd83926b7f8ad9a6))
+
 ## @visulima/fs [2.0.9](https://github.com/visulima/visulima/compare/@visulima/fs@2.0.8...@visulima/fs@2.0.9) (2024-05-03)
 
 
