@@ -1132,11 +1132,11 @@ importers:
   packages/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 3.0.7
-        version: 3.0.7(zod@3.23.6)
+        specifier: 3.0.9
+        version: 3.0.9(zod@3.23.6)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.38
-        version: 2.0.38(@swc/core@1.3.80(@swc/helpers@0.5.2))(openapi-types@12.1.3)
+        specifier: 2.0.41
+        version: 2.0.41(@swc/core@1.3.80(@swc/helpers@0.5.2))(openapi-types@12.1.3)
       accepts:
         specifier: ^1.3.8
         version: 1.3.8
@@ -1178,8 +1178,8 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@visulima/crud':
-        specifier: 2.0.20
-        version: 2.0.20(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)
+        specifier: 2.0.21
+        version: 2.0.21(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)
       '@visulima/readdir':
         specifier: 2.0.12
         version: 2.0.12
@@ -1293,8 +1293,8 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.3.80(@swc/helpers@0.5.2))
       '@visulima/fs':
-        specifier: 2.0.6
-        version: 2.0.6(yaml@2.4.2)
+        specifier: 2.0.9
+        version: 2.0.9(yaml@2.4.2)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -8234,15 +8234,15 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/connect@3.0.7':
-    resolution: {integrity: sha512-Xipiu6bIFfWshxaQhK32rLWxGvyl3hCpP/mQmihxkgZet+4GcM3q7WFbKfCED5bgfvY2R18nBLYXebbtMm/Xeg==}
+  '@visulima/connect@3.0.9':
+    resolution: {integrity: sha512-+Dpmi7vNmn5M7Lc54iAvHV8ybsl50tzi9rwfwdcdjkaot3JZvVSmYttWU31LtZWy7tJbXWt0hwpoIwH9Og/juw==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.20':
-    resolution: {integrity: sha512-jKeieDh5iVRpnei+3HVfpivL7CwNV0W1H5nq/Ul+pCb7kxtBcUVd08hhj3jqspXJ9Q0FwD4XiQXW4TUn49pChA==}
+  '@visulima/crud@2.0.21':
+    resolution: {integrity: sha512-x63xYRgelIZSgMgk4695hpLkyBQMTGgCDcrd6Ys/yX7oMQLWrNBupLU+PoJNGuQlk2/9Kz6gGytaWLdG2b++WA==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -8281,10 +8281,11 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.38':
-    resolution: {integrity: sha512-tzOp+t2CyYg7BXqX5ELZURCIqL7bYQySHcEpa2HctN13TH7rQsUX1tRPlS8NxzC7dHXDzhCw4HkTjbpyUkOxEw==}
+  '@visulima/jsdoc-open-api@2.0.41':
+    resolution: {integrity: sha512-YVR6A2W1udLscSdVvBOriNydB6+XnFoaZtCLUmFPVZgmH0A/E1E/rf8nDp8GwPp7x5YaSlvJif79q4lEnEul7w==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
+    hasBin: true
 
   '@visulima/nextra-theme-docs@4.0.21':
     resolution: {integrity: sha512-NyjxIcFD0L35Y3JwgLdkygDFL7aRr4JL3bibgpuVsnSCYsfE01dc24MTMWtE7ICuRCQf2ZD8R7bSHQtuadA8nw==}
@@ -8308,11 +8309,6 @@ packages:
 
   '@visulima/package@1.7.1':
     resolution: {integrity: sha512-jXDdvZHGpd6N15i6Nan/2PQ24E9fS2JYFY4M5jNe51eHo+MD5kVBZS1fnkpxrDodYrnzqzTzQrxeNPlCEYBLcw==}
-    engines: {node: '>=18.* <=21.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/pagination@3.0.14':
-    resolution: {integrity: sha512-kqQXB81xdt1ynzaq5cHrryBwLsTUI5GWuEBV7XtroC/qhnm1PY9m8Ta6tQYzr2TC6FnwhNQHa5Q8+GnTbpoQ1w==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -24515,15 +24511,15 @@ snapshots:
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.0
 
-  '@visulima/connect@3.0.7(zod@3.23.6)':
+  '@visulima/connect@3.0.9(zod@3.23.6)':
     dependencies:
       http-errors: 2.0.0
       regexparam: 3.0.0
       zod: 3.23.6
 
-  '@visulima/crud@2.0.20(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)':
+  '@visulima/crud@2.0.21(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)':
     dependencies:
-      '@visulima/pagination': 3.0.14
+      '@visulima/pagination': 3.0.15
       '@visulima/prisma-dmmf-transformer': 2.0.17(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)
       http-errors: 2.0.0
       path-to-regexp: 6.2.2
@@ -24554,10 +24550,10 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.0': {}
 
-  '@visulima/jsdoc-open-api@2.0.38(@swc/core@1.3.80(@swc/helpers@0.5.2))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.41(@swc/core@1.3.80(@swc/helpers@0.5.2))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.0.6(yaml@2.4.2)
+      '@visulima/fs': 2.0.9(yaml@2.4.2)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -24655,11 +24651,6 @@ snapshots:
       type-fest: 4.18.1
     transitivePeerDependencies:
       - yaml
-
-  '@visulima/pagination@3.0.14':
-    dependencies:
-      qs: 6.12.1
-    optional: true
 
   '@visulima/pagination@3.0.15':
     dependencies:
