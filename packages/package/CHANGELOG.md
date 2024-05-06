@@ -1,3 +1,11 @@
+## @visulima/package [1.7.5](https://github.com/visulima/visulima/compare/@visulima/package@1.7.4...@visulima/package@1.7.5) (2024-05-06)
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.0
+
 ## @visulima/package [1.7.4](https://github.com/visulima/visulima/compare/@visulima/package@1.7.3...@visulima/package@1.7.4) (2024-05-03)
 
 
