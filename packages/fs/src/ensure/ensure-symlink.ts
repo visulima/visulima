@@ -1,6 +1,7 @@
+import type { symlink as symlinkSync } from "node:fs";
 import { lstat, readlink, stat, symlink } from "node:fs/promises";
 
-import { dirname, resolve,toNamespacedPath } from "pathe";
+import { dirname, resolve, toNamespacedPath } from "pathe";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -10,7 +11,6 @@ import resolveSymlinkTarget from "../utils/resolve-symlink-target";
 import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
-import type { symlink as symlinkSync } from "node:fs";
 
 const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
@@ -21,8 +21,10 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  *
  * @param target the source file path
  * @param linkName the destination link path
+ * @param type the type of the symlink, or null to use automatic detection
  * @returns A void promise that resolves once the link exists.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const ensureSymlink = async (target: URL | string, linkName: URL | string, type?: symlinkSync.Type): Promise<void> => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
@@ -60,7 +62,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
 
     // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
     // lack permission to create them
-    const symlinkType: string | null = type || (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
+    const symlinkType: string | null = type ?? (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -76,9 +78,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkStatInfo = await lstat(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            const type = getFileInfoType(linkStatInfo);
-
-            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${linkName as string}`);
+            throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -86,7 +86,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}`);
+            throw new AlreadyExistsError("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath);
         }
     }
 };

@@ -1,7 +1,7 @@
 import type { symlink } from "node:fs";
 import { lstatSync, readlinkSync, statSync, symlinkSync } from "node:fs";
 
-import { dirname, resolve,toNamespacedPath } from "pathe";
+import { dirname, resolve, toNamespacedPath } from "pathe";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -22,7 +22,9 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * @param target the source file path
  * @param linkName the destination link path
  * @param type the type of the symlink, or null to use automatic detection
+ * @returns A void.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: symlink.Type): void => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
@@ -41,7 +43,14 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             isStatsIdentical(statSync(targetRealPath), statSync(linkName))
         ) {
-            return;
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            const sourceStat = statSync(targetRealPath);
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            const destinationStat = statSync(linkName);
+
+            if (isStatsIdentical(sourceStat, destinationStat)) {
+                return;
+            }
         }
     } catch {
         /* empty */
@@ -55,7 +64,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
 
     // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
     // lack permission to create them
-    const symlinkType: symlink.Type | null = type || (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
+    const symlinkType: symlink.Type | null = type ?? (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
 
     try {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -71,9 +80,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkStatInfo = lstatSync(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            const type = getFileInfoType(linkStatInfo);
-
-            throw new AlreadyExistsError(`A '${type}' already exists at the path: ${linkName as string}`);
+            throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -81,7 +88,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}`);
+            throw new AlreadyExistsError("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath);
         }
     }
 };
