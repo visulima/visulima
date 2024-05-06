@@ -49,7 +49,7 @@ describe.each([
             "./sym-real-symlink.txt",
             "./sym-real-symlink-dir-foo",
             "./sym-symlink-dir-foo",
-            // "./sym-symlink.txt",
+            "./sym-symlink.txt",
             "./sym-empty-dir",
             "./sym-dir-foo",
             "./sym-dir-bar",
