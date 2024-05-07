@@ -4,8 +4,6 @@
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
-import { realpathSync } from "node:fs";
-
 import { readFileSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { parse } from "jsonc-parser";
@@ -76,15 +74,6 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const internalParseTsConfig = (tsconfigPath: string, options?: Options, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
-    let realTsconfigPath: string;
-
-    try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        realTsconfigPath = realpathSync(tsconfigPath) as string;
-    } catch {
-        throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
-    }
-
     /**
      * Decided not to cache the TsConfigJsonResolved object because it's
      * mutable.
@@ -95,13 +84,19 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
      *
      * By only caching fs results, we can avoid serving mutated objects
      */
-    let config: TsConfigJson = readJsonc(realTsconfigPath) || {};
+    let config: TsConfigJson;
+
+    try {
+        config = readJsonc(tsconfigPath) || {};
+    } catch {
+        throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
+    }
 
     if (typeof config !== "object") {
         throw new SyntaxError(`Failed to parse tsconfig at: ${tsconfigPath}`);
     }
 
-    const directoryPath = dirname(realTsconfigPath);
+    const directoryPath = dirname(tsconfigPath);
 
     if (config.compilerOptions) {
         const { compilerOptions } = config;
