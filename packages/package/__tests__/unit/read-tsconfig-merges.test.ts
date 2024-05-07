@@ -4,6 +4,7 @@
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
+import { symlinkSync } from "node:fs";
 import { rm } from "node:fs/promises";
 
 import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
@@ -172,6 +173,34 @@ describe("parse-tsconfig merges", () => {
         });
     });
 
+    it("inherits from symlinked configs", async () => {
+        expect.assertions(1);
+
+        writeFileSync(join(distribution, "project", "src", "a.ts"), "");
+        writeFileSync(join(distribution, "project", "src", "b.ts"), "");
+        writeFileSync(join(distribution, "project", "src", "c.ts"), "");
+        writeJsonSync(join(distribution, "project", "tsconfig.json"), {
+            extends: "./symlink/tsconfig.base.json",
+        });
+        writeJsonSync(join(distribution, "symlink-source", "tsconfig.base.json"), {
+            include: ["../src/*"],
+        });
+
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        symlinkSync(join(distribution, "symlink-source"), join(distribution, "project/symlink"));
+
+        const expectedTsconfig = await getTscTsconfig(join(distribution, "project"));
+        delete expectedTsconfig.files;
+
+        const tsconfig = readTsConfig(join(distribution, "project", "tsconfig.json"));
+
+        expect({
+            ...tsconfig,
+            // See https://github.com/privatenumber/get-tsconfig/issues/73
+            include: tsconfig.include?.map((includePath) => `symlink/../${includePath}`),
+        }).toStrictEqual(expectedTsconfig);
+    });
+
     describe("include", () => {
         it("inherits with relative path", async () => {
             expect.assertions(1);
@@ -299,6 +328,31 @@ describe("parse-tsconfig merges", () => {
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(tsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("resolves parent baseUrl path defined in symlinked config", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "symlink-source", "tsconfig.json"), {
+                compilerOptions: {
+                    baseUrl: "..",
+                },
+            });
+            writeJsonSync(join(distribution, "project", "tsconfig.json"), {
+                extends: "./symlink/tsconfig.json",
+            });
+            writeFileSync(join(distribution, "project", "a.ts"), "");
+
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            symlinkSync(join(distribution, "symlink-source"), join(distribution, "project", "symlink"));
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "project"));
+            delete expectedTsconfig.files;
+
+            const tsconfig = readTsConfig(join(distribution, "project", "tsconfig.json"));
+
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
     });
