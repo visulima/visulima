@@ -233,11 +233,6 @@
         "zod": "^3.23.6"
     },
     "peerDependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "zod": "^3.22.4"
-    },
-    "optionalDependencies": {
         "@hapi/hapi": "^21.3.9",
         "@koa/router": "^12.0.1",
         "@visulima/crud": "2.0.21",
@@ -250,10 +245,72 @@
         "koa": "^2.15.3",
         "next": "^13.5.6",
         "rate-limiter-flexible": "^5.0.3",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "redoc": "^2.1.4",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
-        "webpack": "^5.91.0"
+        "webpack": "^5.91.0",
+        "zod": "^3.22.4"
+    },
+    "peerDependenciesMeta": {
+        "@hapi/hapi": {
+            "optional": true
+        },
+        "@koa/router": {
+            "optional": true
+        },
+        "@visulima/crud": {
+            "optional": true
+        },
+        "@visulima/readdir": {
+            "optional": true
+        },
+        "chalk": {
+            "optional": true
+        },
+        "commander": {
+            "optional": true
+        },
+        "cors": {
+            "optional": true
+        },
+        "express": {
+            "optional": true
+        },
+        "fastify": {
+            "optional": true
+        },
+        "koa": {
+            "optional": true
+        },
+        "next": {
+            "optional": true
+        },
+        "rate-limiter-flexible": {
+            "optional": true
+        },
+        "react": {
+            "optional": true
+        },
+        "react-dom": {
+            "optional": true
+        },
+        "redoc": {
+            "optional": true
+        },
+        "swagger-ui-dist": {
+            "optional": true
+        },
+        "swagger-ui-react": {
+            "optional": true
+        },
+        "webpack": {
+            "optional": true
+        },
+        "zod": {
+            "optional": true
+        }
     },
     "engines": {
         "node": ">=18.* <=21.*"
