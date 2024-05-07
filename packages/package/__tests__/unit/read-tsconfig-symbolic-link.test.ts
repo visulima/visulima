@@ -7,7 +7,7 @@
 import { rm, symlink } from "node:fs/promises";
 import path from "node:path";
 
-import { ensureDirSync, writeFileSync,writeJsonSync } from "@visulima/fs";
+import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "pathe";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";

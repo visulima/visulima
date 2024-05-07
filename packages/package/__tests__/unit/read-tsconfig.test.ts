@@ -183,16 +183,15 @@ describe("parses tsconfig", () => {
         it("extends array with common base", async () => {
             expect.assertions(1);
 
-            writeJsonSync(join(distribution, "base.json"), {
-            });
+            writeJsonSync(join(distribution, "base.json"), {});
             writeJsonSync(join(distribution, "tsconfig-b.json"), {
-                    extends: "./base.json",
+                extends: "./base.json",
             });
             writeJsonSync(join(distribution, "tsconfig-a.json"), {
-                    extends: "./base.json",
+                extends: "./base.json",
             });
             writeJsonSync(join(distribution, "tsconfig.json"), {
-                    extends: ["./tsconfig-a.json", "./tsconfig-b.json"],
+                extends: ["./tsconfig-a.json", "./tsconfig-b.json"],
             });
 
             const expectedTsconfig = await getTscTsconfig(distribution);
