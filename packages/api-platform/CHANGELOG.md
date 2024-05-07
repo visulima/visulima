@@ -1,3 +1,15 @@
+## @visulima/api-platform [3.0.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.7...@visulima/api-platform@3.0.0) (2024-05-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api-platform:** changed optionalDependencies to peerDependencies
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Bug Fixes
+
+* **api-platform:** changed optionalDependencies to peerDependencies with peerDependenciesMeta ([7dd2a90](https://github.com/visulima/visulima/commit/7dd2a9083730a9e8cfab6d7f18dc4936a48872d4))
+
 ## @visulima/api-platform [2.1.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.6...@visulima/api-platform@2.1.7) (2024-05-03)
 
 
