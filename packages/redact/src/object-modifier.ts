@@ -1,11 +1,11 @@
-import type { Input, Modifier } from "./types";
+import type { Input, Modifiers } from "./types";
 import objectPathResolver from "./utils/object-path-resolver";
 
 // Check if value is either an array or an object
 const isObjectOrArray = (value: unknown): boolean | null => Array.isArray(value) || (typeof value === "object" && value && value.constructor === Object);
 
 // Handle value type checking for applying rules recursive
-const deep = (input: Input, modifier: Modifier, redact: (input: Input, modifier: Modifier) => Input): void => {
+const deep = (input: Input, modifier: Modifiers, redact: (input: Input, modifier: Modifiers) => Input): void => {
     const inputKeys = Object.keys(input);
     const inputKeysLength = inputKeys.length;
 
@@ -38,14 +38,15 @@ const deep = (input: Input, modifier: Modifier, redact: (input: Input, modifier:
     }
 };
 
-export const objectModifier = <V = Input>(input: V, modifier: Record<string, unknown>, redact: (input: V, modifier: Modifier) => V) => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const objectModifier = <V = Input>(input: V, modifier: Modifiers, redact: (input: V, modifier: Modifiers) => V): void => {
     const modifierKeys = Object.keys(modifier);
 
     let modifierKeysIndex = 0;
 
     // eslint-disable-next-line no-loops/no-loops
     while (modifierKeysIndex < modifierKeys.length) {
-        const keyOpt = modifierKeys[modifierKeysIndex] as keyof Modifier;
+        const keyOpt = modifierKeys[modifierKeysIndex] as keyof Modifiers;
         const valueOpt = modifier[modifierKeys[modifierKeysIndex]];
 
         // Check if value is object and might have further complexity
@@ -64,10 +65,10 @@ export const objectModifier = <V = Input>(input: V, modifier: Record<string, unk
 
                 temporary[keyOpt] = valueOpt;
 
-                const res = objectPathResolver(temporary);
+                const result = objectPathResolver(temporary);
 
-                if (res?.[keyOpt]) {
-                    input[keyOpt] = res[keyOpt];
+                if (result?.[keyOpt]) {
+                    input[keyOpt] = result[keyOpt];
                 }
             }
 
@@ -86,7 +87,7 @@ export const objectModifier = <V = Input>(input: V, modifier: Record<string, unk
                     while (valueOptKeysIndex < valueOptKeysLength) {
                         const temporary: Record<string, unknown> = {};
 
-                        temporary[valueOptKeys[valueOptKeysIndex]] = (valueOpt as Record<string, unknown>)[valueOptKeys[valueOptKeysIndex] as keyof Modifier];
+                        temporary[valueOptKeys[valueOptKeysIndex]] = (valueOpt as Record<string, unknown>)[valueOptKeys[valueOptKeysIndex] as keyof Modifiers];
 
                         redact(input[keyOpt] as V, temporary);
 
@@ -128,6 +129,7 @@ export const objectModifier = <V = Input>(input: V, modifier: Record<string, unk
             delete input[keyOpt];
         }
 
+        // eslint-disable-next-line no-plusplus
         modifierKeysIndex++;
     }
 };
