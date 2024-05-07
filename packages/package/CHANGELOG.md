@@ -1,3 +1,10 @@
+## @visulima/package [1.7.6](https://github.com/visulima/visulima/compare/@visulima/package@1.7.5...@visulima/package@1.7.6) (2024-05-07)
+
+
+### Bug Fixes
+
+* **package:** symlinks shouldn't be resolved to a real path ([#394](https://github.com/visulima/visulima/issues/394)) ([c504321](https://github.com/visulima/visulima/commit/c504321a05de761eda2c310eaf2e9b272fa0832e))
+
 ## @visulima/package [1.7.5](https://github.com/visulima/visulima/compare/@visulima/package@1.7.4...@visulima/package@1.7.5) (2024-05-06)
 
 
