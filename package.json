@@ -213,7 +213,7 @@
         "husky": "^9.0.11",
         "is-ci": "^3.0.1",
         "lint-staged": "^15.2.2",
-        "nx": "^18.3.4",
+        "nx": "^19.0.0",
         "plop": "^4.0.1",
         "prettier": "^3.2.5",
         "publint": "^0.2.7",
@@ -228,7 +228,7 @@
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
-    "packageManager": "pnpm@9.0.6",
+    "packageManager": "pnpm@9.1.0",
     "engines": {
         "node": ">=18.* <=21.*"
     },
