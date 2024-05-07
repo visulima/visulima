@@ -1,3 +1,9 @@
+/**
+ * A modified version from `https://github.com/privatenumber/get-tsconfig/blob/master/tests/specs/parse-tsconfig/extends/resolves/symbolic-link.spec.ts`
+ *
+ * MIT License
+ * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ */
 import { rm, symlink } from "node:fs/promises";
 import path from "node:path";
 

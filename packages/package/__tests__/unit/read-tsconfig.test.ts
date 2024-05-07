@@ -139,4 +139,68 @@ describe("parses tsconfig", () => {
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
     });
+
+    describe("resolves", () => {
+        it("handles missing extends", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                extends: "missing-package",
+            });
+
+            expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'missing-package' found.");
+        });
+
+        describe("circularity", () => {
+            it("self extend", async () => {
+                expect.assertions(2);
+
+                writeJsonSync(join(distribution, "tsconfig.json"), {
+                    extends: "./tsconfig.json",
+                });
+
+                const errorMessage = "Circularity detected while resolving configuration";
+
+                await expect(getTscTsconfig(distribution)).rejects.toThrow(errorMessage);
+
+                expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow(errorMessage);
+            });
+
+            it("recursive", async () => {
+                expect.assertions(1);
+
+                writeJsonSync(join(distribution, "base.json"), {
+                    extends: "./tsconfig.json",
+                });
+                writeJsonSync(join(distribution, "tsconfig.json"), {
+                    extends: "./base.json",
+                });
+
+                expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("Circularity detected while resolving configuration:");
+            });
+        });
+
+        it("extends array with common base", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "base.json"), {
+            });
+            writeJsonSync(join(distribution, "tsconfig-b.json"), {
+                    extends: "./base.json",
+            });
+            writeJsonSync(join(distribution, "tsconfig-a.json"), {
+                    extends: "./base.json",
+            });
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                    extends: ["./tsconfig-a.json", "./tsconfig-b.json"],
+            });
+
+            const expectedTsconfig = await getTscTsconfig(distribution);
+            delete expectedTsconfig.files;
+
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(tsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
 });
