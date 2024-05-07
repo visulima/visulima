@@ -4,5 +4,5 @@
     "sourceRoot": "packages/jsdoc-open-api/src",
     "projectType": "library",
     "tags": ["type:package", "jsdoc-open-api"],
-    "implicitDependencies": []
+    "implicitDependencies": ["fs"]
 }
