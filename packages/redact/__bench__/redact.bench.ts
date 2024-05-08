@@ -21,15 +21,11 @@ describe("redact", () => {
             },
         };
 
-        const output = redact(object, {
-            modifier: {
-                a: { b: { c: null } },
-            },
-        });
+        const output = redact(object, [{ key: "a.b.c", replacment: null }]);
 
-        // if (output.a.b.c) {
-        //     throw new Error("Expected b in a in object to be empty");
-        // }
+        if (output.a.b.c === 1) {
+            throw new Error("Expected b in a in object to be '<A.B.C>'");
+        }
     });
 
     bench("fast-redact", () => {

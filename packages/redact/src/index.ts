@@ -1,6 +1,5 @@
 import { stringAnonymize } from "./string-anonymizer";
 import type { Anonymize, Modifiers } from "./types";
-import { clone } from "./utils/simple-clone";
 import wildcard from "./wildcard";
 
 type SaveCopy = (original: unknown, copy: unknown) => void;
@@ -135,7 +134,14 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
                 // eslint-disable-next-line security/detect-object-injection
                 copy[key] = input[key];
             }
-        } else if (input instanceof Map) {
+
+            saveCopy(input, copy);
+            recursivelyFilterAttributes<V>(copy as V, examinedObjects, saveCopy, preparedModifiers, identifier);
+
+            return copy as unknown as R;
+        }
+
+        if (input instanceof Map) {
             const copy = new Map();
             const iterator = input.entries();
 
@@ -182,7 +188,9 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
             saveCopy(input, copy);
 
             return copy as unknown as R;
-        } else if (input instanceof Set) {
+        }
+
+        if (input instanceof Set) {
             const copy = new Set();
             const iterator = input.values();
 
@@ -200,7 +208,7 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
             return copy as unknown as R;
         }
 
-        const copy = clone<V>(input);
+        const copy = { ...input };
 
         saveCopy(input, copy);
         recursivelyFilterAttributes<V>(copy, examinedObjects, saveCopy, preparedModifiers, identifier);

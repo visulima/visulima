@@ -83,7 +83,6 @@
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
-        "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
@@ -111,8 +110,6 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.3.21",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "fast-redact": "^3.5.0",
-        "fast-unset": "^2.0.1",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "secretlint": "8.1.1",
@@ -120,7 +117,6 @@
         "sort-package-json": "^2.10.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
-        "unset-value": "^2.0.1",
         "vitest": "^1.6.0"
     },
     "engines": {
