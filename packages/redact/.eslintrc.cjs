@@ -33,16 +33,14 @@ module.exports = {
             },
         },
         {
-            files: ["*.test.ts"],
+            files: ["*.test.ts", "*.bench.ts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {
-                "import/no-default-export": "error",
-                "import/prefer-default-export": "off",
-                "import/no-unused-modules": "off",
-                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
-                "@typescript-eslint/naming-convention": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
             },
         },
         {
