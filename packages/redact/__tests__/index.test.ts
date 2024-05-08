@@ -5,7 +5,7 @@ import defaultModifiers from "../src/modifiers";
 
 describe("redact", () => {
     describe("array", () => {
-        it("should redact sensitive array data with filters", () => {
+        it("should redact sensitive array data with empty modifiers", () => {
             expect.assertions(1);
 
             const input = [
@@ -22,47 +22,74 @@ describe("redact", () => {
                 },
             ];
 
-            const options = {
-                filters: [
-                    {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        isApplicable: (value: any) => value === "password",
-                        transform: () => "REDACTED",
-                    },
-                    {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        isApplicable: (value: any) => typeof value === "object",
-                        transform: (value: any) =>
-                            redact(value, {
-                                filters: [
-                                    {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        isApplicable: (_: any, key: string) => key === "password",
-                                        transform: () => "REDACTED",
-                                    },
-                                    {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        isApplicable: (_: any, key: string) => key === "user.password",
-                                        transform: () => "REDACTED",
-                                    },
-                                ],
-                            }),
-                    },
-                ],
-            };
+            const result = redact(input, []);
 
-            const result = redact(input, options);
+            expect(result).toStrictEqual(input);
+        });
 
-            expect(result).toStrictEqual([
+        it("should redact sensitive array data with only specified keys", () => {
+            expect.assertions(1);
+
+            const input = [
                 1,
-                "REDACTED",
+                "password",
                 3,
                 "user",
                 {
-                    password: "REDACTED",
+                    password: "123456",
                     user: {
-                        email: "<EMAIL>",
-                        password: "REDACTED",
+                        email: "test@example.com",
+                        password: "123456",
+                    },
+                },
+            ];
+
+            const result = redact(input, [1]);
+
+            expect(result).toStrictEqual([
+                1,
+                "<REDACTED>",
+                3,
+                "user",
+                {
+                    password: "123456",
+                    user: {
+                        email: "test@example.com",
+                        password: "123456",
+                    },
+                },
+            ]);
+        });
+
+        it("should redact sensitive array data with deep specified key", () => {
+            expect.assertions(1);
+
+            const input = [
+                1,
+                ["test", "email", 2, "test"],
+                3,
+                "user",
+                {
+                    password: "123456",
+                    user: {
+                        email: "test@example.com",
+                        password: "123456",
+                    },
+                },
+            ];
+
+            const result = redact(input, ["1.2"]);
+
+            expect(result).toStrictEqual([
+                1,
+                ["test", "email", "<REDACTED>", "test"],
+                3,
+                "user",
+                {
+                    password: "123456",
+                    user: {
+                        email: "test@example.com",
+                        password: "123456",
                     },
                 },
             ]);
@@ -224,6 +251,40 @@ describe("redact", () => {
                 user: {
                     email: "test@example.com",
                     password: "<*.PASSWORD>",
+                },
+            });
+        });
+
+        it("should redact sensitive object data with wildcard key and replacement", () => {
+            expect.assertions(1);
+
+            const input = {
+                admin: {
+                    user: {
+                        email: "test@example.com",
+                        password: "123456",
+                    },
+                },
+                password: "123456",
+                user: {
+                    email: "test@example.com",
+                    password: "123456",
+                },
+            };
+
+            const result = redact(input, [{ key: "*.password", replacement: "<PASSWORD>" }]);
+
+            expect(result).toStrictEqual({
+                admin: {
+                    user: {
+                        email: "test@example.com",
+                        password: "<PASSWORD>",
+                    },
+                },
+                password: "123456",
+                user: {
+                    email: "test@example.com",
+                    password: "<PASSWORD>",
                 },
             });
         });

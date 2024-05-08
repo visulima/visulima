@@ -65,8 +65,10 @@ const createDocumentTermsFromTerms = (typesToAnonymize: string[], processedTerms
 };
 
 const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
+    // eslint-disable-next-line unicorn/no-array-reduce
     const uniqueProcessedTerms = [...processedTerms.reduce((map, term) => map.set(term.text + term.start + term.tag, term), new Map()).values()];
 
+    // eslint-disable-next-line etc/no-assign-mutated-array,@typescript-eslint/no-unsafe-return
     return uniqueProcessedTerms.sort((a, b) => {
         const startDiff = a.start - b.start;
 
