@@ -1,3 +1,4 @@
+import isJson from "./is-json";
 import { stringAnonymize } from "./string-anonymizer";
 import type { Anonymize, Modifiers } from "./types";
 import wildcard from "./wildcard";
@@ -78,6 +79,24 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
     }) as Anonymize[];
 
     if (typeof input === "string" || input instanceof String) {
+        if (isJson(input as string)) {
+            try {
+                const parsed = JSON.parse(input as string);
+
+                if (typeof parsed === "number") {
+                    return input as unknown as R;
+                }
+
+                const filtered = recursiveFilter(parsed, examinedObjects, saveCopy, preparedModifiers, identifier);
+
+                return JSON.stringify(filtered) as unknown as R;
+            } catch {
+                // logger?.debug(error);
+            }
+        }
+
+        // TODO: handle URLs
+
         return stringAnonymize(input as string, preparedModifiers) as unknown as R;
     }
 

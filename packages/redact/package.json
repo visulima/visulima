@@ -88,7 +88,6 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/deep-clone": "workspace:*",
         "compromise": "^14.13.0"
     },
     "devDependencies": {

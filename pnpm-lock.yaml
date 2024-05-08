@@ -3505,9 +3505,6 @@ importers:
 
   packages/redact:
     dependencies:
-      '@visulima/deep-clone':
-        specifier: workspace:*
-        version: link:../deep-clone
       compromise:
         specifier: ^14.13.0
         version: 14.13.0
