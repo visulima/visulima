@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { stringAnonymize } from "../src/string-anonymizer";
 import defaultModifiers from "../src/modifiers";
+import stringAnonymize from "../src/string-anonymizer";
 
 describe("stringAnonymize", () => {
     it("should anonymize a string", () => {
@@ -37,7 +37,7 @@ describe("stringAnonymize", () => {
         const input = "John's email is john.doe@gmail.com";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> email is <EMAIL>");
+        expect(result).toBe("<FIRSTNAME> email is <EMAIL>");
     });
 
     it("should anonymize phone numbers", () => {
@@ -46,7 +46,7 @@ describe("stringAnonymize", () => {
         const input = "John's phone number is 123-456-7890";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> phone number is <PHONENUMBER>");
+        expect(result).toBe("<FIRSTNAME> phone number is <PHONENUMBER>");
     });
 
     it("should anonymize money-related strings", () => {
@@ -55,7 +55,7 @@ describe("stringAnonymize", () => {
         const input = "John has $1000 in his account.";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> has <MONEY> in his account.");
+        expect(result).toBe("<FIRSTNAME> has <MONEY> in his account.");
     });
 
     it("should handle empty input string", () => {
@@ -64,7 +64,7 @@ describe("stringAnonymize", () => {
         const input = "";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("");
+        expect(result).toBe("");
     });
 
     it("should handle multiple matches of the same type", () => {
@@ -73,7 +73,7 @@ describe("stringAnonymize", () => {
         const input = "John Doe has phone numbers 123-456-7890 and 098-765-4321";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> <LASTNAME> has phone numbers <PHONENUMBER> and <PHONENUMBER1>");
+        expect(result).toBe("<FIRSTNAME> <LASTNAME> has phone numbers <PHONENUMBER> and <PHONENUMBER1>");
     });
 
     it("should anonymize times", () => {
@@ -91,7 +91,7 @@ describe("stringAnonymize", () => {
         const input = "John's credit card number is 4111-1111-1111-1111";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> credit card number is <CREDITCARD>");
+        expect(result).toBe("<FIRSTNAME> credit card number is <CREDITCARD>");
     });
 
     it("should anonymize multiple credit card numbers", () => {
@@ -100,7 +100,7 @@ describe("stringAnonymize", () => {
         const input = "John's credit card numbers are 4111-1111-1111-1111 and 5500-0000-0000-0004";
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual("<FIRSTNAME> credit card numbers are <CREDITCARD> and <CREDITCARD1>");
+        expect(result).toBe("<FIRSTNAME> credit card numbers are <CREDITCARD> and <CREDITCARD1>");
     });
 
     it("should test long paragraph", () => {
@@ -113,7 +113,7 @@ In my free time, I enjoy hiking, painting, and playing the guitar. I'm also an a
 Please remember that all the information provided, including the credit card number, email address, and phone number, is entirely fictional and randomly generated. It does not represent any real individuals or their personal experiences.`;
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual(
+        expect(result).toBe(
             `My name is <FIRSTNAME> <LASTNAME>, and I was born on <DATE>, in a small town called Oakdale. I grew up with my parents and two siblings, an older brother named <FIRSTNAME1> and a younger sister named <FIRSTNAME2>. We lived in a cozy two-story house with a white picket fence. In high school, I was actively involved in the drama club and played the lead role in our school's production of "<FIRSTNAME3> and <FIRSTNAME4>." <LASTNAME1> graduation, I pursued my passion for writing and earned a Bachelor's degree in English Literature from the University of Cambridge in <DATE3>. Currently, I work as a freelance writer, specializing in content creation for various online platforms.
 If you'd like to reach me, you can email me at <EMAIL> or give me a call at +1 (<PHONENUMBER2>) <DATE1>3-4567.
 Please note that the credit card number provided, <CREDITCARD>, is purely fictional and should not be used for any actual transactions or financial purposes.
@@ -128,6 +128,6 @@ Please remember that all the information provided, including the credit card num
         const input = `Hi i'm John Doe, my email is john@example.com and my phone number is +1-234-567-8900.`;
         const result = stringAnonymize(input, defaultModifiers);
 
-        expect(result).toEqual(`Hi i'm <FIRSTNAME> <LASTNAME>, my email is <EMAIL> and my phone number is <PHONENUMBER>.`);
+        expect(result).toBe(`Hi i'm <FIRSTNAME> <LASTNAME>, my email is <EMAIL> and my phone number is <PHONENUMBER>.`);
     });
 });

@@ -105,12 +105,14 @@ describe("redact", () => {
                     user: {
                         email: "test@example.com",
                         password: "123456",
+                        note: null,
                     },
                 },
                 password: "123456",
                 user: {
                     email: "test@example.com",
                     password: "123456",
+                    note: null,
                 },
             };
 

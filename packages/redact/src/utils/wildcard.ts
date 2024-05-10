@@ -1,3 +1,5 @@
+type RollbackString = { index: number; string: string };
+
 /**
  * When a match doesn't continue to the end of the string, this function rolls back to try again with the rest of the string
  *
@@ -6,15 +8,21 @@
  *
  * @returns {boolean} True if the match was successful, false if it was not
  */
-const checkRollbackStrings = (rollbackStrings: string[], patternSubstrings: string[]): boolean => {
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of,no-loops/no-loops
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrings: string[]): boolean => {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of,no-plusplus
     for (let s = 0; s < rollbackStrings.length; ++s) {
-        let currentString = rollbackStrings[s].string; // starting with the rolled back string
-        let patternIndex = rollbackStrings[s].index;
+        // eslint-disable-next-line security/detect-object-injection
+        let currentString = (rollbackStrings[s] as RollbackString).string; // starting with the rolled back string
+        // eslint-disable-next-line security/detect-object-injection
+        let patternIndex = (rollbackStrings[s] as RollbackString).index;
 
-        // eslint-disable-next-line no-loops/no-loops
+
         while (patternIndex < patternSubstrings.length) {
-            if (!currentString.includes(patternSubstrings[patternIndex])) {
+            // eslint-disable-next-line security/detect-object-injection
+            const patternSubstring = patternSubstrings[patternIndex] as string;
+
+            if (!currentString.includes(patternSubstring)) {
                 break;
             }
 
@@ -22,17 +30,16 @@ const checkRollbackStrings = (rollbackStrings: string[], patternSubstrings: stri
 
             rollbackStrings.push({ index: patternIndex, string: testString });
 
-            if (!testString.includes(patternSubstrings[patternIndex])) {
+            if (!testString.includes(patternSubstring)) {
                 rollbackStrings.pop();
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            currentString = currentString.slice(currentString.indexOf(patternSubstrings[patternIndex]) + patternSubstrings[patternIndex].length);
+            currentString = currentString.slice(currentString.indexOf(patternSubstring) + patternSubstring.length);
 
             // eslint-disable-next-line no-plusplus
             patternIndex++;
 
-            // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line security/detect-object-injection
             while (patternSubstrings[patternIndex] === "") {
                 // eslint-disable-next-line no-plusplus
                 patternIndex++;
@@ -52,34 +59,35 @@ const checkRollbackStrings = (rollbackStrings: string[], patternSubstrings: stri
     return false;
 };
 
+/**
+ * If you put a wildcard at the beginning, for example *Thing then you can match anything or nothing before your string.
+ * So your string could be Best Thing or just Thing and it would match fine.
+ * The same is true for the end. Best* would match Best Thing or just Best
+ * If you want to match text in the middle of the string, it works the same way.
+ * Best*Thing matches both BestThing and Best and crazy Thing.
+ *
+ * @param {string} input
+ * @param {string} pattern
+ *
+ * @returns {boolean}
+ */
 const wildcard = (
-    string_: string,
+    input: string,
     pattern: string,
-    options?: { caseSensitive?: boolean; wildcard?: string },
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): boolean => {
-    // eslint-disable-next-line no-param-reassign
-    options = { caseSensitive: true, wildcard: "*", ...options };
-
-    if (!options.caseSensitive) {
-        // eslint-disable-next-line no-param-reassign
-        pattern = pattern.toLowerCase();
-        // eslint-disable-next-line no-param-reassign
-        string_ = string_.toLowerCase();
-    }
-
     // if there are no wildcards, must be exact
-    if (!pattern.includes(options.wildcard as string)) {
-        return pattern === string_;
+    if (!pattern.includes("*")) {
+        return pattern === input;
     }
 
-    const patternSubstrings = pattern.split(options.wildcard as string);
+    const patternSubstrings = pattern.split("*");
 
     let patternIndex = 0;
-    let currentString = string_;
+    let currentString = input;
 
     // find pattern beginning
-    // eslint-disable-next-line no-loops/no-loops
+    // eslint-disable-next-line security/detect-object-injection
     while (patternSubstrings[patternIndex] === "") {
         // eslint-disable-next-line no-plusplus
         patternIndex++;
@@ -89,17 +97,19 @@ const wildcard = (
         }
     }
 
-    if (patternIndex === 0 && !string_.startsWith(patternSubstrings[0])) {
+    if (patternIndex === 0 && !input.startsWith(patternSubstrings[0] as string)) {
         // not starting with a wildcard
         return false;
     }
 
-    const rollbackStrings = [];
+    const rollbackStrings: RollbackString[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops
+
     while (patternIndex < patternSubstrings.length) {
         // eslint-disable-next-line security/detect-object-injection
-        if (!currentString.includes(patternSubstrings[patternIndex])) {
+        const patternSubstring = patternSubstrings[patternIndex] as string;
+
+        if (!currentString.includes(patternSubstring)) {
             return checkRollbackStrings(rollbackStrings, patternSubstrings);
         }
 
@@ -108,17 +118,16 @@ const wildcard = (
 
         rollbackStrings.push({ index: patternIndex, string: testString });
 
-        // eslint-disable-next-line security/detect-object-injection
-        if (!testString.includes(patternSubstrings[patternIndex])) {
+        if (!testString.includes(patternSubstring)) {
             rollbackStrings.pop();
         }
 
-        currentString = currentString.slice(currentString.indexOf(patternSubstrings[patternIndex]) + patternSubstrings[patternIndex].length);
+        currentString = currentString.slice(currentString.indexOf(patternSubstring) + patternSubstring.length);
 
         // eslint-disable-next-line no-plusplus
         patternIndex++;
 
-        // eslint-disable-next-line no-loops/no-loops
+        // eslint-disable-next-line security/detect-object-injection
         while (patternSubstrings[patternIndex] === "") {
             // eslint-disable-next-line no-plusplus
             patternIndex++;
@@ -127,7 +136,7 @@ const wildcard = (
 
     if (patternIndex >= patternSubstrings.length && patternSubstrings.at(-1) !== "" && currentString.length > 0) {
         // not ending with a wildcard, we need to backtrack
-        if (currentString === string_) {
+        if (currentString === input) {
             // this string doesn't even match a little
             return false;
         }

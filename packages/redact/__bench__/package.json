@@ -9,7 +9,8 @@
         "@visulima/redact": "workspace:*",
         "fast-redact": "^3.5.0",
         "fast-unset": "^2.0.1",
-        "unset-value": "^2.0.1"
+        "unset-value": "^2.0.1",
+        "@qiwi/masker": "^2.0.1"
     },
     "devDependencies": {
         "typescript": "^5.4.5",

@@ -32,7 +32,7 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
 const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const type of typesToAnonymize) {
         // eslint-disable-next-line security/detect-object-injection
         maskMaps[type] = new Map<string, string>();
@@ -40,7 +40,7 @@ const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTe
 
     let outputResult = output;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const term of documentTerms) {
         const { tag, text } = term;
         const mask = maskText(maskMaps, text, tag);
@@ -51,11 +51,21 @@ const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTe
     return outputResult;
 };
 
-const createDocumentTermsFromTerms = (typesToAnonymize: string[], processedTerms: IDocumentTerm[], documentObject: any, term: any): IDocumentTerm[] => {
+const createDocumentTermsFromTerms = (
+    typesToAnonymize: string[],
+    processedTerms: IDocumentTerm[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    documentObject: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    term: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger?: { debug: (...arguments_: any[]) => void },
+): IDocumentTerm[] => {
     const reversedTags = term.tags.reverse();
-    // logger?.debug(`reversedTags: ${JSON.stringify(reversedTags)}`);
+    logger?.debug(`reversedTags: ${JSON.stringify(reversedTags)}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
     const foundTag = reversedTags.find((tag: string) => typesToAnonymize.includes(tag.toLowerCase() as any));
-    // logger?.debug(`foundTag: ${foundTag}`);
+    logger?.debug(`foundTag: ${foundTag}`);
 
     if (foundTag) {
         processedTerms.push({ start: documentObject.offset.start, tag: foundTag, text: term.text });
@@ -81,7 +91,7 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
 };
 
 const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: string, processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
@@ -90,7 +100,7 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
 
         let match;
 
-        // eslint-disable-next-line no-loops/no-loops,no-cond-assign
+        // eslint-disable-next-line no-cond-assign
         while ((match = rx.exec(input)) !== null) {
             processedTerms.push({
                 start: match.index,
@@ -103,11 +113,18 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
     return processedTerms;
 };
 
-const processTerms = (typesToAnonymize: string[], input: string, processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
+const processTerms = (
+    typesToAnonymize: string[],
+    input: string,
+    processedTerms: IDocumentTerm[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger?: { debug: (...arguments_: any[]) => void },
+): IDocumentTerm[] => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const document_ = nlp(input);
 
-    const processedDocument = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const processedDocument: any[] = [
         ...document_.emails().out("offset"),
         ...document_.money().out("offset"),
         ...document_.organizations().out("offset"),
@@ -118,34 +135,43 @@ const processTerms = (typesToAnonymize: string[], input: string, processedTerms:
     processedDocument.forEach((documentObject) => {
         const { terms } = documentObject;
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
         for (const term of terms) {
             // eslint-disable-next-line no-param-reassign
-            processedTerms = createDocumentTermsFromTerms(typesToAnonymize, processedTerms, documentObject, term);
+            processedTerms = createDocumentTermsFromTerms(typesToAnonymize, processedTerms, documentObject, term, logger);
         }
     });
 
     return processedTerms;
 };
 
-const processDocument = (input: string, typesToAnonymize: string[], stringAnonymizeModifiers: StringAnonymize[]): IDocumentTerm[] => {
+const processDocument = (
+    input: string,
+    typesToAnonymize: string[],
+    stringAnonymizeModifiers: StringAnonymize[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger?: { debug: (...arguments_: any[]) => void },
+): IDocumentTerm[] => {
     let processedTerms: IDocumentTerm[] = [];
 
-    processedTerms = processTerms(typesToAnonymize, input, processedTerms);
+    processedTerms = processTerms(typesToAnonymize, input, processedTerms, logger);
     processedTerms = processWithRegex(stringAnonymizeModifiers, input, processedTerms);
 
     return createUniqueAndSortedTerms(processedTerms);
 };
 
-export const stringAnonymize = (input: string, modifiers: Modifiers, logger?: { debug: (...arguments_: any[]) => void }): string => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const stringAnonymize = (input: string, modifiers: Modifiers, options?: { logger?: { debug: (...arguments_: any[]) => void } }): string => {
     const patternModifiers = modifiers.filter((modifier) => typeof modifier === "object" && modifier.pattern) as StringAnonymize[];
-    const typesToAnonymize = modifiers.map((modifier) => (typeof modifier === "string" ? modifier : modifier.key));
+    const typesToAnonymize = modifiers.map((modifier) => (typeof modifier === "string" || typeof modifier === "number" ? modifier + "" : modifier.key));
 
     let output = input;
 
-    const documentTerms = processDocument(input, typesToAnonymize, patternModifiers);
+    const documentTerms = processDocument(input, typesToAnonymize, patternModifiers, options?.logger);
 
     output = replaceWithMasks(typesToAnonymize, documentTerms, output);
 
     return output;
 };
+
+export default stringAnonymize;

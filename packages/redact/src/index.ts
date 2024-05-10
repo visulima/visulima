@@ -1,7 +1,9 @@
-import isJson from "./is-json";
-import { stringAnonymize } from "./string-anonymizer";
+import stringAnonymize from "./string-anonymizer";
 import type { Anonymize, Modifiers } from "./types";
-import wildcard from "./wildcard";
+import isJson from "./utils/is-json";
+import isValidUrl from "./utils/is-valid-url";
+import parseUrlParameters from "./utils/parse-url-params";
+import wildcard from "./utils/wildcard";
 
 type SaveCopy = (original: unknown, copy: unknown) => void;
 type ExaminedObjects = {
@@ -12,50 +14,84 @@ type ExaminedObjects = {
 const circularReferenceKey = "__redact_circular_reference__";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const recursivelyFilterAttributes = <V>(copy: V, examinedObjects: ExaminedObjects[], saveCopy: SaveCopy, modifiers: Anonymize[], identifier?: string): void => {
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const key in copy) {
-        if (Object.prototype.hasOwnProperty.call(copy, key)) {
-            const currentIdentifier = identifier ? `${identifier}.${key}` : key;
-            const matchedModifier = modifiers.find((modifier) => {
-                let modifierFound = false;
+const findModifier = (modifiers: Anonymize[], key: string, currentIdentifier?: string): Anonymize | undefined => {
+    const isMatch = (modifier: Anonymize): boolean => {
+        let modifierFound = false;
 
-                if (modifier.key === key || modifier.key === currentIdentifier) {
-                    modifierFound = true;
-                }
+        if (modifier.key === key || modifier.key === currentIdentifier) {
+            modifierFound = true;
+        }
 
-                if (!modifierFound && (wildcard(key, modifier.key) || wildcard(currentIdentifier, modifier.key))) {
-                    return true;
-                }
+        if (modifier.deep) {
+            return modifierFound;
+        }
 
-                if (modifier.deep) {
-                    return modifierFound;
-                }
+        if (!modifierFound && wildcard(key, modifier.key)) {
+            return true;
+        }
 
-                if (modifier.key.split(".").length === currentIdentifier.split(".").length) {
-                    return modifierFound;
-                }
-
-                return false;
-            });
-
-            if (matchedModifier) {
-                // @ts-expect-error we're literally iterating through attributes, these will exist
-                // eslint-disable-next-line security/detect-object-injection,no-param-reassign
-                copy[key] = matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`;
-
-                // eslint-disable-next-line no-param-reassign
-                identifier = undefined;
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define,security/detect-object-injection,no-param-reassign
-                copy[key] = recursiveFilter(copy[key], examinedObjects, saveCopy, modifiers, currentIdentifier);
+        if (currentIdentifier) {
+            if (!modifierFound && wildcard(currentIdentifier, modifier.key)) {
+                return true;
             }
+
+            if (modifier.key.split(".").length === currentIdentifier.split(".").length) {
+                return modifierFound;
+            }
+        }
+
+        return false;
+    };
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const modifier of modifiers) {
+        if (isMatch(modifier)) {
+            return modifier;
+        }
+    }
+
+    return undefined;
+};
+
+const recursivelyFilterAttributes = <V>(
+    copy: V,
+    examinedObjects: ExaminedObjects[],
+    saveCopy: SaveCopy,
+    modifiers: Anonymize[],
+    options?: RedactOptions,
+    identifier?: string,
+): void => {
+    // eslint-disable-next-line no-restricted-syntax,guard-for-in
+    for (const key in copy) {
+        const currentIdentifier = identifier ? `${identifier}.${key}` : key;
+        const matchedModifier = findModifier(modifiers, key, currentIdentifier);
+
+        if (matchedModifier) {
+            // eslint-disable-next-line security/detect-object-injection,no-param-reassign
+            copy[key] = matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`;
+
+            // eslint-disable-next-line no-param-reassign
+            identifier = undefined;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define,security/detect-object-injection,no-param-reassign
+            copy[key] = recursiveFilter(copy[key], examinedObjects, saveCopy, modifiers, options, currentIdentifier);
         }
     }
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[], saveCopy: SaveCopy, modifiers: Modifiers, identifier?: string): R => {
+const recursiveFilter = <V, R = V>(
+    input: V,
+    examinedObjects: ExaminedObjects[],
+    saveCopy: SaveCopy,
+    modifiers: Modifiers,
+    options?: RedactOptions,
+    identifier?: string,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): R => {
+    if (input == null) {
+        return input as unknown as R;
+    }
+
     // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
     // eslint-disable-next-line security/detect-object-injection
     const id: number | undefined = input[circularReferenceKey];
@@ -83,21 +119,61 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
             try {
                 const parsed = JSON.parse(input as string);
 
-                if (typeof parsed === "number") {
+                if (typeof parsed !== "object" || parsed == null || typeof parsed !== "string") {
                     return input as unknown as R;
                 }
 
-                const filtered = recursiveFilter(parsed, examinedObjects, saveCopy, preparedModifiers, identifier);
+                const filtered = recursiveFilter(parsed, examinedObjects, saveCopy, preparedModifiers, options, identifier);
 
                 return JSON.stringify(filtered) as unknown as R;
-            } catch {
-                // logger?.debug(error);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                options?.logger?.debug(error);
             }
         }
 
-        // TODO: handle URLs
+        if (isValidUrl(input as string)) {
+            const filtered = parseUrlParameters(input as string).map(({ key, value }) => {
+                if (key == null) {
+                    const matchedModifier = findModifier(preparedModifiers, value);
 
-        return stringAnonymize(input as string, preparedModifiers) as unknown as R;
+                    if (matchedModifier) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                        return matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`;
+                    }
+
+                    return value;
+                }
+
+                const matchedModifier = preparedModifiers.find((modifier) => {
+                    let modifierFound = false;
+
+                    if (modifier.key === key) {
+                        modifierFound = true;
+                    }
+
+                    if (!modifierFound && wildcard(key as string, modifier.key)) {
+                        return true;
+                    }
+
+                    if (modifier.deep) {
+                        return modifierFound;
+                    }
+
+                    return false;
+                });
+
+                if (matchedModifier) {
+                    return `${key}=${matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`}`;
+                }
+
+                return `${key}=${value}`;
+            });
+
+            return filtered.join("") as R;
+        }
+
+        return stringAnonymize(input as string, preparedModifiers, options) as unknown as R;
     }
 
     if (Array.isArray(input)) {
@@ -105,7 +181,7 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
 
         saveCopy(input, copy);
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line no-restricted-syntax
         for (const [index, item] of input.entries()) {
             const currentIdentifier = identifier ? `${identifier}.${index.toString()}` : index.toString();
             const foundModifier = preparedModifiers.find((modifier) => modifier.key === index.toString() || modifier.key === currentIdentifier);
@@ -116,14 +192,14 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
                 // eslint-disable-next-line no-param-reassign
                 identifier = undefined;
             } else {
-                copy.push(recursiveFilter(item, examinedObjects, saveCopy, preparedModifiers, currentIdentifier));
+                copy.push(recursiveFilter(item, examinedObjects, saveCopy, preparedModifiers, options, currentIdentifier));
             }
         }
 
         return copy as unknown as R;
     }
 
-    if (typeof input === "object") {
+    if (typeof input === "object" && input !== null) {
         if (input instanceof Error) {
             const copy = new Error(input.message);
 
@@ -147,7 +223,7 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
                 copy.code = input.code;
             }
 
-            // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+            // eslint-disable-next-line guard-for-in,no-restricted-syntax
             for (const key in input) {
                 // @ts-expect-error we're literally iterating through attributes, these will exist
                 // eslint-disable-next-line security/detect-object-injection
@@ -155,7 +231,7 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
             }
 
             saveCopy(input, copy);
-            recursivelyFilterAttributes<V>(copy as V, examinedObjects, saveCopy, preparedModifiers, identifier);
+            recursivelyFilterAttributes<V>(copy as V, examinedObjects, saveCopy, preparedModifiers, options, identifier);
 
             return copy as unknown as R;
         }
@@ -166,38 +242,21 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
 
             let result = iterator.next();
 
-            // eslint-disable-next-line no-loops/no-loops
             while (result.done != null && !result.done) {
                 const [key, value] = result.value;
 
                 if (typeof key === "string" || key instanceof String) {
-                    const matchedModifier = preparedModifiers.find((modifier) => {
-                        let modifierFound = false;
-
-                        if (modifier.key === key) {
-                            modifierFound = true;
-                        }
-
-                        if (!modifierFound && wildcard(key as string, modifier.key)) {
-                            return true;
-                        }
-
-                        if (modifier.deep) {
-                            return modifierFound;
-                        }
-
-                        return false;
-                    });
+                    const matchedModifier = findModifier(preparedModifiers, key as string);
 
                     if (matchedModifier) {
                         copy.set(key, matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`);
                     } else {
-                        copy.set(key, recursiveFilter(value, examinedObjects, saveCopy, preparedModifiers, identifier));
+                        copy.set(key, recursiveFilter(value, examinedObjects, saveCopy, preparedModifiers, options, identifier));
                     }
                 } else {
                     copy.set(
-                        recursiveFilter(key, examinedObjects, saveCopy, preparedModifiers, identifier),
-                        recursiveFilter(value, examinedObjects, saveCopy, preparedModifiers, identifier),
+                        recursiveFilter(key, examinedObjects, saveCopy, preparedModifiers, options, identifier),
+                        recursiveFilter(value, examinedObjects, saveCopy, preparedModifiers, options, identifier),
                     );
                 }
 
@@ -215,9 +274,8 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
 
             let result = iterator.next();
 
-            // eslint-disable-next-line no-loops/no-loops
             while (result.done != null && !result.done) {
-                copy.add(recursiveFilter(result.value, examinedObjects, saveCopy, preparedModifiers, identifier));
+                copy.add(recursiveFilter(result.value, examinedObjects, saveCopy, preparedModifiers, options, identifier));
 
                 result = iterator.next();
             }
@@ -230,7 +288,7 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
         const copy = { ...input };
 
         saveCopy(input, copy);
-        recursivelyFilterAttributes<V>(copy, examinedObjects, saveCopy, preparedModifiers, identifier);
+        recursivelyFilterAttributes<V>(copy, examinedObjects, saveCopy, preparedModifiers, options, identifier);
 
         return copy as unknown as R;
     }
@@ -238,7 +296,9 @@ const recursiveFilter = <V, R = V>(input: V, examinedObjects: ExaminedObjects[],
     return input as unknown as R;
 };
 
+// eslint-disable-next-line import/no-unused-modules
 export type RedactOptions = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: { debug: (...arguments_: any[]) => void };
 };
 
@@ -270,9 +330,9 @@ export function redact<V, R>(input: V, modifiers: Modifiers, options?: RedactOpt
         });
     };
 
-    const returnValue = recursiveFilter<V, R>(input, examinedObjects, saveCopy, modifiers);
+    const returnValue = recursiveFilter<V, R>(input, examinedObjects, saveCopy, modifiers, options);
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const examinedObject of examinedObjects) {
         // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
 

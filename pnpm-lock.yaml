@@ -3527,9 +3527,6 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^8.2.4
         version: 8.2.4
-      '@types/micromatch':
-        specifier: ^4.0.7
-        version: 4.0.7
       '@types/node':
         specifier: 18.18.8
         version: 18.18.8
@@ -3590,6 +3587,9 @@ importers:
 
   packages/redact/__bench__:
     dependencies:
+      '@qiwi/masker':
+        specifier: ^2.0.1
+        version: 2.0.1
       '@visulima/redact':
         specifier: workspace:*
         version: link:..
@@ -6250,6 +6250,57 @@ packages:
   '@prisma/prisma-schema-wasm@5.12.0-21.473ed3124229e22d881cb7addf559799debae1ab':
     resolution: {integrity: sha512-93HT3McC6z6a+2mmHLZVjLz0M0YR4t0CZcsq4HnU0aMWwC9CottwDZvABIPacWqPSXb+5ZnTVybgpZ+Cj1i0rA==}
 
+  '@qiwi/masker-common@2.0.1':
+    resolution: {integrity: sha512-rzxBiSgRDGlxAYuNo+ufaA4rWdPcQKM0HdDDOP08XYMWReJnkjMTFxIOBJYfBzJoOsVroE+HnmUNewl/hMwScg==}
+
+  '@qiwi/masker-debug@2.0.1':
+    resolution: {integrity: sha512-KWwMenSxDcdqK7eGXR5xJAaPDilV836Gv4ZbBqxH7dGCS/URQtF5EVnjdJxFPx9O6XGCRataA2ySkowedGwvvQ==}
+
+  '@qiwi/masker-json@2.0.1':
+    resolution: {integrity: sha512-88wChJUgBtBeV7Iydzrg04TBGO4oW5k/XxKHlLLAhiCWEDry7nOEPbmIsWW4IcmbYdM4Pbs1LBGCKrR1es660Q==}
+
+  '@qiwi/masker-limiter@2.0.1':
+    resolution: {integrity: sha512-CmWxRZm9OEK5Na7zQ21ARoo3KPpH14wwDFUNXHdrsTE5ZPnxuETXla8kvA6udmndGUk8uyCflef63O2jck8trA==}
+
+  '@qiwi/masker-pan@2.0.1':
+    resolution: {integrity: sha512-eCyhSsK7KOUgcPZH67/ut5omtuHz2J/zFc2Mmaaic/A5CpZN0RUNgZj4UaXo2vDWP+nwPCwpapWVrQlidKEvrA==}
+
+  '@qiwi/masker-plain@2.0.1':
+    resolution: {integrity: sha512-1N2Con5FAAwV6NSasrI8Pec0VVD/3+bxE2g/LGHWXeIadH3PpMqp9TQRN7jJgxGER2ZVZ0mEMRyuxoX7ntAAUA==}
+
+  '@qiwi/masker-schema@2.0.1':
+    resolution: {integrity: sha512-Ej/CkHuzDkFWpwvWCqLFG71sgLP/VrYVIu7ahABo6kAjYq565gmKtHpzSlWjhHFF/a6Jd7G1aAGXjZgJxQN0RQ==}
+
+  '@qiwi/masker-secret-key@2.0.1':
+    resolution: {integrity: sha512-J0fizKdyPoX6iLTA9Z4s3874ZYooNIbmklv23Ojatq1+cgfE59RF5PHD6D/RuUXkdxgIGjStIKIepfzpIyx05A==}
+
+  '@qiwi/masker-secret-value@2.0.1':
+    resolution: {integrity: sha512-aW8lXoCQLCm4IGvwjqnBYBlHF69tW0xjVfUVRRC/JoxIQDUebeBde4YKxkAfT8Xg+SemQ69KxqXRrSFEa7Odhw==}
+
+  '@qiwi/masker-split@2.0.1':
+    resolution: {integrity: sha512-tuJ51xrYUBmgwKYf4dfZmdO3eo7xI9kE2Jfx3135zw691hdIpjLyL6itbf7UaTuAldHYUaOvNgtTP7Y7vgNyKg==}
+
+  '@qiwi/masker-strike@2.0.1':
+    resolution: {integrity: sha512-ySwBCmhmAQlIW5ETUsGBK1iw7zO3TVrTGNFKqKmJttryow5NlQXUWDU13ZnXxPYVjtiV24zwfRi4TuMn0wtwkw==}
+
+  '@qiwi/masker-trycatch@2.0.1':
+    resolution: {integrity: sha512-vPooAZszS+HAZtJV0ux9DqcmzZIosT0gf6pmFY0mSYy1hKB61efh8qqd0ebsagaBTOF4/5ZOa6iWWn7Kg0sKiQ==}
+
+  '@qiwi/masker@2.0.1':
+    resolution: {integrity: sha512-a89K9uWO4mbuWGpHSOawv6NlOAcCtbUoH2Vswz/aB+WvjxOaiX2f2P5fjLBpR8iGC2BNMq13ywRE+VVf/wO7WA==}
+
+  '@qiwi/substrate-abstract@2.1.0':
+    resolution: {integrity: sha512-ZzvNT1kWLGLMBtnsTRNs+1WXl1m+z9RNDvhjFcX0whpCtYxYQW1iIfpTJ/UbxiZ4TAQW72ROtIXkob3MuXF31g==}
+
+  '@qiwi/substrate-std@2.1.0':
+    resolution: {integrity: sha512-wqQF0g2ISnww4eggCfL4FJUemx7r07i1y8MVHo5qd7gG35LMjeWP0X05Ez/pyGsOxO+aaRxmm3iFSQMSrNCnyw==}
+
+  '@qiwi/substrate-types@2.1.0':
+    resolution: {integrity: sha512-WLPKeX61SNFTUDLpywY91MNKwR/+JN+KEqyYnCncjqEtlmDkuUn+FVWhzmbd4BUmF5PQ3icyQkppSCgrxcEBlg==}
+
+  '@qiwi/substrate@2.1.0':
+    resolution: {integrity: sha512-F19fckn9+ztlPD0yogxoqWRRlGiLaSJcI+mqYWc8mzSwr4LFRJhwPkitmCPXluKxHeOT1IYQJacRMEWt5yA1AA==}
+
   '@radix-ui/number@1.0.1':
     resolution: {integrity: sha512-T5gIdVO2mmPW3NNhjNgEP3cqMXjXL9UbO0BzWcXfvdBs+BohbQxvd/K5hSVKmn9/lbTdsQVKbUcP5WLCwvUbBg==}
 
@@ -7927,11 +7978,23 @@ packages:
   '@types/lodash.clonedeep@4.5.9':
     resolution: {integrity: sha512-19429mWC+FyaAhOLzsS8kZUsI+/GmBAQ0HFiCPsKGU+7pBXOQWhyrY6xNNDwUSX8SMZMJvuFVMF9O5dQOlQK9Q==}
 
+  '@types/lodash.get@4.4.9':
+    resolution: {integrity: sha512-J5dvW98sxmGnamqf+/aLP87PYXyrha9xIgc2ZlHl6OHMFR2Ejdxep50QfU0abO1+CH6+ugx+8wEUN1toImAinA==}
+
+  '@types/lodash.invert@4.3.9':
+    resolution: {integrity: sha512-doXB9xPv2LEkLMuAnB80m5z8FqJgWs6Vftz4tRDV22In3vutBDZIpRGyGxbzrXAjeT67VhchlAnTVuU16douUg==}
+
   '@types/lodash.merge@4.6.9':
     resolution: {integrity: sha512-23sHDPmzd59kUgWyKGiOMO2Qb9YtqRO/x4IhkgNUiPQ1+5MUVqi6bCZeq9nBJ17msjIMbEIO5u+XW4Kz6aGUhQ==}
 
   '@types/lodash.mergewith@4.6.9':
     resolution: {integrity: sha512-fgkoCAOF47K7sxrQ7Mlud2TH023itugZs2bUg8h/KzT+BnZNrR2jAOmaokbLunHNnobXVWOezAeNn/lZqwxkcw==}
+
+  '@types/lodash.set@4.3.9':
+    resolution: {integrity: sha512-KOxyNkZpbaggVmqbpr82N2tDVTx05/3/j0f50Es1prxrWB0XYf9p3QNxqcbWb7P1Q9wlvsUSlCFnwlPCIJ46PQ==}
+
+  '@types/lodash.unset@4.5.9':
+    resolution: {integrity: sha512-uyYP6JMM30vKXJtDrPtJyK/t3TdyjhZQ7woJAk1biI/o/sXZvBVqQtiMWsIlYLcn6jSPrG4sjYWTZM34qNM7dA==}
 
   '@types/lodash@4.14.197':
     resolution: {integrity: sha512-BMVOiWs0uNxHVlHBgzTIqJYmj+PgCo4euloGF+5m4okL3rEYzM2EEv78mw8zWSMM57dM7kVIgJ2QDvwHSoCI5g==}
@@ -8076,6 +8139,10 @@ packages:
 
   '@types/webpack@5.28.5':
     resolution: {integrity: sha512-wR87cgvxj3p6D0Crt1r5avwqffqPXUkNlnQ1mjU93G7gCuFjufZR4I6j8cz5g1F1tTYpfOOFvly+cmIQwL9wvw==}
+
+  '@types/xregexp@4.4.0':
+    resolution: {integrity: sha512-RJJHNci1sRRq8nZjWxzCbQdLhJVq+JcDHpsdzoTtFAR9qdsMhAWqKQ1NHsNcenKDtLsOwCBe/kfSKM82yXtocg==}
+    deprecated: This is a stub types definition. xregexp provides its own type definitions, so you do not need this installed.
 
   '@types/yargs-parser@21.0.0':
     resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
@@ -11286,6 +11353,10 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
+  fast-luhn@2.0.2:
+    resolution: {integrity: sha512-aaIb41cPmEJd2kltUEskBGx4YfASSdTdvuvjfdb70OvUtn+mUAjDzz6o7SnV0h5p2JC63cIYyY+bQ+WnY1/9HA==}
+    engines: {node: '>=8'}
+
   fast-querystring@1.1.2:
     resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
 
@@ -13456,6 +13527,9 @@ packages:
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
 
+  lodash.invert@4.3.0:
+    resolution: {integrity: sha512-3CJmOxN5y47rd+g5XjdZNcq2SorJkvlSqBwPomT094p6LZ4p7b5bUoRzYYMjwsTGWTW77z/dFZlCzeVQxBrZVg==}
+
   lodash.isequal@4.5.0:
     resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
 
@@ -13483,6 +13557,9 @@ packages:
   lodash.mergewith@4.6.2:
     resolution: {integrity: sha512-GK3g5RPZWTRSeLSpgP8Xhra+pnjBC56q9FZYe1d5RN3TJ35dbkGy3YqBSMbyCrlbi+CM9Z3Jk5yTL7RCsqboyQ==}
 
+  lodash.set@4.3.2:
+    resolution: {integrity: sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==}
+
   lodash.snakecase@4.1.1:
     resolution: {integrity: sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw==}
 
@@ -13503,6 +13580,9 @@ packages:
 
   lodash.uniqwith@4.5.0:
     resolution: {integrity: sha512-7lYL8bLopMoy4CTICbxygAUq6CdRJ36vFc80DucPueUee+d5NBRxz3FdT9Pes/HEx5mPoT9jwnsEJWz1N7uq7Q==}
+
+  lodash.unset@4.5.2:
+    resolution: {integrity: sha512-bwKX88k2JhCV9D1vtE8+naDKlLiGrSmf8zi/Y9ivFHwbmRfA8RxS/aVJ+sIht2XOwqoNr4xUPUkGZpc1sHFEKg==}
 
   lodash.upperfirst@4.3.1:
     resolution: {integrity: sha512-sReKOYJIJf74dhJONhU4e0/shzi1trVbSWDOhKYE5XV2O+H7Sb2Dihwuc7xWxVl+DgFPyTqIN3zMfT9cq5iWDg==}
@@ -18326,6 +18406,9 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
+  xregexp@5.1.1:
+    resolution: {integrity: sha512-fKXeVorD+CzWvFs7VBuKTYIW63YD1e1osxwQ8caZ6o1jg6pDAbABDG54LCIq0j5cy7PjRvGIq6sef9DYPXpncg==}
+
   xtend@2.1.2:
     resolution: {integrity: sha512-vMNKzr2rHP9Dp/e1NQFnLQlwlhp9L/LfvnsVdHxN1f+uggyVI3i08uD14GPvCToPkdsRfyPqIyYGmIk58V98ZQ==}
     engines: {node: '>=0.4'}
@@ -21349,6 +21432,137 @@ snapshots:
 
   '@prisma/prisma-schema-wasm@5.12.0-21.473ed3124229e22d881cb7addf559799debae1ab': {}
 
+  '@qiwi/masker-common@2.0.1':
+    dependencies:
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-debug@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      '@types/debug': 4.1.12
+      debug: 4.3.4
+      tslib: 2.6.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@qiwi/masker-json@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-secret-value': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      '@types/xregexp': 4.4.0
+      tslib: 2.6.2
+      xregexp: 5.1.1
+
+  '@qiwi/masker-limiter@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-plain': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-pan@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      fast-luhn: 2.0.2
+      tslib: 2.6.2
+
+  '@qiwi/masker-plain@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-schema@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-split': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      '@types/lodash.clonedeep': 4.5.9
+      '@types/lodash.get': 4.4.9
+      '@types/lodash.invert': 4.3.9
+      '@types/lodash.set': 4.3.9
+      '@types/lodash.unset': 4.5.9
+      lodash.clonedeep: 4.5.0
+      lodash.get: 4.4.2
+      lodash.invert: 4.3.0
+      lodash.set: 4.3.2
+      lodash.unset: 4.5.2
+      tslib: 2.6.2
+
+  '@qiwi/masker-secret-key@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-plain': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-secret-value@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-plain': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-split@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-strike@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker-trycatch@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-plain': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/masker@2.0.1':
+    dependencies:
+      '@qiwi/masker-common': 2.0.1
+      '@qiwi/masker-debug': 2.0.1
+      '@qiwi/masker-json': 2.0.1
+      '@qiwi/masker-limiter': 2.0.1
+      '@qiwi/masker-pan': 2.0.1
+      '@qiwi/masker-plain': 2.0.1
+      '@qiwi/masker-schema': 2.0.1
+      '@qiwi/masker-secret-key': 2.0.1
+      '@qiwi/masker-secret-value': 2.0.1
+      '@qiwi/masker-split': 2.0.1
+      '@qiwi/masker-strike': 2.0.1
+      '@qiwi/masker-trycatch': 2.0.1
+      '@qiwi/substrate': 2.1.0
+      tslib: 2.6.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@qiwi/substrate-abstract@2.1.0':
+    dependencies:
+      '@qiwi/substrate-types': 2.1.0
+
+  '@qiwi/substrate-std@2.1.0':
+    dependencies:
+      '@qiwi/substrate-types': 2.1.0
+      tslib: 2.6.2
+
+  '@qiwi/substrate-types@2.1.0': {}
+
+  '@qiwi/substrate@2.1.0':
+    dependencies:
+      '@qiwi/substrate-abstract': 2.1.0
+      '@qiwi/substrate-std': 2.1.0
+      '@qiwi/substrate-types': 2.1.0
+      tslib: 2.6.2
+
   '@radix-ui/number@1.0.1':
     dependencies:
       '@babel/runtime': 7.24.1
@@ -24334,11 +24548,27 @@ snapshots:
     dependencies:
       '@types/lodash': 4.14.197
 
+  '@types/lodash.get@4.4.9':
+    dependencies:
+      '@types/lodash': 4.14.197
+
+  '@types/lodash.invert@4.3.9':
+    dependencies:
+      '@types/lodash': 4.14.197
+
   '@types/lodash.merge@4.6.9':
     dependencies:
       '@types/lodash': 4.14.197
 
   '@types/lodash.mergewith@4.6.9':
+    dependencies:
+      '@types/lodash': 4.14.197
+
+  '@types/lodash.set@4.3.9':
+    dependencies:
+      '@types/lodash': 4.14.197
+
+  '@types/lodash.unset@4.5.9':
     dependencies:
       '@types/lodash': 4.14.197
 
@@ -24487,6 +24717,10 @@ snapshots:
       - esbuild
       - uglify-js
       - webpack-cli
+
+  '@types/xregexp@4.4.0':
+    dependencies:
+      xregexp: 5.1.1
 
   '@types/yargs-parser@21.0.0': {}
 
@@ -29160,6 +29394,8 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
+  fast-luhn@2.0.2: {}
+
   fast-querystring@1.1.2:
     dependencies:
       fast-decode-uri-component: 1.0.1
@@ -31921,6 +32157,8 @@ snapshots:
 
   lodash.get@4.4.2: {}
 
+  lodash.invert@4.3.0: {}
+
   lodash.isequal@4.5.0: {}
 
   lodash.isplainobject@4.0.6: {}
@@ -31939,6 +32177,8 @@ snapshots:
 
   lodash.mergewith@4.6.2: {}
 
+  lodash.set@4.3.2: {}
+
   lodash.snakecase@4.1.1: {}
 
   lodash.sortby@4.7.0: {}
@@ -31952,6 +32192,8 @@ snapshots:
   lodash.uniqby@4.7.0: {}
 
   lodash.uniqwith@4.5.0: {}
+
+  lodash.unset@4.5.2: {}
 
   lodash.upperfirst@4.3.1: {}
 
@@ -38951,6 +39193,10 @@ snapshots:
   xml@1.0.1: {}
 
   xmlchars@2.2.0: {}
+
+  xregexp@5.1.1:
+    dependencies:
+      '@babel/runtime-corejs3': 7.22.11
 
   xtend@2.1.2:
     dependencies:

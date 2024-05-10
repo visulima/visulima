@@ -5,10 +5,6 @@
  * @returns {boolean}
  */
 const isJson = (value: string): boolean => {
-    if (/^\{[\s\S]*\}$|^\[[\s\S]*\]$/.test(value)) {
-        return false;
-    }
-
     try {
         JSON.parse(value);
     } catch {

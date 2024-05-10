@@ -5,6 +5,7 @@ import fastRedact from "fast-redact";
 import { core } from "fast-unset/dist/core";
 import { redact } from "../dist";
 import fastUnset from "fast-unset";
+import { masker } from "@qiwi/masker";
 
 const redactBench = fastRedact({
     paths: ["a.b.c"],
@@ -16,15 +17,31 @@ describe("redact", () => {
         const object = {
             a: {
                 b: {
-                    c: 1,
+                    c: null,
                 },
             },
         };
 
-        const output = redact(object, [{ key: "a.b.c", replacment: null }]);
+        const output = redact(object, [{ key: "a.b.c", replacement: null }]);
 
         if (output.a.b.c === 1) {
             throw new Error("Expected b in a in object to be '<A.B.C>'");
+        }
+    });
+
+    bench("@qiwi/masker", async () => {
+        const object = {
+            a: {
+                b: {
+                    secret: 1,
+                },
+            },
+        };
+
+        const output = await masker(object);
+
+        if (output.a.b.secret !== '***') {
+            throw new Error("Expected b in a in object to be '***'");
         }
     });
 
@@ -37,9 +54,9 @@ describe("redact", () => {
             },
         };
 
-        object = JSON.parse(redactBench(object) as string);
+        const output = JSON.parse(redactBench(object) as string);
 
-        if (object.a.b.c) {
+        if (output.a.b.c) {
             throw new Error("Expected b in a in object to be empty");
         }
     });

@@ -2,7 +2,7 @@
 const urlDelimiters = "#;/?:@&";
 const urlParameterRegex = new RegExp(`([${urlDelimiters}][^${urlDelimiters}=\\s]+=[^${urlDelimiters}=\\s]*)`, "g");
 
-const parseUrlParameters = (input: string): Record<string, string> => {
+const parseUrlParameters = (input: string): { key: string | null; value: string }[] => {
     const segments = [];
 
     let previousEndIndex = 0;
@@ -11,7 +11,7 @@ const parseUrlParameters = (input: string): Record<string, string> => {
 
     let match = urlParameterRegex.exec(input);
 
-    // eslint-disable-next-line no-loops/no-loops
+
     while (match != null) {
         const { 0: text, index } = match;
 
