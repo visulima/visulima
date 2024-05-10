@@ -13,7 +13,6 @@ const defaultModifiers: Modifiers = [
     { deep: true, key: "creditcard", pattern: "(?:\\d[ -]*?){13,16}" },
     { deep: true, key: "creditcard", pattern: "\\b(?:\\d[ -]*?){13,19}\\b" },
     {
-
         deep: true,
         key: "date",
         // eslint-disable-next-line no-secrets/no-secrets
@@ -23,7 +22,6 @@ const defaultModifiers: Modifiers = [
     { deep: true, key: "date", pattern: "\\b\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\\b" },
     { deep: true, key: "date", pattern: "\\b(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\\d\\d\\b" },
     {
-
         deep: true,
         key: "date",
         // eslint-disable-next-line no-secrets/no-secrets

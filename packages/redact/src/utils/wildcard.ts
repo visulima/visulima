@@ -17,7 +17,6 @@ const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrin
         // eslint-disable-next-line security/detect-object-injection
         let patternIndex = (rollbackStrings[s] as RollbackString).index;
 
-
         while (patternIndex < patternSubstrings.length) {
             // eslint-disable-next-line security/detect-object-injection
             const patternSubstring = patternSubstrings[patternIndex] as string;
@@ -103,7 +102,6 @@ const wildcard = (
     }
 
     const rollbackStrings: RollbackString[] = [];
-
 
     while (patternIndex < patternSubstrings.length) {
         // eslint-disable-next-line security/detect-object-injection

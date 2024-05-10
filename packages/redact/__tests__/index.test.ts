@@ -82,7 +82,7 @@ describe("redact", () => {
 
             expect(result).toStrictEqual([
                 1,
-                ["test", "email", "<REDACTED>", "test"],
+                ["test", "email", "<1.2>", "test"],
                 3,
                 "user",
                 {
@@ -104,15 +104,15 @@ describe("redact", () => {
                 admin: {
                     user: {
                         email: "test@example.com",
-                        password: "123456",
                         note: null,
+                        password: "123456",
                     },
                 },
                 password: "123456",
                 user: {
                     email: "test@example.com",
-                    password: "123456",
                     note: null,
+                    password: "123456",
                 },
             };
 

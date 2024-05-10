@@ -11,7 +11,6 @@ const parseUrlParameters = (input: string): { key: string | null; value: string 
 
     let match = urlParameterRegex.exec(input);
 
-
     while (match != null) {
         const { 0: text, index } = match;
 

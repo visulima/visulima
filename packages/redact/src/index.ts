@@ -1,5 +1,8 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { hasProperty, setProperty } from "dot-prop";
+
 import stringAnonymize from "./string-anonymizer";
-import type { Anonymize, Modifiers } from "./types";
+import type { Anonymize, InternalAnonymize, Modifiers } from "./types";
 import isJson from "./utils/is-json";
 import isValidUrl from "./utils/is-valid-url";
 import parseUrlParameters from "./utils/parse-url-params";
@@ -53,28 +56,39 @@ const findModifier = (modifiers: Anonymize[], key: string, currentIdentifier?: s
     return undefined;
 };
 
-const recursivelyFilterAttributes = <V>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const recursivelyFilterAttributes = <V = Record<string, any>>(
     copy: V,
     examinedObjects: ExaminedObjects[],
     saveCopy: SaveCopy,
-    modifiers: Anonymize[],
+    modifiers: InternalAnonymize[],
     options?: RedactOptions,
     identifier?: string,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
-    // eslint-disable-next-line no-restricted-syntax,guard-for-in
-    for (const key in copy) {
-        const currentIdentifier = identifier ? `${identifier}.${key}` : key;
-        const matchedModifier = findModifier(modifiers, key, currentIdentifier);
-
-        if (matchedModifier) {
-            // eslint-disable-next-line security/detect-object-injection,no-param-reassign
-            copy[key] = matchedModifier.replacement ?? `<${matchedModifier.key.toUpperCase()}>`;
-
-            // eslint-disable-next-line no-param-reassign
-            identifier = undefined;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const modifier of modifiers) {
+        // fast direct match
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!modifier.wildcard && !modifier.deep && hasProperty(copy as Record<string, any>, modifier.key)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setProperty(copy as Record<string, any>, modifier.key, modifier.replacement);
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define,security/detect-object-injection,no-param-reassign
-            copy[key] = recursiveFilter(copy[key], examinedObjects, saveCopy, modifiers, options, currentIdentifier);
+            // eslint-disable-next-line no-restricted-syntax,guard-for-in
+            for (const key in copy) {
+                const currentIdentifier = identifier ? `${identifier}.${key}` : key;
+
+                if (modifier.deep && !modifier.wildcard && key === modifier.key) {
+                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    copy[key] = modifier.replacement;
+                } else if (modifier.wildcard && (wildcard(key, modifier.key) || wildcard(currentIdentifier, modifier.key))) {
+                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    copy[key] = modifier.replacement;
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-param-reassign,security/detect-object-injection
+                    copy[key] = recursiveFilter(copy[key] as V, examinedObjects, saveCopy, [modifier], options, currentIdentifier);
+                }
+            }
         }
     }
 };
@@ -102,17 +116,27 @@ const recursiveFilter = <V, R = V>(
         return examinedObjects[id]?.copy as R;
     }
 
-    const preparedModifiers = modifiers.map((modifier) => {
+    const preparedModifiers: InternalAnonymize[] = [];
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const modifier of modifiers) {
         if (typeof modifier === "string") {
-            return { deep: false, key: modifier };
-        }
+            const hasWildcard = modifier.includes("*");
+            preparedModifiers.push({ deep: false, key: modifier, replacement: "<" + modifier.toUpperCase() + ">", wildcard: hasWildcard });
+        } else if (typeof modifier === "number") {
+            preparedModifiers.push({ deep: false, key: modifier.toString(), replacement: "<REDACTED>" });
+        } else {
+            if (modifier.key.includes("*")) {
+                (modifier as InternalAnonymize).wildcard = true;
+            }
 
-        if (typeof modifier === "number") {
-            return { deep: false, key: modifier.toString() };
-        }
+            if (!modifier.replacement) {
+                (modifier as InternalAnonymize).replacement = "<" + modifier.key.toUpperCase() + ">";
+            }
 
-        return modifier;
-    }) as Anonymize[];
+            preparedModifiers.push(modifier);
+        }
+    }
 
     if (typeof input === "string" || input instanceof String) {
         if (isJson(input as string)) {
@@ -199,7 +223,7 @@ const recursiveFilter = <V, R = V>(
         return copy as unknown as R;
     }
 
-    if (typeof input === "object" && input !== null) {
+    if (typeof input === "object") {
         if (input instanceof Error) {
             const copy = new Error(input.message);
 

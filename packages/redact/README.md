@@ -42,10 +42,10 @@ pnpm add @visulima/redact
 ## Usage
 
 ```typescript
+
 ```
 
 ## Related
-
 
 ## Supported Node.js Versions
 

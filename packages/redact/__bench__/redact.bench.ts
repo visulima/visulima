@@ -40,7 +40,7 @@ describe("redact", () => {
 
         const output = await masker(object);
 
-        if (output.a.b.secret !== '***') {
+        if (output.a.b.secret !== "***") {
             throw new Error("Expected b in a in object to be '***'");
         }
     });

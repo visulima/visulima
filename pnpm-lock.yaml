@@ -3539,6 +3539,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      dot-prop:
+        specifier: ^9.0.0
+        version: 9.0.0
       eslint:
         specifier: ^8.56.0
         version: 8.57.0
@@ -10493,6 +10496,10 @@ packages:
   dot-prop@8.0.2:
     resolution: {integrity: sha512-xaBe6ZT4DHPkg0k4Ytbvn5xoxgpG0jOS1dYxSOwAHPuNLjP3/OzN0gH55SrLqpx8cBfSaVt91lXYkApjb+nYdQ==}
     engines: {node: '>=16'}
+
+  dot-prop@9.0.0:
+    resolution: {integrity: sha512-1gxPBJpI/pcjQhKgIU91II6Wkay+dLcN3M6rf2uwP8hRur3HtQXjVrdAK3sjC0piaEuxzMwjXChcETiJl47lAQ==}
+    engines: {node: '>=18'}
 
   dotenv-expand@10.0.0:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
@@ -27630,6 +27637,10 @@ snapshots:
   dot-prop@8.0.2:
     dependencies:
       type-fest: 3.13.1
+
+  dot-prop@9.0.0:
+    dependencies:
+      type-fest: 4.18.2
 
   dotenv-expand@10.0.0: {}
 

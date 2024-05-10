@@ -110,6 +110,7 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
+        "dot-prop": "^9.0.0",
         "secretlint": "8.1.1",
         "semantic-release": "^23.0.8",
         "sort-package-json": "^2.10.0",
