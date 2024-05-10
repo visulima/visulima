@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 
 import type { ModelsToOpenApiParameters, SwaggerModelsConfig } from "@visulima/crud";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { modelsToOpenApi } from "@visulima/crud";
 import debug from "debug";
 // eslint-disable-next-line no-restricted-imports
