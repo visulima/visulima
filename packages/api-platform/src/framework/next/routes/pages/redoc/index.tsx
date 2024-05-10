@@ -1,7 +1,5 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import Head from "next/head";
 import type { InferGetStaticPropsType, NextPage } from "next/types";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { RedocStandalone } from "redoc";
 
 import type getStaticProps from "../get-static-properties-swagger";
