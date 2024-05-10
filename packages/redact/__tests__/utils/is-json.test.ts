@@ -9,6 +9,7 @@ describe("isJson", () => {
         expect(isJson(value)).toBeTruthy();
     });
 
+    // eslint-disable-next-line no-void
     it.each(["NaN", "[", "{", "]", "}", "[{", "]}", "{[", "}]", void 0, Number.NaN, function noop() {}, [], {}, '{a":5}'])(
         "should return false for invalid JSON %s",
         (value) => {

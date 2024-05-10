@@ -5,5 +5,3 @@ export type Anonymize = { deep?: boolean; key: string; pattern?: RegExp | string
 export type InternalAnonymize = Anonymize & { wildcard?: boolean };
 
 export type Modifiers = (Anonymize | StringAnonymize | number | string)[];
-
-export type Input = Record<string, unknown> | Record<string, unknown>[];
