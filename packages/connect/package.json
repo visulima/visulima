@@ -106,13 +106,13 @@
         "fastify": "^4.27.0",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^3.2.5",
-        "rimraf": "^5.0.5",
-        "semantic-release": "^23.0.8",
+        "rimraf": "^5.0.6",
+        "semantic-release": "^23.1.0",
         "sort-package-json": "^2.10.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
-        "zod": "^3.23.6"
+        "zod": "^3.23.8"
     },
     "peerDependencies": {
         "zod": "^3.22.4"

@@ -162,16 +162,16 @@
         "prettier": "^3.2.5",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "rimraf": "^5.0.5",
+        "rimraf": "^5.0.6",
         "rxjs": "^7.8.1",
-        "semantic-release": "^23.0.8",
+        "semantic-release": "^23.1.0",
         "sort-package-json": "^2.10.0",
         "tailwindcss": "^3.4.3",
         "tailwindcss-hyphens": "^0.1.0",
         "tsup": "8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
-        "zod": "^3.23.6"
+        "zod": "^3.23.8"
     },
     "peerDependencies": {
         "next": ">=13.1.6",
