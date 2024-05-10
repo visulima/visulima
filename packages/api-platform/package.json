@@ -218,11 +218,11 @@
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "redoc": "^2.1.4",
-        "rimraf": "^5.0.5",
+        "rimraf": "^5.0.6",
         "secretlint": "8.2.3",
-        "semantic-release": "^23.0.8",
+        "semantic-release": "^23.1.0",
         "sort-package-json": "^2.10.0",
-        "styled-components": "^6.1.9",
+        "styled-components": "^6.1.11",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
         "tsup": "^8.0.2",
@@ -230,7 +230,7 @@
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "webpack": "^5.91.0",
-        "zod": "^3.23.6"
+        "zod": "^3.23.8"
     },
     "peerDependencies": {
         "@hapi/hapi": "^21.3.9",
