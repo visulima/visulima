@@ -1,6 +1,6 @@
-import type { Modifiers } from "./types";
+import type { Rules } from "./types";
 
-const defaultModifiers: Modifiers = [
+const standardModifierRules: Rules = [
     { deep: true, key: "apikey", pattern: "\\b[a-zA-Z0-9]{32}\\b" },
     { deep: true, key: "awsid", pattern: "\\bAKIA[0-9A-Z]{16}\\b" },
     { deep: true, key: "awskey", pattern: "\\b[0-9a-zA-Z/+]{40}\\b" },
@@ -74,6 +74,8 @@ const defaultModifiers: Modifiers = [
     { deep: true, key: "bankcc" },
     { deep: true, key: "email" },
     { deep: true, key: "passport" },
+    { deep: true, key: "password" },
+    { deep: true, key: "username"},
 
     { deep: true, key: "auth" },
     { deep: true, key: "bearer" },
@@ -86,4 +88,4 @@ const defaultModifiers: Modifiers = [
     { deep: true, key: "secret" },
 ];
 
-export default defaultModifiers;
+export default standardModifierRules;

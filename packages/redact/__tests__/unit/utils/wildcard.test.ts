@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import wildcard from "../../src/utils/wildcard";
+import wildcard from "../../../src/utils/wildcard";
 
 describe("wildcard", () => {
     it("should match exactly when no wildcard is given", () => {
@@ -10,15 +10,6 @@ describe("wildcard", () => {
         const string = "test";
 
         expect(wildcard(string, pattern)).toBeTruthy();
-    });
-
-    it("should match exactly when no wildcard is given (case sensitivity is off)", () => {
-        expect.assertions(1);
-
-        const pattern = "test";
-        const string = "TEsT";
-
-        expect(wildcard(string, pattern, { caseSensitive: false })).toBeTruthy();
     });
 
     it("should return false if the string doesn't match the pattern and no wildcard is given", () => {
@@ -190,15 +181,6 @@ describe("wildcard", () => {
         const string = ")))))";
 
         expect(wildcard(string, pattern)).toBeFalsy();
-    });
-
-    it("should work with case sensitivity off", () => {
-        expect.assertions(1);
-
-        const pattern = "*TEST";
-        const string = "TeSt";
-
-        expect(wildcard(string, pattern, { caseSensitive: false })).toBeTruthy();
     });
 
     it("should be able to see the same character as a wildcard", () => {

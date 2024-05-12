@@ -7,17 +7,130 @@ import { redact } from "../dist";
 import fastUnset from "fast-unset";
 import { masker } from "@qiwi/masker";
 
-const redactBench = fastRedact({
+const redactObjectBench = fastRedact({
+    paths: ["a"],
+    remove: true,
+});
+
+const redactDeepObjectBench = fastRedact({
     paths: ["a.b.c"],
     remove: true,
 });
 
-describe("redact", () => {
+describe("object", () => {
     bench("@visulima/redact", () => {
         const object = {
             a: {
                 b: {
-                    c: null,
+                    c: 1,
+                },
+            },
+        };
+
+        const output = redact(object, [{ key: "a", replacement: null }]);
+
+        if (typeof output.a === "object") {
+            throw new Error("Expected a to be '<A>'");
+        }
+    });
+
+    bench("fast-redact", () => {
+        let object = {
+            a: {
+                b: {
+                    c: 1,
+                },
+            },
+        };
+
+        const output = JSON.parse(redactObjectBench(object) as string);
+
+        if (output.a) {
+            throw new Error("Expected a to be empty");
+        }
+    });
+
+    bench("unset-value", () => {
+        const object = {
+            a: {
+                b: {
+                    c: 1,
+                },
+            },
+        };
+
+        unsetValue(object, "a");
+
+        if (object.a) {
+            throw new Error("Expected a to be empty");
+        }
+    });
+
+    bench("fast-unset (copy)", () => {
+        const object = {
+            a: {
+                b: {
+                    c: 1,
+                },
+            },
+        };
+
+        const cloned = fastUnset(
+            object,
+            {
+                a: null,
+            },
+            { clone: true },
+        ) as typeof object;
+
+        if (cloned.a) {
+            throw new Error("Expected a to be empty");
+        }
+    });
+
+    bench("fast-unset", () => {
+        const object = {
+            a: {
+                b: {
+                    c: 1,
+                },
+            },
+        };
+
+        fastUnset(object, {
+            a: null,
+        });
+
+        if (object.a) {
+            throw new Error("Expected a to be empty");
+        }
+    });
+
+    bench("fast-unset (bare)", () => {
+        const object = {
+            a: {
+                b: {
+                    c: 1,
+                },
+            },
+        };
+
+        core(object, {
+            a: null,
+        });
+
+        if (object.a) {
+            throw new Error("Expected a to be empty");
+        }
+    });
+});
+
+describe("deep object", () => {
+    bench("@visulima/redact", () => {
+        const object = {
+            a: {
+                b: {
+                    c: 1,
                 },
             },
         };
@@ -54,7 +167,7 @@ describe("redact", () => {
             },
         };
 
-        const output = JSON.parse(redactBench(object) as string);
+        const output = JSON.parse(redactDeepObjectBench(object) as string);
 
         if (output.a.b.c) {
             throw new Error("Expected b in a in object to be empty");

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import defaultModifiers from "../src/modifiers";
-import stringAnonymize from "../src/string-anonymizer";
+import defaultModifiers from "../../src/rules";
+import stringAnonymize from "../../src/string-anonymizer";
 
 describe("stringAnonymize", () => {
     it("should anonymize a string", () => {

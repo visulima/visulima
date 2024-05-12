@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { redact } from "../src";
-import defaultModifiers from "../src/modifiers";
+import { redact } from "../../src";
+import defaultModifiers from "../../src/rules";
 
 type PlainJsObject = {
     _header: string;
@@ -100,7 +100,7 @@ describe("redact", () => {
                 expect(Object.keys(outputIndex3Object)).toHaveLength(2);
 
                 expect(outputIndex3Object.amount).toBe(9.75);
-                expect(outputIndex3Object.credit_card_number).toBe("FILTERED");
+                expect(outputIndex3Object.credit_card_number).toBe("<CREDIT_CARD_NUMBER>");
             });
         });
 
@@ -222,7 +222,7 @@ describe("redact", () => {
             let output = input;
 
             beforeEach(() => {
-                output = redact(input, ["password", "authorization", "PrIvAtE-Data", "credit_card"]);
+                output = redact(input, ["authorization", "PrIvAtE-Data", "credit_card", ...defaultModifiers]);
             });
 
             it("does not modify the original object", () => {
@@ -248,7 +248,7 @@ describe("redact", () => {
                 expect(Object.keys(output)).toHaveLength(numberInputKeys);
                 expect(Object.keys(output.body)).toHaveLength(numberBodyKeys);
 
-                expect(output.username).toBe("bob.bobbington");
+                expect(output.username).toBe("<USERNAME>");
                 expect(output.method).toBe("POST");
                 expect(output.body.parent).toStrictEqual(output);
                 expect(output.numRetries).toBe(6);
@@ -261,7 +261,7 @@ describe("redact", () => {
                 expect(output.password).toBe("<PASSWORD>");
                 expect(output.Authorization).toBe("<AUTHORIZATION>");
                 expect(output.body["Private-Data"]).toBe("<PRIVATE-DATA>");
-                expect(output._header).toBe("FILTERED");
+                expect(output._header).toBe("GET /some/items\\nAuthorization: <TOKEN>");
             });
 
             it("filters out JSON keys (case-insensitive) and matches partials while maintaining non-sensitive data", () => {
@@ -272,7 +272,7 @@ describe("redact", () => {
                 expect(Object.keys(outputInfoObject)).toHaveLength(4);
 
                 expect(outputInfoObject.PASSWORD).toBe("<PASSWORD>");
-                expect(outputInfoObject.first_name).toBe("Bob");
+                expect(outputInfoObject.first_name).toBe("<FIRSTNAME>");
                 expect(outputInfoObject.last_name).toBe("Bobbington");
                 expect(outputInfoObject.amount).toBe(4);
             });
@@ -281,7 +281,7 @@ describe("redact", () => {
                 expect.assertions(1);
 
                 // eslint-disable-next-line no-secrets/no-secrets
-                expect(output.body.notes).toBe("Use https://login.example.com?username=jon.smith&password=FILTERED/?authentic=true to login.");
+                expect(output.body.notes).toBe("Use https://login.example.com?username=<USERNAME>&password=<PASSWORD>/?authentic=true to login.");
             });
         });
 
@@ -750,7 +750,7 @@ describe("redact", () => {
 
                 expect(output.map.get("password")).toBe("<PASSWORD>");
                 expect(output.map.get(complexKey)).toBeUndefined();
-                expect([...output.map]).toEqual([["password", "<PASSWORD>"], ["someNumber", 1_234_567], [filteredComplexKey, filteredComplexValue]]);
+                expect([...output.map]).toStrictEqual([["password", "<PASSWORD>"], ["someNumber", 1_234_567], [filteredComplexKey, filteredComplexValue]]);
 
                 expect(output.set).not.toContain(complexKey);
                 expect(output.set).toContainEqual({ privateStuff: "<PRIVATESTUFF>", public: "anotherKeyThing" });
@@ -801,7 +801,7 @@ describe("redact", () => {
             let output = input;
 
             beforeEach(() => {
-                output = redact(input, ["password", "authorization", "PrIvAtE", "credit_card"]);
+                output = redact(input, ["password", "authorization", "PrIvAtE", "credit_card", "veryPrivateInfo"]);
             });
 
             it("does not modify the original error", () => {
@@ -832,13 +832,13 @@ describe("redact", () => {
                 expect(Object.keys(output)).toHaveLength(numberInputKeys);
                 expect(typeof output).toBe(inputType);
                 expect(output.stack).toBe(inputStack);
-                expect(output.customData.error).toBe(output);
+                expect(output.customData.error).toStrictEqual(output);
             });
 
             it("filters out error keys in a case-insensitive, partial-matching manner", () => {
                 expect.assertions(1);
 
-                expect(output.Authorization).toBe("FILTERED");
+                expect(output.Authorization).toBe("<AUTHORIZATION>");
             });
 
             it("filters out JSON keys (case-insensitive) and matches partials while maintaining non-sensitive data", () => {
@@ -848,7 +848,7 @@ describe("redact", () => {
 
                 expect(Object.keys(outputInfoObject)).toHaveLength(2);
 
-                expect(outputInfoObject.veryPrivateInfo).toBe("FILTERED");
+                expect(outputInfoObject.veryPrivateInfo).toBe("<VERYPRIVATEINFO>");
                 expect(outputInfoObject.json).toBeFalsy();
             });
         });

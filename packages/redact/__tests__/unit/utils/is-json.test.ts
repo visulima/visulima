@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import isJson from "../../src/utils/is-json";
+import isJson from "../../../src/utils/is-json";
 
 describe("isJson", () => {
     it.each([5, "5", "true", "null", "{}", '{"foo": "bar"}', "[1, 2, 3]", '{"foo": "bar", "baz": "qux"}'])("should return true for valid JSON", (value) => {

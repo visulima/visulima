@@ -1,6 +1,6 @@
 import nlp from "compromise";
 
-import type { Modifiers, StringAnonymize } from "./types";
+import type { Rules, StringAnonymize } from "./types";
 
 interface IDocumentTerm {
     start: number;
@@ -130,6 +130,7 @@ const processTerms = (
         ...document_.organizations().out("offset"),
         ...document_.people().out("offset"),
         ...document_.phoneNumbers().out("offset"),
+        ...document_.urls().out("offset"),
     ];
 
     processedDocument.forEach((documentObject) => {
@@ -161,7 +162,7 @@ const processDocument = (
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const stringAnonymize = (input: string, modifiers: Modifiers, options?: { logger?: { debug: (...arguments_: any[]) => void } }): string => {
+const stringAnonymize = (input: string, modifiers: Rules, options?: { logger?: { debug: (...arguments_: any[]) => void } }): string => {
     const patternModifiers = modifiers.filter((modifier) => typeof modifier === "object" && modifier.pattern) as StringAnonymize[];
     const typesToAnonymize = modifiers.map((modifier) => (typeof modifier === "string" || typeof modifier === "number" ? modifier + "" : modifier.key));
 
