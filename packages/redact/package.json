@@ -1,0 +1,141 @@
+{
+    "name": "@visulima/redact",
+    "version": "0.0.0",
+    "description": "Detect whether a terminal or browser supports ansi colors.",
+    "keywords": [
+        "anolilab",
+        "visulima",
+        "redact",
+        "mask",
+        "maskdata",
+        "masked",
+        "gdpr",
+        "censor",
+        "serialize",
+        "stringify",
+        "filter",
+        "masker",
+        "masking",
+        "conseal",
+        "hide",
+        "sensitive data",
+        "credentials",
+        "secret",
+        "security",
+        "anonymize"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/redact",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/redact"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "browser": "./dist/index.js",
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "source": "src/index.ts",
+    "browser": "./dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:packagejson": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "compromise": "^14.13.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-preset": "^8.0.3",
+        "@babel/core": "^7.24.5",
+        "@rushstack/eslint-plugin-security": "^0.8.1",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
+        "@types/node": "18.18.8",
+        "@vitest/coverage-v8": "^1.6.0",
+        "@vitest/ui": "^1.6.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.56.0",
+        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.3.21",
+        "eslint-plugin-vitest-globals": "^1.5.0",
+        "prettier": "^3.2.5",
+        "rimraf": "^5.0.5",
+        "dot-prop": "^9.0.0",
+        "secretlint": "8.1.1",
+        "semantic-release": "^23.0.8",
+        "sort-package-json": "^2.10.0",
+        "tsup": "^8.0.2",
+        "typescript": "^5.4.5",
+        "vitest": "^1.6.0"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    }
+}
