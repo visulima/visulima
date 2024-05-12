@@ -1,0 +1,19 @@
+{
+    "name": "redact-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/redact": "workspace:*",
+        "fast-redact": "^3.5.0",
+        "fast-unset": "^2.0.1",
+        "unset-value": "^2.0.1",
+        "@qiwi/masker": "^2.0.1"
+    },
+    "devDependencies": {
+        "typescript": "^5.4.5",
+        "vitest": "^1.6.0"
+    }
+}

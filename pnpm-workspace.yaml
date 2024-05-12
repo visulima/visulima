@@ -26,3 +26,6 @@ packages:
     - "packages/pail/__fixtures__/package/cjs"
     - "packages/pail/__fixtures__/package/mjs"
     - "packages/pail/__bench__"
+    - "packages/redact/__bench__"
+    - "packages/redact/__fixtures__/package/cjs"
+    - "packages/redact/__fixtures__/package/mjs"
