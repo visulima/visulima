@@ -1,6 +1,6 @@
 import nlp from "compromise";
 
-import type { Rules, StringAnonymize } from "./types";
+import type { RedactOptions, Rules, StringAnonymize } from "./types";
 
 interface IDocumentTerm {
     start: number;
@@ -161,10 +161,32 @@ const processDocument = (
     return createUniqueAndSortedTerms(processedTerms);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const stringAnonymize = (input: string, modifiers: Rules, options?: { logger?: { debug: (...arguments_: any[]) => void } }): string => {
-    const patternModifiers = modifiers.filter((modifier) => typeof modifier === "object" && modifier.pattern) as StringAnonymize[];
-    const typesToAnonymize = modifiers.map((modifier) => (typeof modifier === "string" || typeof modifier === "number" ? modifier + "" : modifier.key));
+const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOptions): string => {
+    const patternModifiers: StringAnonymize[] = [];
+    const typesToAnonymize: string[] = [];
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const modifier of modifiers) {
+        if (
+            options?.exclude &&
+            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+        ) {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        if (typeof modifier === "object" && modifier.pattern) {
+            patternModifiers.push(modifier as StringAnonymize);
+        }
+
+        if (typeof modifier === "string" || typeof modifier === "number") {
+            typesToAnonymize.push(modifier + "");
+        } else {
+            typesToAnonymize.push(modifier.key);
+        }
+    }
 
     let output = input;
 

@@ -1,3 +1,10 @@
+/**
+ * Copied from https://github.com/zjullion/sensitive-param-filter/blob/master/src/helpers.ts
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Alberta Motor Association
+ * Copyright (c) 2024 Zach Jullion
+ */
 // See https://tools.ietf.org/html/rfc1738#section-2.2 and https://tools.ietf.org/html/rfc3986#section-2.2
 const urlDelimiters = "#;/?:@&";
 // eslint-disable-next-line @rushstack/security/no-unsafe-regexp

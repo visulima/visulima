@@ -1,3 +1,9 @@
+/**
+ * Some of the rules are copied and modified from https://github.com/nitaiaharoni1/anonymize-nlp/blob/master/src/common/regexPatterns.ts
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2023 Nitai Aharoni
+ */
 import type { Rules } from "./types";
 
 const standardModifierRules: Rules = [

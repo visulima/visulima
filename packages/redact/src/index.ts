@@ -2,7 +2,7 @@
 import { hasProperty, setProperty } from "dot-prop";
 
 import stringAnonymize from "./string-anonymizer";
-import type { InternalAnonymize, Rules } from "./types";
+import type { InternalAnonymize, RedactOptions, Rules } from "./types";
 import isJson from "./utils/is-json";
 import parseUrlParameters from "./utils/parse-url-parameters";
 import wildcard from "./utils/wildcard";
@@ -226,7 +226,7 @@ const recursiveFilter = <V, R = V>(
             return filtered.join("") as R;
         }
 
-        return stringAnonymize(input as string, rules, options) as unknown as R;
+        return stringAnonymize(input as string, rules, { logger: options?.logger }) as unknown as R;
     }
 
     if (Array.isArray(input)) {
@@ -253,13 +253,6 @@ const recursiveFilter = <V, R = V>(
     }
 
     return input as unknown as R;
-};
-
-// eslint-disable-next-line import/no-unused-modules
-export type RedactOptions = {
-    exclude?: string[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    logger?: { debug: (...arguments_: any[]) => void };
 };
 
 export function redact<V = string, R = V>(input: V, rules: Rules, options?: RedactOptions): R;
@@ -297,7 +290,7 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
         if (
             options?.exclude &&
             ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier.toString())) ||
+                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
                 (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             // eslint-disable-next-line no-continue
@@ -342,4 +335,4 @@ export { default as standardRules } from "./rules";
 // eslint-disable-next-line import/no-unused-modules
 export { default as stringAnonymize } from "./string-anonymizer";
 // eslint-disable-next-line import/no-unused-modules
-export type { Anonymize, Rules } from "./types";
+export type { Anonymize, RedactOptions, Rules } from "./types";

@@ -21,6 +21,7 @@
         "sensitive data",
         "credentials",
         "secret",
+        "security",
         "anonymize"
     ],
     "homepage": "https://www.visulima.com/docs/package/redact",

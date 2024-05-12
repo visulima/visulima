@@ -1,7 +1,11 @@
 <div align="center">
   <h3>Visulima redact</h3>
   <p>
-  Redacts very fast values in objects.
+  Redacts very fast values in objects (includes Error, Map and Set), string and arrays, for secure logging, for public data output and so on, built on top of
+
+[compromise](https://github.com/spencermountain/compromise) and
+[dot-prop](https://github.com/sindresorhus/dot-prop).
+
   </p>
 </div>
 
@@ -25,6 +29,63 @@
 
 ---
 
+## Why Redact?
+
+-   Easy to use
+-   Anonymize specific categories in a text, including emails, monetary values, organizations, people, and phone numbers and more.
+-   Customizable anonymization: Specify which categories to anonymize and which to exclude.
+-   Built-in compatibility with nlp NER - compromise.
+-   Does not modify input objects
+-   Performs a deep copy of the input object
+-   Handles circular references
+-   Filters valid JSON strings
+-   Filters valid and malformed URL query params
+-   Filters Errors, Arrays, Maps, Sets, and simple objects
+-   Includes a default set of rules
+    - apikey
+    - awsid
+    - awskey
+    - bankacc
+    - basic_auth
+    - token
+    - crypto
+    - id
+    - creditcard
+    - date
+    - dl
+    - domain
+    - ip
+    - mac_address
+    - phonenumber
+    - routing
+    - ssn
+    - time
+    - uk_nin
+    - url
+    - us_social_security
+    - isbn
+    - zip_code
+    - firstname
+    - lastname
+    - organization
+    - money
+    - bankcc
+    - email
+    - passport
+    - password
+    - username
+    - auth
+    - bearer
+    - credit
+    - CVD
+    - CVV
+    - encrypt
+    - PAN
+    - pass
+    - secret
+-   TypeScript support
+-   Fast and powerful, see the [benchmarks](__bench__/README.md)
+
 ## Install
 
 ```sh
@@ -41,11 +102,63 @@ pnpm add @visulima/redact
 
 ## Usage
 
-```typescript
+-   redact(input, rules, options)
 
+```typescript
+const input = {
+    admin: {
+        user: {
+            email: "test@example.com",
+            password: "123456",
+        },
+    },
+    password: "123456",
+    user: {
+        email: "test@example.com",
+        password: "123456",
+    },
+};
+
+const result = redact(input, ["password", "user.password", "admin.user.password"]);
+
+console.log(result);
+
+//{
+//    admin: {
+//        user: {
+//            email: "test@example.com",
+//            password: "<ADMIN.USER.PASSWORD>",
+//        },
+//    },
+//    password: "<PASSWORD>",
+//    user: {
+//        email: "test@example.com",
+//        password: "<USER.PASSWORD>",
+//    },
+//}
+```
+
+-   stringAnonymize(input, rules, options)
+    > It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const input = "John Doe will be 30 on 2024-06-10.";
+const result = stringAnonymize(input, defaultModifiers);
+
+console.log(result);
+
+//"<FIRSTNAME> <LASTNAME> will be 30 on <DATE>"
 ```
 
 ## Related
+
+-   [fast-redact](https://github.com/davidmarkclements/fast-redact) - very fast object redaction
+-   [fast-unset](https://github.com/lucagoslar/fast-unset) - 🪄 Efficiently remove, replace, set or default object properties.
+-   [masker](https://github.com/qiwi/masker) - Composite data masking utility
+-   [sensitive-param-filter](https://github.com/zjullion/sensitive-param-filter) - A package for filtering sensitive data (parameters, keys) from a variety of JS objects
+-   [anonymize-nlp](https://github.com/nitaiaharoni1/anonymize-nlp) - Anonymize-NLP is a lightweight and robust package for text anonymization. It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
 
 ## Supported Node.js Versions
 

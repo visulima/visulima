@@ -1,8 +1,16 @@
+/**
+ * Some of the tests are copied from https://github.com/zjullion/sensitive-param-filter/blob/master/test/sensitiveParamFilter.test.ts and https://github.com/zjullion/sensitive-param-filter/blob/master/test/sensitiveParamFilter.fixture.ts
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Alberta Motor Association
+ * Copyright (c) 2024 Zach Jullion
+ */
+
 // eslint-disable-next-line max-classes-per-file
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { redact } from "../../src";
-import defaultModifiers from "../../src/rules";
+import standardModifierRules from "../../src/rules";
 
 type PlainJsObject = {
     _header: string;
@@ -193,6 +201,40 @@ describe("redact", () => {
                 },
             ]);
         });
+
+        it("should redact sensitive array and object data with deep specified key", () => {
+            expect.assertions(1);
+
+            const input = [
+                1,
+                ["test", "email", 2, "test"],
+                3,
+                "user",
+                {
+                    password: "123456",
+                    user: {
+                        email: "test@example.com",
+                        password: "123456",
+                    },
+                },
+            ];
+
+            const result = redact(input, ["1.2", { deep: true, key: "password" }]);
+
+            expect(result).toStrictEqual([
+                1,
+                ["test", "email", "<1.2>", "test"],
+                3,
+                "user",
+                {
+                    password: "<PASSWORD>",
+                    user: {
+                        email: "test@example.com",
+                        password: "<PASSWORD>",
+                    },
+                },
+            ]);
+        });
     });
 
     describe("object", () => {
@@ -222,7 +264,7 @@ describe("redact", () => {
             let output = input;
 
             beforeEach(() => {
-                output = redact(input, ["authorization", "PrIvAtE-Data", "credit_card", ...defaultModifiers]);
+                output = redact(input, ["authorization", "PrIvAtE-Data", "credit_card", ...standardModifierRules]);
             });
 
             it("does not modify the original object", () => {
@@ -750,7 +792,11 @@ describe("redact", () => {
 
                 expect(output.map.get("password")).toBe("<PASSWORD>");
                 expect(output.map.get(complexKey)).toBeUndefined();
-                expect([...output.map]).toStrictEqual([["password", "<PASSWORD>"], ["someNumber", 1_234_567], [filteredComplexKey, filteredComplexValue]]);
+                expect([...output.map]).toStrictEqual([
+                    ["password", "<PASSWORD>"],
+                    ["someNumber", 1_234_567],
+                    [filteredComplexKey, filteredComplexValue],
+                ]);
 
                 expect(output.set).not.toContain(complexKey);
                 expect(output.set).toContainEqual({ privateStuff: "<PRIVATESTUFF>", public: "anotherKeyThing" });
@@ -763,7 +809,7 @@ describe("redact", () => {
             expect.assertions(1);
 
             const input = "John Doe will be 30 on 2024-06-10.";
-            const result = redact(input, defaultModifiers);
+            const result = redact(input, standardModifierRules);
 
             expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
         });
@@ -854,12 +900,21 @@ describe("redact", () => {
         });
     });
 
-    it("returns the same value without rounding it", () => {
+    it("should return the same value without rounding it", () => {
         expect.assertions(1);
 
         const bigInt = "987654321987654321";
         const output = redact(bigInt, []);
 
         expect(output).toStrictEqual(bigInt);
+    });
+
+    it("should exclude a rule from the rules list", () => {
+        expect.assertions(1);
+
+        const input = "John Doe will be 30 on 2024-06-10.";
+        const result = redact(input, standardModifierRules, { exclude: ["firstname"] });
+
+        expect(result).toMatch("John <LASTNAME> will be 30 on <DATE>");
     });
 });
