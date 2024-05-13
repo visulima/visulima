@@ -1,10 +1,5 @@
-/// <reference types="vitest" />
+import { getVitestConfig } from "../../tools/get-vitest-config";
 
-import { defineConfig } from "vitest/config";
+const config = getVitestConfig();
 
-// https://vitejs.dev/config/
-export default defineConfig({
-    test: {
-        environment: "node",
-    },
-});
+export default config;

@@ -1,7 +1,5 @@
-import { createConfig } from "../../tsup.config";
+import { createConfig } from "../../tools/get-tsup-config";
 
-const config = createConfig({
-    format: "esm"
-});
+const config = createConfig();
 
 export default config;

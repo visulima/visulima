@@ -1,7 +1,7 @@
 {
     "name": "@visulima/openapi-validator",
     "version": "1.0.0",
-    "description": "Fastest deep clone implementation.",
+    "description": "OpenAPI spec validator.",
     "keywords": [
         "anolilab",
         "visulima",
@@ -61,10 +61,10 @@
         "clean": "rimraf node_modules dist .eslintcache",
         "coverage": "vitest run --coverage",
         "dev": "pnpm run build --watch",
-        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
-        "lint:prettier": "prettier --config=.prettierrc.js --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
         "test:bench": "vitest bench",
@@ -101,8 +101,13 @@
         "vitest": "^0.34.6"
     },
     "engines": {
-        "node": ">=18.* <=20.*"
+        "node": ">=18.* <=21.*"
     },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
