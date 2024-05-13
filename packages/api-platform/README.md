@@ -75,7 +75,7 @@ pnpm add @visulima/api-platform zod @visulima/fs
 ### To use the swagger-ui or the redoc-ui you need to install the following packages:
 
 ```sh
-npm install openapi-ui-react
+npm install swagger-ui-react
 ```
 
 To have a styled version of the swagger-ui you need to add the following css to your project:
