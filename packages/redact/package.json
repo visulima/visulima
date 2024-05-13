@@ -1,6 +1,6 @@
 {
     "name": "@visulima/redact",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Detect whether a terminal or browser supports ansi colors.",
     "keywords": [
         "anolilab",
