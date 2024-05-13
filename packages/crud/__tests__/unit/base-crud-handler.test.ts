@@ -6,8 +6,8 @@ import type { RequestOptions } from "node-mocks-http";
 import { createMocks as createHttpMocks } from "node-mocks-http";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Adapter, ParsedQueryParameters } from "../../src/types.d";
-import { RouteType } from "../../src/types.d";
+import type { Adapter, ParsedQueryParameters } from "../../src/types";
+import { RouteType } from "../../src/types";
 import CrudHandler from "../utils/crud-handler";
 import InvalidAdapter from "../utils/invalid-adapter";
 import NoopAdapter from "../utils/noop-adapter";

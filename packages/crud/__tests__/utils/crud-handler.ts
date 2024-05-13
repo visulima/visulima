@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import baseHandler from "../../src/base-crud-handler";
-import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../src/types.d";
+import type { Adapter, ExecuteHandler, HandlerOptions, ParsedQueryParameters } from "../../src/types";
 
 // eslint-disable-next-line func-style
 async function CrudHandler<T, Q extends ParsedQueryParameters = any, M extends string = string>(

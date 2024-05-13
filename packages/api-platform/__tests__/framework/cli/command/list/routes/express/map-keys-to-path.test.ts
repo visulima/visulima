@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { oneDynamicPath, staticPath, twoDynamicPaths } from "../../../../../../../__fixtures__/express/const";
 import mapKeysToPath from "../../../../../../../src/framework/cli/command/list/routes/express/map-keys-to-path";
-import type { ExpressRegex } from "../../../../../../../src/framework/cli/command/list/routes/express/types.d";
+import type { ExpressRegex } from "../../../../../../../src/framework/cli/command/list/routes/express/types";
 
 describe("mapKeysToPath", () => {
     it("handles one dynamic path parameter", () => {

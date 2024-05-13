@@ -17,7 +17,7 @@ import { createSeedData } from "./seed";
 // eslint-disable-next-line n/no-unpublished-import
 import PrismaAdapter from "../../../../src/adapter/prisma";
 // eslint-disable-next-line n/no-unpublished-import
-import type { Adapter } from "../../../../src/types.d";
+import type { Adapter } from "../../../../src/types";
 
 const createMocks = (
     options: RequestOptions,

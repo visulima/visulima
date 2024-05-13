@@ -1,6 +1,6 @@
-import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types.d";
+import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOperator } from "../../../types";
 import isPrimitive from "../../../utils/is-primitive";
-import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types.d";
+import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types";
 
 const isObject = (a: any) => a instanceof Object;
 

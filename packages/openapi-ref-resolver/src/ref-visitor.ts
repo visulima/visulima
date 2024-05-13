@@ -1,4 +1,4 @@
-import type { ApiObject, JsonItem, ObjectVisitor, ReferenceObject, ReferenceVisitor, JsonNavigation } from "./types.d";
+import type { ApiObject, JsonItem, ObjectVisitor, ReferenceObject, ReferenceVisitor, JsonNavigation } from "./types";
 
 /**
  * Recursively walk a JSON object and invoke a callback function

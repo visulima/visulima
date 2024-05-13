@@ -5,8 +5,8 @@ import type {
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, FakePrismaClient, MarshalFunction, PaginationData, ParsedQueryParameters, UnmarshalFunction } from "../../types.d";
-import type { PrismaParsedQueryParameters } from "./types.d";
+import type { Adapter, FakePrismaClient, MarshalFunction, PaginationData, ParsedQueryParameters, UnmarshalFunction } from "../../types";
+import type { PrismaParsedQueryParameters } from "./types";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
 import parsePrismaOrderBy from "./utils/parse-order-by";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import routesGroupBy from "../../../../../../src/framework/cli/command/list/routes/routes-group-by";
-import type { Route } from "../../../../../../src/framework/cli/command/list/routes/types.d";
+import type { Route } from "../../../../../../src/framework/cli/command/list/routes/types";
 
 describe("routes-group-by", () => {
     it("routesGroupBy returns a Map", () => {

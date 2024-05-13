@@ -1,6 +1,6 @@
 import type { OpenAPIV3 } from "openapi-types";
 
-import type { ModelsConfig, SwaggerModelsConfig } from "../types.d";
+import type { ModelsConfig, SwaggerModelsConfig } from "../types";
 
 const getOpenapiTags = <M extends string>(modelNames: M[], modelsConfig?: SwaggerModelsConfig<M>): OpenAPIV3.TagObject[] =>
     modelNames.map((modelName) => {

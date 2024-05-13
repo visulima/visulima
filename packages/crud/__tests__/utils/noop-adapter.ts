@@ -1,4 +1,4 @@
-import type { Adapter, MarshalFunction, PaginationData, ParsedQueryParameters, UnmarshalFunction } from "../../src/types.d";
+import type { Adapter, MarshalFunction, PaginationData, ParsedQueryParameters, UnmarshalFunction } from "../../src/types";
 
 class NoopAdapter implements Adapter<any, any, any> {
     public models: string[] = [];

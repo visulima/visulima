@@ -1,6 +1,6 @@
 import { paginate } from "@visulima/pagination";
 
-import type { ListHandler } from "../types.d";
+import type { ListHandler } from "../types";
 
 interface PaginationOptions {
     page: number;

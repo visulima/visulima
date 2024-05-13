@@ -1,7 +1,7 @@
-import type { ModelOption, ModelsOptions } from "../../types.d";
-import { RouteType } from "../../types.d";
+import type { ModelOption, ModelsOptions } from "../../types";
+import { RouteType } from "../../types";
 import { getQueryParameters } from "../parameters";
-import type { Routes, SwaggerModelsConfig } from "../types.d";
+import type { Routes, SwaggerModelsConfig } from "../types";
 import formatExampleReference from "./format-example-ref";
 import formatSchemaReference from "./format-schema-ref";
 

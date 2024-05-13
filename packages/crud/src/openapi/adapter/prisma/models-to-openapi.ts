@@ -1,9 +1,9 @@
 import type { OpenAPIV3 } from "openapi-types";
 
 import modelsToRouteNames from "../../../adapter/prisma/utils/models-to-route-names";
-import type { FakePrismaClient, ModelsOptions } from "../../../types.d";
+import type { FakePrismaClient, ModelsOptions } from "../../../types";
 import PrismaJsonSchemaParser from "./json-schema-parser";
-import type { SwaggerModelsConfig } from "../../types.d";
+import type { SwaggerModelsConfig } from "../../types";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
 import getOpenapiPaths from "../../utils/get-openapi-paths";
 import getOpenapiTags from "../../utils/get-openapi-tags";

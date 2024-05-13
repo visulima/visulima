@@ -1,6 +1,6 @@
 import deepClone from "@visulima/deep-clone";
 
-import { ApiObject } from "./../types.d";
+import { ApiObject } from "./../types";
 
 /**
  * Merge the `$ref` object with the API object read from the URL.

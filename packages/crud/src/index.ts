@@ -17,6 +17,6 @@ export type {
     WhereCondition,
     WhereField,
     WhereOperator,
-} from "./types.d";
+} from "./types";
 
-export { RouteType } from "./types.d";
+export { RouteType } from "./types";

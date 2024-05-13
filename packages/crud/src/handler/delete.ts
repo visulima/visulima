@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 
-import type { DeleteHandler } from "../types.d";
+import type { DeleteHandler } from "../types";
 
 const deleteHandler: DeleteHandler = async ({ adapter, query, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);

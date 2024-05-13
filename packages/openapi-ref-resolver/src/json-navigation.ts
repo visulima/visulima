@@ -1,7 +1,7 @@
 import jsonPointer from "json-pointer";
 import deepClone from "@visulima/deep-clone";
 
-import type { ApiObject, JsonNavigation as IJsonNavigation, JsonItem, JsonKey } from "./types.d";
+import type { ApiObject, JsonNavigation as IJsonNavigation, JsonItem, JsonKey } from "./types";
 
 /**
  * Captures a JSON document and the navigation path

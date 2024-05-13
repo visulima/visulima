@@ -1,6 +1,6 @@
 import createHttpError from "http-errors";
 
-import type { UpdateHandler } from "../types.d";
+import type { UpdateHandler } from "../types";
 
 const updateHandler: UpdateHandler = async ({ adapter, query, request, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
