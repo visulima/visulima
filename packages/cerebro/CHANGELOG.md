@@ -1,3 +1,10 @@
+## @visulima/cerebro [1.0.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.26...@visulima/cerebro@1.0.27) (2024-05-13)
+
+
+### Bug Fixes
+
+* **cerebro:** updated cli-table3 to version 0.6.5 ([5b0aae1](https://github.com/visulima/visulima/commit/5b0aae1d4a80489a238595ac11bf2293b584400e))
+
 ## @visulima/cerebro [1.0.26](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.25...@visulima/cerebro@1.0.26) (2024-04-10)
 
 
