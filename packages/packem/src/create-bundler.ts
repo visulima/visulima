@@ -14,7 +14,6 @@ import { defu } from "defu";
 import { createHooks } from "hookable";
 import { basename, isAbsolute, join, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
-import ts from "typescript";
 
 import { EXCLUDE_REGEXP } from "./constants";
 import createStub from "./jit/create-stub";
@@ -150,7 +149,7 @@ const build = async (
                     skipLibCheck: true,
                     // Ensure we can parse the latest code
                     // eslint-disable-next-line import/no-named-as-default-member
-                    target: ts.ScriptTarget.ESNext,
+                    target: 99, // ESNext
                 },
                 respectExternal: true,
             },

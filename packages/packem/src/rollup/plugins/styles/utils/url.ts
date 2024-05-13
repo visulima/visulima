@@ -1,23 +1,27 @@
-import path from "node:path";
+import { parse } from "node:path";
 
-import { isAbsolutePath, isRelativePath, normalizePath } from "./path";
+import { isAbsolute, toNamespacedPath } from "pathe";
+
+import { isRelativePath } from "./path";
 
 export const isModule = (url: string): boolean => /^~[\d@A-Z]/i.test(url);
 
-export function getUrlOfPartial(url: string): string {
-    const { base, dir } = path.parse(url);
+export const getUrlOfPartial = (url: string): string => {
+    const { base, dir } = parse(url);
 
-    return dir ? `${normalizePath(dir)}/_${base}` : `_${base}`;
-}
+    return dir ? `${toNamespacedPath(dir)}/_${base}` : `_${base}`;
+};
 
-export function normalizeUrl(url: string): string {
+export const normalizeUrl = (url: string): string => {
     if (isModule(url)) {
-        return normalizePath(url.slice(1));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return toNamespacedPath(url.slice(1));
     }
 
-    if (isAbsolutePath(url) || isRelativePath(url)) {
-        return normalizePath(url);
+    if (isAbsolute(url) || isRelativePath(url)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return toNamespacedPath(url);
     }
 
-    return `./${normalizePath(url)}`;
-}
+    return `./${toNamespacedPath(url)}`;
+};

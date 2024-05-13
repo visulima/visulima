@@ -2,16 +2,17 @@ import path from "node:path";
 
 import { createFilter } from "@rollup/pluginutils";
 import cssnano from "cssnano";
-import type { OutputAsset,OutputChunk, Plugin } from "rollup";
+import type { OutputAsset, OutputChunk, Plugin } from "rollup";
 
 import Loaders from "./loaders";
-import type { Extracted,LoaderContext } from "./loaders/types";
+import type { Extracted, LoaderContext } from "./loaders/types";
 import type { ExtractedData, Options, PostCSSLoaderOptions } from "./types";
 import concat from "./utils/concat";
-import { ensurePCSSOption, ensurePCSSPlugins,ensureUseOption, inferHandlerOption, inferModeOption, inferOption, inferSourceMapOption } from "./utils/options";
-import { humanlizePath, isAbsolutePath, isRelativePath,normalizePath } from "./utils/path";
+import { ensurePCSSOption, ensurePCSSPlugins, ensureUseOption, inferHandlerOption, inferModeOption, inferOption, inferSourceMapOption } from "./utils/options";
+import { humanlizePath, isAbsolutePath, isRelativePath, normalizePath } from "./utils/path";
 import { mm } from "./utils/sourcemap";
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default (options: Options = {}): Plugin => {
     const isIncluded = createFilter(options.include, options.exclude);
 
@@ -24,7 +25,6 @@ export default (options: Options = {}): Plugin => {
         dts: options.dts ?? false,
         extensions: options.extensions ?? [".css", ".pcss", ".postcss", ".sss"],
         import: inferHandlerOption(options.import, options.alias),
-
         minimize: inferOption(options.minimize, false),
         modules: inferOption(options.modules, false),
         namedExports: options.namedExports ?? false,
@@ -114,7 +114,6 @@ export default (options: Options = {}): Plugin => {
         },
 
         async generateBundle(options_, bundle) {
-
             if (extracted.length === 0 || !(options_.dir || options_.file)) {
                 return;
             }
@@ -140,11 +139,11 @@ export default (options: Options = {}): Plugin => {
 
                 const entries = extracted.filter((e) => ids.includes(e.id)).sort((a, b) => ids.lastIndexOf(a.id) - ids.lastIndexOf(b.id));
 
-                const res = await concat(entries);
+                const result = await concat(entries);
 
                 return {
-                    css: res.css,
-                    map: mm(res.map.toString())
+                    css: result.css,
+                    map: mm(result.map.toString())
                         .relative(path.dirname(path.resolve(dir, fileName)))
                         .toString(),
                     name: fileName,
