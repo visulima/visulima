@@ -152,6 +152,76 @@ console.log(result);
 //"<FIRSTNAME> <LASTNAME> will be 30 on <DATE>"
 ```
 
+## API
+
+### redact(input, rules, options?)
+
+#### input
+
+Type: `any`
+
+The input value to redact.
+
+#### rules
+
+Type: `(Anonymize | StringAnonymize | number | string)[]`
+
+An array of rules to redact.
+
+#### options
+
+Type: `object`
+
+##### exclude
+
+Type: `(string | number)[]`
+
+Exclude a rule for the rules array.
+
+##### logger
+
+Type: `object`
+
+###### debug
+
+Type: `(message?: any, ...optionalParameters: any[]) => void`
+
+A function to log debug messages.
+
+### stringAnonymize(input, rules, options?)
+
+#### input
+
+Type: `string`
+
+The input value to redact.
+
+#### rules
+
+Type: `(Anonymize | StringAnonymize | number | string)[]`
+
+An array of rules to redact.
+
+#### options
+
+Type: `object`
+
+##### exclude
+
+Type: `(string | number)[]`
+
+Exclude a rule for the rules array.
+
+##### logger
+
+Type: `object`
+
+###### debug
+
+Type: `(message?: any, ...optionalParameters: any[]) => void`
+
+A function to log debug messages.
+
 ## Related
 
 -   [fast-redact](https://github.com/davidmarkclements/fast-redact) - very fast object redaction
