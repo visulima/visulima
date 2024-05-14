@@ -148,4 +148,4 @@ export const isRelative = (path: string): boolean => /^\.?\.[/\\]/.test(path);
 
 export const isBinaryPath = (path: string): boolean => extensions.has(extname(path).slice(1).toLowerCase());
 
-export const toPath = (urlOrPath: URL | string): string => (urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath);
+export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath((urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath));
