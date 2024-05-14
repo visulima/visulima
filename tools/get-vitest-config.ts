@@ -26,8 +26,8 @@ export const getVitestConfig = (options: UserConfig = {}) => {
             typecheck: {
                 enabled: false,
             },
-            exclude: [...configDefaults.exclude, "__fixtures__/**"],
             ...options.test,
+            exclude: [...configDefaults.exclude, "__fixtures__/**", ...options.test?.exclude],
         },
     });
 };
