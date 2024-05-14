@@ -65,6 +65,7 @@ export default function (plop) {
                 templateFiles: `plop/package/**`,
                 destination: `./packages//{{dashCase packageName}}`,
                 base: `plop/package`,
+                globOptions: { dot: true },
                 data,
                 abortOnFail: true,
             });
