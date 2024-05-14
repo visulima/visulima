@@ -1,0 +1,8 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "include": ["src/**/*", "*.d.ts"],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "moduleResolution": "bundler",
+    }
+}

@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 
 import { bold, cyan, gray } from "@visulima/colorize";
 import { collectSync } from "@visulima/fs";
-import { join } from "pathe";
+import { join } from "@visulima/path";
 import type { NormalizedPackageJson } from "read-pkg";
 
 import type { BuildPreset } from "../types";

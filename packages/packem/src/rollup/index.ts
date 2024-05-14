@@ -1,6 +1,6 @@
 import { cyan, gray } from "@visulima/colorize";
 import type { Pail } from "@visulima/pail";
-import { relative, resolve } from "pathe";
+import { relative, resolve } from "@visulima/path";
 import type { OutputAsset, OutputChunk, OutputOptions, RollupWatcher, RollupWatcherEvent } from "rollup";
 import { rollup, watch as rollupWatch } from "rollup";
 

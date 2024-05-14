@@ -4,7 +4,7 @@ import type { FilterPattern } from "@rollup/pluginutils";
 import { createFilter } from "@rollup/pluginutils";
 import type { Options } from "@swc/core";
 import { transform as swcTransform } from "@swc/core";
-import { dirname, resolve } from "pathe";
+import { dirname, resolve } from "@visulima/path";
 import type { Plugin } from "rollup";
 
 import { DEFAULT_EXTENSIONS, EXCLUDE_REGEXP } from "../../constants";

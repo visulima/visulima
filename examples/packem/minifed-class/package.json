@@ -1,0 +1,15 @@
+{
+    "name": "example_packem_cjs_interop",
+    "version": "1.0.0",
+    "private": true,
+    "type": "commonjs",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "packem --minify"
+    },
+    "dependencies": {
+        "@visulima/packem": "workspace:*"
+    }
+}

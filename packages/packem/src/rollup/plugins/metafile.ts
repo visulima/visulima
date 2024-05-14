@@ -1,5 +1,5 @@
 import { writeJsonSync } from "@visulima/fs";
-import { resolve } from "pathe";
+import { resolve } from "@visulima/path";
 import type { Plugin } from "rollup";
 
 interface MetafileOptions {

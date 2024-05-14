@@ -2,7 +2,7 @@ import { existsSync, statSync } from "node:fs";
 
 import type { FilterPattern } from "@rollup/pluginutils";
 import { createFilter } from "@rollup/pluginutils";
-import { dirname, resolve } from "pathe";
+import { dirname, resolve } from "@visulima/path";
 import type { Plugin } from "rollup";
 import type { Options } from "sucrase";
 import { transform as sucraseTransform } from "sucrase";

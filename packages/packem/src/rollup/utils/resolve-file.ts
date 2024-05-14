@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 
-import { join } from "pathe";
+import { join } from "@visulima/path";
 
 const resolveFile = (extensions: string[], resolved: string, index = false) => {
     const fileWithoutExtension = resolved.replace(/\.[jt]sx?$/, "");

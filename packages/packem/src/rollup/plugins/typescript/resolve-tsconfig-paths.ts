@@ -1,7 +1,7 @@
 import { normalizePath } from "@rollup/pluginutils";
 import type { TsConfigResult } from "@visulima/package";
 import type { Pail } from "@visulima/pail";
-import { dirname, resolve } from "pathe";
+import { dirname, resolve } from "@visulima/path";
 import type { Plugin } from "rollup";
 
 type Alias = {

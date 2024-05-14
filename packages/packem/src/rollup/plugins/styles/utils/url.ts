@@ -1,6 +1,6 @@
 import { parse } from "node:path";
 
-import { isAbsolute, toNamespacedPath } from "pathe";
+import { isAbsolute, toNamespacedPath } from "@visulima/path";
 
 import { isRelativePath } from "./path";
 

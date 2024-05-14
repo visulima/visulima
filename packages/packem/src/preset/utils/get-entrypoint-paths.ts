@@ -1,4 +1,4 @@
-import { normalize } from "pathe";
+import { normalize } from "@visulima/path";
 
 const getEntrypointPaths = (path: string): string[] => {
     const segments = normalize(path).split("/");

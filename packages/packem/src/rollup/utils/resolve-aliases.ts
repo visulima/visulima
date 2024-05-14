@@ -1,5 +1,5 @@
 import type { PackageJson } from "@visulima/package";
-import { join } from "pathe";
+import { join } from "@visulima/path";
 
 import type { BuildContext } from "../../types";
 

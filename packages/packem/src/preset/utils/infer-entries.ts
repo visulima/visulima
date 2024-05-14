@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import type { PackageJson } from "@visulima/package";
-import { resolve } from "pathe";
+import { resolve } from "@visulima/path";
 
 import type { BuildEntry, InferEntriesResult } from "../../types";
 import extractExportFilenames from "../../utils/extract-export-filenames";

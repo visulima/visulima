@@ -1,7 +1,7 @@
 import type { Pail } from "@visulima/pail";
+import { extname } from "@visulima/path";
 import type { Node } from "estree";
 import MagicString from "magic-string";
-import { extname } from "pathe";
 import type { Plugin } from "rollup";
 
 const availableESExtensionsRegex = /\.(?:m|c)?(?:j|t)sx?$/;

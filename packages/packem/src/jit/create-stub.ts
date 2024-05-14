@@ -1,8 +1,8 @@
 import { pathToFileURL } from "node:url";
 
 import { readFile, writeFile } from "@visulima/fs";
+import { extname, normalize, resolve } from "@visulima/path";
 import { resolveModuleExportNames, resolvePath } from "mlly";
-import { extname, normalize, resolve } from "pathe";
 
 import { DEFAULT_EXTENSIONS } from "../constants";
 import { getShebang, makeExecutable } from "../rollup/plugins/shebang";

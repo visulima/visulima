@@ -10,9 +10,9 @@ import { findPackageJson, findTSConfig, readTsConfig } from "@visulima/package";
 import type { Pail, Processor } from "@visulima/pail";
 import { createPail } from "@visulima/pail";
 import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
+import { basename, isAbsolute, join, normalize, relative, resolve } from "@visulima/path";
 import { defu } from "defu";
 import { createHooks } from "hookable";
-import { basename, isAbsolute, join, normalize, relative, resolve } from "pathe";
 import { minVersion } from "semver";
 
 import { EXCLUDE_REGEXP } from "./constants";
@@ -148,7 +148,7 @@ const build = async (
                     preserveSymlinks: false,
                     skipLibCheck: true,
                     // Ensure we can parse the latest code
-                    // eslint-disable-next-line import/no-named-as-default-member
+
                     target: 99, // ESNext
                 },
                 respectExternal: true,

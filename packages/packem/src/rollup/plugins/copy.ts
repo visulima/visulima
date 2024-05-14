@@ -2,9 +2,9 @@ import { stat } from "node:fs/promises";
 
 import { readFile } from "@visulima/fs";
 import type { Pail } from "@visulima/pail";
+import { basename, dirname, join, normalize, relative } from "@visulima/path";
 import { glob } from "glob";
 import globParent from "glob-parent";
-import { basename, dirname, join, normalize, relative } from "pathe";
 import type { Plugin, PluginContext } from "rollup";
 
 type SingleTargetDesc = {

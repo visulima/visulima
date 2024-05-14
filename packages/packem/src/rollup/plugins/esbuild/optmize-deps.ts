@@ -8,10 +8,10 @@
 import { readFile } from "node:fs/promises";
 
 import { findCacheDirectory } from "@visulima/package";
+import { join } from "@visulima/path";
 import { init, parse } from "es-module-lexer";
 import type { OnResolveArgs, OnResolveResult } from "esbuild";
 import { build as esbuildBuild } from "esbuild";
-import { join } from "pathe";
 
 import type { Optimized, OptimizeDepsOptions, OptimizeDepsResult } from "./types";
 

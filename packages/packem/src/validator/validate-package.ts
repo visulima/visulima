@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 
 import { cyan, grey } from "@visulima/colorize";
 import type { PackageJson } from "@visulima/package";
-import { relative, resolve } from "pathe";
+import { relative, resolve } from "@visulima/path";
 
 import type { BuildContext } from "../types";
 import extractExportFilenames from "../utils/extract-export-filenames";

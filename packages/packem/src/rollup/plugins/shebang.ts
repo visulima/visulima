@@ -1,8 +1,8 @@
 // Forked from https://github.com/developit/rollup-plugin-preserve-shebang (1.0.1 @ MIT)
 import { chmod } from "node:fs/promises";
 
+import { resolve } from "@visulima/path";
 import MagicString from "magic-string";
-import { resolve } from "pathe";
 import type { Plugin, SourceMapInput } from "rollup";
 
 const SHEBANG_RE = /^#![^\n]*/;

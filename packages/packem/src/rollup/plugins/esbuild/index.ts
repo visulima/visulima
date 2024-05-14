@@ -9,9 +9,9 @@ import { existsSync, statSync } from "node:fs";
 
 import { createFilter } from "@rollup/pluginutils";
 import type { Pail } from "@visulima/pail";
+import { dirname, extname, resolve } from "@visulima/path";
 import type { Loader } from "esbuild";
 import { transform } from "esbuild";
-import { dirname, extname, resolve } from "pathe";
 import type { Plugin as RollupPlugin } from "rollup";
 
 import { DEFAULT_LOADERS, EXCLUDE_REGEXP } from "../../../constants";

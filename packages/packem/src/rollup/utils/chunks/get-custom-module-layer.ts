@@ -6,7 +6,7 @@
  *
  * Copyright (c) 2018 these people -> https://github.com/huozhi/bunchee/graphs/contributors
  */
-import { basename } from "pathe";
+import { basename } from "@visulima/path";
 
 import { DEFAULT_EXTENSIONS } from "../../../constants";
 
