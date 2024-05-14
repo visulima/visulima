@@ -9,9 +9,9 @@ export interface CJSInteropOptions {
 export const cjsInterop = ({
     addDefaultProperty = false,
     logger,
-    type
+    type,
 }: CJSInteropOptions & {
-    logger: Pail<never, string>
+    logger: Pail<never, string>;
     type: "commonjs" | "module";
 }): Plugin => {
     return {

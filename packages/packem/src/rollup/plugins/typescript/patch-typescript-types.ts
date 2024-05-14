@@ -33,7 +33,13 @@ const calledDtsFiles = new Map<string, boolean>();
  * confusing when showed in autocompletions. Try to replace with a better name
  */
 // eslint-disable-next-line func-style
-function replaceConfusingTypeNames(this: PluginContext, code: string, chunk: RenderedChunk, { identifierReplacements }: PatchTypesOptions, logger: Pail<never, string>) {
+function replaceConfusingTypeNames(
+    this: PluginContext,
+    code: string,
+    chunk: RenderedChunk,
+    { identifierReplacements }: PatchTypesOptions,
+    logger: Pail<never, string>,
+) {
     const imports = findStaticImports(code);
 
     // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax

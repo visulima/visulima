@@ -14,7 +14,7 @@ export interface SucrasePluginConfig extends Options {
     exclude?: FilterPattern;
     extensions?: string[];
     include?: FilterPattern;
-};
+}
 
 export const sucrasePlugin = ({ exclude, extensions = DEFAULT_EXTENSIONS, include, ...transformOptions }: SucrasePluginConfig): Plugin => {
     const filter = createFilter(include, exclude || EXCLUDE_REGEXP);

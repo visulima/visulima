@@ -30,7 +30,9 @@ export const importer: sass.Importer = (url, importer, done): void => {
     resolveAsync([partialUrl, moduleUrl], options).then(finalize).catch(next);
 };
 
-const finalize = (id: string): sass.Data => {return { file: id.replace(/\.css$/i, "") }};
+const finalize = (id: string): sass.Data => {
+    return { file: id.replace(/\.css$/i, "") };
+};
 export const importerSync: sass.Importer = (url, importer): sass.Data => {
     if (!isModule(url)) {
         return null;

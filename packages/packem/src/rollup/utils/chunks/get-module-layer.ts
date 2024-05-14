@@ -9,6 +9,7 @@
 import type { CustomPluginOptions } from "rollup";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getModuleLayer = (moduleMeta: CustomPluginOptions): any => (moduleMeta.preserveDirectives || { directives: [] }).directives.map((d: string) => d.replace(/^use /, "")).find((d: string) => d !== "strict")
+const getModuleLayer = (moduleMeta: CustomPluginOptions): any =>
+    (moduleMeta.preserveDirectives || { directives: [] }).directives.map((d: string) => d.replace(/^use /, "")).find((d: string) => d !== "strict");
 
 export default getModuleLayer;

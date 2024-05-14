@@ -1,15 +1,15 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { AsyncOpts, PackageJSON,SyncOpts } from "resolve";
+import type { AsyncOpts, PackageJSON, SyncOpts } from "resolve";
 import resolver from "resolve";
-import { legacy as resolveFields,resolve as resolveExports } from "resolve.exports";
+import { legacy as resolveFields, resolve as resolveExports } from "resolve.exports";
 
 import arrayFmt from "./array-fmt";
 
 const baseDir = path.dirname(fileURLToPath(import.meta.url));
 
-type Package = PackageJSON
+type Package = PackageJSON;
 type PackageFilterFunction = (package_: Package, pkgfile: string) => Package;
 
 export interface ResolveOptions {
@@ -100,9 +100,7 @@ export async function resolveAsync(ids: string[], userOptions: ResolveOptions): 
 const resolverSync = (id: string, options: SyncOpts = {}): string | undefined => {
     try {
         return resolver.sync(id, options);
-    } catch {
-
-    }
+    } catch {}
 };
 
 export function resolveSync(ids: string[], userOptions: ResolveOptions): string {

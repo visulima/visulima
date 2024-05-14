@@ -18,7 +18,6 @@ const plugin: PluginCreator<InteroperableCSSOptions> = (options = {}) => {
     const extensions = options.extensions ?? extensionsDefault;
 
     return {
-
         async OnceExit(css, { result: res }) {
             if (!css.source?.input.file) {
                 return;

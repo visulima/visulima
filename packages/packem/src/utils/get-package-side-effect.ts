@@ -9,7 +9,7 @@ const createFilter = _createFilter as (
     options?: { resolve?: string | false | null },
 ) => (id: string | unknown) => boolean;
 
-const getPackageSideEffect = (cwd: string, packageJson: PackageJson): (id: string) => boolean | null => {
+const getPackageSideEffect = (cwd: string, packageJson: PackageJson): ((id: string) => boolean | null) => {
     const { sideEffects } = packageJson;
 
     let hasSideEffects: (id: string) => boolean | null;

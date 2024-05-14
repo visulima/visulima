@@ -16,7 +16,7 @@ const getCustomModuleLayer = (moduleId: string): string | undefined => {
     if (segments.length >= 2) {
         const [layerSegment, extension] = segments.slice(-2);
         const baseName = segments[0];
-        const match = /^(\w+)-runtime$/.exec((layerSegment as string));
+        const match = /^(\w+)-runtime$/.exec(layerSegment as string);
         const layer = match?.[1];
 
         if (DEFAULT_EXTENSIONS.includes(extension as string) && layer && layer.length > 0) {

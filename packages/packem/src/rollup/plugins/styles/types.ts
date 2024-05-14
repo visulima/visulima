@@ -7,7 +7,7 @@ import type { ModulesOptions } from "./loaders/postcss/modules";
 import type { UrlOptions } from "./loaders/postcss/url";
 import type { SASSLoaderOptions } from "./loaders/sass";
 import type { StylusLoaderOptions } from "./loaders/stylus";
-import type { Loader,SourceMapOptions } from "./loaders/types";
+import type { Loader, SourceMapOptions } from "./loaders/types";
 
 /** Options for PostCSS config loader */
 export interface PostCSSConfigLoaderOptions {
@@ -170,7 +170,14 @@ export interface Options {
      * @default "inject"
      */
     mode?:
-        "emit" | "extract" | "inject" | ["emit"] | ["extract", string] | ["extract"] | ["inject", InjectOptions | ((varname: string, id: string) => string)] | ["inject"];
+        | "emit"
+        | "extract"
+        | "inject"
+        | ["emit"]
+        | ["extract", string]
+        | ["extract"]
+        | ["inject", InjectOptions | ((varname: string, id: string) => string)]
+        | ["inject"];
     /**
      * Enable/disable or pass options for
      * [CSS Modules](https://github.com/css-modules/css-modules)
@@ -203,9 +210,15 @@ export interface Options {
      * which are used before plugins loaded from PostCSS config file, if any
      */
     plugins?:
-        (
-              postcss.AcceptedPlugin | string | [postcss.PluginCreator<unknown> | string, Record<string, unknown>] | [postcss.PluginCreator<unknown> | string] | null | undefined
-          )[] | Record<string, unknown>;
+        | (
+              | postcss.AcceptedPlugin
+              | string
+              | [postcss.PluginCreator<unknown> | string, Record<string, unknown>]
+              | [postcss.PluginCreator<unknown> | string]
+              | null
+              | undefined
+          )[]
+        | Record<string, unknown>;
     /** Options for Sass loader */
     sass?: SASSLoaderOptions;
     /**

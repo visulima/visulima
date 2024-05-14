@@ -41,7 +41,7 @@ const CJSToESM = (code: string, shim: string) => {
         code: s.toString(),
         map: s.generateMap(),
     };
-}
+};
 
 const cjsPlugin = (packageJson: PackageJson): Plugin =>
     ({

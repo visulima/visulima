@@ -44,7 +44,7 @@ const resolveAliases = (context: BuildContext, mode: "build" | "jit" | "types"):
         }
     }
 
-    context.logger.debug({message: "Resolved aliases: " + JSON.stringify(aliases), prefix: mode });
+    context.logger.debug({ message: "Resolved aliases: " + JSON.stringify(aliases), prefix: mode });
 
     return aliases;
 };

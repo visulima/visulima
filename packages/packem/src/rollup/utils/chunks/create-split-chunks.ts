@@ -68,45 +68,48 @@ const createSplitChunks = (dependencyGraphMap: Map<string, Set<[string, string]>
         }
 
         // If current module has a layer, and it's not an entry
-        if (moduleLayer && !isEntry && // If the module is imported by the entry:
+        if (
+            moduleLayer &&
+            !isEntry && // If the module is imported by the entry:
             // when the module layer is same as entry layer, keep it as part of entry and don't split it;
             // when the module layer is different from entry layer, split the module into a separate chunk as a separate boundary.
-            dependencyGraphMap.has(id)) {
-                const parentModuleIds = [...(dependencyGraphMap.get(id)!)];
-                const isImportFromOtherEntry = parentModuleIds.some(([id]) => {
-                    console.log(id);
-                    // If other entry is dependency of this entry
-                    if (entryFiles.some((entry) => entry.path === id)) {
-                        const entryModuleInfo = context.getModuleInfo(id);
-                        const entryModuleLayer = getModuleLayer(entryModuleInfo ? entryModuleInfo.meta : {});
+            dependencyGraphMap.has(id)
+        ) {
+            const parentModuleIds = [...dependencyGraphMap.get(id)!];
+            const isImportFromOtherEntry = parentModuleIds.some(([id]) => {
+                console.log(id);
+                // If other entry is dependency of this entry
+                if (entryFiles.some((entry) => entry.path === id)) {
+                    const entryModuleInfo = context.getModuleInfo(id);
+                    const entryModuleLayer = getModuleLayer(entryModuleInfo ? entryModuleInfo.meta : {});
 
-                        return entryModuleLayer === moduleLayer;
-                    }
-                    return false;
-                });
-                if (isImportFromOtherEntry) {
-                    return undefined;
+                    return entryModuleLayer === moduleLayer;
                 }
-
-                const isPartOfCurrentEntry = parentModuleIds.every(([, layer]) => layer === moduleLayer);
-                if (isPartOfCurrentEntry) {
-                    if (splitChunksGroupMap.has(id)) {
-                        return splitChunksGroupMap.get(id);
-                    }
-
-                    return undefined;
-                }
-
-                const chunkName = basename(id, extname(id));
-                const chunkGroup = `${chunkName}-${moduleLayer}`;
-
-                splitChunksGroupMap.set(id, chunkGroup);
-
-                return chunkGroup;
+                return false;
+            });
+            if (isImportFromOtherEntry) {
+                return undefined;
             }
+
+            const isPartOfCurrentEntry = parentModuleIds.every(([, layer]) => layer === moduleLayer);
+            if (isPartOfCurrentEntry) {
+                if (splitChunksGroupMap.has(id)) {
+                    return splitChunksGroupMap.get(id);
+                }
+
+                return undefined;
+            }
+
+            const chunkName = basename(id, extname(id));
+            const chunkGroup = `${chunkName}-${moduleLayer}`;
+
+            splitChunksGroupMap.set(id, chunkGroup);
+
+            return chunkGroup;
+        }
 
         return undefined;
     };
-}
+};
 
 export default createSplitChunks;

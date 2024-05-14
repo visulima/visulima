@@ -23,7 +23,7 @@ const preserveDirectives = (logger: Pail<never, string>): Plugin => {
         },
 
         renderChunk: {
-                handler(code, chunk, { sourcemap }) {
+            handler(code, chunk, { sourcemap }) {
                 const outputDirectives = chunk.moduleIds
                     .map((id) => {
                         // eslint-disable-next-line security/detect-object-injection

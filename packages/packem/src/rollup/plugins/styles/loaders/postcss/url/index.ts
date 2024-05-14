@@ -4,14 +4,14 @@ import type { Declaration, PluginCreator } from "postcss";
 import type { Node, ParsedValue } from "postcss-value-parser";
 import valueParser from "postcss-value-parser";
 
-import { isAbsolutePath,normalizePath } from "../../../utils/path";
+import { isAbsolutePath, normalizePath } from "../../../utils/path";
 import { mm } from "../../../utils/sourcemap";
-import { dataURIRe,firstExtRe as firstExtensionRe } from "../common";
+import { dataURIRe, firstExtRe as firstExtensionRe } from "../common";
 import generateName from "./generate";
 import inlineFile from "./inline";
-import type { UrlFile,UrlResolve } from "./resolve";
+import type { UrlFile, UrlResolve } from "./resolve";
 import resolveDefault from "./resolve";
-import { isDeclWithUrl,walkUrls } from "./utils";
+import { isDeclWithUrl, walkUrls } from "./utils";
 
 const name = "styles-url";
 const placeholderHashDefault = "assets/[name]-[hash][extname]";
@@ -69,7 +69,6 @@ const plugin: PluginCreator<UrlOptions> = (options = {}) => {
     const placeholder = options.hash ?? true ? (typeof options.hash === "string" ? options.hash : placeholderHashDefault) : placeholderNoHashDefault;
 
     return {
-
         async Once(css, { result: res }) {
             if (!css.source?.input.file) {
                 return;

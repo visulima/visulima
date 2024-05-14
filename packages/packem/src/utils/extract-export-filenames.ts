@@ -2,7 +2,7 @@ import type { PackageJson } from "read-pkg";
 
 import { inferExportType, inferExportTypeFromFileName } from "./infer-export-type";
 
-type OutputDescriptor = { fieldName?: string; file: string; isExecutable?: true, type?: "cjs" | "esm" };
+type OutputDescriptor = { fieldName?: string; file: string; isExecutable?: true; type?: "cjs" | "esm" };
 
 const extractExportFilenames = (packageExports: PackageJson["exports"], type: PackageJson["type"], conditions: string[] = []): OutputDescriptor[] => {
     if (!packageExports) {

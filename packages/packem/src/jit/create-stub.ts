@@ -27,7 +27,7 @@ const createStub = async (context: BuildContext): Promise<void> => {
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const entry of context.options.entries) {
-        const output = resolve(context.options.rootDir, context.options.outDir, entry.name);
+        const output = resolve(context.options.rootDir, context.options.outDir, entry.name as string);
 
         const resolvedEntry = normalize(tryResolve(entry.input, context.options.rootDir) || entry.input);
         const resolvedEntryWithoutExtension = resolvedEntry.slice(0, Math.max(0, resolvedEntry.length - extname(resolvedEntry).length));
@@ -98,10 +98,7 @@ const createStub = async (context: BuildContext): Promise<void> => {
         // eslint-disable-next-line no-await-in-loop
         await writeFile(
             `${output}.d.mts`,
-            [
-                `export * from ${JSON.stringify(resolvedEntry)};`,
-                hasDefaultExport ? `export { default } from ${JSON.stringify(resolvedEntry)};` : "",
-            ].join("\n"),
+            [`export * from ${JSON.stringify(resolvedEntry)};`, hasDefaultExport ? `export { default } from ${JSON.stringify(resolvedEntry)};` : ""].join("\n"),
         );
 
         if (shebang) {

@@ -95,7 +95,6 @@ const createBuildCommand = (cli: Cli): void => {
                 description: "Compile-time environment variables (eg. --env.NODE_ENV=production)",
                 multiple: true,
                 name: "env",
-                // @ts-expect-error -- wrong type
                 type: (input: string) => {
                     const [key, value] = input.split("=");
 

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { AtRule,PluginCreator, Result } from "postcss";
+import type { AtRule, PluginCreator, Result } from "postcss";
 import postcss from "postcss";
 import valueParser from "postcss-value-parser";
 
@@ -38,7 +38,6 @@ const plugin: PluginCreator<ImportOptions> = (options = {}) => {
     const extensions = options.extensions ?? extensionsDefault;
 
     return {
-
         async Once(css, { result: res }) {
             if (!css.source?.input.file) {
                 return;
