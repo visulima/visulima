@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { dirname, join, resolve } from "pathe";
+import { dirname, join, resolve } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

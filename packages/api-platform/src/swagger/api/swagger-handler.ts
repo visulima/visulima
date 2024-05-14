@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import path from "node:path";
 
 import type { ModelsToOpenApiParameters, SwaggerModelsConfig } from "@visulima/crud";
 import { modelsToOpenApi } from "@visulima/crud";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { join } from "@visulima/path";
 import debug from "debug";
 // eslint-disable-next-line no-restricted-imports
 import merge from "lodash.merge";
@@ -27,7 +28,7 @@ const swaggerHandler = <M extends string, PrismaClient>(
     } = options;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: Response) => {
-        const swaggerPath = path.join(process.cwd(), swaggerFilePath ?? "swagger/swagger.json");
+        const swaggerPath = join(process.cwd(), swaggerFilePath ?? "swagger/swagger.json");
 
         if (!existsSync(swaggerPath)) {
             throw new Error(`Swagger file not found at "${swaggerPath}".`);

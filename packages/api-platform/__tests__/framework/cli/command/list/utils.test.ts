@@ -1,4 +1,4 @@
-import { join } from "pathe";
+import { join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import { getApp, getAppWorkingDirectoryPath, getFrameworkName } from "../../../../../src/framework/cli/command/list/utils";

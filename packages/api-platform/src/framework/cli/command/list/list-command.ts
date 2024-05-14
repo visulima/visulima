@@ -1,8 +1,9 @@
 import { execSync } from "node:child_process";
 import { existsSync, rmSync, statSync } from "node:fs";
-import { extname, join } from "node:path";
 import process from "node:process";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { extname, join } from "@visulima/path";
 import chalk from "chalk";
 
 import { getRoutes } from "./get-routes";

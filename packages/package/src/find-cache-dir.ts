@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
 import { ensureDirSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
-import { join } from "pathe";
+import { join } from "@visulima/path";
 
 import { findPackageRoot, findPackageRootSync } from "./package";
 

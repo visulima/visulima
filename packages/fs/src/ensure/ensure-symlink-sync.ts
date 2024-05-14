@@ -1,7 +1,7 @@
 import type { symlink } from "node:fs";
 import { lstatSync, readlinkSync, statSync, symlinkSync } from "node:fs";
 
-import { dirname, resolve, toNamespacedPath } from "pathe";
+import { dirname, resolve, toNamespacedPath } from "@visulima/path";
 
 import { AlreadyExistsError } from "../error";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";

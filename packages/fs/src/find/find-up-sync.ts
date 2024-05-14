@@ -1,7 +1,6 @@
 import { statSync } from "node:fs";
-import { parse } from "node:path";
 
-import { dirname, isAbsolute, resolve } from "pathe";
+import { dirname, isAbsolute, parse, resolve } from "@visulima/path";
 
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpOptions, Match } from "../types";

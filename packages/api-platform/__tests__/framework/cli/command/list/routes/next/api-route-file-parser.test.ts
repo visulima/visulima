@@ -1,4 +1,5 @@
-import { join, resolve } from "pathe";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { join, resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import apiRouteFileParser from "../../../../../../../src/framework/cli/command/list/routes/next/api-route-file-parser";

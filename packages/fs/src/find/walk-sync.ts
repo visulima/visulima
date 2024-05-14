@@ -6,7 +6,7 @@
 import type { Stats } from "node:fs";
 import { readdirSync, realpathSync, statSync } from "node:fs";
 
-import { basename, join, normalize, resolve } from "pathe";
+import { basename, join, normalize, resolve } from "@visulima/path";
 
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";

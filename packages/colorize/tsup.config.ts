@@ -1,4 +1,4 @@
-import { join } from "path";
+import { join } from "@visulima/path";
 import { readFileSync, writeFileSync } from "fs";
 
 import { createConfig } from "../../tools/get-tsup-config";

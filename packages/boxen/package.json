@@ -88,6 +88,7 @@
         "@anolilab/semantic-release-pnpm": "^1.1.0",
         "@anolilab/semantic-release-preset": "^8.1.0",
         "@babel/core": "^7.24.5",
+        "@visulima/path": "workspace:*",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.18.14",
         "@visulima/colorize": "1.4.0",

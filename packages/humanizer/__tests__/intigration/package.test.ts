@@ -1,11 +1,11 @@
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import { execScriptSync } from "../helpers";
 
-describe("usage `@visulima/fs` npm package", () => {
+describe("usage `@visulima/humanizer` npm package", () => {
     it(`should work as CommonJS package`, () => {
         expect.assertions(1);
 

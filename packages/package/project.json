@@ -4,5 +4,5 @@
     "sourceRoot": "packages/package/src",
     "projectType": "library",
     "tags": ["package", "type:package"],
-    "implicitDependencies": ["fs"]
+    "implicitDependencies": ["fs", "path"]
 }

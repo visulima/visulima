@@ -1,6 +1,7 @@
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { dirname, join } from "@visulima/path";
 import stripAnsi from "strip-ansi";
 import { describe, expect, it } from "vitest";
 

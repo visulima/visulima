@@ -1,6 +1,6 @@
 import { linkSync, lstatSync } from "node:fs";
 
-import { dirname, toNamespacedPath } from "pathe";
+import { dirname, toNamespacedPath } from "@visulima/path";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "../utils/is-stats-identical";

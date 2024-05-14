@@ -6,8 +6,8 @@
  */
 import { readFileSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
+import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "@visulima/path";
 import { parse } from "jsonc-parser";
-import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "pathe";
 import type { TsConfigJson } from "type-fest";
 
 import type { TsConfigJsonResolved } from "./types";

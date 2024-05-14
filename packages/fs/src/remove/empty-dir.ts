@@ -2,7 +2,7 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, rm } from "node:fs/promises";
 
-import { join } from "pathe";
+import { join } from "@visulima/path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import type { EmptyDirOptions } from "../types";

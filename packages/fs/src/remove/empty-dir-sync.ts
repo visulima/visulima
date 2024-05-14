@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 
-import { join } from "pathe";
+import { join } from "@visulima/path";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import type { EmptyDirOptions } from "../types";

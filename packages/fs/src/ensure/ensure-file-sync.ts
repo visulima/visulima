@@ -1,6 +1,6 @@
 import { lstatSync, writeFileSync } from "node:fs";
 
-import { dirname } from "pathe";
+import { dirname } from "@visulima/path";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import { getFileInfoType } from "../utils/get-file-info-type";

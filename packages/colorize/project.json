@@ -4,5 +4,5 @@
     "sourceRoot": "packages/colorize/src",
     "projectType": "library",
     "tags": ["type:package", "colorize"],
-    "implicitDependencies": ["is-ansi-color-supported"]
+    "implicitDependencies": ["is-ansi-color-supported", "path"]
 }

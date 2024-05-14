@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 
-import { basename, dirname, join, relative, resolve } from "pathe";
+import { basename, dirname, join, relative, resolve } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

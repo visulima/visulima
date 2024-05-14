@@ -1,7 +1,8 @@
-import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { originalPositionFor } from "@jridgewell/trace-mapping";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import loadSourceMap from "../../src/sourcemap/load-source-map";
