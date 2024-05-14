@@ -17,4 +17,3 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     // replace last newline in result
     return result.toString().replace(/\n$/, "");
 };
-

@@ -81,7 +81,7 @@ const standardModifierRules: Rules = [
     { deep: true, key: "email" },
     { deep: true, key: "passport" },
     { deep: true, key: "password" },
-    { deep: true, key: "username"},
+    { deep: true, key: "username" },
 
     { deep: true, key: "auth" },
     { deep: true, key: "bearer" },
