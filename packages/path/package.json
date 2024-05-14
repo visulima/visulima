@@ -1,14 +1,26 @@
 {
-    "name": "@visulima/{{packageName}}",
+    "name": "@visulima/path",
     "version": "0.0.0",
-    "description": "{{description}}",
+    "description": "Drop-in replacement of the Node.js path module.",
     "keywords": [
         "visulima",
-        "{{packageName}}"
+        "path",
+        "binary",
+        "extensions",
+        "extension",
+        "file",
+        "json",
+        "list",
+        "array"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/path",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/path"
     },
     "funding": [
         {
@@ -20,8 +32,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/{{packageName}}",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -35,24 +50,25 @@
                 "default": "./dist/index.js"
             }
         },
+        "./utils": {
+            "require": {
+                "types": "./dist/utils.d.cts",
+                "default": "./dist/utils.cjs"
+            },
+            "import": {
+                "types": "./dist/utils.d.ts",
+                "default": "./dist/utils.js"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "browser": "./dist/index.js",
-    "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
         "dist"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/{{packageName}}"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -69,24 +85,18 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-preset": "^8.0.3",
-        "@babel/core": "^7.24.3",
+        "@babel/core": "^7.24.5",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
-        "@types/micromatch": "^4.0.6",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
+        "@types/micromatch": "^4.0.7",
         "@types/node": "18.18.14",
-        "@vitest/coverage-v8": "^1.4.0",
-        "@vitest/ui": "^1.4.0",
+        "@vitest/coverage-v8": "^1.6.0",
+        "@vitest/ui": "^1.6.0",
+        "binary-extensions": "^3.0.0",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^2.0.0",
@@ -96,13 +106,20 @@
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "prettier": "^3.2.5",
-        "rimraf": "^5.0.5",
+        "rimraf": "^5.0.7",
         "secretlint": "8.1.2",
-        "semantic-release": "^23.0.5",
-        "sort-package-json": "^2.8.0",
+        "semantic-release": "^23.1.1",
+        "sort-package-json": "^2.10.0",
         "tsup": "^8.0.2",
-        "typescript": "^5.4.3",
-        "vitest": "^1.4.0"
+        "typescript": "^5.4.5",
+        "vitest": "^1.6.0"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
     "anolilab": {
         "eslint-config": {
@@ -117,4 +134,8 @@
             "info_on_disabling_etc_no_deprecated": false
         }
     },
+    "sources": [
+        "src/index.ts",
+        "src/utils.ts"
+    ]
 }
