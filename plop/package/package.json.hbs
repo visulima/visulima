@@ -20,9 +20,8 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.io",
+    "homepage": "https://visulima.com/packages/{{packageName}}",
     "license": "MIT",
-    "main": "src/index.ts",
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -104,5 +103,18 @@
         "tsup": "^8.0.2",
         "typescript": "^5.4.3",
         "vitest": "^1.4.0"
-    }
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false,
+                "etc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    },
 }

@@ -1,0 +1,8 @@
+{
+    "name": "path-esm",
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/path": "workspace:*"
+    }
+}
