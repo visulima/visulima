@@ -9,7 +9,7 @@
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
         "consola": "^3.2.3",
-        "pino": "^9.0.0",
+        "pino": "^9.1.0",
         "tslog": "^4.9.2",
         "winston": "^3.13.0"
     },
