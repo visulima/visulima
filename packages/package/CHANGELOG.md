@@ -1,10 +1,3 @@
-## @visulima/package [1.8.0](https://github.com/visulima/visulima/compare/@visulima/package@1.7.6...@visulima/package@1.8.0) (2024-05-14)
-
-
-### Features
-
-* **path:** new path component ([#409](https://github.com/visulima/visulima/issues/409)) ([e3fe6be](https://github.com/visulima/visulima/commit/e3fe6be7c79a791d028666a570199e6df1936482))
-
 ## @visulima/package [1.7.6](https://github.com/visulima/visulima/compare/@visulima/package@1.7.5...@visulima/package@1.7.6) (2024-05-07)
 
 
