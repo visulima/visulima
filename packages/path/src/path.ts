@@ -29,7 +29,7 @@ const cwd = () => {
     }
 
     return "/";
-}
+};
 
 /**
  * File system path separator constant, forced to POSIX style for consistency.
@@ -41,8 +41,6 @@ export const sep = "/";
  * Path delimiter constant, used to separate paths in environment variables.
  */
 export const delimiter = ":";
-
-
 
 /**
  * Resolves a string path, resolving '.' and '.' segments and allowing paths above the root.
@@ -126,7 +124,7 @@ export const normalizeString = (path: string, allowAboveRoot: boolean): string =
         }
     }
     return result;
-}
+};
 
 /**
  * Determines if a path is an absolute path.

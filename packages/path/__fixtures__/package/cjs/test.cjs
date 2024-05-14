@@ -1,4 +1,4 @@
-const { sep} = require("@visulima/path");
+const { sep } = require("@visulima/path");
 const path = require("@visulima/path");
 
 console.log(sep);

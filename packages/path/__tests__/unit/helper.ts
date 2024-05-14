@@ -11,7 +11,11 @@ const _r = (item: boolean | string | (() => string) | null | undefined): boolean
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _s = (item: boolean | string | (() => string) | null | undefined): string => (JSON.stringify(_r(item)) || "undefined").replaceAll('"', "'");
 
-const runTest = (name: string, function_: (...parameters: string[]) => boolean | string, items: (boolean | string | (() => string) | null | undefined)[][] | Record<string, boolean | string>): void => {
+const runTest = (
+    name: string,
+    function_: (...parameters: string[]) => boolean | string,
+    items: (boolean | string | (() => string) | null | undefined)[][] | Record<string, boolean | string>,
+): void => {
     if (!Array.isArray(items)) {
         // eslint-disable-next-line no-param-reassign
         items = Object.entries(items).map((entry) => entry.flat());

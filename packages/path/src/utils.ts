@@ -21,14 +21,14 @@ const normalizedAliasSymbol = Symbol.for("pathe:normalizedAlias");
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
 const FILENAME_RE = /(^|[/\\])([^/\\]+?)(?=(?:\.[^.]+)?$)/;
 
-const compareAliases = (a: string, b: string) => b.split("/").length - a.split("/").length
+const compareAliases = (a: string, b: string) => b.split("/").length - a.split("/").length;
 
 // Returns true if path ends with a slash or **is empty**
 const hasTrailingSlash = (path = "/"): boolean => {
     const lastChar = path.at(-1);
 
     return lastChar === "/" || lastChar === "\\";
-}
+};
 
 /**
  * Normalises alias mappings, ensuring that more specific aliases are resolved before less specific ones.
@@ -71,7 +71,7 @@ export const normalizeAliases = (_aliases: Record<string, string>): Record<strin
     });
 
     return aliases;
-}
+};
 
 /**
  * Resolves a path string to its alias if applicable, otherwise returns the original path.
@@ -103,7 +103,7 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
     }
 
     return path;
-}
+};
 
 /**
  * Extracts the filename from a given path, excluding any directory paths and the file extension.
@@ -111,7 +111,7 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
  * @param path - The full path of the file from which to extract the filename.
  * @returns the filename without the extension, or `undefined` if the filename cannot be extracted.
  */
-export const filename = (path: string): string => <string> FILENAME_RE.exec(path)?.[2]
+export const filename = (path: string): string => <string>FILENAME_RE.exec(path)?.[2];
 
 /**
  * Reverting the resolveAlias method.
@@ -142,10 +142,10 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     }
 
     return path;
-}
+};
 
 export const isRelative = (path: string): boolean => /^\.?\.[/\\]/.test(path);
 
 export const isBinaryPath = (path: string): boolean => extensions.has(extname(path).slice(1).toLowerCase());
 
-export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath((urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath));
+export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath(urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath);
