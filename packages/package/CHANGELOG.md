@@ -1,3 +1,16 @@
+## @visulima/package [1.8.1](https://github.com/visulima/visulima/compare/@visulima/package@1.8.0...@visulima/package@1.8.1) (2024-05-15)
+
+
+### Reverts
+
+* **package:** revert wrong bump of version ([e41910f](https://github.com/visulima/visulima/commit/e41910fe96c22851649a6a8c1f30c0cfc70ba35c))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.1
+
 ## @visulima/package [1.7.6](https://github.com/visulima/visulima/compare/@visulima/package@1.7.5...@visulima/package@1.7.6) (2024-05-07)
 
 
