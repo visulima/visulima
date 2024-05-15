@@ -1,3 +1,25 @@
+## @visulima/nextra-theme-docs [4.0.24](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.23...@visulima/nextra-theme-docs@4.0.24) (2024-05-15)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updated react-medium-image-zoom to version 5.2.0 ([9390706](https://github.com/visulima/visulima/commit/9390706c413fc6a992ba5681c8bf5def962cc2cd))
+
+
+### Styles
+
+* cs fixes ([7bf5b91](https://github.com/visulima/visulima/commit/7bf5b91383b612598d955fe23505c94f22a8d277))
+
+
+### Miscellaneous Chores
+
+* **nextra-theme-docs:** updated devDependencies ([9fabe81](https://github.com/visulima/visulima/commit/9fabe815fef5941d484b136190b7edc35998c6fd))
+* update lock and cs fixes ([2e74a2c](https://github.com/visulima/visulima/commit/2e74a2cf18ed74a0b254f1aeafea0bca7bd0f26e))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+* updated dev dependencies ([d7791e3](https://github.com/visulima/visulima/commit/d7791e327917e438757636573b1e5549a97bba7b))
+* updated dev dependencies ([6005345](https://github.com/visulima/visulima/commit/60053456717a3889fc77b4fb5b05d50a662475b2))
+
 ## @visulima/nextra-theme-docs [4.0.23](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.22...@visulima/nextra-theme-docs@4.0.23) (2024-04-27)
 
 
