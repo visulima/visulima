@@ -1,6 +1,5 @@
 import { fileURLToPath } from "node:url";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
