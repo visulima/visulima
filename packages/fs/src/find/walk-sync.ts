@@ -7,12 +7,12 @@ import type { Stats } from "node:fs";
 import { readdirSync, realpathSync, statSync } from "node:fs";
 
 import { basename, join, normalize, resolve } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import globToRegExp from "../utils/glob-to-regex";
-import toPath from "../utils/to-path";
 import walkInclude from "../utils/walk-include";
 
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */

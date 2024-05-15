@@ -1,10 +1,10 @@
 import { link, lstat } from "node:fs/promises";
 
 import { dirname, toNamespacedPath } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import isStatsIdentical from "../utils/is-stats-identical";
-import toPath from "../utils/to-path";
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import ensureDir from "./ensure-dir";
 

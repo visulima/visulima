@@ -1,10 +1,10 @@
 import { stat } from "node:fs/promises";
 
 import { dirname, isAbsolute, parse, resolve } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpOptions, Match } from "../types";
-import toPath from "../utils/to-path";
 
 const findUp = async (
     name: ReadonlyArray<string> | string[] | string | ((directory: string) => Match | Promise<Match>),

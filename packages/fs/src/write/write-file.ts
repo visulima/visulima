@@ -2,13 +2,13 @@ import type { Stats } from "node:fs";
 import { chmod, chown, mkdir, rename, stat as nodeStat, unlink, writeFile as nodeWriteFile } from "node:fs/promises";
 
 import { dirname } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import { F_OK } from "../constants";
 import isAccessible from "../is-accessible";
 import type { WriteFileOptions } from "../types";
 import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import toPath from "../utils/to-path";
 import toUint8Array from "../utils/to-uint-8-array";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -26,7 +26,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
     assertValidFileContents(content);
 
     // eslint-disable-next-line no-param-reassign
-    path = toPath(path);
+    path = toPath(path) as string;
 
     try {
         const pathExists = await isAccessible(path, F_OK);
