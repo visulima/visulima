@@ -1,7 +1,6 @@
 import { fileURLToPath } from "node:url";
 
 import { originalPositionFor } from "@jridgewell/trace-mapping";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
@@ -9,9 +8,7 @@ import loadSourceMap from "../../src/sourcemap/load-source-map";
 
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "source-maps");
 
-const isWin = process.platform === "win32";
-
-describe("util/load-source-map", () => {
+describe("load-source-map", () => {
     it("should give back undefined as result if no sourcemap is referenced", () => {
         expect.assertions(1);
 
@@ -37,9 +34,8 @@ describe("util/load-source-map", () => {
         const result = loadSourceMap(join(FIXTURES_DIR, "lib", "example.js"));
 
         const generated = { column: 13, line: 30 };
-        // This isWin check is needed because of the hardcoded path in the sourcemap
 
-        const expected = { column: 9, line: 15, name: "setState", source: isWin ? "../src/example.js" : join(FIXTURES_DIR, "src", "example.js") };
+        const expected = { column: 9, line: 15, name: "setState", source: join(FIXTURES_DIR, "src", "example.js") };
 
         expect(originalPositionFor(result, generated), "should have correct source mapping").toStrictEqual(expected);
     });
