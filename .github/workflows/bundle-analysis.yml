@@ -96,7 +96,7 @@ jobs:
                   key: "${{ runner.os }}-build-${{ env.cache-name }}"
 
             - name: "Build @visulima/nextra-theme-docs"
-              run: "pnpm run build:prod:nextra-theme-docs"
+              run: "pnpm run build:nextra-theme-docs:prod"
 
             - name: "Build Next.js App"
               # change this if your site requires a custom build command

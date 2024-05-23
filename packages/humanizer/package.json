@@ -92,7 +92,7 @@
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
-        "lint:packagejson": "publint --strict",
+        "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
         "lint:types": "tsc --noEmit",
@@ -128,7 +128,6 @@
         "rimraf": "^5.0.7",
         "secretlint": "8.2.3",
         "semantic-release": "^23.1.1",
-        "sort-package-json": "^2.10.0",
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
