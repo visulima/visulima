@@ -1,3 +1,23 @@
+## @visulima/api-platform [3.0.1](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.0...@visulima/api-platform@3.0.1) (2024-05-23)
+
+
+### Bug Fixes
+
+* **api-platform:** updated ts-japi dependency to 1.11.4 ([ec64e9d](https://github.com/visulima/visulima/commit/ec64e9d1be17f8ae47114642e6a0b10514f7b0b8))
+
+
+### Styles
+
+* **api-platform:** cs fixes ([a1ccdc8](https://github.com/visulima/visulima/commit/a1ccdc8a26d938ec15b7e9ee741ae5c220bb8e99))
+* cs fixes on some package.json files ([12fc0f7](https://github.com/visulima/visulima/commit/12fc0f74e206cef77863b0b89ec41174ca9ff0bd))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+
 ## @visulima/api-platform [3.0.0](https://github.com/visulima/visulima/compare/@visulima/api-platform@2.1.7...@visulima/api-platform@3.0.0) (2024-05-07)
 
 
