@@ -9,7 +9,7 @@ on: # yamllint disable-line rule:truthy
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
-    group: "ci-lint-${{ github.ref }}-1"
+    group: "${{ github.workflow }}-${{ github.ref }}"
     cancel-in-progress: true
 
 permissions:
@@ -24,6 +24,7 @@ env:
 jobs:
     files-changed:
         name: "Detect what files changed"
+        if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-22.04"
         timeout-minutes: 3
         # Map a step output to a job output
@@ -80,16 +81,16 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "./.github/actions/setup"
+              uses: "anolilab/workflows/step/setup/action.yml@main"
               with:
-                  cache-prefix: "eslint"
+                  cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@20576b4b9ed46d41e2d45a2256e5e2316dde6834" # v43.0.1
               with:
-                  files_ignore: "pnpm-lock.yaml"
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
@@ -131,16 +132,16 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "./.github/actions/setup"
+              uses: "anolilab/workflows/step/setup/action.yml@main"
               with:
-                  cache-prefix: "package-json"
+                  cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@20576b4b9ed46d41e2d45a2256e5e2316dde6834" # v43.0.1
               with:
-                  files_ignore: "pnpm-lock.yaml"
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
@@ -182,16 +183,16 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "./.github/actions/setup"
+              uses: "anolilab/workflows/step/setup/action.yml@main"
               with:
-                  cache-prefix: "types"
+                  cache-prefix: "lint"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@20576b4b9ed46d41e2d45a2256e5e2316dde6834" # v43.0.1
               with:
-                  files_ignore: "pnpm-lock.yaml"
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
@@ -247,7 +248,7 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
+            # From https://github.com/rhysd/actionlint/main/docs/usage.md#use-actionlint-on-github-actions
             - name: "Lint github workflows"
               run: |
                   bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
@@ -300,7 +301,7 @@ jobs:
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
-    # This check is the only required Github check
+    # This check is the only required GitHub check
     test-required-check:
         needs: ["files-changed", "eslint", "yaml-lint", "package-json-lint"] # TODO add "markdown-lint"
         name: "Check Lint Run"

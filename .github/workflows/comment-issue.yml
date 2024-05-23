@@ -47,7 +47,7 @@ jobs:
                           We do this because:
 
                           - There are plenty of frameworks/tools out there and we would like to ensure that every method can cover all or almost all of them.
-                          - Every feature we add to Visulima has "costs" associated to it:
+                          - Every feature we add to visulima has "costs" associated to it:
                               - initial costs: design, implementation, reviews, documentation
                               - running costs: awareness of the feature itself, more complex module structure, increased bundle size, more work during refactors
 

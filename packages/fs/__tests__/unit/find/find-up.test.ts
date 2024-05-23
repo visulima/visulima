@@ -19,6 +19,7 @@ const testName = {
     baz: "baz.js",
     directoryLink: "directory-link",
     dotDirectory: ".git2",
+    dotFile: ".find_file",
     fileLink: "file-link",
     fixtureDirectory: "__fixtures__",
     fooDirectory: "foo",
@@ -51,6 +52,7 @@ absolute.barDirQux = join(absolute.fixtureDirectory, testName.fooDirectory, test
 absolute.fileLink = join(absolute.fixtureDirectory, testName.fileLink);
 absolute.directoryLink = join(absolute.fixtureDirectory, testName.directoryLink);
 absolute.dotDirectory = join(absolute.fixtureDirectory, testName.dotDirectory);
+absolute.dotFile = join(absolute.fixtureDirectory, testName.dotFile);
 
 describe.each([
     ["findUp", findUp],
@@ -115,7 +117,7 @@ describe.each([
         expect(foundPath).toBeUndefined();
     });
 
-    it("should find a dot file", async () => {
+    it("should find a dot directory", async () => {
         expect.assertions(1);
 
         let foundPath = function_(testName.dotDirectory, { cwd: absolute.fixtureDirectory, type: "directory" });
@@ -126,6 +128,19 @@ describe.each([
         }
 
         expect(foundPath).toStrictEqual(absolute.dotDirectory);
+    });
+
+    it("should find a dot file", async () => {
+        expect.assertions(1);
+
+        let foundPath = function_(testName.dotFile, { cwd: absolute.fixtureDirectory, type: "file" });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(absolute.dotFile);
     });
 
     it("should handle absolute directory", async () => {

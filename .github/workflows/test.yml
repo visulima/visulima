@@ -9,7 +9,7 @@ on: # yamllint disable-line rule:truthy
     merge_group: # yamllint disable-line rule:empty-values
 
 concurrency:
-    group: "ci-tests-${{ github.ref }}-1"
+    group: "${{ github.workflow }}-${{ github.ref }}"
     cancel-in-progress: true
 
 permissions:
@@ -59,7 +59,7 @@ jobs:
             matrix:
                 os:
                     - "ubuntu-latest"
-                node_version: ["18", "20", "21"]
+                node_version: ["18", "20", "21", "22"]
                 # On the other platforms, we only test the lts node version
                 include:
                     - os: "macos-latest"
@@ -93,7 +93,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "./.github/actions/setup"
+              uses: "anolilab/workflows/step/setup/action.yml@main"
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
@@ -103,7 +103,7 @@ jobs:
               id: "files"
               uses: "tj-actions/changed-files@20576b4b9ed46d41e2d45a2256e5e2316dde6834" # v43.0.1
               with:
-                  files_ignore: "pnpm-lock.yaml"
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
@@ -130,7 +130,7 @@ jobs:
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
-              uses: "./.github/actions/codecov"
+              uses: "anolilab/workflows/step/codecov/action.yml@main"
               with:
                   run-lint: "needs.files-changed.outputs.codecov == 'true'"
                   codecov-token: "${{ secrets.CODECOV_TOKEN }}"
@@ -140,7 +140,7 @@ jobs:
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
-    # This check is the only required Github check
+    # This check is the only required GitHub check
     test-required-check:
         needs: ["files-changed", "test"]
         name: "Check Test Run"

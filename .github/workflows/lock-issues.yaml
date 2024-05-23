@@ -1,0 +1,12 @@
+name: "Lock inactive issues and pull requests"
+
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "0 * * * *"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+jobs:
+    lock-closed:
+        uses: "anolilab/workflows/.github/workflows/lock-closed.yml@main"
+        with:
+            target-repo: "visulima/visulima"
