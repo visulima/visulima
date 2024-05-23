@@ -2,7 +2,6 @@ import fs from "node:fs";
 
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
 import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { join } from "@visulima/path";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { NextConfig } from "next/types";

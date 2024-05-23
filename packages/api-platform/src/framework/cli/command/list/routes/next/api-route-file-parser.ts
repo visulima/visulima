@@ -3,7 +3,6 @@ import { cwd as nodeCwd } from "node:process";
 
 import type { OpenApiObject } from "@visulima/jsdoc-open-api";
 import { jsDocumentCommentsToOpenApi, parseFile, swaggerJsDocumentCommentsToOpenApi } from "@visulima/jsdoc-open-api";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { toNamespacedPath } from "@visulima/path";
 
 import type { Route } from "../types";

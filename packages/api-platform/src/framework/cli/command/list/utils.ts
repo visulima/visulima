@@ -1,6 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parse } from "@visulima/path";
 import type { PackageJson } from "type-fest";
 

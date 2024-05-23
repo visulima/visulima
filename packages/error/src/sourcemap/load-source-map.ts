@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, resolve } from "@visulima/path";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
