@@ -10,3 +10,5 @@ tsup.config.ts
 
 # TODO fix rules on bench files
 __tests__/*.bench.ts
+
+package.json

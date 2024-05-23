@@ -2,27 +2,6 @@
     "name": "@visulima/api-platform",
     "version": "3.0.0",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "license": "MIT",
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "homepage": "https://www.visulima.com/docs/package/api-platform",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/api-platform"
-    },
     "keywords": [
         "anolilab",
         "visulima",
@@ -51,6 +30,27 @@
         "swagger",
         "openapi"
     ],
+    "homepage": "https://www.visulima.com/docs/package/api-platform",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/api-platform"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -124,9 +124,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "node ./scripts/wait.js && cross-env NODE_ENV=production tsup",
@@ -142,86 +139,6 @@
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
-    },
-    "peerDependencies": {
-        "@hapi/hapi": "^21.3.9",
-        "@koa/router": "^12.0.1",
-        "@visulima/crud": "2.0.21",
-        "@visulima/readdir": "2.0.12",
-        "chalk": "5.3.0",
-        "commander": "^12.0.0",
-        "cors": "^2.8.5",
-        "express": "^4.19.2",
-        "fastify": "^4.27.0",
-        "koa": "^2.15.3",
-        "next": "^13.5.6",
-        "rate-limiter-flexible": "^5.0.3",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "redoc": "^2.1.4",
-        "swagger-ui-dist": "^4.19.1",
-        "swagger-ui-react": "^4.19.1",
-        "webpack": "^5.91.0",
-        "zod": "^3.22.4"
-    },
-    "peerDependenciesMeta": {
-        "@hapi/hapi": {
-            "optional": true
-        },
-        "@koa/router": {
-            "optional": true
-        },
-        "@visulima/crud": {
-            "optional": true
-        },
-        "@visulima/readdir": {
-            "optional": true
-        },
-        "chalk": {
-            "optional": true
-        },
-        "commander": {
-            "optional": true
-        },
-        "cors": {
-            "optional": true
-        },
-        "express": {
-            "optional": true
-        },
-        "fastify": {
-            "optional": true
-        },
-        "koa": {
-            "optional": true
-        },
-        "next": {
-            "optional": true
-        },
-        "rate-limiter-flexible": {
-            "optional": true
-        },
-        "react": {
-            "optional": true
-        },
-        "react-dom": {
-            "optional": true
-        },
-        "redoc": {
-            "optional": true
-        },
-        "swagger-ui-dist": {
-            "optional": true
-        },
-        "swagger-ui-react": {
-            "optional": true
-        },
-        "webpack": {
-            "optional": true
-        },
-        "zod": {
-            "optional": true
-        }
     },
     "dependencies": {
         "@visulima/connect": "3.0.9",
@@ -314,6 +231,89 @@
         "vitest": "^1.6.0",
         "webpack": "^5.91.0",
         "zod": "^3.23.8"
+    },
+    "peerDependencies": {
+        "@hapi/hapi": "^21.3.9",
+        "@koa/router": "^12.0.1",
+        "@visulima/crud": "2.0.21",
+        "@visulima/readdir": "2.0.12",
+        "chalk": "5.3.0",
+        "commander": "^12.0.0",
+        "cors": "^2.8.5",
+        "express": "^4.19.2",
+        "fastify": "^4.27.0",
+        "koa": "^2.15.3",
+        "next": "^13.5.6",
+        "rate-limiter-flexible": "^5.0.3",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "redoc": "^2.1.4",
+        "swagger-ui-dist": "^4.19.1",
+        "swagger-ui-react": "^4.19.1",
+        "webpack": "^5.91.0",
+        "zod": "^3.22.4"
+    },
+    "peerDependenciesMeta": {
+        "@hapi/hapi": {
+            "optional": true
+        },
+        "@koa/router": {
+            "optional": true
+        },
+        "@visulima/crud": {
+            "optional": true
+        },
+        "@visulima/readdir": {
+            "optional": true
+        },
+        "chalk": {
+            "optional": true
+        },
+        "commander": {
+            "optional": true
+        },
+        "cors": {
+            "optional": true
+        },
+        "express": {
+            "optional": true
+        },
+        "fastify": {
+            "optional": true
+        },
+        "koa": {
+            "optional": true
+        },
+        "next": {
+            "optional": true
+        },
+        "rate-limiter-flexible": {
+            "optional": true
+        },
+        "react": {
+            "optional": true
+        },
+        "react-dom": {
+            "optional": true
+        },
+        "redoc": {
+            "optional": true
+        },
+        "swagger-ui-dist": {
+            "optional": true
+        },
+        "swagger-ui-react": {
+            "optional": true
+        },
+        "webpack": {
+            "optional": true
+        },
+        "zod": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",

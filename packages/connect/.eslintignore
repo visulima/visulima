@@ -9,6 +9,8 @@ __fixtures__
 _meta.*.json
 tsup.config.ts
 
+package.json
+
 __docs__/quickstart.mdx
 
 bench
