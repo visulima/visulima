@@ -12,4 +12,6 @@ __bench__
 _meta.*.json
 tsup.config.ts
 
+package.json
+
 scripts/wait.js

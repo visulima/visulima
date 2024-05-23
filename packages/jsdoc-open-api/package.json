@@ -2,6 +2,30 @@
     "name": "@visulima/jsdoc-open-api",
     "version": "2.0.43",
     "description": "Generates swagger doc based on JSDoc.",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "license": "MIT",
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://www.visulima.com/docs/package/jsdoc-open-api",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/jsdoc-open-api"
+    },
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
     "keywords": [
         "visulima",
         "javascript",
@@ -14,30 +38,6 @@
         "cli",
         "command"
     ],
-    "homepage": "https://www.visulima.com/docs/package/jsdoc-open-api",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/jsdoc-open-api"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -86,6 +86,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -109,6 +112,11 @@
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
         "yaml": "^2.4.2"
+    },
+    "optionalDependencies": {
+        "cli-progress": "^3.12.0",
+        "commander": "^12.1.0",
+        "webpack": "^5.91.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -142,14 +150,6 @@
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "webpack": "^5.91.0"
-    },
-    "optionalDependencies": {
-        "cli-progress": "^3.12.0",
-        "commander": "^12.1.0",
-        "webpack": "^5.91.0"
-    },
-    "engines": {
-        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",

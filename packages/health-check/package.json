@@ -2,6 +2,27 @@
     "name": "@visulima/health-check",
     "version": "2.0.13",
     "description": "A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "license": "MIT",
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://www.visulima.com/docs/package/health-check",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/health-check"
+    },
     "keywords": [
         "anolilab",
         "visulima",
@@ -15,27 +36,6 @@
         "http-check",
         "ping-check"
     ],
-    "homepage": "https://www.visulima.com/docs/package/health-check",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/health-check"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -60,6 +60,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -80,6 +83,9 @@
         "cacheable-lookup": "^7.0.0",
         "http-status-codes": "^2.3.0",
         "pingman": "^2.0.0"
+    },
+    "optionalDependencies": {
+        "next": "^13.5.6"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -110,12 +116,6 @@
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
-    },
-    "optionalDependencies": {
-        "next": "^13.5.6"
-    },
-    "engines": {
-        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",

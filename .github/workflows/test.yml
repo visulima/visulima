@@ -139,7 +139,7 @@ jobs:
                   exclude-affected-projects: "pail-bench,colorize-bench,docs,storybook,nextra-theme-docs"
 
     # This check runs once all dependant jobs have passed
-    # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
+    # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
         needs: ["files-changed", "test"]

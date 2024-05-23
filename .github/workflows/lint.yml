@@ -300,7 +300,7 @@ jobs:
               run: "exit 0"
 
     # This check runs once all dependant jobs have passed
-    # It symbolizes that all required Frontend checks have succesfully passed (Or skipped)
+    # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
         needs: ["files-changed", "eslint", "yaml-lint", "package-json-lint"] # TODO add "markdown-lint"

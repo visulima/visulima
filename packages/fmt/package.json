@@ -2,6 +2,27 @@
     "name": "@visulima/fmt",
     "version": "1.1.4",
     "description": "Util.format-like string formatting utility.",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "license": "MIT",
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://www.visulima.com/docs/package/fmt",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/fmt"
+    },
     "keywords": [
         "anolilab",
         "fmt",
@@ -16,27 +37,6 @@
         "util.format",
         "visulima"
     ],
-    "homepage": "https://www.visulima.com/docs/package/fmt",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/fmt"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -61,6 +61,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -103,9 +106,6 @@
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
-    },
-    "engines": {
-        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",
