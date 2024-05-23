@@ -2132,6 +2132,9 @@ importers:
       '@jridgewell/trace-mapping':
         specifier: ^0.3.25
         version: 0.3.25
+      '@visulima/path':
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
