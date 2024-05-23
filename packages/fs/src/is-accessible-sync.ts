@@ -1,8 +1,9 @@
 import { accessSync } from "node:fs";
 
+import { toPath } from "@visulima/path/utils";
+
 import { F_OK } from "./constants";
 import assertValidFileOrDirectoryPath from "./utils/assert-valid-file-or-directory-path";
-import toPath from "./utils/to-path";
 
 /** Returns a boolean indicating if the path is accessible or not. */
 function isAccessibleSync(path: URL | string, mode?: number): boolean;

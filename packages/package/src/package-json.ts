@@ -4,9 +4,9 @@ import type { WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
+import { join } from "@visulima/path";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
-import { join } from "pathe";
 import type { JsonObject } from "type-fest";
 
 import type { Cache, NormalizedPackageJson, PackageJson } from "./types";

@@ -8,8 +8,8 @@ import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
+import { dirname, join } from "@visulima/path";
 import { execaNode } from "execa";
-import { dirname, join } from "pathe";
 import stripAnsi from "strip-ansi";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";

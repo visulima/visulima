@@ -4,5 +4,5 @@
     "sourceRoot": "packages/api-platform/src",
     "projectType": "library",
     "tags": ["type:package", "api-platform"],
-    "implicitDependencies": ["connect", "crud", "jsdoc-open-api", "fs"]
+    "implicitDependencies": ["connect", "crud", "jsdoc-open-api", "fs", "path"]
 }

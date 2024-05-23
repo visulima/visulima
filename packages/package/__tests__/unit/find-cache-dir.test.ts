@@ -4,7 +4,7 @@ import { rm } from "node:fs/promises";
 import { platform } from "node:process";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

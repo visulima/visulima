@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import { F_OK, R_OK, W_OK, X_OK } from "../../src/constants";

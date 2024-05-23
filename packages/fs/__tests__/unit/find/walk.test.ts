@@ -1,7 +1,7 @@
 import { mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { resolve } from "pathe";
+import { resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import { walk } from "../../../src";

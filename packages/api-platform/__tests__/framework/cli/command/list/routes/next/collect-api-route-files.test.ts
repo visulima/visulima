@@ -1,4 +1,4 @@
-import { join, resolve } from "pathe";
+import { join, resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import collectApiRouteFiles from "../../../../../../../src/framework/cli/command/list/routes/next/collect-api-route-files";

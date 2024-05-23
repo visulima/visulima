@@ -1,7 +1,6 @@
-import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { resolve } from "pathe";
+import { join, resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import collect from "../../../src/find/collect";

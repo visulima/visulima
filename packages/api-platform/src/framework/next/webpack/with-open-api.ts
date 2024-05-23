@@ -1,8 +1,8 @@
 import fs from "node:fs";
-import path from "node:path";
 
 import type { BaseDefinition } from "@visulima/jsdoc-open-api";
 import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
+import { join } from "@visulima/path";
 import type { NextJsWebpackConfig, WebpackConfigContext } from "next/dist/server/config-shared";
 import type { NextConfig } from "next/types";
 import type { Configuration } from "webpack";
@@ -45,7 +45,7 @@ const withOpenApi =
                         new SwaggerCompilerPlugin(
                             `${options.dir}/${output}`,
                             sources.map((source) => {
-                                const combinedPath = path.join(options.dir as string, source.replace("./", ""));
+                                const combinedPath = join(options.dir as string, source.replace("./", ""));
 
                                 // Check if the path is a directory
                                 fs.lstatSync(combinedPath).isDirectory();

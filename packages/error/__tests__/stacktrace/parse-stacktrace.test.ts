@@ -1,6 +1,6 @@
-import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { dirname } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../../__fixtures__/captured-errors";

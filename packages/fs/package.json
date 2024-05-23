@@ -132,7 +132,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "pathe": "^1.1.2",
+        "@visulima/path": "workspace:*",
         "type-fest": "^4.18.2"
     },
     "devDependencies": {

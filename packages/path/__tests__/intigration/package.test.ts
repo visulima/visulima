@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { execScriptSync } from "../helpers";
 
-describe("usage `@visulima/fs` npm package", () => {
+describe("usage `@visulima/path` npm package", () => {
     it(`should work as CommonJS package`, () => {
         expect.assertions(1);
 

@@ -1,8 +1,8 @@
 import { statSync } from "node:fs";
-import { join } from "node:path";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { collect } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { ALLOWED_EXTENSIONS } from "../../utils";
 

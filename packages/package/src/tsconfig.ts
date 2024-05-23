@@ -2,7 +2,7 @@ import type { WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, writeJson } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { toPath } from "@visulima/fs/utils";
-import { join } from "pathe";
+import { join } from "@visulima/path";
 import type { TsConfigJson } from "type-fest";
 
 import { readTsConfig } from "./read-tsconfig";

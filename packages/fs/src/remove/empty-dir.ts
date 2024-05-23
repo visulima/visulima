@@ -2,12 +2,12 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, rm } from "node:fs/promises";
 
-import { join } from "pathe";
+import { join } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 import type { EmptyDirOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import toPath from "../utils/to-path";
 
 /**
  * Ensures that a directory is empty.

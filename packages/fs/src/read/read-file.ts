@@ -1,12 +1,13 @@
 import { readFile as nodeReadFile } from "node:fs/promises";
 import { brotliDecompress, unzip } from "node:zlib";
 
+import { toPath } from "@visulima/path/utils";
+
 import { R_OK } from "../constants";
 import PermissionError from "../error/permission-error";
 import isAccessible from "../is-accessible";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import toPath from "../utils/to-path";
 
 const decompressionMethods = {
     brotli: brotliDecompress,
@@ -23,7 +24,7 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign
-    path = toPath(path);
+    path = toPath(path) as string;
 
     if (!(await isAccessible(path))) {
         throw new PermissionError(`unable to read the non-accessible file: ${path}`);

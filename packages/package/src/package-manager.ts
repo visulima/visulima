@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 
 import { parsePackageJson } from "./package-json";
 

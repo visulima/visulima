@@ -6,13 +6,13 @@
 import type { Stats } from "node:fs";
 import { readdir, realpath, stat } from "node:fs/promises";
 
-import { basename, join, normalize, resolve } from "pathe";
+import { basename, join, normalize, resolve } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import WalkError from "../error/walk-error";
 import type { WalkEntry, WalkOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 import globToRegExp from "../utils/glob-to-regex";
-import toPath from "../utils/to-path";
 import walkInclude from "../utils/walk-include";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle

@@ -4,5 +4,5 @@
     "sourceRoot": "packages/fs/src",
     "projectType": "library",
     "tags": ["type:package", "type:nextra", "fs"],
-    "implicitDependencies": ["error"]
+    "implicitDependencies": ["error", "path"]
 }

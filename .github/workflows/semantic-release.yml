@@ -64,8 +64,6 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:coverage"
-              env:
-                  TEST_PROD_BUILD: "true"
 
             - name: "Prepare nx cache"
               shell: "bash"

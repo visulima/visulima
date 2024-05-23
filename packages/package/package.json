@@ -154,9 +154,9 @@
     },
     "dependencies": {
         "@visulima/fs": "2.1.1",
+        "@visulima/path": "^1.0.0",
         "jsonc-parser": "^3.2.1",
         "normalize-package-data": "^6.0.1",
-        "pathe": "^1.1.2",
         "resolve-pkg-maps": "^1.0.0",
         "type-fest": "^4.18.2"
     },

@@ -6,9 +6,9 @@
  */
 import { existsSync, statSync } from "node:fs";
 import Module from "node:module";
-import { isAbsolute, join, resolve } from "node:path";
 
 import { findUpSync, readFileSync } from "@visulima/fs";
+import { isAbsolute, join, resolve } from "@visulima/path";
 import { parse } from "jsonc-parser";
 import type { PathConditions } from "resolve-pkg-maps";
 import { resolveExports } from "resolve-pkg-maps";

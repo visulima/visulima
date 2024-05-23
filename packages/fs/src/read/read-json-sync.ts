@@ -1,8 +1,8 @@
+import { toPath } from "@visulima/path/utils";
 import type { JsonValue } from "type-fest";
 
 import type { JsonReviver, ReadJsonOptions } from "../types";
 import parseJson from "../utils/parse-json";
-import toPath from "../utils/to-path";
 import readFileSync from "./read-file-sync";
 
 function readJsonSync<T extends JsonValue>(path: URL | string, options?: ReadJsonOptions): T;

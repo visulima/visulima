@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 
 import { JSONError } from "@visulima/fs/error";
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 

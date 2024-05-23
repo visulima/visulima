@@ -1,12 +1,13 @@
 import { readFileSync as nodeReadFileSync } from "node:fs";
 import { brotliDecompressSync, unzipSync } from "node:zlib";
 
+import { toPath } from "@visulima/path/utils";
+
 import { R_OK } from "../constants";
 import PermissionError from "../error/permission-error";
 import isAccessibleSync from "../is-accessible-sync";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
-import toPath from "../utils/to-path";
 
 const decompressionMethods = {
     brotli: brotliDecompressSync,
@@ -21,7 +22,7 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign
-    path = toPath(path);
+    path = toPath(path) as string;
 
     if (!isAccessibleSync(path)) {
         throw new PermissionError(`unable to read the non-accessible file: ${path}`);
