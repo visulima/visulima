@@ -54,7 +54,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup/action.yml@main"
+              uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "18.x"
                   cache-prefix: "semantic-release"
