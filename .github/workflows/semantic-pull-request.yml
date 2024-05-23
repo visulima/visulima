@@ -11,10 +11,11 @@ on: # yamllint disable-line rule:truthy
             - "synchronize"
     merge_group: # yamllint disable-line rule:empty-values
 
-permissions: {}
+permissions:
+    contents: "read"
 
 jobs:
-    main:
+    semantic-pull-request:
         permissions:
             pull-requests: "write" # to analyze PRs (amannn/action-semantic-pull-request)
             statuses: "write" # to mark status of analyzed PR (amannn/action-semantic-pull-request)
@@ -22,7 +23,7 @@ jobs:
         name: "Semantic Pull Request"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
+              uses: "step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4" # v2.7.1
               with:
                   egress-policy: "audit"
 
@@ -36,20 +37,17 @@ jobs:
                       build
                       chore
                       ci
-                      deps
                       docs
                       feat
                       fix
                       perf
+                      infra
                       refactor
                       revert
-                      security
-                      style
                       test
-                      translation
 
             - uses: "marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31" # v2.9.0
-              # When the previous steps fails, the workflow would stop. By adding this
+              # When the previous steps fail, the workflow would stop. By adding this
               # condition you can continue the execution with the populated error message.
               if: "always() && (steps.lint_pr_title.outputs.error_message != null)"
               with:

@@ -11,5 +11,7 @@ tsup.config.ts
 .secretlintrc.cjs
 tsconfig.eslint.json
 
+package.json
+
 README.md
 

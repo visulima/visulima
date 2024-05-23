@@ -1,4 +1,4 @@
-name: "cleanup caches by a branch"
+name: "Cleanup caches by a branch"
 
 on: # yamllint disable-line rule:truthy
     pull_request:
@@ -7,40 +7,7 @@ on: # yamllint disable-line rule:truthy
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
 jobs:
-    cleanup:
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11" # v4.1.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Cleanup"
-              run: |
-                  gh extension install actions/gh-actions-cache
-
-                  REPO=${{ github.repository }}
-                  BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
-
-                  echo "Fetching list of cache key"
-                  cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
-
-                  ## Setting this to not fail the workflow while deleting cache keys.
-                  set +e
-                  echo "Deleting caches..."
-                  for cacheKey in $cacheKeysForPR
-                  do
-                          gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
-                  done
-                  echo "Done"
-              env:
-                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-                  REPO: "${{ github.repository }}"
-                  BRANCH: "refs/pull/${{ github.event.pull_request.number }}/merge"
+    cleanup-branch-cache:
+        uses: "anolilab/workflows/.github/workflows/cleanup-branch-cache.yml@main"
+        with:
+            target-repo: "visulima/visulima"

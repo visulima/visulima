@@ -12,5 +12,7 @@ __bench__
 _meta.*.json
 tsup.config.ts
 
+package.json
+
 # TODO fix rules on bench files
 __tests__/*.bench.ts

@@ -12,14 +12,13 @@ on: # yamllint disable-line rule:truthy
             - "alpha"
             - "beta"
 
-concurrency: "${{ github.workflow }}-${{ github.ref }}"
-
 permissions:
     contents: "read" # for checkout
 
 jobs:
     semantic-release:
         name: "Semantic Release"
+        if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
         permissions:
             contents: "write" # to be able to publish a GitHub release
@@ -55,16 +54,13 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "./.github/actions/setup"
+              uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "18.x"
                   cache-prefix: "semantic-release"
 
             - name: "Build Production"
-              run: "pnpm run build:prod:packages"
-
-            - name: "npm v8.5+ requires workspaces-update to be set to false"
-              run: "echo 'workspaces-update=false' >> .npmrc"
+              run: "pnpm run build:packages:prod"
 
             - name: "test and coverage"
               run: "pnpm run test:coverage"
@@ -76,7 +72,7 @@ jobs:
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
             - name: "Upload code coverage to codecov"
-              uses: "./.github/actions/codecov"
+              uses: "anolilab/workflows/step/codecov@main"
               with:
                   run-lint: "false"
                   codecov-token: "${{ secrets.CODECOV_TOKEN }}"
