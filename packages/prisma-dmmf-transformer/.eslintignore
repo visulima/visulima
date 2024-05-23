@@ -10,3 +10,5 @@ _meta.*.json
 tsup.config.ts
 
 README.md
+
+package.json

@@ -2,11 +2,18 @@
     "name": "@visulima/pagination",
     "version": "3.0.15",
     "description": "Simple Pagination for Node.",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "keywords": [
+        "anolilab",
+        "pagination",
+        "paginator",
+        "offset"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/pagination",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/pagination"
     },
-    "license": "MIT",
     "funding": [
         {
             "type": "github",
@@ -17,18 +24,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://www.visulima.com/docs/package/pagination",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/pagination"
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
     },
-    "keywords": [
-        "anolilab",
-        "pagination",
-        "paginator",
-        "offset"
-    ],
     "sideEffects": false,
     "exports": {
         ".": {
@@ -53,9 +53,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -102,6 +99,9 @@
         "tsup": "^8.0.2",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",

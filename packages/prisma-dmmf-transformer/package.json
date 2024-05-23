@@ -2,27 +2,6 @@
     "name": "@visulima/prisma-dmmf-transformer",
     "version": "2.0.17",
     "description": "A generator for Prisma to generate a valid JSON Schema v7.",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "license": "MIT",
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/prisma-dmmf-transformer"
-    },
     "keywords": [
         "anolilab",
         "visulima",
@@ -35,6 +14,27 @@
         "transformer",
         "json-schema"
     ],
+    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/prisma-dmmf-transformer"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -59,9 +59,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -77,10 +74,6 @@
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
-    },
-    "peerDependencies": {
-        "@prisma/client": "3.* || 4.*",
-        "prisma": "3.* || 4.*"
     },
     "dependencies": {
         "@prisma/generator-helper": "5.12.1"
@@ -115,6 +108,13 @@
         "tsup": "8.0.2",
         "typescript": "5.4.5",
         "vitest": "1.5.0"
+    },
+    "peerDependencies": {
+        "@prisma/client": "3.* || 4.*",
+        "prisma": "3.* || 4.*"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",

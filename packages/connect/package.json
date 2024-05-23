@@ -2,30 +2,6 @@
     "name": "@visulima/connect",
     "version": "3.0.10",
     "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "license": "MIT",
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "homepage": "https://www.visulima.com/docs/package/connect",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/connect"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "keywords": [
         "javascript",
         "nextjs",
@@ -38,6 +14,30 @@
         "http2",
         "zod"
     ],
+    "homepage": "https://www.visulima.com/docs/package/connect",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/connect"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -62,9 +62,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "engines": {
-        "node": ">=18.* <=21.*"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -80,9 +77,6 @@
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
-    },
-    "peerDependencies": {
-        "zod": "^3.22.4"
     },
     "dependencies": {
         "http-errors": "^2.0.0",
@@ -119,6 +113,12 @@
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "zod": "^3.23.8"
+    },
+    "peerDependencies": {
+        "zod": "^3.22.4"
+    },
+    "engines": {
+        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",
