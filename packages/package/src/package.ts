@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import { findUp, findUpSync, readJsonSync } from "@visulima/fs";
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 
 import { findLockFile, findLockFileSync } from "./package-manager";
 import type { PackageJson } from "./types";

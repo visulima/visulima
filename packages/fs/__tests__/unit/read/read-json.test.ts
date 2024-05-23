@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import { dirname, join } from "pathe";
+import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import JsonError from "../../../src/error/json-error";

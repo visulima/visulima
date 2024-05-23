@@ -1,4 +1,4 @@
-import { dirname, resolve } from "pathe";
+import { dirname, resolve } from "@visulima/path";
 
 const resolveSymlinkTarget = (target: URL | string, linkName: URL | string): URL | string => {
     if (typeof target !== "string") {

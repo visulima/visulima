@@ -1,4 +1,4 @@
-import { dirname, resolve } from "pathe";
+import { dirname, resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import resolveSymlinkTarget from "../../../src/utils/resolve-symlink-target";

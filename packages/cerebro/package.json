@@ -95,7 +95,6 @@
     "dependencies": {
         "@visulima/boxen": "1.0.7",
         "@visulima/colorize": "1.4.0",
-        "@visulima/package": "1.7.6",
         "@visulima/pail": "1.1.10",
         "cli-table3": "^0.6.5",
         "command-line-args": "^5.2.1",
@@ -117,6 +116,8 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.18.5",
         "@visulima/nextra-theme-docs": "4.0.23",
+        "@visulima/package": "1.7.6",
+        "@visulima/path": "workspace:*",
         "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",
         "cross-env": "^7.0.3",

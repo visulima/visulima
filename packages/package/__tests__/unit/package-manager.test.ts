@@ -1,8 +1,8 @@
 import { platform } from "node:os";
 import { fileURLToPath } from "node:url";
 
+import { dirname, join } from "@visulima/path";
 import { execa } from "execa";
-import { dirname, join } from "pathe";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";

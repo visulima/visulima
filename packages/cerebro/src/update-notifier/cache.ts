@@ -1,7 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { findCacheDirectorySync } from "@visulima/package";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { dirname, join } from "@visulima/path";
 
 const FILE_NAME = "last-update-check.json";
 

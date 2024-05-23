@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 
-import { parse } from "pathe";
+import { parse } from "@visulima/path";
 import type { PackageJson } from "type-fest";
 
 interface AppExport {

@@ -1,11 +1,10 @@
 import { statSync } from "node:fs";
-import { parse } from "node:path";
 
-import { dirname, isAbsolute, resolve } from "pathe";
+import { dirname, isAbsolute, parse, resolve } from "@visulima/path";
+import { toPath } from "@visulima/path/utils";
 
 import { FIND_UP_STOP } from "../constants";
 import type { FindUpOptions, Match } from "../types";
-import toPath from "../utils/to-path";
 
 const findUpSync = (
     name: ReadonlyArray<string> | string[] | string | ((directory: string) => Match),
