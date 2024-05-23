@@ -9,4 +9,7 @@ tsup.config.ts
 .eslintrc.cjs
 .prettierrc.cjs
 .secretlintrc.cjs
+
 README.md
+
+package.json

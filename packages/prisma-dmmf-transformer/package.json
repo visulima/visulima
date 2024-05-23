@@ -2,6 +2,27 @@
     "name": "@visulima/prisma-dmmf-transformer",
     "version": "2.0.17",
     "description": "A generator for Prisma to generate a valid JSON Schema v7.",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "license": "MIT",
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/prisma-dmmf-transformer"
+    },
     "keywords": [
         "anolilab",
         "visulima",
@@ -14,27 +35,6 @@
         "transformer",
         "json-schema"
     ],
-    "homepage": "https://www.visulima.com/docs/package/prisma-dmmf-transformer",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/prisma-dmmf-transformer"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "sideEffects": false,
     "exports": {
         ".": {
@@ -59,6 +59,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "engines": {
+        "node": ">=18.* <=21.*"
+    },
     "scripts": {
         "build": "cross-env NODE_ENV=development tsup",
         "build:prod": "cross-env NODE_ENV=production tsup",
@@ -66,7 +69,7 @@
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
-        "lint:packagejson": "publint --strict",
+        "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.js --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.js --write .",
         "lint:types": "tsc --noEmit",
@@ -75,13 +78,18 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "peerDependencies": {
+        "@prisma/client": "3.* || 4.*",
+        "prisma": "3.* || 4.*"
+    },
     "dependencies": {
         "@prisma/generator-helper": "5.12.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-preset": "^8.0.3",
+        "@anolilab/semantic-release-pnpm": "^1.1.0",
+        "@anolilab/semantic-release-preset": "^8.1.0",
         "@babel/core": "^7.24.5",
         "@prisma/client": "4.16.2",
         "@prisma/internals": "5.12.1",
@@ -104,17 +112,9 @@
         "prisma": "4.16.2",
         "rimraf": "5.0.5",
         "semantic-release": "23.0.8",
-        "sort-package-json": "^2.10.0",
         "tsup": "8.0.2",
         "typescript": "5.4.5",
         "vitest": "1.5.0"
-    },
-    "peerDependencies": {
-        "@prisma/client": "3.* || 4.*",
-        "prisma": "3.* || 4.*"
-    },
-    "engines": {
-        "node": ">=18.* <=21.*"
     },
     "os": [
         "darwin",
