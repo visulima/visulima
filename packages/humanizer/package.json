@@ -1,6 +1,6 @@
 {
     "name": "@visulima/humanizer",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Humanizer is a library for humanizing data in a human-readable form.",
     "keywords": [
         "visulima",
@@ -112,7 +112,7 @@
         "@types/micromatch": "^4.0.7",
         "@types/ms": "^0.7.34",
         "@types/node": "18.18.14",
-        "@visulima/path": "workspace:*",
+        "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",
