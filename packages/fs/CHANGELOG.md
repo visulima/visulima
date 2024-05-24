@@ -1,3 +1,23 @@
+## @visulima/fs [2.1.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.1...@visulima/fs@2.1.2) (2024-05-24)
+
+
+### Bug Fixes
+
+* changed pathe to @visulima/path ([#410](https://github.com/visulima/visulima/issues/410)) ([bfe1287](https://github.com/visulima/visulima/commit/bfe1287aff6d28d5dca302fd4d58c1f6234ce0bb))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* fixed wrong named folders to integration, added TEST_PROD_BUILD ([1b826f5](https://github.com/visulima/visulima/commit/1b826f5baf8285847199de9ede8fbdbadf201ad6))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.1
+* **@visulima/error:** upgraded to 3.2.9
+
 ## @visulima/fs [2.1.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.0...@visulima/fs@2.1.1) (2024-05-15)
 
 
