@@ -344,7 +344,7 @@ const duration = (milliseconds: number, options?: DurationOptions): string => {
 
     validateDurationLanguage(config.language);
 
-    // Has the nice side-effect of converting things to numbers. For example,
+    // Has the nice side effect of converting things to numbers. For example,
     // converts `"123"` and `Number(123)` to `123`.
     const absTime = Math.abs(milliseconds as number);
 
