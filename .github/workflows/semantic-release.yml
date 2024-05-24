@@ -64,6 +64,9 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:coverage"
+              env:
+                  # This is needed for the colorize integration test
+                  TEST_PROD_BUILD: "true"
 
             - name: "Prepare nx cache"
               shell: "bash"
