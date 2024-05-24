@@ -1,3 +1,10 @@
+## @visulima/humanizer [1.0.3](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.2...@visulima/humanizer@1.0.3) (2024-05-24)
+
+
+### Bug Fixes
+
+* **humanizer:** added Unlicense for the duration functions ([72ff020](https://github.com/visulima/visulima/commit/72ff0200be90e9707bea8606a03bd6091b229f43))
+
 ## @visulima/humanizer [1.0.2](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.1...@visulima/humanizer@1.0.2) (2024-05-24)
 
 
