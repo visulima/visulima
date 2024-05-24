@@ -1138,11 +1138,11 @@ importers:
         specifier: 3.0.10
         version: 3.0.10(zod@3.23.8)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.43
-        version: 2.0.43(@swc/core@1.3.80)(openapi-types@12.1.3)
+        specifier: 2.0.44
+        version: 2.0.44(@swc/core@1.3.80)(openapi-types@12.1.3)
       '@visulima/path':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       accepts:
         specifier: ^1.3.8
         version: 1.3.8
@@ -1259,8 +1259,8 @@ importers:
         specifier: 2.0.21
         version: 2.0.21(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)
       '@visulima/fs':
-        specifier: 2.1.1
-        version: 2.1.1(yaml@2.4.2)
+        specifier: 2.1.2
+        version: 2.1.2(yaml@2.4.2)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1424,11 +1424,11 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/colorize':
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.4.1
+        version: 1.4.1
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.1
+        version: 1.0.1
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1505,14 +1505,14 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@visulima/colorize':
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.4.1
+        version: 1.4.1
       '@visulima/pail':
-        specifier: 1.1.10
-        version: 1.1.10(rotating-file-stream@3.2.1)
+        specifier: 1.1.11
+        version: 1.1.11(rotating-file-stream@3.2.1)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1566,14 +1566,14 @@ importers:
         specifier: 18.18.5
         version: 18.18.5
       '@visulima/nextra-theme-docs':
-        specifier: 4.0.23
-        version: 4.0.23(@jest/globals@29.7.0)(csstype@3.1.3)(jest@29.7.0(@types/node@18.18.5))(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))(zod@3.23.8)
+        specifier: 4.0.24
+        version: 4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
-        specifier: 1.7.6
-        version: 1.7.6(yaml@2.4.2)
+        specifier: 1.8.2
+        version: 1.8.2(yaml@2.4.2)
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.1
+        version: 1.0.1
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1669,8 +1669,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.1
+        version: 1.0.1
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2133,8 +2133,8 @@ importers:
         specifier: ^0.3.25
         version: 0.3.25
       '@visulima/path':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -2305,8 +2305,8 @@ importers:
   packages/fs:
     dependencies:
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.1
+        version: 1.0.1
       type-fest:
         specifier: ^4.18.2
         version: 4.18.2
@@ -2333,8 +2333,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/error':
-        specifier: 3.2.8
-        version: 3.2.8
+        specifier: 3.2.9
+        version: 3.2.9
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2547,8 +2547,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.1
+        version: 1.0.1
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2706,8 +2706,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.1.1
-        version: 2.1.1(yaml@2.4.2)
+        specifier: 2.1.2
+        version: 2.1.2(yaml@2.4.2)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -3066,11 +3066,11 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.1.1
-        version: 2.1.1(yaml@2.4.2)
+        specifier: 2.1.2
+        version: 2.1.2(yaml@2.4.2)
       '@visulima/path':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       jsonc-parser:
         specifier: ^3.2.1
         version: 3.2.1
@@ -3284,8 +3284,8 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.4.1
+        version: 1.4.1
       '@visulima/fmt':
         specifier: 1.1.4
         version: 1.1.4
@@ -7149,9 +7149,6 @@ packages:
   '@storybook/channels@7.6.17':
     resolution: {integrity: sha512-GFG40pzaSxk1hUr/J/TMqW5AFDDPUSu+HkeE/oqSWJbOodBOLJzHN6CReJS6y1DjYSZLNFt1jftPWZZInG/XUA==}
 
-  '@storybook/channels@8.0.6':
-    resolution: {integrity: sha512-IbNvjxeyQKiMpb+gSpQ7yYsFqb8BM/KYgfypJM3yJV6iU/NFeevrC/DA6/R+8xWFyPc70unRNLv8fPvxhcIu8Q==}
-
   '@storybook/channels@8.1.0':
     resolution: {integrity: sha512-zZ6f1IC6AlQfPcVJeRH9MyzaGBXdniVREbjdM4qDHJkHKtWs92K2IXQ3W/aAIFKbpKKYadTWu+UQfULw0oAG3Q==}
 
@@ -7164,9 +7161,6 @@ packages:
 
   '@storybook/client-logger@7.6.17':
     resolution: {integrity: sha512-6WBYqixAXNAXlSaBWwgljWpAu10tPRBJrcFvx2gPUne58EeMM20Gi/iHYBz2kMCY+JLAgeIH7ZxInqwO8vDwiQ==}
-
-  '@storybook/client-logger@8.0.6':
-    resolution: {integrity: sha512-et/IHPHiiOwMg93l5KSgw47NZXz5xOyIrIElRcsT1wr8OJeIB9DzopB/suoHBZ/IML+t8x91atdutzUN2BLF6A==}
 
   '@storybook/client-logger@8.1.0':
     resolution: {integrity: sha512-MPNggo4g/J/40muUsyo+LUN3BBcOb4FK5AD+yjDgbBPo2IwXCNqOdCHkz0TEALIVMMZ0KSdFW7uB/cFnfq/Xdw==}
@@ -7211,9 +7205,6 @@ packages:
   '@storybook/core-events@7.6.17':
     resolution: {integrity: sha512-AriWMCm/k1cxlv10f+jZ1wavThTRpLaN3kY019kHWbYT9XgaSuLU67G7GPr3cGnJ6HuA6uhbzu8qtqVCd6OfXA==}
 
-  '@storybook/core-events@8.0.6':
-    resolution: {integrity: sha512-EwGmuMm8QTUAHPhab4yftQWoSCX3OzEk6cQdpLtbNFtRRLE9aPZzxhk5Z/d3KhLNSCUAGyCiDt5I9JxTBetT9A==}
-
   '@storybook/core-events@8.1.0':
     resolution: {integrity: sha512-9oCACeyYqH7rZVHglzH//cJXdP0mM5d2nBM4kgFgTTLJpbb0+SrF0rD0EVpHfA1l4Kz7pgzTY6Xj2p4mEiZ0Qg==}
 
@@ -7257,9 +7248,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  '@storybook/instrumenter@8.0.6':
-    resolution: {integrity: sha512-I1OgKvvCWLQafTTEJ8KG8AGKwnNu8sLNO4ce6tRGSPFpsGgt1QIemJ/p6taOgPicnEFamTzH+5x+LYjRKt0cJA==}
-
   '@storybook/instrumenter@8.1.3':
     resolution: {integrity: sha512-FYWXt6Pb7N64I934XxciRHUhy37l//uvXyQOwxIyI9syf2ESixpWHgPKd7XjyjULa3JOA2IAEJ3BEZVpqFirog==}
 
@@ -7283,9 +7271,6 @@ packages:
 
   '@storybook/preview-api@7.6.17':
     resolution: {integrity: sha512-wLfDdI9RWo1f2zzFe54yRhg+2YWyxLZvqdZnSQ45mTs4/7xXV5Wfbv3QNTtcdw8tT3U5KRTrN1mTfTCiRJc0Kw==}
-
-  '@storybook/preview-api@8.0.6':
-    resolution: {integrity: sha512-O5SvBqlHIO/Cf5oGZUJV2npkp9bLqg9Sn0T0a5zXolJbRy+gP7MDyz4AnliLpTn5bT2rzVQ6VH8IDlhHBq3K6g==}
 
   '@storybook/preview-api@8.1.0':
     resolution: {integrity: sha512-JYp58I/+u4YBUvdDbQ7G1B7CPjB/C/UU7Wgb7bdX3Kp9jQto1hYO9Arq/ncMB7w6ZZJOwTeaI0PLAFsnpFwf4w==}
@@ -7335,9 +7320,6 @@ packages:
     engines: {node: ^16.10.0 || ^18.0.0 || >=20.0.0}
     hasBin: true
 
-  '@storybook/test@8.0.6':
-    resolution: {integrity: sha512-MctGhJSnD6es5xj8lMDjB4gzXk6Uoaw756CAnQamPoETr+3dkJzf4LOeUwyV3LgT7D3pQ72Po5kTdCKfrPHsDQ==}
-
   '@storybook/test@8.1.3':
     resolution: {integrity: sha512-9fjigeDBUk1X7el6haYk1Lniak0Se7Ol5f7QSw/64tIbXHp6ucj06FWEK+SfWx1J9GgCdDiFGW5UMmEZOiRCXw==}
 
@@ -7363,9 +7345,6 @@ packages:
 
   '@storybook/types@7.6.17':
     resolution: {integrity: sha512-GRY0xEJQ0PrL7DY2qCNUdIfUOE0Gsue6N+GBJw9ku1IUDFLJRDOF+4Dx2BvYcVCPI5XPqdWKlEyZdMdKjiQN7Q==}
-
-  '@storybook/types@8.0.6':
-    resolution: {integrity: sha512-YKq4A+3diQ7UCGuyrB/9LkB29jjGoEmPl3TfV7mO1FvdRw22BNuV3GyJCiLUHigSKiZgFo+pfQhmsNRJInHUnQ==}
 
   '@storybook/types@8.1.0':
     resolution: {integrity: sha512-VNF++bY5KvLS4GnrH6vFVC3vaG38NHHAmDRBsjUG17LKXCL5PD6+fe8XEfWX40ylQ9ntzNdtCXDSSdow15IZ+Q==}
@@ -8536,13 +8515,13 @@ packages:
     resolution: {integrity: sha512-OTe0KE37F5Y2eTys6eMnfopC+P4qr2ooXUTFyFPTplYSPwowmFk/HLD1FXtbKLjqsIH0SgekcJWad+C5uX4nkg==}
     engines: {node: '>=16'}
 
-  '@visulima/boxen@1.0.7':
-    resolution: {integrity: sha512-mspfeZH4GwJtTLeIZFQKgFmh6xZ+u+kxrqlZJ5HIlY+W0zhPs+aqh0XrkGd3iWHMHXjj/QtxhOZgCdaDJpmYgg==}
+  '@visulima/boxen@1.0.8':
+    resolution: {integrity: sha512-uoG49VQmPFQzxX82Vbj/yq2d1dgh7L4lKoZCDBkwyv+hDagGMEFuUae067xlU4BNkNJ7EVs2pphhXbgjWGVEyQ==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/colorize@1.4.0':
-    resolution: {integrity: sha512-ZNelNbdYD4n7dR+KVljZpQcgzrVhtlHX3DPy/xZisOztfrZE5mIrXq9PQrUC8WRGbhxpnEUD08i8WhL6/74Z9g==}
+  '@visulima/colorize@1.4.1':
+    resolution: {integrity: sha512-O3oh+m1X1hY7iKdEL+TjqXkGW1HYeDlr8xnzQaxJbkgGW8bLqxPSYDilxSx0EMf6AS45NxlNIy7/fsnRTWfY7Q==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -8558,8 +8537,8 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@3.2.8':
-    resolution: {integrity: sha512-qbxoUYFqN9dja0Km+j2PIJ3CG2GAXebf+4Tx4RbkQv2FVrDn5xj1BFlAEYf96MNJTNe5+97KTsA/ZZMOFW24LA==}
+  '@visulima/error@3.2.9':
+    resolution: {integrity: sha512-Atiy+jH8i9XYOsvaEU9sDgs3RQ+C8i0YYjDCiBWpuU8NKEprWIk63OCKLf3GdZVxSKBiBBB2SBjh20+JCNv0xQ==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -8568,8 +8547,8 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/fs@2.1.0':
-    resolution: {integrity: sha512-W5Sb75IyvgbOBRHsQ9d0n/h+a5y1Yei4DR/L3WzWpRK7Ez2bnsrczo0n6RWGvkX54t9IAwjP1ua6enr/Ux3CBw==}
+  '@visulima/fs@2.1.1':
+    resolution: {integrity: sha512-KBcdscZZyZOQRdem0pLSmAT0r85ZmckUD61XRlgnyrjTOy9dUJ/gMoosa5UvcFEBTV89qOKpOTYynZFb+9Hn5g==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -8578,8 +8557,8 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/fs@2.1.1':
-    resolution: {integrity: sha512-KBcdscZZyZOQRdem0pLSmAT0r85ZmckUD61XRlgnyrjTOy9dUJ/gMoosa5UvcFEBTV89qOKpOTYynZFb+9Hn5g==}
+  '@visulima/fs@2.1.2':
+    resolution: {integrity: sha512-bRD/jE7BVlLw89hf/MIMx6R7/DutlMyhWKKmXvZXpDaHXZMlw7pnC+hWpK7XVWievDtny+7E0HAxNgI1yPXyhw==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -8593,39 +8572,29 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.43':
-    resolution: {integrity: sha512-N1OJR6izaEmhu+vu1WzBbsjsViymDpIZvQ9LW95wQaCN+pAktIq/gdqGdT9sNfDHjoKEdVeNljfGyfVXvIJchg==}
+  '@visulima/jsdoc-open-api@2.0.44':
+    resolution: {integrity: sha512-H53luAl3maJtW4ulBA0dsLIuaJYQgczwMB67HhpXSzzE9povws0+5klUNwrYXV7Jpv8ayB7MiuDG2YHXBxgbeQ==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     hasBin: true
-
-  '@visulima/nextra-theme-docs@4.0.23':
-    resolution: {integrity: sha512-AW3Q/9N78G4664Qu8njwdhug++Xudj+JE4hQsSh42cPqA2jB/HpX8Gq41wchH5hX/V5eyRlruQXu1eBugsgiOw==}
-    engines: {node: '>=18.* <=21.*'}
-    peerDependencies:
-      next: '>=13.4.20-canary.13'
-      nextra: '>=2.2.13'
-      react: '>=16.13.1'
-      react-dom: '>=16.13.1'
-      zod: ^3.22.4
 
   '@visulima/nextra-theme-docs@4.0.24':
     resolution: {integrity: sha512-28+fv7ZR1+bXezqQbDhZVIK5ekxWCgAFHK+uM7oKtWgDhqMFgLLDUp+4XIBjYoFqbmfU7N815lwgv8iDrDTTbw==}
     engines: {node: '>=18.* <=21.*'}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=14.1.1'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
       zod: ^3.22.4
 
-  '@visulima/package@1.7.6':
-    resolution: {integrity: sha512-bJAcMomnXCNmYTMuwARqeSSWIycqAP3W/2eJsZ/rjPDQhyRfx6xqYuNN6vlS4Moa38sB9/uhlL7tH8GEivEctA==}
+  '@visulima/package@1.8.1':
+    resolution: {integrity: sha512-ksrIqIKeZn1ba2AOrPx5ipYtCRwOXhMBHCS0BQWjTrmlcaZgiBqrw9Bx7EbyJflqedOesIbQTTWAaGw8G86rog==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@1.8.1':
-    resolution: {integrity: sha512-ksrIqIKeZn1ba2AOrPx5ipYtCRwOXhMBHCS0BQWjTrmlcaZgiBqrw9Bx7EbyJflqedOesIbQTTWAaGw8G86rog==}
+  '@visulima/package@1.8.2':
+    resolution: {integrity: sha512-NAYC1I6cizBPFLb/n3WYGg8gZSvxpTR0X69jdMmvwtvcSKapefzSJfFGFnKWDWAT8c3msP6H0q3tMUIvqvaYBw==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -8634,8 +8603,8 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/pail@1.1.10':
-    resolution: {integrity: sha512-aLKgmFi17YMa0MeLOo/nvHEgGNFfGBNrT0gaRt3pamFEpUECTN8Is0u+eSOD2k50JE9xptkZV5AE1QisC7/z0w==}
+  '@visulima/pail@1.1.11':
+    resolution: {integrity: sha512-Ub9/K9YtRhrBELvqqP7gIG2u8brMIpZDa+uw/xd6BXXHnp6YA680E+4Z+Iy8+157gZk6h0zV4SwE6nrI3FiXmg==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -8644,8 +8613,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/path@1.0.0':
-    resolution: {integrity: sha512-9bJY01zRStrPqk2yKItIThZ+bRvPLHEBtvHUIGPgkmDF5fydF81IBJUxj558ZsQ8PVTcF/uMblHvdNVxyCjclQ==}
+  '@visulima/path@1.0.1':
+    resolution: {integrity: sha512-NZNvccgnRvMFoKxc7iEyTLTWujA2X4/kgNGXeEfvcC0L76E3yB5f+D3iaZUUekHjVkkC6UpHy3egjgzWezBU1g==}
     engines: {node: '>=18.* <=21.*'}
 
   '@visulima/prisma-dmmf-transformer@2.0.17':
@@ -8696,9 +8665,6 @@ packages:
   '@vitest/spy@1.3.1':
     resolution: {integrity: sha512-xAcW+S099ylC9VLU7eZfdT9myV67Nor9w9zhf0mGCYJSO+zM2839tOeROTdikOi/8Qeusffvxb/MyBSOja1Uig==}
 
-  '@vitest/spy@1.4.0':
-    resolution: {integrity: sha512-Ywau/Qs1DzM/8Uc+yA77CwSegizMlcgTJuYGAi0jujOteJOUf1ujunHThYo243KG9nAyWT3L9ifPYZ5+As/+6Q==}
-
   '@vitest/spy@1.5.0':
     resolution: {integrity: sha512-vu6vi6ew5N5MMHJjD5PoakMRKYdmIrNJmyfkhRpQt5d9Ewhw9nZ5Aqynbi3N61bvk9UvZ5UysMT6ayIrZ8GA9w==}
 
@@ -8715,9 +8681,6 @@ packages:
 
   '@vitest/utils@1.5.0':
     resolution: {integrity: sha512-BDU0GNL8MWkRkSRdNFvCUCAVOeHaUlVJ9Tx0TYBZyXaaOTmGtUFObzchCivIBrIwKzvZA7A9sCejVhXM2aY98A==}
-
-  '@vitest/utils@1.5.2':
-    resolution: {integrity: sha512-sWOmyofuXLJ85VvXNsroZur7mOJGiQeM0JN3/0D1uU8U9bGFM69X1iqHaRXl6R8BwaLY6yPCogP257zxTzkUdA==}
 
   '@vitest/utils@1.6.0':
     resolution: {integrity: sha512-21cPiuGMoMZwiOHa2i4LXkMkMkCGzA+MVFV70jRwHo95dL4x/ts5GZhML1QWuy7yfp3WzK3lRvZi3JnXTYqrBw==}
@@ -15988,18 +15951,6 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  react-medium-image-zoom@5.2.0:
-    resolution: {integrity: sha512-OL4el3DHt7+VIn7TbCuHVEL6h/UpeJIsFUx0kF/gFkhKm5S2en98m3cDYNdEggjFh74XbEuoT6Ll1njRAMrcQA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-
-  react-medium-image-zoom@5.2.3:
-    resolution: {integrity: sha512-G+VIt7Us/kB7YPnd1d3oGjBmpNy3SSGK6B5Ehbc+f1cRMgOytJtwI6bSSvnecHtaXMpyjY+0vF80TRtcEz1r3g==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-
   react-medium-image-zoom@5.2.4:
     resolution: {integrity: sha512-XLu/fLqpbmhiDAGA6yie78tDv4kh8GxvS7kKQArSOvCvm5zvgItoh4h01NAAvnezQ60ovsTeedHiHG3eG9CcGg==}
     peerDependencies:
@@ -18986,7 +18937,7 @@ snapshots:
 
   '@anolilab/rc@1.1.0(yaml@2.4.2)':
     dependencies:
-      '@visulima/fs': 2.1.1(yaml@2.4.2)
+      '@visulima/fs': 2.1.2(yaml@2.4.2)
       ini: 4.1.3
       ts-deepmerge: 7.0.0
     transitivePeerDependencies:
@@ -18996,9 +18947,9 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.0(yaml@2.4.2)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 2.1.1(yaml@2.4.2)
+      '@visulima/fs': 2.1.2(yaml@2.4.2)
       '@visulima/package': 1.8.1(yaml@2.4.2)
-      '@visulima/path': 1.0.0
+      '@visulima/path': 1.0.1
       aggregate-error: 5.0.0
       execa: 9.1.0
       ini: 4.1.2
@@ -23277,14 +23228,6 @@ snapshots:
       telejson: 7.2.0
       tiny-invariant: 1.3.3
 
-  '@storybook/channels@8.0.6':
-    dependencies:
-      '@storybook/client-logger': 8.0.6
-      '@storybook/core-events': 8.0.6
-      '@storybook/global': 5.0.0
-      telejson: 7.2.0
-      tiny-invariant: 1.3.3
-
   '@storybook/channels@8.1.0':
     dependencies:
       '@storybook/client-logger': 8.1.0
@@ -23349,10 +23292,6 @@ snapshots:
       - utf-8-validate
 
   '@storybook/client-logger@7.6.17':
-    dependencies:
-      '@storybook/global': 5.0.0
-
-  '@storybook/client-logger@8.0.6':
     dependencies:
       '@storybook/global': 5.0.0
 
@@ -23527,10 +23466,6 @@ snapshots:
     dependencies:
       ts-dedent: 2.2.0
 
-  '@storybook/core-events@8.0.6':
-    dependencies:
-      ts-dedent: 2.2.0
-
   '@storybook/core-events@8.1.0':
     dependencies:
       '@storybook/csf': 0.1.7
@@ -23669,16 +23604,6 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/instrumenter@8.0.6':
-    dependencies:
-      '@storybook/channels': 8.0.6
-      '@storybook/client-logger': 8.0.6
-      '@storybook/core-events': 8.0.6
-      '@storybook/global': 5.0.0
-      '@storybook/preview-api': 8.0.6
-      '@vitest/utils': 1.5.2
-      util: 0.12.5
-
   '@storybook/instrumenter@8.1.3':
     dependencies:
       '@storybook/channels': 8.1.3
@@ -23752,23 +23677,6 @@ snapshots:
       memoizerific: 1.11.3
       qs: 6.12.1
       synchronous-promise: 2.0.17
-      ts-dedent: 2.2.0
-      util-deprecate: 1.0.2
-
-  '@storybook/preview-api@8.0.6':
-    dependencies:
-      '@storybook/channels': 8.0.6
-      '@storybook/client-logger': 8.0.6
-      '@storybook/core-events': 8.0.6
-      '@storybook/csf': 0.1.2
-      '@storybook/global': 5.0.0
-      '@storybook/types': 8.0.6
-      '@types/qs': 6.9.15
-      dequal: 2.0.3
-      lodash: 4.17.21
-      memoizerific: 1.11.3
-      qs: 6.12.1
-      tiny-invariant: 1.3.3
       ts-dedent: 2.2.0
       util-deprecate: 1.0.2
 
@@ -23932,26 +23840,6 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@storybook/test@8.0.6(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))':
-    dependencies:
-      '@storybook/client-logger': 8.0.6
-      '@storybook/core-events': 8.0.6
-      '@storybook/instrumenter': 8.0.6
-      '@storybook/preview-api': 8.0.6
-      '@testing-library/dom': 9.3.4
-      '@testing-library/jest-dom': 6.4.2(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
-      '@testing-library/user-event': 14.5.2(@testing-library/dom@9.3.4)
-      '@vitest/expect': 1.3.1
-      '@vitest/spy': 1.4.0
-      chai: 4.4.1
-      util: 0.12.5
-    transitivePeerDependencies:
-      - '@jest/globals'
-      - '@types/bun'
-      - '@types/jest'
-      - jest
-      - vitest
-
   '@storybook/test@8.1.3(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.14))(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))':
     dependencies:
       '@storybook/client-logger': 8.1.3
@@ -24000,12 +23888,6 @@ snapshots:
     dependencies:
       '@storybook/channels': 7.6.17
       '@types/babel__core': 7.20.5
-      '@types/express': 4.17.21
-      file-system-cache: 2.3.0
-
-  '@storybook/types@8.0.6':
-    dependencies:
-      '@storybook/channels': 8.0.6
       '@types/express': 4.17.21
       file-system-cache: 2.3.0
 
@@ -24508,21 +24390,6 @@ snapshots:
       '@jest/globals': 29.7.0
       jest: 29.7.0(@types/node@18.18.14)
       vitest: 1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0)
-
-  '@testing-library/jest-dom@6.4.2(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))':
-    dependencies:
-      '@adobe/css-tools': 4.3.3
-      '@babel/runtime': 7.24.1
-      aria-query: 5.3.0
-      chalk: 3.0.0
-      css.escape: 1.5.1
-      dom-accessibility-api: 0.6.3
-      lodash: 4.17.21
-      redent: 3.0.0
-    optionalDependencies:
-      '@jest/globals': 29.7.0
-      jest: 29.7.0(@types/node@18.18.5)
-      vitest: 1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0)
 
   '@testing-library/react@15.0.7(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -25776,9 +25643,9 @@ snapshots:
       satori: 0.10.9
       yoga-wasm-web: 0.3.3
 
-  '@visulima/boxen@1.0.7': {}
+  '@visulima/boxen@1.0.8': {}
 
-  '@visulima/colorize@1.4.0':
+  '@visulima/colorize@1.4.1':
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.0
 
@@ -25798,18 +25665,12 @@ snapshots:
       - '@prisma/client'
       - prisma
 
-  '@visulima/error@3.2.8':
+  '@visulima/error@3.2.9':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
+      '@visulima/path': 1.0.1
 
   '@visulima/fmt@1.1.4': {}
-
-  '@visulima/fs@2.1.0(yaml@2.4.2)':
-    dependencies:
-      pathe: 1.1.2
-      type-fest: 4.18.2
-    optionalDependencies:
-      yaml: 2.4.2
 
   '@visulima/fs@2.1.1(yaml@2.4.2)':
     dependencies:
@@ -25818,12 +25679,19 @@ snapshots:
     optionalDependencies:
       yaml: 2.4.2
 
+  '@visulima/fs@2.1.2(yaml@2.4.2)':
+    dependencies:
+      '@visulima/path': 1.0.1
+      type-fest: 4.18.2
+    optionalDependencies:
+      yaml: 2.4.2
+
   '@visulima/is-ansi-color-supported@2.2.0': {}
 
-  '@visulima/jsdoc-open-api@2.0.43(@swc/core@1.3.80)(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.44(@swc/core@1.3.80)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.1.1(yaml@2.4.2)
+      '@visulima/fs': 2.1.2(yaml@2.4.2)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -25838,42 +25706,6 @@ snapshots:
       - openapi-types
       - uglify-js
       - webpack-cli
-
-  '@visulima/nextra-theme-docs@4.0.23(@jest/globals@29.7.0)(csstype@3.1.3)(jest@29.7.0(@types/node@18.18.5))(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))(zod@3.23.8)':
-    dependencies:
-      '@giscus/react': 3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@headlessui/react': 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@popperjs/core': 2.11.8
-      clsx: 2.1.1
-      copy-to-clipboard: 3.3.3
-      escape-string-regexp: 5.0.0
-      flexsearch: 0.7.43
-      focus-visible: 5.2.0
-      git-url-parse: 14.0.0
-      he: 1.2.0
-      intersection-observer: 0.12.2
-      next: 14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next-seo: 6.5.0(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next-themes: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      nextra: 2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      prism-react-renderer: 2.3.1(react@18.3.1)
-      prismjs: 1.29.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-live: 4.1.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-medium-image-zoom: 5.2.0(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
-      react-wrap-balancer: 1.1.0(react@18.3.1)
-      scroll-into-view-if-needed: 3.1.0
-      tailwind-merge: 2.3.0
-      zod: 3.23.8
-    transitivePeerDependencies:
-      - '@jest/globals'
-      - '@types/bun'
-      - '@types/jest'
-      - csstype
-      - jest
-      - vitest
 
   '@visulima/nextra-theme-docs@4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)':
     dependencies:
@@ -25898,24 +25730,13 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-live: 4.1.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-medium-image-zoom: 5.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-medium-image-zoom: 5.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-wrap-balancer: 1.1.0(react@18.3.1)
       scroll-into-view-if-needed: 3.1.0
       tailwind-merge: 2.3.0
       zod: 3.23.8
     transitivePeerDependencies:
       - csstype
-
-  '@visulima/package@1.7.6(yaml@2.4.2)':
-    dependencies:
-      '@visulima/fs': 2.1.0(yaml@2.4.2)
-      jsonc-parser: 3.2.1
-      normalize-package-data: 6.0.1
-      pathe: 1.1.2
-      resolve-pkg-maps: 1.0.0
-      type-fest: 4.18.2
-    transitivePeerDependencies:
-      - yaml
 
   '@visulima/package@1.8.1(yaml@2.4.2)':
     dependencies:
@@ -25928,19 +25749,30 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+  '@visulima/package@1.8.2(yaml@2.4.2)':
+    dependencies:
+      '@visulima/fs': 2.1.2(yaml@2.4.2)
+      '@visulima/path': 1.0.1
+      jsonc-parser: 3.2.1
+      normalize-package-data: 6.0.1
+      resolve-pkg-maps: 1.0.0
+      type-fest: 4.18.2
+    transitivePeerDependencies:
+      - yaml
+
   '@visulima/pagination@3.0.15':
     dependencies:
       qs: 6.12.1
 
-  '@visulima/pail@1.1.10(rotating-file-stream@3.2.1)':
+  '@visulima/pail@1.1.11(rotating-file-stream@3.2.1)':
     dependencies:
-      '@visulima/colorize': 1.4.0
+      '@visulima/colorize': 1.4.1
       '@visulima/fmt': 1.1.4
       safe-stable-stringify: 2.4.3
     optionalDependencies:
       rotating-file-stream: 3.2.1
 
-  '@visulima/path@1.0.0': {}
+  '@visulima/path@1.0.1': {}
 
   '@visulima/prisma-dmmf-transformer@2.0.17(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)':
     dependencies:
@@ -26081,10 +25913,6 @@ snapshots:
     dependencies:
       tinyspy: 2.2.0
 
-  '@vitest/spy@1.4.0':
-    dependencies:
-      tinyspy: 2.2.0
-
   '@vitest/spy@1.5.0':
     dependencies:
       tinyspy: 2.2.0
@@ -26112,13 +25940,6 @@ snapshots:
       pretty-format: 29.7.0
 
   '@vitest/utils@1.5.0':
-    dependencies:
-      diff-sequences: 29.6.3
-      estree-walker: 3.0.3
-      loupe: 2.3.7
-      pretty-format: 29.7.0
-
-  '@vitest/utils@1.5.2':
     dependencies:
       diff-sequences: 29.6.3
       estree-walker: 3.0.3
@@ -27620,22 +27441,6 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - ts-node
-
-  create-jest@29.7.0(@types/node@18.18.5):
-    dependencies:
-      '@jest/types': 29.6.3
-      chalk: 4.1.2
-      exit: 0.1.2
-      graceful-fs: 4.2.11
-      jest-config: 29.7.0(@types/node@18.18.5)
-      jest-util: 29.7.0
-      prompts: 2.4.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
-    optional: true
 
   cross-env@7.0.3:
     dependencies:
@@ -31820,26 +31625,6 @@ snapshots:
       - supports-color
       - ts-node
 
-  jest-cli@29.7.0(@types/node@18.18.5):
-    dependencies:
-      '@jest/core': 29.7.0
-      '@jest/test-result': 29.7.0
-      '@jest/types': 29.6.3
-      chalk: 4.1.2
-      create-jest: 29.7.0(@types/node@18.18.5)
-      exit: 0.1.2
-      import-local: 3.1.0
-      jest-config: 29.7.0(@types/node@18.18.5)
-      jest-util: 29.7.0
-      jest-validate: 29.7.0
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
-    optional: true
-
   jest-config@29.7.0(@types/node@18.18.14):
     dependencies:
       '@babel/core': 7.24.5
@@ -31869,37 +31654,6 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
-
-  jest-config@29.7.0(@types/node@18.18.5):
-    dependencies:
-      '@babel/core': 7.24.5
-      '@jest/test-sequencer': 29.7.0
-      '@jest/types': 29.6.3
-      babel-jest: 29.7.0(@babel/core@7.24.5)
-      chalk: 4.1.2
-      ci-info: 3.8.0
-      deepmerge: 4.3.1
-      glob: 7.2.3
-      graceful-fs: 4.2.11
-      jest-circus: 29.7.0
-      jest-environment-node: 29.7.0
-      jest-get-type: 29.6.3
-      jest-regex-util: 29.6.3
-      jest-resolve: 29.7.0
-      jest-runner: 29.7.0
-      jest-util: 29.7.0
-      jest-validate: 29.7.0
-      micromatch: 4.0.5
-      parse-json: 5.2.0
-      pretty-format: 29.7.0
-      slash: 3.0.0
-      strip-json-comments: 3.1.1
-    optionalDependencies:
-      '@types/node': 18.18.5
-    transitivePeerDependencies:
-      - babel-plugin-macros
-      - supports-color
-    optional: true
 
   jest-config@29.7.0(@types/node@20.11.5):
     dependencies:
@@ -32232,19 +31986,6 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - ts-node
-
-  jest@29.7.0(@types/node@18.18.5):
-    dependencies:
-      '@jest/core': 29.7.0
-      '@jest/types': 29.6.3
-      import-local: 3.1.0
-      jest-cli: 29.7.0(@types/node@18.18.5)
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - supports-color
-      - ts-node
-    optional: true
 
   jiti@1.21.0: {}
 
@@ -35781,23 +35522,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       sucrase: 3.34.0
       use-editable: 2.3.3(react@18.3.1)
-
-  react-medium-image-zoom@5.2.0(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0)):
-    dependencies:
-      '@storybook/test': 8.0.6(@jest/globals@29.7.0)(jest@29.7.0(@types/node@18.18.5))(vitest@1.6.0(@types/node@18.18.5)(@vitest/ui@1.6.0)(jsdom@24.0.0)(lightningcss@1.22.0)(terser@5.27.0))
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-    transitivePeerDependencies:
-      - '@jest/globals'
-      - '@types/bun'
-      - '@types/jest'
-      - jest
-      - vitest
-
-  react-medium-image-zoom@5.2.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   react-medium-image-zoom@5.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
