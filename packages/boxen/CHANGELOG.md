@@ -1,3 +1,25 @@
+## @visulima/boxen [1.0.8](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.7...@visulima/boxen@1.0.8) (2024-05-24)
+
+
+### Bug Fixes
+
+* changed pathe to @visulima/path ([#410](https://github.com/visulima/visulima/issues/410)) ([bfe1287](https://github.com/visulima/visulima/commit/bfe1287aff6d28d5dca302fd4d58c1f6234ce0bb))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* fixed wrong named folders to integration, added TEST_PROD_BUILD ([1b826f5](https://github.com/visulima/visulima/commit/1b826f5baf8285847199de9ede8fbdbadf201ad6))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.1
+* **@visulima/path:** upgraded to 1.0.1
+
 ## @visulima/boxen [1.0.7](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.6...@visulima/boxen@1.0.7) (2024-05-03)
 
 
