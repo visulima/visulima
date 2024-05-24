@@ -1,3 +1,21 @@
+## @visulima/error [3.2.9](https://github.com/visulima/visulima/compare/@visulima/error@3.2.8...@visulima/error@3.2.9) (2024-05-24)
+
+
+### Bug Fixes
+
+* changed pathe to @visulima/path ([#410](https://github.com/visulima/visulima/issues/410)) ([bfe1287](https://github.com/visulima/visulima/commit/bfe1287aff6d28d5dca302fd4d58c1f6234ce0bb))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.1
+
 ## @visulima/error [3.2.8](https://github.com/visulima/visulima/compare/@visulima/error@3.2.7...@visulima/error@3.2.8) (2024-05-15)
 
 
