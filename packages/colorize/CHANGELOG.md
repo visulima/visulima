@@ -1,3 +1,37 @@
+## @visulima/colorize [1.4.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.0...@visulima/colorize@1.4.1) (2024-05-24)
+
+
+### Bug Fixes
+
+* changed pathe to @visulima/path ([#410](https://github.com/visulima/visulima/issues/410)) ([bfe1287](https://github.com/visulima/visulima/commit/bfe1287aff6d28d5dca302fd4d58c1f6234ce0bb))
+
+
+### Styles
+
+* cs fixes ([7bf5b91](https://github.com/visulima/visulima/commit/7bf5b91383b612598d955fe23505c94f22a8d277))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* **deps:** updated dev deps ([d91ac38](https://github.com/visulima/visulima/commit/d91ac389cea85a6c6bdc8de97905252a6c467abc))
+* fixed wrong named folders to integration, added TEST_PROD_BUILD ([1b826f5](https://github.com/visulima/visulima/commit/1b826f5baf8285847199de9ede8fbdbadf201ad6))
+* update bench dependencies ([d03bf14](https://github.com/visulima/visulima/commit/d03bf14a137074d980e3e56c72d12662751a4ec6))
+* update dev dependencies ([068bdbf](https://github.com/visulima/visulima/commit/068bdbfe0b371b5cc7e5ac071dc3310a3b8cea98))
+* update dev dependencies ([09c4854](https://github.com/visulima/visulima/commit/09c4854e221fa8b808dfe66d7196d8db2a39b366))
+* updated dev dependencies ([2e08f23](https://github.com/visulima/visulima/commit/2e08f23ba4f23ff4c64a36807b53242e9497c073))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+* updated dev dependencies ([d7791e3](https://github.com/visulima/visulima/commit/d7791e327917e438757636573b1e5549a97bba7b))
+* updated dev dependencies ([6005345](https://github.com/visulima/visulima/commit/60053456717a3889fc77b4fb5b05d50a662475b2))
+* updated devDependencies ([e5f936c](https://github.com/visulima/visulima/commit/e5f936c24ce8dd1f04f7ea53736f53165f6bb780))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.1
+
 ## @visulima/colorize [1.4.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.3.3...@visulima/colorize@1.4.0) (2024-04-10)
 
 
