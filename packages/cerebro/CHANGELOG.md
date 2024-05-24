@@ -1,3 +1,25 @@
+## @visulima/cerebro [1.0.28](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.27...@visulima/cerebro@1.0.28) (2024-05-24)
+
+
+### Bug Fixes
+
+* changed pathe to @visulima/path ([#410](https://github.com/visulima/visulima/issues/410)) ([bfe1287](https://github.com/visulima/visulima/commit/bfe1287aff6d28d5dca302fd4d58c1f6234ce0bb))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.8
+* **@visulima/colorize:** upgraded to 1.4.1
+* **@visulima/pail:** upgraded to 1.1.11
+* **@visulima/package:** upgraded to 1.8.2
+* **@visulima/path:** upgraded to 1.0.1
+
 ## @visulima/cerebro [1.0.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.26...@visulima/cerebro@1.0.27) (2024-05-13)
 
 
