@@ -1,3 +1,10 @@
+## @visulima/package [1.8.3](https://github.com/visulima/visulima/compare/@visulima/package@1.8.2...@visulima/package@1.8.3) (2024-05-28)
+
+
+### Bug Fixes
+
+* **package:** exposed missing implicitBaseUrlSymbol, readTsConfig, wr… ([#416](https://github.com/visulima/visulima/issues/416)) ([6e3d431](https://github.com/visulima/visulima/commit/6e3d431611850ae1bab2305f1112d2ece6f239f3))
+
 ## @visulima/package [1.8.2](https://github.com/visulima/visulima/compare/@visulima/package@1.8.1...@visulima/package@1.8.2) (2024-05-24)
 
 
