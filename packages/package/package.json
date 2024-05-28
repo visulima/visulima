@@ -61,8 +61,8 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./monorepo": {
@@ -71,8 +71,8 @@
                 "default": "./dist/monorepo.cjs"
             },
             "import": {
-                "types": "./dist/monorepo.d.ts",
-                "default": "./dist/monorepo.js"
+                "types": "./dist/monorepo.d.mts",
+                "default": "./dist/monorepo.mjs"
             }
         },
         "./package": {
@@ -81,8 +81,8 @@
                 "default": "./dist/package.cjs"
             },
             "import": {
-                "types": "./dist/package.d.ts",
-                "default": "./dist/package.js"
+                "types": "./dist/package.d.mts",
+                "default": "./dist/package.mjs"
             }
         },
         "./package-json": {
@@ -91,8 +91,8 @@
                 "default": "./dist/package-json.cjs"
             },
             "import": {
-                "types": "./dist/package-json.d.ts",
-                "default": "./dist/package-json.js"
+                "types": "./dist/package-json.d.mts",
+                "default": "./dist/package-json.mjs"
             }
         },
         "./package-manager": {
@@ -101,18 +101,18 @@
                 "default": "./dist/package-manager.cjs"
             },
             "import": {
-                "types": "./dist/package-manager.d.ts",
-                "default": "./dist/package-manager.js"
+                "types": "./dist/package-manager.d.mts",
+                "default": "./dist/package-manager.mjs"
             }
         },
         "./tsconfig": {
             "require": {
-                "types": "./dist/tsconfig.d.cts",
-                "default": "./dist/tsconfig.cjs"
+                "types": "./dist/tsconfig/index.d.cts",
+                "default": "./dist/tsconfig/index.cjs"
             },
             "import": {
-                "types": "./dist/tsconfig.d.ts",
-                "default": "./dist/tsconfig.js"
+                "types": "./dist/tsconfig/index.d.mts",
+                "default": "./dist/tsconfig/index.mjs"
             }
         },
         "./error": {
@@ -121,14 +121,14 @@
                 "default": "./dist/error.cjs"
             },
             "import": {
-                "types": "./dist/error.d.ts",
-                "default": "./dist/error.js"
+                "types": "./dist/error.d.mts",
+                "default": "./dist/error.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -137,10 +137,10 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
+        "dev": "cross-env NODE_ENV=development packem build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "pnpm run lint:eslint --fix",
         "lint:package-json": "publint --strict",
@@ -157,10 +157,10 @@
         "@visulima/path": "1.0.1",
         "jsonc-parser": "^3.2.1",
         "normalize-package-data": "^6.0.1",
-        "resolve-pkg-maps": "^1.0.0",
-        "type-fest": "^4.18.2"
+        "resolve-pkg-maps": "^1.0.0"
     },
     "devDependencies": {
+        "type-fest": "^4.18.2",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-pnpm": "^1.1.0",
@@ -189,7 +189,8 @@
         "semantic-release": "^23.1.1",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
-        "tsup": "^8.0.2",
+        "@visulima/packem": "^1.0.0-alpha.20",
+        "esbuild": "^0.21.4",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "which-pm-runs": "file:",
@@ -218,14 +219,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/error.ts",
-        "src/index.ts",
-        "src/monorepo.ts",
-        "src/package.ts",
-        "src/package-json.ts",
-        "src/package-manager.ts",
-        "src/tsconfig.ts"
-    ]
+    }
 }
