@@ -33,4 +33,4 @@ jobs:
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Dependency Review"
-              uses: "actions/dependency-review-action@733dd5d4a5203f238c33806593ec0f5fc5343d8c" # v4.2.4
+              uses: "actions/dependency-review-action@0c155c5e8556a497adf53f2c18edabf945ed8e70" # v4.3.2
