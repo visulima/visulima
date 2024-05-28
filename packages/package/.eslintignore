@@ -8,7 +8,7 @@ src/module.d.ts
 vitest.config.ts
 .prettierrc.js
 _meta.*.json
-tsup.config.ts
+packem.config.ts
 .eslintrc.cjs
 .prettierrc.cjs
 .secretlintrc.cjs
