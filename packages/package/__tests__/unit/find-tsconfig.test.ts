@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 
 import { writeJsonSync } from "@visulima/fs";
@@ -6,8 +5,8 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { TsConfigResult } from "../../src/tsconfig";
-import { findTsConfig, findTsConfigSync, writeTsConfig } from "../../src/tsconfig";
+import type { TsConfigResult } from "../../src/tsconfig/find-tsconfig";
+import { findTsConfig, findTsConfigSync } from "../../src/tsconfig/find-tsconfig";
 
 describe("tsconfig", () => {
     let distribution: string;
@@ -65,26 +64,6 @@ describe("tsconfig", () => {
                 // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
                 expect(() => function_("/noMatch")).toThrow(expectedErrorMessage);
             }
-        });
-    });
-
-    describe("writeTsConfig", () => {
-        it("should write a tsconfig.json file", async () => {
-            expect.assertions(1);
-
-            await writeTsConfig(
-                {
-                    compilerOptions: {},
-                },
-                {
-                    cwd: distribution,
-                },
-            );
-
-            const tsconfigFilePath = join(distribution, "tsconfig.json");
-
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            expect(existsSync(tsconfigFilePath)).toBeTruthy();
         });
     });
 });
