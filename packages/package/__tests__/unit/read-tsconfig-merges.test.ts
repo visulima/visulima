@@ -12,7 +12,7 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { readTsConfig } from "../../src/read-tsconfig";
+import { readTsConfig } from "../../src/tsconfig/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
 
 describe("parse-tsconfig merges", () => {

@@ -10,8 +10,8 @@ import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "@
 import { parse } from "jsonc-parser";
 import type { TsConfigJson } from "type-fest";
 
-import type { TsConfigJsonResolved } from "./types";
-import resolveExtendsPath from "./utils/resolve-extends-path";
+import type { TsConfigJsonResolved } from "../types";
+import resolveExtendsPath from "../utils/resolve-extends-path";
 
 type Options = {
     tscCompatible?: boolean;

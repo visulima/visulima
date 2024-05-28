@@ -1,12 +1,8 @@
-import type { WriteJsonOptions } from "@visulima/fs";
-import { findUp, findUpSync, writeJson } from "@visulima/fs";
+import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
-import { toPath } from "@visulima/fs/utils";
-import { join } from "@visulima/path";
-import type { TsConfigJson } from "type-fest";
 
+import type { TsConfigJsonResolved } from "../types";
 import { readTsConfig } from "./read-tsconfig";
-import type { TsConfigJsonResolved } from "./types";
 
 type Options = {
     cache?: Map<string, TsConfigJsonResolved> | boolean;
@@ -109,25 +105,3 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
 
 // @deprecate Please use `findTsConfigSync` instead.
 export const findTSConfigSync = findTsConfigSync;
-
-/**
- * An asynchronous function that writes the provided TypeScript configuration object to a tsconfig.json file.
- *
- * @param tsConfig - The TypeScript configuration object to write. The type of `tsConfig` is `TsConfigJson`.
- * @param options - Optional. The write options and the current working directory. The type of `options` is an
- * intersection type of `WriteOptions` and a Record type with an optional `cwd` key of type `string`.
- * @returns A `Promise` that resolves when the tsconfig.json file has been written.
- * The return type of function is `Promise<void>`.
- */
-export const writeTsConfig = async (data: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
-    const { cwd, ...writeOptions } = options;
-
-    const directory = toPath(options.cwd ?? process.cwd());
-
-    await writeJson(join(directory, "tsconfig.json"), data, writeOptions);
-};
-
-// @deprecate Please use `writeTsconfig` instead.
-export const writeTSConfig = writeTsConfig;
-// eslint-disable-next-line import/no-unused-modules
-export { implicitBaseUrlSymbol } from "./read-tsconfig";

@@ -19,3 +19,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+<!-- DEPENDENCIES -->
+<!-- DEPENDENCIES -->
+
+<!-- TYPE_DEPENDENCIES -->
+
+# Licenses of bundled types
+The published @visulima/package artifact additionally contains code with the following licenses:
+(MIT OR CC0-1.0)
+
+# Bundled types:
+## type-fest
+License: (MIT OR CC0-1.0)
+By: Sindre Sorhus
+Repository: sindresorhus/type-fest
+
+<!-- TYPE_DEPENDENCIES -->
