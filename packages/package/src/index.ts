@@ -14,8 +14,7 @@ export {
     getPackageManagerVersion,
     identifyInitiatingPackageManager,
 } from "./package-manager";
-export { implicitBaseUrlSymbol, readTsConfig } from "./read-tsconfig";
 export type { TsConfigResult } from "./tsconfig";
-export { findTSConfig, findTsConfig, findTSConfigSync, findTsConfigSync, writeTSConfig } from "./tsconfig";
+export { findTSConfig, findTsConfig, findTsConfigSync, implicitBaseUrlSymbol, readTsConfig, writeTSConfig, writeTsConfig, writeTsConfigSync } from "./tsconfig";
 export type { NormalizedPackageJson, PackageJson, TsConfigJsonResolved } from "./types";
 export type { TsConfigJson } from "type-fest";
