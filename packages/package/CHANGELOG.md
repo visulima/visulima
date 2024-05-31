@@ -1,3 +1,10 @@
+## @visulima/package [1.8.4](https://github.com/visulima/visulima/compare/@visulima/package@1.8.3...@visulima/package@1.8.4) (2024-05-31)
+
+
+### Bug Fixes
+
+* **package:** fixed finding of cache folder in a monorepo ([ccec0b7](https://github.com/visulima/visulima/commit/ccec0b7fa74fe0e6c01e88f0bc91dc81e0a56870))
+
 ## @visulima/package [1.8.3](https://github.com/visulima/visulima/compare/@visulima/package@1.8.2...@visulima/package@1.8.3) (2024-05-28)
 
 
