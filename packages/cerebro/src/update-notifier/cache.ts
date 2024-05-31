@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { findCacheDirectorySync } from "@visulima/package";
+import { findCacheDirectorySync } from "@visulima/package/cache";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 
