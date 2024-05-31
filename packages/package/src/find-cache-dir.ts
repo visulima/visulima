@@ -2,10 +2,10 @@
 import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
-import { ensureDirSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
+import { ensureDirSync, findUp, findUpSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 
-import { findPackageJson, findPackageJsonSync } from "./package-json";
+import { NotFoundError } from "@visulima/fs/error";
 
 type Options = {
     create?: boolean;
@@ -26,22 +26,20 @@ export const findCacheDirectory = async (name: string, options?: Options): Promi
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
-    let rootDirectory: string;
+    const rootDirectory = await findUp("package.json", {
+        cwd: options?.cwd ?? cwd(),
+        type: "file",
+    });
 
-    try {
-        const { path } = await findPackageJson(options?.cwd ?? cwd());
-
-        rootDirectory = dirname(path);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    if (!rootDirectory) {
         if (options?.throwError) {
-            throw error;
+            throw new NotFoundError("No such file or directory found.");
         }
 
         return undefined;
     }
 
-    const nodeModulesDirectory = join(rootDirectory, "node_modules");
+    const nodeModulesDirectory = join(dirname(rootDirectory), "node_modules");
     const cacheDirectory = join(nodeModulesDirectory, ".cache");
     const cacheNameDirectory = join(cacheDirectory, name);
 
@@ -71,22 +69,20 @@ export const findCacheDirectorySync = (name: string, options?: Options): string 
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
-    let rootDirectory: string;
+    const rootDirectory = findUpSync("package.json", {
+        cwd: options?.cwd ?? cwd(),
+        type: "file",
+    });
 
-    try {
-        const { path } = findPackageJsonSync(options?.cwd ?? cwd());
-
-        rootDirectory = dirname(path);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    if (!rootDirectory) {
         if (options?.throwError) {
-            throw error;
+            throw new NotFoundError("No such file or directory found.");
         }
 
         return undefined;
     }
 
-    const nodeModulesDirectory = join(rootDirectory, "node_modules");
+    const nodeModulesDirectory = join(dirname(rootDirectory), "node_modules");
     const cacheDirectory = join(nodeModulesDirectory, ".cache");
     const cacheNameDirectory = join(cacheDirectory, name);
 
