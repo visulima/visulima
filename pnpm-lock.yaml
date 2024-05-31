@@ -1569,8 +1569,8 @@ importers:
         specifier: 4.0.24
         version: 4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
-        specifier: 1.8.2
-        version: 1.8.2(yaml@2.4.2)
+        specifier: 1.8.3
+        version: 1.8.3(yaml@2.4.2)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -8785,8 +8785,8 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@1.8.2':
-    resolution: {integrity: sha512-NAYC1I6cizBPFLb/n3WYGg8gZSvxpTR0X69jdMmvwtvcSKapefzSJfFGFnKWDWAT8c3msP6H0q3tMUIvqvaYBw==}
+  '@visulima/package@1.8.3':
+    resolution: {integrity: sha512-ABn1pIlE+SQ9ASQ91kV9gYkBsvAJ5tpk6Uncro4rpX+Cteqyu9maeHVxz3D3eW4zQSI5lR7IeapPdbyCKUBQuQ==}
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
@@ -26220,14 +26220,13 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/package@1.8.2(yaml@2.4.2)':
+  '@visulima/package@1.8.3(yaml@2.4.2)':
     dependencies:
       '@visulima/fs': 2.1.2(yaml@2.4.2)
       '@visulima/path': 1.0.1
       jsonc-parser: 3.2.1
       normalize-package-data: 6.0.1
       resolve-pkg-maps: 1.0.0
-      type-fest: 4.18.2
     transitivePeerDependencies:
       - yaml
 
@@ -26249,7 +26248,7 @@ snapshots:
       '@visulima/colorize': 1.4.1
       '@visulima/fs': 2.1.2(yaml@2.4.2)
       '@visulima/humanizer': 1.0.3
-      '@visulima/package': 1.8.2(yaml@2.4.2)
+      '@visulima/package': 1.8.3(yaml@2.4.2)
       '@visulima/pail': 1.1.11(rotating-file-stream@3.2.1)
       '@visulima/path': 1.0.1
       defu: 6.1.4
