@@ -1,3 +1,10 @@
+## @visulima/package [1.9.0](https://github.com/visulima/visulima/compare/@visulima/package@1.8.4...@visulima/package@1.9.0) (2024-05-31)
+
+
+### Features
+
+* **package:** added new findMonorepoRootSync func, improved find-cache-dir, added new exports entry ([15cbed5](https://github.com/visulima/visulima/commit/15cbed586279dfe5a8388eee255a783570a18a0c))
+
 ## @visulima/package [1.8.4](https://github.com/visulima/visulima/compare/@visulima/package@1.8.3...@visulima/package@1.8.4) (2024-05-31)
 
 
