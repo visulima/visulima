@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 
-import type { WriteJsonOptions } from "@visulima/fs";
+import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
@@ -31,10 +31,15 @@ export type NormalizedReadResult = {
  * @throws An `Error` if the package.json file cannot be found.
  */
 export const findPackageJson = async (cwd?: URL | string, options: ReadOptions = {}): Promise<NormalizedReadResult> => {
-    const filePath = await findUp("package.json", {
-        ...(cwd && { cwd }),
+    const findUpConfig: FindUpOptions = {
         type: "file",
-    });
+    };
+
+    if (cwd) {
+        findUpConfig.cwd = cwd;
+    }
+
+    const filePath = await findUp("package.json", findUpConfig);
 
     if (!filePath) {
         throw new NotFoundError("No such file or directory, for package.json found.");
@@ -61,10 +66,15 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 };
 
 export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {}): NormalizedReadResult => {
-    const filePath = findUpSync("package.json", {
-        ...(cwd && { cwd }),
+    const findUpConfig: FindUpOptions = {
         type: "file",
-    });
+    };
+
+    if (cwd) {
+        findUpConfig.cwd = cwd;
+    }
+
+    const filePath = findUpSync("package.json", findUpConfig);
 
     if (!filePath) {
         throw new NotFoundError("No such file or directory, for package.json found.");
