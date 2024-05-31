@@ -3,13 +3,14 @@ import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
 import { ensureDirSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { dirname, join } from "@visulima/path";
 
-import { findPackageRoot, findPackageRootSync } from "./package";
+import { findPackageJson, findPackageJsonSync } from "./package-json";
 
 type Options = {
     create?: boolean;
     cwd?: URL | string;
+    throwError?: boolean;
 };
 
 const useDirectory = (directory: string, options?: Options): string => {
@@ -25,9 +26,18 @@ export const findCacheDirectory = async (name: string, options?: Options): Promi
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
-    const rootDirectory = await findPackageRoot(options?.cwd ?? cwd());
+    let rootDirectory: string;
 
-    if (!rootDirectory) {
+    try {
+        const { path } = await findPackageJson(options?.cwd ?? cwd());
+
+        rootDirectory = dirname(path);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        if (options?.throwError) {
+            throw error;
+        }
+
         return undefined;
     }
 
@@ -61,9 +71,18 @@ export const findCacheDirectorySync = (name: string, options?: Options): string 
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
 
-    const rootDirectory = findPackageRootSync(options?.cwd ?? cwd());
+    let rootDirectory: string;
 
-    if (!rootDirectory) {
+    try {
+        const { path } = findPackageJsonSync(options?.cwd ?? cwd());
+
+        rootDirectory = dirname(path);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        if (options?.throwError) {
+            throw error;
+        }
+
         return undefined;
     }
 

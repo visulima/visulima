@@ -93,6 +93,38 @@ describe.each([
         expect(result).toStrictEqual(join(testCachePath, ".cache", "test"));
     });
 
+    it.skipIf(isWindows)(
+        "should return the current working directory's cache path if the node_modules directory exists and is writable within a monorepo.",
+        async () => {
+            expect.assertions(2);
+
+            const monorepoPath = join(distribution, "packages", "package");
+            const testCachePath = join(monorepoPath, "node_modules");
+
+            ensureDirSync(join(distribution, "node_modules"));
+            ensureDirSync(testCachePath);
+
+            writeJsonSync(join(distribution, "package.json"), {
+                name: "root",
+            });
+            writeJsonSync(join(monorepoPath, "package.json"), {
+                name: "test",
+            });
+
+            let result = function_("test", {
+                cwd: monorepoPath,
+            });
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findCacheDirectory") {
+                result = await result;
+            }
+
+            expect(result).not.toStrictEqual(join(distribution, "node_modules", ".cache", "test"));
+            expect(result).toStrictEqual(join(testCachePath, ".cache", "test"));
+        },
+    );
+
     it.skipIf(isWindows)("should return undefined if the node_modules directory exists but is not writeable", async () => {
         expect.assertions(1);
 
@@ -225,5 +257,22 @@ describe.each([
         expect(result).toStrictEqual(testCachePath);
 
         delete process.env.CACHE_DIR;
+    });
+
+    it("should throw an error if the root directory could not be found and throwError option is enabled", async () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findCacheDirectory") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(async () => await function_("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true })).rejects.toThrow(
+                "ENOENT: No such file or directory, for package.json found.",
+            );
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() =>
+                (function_ as typeof findCacheDirectorySync)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true }),
+            ).toThrow("ENOENT: No such file or directory, for package.json found.");
+        }
     });
 });
