@@ -77,8 +77,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "rimraf dist && cross-env NODE_ENV=development tsup",
-        "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -132,7 +132,8 @@
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
         "strip-ansi": "^7.1.0",
-        "tsup": "^8.1.0",
+        "esbuild": "0.21.4",
+        "@visulima/packem": "1.0.0-alpha.42",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
