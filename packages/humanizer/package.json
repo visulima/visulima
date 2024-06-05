@@ -62,8 +62,8 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./language/*": {
@@ -72,22 +72,22 @@
                 "default": "./dist/language/*.cjs"
             },
             "import": {
-                "types": "./dist/language/*.d.ts",
-                "default": "./dist/language/*.js"
+                "types": "./dist/language/*.d.mts",
+                "default": "./dist/language/*.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "browser": "./dist/index.js",
+    "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -112,11 +112,13 @@
         "@types/micromatch": "^4.0.7",
         "@types/ms": "^0.7.34",
         "@types/node": "18.18.14",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",
         "csv-parse": "^5.5.6",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -129,7 +131,6 @@
         "rimraf": "^5.0.7",
         "secretlint": "8.2.3",
         "semantic-release": "23.1.1",
-        "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
@@ -151,70 +152,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/language/af.ts",
-        "src/language/ar.ts",
-        "src/language/bn.ts",
-        "src/language/bg.ts",
-        "src/language/ca.ts",
-        "src/language/ckb.ts",
-        "src/language/cs.ts",
-        "src/language/cy.ts",
-        "src/language/da.ts",
-        "src/language/de.ts",
-        "src/language/el.ts",
-        "src/language/en.ts",
-        "src/language/eo.ts",
-        "src/language/es.ts",
-        "src/language/et.ts",
-        "src/language/eu.ts",
-        "src/language/fa.ts",
-        "src/language/fi.ts",
-        "src/language/fo.ts",
-        "src/language/fr.ts",
-        "src/language/he.ts",
-        "src/language/hi.ts",
-        "src/language/hr.ts",
-        "src/language/hu.ts",
-        "src/language/id.ts",
-        "src/language/is.ts",
-        "src/language/it.ts",
-        "src/language/ja.ts",
-        "src/language/km.ts",
-        "src/language/kn.ts",
-        "src/language/ko.ts",
-        "src/language/ku.ts",
-        "src/language/lo.ts",
-        "src/language/lt.ts",
-        "src/language/lv.ts",
-        "src/language/mk.ts",
-        "src/language/mn.ts",
-        "src/language/mr.ts",
-        "src/language/ms.ts",
-        "src/language/nl.ts",
-        "src/language/no.ts",
-        "src/language/pl.ts",
-        "src/language/pt.ts",
-        "src/language/ro.ts",
-        "src/language/ru.ts",
-        "src/language/sk.ts",
-        "src/language/sl.ts",
-        "src/language/sq.ts",
-        "src/language/sr.ts",
-        "src/language/sv.ts",
-        "src/language/sw.ts",
-        "src/language/ta.ts",
-        "src/language/te.ts",
-        "src/language/th.ts",
-        "src/language/tr.ts",
-        "src/language/uk.ts",
-        "src/language/ur.ts",
-        "src/language/uz.ts",
-        "src/language/uz_CYR.ts",
-        "src/language/vi.ts",
-        "src/language/zh_CN.ts",
-        "src/language/zh_TW.ts"
-    ]
+    }
 }

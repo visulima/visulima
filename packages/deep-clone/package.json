@@ -67,8 +67,8 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./handler": {
@@ -77,8 +77,8 @@
                 "default": "./dist/handler.cjs"
             },
             "import": {
-                "types": "./dist/handler.d.ts",
-                "default": "./dist/handler.js"
+                "types": "./dist/handler.d.mts",
+                "default": "./dist/handler.mjs"
             }
         },
         "./utils": {
@@ -87,14 +87,14 @@
                 "default": "./dist/utils.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -103,8 +103,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -130,11 +130,13 @@
         "@types/lodash.clonedeep": "^4.5.9",
         "@types/node": "18.18.14",
         "@ungap/structured-clone": "^1.2.0",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "clone-deep": "^4.0.1",
         "cross-env": "^7.0.3",
         "deep-copy": "^1.4.2",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -155,7 +157,6 @@
         "rimraf": "^5.0.7",
         "semantic-release": "23.1.1",
         "standard": "^17.1.0",
-        "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
@@ -182,10 +183,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/handler.ts",
-        "src/utils.ts"
-    ]
+    }
 }

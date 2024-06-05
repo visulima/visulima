@@ -60,15 +60,14 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "source": "src/index.ts",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist",
@@ -77,8 +76,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "rimraf dist && cross-env NODE_ENV=development tsup",
-        "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
+        "build": "rimraf dist && cross-env NODE_ENV=development packem build",
+        "build:prod": "rimraf dist && cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -117,10 +116,12 @@
         "@types/node": "18.18.5",
         "@visulima/nextra-theme-docs": "4.0.24",
         "@visulima/package": "1.9.0",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",
         "cross-env": "^7.0.3",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
@@ -131,7 +132,6 @@
         "rimraf": "^5.0.7",
         "semantic-release": "23.1.1",
         "strip-ansi": "^7.1.0",
-        "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },

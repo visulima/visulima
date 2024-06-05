@@ -80,20 +80,20 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.server.js",
+            "browser": "./dist/index.server.mjs",
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
             }
         },
         "./browser": {
             "import": {
-                "types": "./dist/index.browser.d.ts",
-                "default": "./dist/index.browser.js"
+                "types": "./dist/index.browser.d.mts",
+                "default": "./dist/index.browser.mjs"
             }
         },
         "./template": {
@@ -102,8 +102,8 @@
                 "default": "./dist/template.cjs"
             },
             "import": {
-                "types": "./dist/template.d.ts",
-                "default": "./dist/template.js"
+                "types": "./dist/template.d.mts",
+                "default": "./dist/template.mjs"
             }
         },
         "./gradient": {
@@ -112,8 +112,8 @@
                 "default": "./dist/gradient.cjs"
             },
             "import": {
-                "types": "./dist/gradient.d.ts",
-                "default": "./dist/gradient.js"
+                "types": "./dist/gradient.d.mts",
+                "default": "./dist/gradient.mjs"
             }
         },
         "./utils": {
@@ -122,14 +122,15 @@
                 "default": "./dist/utils.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
             }
         },
         "./package.json": "./package.json"
     },
+    "browser": "./dist/index.browser.mjs",
     "main": "dist/index.server.cjs",
-    "module": "dist/index.server.js",
+    "module": "dist/index.server.mjs",
     "types": "dist/index.server.d.ts",
     "files": [
         "dist/**",
@@ -138,8 +139,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,cts,mts,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -166,12 +167,14 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "ansi-regex": "^6.0.1",
         "ansi-styles": "^6.2.1",
         "cross-env": "^7.0.3",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -183,7 +186,6 @@
         "rimraf": "^5.0.7",
         "secretlint": "8.2.3",
         "semantic-release": "23.1.1",
-        "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
@@ -210,43 +212,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        {
-            "source": "src/index.browser.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/index.server.mts",
-            "format": "esm"
-        },
-        {
-            "source": "src/index.server.cts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/template.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/template.ts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/gradient.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/gradient.ts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/utils.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/utils.ts",
-            "format": "cjs"
-        }
-    ]
+    }
 }

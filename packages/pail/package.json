@@ -77,14 +77,14 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.browser.js",
+            "browser": "./dist/index.browser.mjs",
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
             }
         },
         "./browser": {
@@ -93,8 +93,8 @@
                 "default": "./dist/index.browser.cjs"
             },
             "import": {
-                "types": "./dist/index.browser.d.ts",
-                "default": "./dist/index.browser.js"
+                "types": "./dist/index.browser.d.mts",
+                "default": "./dist/index.browser.mjs"
             }
         },
         "./server": {
@@ -103,19 +103,19 @@
                 "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
             }
         },
         "./reporter": {
-            "browser": "./dist/reporter.browser.js",
+            "browser": "./dist/reporter.browser.mjs",
             "require": {
                 "types": "./dist/reporter.server.d.cts",
                 "default": "./dist/reporter.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter.server.d.ts",
-                "default": "./dist/reporter.server.js"
+                "types": "./dist/reporter.server.d.mts",
+                "default": "./dist/reporter.server.mjs"
             }
         },
         "./browser/reporter": {
@@ -124,37 +124,37 @@
                 "default": "./dist/reporter.browser.cjs"
             },
             "import": {
-                "types": "./dist/reporter.browser.d.ts",
-                "default": "./dist/reporter.browser.js"
+                "types": "./dist/reporter.browser.d.mts",
+                "default": "./dist/reporter.browser.mjs"
             }
         },
         "./server/reporter": {
-            "browser": "./dist/reporter.browser.js",
+            "browser": "./dist/reporter.browser.mjs",
             "require": {
                 "types": "./dist/reporter.server.d.cts",
                 "default": "./dist/reporter.server.cjs"
             },
             "import": {
-                "types": "./dist/reporter.server.d.ts",
-                "default": "./dist/reporter.server.js"
+                "types": "./dist/reporter.server.d.mts",
+                "default": "./dist/reporter.server.mjs"
             }
         },
         "./processor": {
-            "browser": "./dist/processor.browser.js",
+            "browser": "./dist/processor.browser.mjs",
             "require": {
                 "types": "./dist/processor.server.d.cts",
                 "default": "./dist/processor.server.cjs"
             },
             "import": {
-                "types": "./dist/processor.server.d.ts",
-                "default": "./dist/processor.server.js"
+                "types": "./dist/processor.server.d.mts",
+                "default": "./dist/processor.server.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.server.cjs",
-    "module": "dist/index.server.js",
-    "browser": "dist/index.browser.js",
+    "module": "dist/index.server.mjs",
+    "browser": "dist/index.browser.mjs",
     "types": "dist/index.server.d.ts",
     "files": [
         "dist/**",
@@ -163,8 +163,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "node ./scripts/wait.js && cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -193,9 +193,11 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.8",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -210,7 +212,6 @@
         "semantic-release": "23.1.1",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
-        "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "wrap-ansi": "^9.0.0"
@@ -246,13 +247,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.browser.ts",
-        "src/index.server.ts",
-        "src/processor.browser.ts",
-        "src/processor.server.ts",
-        "src/reporter.browser.ts",
-        "src/reporter.server.ts"
-    ]
+    }
 }

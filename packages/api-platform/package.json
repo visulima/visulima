@@ -54,10 +54,10 @@
     "sideEffects": false,
     "exports": {
         ".": {
-            "browser": "./dist/index-browser.js",
+            "browser": "./dist/index-browser.,js",
             "require": {
-                "types": "./dist/index-server.d.ts",
-                "default": "./dist/index-server.js"
+                "types": "./dist/index-server.d.cts",
+                "default": "./dist/index-server.cjs"
             },
             "import": {
                 "types": "./dist/index-server.d.mts",
@@ -65,10 +65,10 @@
             }
         },
         "./next": {
-            "browser": "./dist/framework/next/index-browser.js",
+            "browser": "./dist/framework/next/index-browser.mjs",
             "require": {
-                "types": "./dist/framework/next/index-server.d.ts",
-                "default": "./dist/framework/next/index-server.js"
+                "types": "./dist/framework/next/index-server.d.cts",
+                "default": "./dist/framework/next/index-server.cjs"
             },
             "import": {
                 "types": "./dist/framework/next/index-server.d.mts",
@@ -76,10 +76,10 @@
             }
         },
         "./next/pages/swagger": {
-            "browser": "./dist/framework/next/routes/pages/swagger/index.js",
+            "browser": "./dist/framework/next/routes/pages/swagger/index.mjs",
             "require": {
-                "types": "./dist/framework/next/routes/pages/swagger/index.d.ts",
-                "default": "./dist/framework/next/routes/pages/swagger/index.js"
+                "types": "./dist/framework/next/routes/pages/swagger/index.d.cts",
+                "default": "./dist/framework/next/routes/pages/swagger/index.cjs"
             },
             "import": {
                 "types": "./dist/framework/next/routes/pages/swagger/index.d.mts",
@@ -87,10 +87,10 @@
             }
         },
         "./next/pages/redoc": {
-            "browser": "./dist/framework/next/routes/pages/redoc/index.js",
+            "browser": "./dist/framework/next/routes/pages/redoc/index.mjs",
             "require": {
-                "types": "./dist/framework/next/routes/pages/redoc/index.d.ts",
-                "default": "./dist/framework/next/routes/pages/redoc/index.js"
+                "types": "./dist/framework/next/routes/pages/redoc/index.d.cts",
+                "default": "./dist/framework/next/routes/pages/redoc/index.cjs"
             },
             "import": {
                 "types": "./dist/framework/next/routes/pages/redoc/index.d.mts",
@@ -99,8 +99,8 @@
         },
         "./cli": {
             "require": {
-                "types": "./dist/framework/cli/index.d.ts",
-                "default": "./dist/framework/cli/index.js"
+                "types": "./dist/framework/cli/index.d.cts",
+                "default": "./dist/framework/cli/index.cjs"
             },
             "import": {
                 "types": "./dist/framework/cli/index.d.mts",
@@ -109,7 +109,7 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index-server.js",
+    "main": "dist/index-server.cjs",
     "module": "dist/index-server.mjs",
     "browser": "dist/index-browser.mjs",
     "types": "dist/index-server.d.ts",
@@ -125,8 +125,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "node ./scripts/wait.js && cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
@@ -185,6 +185,7 @@
         "@types/webpack": "^5.28.5",
         "@visulima/crud": "2.0.21",
         "@visulima/fs": "2.1.2",
+        "@visulima/packem build": "^1.0.0-alpha.40",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "chalk": "5.3.0",
@@ -192,6 +193,7 @@
         "core-js": "^3.37.1",
         "cors": "^2.8.5",
         "cross-env": "^7.0.3",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -225,7 +227,6 @@
         "styled-components": "^6.1.11",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
-        "tsup": "^8.1.0",
         "type-fest": "^4.19.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
@@ -337,15 +338,5 @@
             "info_on_testing_library_framework": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index-browser.tsx",
-        "src/index-server.ts",
-        "src/framework/cli/index.ts",
-        "src/framework/cli/commander/index.ts",
-        "src/framework/next/index-browser.tsx",
-        "src/framework/next/index-server.ts",
-        "src/framework/next/routes/pages/swagger/index.tsx",
-        "src/framework/next/routes/pages/redoc/index.tsx"
-    ]
+    }
 }
