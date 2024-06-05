@@ -1,3 +1,21 @@
+## @visulima/fs [2.1.3](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.2...@visulima/fs@2.1.3) (2024-06-05)
+
+
+### Bug Fixes
+
+* **fs:** updated type-fest ([f1ba811](https://github.com/visulima/visulima/commit/f1ba81100ad6eddeeda80066b2fb0f0b57a4cfa5))
+
+
+### Miscellaneous Chores
+
+* **fs:** added test for dot file ([105c6f3](https://github.com/visulima/visulima/commit/105c6f329312c71d3596b7115c16eb3829d7eac9))
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.10
+
 ## @visulima/fs [2.1.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.1...@visulima/fs@2.1.2) (2024-05-24)
 
 
