@@ -6,8 +6,7 @@ export default defineConfig({
     rollup: {
         license: {
             path: "./LICENSE.md",
-        },
-        shim: true,
+        }
     },
     transformer,
 });

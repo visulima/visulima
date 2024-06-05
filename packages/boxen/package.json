@@ -91,7 +91,7 @@
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.18.14",
         "@visulima/colorize": "1.4.1",
-        "@visulima/packem build": "^1.0.0-alpha.40",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",

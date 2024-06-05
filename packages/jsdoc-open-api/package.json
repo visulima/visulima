@@ -122,7 +122,7 @@
         "@types/lodash.mergewith": "^4.6.9",
         "@types/node": "18.18.14",
         "@types/webpack": "^5.28.5",
-        "@visulima/packem build": "^1.0.0-alpha.40",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cli-progress": "^3.12.0",

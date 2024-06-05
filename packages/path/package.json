@@ -95,7 +95,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@types/micromatch": "^4.0.7",
         "@types/node": "18.18.14",
-        "@visulima/packem build": "^1.0.0-alpha.40",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "binary-extensions": "^3.0.0",

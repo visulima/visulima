@@ -112,7 +112,7 @@
         "@types/micromatch": "^4.0.7",
         "@types/ms": "^0.7.34",
         "@types/node": "18.18.14",
-        "@visulima/packem build": "^1.0.0-alpha.40",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@visulima/path": "1.0.1",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",

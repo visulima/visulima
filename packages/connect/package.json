@@ -91,7 +91,7 @@
         "@types/http-errors": "^2.0.4",
         "@types/node": "18.18.14",
         "@visulima/nextra-theme-docs": "4.0.24",
-        "@visulima/packem build": "^1.0.0-alpha.40",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",

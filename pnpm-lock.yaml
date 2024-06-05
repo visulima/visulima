@@ -181,7 +181,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.0(tailwindcss@3.4.3))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.8.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tailwindcss@3.17.0(tailwindcss@3.4.3))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.0)
@@ -588,7 +588,7 @@ importers:
         specifier: ^6.12.3
         version: 6.12.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -744,7 +744,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -787,7 +787,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -921,7 +921,7 @@ importers:
         specifier: ^6.12.3
         version: 6.12.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prisma:
         specifier: ^4.15.0
@@ -1139,7 +1139,7 @@ importers:
         version: 3.0.10(zod@3.23.8)
       '@visulima/jsdoc-open-api':
         specifier: 2.0.44
-        version: 2.0.44(@swc/core@1.5.7)(esbuild@0.21.4)(openapi-types@12.1.3)
+        version: 2.0.44(@swc/core@1.5.7)(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -1254,16 +1254,13 @@ importers:
         version: 4.18.3
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.5.7)(esbuild@0.21.4)
+        version: 5.28.5(@swc/core@1.5.7)
       '@visulima/crud':
         specifier: 2.0.21
         version: 2.0.21(@prisma/client@4.16.2(prisma@4.16.2))(prisma@4.16.2)
       '@visulima/fs':
         specifier: 2.1.2
         version: 2.1.2(yaml@2.4.3)
-      '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1285,9 +1282,6 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
-      esbuild:
-        specifier: 0.21.4
-        version: 0.21.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -1387,6 +1381,9 @@ importers:
       swagger-ui-react:
         specifier: ^4.19.1
         version: 4.19.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(debug@4.3.5)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tsup:
+        specifier: ^8.1.0
+        version: 8.1.0(@swc/core@1.5.7)(postcss@8.4.38)(typescript@5.4.5)
       type-fest:
         specifier: ^4.19.0
         version: 4.19.0
@@ -1398,7 +1395,7 @@ importers:
         version: 1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
       webpack:
         specifier: ^5.91.0
-        version: 5.91.0(@swc/core@1.5.7)(esbuild@0.21.4)
+        version: 5.91.0(@swc/core@1.5.7)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -1430,8 +1427,8 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -1573,13 +1570,13 @@ importers:
         version: 18.18.5
       '@visulima/nextra-theme-docs':
         specifier: 4.0.24
-        version: 4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.24(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
         specifier: 1.9.0
         version: 1.9.0(yaml@2.4.3)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -1678,8 +1675,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -1833,10 +1830,10 @@ importers:
         version: 18.18.14
       '@visulima/nextra-theme-docs':
         specifier: 4.0.24
-        version: 4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.24(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1946,9 +1943,6 @@ importers:
       '@types/node':
         specifier: 18.18.14
         version: 18.18.14
-      '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1961,9 +1955,6 @@ importers:
       dot-prop:
         specifier: 8.0.2
         version: 8.0.2
-      esbuild:
-        specifier: 0.21.4
-        version: 0.21.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -1995,7 +1986,7 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-test-api-route-handler:
         specifier: ^4.0.7
@@ -2021,6 +2012,9 @@ importers:
       semantic-release:
         specifier: 23.1.1
         version: 23.1.1(typescript@5.4.5)
+      tsup:
+        specifier: ^8.1.0
+        version: 8.1.0(@swc/core@1.5.7)(postcss@8.4.38)(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -2061,8 +2055,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2201,10 +2195,10 @@ importers:
         version: 18.18.14
       '@visulima/nextra-theme-docs':
         specifier: 4.0.24
-        version: 4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.24(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2275,8 +2269,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2363,8 +2357,8 @@ importers:
         specifier: 3.2.9
         version: 3.2.9
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2484,8 +2478,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2580,8 +2574,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@visulima/path':
         specifier: 1.0.1
         version: 1.0.1
@@ -2685,8 +2679,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2804,8 +2798,8 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.5.7)(esbuild@0.21.4)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -2926,7 +2920,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.0(tailwindcss@3.4.3))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.8.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tailwindcss@3.17.0(tailwindcss@3.4.3))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.0)
@@ -3275,8 +3269,8 @@ importers:
         specifier: ^6.9.15
         version: 6.9.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -3369,8 +3363,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.8)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -3508,8 +3502,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.14)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -3616,6 +3610,9 @@ importers:
       '@types/node':
         specifier: 18.18.14
         version: 18.18.14
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: 1.5.0
         version: 1.5.0(vitest@1.5.0(@types/node@18.18.14)(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -3628,6 +3625,9 @@ importers:
       cross-env:
         specifier: 7.0.3
         version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -3661,9 +3661,6 @@ importers:
       semantic-release:
         specifier: 23.0.8
         version: 23.0.8(typescript@5.4.5)
-      tsup:
-        specifier: 8.0.2
-        version: 8.0.2(@swc/core@1.5.7)(postcss@8.4.38)(typescript@5.4.5)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -3702,8 +3699,8 @@ importers:
         specifier: 18.18.8
         version: 18.18.8
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.40
-        version: 1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.18.8)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -8969,8 +8966,8 @@ packages:
       typescript:
         optional: true
 
-  '@visulima/packem@1.0.0-alpha.40':
-    resolution: {integrity: sha512-Fwo/Ny1A0FjGW7NFjvZa8XBASG5r5pvlIM31gPlBltF2ATYzb4w3tU9jxlgdsBuafyAR1Ufj/Kt2YxGeCfpcRg==}
+  '@visulima/packem@1.0.0-alpha.41':
+    resolution: {integrity: sha512-s1k3gOSBtWp62vHbS2kP/bOaGrTvWoNvuQQogYu3Z/73laVso+EopQsgnS696vXObRs4y1E7dfPCejDQyZQFNg==}
     engines: {node: '>=18.* <=22.*'}
     hasBin: true
     peerDependencies:
@@ -15062,7 +15059,7 @@ packages:
   next-seo@6.5.0:
     resolution: {integrity: sha512-MfzUeWTN/x/rsKp/1n0213eojO97lIl0unxqbeCY+6pAucViHDA8GSLRRcXpgjsSmBxfCFdfpu7LXbt4ANQoNQ==}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -15070,7 +15067,7 @@ packages:
     resolution: {integrity: sha512-7lSpltVIVrJK1X06MNVVSgq5MvIzo5LZjdtUmWigt4v4/xpF78QeOgBorB+wfbiIAj6tjzf1/0zeEWiaxbyLsQ==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -19373,7 +19370,7 @@ snapshots:
       '@babel/core': 7.24.6
       '@babel/eslint-parser': 7.24.6(@babel/core@7.24.6)(eslint@8.57.0)
       '@babel/plugin-syntax-import-assertions': 7.24.6(@babel/core@7.24.6)
-      '@eslint/js': 8.57.0
+      '@eslint/js': 8.55.0
       '@html-eslint/eslint-plugin': 0.20.0
       '@html-eslint/parser': 0.20.0
       '@jsenv/eslint-import-resolver': 8.0.4
@@ -19437,82 +19434,13 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.0(tailwindcss@3.4.3))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
-    dependencies:
-      '@anolilab/package-json-utils': 3.0.9
-      '@babel/core': 7.24.6
-      '@babel/eslint-parser': 7.24.6(@babel/core@7.24.6)(eslint@8.57.0)
-      '@babel/plugin-syntax-import-assertions': 7.24.6(@babel/core@7.24.6)
-      '@eslint/js': 8.55.0
-      '@html-eslint/eslint-plugin': 0.20.0
-      '@html-eslint/parser': 0.20.0
-      '@jsenv/eslint-import-resolver': 8.0.4
-      '@rushstack/eslint-patch': 1.5.1
-      '@rushstack/eslint-plugin-security': 0.7.1(eslint@8.57.0)(typescript@5.4.5)
-      '@typescript-eslint/eslint-plugin': 6.9.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0)(typescript@5.4.5)
-      '@typescript-eslint/parser': 6.9.1(eslint@8.57.0)(typescript@5.4.5)
-      confusing-browser-globals: 1.0.11
-      eslint: 8.57.0
-      eslint-define-config: 1.24.1
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-antfu: 1.0.1(eslint@8.57.0)
-      eslint-plugin-compat: 4.2.0(eslint@8.57.0)
-      eslint-plugin-es-x: 7.2.0(eslint@8.57.0)
-      eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.0)
-      eslint-plugin-html: 7.1.0
-      eslint-plugin-i: 2.29.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-jsonc: 2.10.0(eslint@8.57.0)
-      eslint-plugin-markdown: 3.0.1(eslint@8.57.0)
-      eslint-plugin-mdx: 2.3.4(eslint@8.57.0)
-      eslint-plugin-n: 16.2.0(eslint@8.57.0)
-      eslint-plugin-no-loops: 0.3.0(eslint@8.57.0)
-      eslint-plugin-no-only-tests: 3.1.0
-      eslint-plugin-no-secrets: 0.8.9(eslint@8.57.0)
-      eslint-plugin-no-use-extend-native: 0.5.0
-      eslint-plugin-perfectionist: 2.2.0(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-promise: 6.1.1(eslint@8.57.0)
-      eslint-plugin-regexp: 2.1.1(eslint@8.57.0)
-      eslint-plugin-security: 1.7.1
-      eslint-plugin-simple-import-sort: 10.0.0(eslint@8.57.0)
-      eslint-plugin-sonarjs: 0.22.0(eslint@8.57.0)
-      eslint-plugin-toml: 0.6.0(eslint@8.57.0)
-      eslint-plugin-unicorn: 49.0.0(eslint@8.57.0)
-      eslint-plugin-yml: 1.10.0(eslint@8.57.0)
-      find-up: 5.0.0
-      globals: 13.23.0
-      jsonc-eslint-parser: 2.4.0
-      read-pkg-up: 7.0.1
-      semver: 7.6.0
-      toml-eslint-parser: 0.6.0
-      yaml-eslint-parser: 1.2.2
-    optionalDependencies:
-      '@arthurgeron/eslint-plugin-react-usememo': 2.4.0
-      eslint-plugin-editorconfig: 4.0.3
-      eslint-plugin-jsx-a11y: 6.8.0(eslint@8.57.0)
-      eslint-plugin-react: 7.34.1(eslint@8.57.0)
-      eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
-      eslint-plugin-ssr-friendly: 1.3.0(eslint@8.57.0)
-      eslint-plugin-tailwindcss: 3.17.0(tailwindcss@3.4.3)
-      eslint-plugin-testing-library: 6.2.2(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@8.57.0)
-      typescript: 5.4.5
-    transitivePeerDependencies:
-      - astro-eslint-parser
-      - eslint-import-resolver-webpack
-      - eslint-plugin-import
-      - supports-color
-      - svelte
-      - svelte-eslint-parser
-      - vue-eslint-parser
-
   '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.6)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.0(eslint@8.57.0))(eslint-plugin-react@7.34.1(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.0)(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.24.6
       '@babel/eslint-parser': 7.24.6(@babel/core@7.24.6)(eslint@8.57.0)
       '@babel/plugin-syntax-import-assertions': 7.24.6(@babel/core@7.24.6)
-      '@eslint/js': 8.57.0
+      '@eslint/js': 8.55.0
       '@html-eslint/eslint-plugin': 0.20.0
       '@html-eslint/parser': 0.20.0
       '@jsenv/eslint-import-resolver': 8.0.4
@@ -26173,6 +26101,17 @@ snapshots:
     dependencies:
       '@types/node': 20.11.5
 
+  '@types/webpack@5.28.5(@swc/core@1.5.7)':
+    dependencies:
+      '@types/node': 20.11.5
+      tapable: 2.2.1
+      webpack: 5.91.0(@swc/core@1.5.7)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+      - webpack-cli
+
   '@types/webpack@5.28.5(@swc/core@1.5.7)(esbuild@0.21.4)':
     dependencies:
       '@types/node': 20.11.5
@@ -26659,7 +26598,7 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.0': {}
 
-  '@visulima/jsdoc-open-api@2.0.44(@swc/core@1.5.7)(esbuild@0.21.4)(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.44(@swc/core@1.5.7)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
       '@visulima/fs': 2.1.2(yaml@2.4.3)
@@ -26670,7 +26609,7 @@ snapshots:
     optionalDependencies:
       cli-progress: 3.12.0
       commander: 12.1.0
-      webpack: 5.91.0(@swc/core@1.5.7)(esbuild@0.21.4)
+      webpack: 5.91.0(@swc/core@1.5.7)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -26678,7 +26617,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@visulima/nextra-theme-docs@4.0.24(csstype@3.1.3)(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)':
+  '@visulima/nextra-theme-docs@4.0.24(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.1.3(@babel/core@7.24.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)':
     dependencies:
       '@giscus/react': 3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@headlessui/react': 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -26774,7 +26713,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.40(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)':
+  '@visulima/packem@1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.1)(typescript@5.4.5)(yaml@2.4.3)':
     dependencies:
       '@antfu/install-pkg': 0.3.3
       '@babel/parser': 7.24.6
@@ -29678,7 +29617,7 @@ snapshots:
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.2.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.51.0))(eslint@8.51.0)
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
       fast-glob: 3.3.2
-      get-tsconfig: 4.7.5
+      get-tsconfig: 4.7.3
       is-core-module: 2.13.0
       is-glob: 4.0.3
     transitivePeerDependencies:
@@ -29695,7 +29634,7 @@ snapshots:
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.51.0))(eslint@8.51.0)
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.3(eslint@8.51.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.51.0)
       fast-glob: 3.3.2
-      get-tsconfig: 4.7.5
+      get-tsconfig: 4.7.3
       is-core-module: 2.13.0
       is-glob: 4.0.3
     transitivePeerDependencies:
@@ -29712,7 +29651,7 @@ snapshots:
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.9.1(eslint@8.56.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.9.1(eslint@8.56.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.56.0))(eslint@8.56.0)
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.9.1(eslint@8.56.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.56.0)
       fast-glob: 3.3.2
-      get-tsconfig: 4.7.5
+      get-tsconfig: 4.7.3
       is-core-module: 2.13.0
       is-glob: 4.0.3
     transitivePeerDependencies:
@@ -29746,7 +29685,7 @@ snapshots:
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.2
-      get-tsconfig: 4.7.5
+      get-tsconfig: 4.7.3
       is-core-module: 2.13.0
       is-glob: 4.0.3
     transitivePeerDependencies:

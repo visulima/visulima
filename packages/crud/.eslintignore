@@ -7,7 +7,7 @@ recipes
 __fixtures__
 .prettierrc.js
 _meta.*.json
-packem.config.ts
+tsup.config.ts
 
 README.md
 
