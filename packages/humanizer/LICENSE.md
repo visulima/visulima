@@ -23,6 +23,7 @@ SOFTWARE.
 **This project file (src/duration.ts and all files under the src/language) are licensed under the Unlicense license:**
 
 ---
+
 The Unlicense
 
 Copyright (c) 2013-2024 Evan Hahn (@EvanHahn)
@@ -58,3 +59,9 @@ For more information, please refer to <https://unlicense.org/>
 ---
 
 SPDX-License-Identifier: MIT or UNLICENSE
+
+<!-- DEPENDENCIES -->
+<!-- DEPENDENCIES -->
+
+<!-- TYPE_DEPENDENCIES -->
+<!-- TYPE_DEPENDENCIES -->

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { red, rgb, bgRgb, hex, bgHex } from "../../dist/index.server.js";
+import { red, rgb, bgRgb, hex, bgHex } from "../../dist/index.server.mjs";
 
 // test output into terminal, depends on flags (--no-color, --color) and environment variables (NO_COLOR, FORCE_COLOR)
 console.log(red("red") + "|" + rgb(80, 80, 80)("rgb") + "|" + bgRgb(80, 80, 80)("bgRgb") + "|" + hex("#fff")("hex") + "|" + bgHex("#fff")("bgHex"));

@@ -5,7 +5,7 @@ __fixtures__
 
 vitest.config.ts
 _meta.*.json
-tsup.config.ts
+packem.config.ts
 .eslintrc.cjs
 .prettierrc.cjs
 .secretlintrc.cjs

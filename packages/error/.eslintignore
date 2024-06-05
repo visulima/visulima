@@ -6,7 +6,7 @@ __docs__
 
 vitest.config.ts
 .prettierrc.cjs
-tsup.config.ts
+packem.config.ts
 .secretlintrc.cjs
 tsconfig.eslint.json
 
