@@ -1,3 +1,16 @@
+## @visulima/error [3.2.10](https://github.com/visulima/visulima/compare/@visulima/error@3.2.9...@visulima/error@3.2.10) (2024-06-05)
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.25
+
 ## @visulima/error [3.2.9](https://github.com/visulima/visulima/compare/@visulima/error@3.2.8...@visulima/error@3.2.9) (2024-05-24)
 
 
