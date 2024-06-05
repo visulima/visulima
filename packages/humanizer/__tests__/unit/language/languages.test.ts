@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { parse as parseCSV } from "csv-parse";
 import { beforeAll, describe, expect, it } from "vitest";
 
+import type { DurationLanguage } from "../../../src";
 import duration from "../../../src/duration";
 import { durationLanguage as af } from "../../../src/language/af";
 import { durationLanguage as am } from "../../../src/language/am";
@@ -149,9 +150,9 @@ describe("localized duration", () => {
          * @param {string} filePath
          * @returns {Promise<Array<[number, string]>>}
          */
-        const readPairs = async (filePath) => {
+        const readPairs = async (filePath: string): Promise<[number, string][]> => {
             /** @type {Array<[number, string]>} */
-            const result = [];
+            const result: [number, string][] = [];
 
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const parser = createReadStream(filePath).pipe(parseCSV({ delimiter: "\t" }));
@@ -189,8 +190,11 @@ describe("localized duration", () => {
             // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
             for (const [milliseconds, expectedResult] of pairs) {
                 expect(
-                    // eslint-disable-next-line security/detect-object-injection
-                    duration(milliseconds, { delimiter: "+", language: importedLanguages[language], units: ["y", "mo", "w", "d", "h", "m", "s", "ms"] }),
+                    duration(milliseconds, {
+                        delimiter: "+",
+                        language: importedLanguages[language as keyof typeof importedLanguages] as DurationLanguage,
+                        units: ["y", "mo", "w", "d", "h", "m", "s", "ms"],
+                    }),
                     `${language} localization error for ${milliseconds} milliseconds`,
                 ).toStrictEqual(expectedResult);
             }

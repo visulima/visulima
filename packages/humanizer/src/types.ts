@@ -606,6 +606,7 @@ export type DurationDigitReplacements = [string, string, string, string, string,
 
 export interface DurationLanguage {
     _digitReplacements?: DurationDigitReplacements;
+    _hideCountIf2?: boolean;
     _numberFirst?: boolean;
     d: DurationUnit;
     decimal?: string;

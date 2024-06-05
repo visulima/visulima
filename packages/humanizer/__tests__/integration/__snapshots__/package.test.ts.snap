@@ -1,15 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`usage \`@visulima/fs\` npm package > should work as CommonJS package 1`] = `
-"1 second
-118 MB"
-`;
-
-exports[`usage \`@visulima/fs\` npm package > should work as ESM package 1`] = `
-"1 second
-118 MB"
-`;
-
 exports[`usage \`@visulima/humanizer\` npm package > should work as CommonJS package 1`] = `
 "1 second
 118 MB"
