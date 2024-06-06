@@ -1,3 +1,16 @@
+## @visulima/connect [3.0.12](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.11...@visulima/connect@3.0.12) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.26
+
 ## @visulima/connect [3.0.11](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.10...@visulima/connect@3.0.11) (2024-06-05)
 
 
