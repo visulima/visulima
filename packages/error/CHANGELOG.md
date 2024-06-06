@@ -1,3 +1,17 @@
+## @visulima/error [3.2.11](https://github.com/visulima/visulima/compare/@visulima/error@3.2.10...@visulima/error@3.2.11) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.2
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.26
+
 ## @visulima/error [3.2.10](https://github.com/visulima/visulima/compare/@visulima/error@3.2.9...@visulima/error@3.2.10) (2024-06-05)
 
 
