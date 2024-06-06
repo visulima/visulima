@@ -1,3 +1,17 @@
+## @visulima/package [1.9.2](https://github.com/visulima/visulima/compare/@visulima/package@1.9.1...@visulima/package@1.9.2) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.4
+* **@visulima/path:** upgraded to 1.0.2
+
 ## @visulima/package [1.9.1](https://github.com/visulima/visulima/compare/@visulima/package@1.9.0...@visulima/package@1.9.1) (2024-06-05)
 
 
