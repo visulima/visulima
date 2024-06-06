@@ -1,3 +1,16 @@
+## @visulima/humanizer [1.0.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.4...@visulima/humanizer@1.0.5) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.2
+
 ## @visulima/humanizer [1.0.4](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.3...@visulima/humanizer@1.0.4) (2024-06-05)
 
 
