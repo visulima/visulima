@@ -1,5 +1,6 @@
-import wrapAnsi from "wrap-ansi";
 import { cyan, grey, red } from "@visulima/colorize";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import wrapAnsi from "wrap-ansi";
 
 const formatError = (error: Error, size: number, groupSpaces: string, hideName = false): string => {
     const { message, name, stack } = error;

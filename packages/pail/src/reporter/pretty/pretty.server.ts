@@ -12,10 +12,10 @@ import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, LiteralUnion,
 import { getLongestBadge } from "../../util/get-longest-badge";
 import { getLongestLabel } from "../../util/get-longest-label";
 import { writeStream } from "../../util/write-stream";
-import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
+import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
 export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -162,7 +162,7 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
                     ...context.map((value) => {
                         if (value instanceof Error) {
                             hasError = true;
-                            return "\n\n" + this._formatError(value, size, groupSpaces);
+                            return "\n\n" + formatError(value, size, groupSpaces);
                         }
 
                         if (typeof value === "object") {

@@ -1,4 +1,5 @@
 import { bold, underline } from "@visulima/colorize";
+
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 
 const formatLabel = (label: string, styles: PrettyStyleOptions): string => {
