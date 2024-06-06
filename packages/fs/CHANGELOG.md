@@ -1,3 +1,17 @@
+## @visulima/fs [2.1.4](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.3...@visulima/fs@2.1.4) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.2
+* **@visulima/error:** upgraded to 3.2.11
+
 ## @visulima/fs [2.1.3](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.2...@visulima/fs@2.1.3) (2024-06-05)
 
 
