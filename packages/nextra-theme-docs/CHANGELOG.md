@@ -1,3 +1,10 @@
+## @visulima/nextra-theme-docs [4.0.26](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.25...@visulima/nextra-theme-docs@4.0.26) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
 ## @visulima/nextra-theme-docs [4.0.25](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.24...@visulima/nextra-theme-docs@4.0.25) (2024-06-05)
 
 
