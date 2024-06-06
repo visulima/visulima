@@ -1,3 +1,15 @@
+## @visulima/path [1.0.2](https://github.com/visulima/visulima/compare/@visulima/path@1.0.1...@visulima/path@1.0.2) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
 ## @visulima/path [1.0.1](https://github.com/visulima/visulima/compare/@visulima/path@1.0.0...@visulima/path@1.0.1) (2024-05-24)
 
 
