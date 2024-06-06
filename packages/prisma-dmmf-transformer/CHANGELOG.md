@@ -1,3 +1,25 @@
+## @visulima/prisma-dmmf-transformer [2.0.18](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.17...@visulima/prisma-dmmf-transformer@2.0.18) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Styles
+
+* cs fixes on some package.json files ([12fc0f7](https://github.com/visulima/visulima/commit/12fc0f74e206cef77863b0b89ec41174ca9ff0bd))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* downgrade eslint-plugin-vitest ([0162771](https://github.com/visulima/visulima/commit/0162771e6022e4594486a796bc41e91a2d87bcd8))
+* update dev dependencies ([09c4854](https://github.com/visulima/visulima/commit/09c4854e221fa8b808dfe66d7196d8db2a39b366))
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+* updated dev dependencies ([6005345](https://github.com/visulima/visulima/commit/60053456717a3889fc77b4fb5b05d50a662475b2))
+* updated dev dependencies ([87dee15](https://github.com/visulima/visulima/commit/87dee156e797b5dee2557a09ad32c935d851847c))
+
 ## @visulima/prisma-dmmf-transformer [2.0.17](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.16...@visulima/prisma-dmmf-transformer@2.0.17) (2024-04-05)
 
 
