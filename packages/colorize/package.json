@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "1.4.1",
+    "version": "1.4.2",
     "description": "Terminal and Console string styling done right.",
     "keywords": [
         "256",
@@ -154,7 +154,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "2.2.0"
+        "@visulima/is-ansi-color-supported": "2.2.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -166,7 +166,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
-        "@visulima/path": "1.0.1",
+        "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "ansi-regex": "^6.0.1",
