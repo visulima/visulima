@@ -1,3 +1,21 @@
+## @visulima/cerebro [1.0.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.32...@visulima/cerebro@1.0.33) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.9
+* **@visulima/colorize:** upgraded to 1.4.2
+* **@visulima/pail:** upgraded to 1.1.12
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.26
+* **@visulima/package:** upgraded to 1.9.2
+* **@visulima/path:** upgraded to 1.0.2
+
 ## @visulima/cerebro [1.0.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.31...@visulima/cerebro@1.0.32) (2024-06-05)
 
 
