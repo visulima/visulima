@@ -1,3 +1,20 @@
+## @visulima/api-platform [3.0.4](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.3...@visulima/api-platform@3.0.4) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.12
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.46
+* **@visulima/path:** upgraded to 1.0.2
+* **@visulima/crud:** upgraded to 2.0.22
+* **@visulima/fs:** upgraded to 2.1.4
+
 ## @visulima/api-platform [3.0.3](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.2...@visulima/api-platform@3.0.3) (2024-06-05)
 
 
