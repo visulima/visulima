@@ -1,3 +1,28 @@
+## @visulima/is-ansi-color-supported [2.2.1](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.0...@visulima/is-ansi-color-supported@2.2.1) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Styles
+
+* cs fixes ([7bf5b91](https://github.com/visulima/visulima/commit/7bf5b91383b612598d955fe23505c94f22a8d277))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* **deps:** updated dev deps ([d91ac38](https://github.com/visulima/visulima/commit/d91ac389cea85a6c6bdc8de97905252a6c467abc))
+* update dev dependencies ([068bdbf](https://github.com/visulima/visulima/commit/068bdbfe0b371b5cc7e5ac071dc3310a3b8cea98))
+* update dev dependencies ([09c4854](https://github.com/visulima/visulima/commit/09c4854e221fa8b808dfe66d7196d8db2a39b366))
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+* updated dev dependencies ([d7791e3](https://github.com/visulima/visulima/commit/d7791e327917e438757636573b1e5549a97bba7b))
+* updated dev dependencies ([6005345](https://github.com/visulima/visulima/commit/60053456717a3889fc77b4fb5b05d50a662475b2))
+
 ## @visulima/is-ansi-color-supported [2.2.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.1.0...@visulima/is-ansi-color-supported@2.2.0) (2024-04-09)
 
 
