@@ -2,20 +2,40 @@ import { createPail } from "@visulima/pail";
 import { SimpleReporter } from "@visulima/pail/reporter";
 
 const pail = createPail({
-    reporter: new SimpleReporter(),
+    reporters: [new SimpleReporter()],
 });
 
 console.log("------------------ DEFAULT ------------------", "\n");
 
-pail.complete("Hello World!");
+pail.alert("[1, 2, 3, 4, 5]", [1, 2, 3, 4, 5], ["teset", "test"], { test: "test", 1: 2 });
+pail.await("Hello World!")
+pail.complete("Hello World!")
+pail.critical("Hello World!")
+pail.debug("Hello World!")
+pail.emergency("Hello World!")
+pail.error("Hello World!")
+pail.info("Hello World!")
+pail.log("Hello World!")
+pail.notice("Hello World!")
+pail.pending("Hello World!")
+pail.start("Hello World!")
+pail.stop("Hello World!")
+pail.success("Hello World!")
+pail.trace("Hello World!")
+pail.wait("Hello World!")
+pail.warn("Hello World!")
+pail.watch("Hello World!")
 
-console.log("------------------ TRACE ------------------", "\n");
+pail.info({
+    message: "Hello World!",
+    suffix: "suffix",
+    prefix: "prefix",
+    context: [{
+        test: "test"
+    }]
+})
 
-const traceLevel = pail.clone({ logLevel: "trace" });
-
-traceLevel.trace("This is a trace message");
-
-console.log("------------------ TIME ------------------", "\n");
+console.log("\n", "------------------ TIME ------------------", "\n");
 
 pail.time("test");
 pail.time();
@@ -27,13 +47,13 @@ setTimeout(() => {
     pail.timeEnd("test");
 }, 500);
 
-console.log("------------------ SCOPE NEW CUSTOM ------------------", "\n");
+console.log("\n", "------------------ SCOPE NEW CUSTOM ------------------", "\n");
 
 const newLogger = pail.scope("new custom");
 
 newLogger.complete("Hello World!");
 
-console.log("------------------ SCOPE CLIENT|SERVER ------------------", "\n");
+console.log("\n", "------------------ SCOPE CLIENT|SERVER ------------------", "\n");
 
 const newLogger2 = newLogger.scope("client", "server");
 
@@ -58,7 +78,7 @@ newLogger2.notice({
     prefix: "prefix",
 });
 
-console.log("------------------ REPEATER ------------------", "\n");
+console.log("\n", "------------------ REPEATER ------------------", "\n");
 
 function wait(delay) {
     return new Promise((resolve) => {
@@ -68,6 +88,7 @@ function wait(delay) {
 
 const repeaterLogger = createPail({
     throttle: 100,
+    reporters: [new SimpleReporter()],
 });
 
 for (let i = 0; i < 10; i++) {
@@ -89,7 +110,7 @@ let test = new TestFunctionCall();
 
 pail.info(test.count("a", "b"));
 
-console.log("------------------ GROUP ------------------\n");
+console.log("\n", "------------------ GROUP ------------------\n");
 
 const newLogger3 = newLogger.scope("group");
 

@@ -14,9 +14,7 @@ pail.complete("Hello World!");
 
 console.log("------------------ TRACE ------------------", "\n");
 
-const traceLevel = pail.clone({ logLevel: "trace" });
-
-traceLevel.trace("This is a trace message");
+pail.trace("This is a trace message");
 
 console.log("------------------ TIME ------------------", "\n");
 

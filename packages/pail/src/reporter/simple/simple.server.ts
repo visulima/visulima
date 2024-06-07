@@ -1,4 +1,4 @@
-import colorize, { bgGrey, grey, underline, white } from "@visulima/colorize";
+import colorize, { bgGrey, bold, grey, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import stringLength from "string-length";
@@ -87,22 +87,21 @@ export class SimpleReporter<T extends string = never, L extends string = never> 
         }
 
         if (badge) {
-            items.push(colorized(badge) as string);
+            items.push(bold(colorized(badge) as string));
         } else {
             const longestBadge: string = getLongestBadge<L, T>(this._loggerTypes);
 
             if (longestBadge.length > 0) {
-                items.push(grey(".".repeat(longestBadge.length)) + " ");
+                items.push(grey(" ".repeat(longestBadge.length)));
             }
         }
 
         const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            items.push(colorized(formatLabel(label as string, this._styles)) + " ", grey(".".repeat(longestLabel.length - stringLength(label as string))));
+            items.push(bold(colorized(formatLabel(label as string, this._styles)) + " "), " ".repeat(longestLabel.length - stringLength(label as string)));
         } else {
-            // plus 2 for the space and the dot
-            items.push(grey(".".repeat(longestLabel.length + 2)));
+            items.push(" ".repeat(longestLabel.length + 1));
         }
 
         if (repeated) {
@@ -110,34 +109,14 @@ export class SimpleReporter<T extends string = never, L extends string = never> 
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(grey(" [" + scope.join(" > ") + "] "));
+            items.push(grey("[" + scope.join(" > ") + "] "));
         }
 
         if (prefix) {
-            items.push(
-                grey(
-                    (Array.isArray(scope) && scope.length > 0 ? ". " : " ") +
-                        "[" +
-                        (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
-                        "] ",
-                ),
-            );
+            items.push(grey("[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] "));
         }
 
-        const titleSize = stringLength(items.join(" "));
-
-        if (file) {
-            const fileMessage = file.name + (file.line ? ":" + file.line : "");
-            const fileMessageSize = stringLength(fileMessage);
-
-            items.push(grey(".".repeat(size - titleSize - fileMessageSize - 2) + " " + fileMessage));
-        } else {
-            items.push(grey(".".repeat(size - titleSize - 1)));
-        }
-
-        if (items.length > 0) {
-            items.push("\n\n");
-        }
+        const titleSize = stringLength(items.join(""));
 
         if (message) {
             const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
@@ -150,18 +129,29 @@ export class SimpleReporter<T extends string = never, L extends string = never> 
                         wordWrap: true,
                     }),
             );
+        }
 
-            if (context) {
-                items.push(
-                    ...context.map((value) => {
-                        if (typeof value === "object") {
-                            return " " + (this._stringify as typeof stringify)(value);
-                        }
+        if (context) {
+            let hasError = false;
 
-                        return " " + value;
-                    }),
-                );
-            }
+            items.push(
+                ...context.map((value) => {
+                    if (value instanceof Error) {
+                        hasError = true;
+                        return "\n\n" + formatError(value, size, groupSpaces);
+                    }
+
+                    if (typeof value === "object") {
+                        return " " + (this._stringify as typeof stringify)(value);
+                    }
+
+                    const newValue = (hasError ? "\n\n" : " ") + value;
+
+                    hasError = false;
+
+                    return newValue;
+                }),
+            );
         }
 
         if (error) {
@@ -173,10 +163,16 @@ export class SimpleReporter<T extends string = never, L extends string = never> 
         }
 
         if (suffix) {
-            items.push("\n", groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
+            items.push(" " + groupSpaces + grey(this._styles.underline.suffix ? underline(suffix as string) : suffix));
         }
 
-        return items.join("") + "\n";
+        if (file) {
+            const fileMessage = file.name + (file.line ? ":" + file.line : "");
+
+            items.push("\n", grey("Caller: "), " ".repeat(titleSize - 8), fileMessage, "\n");
+        }
+
+        return items.join("");
     }
 
     protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {

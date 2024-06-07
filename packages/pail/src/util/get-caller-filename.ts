@@ -25,15 +25,20 @@ export const getCallerFilename = (): {
 
         // eslint-disable-next-line unicorn/no-array-reduce
         const callers = result.reduce<CallSiteWithFileName[]>((accumulator, x) => {
+            if (x.isNative() || x.getFileName()?.includes("pail/dist")) {
+                return accumulator;
+            }
+
             accumulator.push({
                 columnNumber: x.getColumnNumber(),
                 fileName: x.getFileName(),
                 lineNumber: x.getLineNumber(),
             });
+
             return accumulator;
         }, []);
 
-        const firstExternalFilePath = callers.at(-2);
+        const firstExternalFilePath = callers[0];
 
         if (firstExternalFilePath) {
             return {

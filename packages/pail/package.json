@@ -3,6 +3,7 @@
     "version": "1.1.13",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
+        "ansi",
         "anolilab",
         "browser",
         "browser-logger",
@@ -36,6 +37,8 @@
         "logger",
         "logging",
         "node",
+        "stream",
+        "pretty",
         "node-logger",
         "pail",
         "pino",
@@ -47,6 +50,7 @@
         "rotating-log",
         "show error",
         "timer",
+        "universal",
         "visulima",
         "warning-logging",
         "winston"
