@@ -69,6 +69,8 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
             size = this._styles.messageLength;
         }
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
+        // @ts-ignore - @TODO: check rollup-plugin-dts
         const { badge, context, date, error, file, groups, label, message, prefix, repeated, scope, suffix, traceError, type } = data;
 
         const { color } = this._loggerTypes[type.name as keyof typeof this._loggerTypes];
