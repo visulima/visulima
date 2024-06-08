@@ -95,7 +95,7 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
     // Never add a spacer if the count is hidden
     // eslint-disable-next-line no-underscore-dangle
     if (language._hideCountIf2 && unitCount === 2) {
-      spacer = "";
+        spacer = "";
     }
 
     // eslint-disable-next-line no-underscore-dangle

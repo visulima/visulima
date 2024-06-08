@@ -16,6 +16,7 @@ describe("monorepo", () => {
     describe.each([
         ["findMonorepoRoot", findMonorepoRoot],
         ["findMonorepoRootSync", findMonorepoRootSync],
+        // eslint-disable-next-line sonarjs/cognitive-complexity
     ])("%s", (name, _function) => {
         describe.each(scenarios)(`using scenario %s`, (scenario) => {
             const strategy = scenario.includes("-") ? scenario.split("-")[0] : scenario;
@@ -27,6 +28,7 @@ describe("monorepo", () => {
 
                 let result = _function(join(root, "packages", package_));
 
+                // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
                     result = await (result as Promise<RootMonorepo>);
                 }
@@ -42,6 +44,7 @@ describe("monorepo", () => {
 
                 let result = _function(root);
 
+                // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
                     result = await (result as Promise<RootMonorepo>);
                 }
@@ -57,6 +60,7 @@ describe("monorepo", () => {
 
                 let result = _function(join(root, "packages", "package-a", "scripts"));
 
+                // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
                     result = await (result as Promise<RootMonorepo>);
                 }
@@ -72,6 +76,7 @@ describe("monorepo", () => {
 
                 let result = _function(join(root, "scripts"));
 
+                // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
                     result = await (result as Promise<RootMonorepo>);
                 }

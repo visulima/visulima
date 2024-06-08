@@ -88,6 +88,7 @@ Combine that with the knowledge about which operating system the program is runn
 | Terminal emulator Kitty          | ✅                | ✅                 | ✅            |  xterm-kitty   |                   |                                        |
 
 [^1]: Colors supported depends on actual terminal.
+
 [^2]: The Windows terminal supports true color since Windows 10 revision 14931 (2016-09-21).
 
 See also:
