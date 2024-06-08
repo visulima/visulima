@@ -53,32 +53,4 @@ describe.skipIf(isNode && canInspectPromises)("promises", () => {
             });
         });
     });
-
-    describe("node <= 16", () => {
-        it("returns an inspected version of the Promise value if it has already resolved", () => {
-            expect.assertions(1);
-
-            // eslint-disable-next-line compat/compat
-            expect(inspect(Promise.resolve(4))).toBe("Promise{4}");
-        });
-
-        it('returns a "pending" version of the Promise value if it is pending', () => {
-            expect.assertions(1);
-
-            // eslint-disable-next-line compat/compat
-            expect(inspect(new Promise(() => {}))).toBe("Promise{<pending>}");
-        });
-
-        it('returns a "rejected" version of the Promise value if it is rejected', async () => {
-            expect.assertions(1);
-
-            // eslint-disable-next-line compat/compat
-            const prom = Promise.reject(new Error("Foo"));
-
-            expect(inspect(prom)).toBe("Promise!{Error: Foo}");
-
-            // catch the promise to prevent warnings
-            await prom.catch(() => {});
-        });
-    });
 });

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ----
 
-Modified code from the original [loupe](https://github.com/chaijs/loupe/tree/main) and [get-func-name](https://github.com/chaijs/get-func-name) repository.
+Modified code from the original [loupe](https://github.com/chaijs/loupe/tree/main) repository.
 
 (The MIT License)
 

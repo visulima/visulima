@@ -6,14 +6,22 @@ describe("functions", () => {
     it("returns the functions name wrapped in `[Function ]`", () => {
         expect.assertions(1);
         /* eslint-disable-next-line prefer-arrow-callback */
-        expect(inspect(function foo() {})).toBe("[Function foo]");
+        expect(inspect(function foo() {})).toBe("[Function: function foo() {\n    }]");
     });
 
     it("returns the `[Function]` if given anonymous function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,func-names */
-        expect(inspect(function () {})).toBe("[Function]");
+        expect(inspect(function () {})).toBe("[Function: function() {\n    }]");
+    });
+
+    it("returns the `[Function]` with the given body", () => {
+        expect.assertions(2);
+
+        expect(inspect(() => 3)).toBe("[Function: () => 3]");
+        /* eslint-disable-next-line prefer-arrow-callback,func-names */
+        expect(inspect(function(a: string, b: string, c: string) { return a + b + c })).toBe("[Function: function(a, b, c) {\n      return a + b + c;\n    }]");
     });
 
     describe("colors", () => {
@@ -21,7 +29,7 @@ describe("functions", () => {
             expect.assertions(1);
 
             /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foo() {}, { colors: true })).toBe("\u001B[36m[Function foo]\u001B[39m");
+            expect(inspect(function foo() {}, { colors: true })).toBe("\u001B[36m[Function: function foo() {\n      }]\u001B[39m");
         });
     });
 
