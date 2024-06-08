@@ -3,9 +3,8 @@ import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
 import { ensureDirSync, findUp, findUpSync, isAccessible, isAccessibleSync, W_OK } from "@visulima/fs";
-import { dirname, join } from "@visulima/path";
-
 import { NotFoundError } from "@visulima/fs/error";
+import { dirname, join } from "@visulima/path";
 
 type Options = {
     create?: boolean;
