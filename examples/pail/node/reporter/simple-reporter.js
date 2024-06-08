@@ -8,32 +8,34 @@ const pail = createPail({
 console.log("------------------ DEFAULT ------------------", "\n");
 
 pail.alert("[1, 2, 3, 4, 5]", [1, 2, 3, 4, 5], ["teset", "test"], { test: "test", 1: 2 });
-pail.await("Hello World!")
-pail.complete("Hello World!")
-pail.critical("Hello World!")
-pail.debug("Hello World!")
-pail.emergency("Hello World!")
-pail.error("Hello World!")
-pail.info("Hello World!")
-pail.log("Hello World!")
-pail.notice("Hello World!")
-pail.pending("Hello World!")
-pail.start("Hello World!")
-pail.stop("Hello World!")
-pail.success("Hello World!")
-pail.trace("Hello World!")
-pail.wait("Hello World!")
-pail.warn("Hello World!")
-pail.watch("Hello World!")
+pail.await("Hello World!");
+pail.complete("Hello World!");
+pail.critical("Hello World!");
+pail.debug("Hello World!");
+pail.emergency("Hello World!");
+pail.error("Hello World!");
+pail.info("Hello World!");
+pail.log("Hello World!");
+pail.notice("Hello World!");
+pail.pending("Hello World!");
+pail.start("Hello World!");
+pail.stop("Hello World!");
+pail.success("Hello World!");
+pail.trace("Hello World!");
+pail.wait("Hello World!");
+pail.warn("Hello World!");
+pail.watch("Hello World!");
 
 pail.info({
     message: "Hello World!",
     suffix: "suffix",
     prefix: "prefix",
-    context: [{
-        test: "test"
-    }]
-})
+    context: [
+        {
+            test: "test",
+        },
+    ],
+});
 
 console.log("\n", "------------------ TIME ------------------", "\n");
 

@@ -1,7 +1,7 @@
 import type { Options as RfsOptions } from "rotating-file-stream";
 
 import type { ReadonlyMeta, Reporter } from "../../types";
-import { RotatingFileStream } from "../../util/rotating-file-stream";
+import RotatingFileStream from "./utils/rotating-file-stream";
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type Options = RfsOptions & {

@@ -2,13 +2,13 @@
 import { describe, expect, it } from "vitest";
 
 import type { SerializedError } from "../../../../src/processor/error/error-proto";
-import { errorWithCauseSerializer as serialize } from "../../../../src/processor/error/error-with-cause-serializer";
+import errorWithCauseSerializer from "../../../../src/processor/error/error-with-cause-serializer";
 
 describe("error with cause serializer", () => {
     it("should serializes Error objects", () => {
         expect.assertions(3);
 
-        const serialized = serialize(new Error("foo"));
+        const serialized = errorWithCauseSerializer(new Error("foo"));
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -21,7 +21,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { statusCode: number };
         error.statusCode = 500;
 
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -35,7 +35,7 @@ describe("error with cause serializer", () => {
         class MyError extends Error {}
 
         const error = new MyError("foo");
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.name).toBe("MyError");
     });
@@ -46,7 +46,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = new Error("bar");
 
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         const serializedInner = serialized.inner as SerializedError;
 
@@ -69,7 +69,7 @@ describe("error with cause serializer", () => {
         const outerError = new Error("outer") as Error & { cause: Error };
         outerError.cause = middleError;
 
-        const serialized = serialize(outerError);
+        const serialized = errorWithCauseSerializer(outerError);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("outer");
@@ -94,7 +94,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { cause: string };
         error.cause = "abc";
 
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -107,7 +107,7 @@ describe("error with cause serializer", () => {
         const error = new Error("foo") as Error & { inner: Error };
         error.inner = error;
 
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -123,8 +123,8 @@ describe("error with cause serializer", () => {
         error.inner = bar;
         bar.inner = error;
 
-        serialize(error);
-        const serialized = serialize(error);
+        errorWithCauseSerializer(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.name).toBe("Error");
         expect(serialized.message).toBe("foo");
@@ -144,7 +144,7 @@ describe("error with cause serializer", () => {
         expect.assertions(1);
 
         const error = new Error("foo");
-        const serialized = serialize(error);
+        const serialized = errorWithCauseSerializer(error);
 
         expect(serialized.raw).toBe(error);
     });
@@ -176,13 +176,13 @@ describe("error with cause serializer", () => {
         const error5 = new MyError("foo");
         error5.constructor = undefined;
 
-        check(serialize(error1), "TypeError");
-        check(serialize(error2), "TypeError");
-        check(serialize(error3), "Error");
-        check(serialize(error4), "Error");
+        check(errorWithCauseSerializer(error1), "TypeError");
+        check(errorWithCauseSerializer(error2), "TypeError");
+        check(errorWithCauseSerializer(error3), "Error");
+        check(errorWithCauseSerializer(error4), "Error");
         // We do not expect 'MyError' because err5.constructor has been blown away.
         // `err5.name` is 'Error' from the base class protoname.
-        check(serialize(error5), "Error");
+        check(errorWithCauseSerializer(error5), "Error");
     });
 
     it.skipIf(!global.AggregateError)("serializes aggregate errors", () => {
@@ -197,7 +197,7 @@ describe("error with cause serializer", () => {
             new AggregateError([foo, bar], "aggregated message"),
             { errors: [foo, bar], message: "aggregated message", stack: "error-with-cause-serializer.test.ts:" },
         ]) {
-            const serialized = serialize(aggregate);
+            const serialized = errorWithCauseSerializer(aggregate);
 
             expect(serialized.message).toBe("aggregated message");
             expect(serialized.aggregateErrors).toHaveLength(2);

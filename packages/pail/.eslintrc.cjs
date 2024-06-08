@@ -27,8 +27,6 @@ module.exports = {
             parserOptions: {},
             rules: {
                 "no-underscore-dangle": "off",
-                "import/no-default-export": "error",
-                "import/prefer-default-export": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-return": "off",

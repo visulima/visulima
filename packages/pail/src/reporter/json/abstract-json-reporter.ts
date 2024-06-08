@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 
 import type { ExtendedRfc5424LogLevels, LiteralUnion, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-export abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
+abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected _stringify: typeof stringify | undefined;
 
@@ -30,3 +30,5 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
 
     protected abstract _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void;
 }
+
+export default AbstractJsonReporter;

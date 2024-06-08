@@ -2,13 +2,13 @@ import colorize, { bold, grey, underline, white } from "@visulima/colorize/brows
 import { format } from "@visulima/fmt";
 
 import type { ReadonlyMeta } from "../../types";
-import { getLongestBadge } from "../../util/get-longest-badge";
-import { getLongestLabel } from "../../util/get-longest-label";
-import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
+import getLongestBadge from "../../utils/get-longest-badge";
+import getLongestLabel from "../../utils/get-longest-label";
+import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+import AbstractPrettyReporter from "./abstract-pretty-reporter";
 
-export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
+class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
             uppercase: {
@@ -205,3 +205,5 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         return formattedLabel;
     }
 }
+
+export default PrettyReporter;

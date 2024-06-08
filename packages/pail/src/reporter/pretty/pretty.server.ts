@@ -7,17 +7,17 @@ import terminalSize from "terminal-size";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
-import type { InteractiveManager } from "../../interactive/interactive-manager";
+import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, LiteralUnion, ReadonlyMeta } from "../../types";
-import { getLongestBadge } from "../../util/get-longest-badge";
-import { getLongestLabel } from "../../util/get-longest-label";
-import { writeStream } from "../../util/write-stream";
+import getLongestBadge from "../../utils/get-longest-badge";
+import getLongestLabel from "../../utils/get-longest-label";
+import writeStream from "../../utils/write-stream";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+import AbstractPrettyReporter from "./abstract-pretty-reporter";
 
-export class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -207,3 +207,5 @@ export class PrettyReporter<T extends string = never, L extends string = never> 
         }
     }
 }
+
+export default PrettyReporter;

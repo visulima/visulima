@@ -3,11 +3,11 @@ import terminalSize from "terminal-size";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
-import type { InteractiveStreamHook } from "./interactive-stream-hook";
+import type InteractiveStreamHook from "./interactive-stream-hook";
 
 type StreamType = "stderr" | "stdout";
 
-export class InteractiveManager {
+class InteractiveManager {
     readonly #stream: {
         stderr: InteractiveStreamHook;
         stdout: InteractiveStreamHook;
@@ -200,3 +200,5 @@ export class InteractiveManager {
         this.#outside = 0;
     }
 }
+
+export default InteractiveManager;

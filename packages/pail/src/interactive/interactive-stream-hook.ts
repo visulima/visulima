@@ -1,8 +1,8 @@
 import { StringDecoder } from "node:string_decoder";
 
-import { cursorHide, cursorShow, eraseLines } from "../util/ansi-escapes";
+import { cursorHide, cursorShow, eraseLines } from "../utils/ansi-escapes";
 
-export class InteractiveStreamHook {
+class InteractiveStreamHook {
     public static readonly DRAIN = true;
 
     readonly #decoder = new StringDecoder();
@@ -73,3 +73,5 @@ export class InteractiveStreamHook {
         this.#method.apply(this.#stream, [message]);
     }
 }
+
+export default InteractiveStreamHook;

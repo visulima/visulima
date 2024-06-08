@@ -4,7 +4,7 @@ import type { Meta } from "../../types";
 import type { Options as FileReporterOptions } from "./abstract-file-reporter";
 import { AbstractFileReporter } from "./abstract-file-reporter";
 
-export class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
+class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
@@ -35,10 +35,11 @@ export class JsonFileReporter<L extends string = never> extends AbstractFileRepo
         // @ts-nocheck - @TODO: check rollup-plugin-dts
         if (file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file =
-                file.name + ":" + file.line + (file.column ? ":" + file.column : "");
+            (rest as unknown as Omit<Meta<L>, "file"> & { file: string }).file = file.name + ":" + file.line + (file.column ? ":" + file.column : "");
         }
 
         return (this.#stringify as typeof stringify)(rest) as string;
     }
 }
+
+export default JsonFileReporter;

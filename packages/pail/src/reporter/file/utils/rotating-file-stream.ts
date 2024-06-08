@@ -3,13 +3,13 @@ import type { Writable } from "node:stream";
 import type { Options as RfsOptions } from "rotating-file-stream";
 import { createStream as createRfsStream } from "rotating-file-stream";
 
-import { SafeStreamHandler } from "./safe-stream-handler";
+import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
 
 /**
  * A wrapper for the `rfs` module that will optionally write to disk immediately
  * by creating and closing a new stream on each write.
  */
-export class RotatingFileStream {
+class RotatingFileStream {
     private readonly _filePath: string;
 
     private readonly _immediate: boolean;
@@ -60,3 +60,5 @@ export class RotatingFileStream {
         }
     }
 }
+
+export default RotatingFileStream;

@@ -4,7 +4,7 @@ import type { stringify } from "safe-stable-stringify";
 
 import type { Meta, StringifyAwareProcessor } from "../types";
 
-export class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
+class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
@@ -66,3 +66,5 @@ export class MessageFormatterProcessor<L extends string = string> implements Str
         return data;
     }
 }
+
+export default MessageFormatterProcessor;

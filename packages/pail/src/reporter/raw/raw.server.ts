@@ -1,10 +1,10 @@
 import type { stringify } from "safe-stable-stringify";
 
-import type { InteractiveManager } from "../../interactive/interactive-manager";
+import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "../../types";
-import { writeStream } from "../../util/write-stream";
+import writeStream from "../../utils/write-stream";
 
-export class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
+class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
@@ -76,3 +76,5 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
         }
     }
 }
+
+export default RawReporter;

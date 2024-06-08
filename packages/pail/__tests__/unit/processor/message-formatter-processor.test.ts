@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MessageFormatterProcessor } from "../../../src/processor/message-formatter-processor";
+import MessageFormatterProcessor from "../../../src/processor/message-formatter-processor";
 import type { Meta } from "../../../src/types";
 
 describe("messageFormatterProcessor", () => {
@@ -18,7 +18,7 @@ describe("messageFormatterProcessor", () => {
             context: ["UPPERCASE"],
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: "%uHello world",
             prefix: undefined,
@@ -47,7 +47,7 @@ describe("messageFormatterProcessor", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: "Hello",
             prefix: undefined,
@@ -76,7 +76,7 @@ describe("messageFormatterProcessor", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: ["Hello"],
             prefix: undefined,
@@ -105,7 +105,7 @@ describe("messageFormatterProcessor", () => {
             context: ["world"],
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: ["Hello %s"],
             prefix: undefined,
@@ -138,7 +138,7 @@ describe("messageFormatterProcessor", () => {
             context: [object],
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: "Hello %o",
             prefix: undefined,
@@ -170,7 +170,7 @@ describe("messageFormatterProcessor", () => {
             context: [object],
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: undefined,
             message: "Hello %o",
             prefix: undefined,

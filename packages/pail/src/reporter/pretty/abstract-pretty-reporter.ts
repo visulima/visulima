@@ -3,9 +3,7 @@ import type { stringify } from "safe-stable-stringify";
 import { LOG_TYPES } from "../../constants";
 import type { DefaultLogTypes, LiteralUnion, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never>
-    implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L>
-{
+abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L> {
     protected readonly _styles: PrettyStyleOptions;
 
     protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
@@ -62,3 +60,5 @@ export type PrettyStyleOptions = {
         label: boolean;
     };
 };
+
+export default AbstractPrettyReporter;

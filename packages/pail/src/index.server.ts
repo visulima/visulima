@@ -1,8 +1,8 @@
 import type { PailServerType } from "./pail.server";
 import { PailServer } from "./pail.server";
-import { ErrorProcessor } from "./processor/error/error-processor";
-import { MessageFormatterProcessor } from "./processor/message-formatter-processor";
-import { PrettyReporter } from "./reporter/pretty/pretty.server";
+import ErrorProcessor from "./processor/error/error-processor";
+import MessageFormatterProcessor from "./processor/message-formatter-processor";
+import PrettyReporter from "./reporter/pretty/pretty.server";
 import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

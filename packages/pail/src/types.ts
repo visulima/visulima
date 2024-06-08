@@ -1,6 +1,6 @@
 import type { AnsiColors } from "@visulima/colorize";
 
-import type { InteractiveManager } from "./interactive/interactive-manager";
+import type InteractiveManager from "./interactive/interactive-manager";
 
 /**
  *  * This is a special exported interface for other packages/app to declare additional metadata for the logger.
