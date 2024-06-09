@@ -124,14 +124,14 @@ describe("async functions", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,@typescript-eslint/no-empty-function */
-        expect(inspect(async function foo() {})).toBe("[AsyncFunction foo]");
+        expect(inspect(async function foo() {})).toBe("[AsyncFunction: async function foo() {\n    }]");
     });
 
     it("returns the `[AsyncFunction]` if given anonymous function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,@typescript-eslint/no-empty-function,func-names */
-        expect(inspect(async function () {})).toBe("[AsyncFunction]");
+        expect(inspect(async function () {})).toBe("[AsyncFunction: async function() {\n    }]");
     });
 });
 
@@ -140,14 +140,14 @@ describe("generator functions", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        expect(inspect(function* foo() {})).toBe("[GeneratorFunction foo]");
+        expect(inspect(function* foo() {})).toBe("[GeneratorFunction: function* foo() {\n    }]");
     });
 
     it("returns the `[GeneratorFunction]` if given a generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line @typescript-eslint/no-empty-function,func-names
-        expect(inspect(function* () {})).toBe("[GeneratorFunction]");
+        expect(inspect(function* () {})).toBe("[GeneratorFunction: function* () {\n    }]");
     });
 });
 
@@ -156,13 +156,13 @@ describe("async generator functions", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        expect(inspect(async function* foo() {})).toBe("[AsyncGeneratorFunction foo]");
+        expect(inspect(async function* foo() {})).toBe("[AsyncGeneratorFunction: async function* foo() {\n    }]");
     });
 
     it("returns the `[AsyncGeneratorFunction]` if given a async generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line func-names,@typescript-eslint/no-empty-function
-        expect(inspect(async function* () {})).toBe("[AsyncGeneratorFunction]");
+        expect(inspect(async function* () {})).toBe("[AsyncGeneratorFunction: async function* () {\n    }]");
     });
 });

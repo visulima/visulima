@@ -29,6 +29,7 @@ try {
 // eslint-disable-next-line @typescript-eslint/ban-types
 const constructorMap = new WeakMap<Function, Inspect>();
 const stringTagMap: Record<string, Inspect> = {};
+
 const baseTypesMap = {
     Arguments: inspectArguments,
     Array: inspectArray,
@@ -140,7 +141,7 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
     }
 
     const proto = value ? Object.getPrototypeOf(value) : false;
-    // If it's a plain Object then use Loupe's inspector
+    // If it's a plain Object then use inspector
     if (proto === Object.prototype || proto === null) {
         return inspectObject(value as object, options);
     }
@@ -153,6 +154,7 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
     if ("constructor" in (value as object)) {
         // If it is a class, inspect it like an object but add the constructor name
         if ((value as object).constructor !== Object) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return inspectClass(value as new (...arguments_: any[]) => unknown, options);
         }
 

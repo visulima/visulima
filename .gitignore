@@ -17,6 +17,7 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage
+ts-coverage
 *.lcov
 
 # Dependency directories

@@ -18,7 +18,7 @@ describe("arrays", () => {
     it("can contain anonymous functions", () => {
         expect.assertions(1);
 
-        expect(inspect([() => 1])).toBe("[ [Function] ]");
+        expect(inspect([() => 1])).toBe("[ [Function: () => 1] ]");
     });
 });
 
@@ -41,7 +41,7 @@ describe("objects", () => {
         const object = {
             inspect: () => 1,
         };
-        expect(inspect(object, { customInspect: false })).toBe("{ inspect: [Function inspect] }");
+        expect(inspect(object, { customInspect: false })).toBe("{ inspect: [Function: () => 1] }");
     });
 
     it("uses custom inspect function is `customInspect` is turned on", () => {

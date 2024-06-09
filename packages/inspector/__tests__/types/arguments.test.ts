@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-// eslint-disable-next-line func-style,@typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any,no-underscore-dangle
-function arguments_(...arguments__: any[]) {
-    return arguments__;
+// eslint-disable-next-line func-style,@typescript-eslint/naming-convention,no-underscore-dangle
+function arguments_() {
+  // eslint-disable-next-line prefer-rest-params
+  return arguments
 }
 
 describe("arguments", () => {

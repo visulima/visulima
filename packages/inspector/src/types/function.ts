@@ -8,7 +8,7 @@ const inspectFunction = (function_: ToStringable, options: Options): string => {
     const source = function_.toString();
 
     if (source.length < options.truncate - 12) {
-        return options.stylize(`[Function: ${source}]`, "special");
+        return options.stylize(`[${functionType}: ${source}]`, "special");
     }
 
     const { name } = function_;
