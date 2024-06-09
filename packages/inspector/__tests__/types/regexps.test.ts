@@ -16,14 +16,6 @@ describe("regexps", () => {
         expect(inspect(/abc/gim)).toBe("/abc/gim");
     });
 
-    describe("colors", () => {
-        it("returns string with red color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            expect(inspect(/abc/, { colors: true })).toBe("\u001B[31m/abc/\u001B[39m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(1);

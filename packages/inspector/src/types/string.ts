@@ -1,7 +1,7 @@
-import { truncate } from "../helpers";
 import type { Options } from "../types";
+import truncate from "../utils/truncate";
 
-// eslint-disable-next-line no-misleading-character-class
+// eslint-disable-next-line no-misleading-character-class,@rushstack/security/no-unsafe-regexp
 const stringEscapeChars = new RegExp(
     // eslint-disable-next-line no-useless-concat,regexp/no-control-character
     "['\\0-\\u001f\\u007f-\\u009f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5" + "\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]",

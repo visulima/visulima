@@ -9,14 +9,6 @@ describe("undefined", () => {
         expect(inspect(undefined)).toBe("undefined");
     });
 
-    describe("colors", () => {
-        it("returns string with grey color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            expect(inspect(undefined, { colors: true })).toBe("\u001B[90mundefined\u001B[39m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full string representation regardless of truncate", () => {
             expect.assertions(9);

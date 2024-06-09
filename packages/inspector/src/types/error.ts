@@ -1,5 +1,7 @@
-import { inspectList, inspectProperty, truncate } from "../helpers";
 import type { Inspect, Options } from "../types";
+import inspectList from "../utils/inspect-list";
+import inspectProperty from "../utils/inspect-property";
+import truncate from "../utils/truncate";
 
 const errorKeys = new Set(["stack", "line", "column", "name", "message", "fileName", "lineNumber", "columnNumber", "number", "description"]);
 

@@ -8,7 +8,9 @@ describe("booleans", () => {
 
         expect(inspect(false)).toBe("false");
         expect(inspect(true)).toBe("true");
+        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins
         expect(inspect(new Boolean(1))).toBe("true");
+        // eslint-disable-next-line no-new-wrappers,unicorn/new-for-builtins
         expect(inspect(new Boolean(false))).toBe("false");
     });
 
@@ -17,15 +19,6 @@ describe("booleans", () => {
 
         expect(inspect(false)).toBe("false");
         expect(inspect(true)).toBe("true");
-    });
-
-    describe("colors", () => {
-        it("returns string with yellow color, if colour is set to true", () => {
-            expect.assertions(2);
-
-            expect(inspect(false, { colors: true })).toBe("\u001B[33mfalse\u001B[39m");
-            expect(inspect(true, { colors: true })).toBe("\u001B[33mtrue\u001B[39m");
-        });
     });
 
     describe("truncated", () => {

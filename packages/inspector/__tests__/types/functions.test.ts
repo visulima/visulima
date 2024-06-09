@@ -24,15 +24,6 @@ describe("functions", () => {
         expect(inspect(function(a: string, b: string, c: string) { return a + b + c })).toBe("[Function: function(a, b, c) {\n      return a + b + c;\n    }]");
     });
 
-    describe("colors", () => {
-        it("returns string with cyan color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            /* eslint-disable-next-line prefer-arrow-callback */
-            expect(inspect(function foo() {}, { colors: true })).toBe("\u001B[36m[Function: function foo() {\n      }]\u001B[39m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(1);

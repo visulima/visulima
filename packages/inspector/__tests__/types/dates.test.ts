@@ -16,14 +16,6 @@ describe("date", () => {
         expect(inspect(new Date("not a date"))).toBe("Invalid Date");
     });
 
-    describe("colors", () => {
-        it("returns date with red color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            expect(inspect(new Date(1_475_318_637_123), { colors: true })).toBe("\u001B[35m2016-10-01T10:43:57.123Z\u001B[39m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(1);

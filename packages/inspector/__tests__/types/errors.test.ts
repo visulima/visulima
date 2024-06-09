@@ -13,18 +13,21 @@ describe("errors", () => {
     it("also works with Error subclasses (TypeError)", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line unicorn/error-message
         expect(inspect(new TypeError())).toBe("TypeError");
     });
 
     it("also works with Error subclasses (SyntaxError)", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line unicorn/error-message
         expect(inspect(new SyntaxError())).toBe("SyntaxError");
     });
 
     it("also works with Error subclasses (ReferenceError)", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line unicorn/error-message
         expect(inspect(new ReferenceError())).toBe("ReferenceError");
     });
 
@@ -38,7 +41,7 @@ describe("errors", () => {
         it("adds non standard properties to end of output", () => {
             expect.assertions(1);
 
-            const error = new Error("message");
+            const error = new Error("message") as Error & { code: number };
             error.code = 404;
 
             expect(inspect(error)).toBe("Error: message { code: 404 }");
@@ -47,7 +50,8 @@ describe("errors", () => {
         it("will properly inspect a non-string message property", () => {
             expect.assertions(1);
 
-            const error = new Error("message");
+            const error = new Error("message") as Error & { message: { code: number } };
+            // @ts-expect-error - testing non-standard property
             error.message = { code: 404 };
 
             expect(inspect(error)).toBe("Error { message: { code: 404 } }");

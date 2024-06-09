@@ -1,5 +1,5 @@
-import { truncate } from "../helpers";
 import type { Options } from "../types";
+import truncate from "../utils/truncate";
 
 const inspectDate = (dateObject: Date, options: Options): string => {
     const stringRepresentation = dateObject.toJSON();

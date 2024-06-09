@@ -8,6 +8,7 @@ const h = (name: string, attributes?: Record<string, any>, ...children: any[]) =
 
     // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
     for (const key in attributes) {
+        // eslint-disable-next-line security/detect-object-injection
         container.setAttribute(key, attributes[key]);
     }
 
@@ -35,10 +36,13 @@ describe.skipIf(typeof window === 'undefined')("hTMLElement", () => {
                 }
 
                 public getAttribute(name: string) {
+                    // eslint-disable-next-line security/detect-object-injection
                     return this.attributes[name];
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 public setAttribute(name: string, value: any) {
+                    // eslint-disable-next-line security/detect-object-injection
                     this.attributes[name] = value;
                 }
 
@@ -48,10 +52,12 @@ describe.skipIf(typeof window === 'undefined')("hTMLElement", () => {
             }
 
             if (typeof global === "undefined") {
+                // eslint-disable-next-line deprecation/deprecation
                 window.document.createElement = (tagName) => new HTMLElement(tagName);
                 window.HTMLElement = HTMLElement;
             } else {
                 global.document = {};
+                // eslint-disable-next-line deprecation/deprecation
                 global.document.createElement = (tagName) => new HTMLElement(tagName);
                 global.HTMLElement = HTMLElement;
             }

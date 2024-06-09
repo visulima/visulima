@@ -27,14 +27,6 @@ describe("numbers", () => {
         expect(inspect(1e300)).toBe("1e+300");
     });
 
-    describe("colors", () => {
-        it("returns string with yellow color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            expect(inspect(3.141, { colors: true })).toBe("\u001B[33m3.141\u001B[39m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(1);
@@ -121,14 +113,6 @@ describe("numbers", () => {
             expect(inspect(Number.NaN)).toBe("NaN");
         });
 
-        describe("colors", () => {
-            it("returns string with yellow color, if colour is set to true", () => {
-                expect.assertions(1);
-
-                expect(inspect(Number.NaN, { colors: true })).toBe("\u001B[33mNaN\u001B[39m");
-            });
-        });
-
         describe("truncate", () => {
             it("returns the full string representation regardless of truncate", () => {
                 expect.assertions(9);
@@ -153,14 +137,6 @@ describe("numbers", () => {
             expect(inspect(Number.POSITIVE_INFINITY)).toBe("Infinity");
         });
 
-        describe("colors", () => {
-            it("returns string with yellow color, if colour is set to true", () => {
-                expect.assertions(1);
-
-                expect(inspect(Number.POSITIVE_INFINITY, { colors: true })).toBe("\u001B[33mInfinity\u001B[39m");
-            });
-        });
-
         describe("truncate", () => {
             it("returns the full string representation regardless of truncate", () => {
                 expect.assertions(9);
@@ -183,14 +159,6 @@ describe("numbers", () => {
             expect.assertions(1);
 
             expect(inspect(Number.NEGATIVE_INFINITY)).toBe("-Infinity");
-        });
-
-        describe("colors", () => {
-            it("returns string with yellow color, if colour is set to true", () => {
-                expect.assertions(1);
-
-                expect(inspect(Number.NEGATIVE_INFINITY, { colors: true })).toBe("\u001B[33m-Infinity\u001B[39m");
-            });
         });
 
         describe("truncate", () => {

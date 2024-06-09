@@ -9,14 +9,6 @@ describe("null", () => {
         expect(inspect(null)).toBe("null");
     });
 
-    describe("colors", () => {
-        it("returns string with bold color, if colour is set to true", () => {
-        expect.assertions(1);
-
-            expect(inspect(null, { colors: true })).toBe("\u001B[1mnull\u001B[22m");
-        });
-    });
-
     describe("truncate", () => {
         it("returns the full string representation regardless of truncate", () => {
         expect.assertions(9);

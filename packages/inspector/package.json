@@ -42,6 +42,7 @@
     "type": "module",
     "exports": {
         ".": {
+            "browser": "./dist/index.mjs",
             "require": {
                 "types": "./dist/index.d.cts",
                 "default": "./dist/index.cjs"
@@ -75,15 +76,12 @@
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
         "test:browser:chrome": "vitest run --browser.name=chrome --browser.headless=true",
-        "test:browser:firefox": "vitest run --browser.name=firefox --browser.headless=true",
         "test:browser:edge": "vitest run --browser.name=edge --browser.headless=true",
+        "test:browser:firefox": "vitest run --browser.name=firefox --browser.headless=true",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest",
         "ts:coverage": "typescript-coverage-report"
-    },
-    "dependencies": {
-        "@visulima/colorize": "^1.4.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -95,6 +93,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
+        "@visulima/colorize": "^1.4.2",
         "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/browser": "1.6.0",
         "@vitest/coverage-v8": "^1.4.0",

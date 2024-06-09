@@ -9,6 +9,7 @@ const inspectClass = (value: new (...arguments_: any[]) => unknown, options: Opt
     let name = "";
 
     if (toStringTag && toStringTag in value) {
+        // eslint-disable-next-line security/detect-object-injection
         name = value[toStringTag] as string;
     }
 

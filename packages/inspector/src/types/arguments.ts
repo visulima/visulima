@@ -1,5 +1,5 @@
-import { inspectList } from "../helpers";
 import type { Options } from "../types";
+import inspectList from "../utils/inspect-list";
 
 const inspectArguments = (arguments_: IArguments, options: Options): string => {
     if (arguments_.length === 0) {

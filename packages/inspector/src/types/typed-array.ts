@@ -1,5 +1,8 @@
-import { inspectList, inspectProperty, truncate, truncator } from "../helpers";
+import { TRUNCATOR } from "../constants";
 import type { Inspect, Options } from "../types";
+import inspectList from "../utils/inspect-list";
+import inspectProperty from "../utils/inspect-property";
+import truncate from "../utils/truncate";
 
 type TypedArray = Float32Array | Float64Array | Int8Array | Int16Array | Int32Array | Uint8Array | Uint8ClampedArray | Uint16Array | Uint32Array;
 
@@ -46,7 +49,7 @@ const inspectTypedArray = (array: TypedArray, options: Options): string => {
         // eslint-disable-next-line security/detect-object-injection
         if (array[index] !== array.length && options.truncate <= 3) {
             // eslint-disable-next-line security/detect-object-injection
-            output += `${truncator}(${array.length - (array[index] as number) + 1})`;
+            output += `${TRUNCATOR}(${array.length - (array[index] as number) + 1})`;
             break;
         }
 

@@ -1,5 +1,5 @@
-import { inspectList } from "../helpers";
 import type { Options } from "../types";
+import inspectList from "../utils/inspect-list";
 
 const inspectSet = (set: Set<unknown>, options: Options): string => {
     if (set.size === 0) {

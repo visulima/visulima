@@ -1,5 +1,4 @@
-import { normaliseOptions } from "./helpers";
-import inspectHTMLElement, { inspectHTMLCollection } from "./html";
+import { inspectHTMLCollection, inspectHTMLElement } from "./html";
 import type { Inspect, Options } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
@@ -19,8 +18,11 @@ import inspectSymbol from "./types/symbol";
 import inspectTypedArray from "./types/typed-array";
 
 let nodeInspect: symbol | false = false;
+
 try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-var-requires,global-require,unicorn/prefer-module
     const nodeUtil = require("node:util");
+
     nodeInspect = nodeUtil.inspect ? nodeUtil.inspect.custom : false;
 } catch {
     nodeInspect = false;
@@ -88,9 +90,9 @@ const baseTypesMap = {
 } as const;
 
 const inspectCustom = (value: object, options: Options, type: string): string => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
     if (nodeInspect && nodeInspect in value && typeof (value as any)[nodeInspect] === "function") {
-        // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any,security/detect-object-injection
         return ((value as any)[nodeInspect] as Function)(options.depth, options);
     }
 
@@ -99,7 +101,7 @@ const inspectCustom = (value: object, options: Options, type: string): string =>
     }
 
     if ("constructor" in value && constructorMap.has(value.constructor)) {
-        return constructorMap.get(value.constructor)!(value, options);
+        return constructorMap.get(value.constructor)?.(value, options) ?? "unknown";
     }
 
     // eslint-disable-next-line security/detect-object-injection
@@ -113,7 +115,21 @@ const inspectCustom = (value: object, options: Options, type: string): string =>
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
-    const options = normaliseOptions(options_, inspect);
+    const options = {
+        breakLength: Number.POSITIVE_INFINITY,
+        colors: false,
+        customInspect: true,
+        depth: 2,
+        inspect,
+        maxArrayLength: Number.POSITIVE_INFINITY,
+        seen: [],
+        showHidden: false,
+        showProxy: false,
+        stylize: String,
+        truncate: Number.POSITIVE_INFINITY,
+        ...options_,
+    } satisfies Options;
+
     const { customInspect } = options;
 
     let type = value === null ? "null" : typeof value;

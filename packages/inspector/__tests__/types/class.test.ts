@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Foo {}
 
 describe("classes", () => {
@@ -15,6 +16,7 @@ describe("classes", () => {
     it("returns `<Anonymous Class>{}` for anonymous classes", () => {
         expect.assertions(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-extraneous-class
         const anon = () => class {};
 
         expect(inspect(new (anon())())).toBe("<Anonymous Class>{}");
@@ -24,7 +26,8 @@ describe("classes", () => {
         expect.assertions(1);
 
         class Bar {
-            get [Symbol.toStringTag]() {
+            // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+            public get [Symbol.toStringTag]() {
                 return "Baz";
             }
         }
@@ -38,7 +41,9 @@ describe("classes", () => {
             expect.assertions(1);
 
             const foo = new Foo();
+            // @ts-expect-error - testing non-standard property
             foo.bar = 1;
+            // @ts-expect-error - testing non-standard property
             foo.baz = "hello";
 
             expect(inspect(foo)).toBe("Foo{ bar: 1, baz: 'hello' }");
@@ -48,6 +53,7 @@ describe("classes", () => {
             expect.assertions(1);
 
             const foo = new Foo();
+            // @ts-expect-error - testing non-standard property
             foo[Symbol("foo")] = 1;
 
             expect(inspect(foo)).toBe("Foo{ [Symbol(foo)]: 1 }");

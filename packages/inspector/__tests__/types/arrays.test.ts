@@ -105,10 +105,11 @@ describe("arrays", () => {
         it("outputs non-integer properties right after standard list items", () => {
             expect.assertions(1);
 
-            const arr = ["a", "b", "c"];
-            arr.foo = "bar";
+            const array = ["a", "b", "c"];
+            // @ts-expect-error - TS doesn't allow this
+            array.foo = "bar";
 
-            expect(inspect(arr)).toBe("[ 'a', 'b', 'c', foo: 'bar' ]");
+            expect(inspect(array)).toBe("[ 'a', 'b', 'c', foo: 'bar' ]");
         });
     });
 });

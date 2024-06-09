@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
+import type { Options } from "../src/types";
 
 describe("arrays", () => {
     it("truncates an array of strings rather than just the strings", () => {
@@ -76,7 +77,7 @@ describe("objects", () => {
 
         const object = {
             sub: {
-                inspect: (depth, options) => options.stylize("Object content", "string"),
+                inspect: (_depth: never, options: Options) => options.stylize("Object content", "string"),
             },
         };
         expect(inspect(object, { customInspect: true })).toBe("{ sub: Object content }");

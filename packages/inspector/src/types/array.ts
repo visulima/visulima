@@ -1,5 +1,6 @@
-import { inspectList, inspectProperty } from "../helpers";
 import type { Inspect, Options } from "../types";
+import inspectList from "../utils/inspect-list";
+import inspectProperty from "../utils/inspect-property";
 
 const inspectArray = (array: ArrayLike<unknown>, options: Options): string => {
     // Object.keys will always output the Array indices first, so we can slice by

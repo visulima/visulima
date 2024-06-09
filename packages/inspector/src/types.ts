@@ -10,6 +10,10 @@ export interface Options {
     seen: unknown[];
     showHidden: boolean;
     showProxy: boolean;
-    stylize: (value: string, styleType: string) => string;
+    stylize: <S extends string>(
+        value: S,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        styleType: string | "bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined",
+    ) => string;
     truncate: number;
 }

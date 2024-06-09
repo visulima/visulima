@@ -33,12 +33,4 @@ describe("symbols", () => {
 
         expect(inspect("\u001B")).toBe("'\\u001b'");
     });
-
-    describe("colors", () => {
-        it("returns string with green color, if colour is set to true", () => {
-            expect.assertions(1);
-
-            expect(inspect("abc", { colors: true })).toBe("\u001B[32m'abc'\u001B[39m");
-        });
-    });
 });
