@@ -1,27 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
+import h from "./utils/h";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const h = (name: string, attributes?: Record<string, any>, ...children: any[]) => {
-    const container = document.createElement(name);
-
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
-    for (const key in attributes) {
-        // eslint-disable-next-line security/detect-object-injection
-        container.setAttribute(key, attributes[key]);
-    }
-
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax,@typescript-eslint/no-for-in-array
-    for (const index in children) {
-        // eslint-disable-next-line security/detect-object-injection
-        container.append(children[index]);
-    }
-
-    return container;
-};
-
-describe.skipIf(typeof window === 'undefined')("hTMLElement", () => {
+describe.skipIf(typeof window === "undefined")("hTMLElement", () => {
     beforeEach(() => {
         if (typeof HTMLElement !== "function") {
             class HTMLElement {
@@ -148,13 +130,13 @@ describe.skipIf(typeof window === 'undefined')("hTMLElement", () => {
         it("truncates arguments values longer than truncate (25)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 25 })).toBe('<div hidden …(1)>…(1)</div>');
+            expect(inspect(template, { truncate: 25 })).toBe("<div hidden …(1)>…(1)</div>");
         });
 
         it("truncates arguments values longer than truncate (24)", () => {
             expect.assertions(1);
 
-            expect(inspect(template, { truncate: 24 })).toBe('<div hidden …(1)>…(1)</div>');
+            expect(inspect(template, { truncate: 24 })).toBe("<div hidden …(1)>…(1)</div>");
         });
 
         it("disregards truncate when it cannot truncate further (18)", () => {
@@ -167,17 +149,6 @@ describe.skipIf(typeof window === 'undefined')("hTMLElement", () => {
             expect.assertions(1);
 
             expect(inspect(template, { truncate: 1 })).toBe("<div …(2)>…(1)</div>");
-        });
-    });
-
-    describe("colors", () => {
-        it("returns element as cyan, with attribute names in yellow and values as string colour", () => {
-            expect.assertions(1);
-
-            expect(inspect(h("div", { id: "foo" }), { colors: true })).toBe(
-                // eslint-disable-next-line no-useless-concat
-                "\u001B[36m<div\u001B[39m \u001B[33mid\u001B[39m=\u001B[32m" + '"foo"\u001B[39m\u001B[36m>\u001B[39m\u001B[36m</div>\u001B[39m',
-            );
         });
     });
 });

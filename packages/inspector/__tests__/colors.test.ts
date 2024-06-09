@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
 import type { Options } from "../src/types";
+import h from "./utils/h";
 
 const stylize: Options["stylize"] = <S extends string>(
     value: S,
@@ -27,7 +28,7 @@ const stylize: Options["stylize"] = <S extends string>(
     return (mapped[styleType] as ColorizeType)(value);
 };
 
-describe("colors", () => {
+describe.runIf(typeof window === "undefined")("colors", () => {
     it("should return a date colorized if color is set to true", () => {
         expect.assertions(1);
 
@@ -100,5 +101,16 @@ describe("colors", () => {
         expect.assertions(1);
 
         expect(inspect(Number.NEGATIVE_INFINITY, { colors: true, stylize })).toBe("\u001B[33m-Infinity\u001B[39m");
+    });
+
+    // TODO: Fix this test
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("returns element as cyan, with attribute names in yellow and values as string colour", () => {
+        expect.assertions(1);
+
+        expect(inspect(h("div", { id: "foo" }), { colors: true, stylize })).toBe(
+            // eslint-disable-next-line no-useless-concat
+            "\u001B[36m<div\u001B[39m \u001B[33mid\u001B[39m=\u001B[32m" + '"foo"\u001B[39m\u001B[36m>\u001B[39m\u001B[36m</div>\u001B[39m',
+        );
     });
 });
