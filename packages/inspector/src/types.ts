@@ -1,4 +1,11 @@
-export type InspectType<V> = (value: V, options: Options, inspect: Inspect) => string;
+export type Indent = {
+    base: string;
+    prev: string;
+};
+
+export type InternalInspect = (value: unknown, from: unknown, options: Options) => string;
+
+export type InspectType<V> = (value: V, options: Options, inspect: InternalInspect, indent: Indent | undefined) => string;
 
 export type Inspect = (value: unknown, options: Options) => string;
 
@@ -11,7 +18,6 @@ export interface Options {
     maxArrayLength: number;
     numericSeparator: boolean;
     quoteStyle: "double" | "single";
-    seen: unknown[];
     showHidden: boolean;
     showProxy: boolean;
     stylize: <S extends string>(

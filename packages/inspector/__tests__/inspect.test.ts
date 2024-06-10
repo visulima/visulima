@@ -98,4 +98,14 @@ describe("objects", () => {
 
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
     });
+
+    it("should respect the depth options", () => {
+        expect.assertions(3);
+
+        const nestedObject = { n: { a: { b: { c: { d: { e: "3" } } } } } };
+
+        expect(inspect(nestedObject, { depth: 1 })).toBe("{ n: [Object] }");
+        expect(inspect(nestedObject, { depth: 2 })).toBe("{ n: { a: [Object] } }");
+        expect(inspect(nestedObject, { depth: 3 })).toBe("{ n: { a: { b: [Object] } } }");
+    });
 });

@@ -1,8 +1,14 @@
-import type { Inspect, InspectType, Options } from "../types";
+import type { Indent, InspectType, InternalInspect, Options } from "../types";
 import inspectObject from "./object";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (value: new (...arguments_: any[]) => unknown, options: Options, inspect: Inspect): string => {
+const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: new (...arguments_: any[]) => unknown,
+    options: Options,
+    inspect: InternalInspect,
+    indent: Indent | undefined,
+): string => {
     let name = "";
 
     name = name || value.constructor.name;
@@ -15,7 +21,7 @@ const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (value:
     // eslint-disable-next-line no-param-reassign
     options.truncate -= name.length;
 
-    return `${name} ${inspectObject(value, options, inspect)}`;
-}
+    return `${name} ${inspectObject(value, options, inspect, indent)}`;
+};
 
 export default inspectClass;

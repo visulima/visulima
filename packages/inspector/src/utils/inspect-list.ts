@@ -1,18 +1,16 @@
 import { TRUNCATOR } from "../constants";
-import type { Inspect, InspectType, Options } from "../types";
+import type { InternalInspect, Options } from "../types";
 
 const inspectList = (
     list: ArrayLike<unknown>,
+    from: unknown,
     options: Options,
-    inspect: Inspect,
+    inspect: InternalInspect,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    inspectItem?: InspectType<any>,
+    inspectItem?: (value: any, object: any, options: Options, inspect: InternalInspect) => string,
     separator = ", ",
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
-    // eslint-disable-next-line no-param-reassign
-    inspectItem = inspectItem ?? inspect;
-
     const size = list.length;
 
     if (size === 0) {
@@ -33,13 +31,13 @@ const inspectList = (
         truncated = `${TRUNCATOR}(${list.length - index})`;
 
         // eslint-disable-next-line security/detect-object-injection
-        const value = list[index];
+        let value = list[index];
 
         // If there is more than one remaining we need to account for a separator of `, `
         // eslint-disable-next-line no-param-reassign
         options.truncate = originalLength - output.length - (last ? 0 : separator.length);
 
-        const string = peek || inspectItem(value, options, inspect) + (last ? "" : separator);
+        const string = peek || (inspectItem ? inspectItem(value, from, options, inspect) : inspect(value, from, options)) + (last ? "" : separator);
         const nextLength = output.length + string.length;
         const truncatedLength = nextLength + truncated.length;
 
@@ -55,9 +53,11 @@ const inspectList = (
             break;
         }
 
+        value = list[index + 1];
+
         // Peek at the next string to determine if we should
         // break early before adding this item to the output
-        peek = last ? "" : inspectItem(list[index + 1], options, inspect) + (secondToLast ? "" : separator);
+        peek = last ? "" : (inspectItem ? inspectItem(value, from, options, inspect) : inspect(value, from, options)) + (secondToLast ? "" : separator);
 
         // If we have one element left, but this element and
         // the next takes over length, the break early

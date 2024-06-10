@@ -9,7 +9,7 @@ const inspectArguments: InspectType<IArguments> = (arguments_: IArguments, optio
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 13;
 
-    return `Arguments[ ${inspectList(arguments_, options, inspect)} ]`;
+    return `Arguments[ ${inspectList(arguments_, arguments_, options, inspect)} ]`;
 }
 
 export default inspectArguments;

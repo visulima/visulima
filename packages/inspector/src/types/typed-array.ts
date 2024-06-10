@@ -1,5 +1,5 @@
 import { TRUNCATOR } from "../constants";
-import type { Inspect, InspectType, Options } from "../types";
+import type { InspectType, InternalInspect, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 import truncate from "../utils/truncate";
@@ -20,7 +20,7 @@ const getArrayName = (array: TypedArray) => {
     return array.constructor.name;
 };
 
-const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: Options, inspect: Inspect): string => {
+const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: Options, inspect: InternalInspect): string => {
     const name = getArrayName(array);
 
     // eslint-disable-next-line no-param-reassign
@@ -61,6 +61,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     if (nonIndexProperties.length > 0) {
         propertyContents = inspectList(
             nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
+            array,
             options,
             inspect,
             inspectProperty,

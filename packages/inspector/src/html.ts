@@ -1,8 +1,8 @@
 import { TRUNCATOR } from "./constants";
-import type { Inspect, Options } from "./types";
+import type { InternalInspect, Options } from "./types";
 import inspectList from "./utils/inspect-list";
 
-const inspectAttribute = ([key, value]: [unknown, unknown], options: Options): string => {
+const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options: Options): string => {
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 3;
 
@@ -13,11 +13,11 @@ const inspectAttribute = ([key, value]: [unknown, unknown], options: Options): s
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;
 };
 
-export const inspectHTMLCollection = (collection: ArrayLike<Element>, options: Options, inspect: Inspect): string =>
+export const inspectHTMLCollection = (collection: ArrayLike<Element>, options: Options, inspect: InternalInspect): string =>
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    inspectList(collection, options, inspect, inspectHTMLElement, "\n");
+    inspectList(collection, collection, options, inspect, inspectHTMLElement, "\n");
 
-export const inspectHTMLElement = (element: Element, options: Options, inspect: Inspect): string => {
+export const inspectHTMLElement = (element: Element, object: unknown, options: Options, inspect: InternalInspect): string => {
     const properties = element.getAttributeNames();
     const name = element.tagName.toLowerCase();
     const head = options.stylize(`<${name}`, "special");
@@ -33,6 +33,7 @@ export const inspectHTMLElement = (element: Element, options: Options, inspect: 
         propertyContents += " ";
         propertyContents += inspectList(
             properties.map((key: string) => [key, element.getAttribute(key)]),
+            object,
             options,
             inspect,
             inspectAttribute,

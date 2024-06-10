@@ -1,4 +1,4 @@
-import type { Inspect, InspectType, Options } from "../types";
+import type { InternalInspect, Options } from "../types";
 
 const quoteComplexKey = (key: string, options: Options): string => {
     if (/^[a-z_]\w*$/i.test(key)) {
@@ -17,7 +17,7 @@ const quoteComplexKey = (key: string, options: Options): string => {
         .replaceAll(/^"|"$/g, "'");
 }
 
-const inspectProperty: InspectType<[unknown, unknown]> = ([key, value]: [unknown, unknown], options: Options, inspect: Inspect): string => {
+const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 2;
 
@@ -26,14 +26,14 @@ const inspectProperty: InspectType<[unknown, unknown]> = ([key, value]: [unknown
         key = quoteComplexKey(key, options);
     } else if (typeof key !== "number") {
         // eslint-disable-next-line no-param-reassign
-        key = `[${inspect(key, options)}]`;
+        key = `[${inspect(key, object, options)}]`;
     }
 
     // eslint-disable-next-line no-param-reassign
     options.truncate -= (key as string).length;
 
     // eslint-disable-next-line no-param-reassign
-    value = inspect(value, options);
+    value = inspect(value, object, options);
 
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `${key}: ${value}`;

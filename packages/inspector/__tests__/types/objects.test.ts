@@ -19,6 +19,24 @@ describe.each([
         expect(function_({})).toBe(tag + "{}");
     });
 
+    it("should show a simple object with indent", () => {
+        expect.assertions(2);
+
+        const object = { a: 1, b: 2 };
+
+        expect(inspect(object, { indent: 2 })).toBe(["{", "  a: 1,", "  b: 2", "}"].join("\n"));
+        expect(inspect(object, { indent: "\t" })).toBe(["{", "	a: 1,", "	b: 2", "}"].join("\n"));
+    });
+
+    it("should show two deep object with indent", () => {
+        expect.assertions(2);
+
+        const object = { a: 1, b: { c: 3, d: 4 } };
+
+        expect(inspect(object, { indent: 2 })).toBe(["{", "  a: 1,", "  b: {", "    c: 3,", "    d: 4", "  }", "}"].join("\n"));
+        expect(inspect(object, { indent: "\t" })).toBe(["{", "	a: 1,", "	b: {", "		c: 3,", "		d: 4", "	}", "}"].join("\n"));
+    });
+
     it("quotes a key if it contains special chars", () => {
         expect.assertions(2);
 

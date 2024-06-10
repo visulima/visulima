@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { inspect } from "../../src";
 
 describe("maps", () => {
-    it("returns `Map{}` for empty Maps", () => {
+    it("returns `Map {}` for empty Maps", () => {
         expect.assertions(1);
 
-        expect(inspect(new Map())).toBe("Map{}");
+        expect(inspect(new Map())).toBe("Map (0) {}");
     });
 
-    it("inspects both keys and values", () => {
+    it("should inspects both keys and values", () => {
         expect.assertions(1);
 
         expect(
@@ -19,7 +19,66 @@ describe("maps", () => {
                     [{ a: 2 }, { b: 2 }],
                 ]),
             ),
-        ).toBe("Map{ { a: 1 } => { b: 1 }, { a: 2 } => { b: 2 } }");
+        ).toBe("Map (2) { { a: 1 } => { b: 1 }, { a: 2 } => { b: 2 } }");
+    });
+
+    it("should support quoteStyle", () => {
+        expect.assertions(2);
+
+        expect(
+            inspect(
+                new Map([
+                    ["a", 1],
+                    ["b", 2],
+                    ["c", 3],
+                ]),
+                {
+                    quoteStyle: "single",
+                },
+            ),
+        ).toBe("Map (3) { 'a' => 1, 'b' => 2, 'c' => 3 }");
+        expect(
+            inspect(
+                new Map([
+                    ["a", 1],
+                    ["b", 2],
+                    ["c", 3],
+                ]),
+                {
+                    quoteStyle: "double",
+                },
+            ),
+        ).toBe('Map (3) { "a" => 1, "b" => 2, "c" => 3 }');
+    });
+
+    it("should render a Map with indent", () => {
+        expect.assertions(7);
+
+        const map = new Map();
+
+        map.set({ a: 1 }, ["b"]);
+        map.set(3, Number.NaN);
+
+        const expectedStringSpaces = ["Map (2) {", "  {\n    a: 1\n  } => [ 'b' ],", "  3 => NaN", "}"].join("\n");
+        const expectedStringTabs = ["Map (2) {", "	{\n		a: 1\n	} => [ 'b' ],", "	3 => NaN", "}"].join("\n");
+        const expectedStringTabsDoubleQuotes = ["Map (2) {", '	{\n		a: 1\n	} => [ "b" ],', "	3 => NaN", "}"].join("\n");
+
+        expect(inspect(map, { indent: 2 }), "Map keys are not indented (two)").toBe(expectedStringSpaces);
+        expect(inspect(map, { indent: "\t" }), "Map keys are not indented (tabs)").toBe(expectedStringTabs);
+        expect(inspect(map, { indent: "\t", quoteStyle: "double" }), "Map keys are not indented (tabs + double quotes)").toBe(expectedStringTabsDoubleQuotes);
+
+        expect(inspect(new Map(), { indent: 2 }), "empty Map should show as empty (two)").toBe("Map (0) {}");
+        expect(inspect(new Map(), { indent: "\t" }), "empty Map should show as empty (tabs)").toBe("Map (0) {}");
+
+        const nestedMap = new Map();
+
+        nestedMap.set(nestedMap, map);
+
+        const expectedNestedSpaces = ["Map (1) {", "  [Circular] => Map (2) {", "    {\n      a: 1\n    } => [ 'b' ],", "    3 => NaN", "  }", "}"].join("\n");
+        const expectedNestedTabs = ["Map (1) {", "	[Circular] => Map (2) {", "		{\n			a: 1\n		} => [ 'b' ],", "		3 => NaN", "	}", "}"].join("\n");
+
+        expect(inspect(nestedMap, { indent: 2 }), "Map containing a Map should work (two)").toBe(expectedNestedSpaces);
+        expect(inspect(nestedMap, { indent: "\t" }), "Map containing a Map should work (tabs)").toBe(expectedNestedTabs);
     });
 
     describe("truncate", () => {
@@ -35,7 +94,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 35 },
                 ),
-            ).toBe("Map{ 'a' => 1, 'b' => 2, 'c' => 3 }");
+            ).toBe("Map (3) { 'a' => 1, 'b' => 2, 'c' => 3 }");
         });
 
         it("truncates map values longer than truncate (34)", () => {
@@ -50,7 +109,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 34 },
                 ),
-            ).toBe("Map{ 'a' => 1, 'b' => 2, …(1) }");
+            ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
         it("truncates map values longer than truncate (33)", () => {
@@ -65,7 +124,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 33 },
                 ),
-            ).toBe("Map{ 'a' => 1, 'b' => 2, …(1) }");
+            ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
         it("truncates map values longer than truncate (32)", () => {
@@ -80,7 +139,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 32 },
                 ),
-            ).toBe("Map{ 'a' => 1, 'b' => 2, …(1) }");
+            ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
         it("truncates map values longer than truncate (31)", () => {
@@ -95,7 +154,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 31 },
                 ),
-            ).toBe("Map{ 'a' => 1, 'b' => 2, …(1) }");
+            ).toBe("Map (3) { 'a' => 1, 'b' => 2, …(1) }");
         });
 
         it("truncates map values longer than truncate (30)", () => {
@@ -110,7 +169,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 30 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (29)", () => {
@@ -125,7 +184,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 29 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (28)", () => {
@@ -140,7 +199,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 28 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (27)", () => {
@@ -155,7 +214,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 27 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (26)", () => {
@@ -170,7 +229,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 26 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (25)", () => {
@@ -185,7 +244,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 25 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (24)", () => {
@@ -200,7 +259,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 24 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (23)", () => {
@@ -215,7 +274,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 23 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (22)", () => {
@@ -230,7 +289,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 22 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (21)", () => {
@@ -245,7 +304,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 21 },
                 ),
-            ).toBe("Map{ 'a' => 1, …(2) }");
+            ).toBe("Map (3) { 'a' => 1, …(2) }");
         });
 
         it("truncates map values longer than truncate (20)", () => {
@@ -260,7 +319,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 20 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (19)", () => {
@@ -275,7 +334,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 19 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (18)", () => {
@@ -290,7 +349,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 18 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (17)", () => {
@@ -305,7 +364,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 17 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (16)", () => {
@@ -320,7 +379,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 16 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (15)", () => {
@@ -335,7 +394,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 15 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (14)", () => {
@@ -350,7 +409,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 14 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (13)", () => {
@@ -365,7 +424,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 13 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (11)", () => {
@@ -380,7 +439,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 11 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (10)", () => {
@@ -395,7 +454,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 10 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (9)", () => {
@@ -410,7 +469,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 9 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (8)", () => {
@@ -425,7 +484,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 8 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (7)", () => {
@@ -440,7 +499,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 7 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (6)", () => {
@@ -455,7 +514,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 6 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (5)", () => {
@@ -470,7 +529,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 5 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (4)", () => {
@@ -485,7 +544,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 4 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (3)", () => {
@@ -500,7 +559,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 3 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (2)", () => {
@@ -515,7 +574,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 2 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (1)", () => {
@@ -530,7 +589,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 1 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
 
         it("truncates map values longer than truncate (0)", () => {
@@ -545,7 +604,7 @@ describe("maps", () => {
                     ]),
                     { truncate: 0 },
                 ),
-            ).toBe("Map{ …(3) }");
+            ).toBe("Map (3) { …(3) }");
         });
     });
 });

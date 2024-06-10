@@ -1,5 +1,5 @@
 import { inspectHTMLCollection, inspectHTMLElement } from "./html";
-import type { Inspect, InspectType, Options } from "./types";
+import type { Inspect, InspectType, InternalInspect, Options } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
 import inspectBigInt from "./types/bigint";
@@ -16,6 +16,7 @@ import inspectSet from "./types/set";
 import inspectString from "./types/string";
 import inspectSymbol from "./types/symbol";
 import inspectTypedArray from "./types/typed-array";
+import { getIndent } from "./utils/indent";
 
 let nodeInspect: symbol | false = false;
 
@@ -90,15 +91,15 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     undefined: (_value: undefined, options: Options) => options.stylize("undefined", "undefined"),
 } as const;
 
-const inspectCustom = (value: object, options: Options, type: string): string => {
+const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
     if (nodeInspect && nodeInspect in value && typeof (value as any)[nodeInspect] === "function") {
         // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any,security/detect-object-injection
-        return ((value as any)[nodeInspect] as Function)(options.depth, options);
+        return ((value as any)[nodeInspect] as Function)(depth, options);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {
-        return value.inspect(options.depth, options);
+        return value.inspect(depth, options);
     }
 
     if ("constructor" in value && constructorMap.has(value.constructor)) {
@@ -115,17 +116,16 @@ const inspectCustom = (value: object, options: Options, type: string): string =>
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
+const internalInspect = (value: unknown, options_: Partial<Options>, depth: number, seen: unknown[]): string => {
     const options = {
         breakLength: Number.POSITIVE_INFINITY,
         colors: false,
         customInspect: true,
-        depth: 2,
-        indent: "\t",
+        depth: 5,
+        indent: undefined,
         maxArrayLength: Number.POSITIVE_INFINITY,
         numericSeparator: true,
         quoteStyle: "single",
-        seen: [],
         showHidden: false,
         showProxy: false,
         stylize: String,
@@ -133,7 +133,21 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         ...options_,
     } satisfies Options;
 
-    const { customInspect } = options;
+    // @ts-expect-error - use can put a string in the indent option
+    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent, 10) === options.indent && options.indent > 0)) {
+        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
+    }
+
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const seenValue of seen) {
+        if (seenValue === value) {
+            return "[Circular]";
+        }
+    }
+
+    if (depth >= options.depth && options.depth > 0 && typeof value === 'object') {
+        return Array.isArray(value) ? '[Array]' : '[Object]';
+    }
 
     let type = value === null ? "null" : typeof value;
 
@@ -141,55 +155,72 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         type = Object.prototype.toString.call(value).slice(8, -1);
     }
 
+    const indent = getIndent(options.indent, depth);
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const inspect: InternalInspect = (object: unknown, from: unknown, options: Partial<Options>): string => {
+        if (from) {
+            // eslint-disable-next-line no-param-reassign
+            seen = [...seen];
+
+            seen.push(from);
+        }
+
+        return internalInspect(object, options, depth + 1, seen);
+    }
+
     // If it is a base value that we already support, then use Loupe's inspector
     if (type in baseTypesMap) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (baseTypesMap[type as keyof typeof baseTypesMap] as InspectType<any>)(value, options, inspect);
+        return (baseTypesMap[type as keyof typeof baseTypesMap] as InspectType<any>)(value, options, inspect, indent);
     }
 
     // If `options.customInspect` is set to true then try to use the custom inspector
-    if (customInspect && value) {
-        const output = inspectCustom(value, options, type);
+    if (options.customInspect && value) {
+        const output = inspectCustom(value, options, type, options.depth - depth);
 
         if (output) {
             if (typeof output === "string") {
                 return output;
             }
 
-            return inspect(output, options);
+            return inspect(output, value, options);
         }
     }
 
     const proto = value ? Object.getPrototypeOf(value) : false;
+
     // If it's a plain Object then use inspector
     if (proto === Object.prototype || proto === null) {
-        return inspectObject(value as object, options, inspect);
+        return inspectObject(value as object, options, inspect, indent);
     }
 
     // Specifically account for HTMLElements
     if (value && typeof HTMLElement === "function" && value instanceof HTMLElement) {
-        return inspectHTMLElement(value, options, inspect);
+        return inspectHTMLElement(value, value, options, inspect);
     }
 
     if ("constructor" in (value as object)) {
         // If it is a class, inspect it like an object but add the constructor name
         if ((value as object).constructor !== Object) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return inspectClass(value as new (...arguments_: any[]) => unknown, options, inspect);
+            return inspectClass(value as new (...arguments_: any[]) => unknown, options, inspect, indent);
         }
 
         // If it is an object with an anonymous prototype, display it as an object.
-        return inspectObject(value as object, options, inspect);
+        return inspectObject(value as object, options, inspect, indent);
     }
 
     // last chance to check if it's an object
     if (value === Object(value)) {
-        return inspectObject(value as object, options, inspect);
+        return inspectObject(value as object, options, inspect, indent);
     }
 
     // We have run out of options! Just stringify the value
     return (options as Options).stylize(String(value), type);
 };
+
+export const inspect = (value: unknown, options: Partial<Options> = {}): string => internalInspect(value, options, 0, []);
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const registerConstructor = (constructor: Function, inspector: Inspect): boolean => {

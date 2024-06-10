@@ -1,8 +1,21 @@
-import type { Inspect, InspectType, Options } from "../types";
+import type { Indent, InspectType, InternalInspect, Options } from "../types";
+import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 
-const inspectArray: InspectType<ArrayLike<unknown>> = (array: ArrayLike<unknown>, options: Options, inspect: Inspect): string => {
+
+const multiLineValues = (values: unknown[]): boolean => {
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const value of values) {
+        if (Array.isArray(value) || (typeof value === "object" && value !== null)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);
@@ -14,7 +27,7 @@ const inspectArray: InspectType<ArrayLike<unknown>> = (array: ArrayLike<unknown>
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 4;
 
-    const listContents = inspectList(array, options, inspect);
+    let listContents = inspectList(array, array, options, inspect);
 
     // eslint-disable-next-line no-param-reassign
     options.truncate -= listContents.length;
@@ -24,13 +37,20 @@ const inspectArray: InspectType<ArrayLike<unknown>> = (array: ArrayLike<unknown>
     if (nonIndexProperties.length > 0) {
         propertyContents = inspectList(
             nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
+            array,
             options,
             inspect,
             inspectProperty,
         );
     }
 
-    return `[ ${listContents}${propertyContents ? `, ${propertyContents}` : ""} ]`;
-}
+    const hasIndent = indent && multiLineValues(array);
+
+    if (hasIndent) {
+        listContents = indentedJoin(listContents, indent);
+    }
+
+    return "[" + (hasIndent ? "" : " ") + listContents + (propertyContents ? `, ${propertyContents}` : "") + (hasIndent ? "" : " ") + "]";
+};
 
 export default inspectArray;

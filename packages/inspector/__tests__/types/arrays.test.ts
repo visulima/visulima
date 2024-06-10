@@ -9,6 +9,37 @@ describe("arrays", () => {
         expect(inspect([])).toBe("[]");
     });
 
+    it("simple array with all single line elements", () => {
+        expect.assertions(2);
+
+        const object = [1, 2, 3, "asdf\nsdf"];
+
+        const expected = "[ 1, 2, 3, 'asdf\\nsdf' ]";
+
+        expect(inspect(object, { indent: 2 })).toBe(expected);
+        expect(inspect(object, { indent: "\t" })).toBe(expected);
+    });
+
+    it("should return a indent array with complex elements", () => {
+        expect.assertions(2);
+
+        const value = [1, { a: 1, b: { c: 1 } }, "asdf\nsdf"];
+
+        expect(inspect(value, { indent: 2 })).toBe(
+            ["[", "  1,", "  {", "    a: 1,", "    b: {", "      c: 1", "    }", "  },", "  'asdf\\nsdf'", "]"].join("\n"),
+        );
+        expect(inspect(value, { indent: "\t" })).toBe(["[", "	1,", "	{", "		a: 1,", "		b: {", "			c: 1", "		}", "	},", "	'asdf\\nsdf'", "]"].join("\n"));
+    });
+
+    it("should return a values array with indent", () => {
+        expect.assertions(2);
+
+        const object = [{}, [], { "a-b": 5 }];
+
+        expect(inspect(object, { indent: 2 })).toBe(["[", "  {},", "  [],", "  {", "    'a-b': 5", "  }", "]"].join("\n"));
+        expect(inspect(object, { indent: "\t" })).toBe(["[", "	{},", "	[],", "	{", "		'a-b': 5", "	}", "]"].join("\n"));
+    });
+
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
             expect.assertions(1);
