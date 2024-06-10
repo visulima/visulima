@@ -1,15 +1,17 @@
 import { TRUNCATOR } from "../constants";
-import type { Inspect, Options } from "../types";
+import type { Inspect, InspectType, Options } from "../types";
 
 const inspectList = (
     list: ArrayLike<unknown>,
     options: Options,
-    inspectItem?: Inspect,
+    inspect: Inspect,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    inspectItem?: InspectType<any>,
     separator = ", ",
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
     // eslint-disable-next-line no-param-reassign
-    inspectItem = inspectItem ?? options.inspect;
+    inspectItem = inspectItem ?? inspect;
 
     const size = list.length;
 
@@ -37,7 +39,7 @@ const inspectList = (
         // eslint-disable-next-line no-param-reassign
         options.truncate = originalLength - output.length - (last ? 0 : separator.length);
 
-        const string = peek || inspectItem(value, options) + (last ? "" : separator);
+        const string = peek || inspectItem(value, options, inspect) + (last ? "" : separator);
         const nextLength = output.length + string.length;
         const truncatedLength = nextLength + truncated.length;
 
@@ -55,7 +57,7 @@ const inspectList = (
 
         // Peek at the next string to determine if we should
         // break early before adding this item to the output
-        peek = last ? "" : inspectItem(list[index + 1], options) + (secondToLast ? "" : separator);
+        peek = last ? "" : inspectItem(list[index + 1], options, inspect) + (secondToLast ? "" : separator);
 
         // If we have one element left, but this element and
         // the next takes over length, the break early
@@ -77,6 +79,6 @@ const inspectList = (
     }
 
     return `${output}${truncated}`;
-}
+};
 
 export default inspectList;

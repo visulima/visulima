@@ -1,11 +1,11 @@
-import type { Inspect, Options } from "../types";
+import type { Inspect, InspectType, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 import truncate from "../utils/truncate";
 
 const errorKeys = new Set(["stack", "line", "column", "name", "message", "fileName", "lineNumber", "columnNumber", "number", "description"]);
 
-const inspectObject = (error: Error, options: Options): string => {
+const inspectObject: InspectType<Error> = (error: Error, options: Options, inspect: Inspect): string => {
     const properties = Object.getOwnPropertyNames(error).filter((key) => !errorKeys.has(key));
     const { name } = error;
 
@@ -28,7 +28,8 @@ const inspectObject = (error: Error, options: Options): string => {
     const propertyContents = inspectList(
         properties.map((key) => [key, error[key as keyof typeof error]]),
         options,
-        inspectProperty as Inspect,
+        inspect,
+        inspectProperty,
     );
 
     return `${name}${message}${propertyContents ? ` { ${propertyContents} }` : ""}`;

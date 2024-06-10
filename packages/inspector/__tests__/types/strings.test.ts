@@ -16,9 +16,15 @@ describe("strings", () => {
     });
 
     it("does not escape double quotes", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         expect(inspect('ab"c')).toBe("'ab\"c'");
+        expect(
+            inspect('ab"c', {
+                quoteStyle: "double",
+            }),
+        // eslint-disable-next-line no-useless-escape
+        ).toBe('"ab\"c"');
     });
 
     it("escapes unicode characters", () => {

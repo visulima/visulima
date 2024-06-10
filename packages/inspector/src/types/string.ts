@@ -1,5 +1,6 @@
-import type { Options } from "../types";
+import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
+import wrapQuotes from "../utils/wrap-quotes";
 
 // eslint-disable-next-line no-misleading-character-class,@rushstack/security/no-unsafe-regexp
 const stringEscapeChars = new RegExp(
@@ -25,13 +26,13 @@ const escape = (char: string): string =>
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     escapeCharacters[char as keyof typeof escapeCharacters] || `\\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
 
-const inspectString = (string: string, options: Options): string => {
+const inspectString: InspectType<string> = (string: string, options: Options): string => {
     if (stringEscapeChars.test(string)) {
         // eslint-disable-next-line no-param-reassign
         string = string.replaceAll(stringEscapeChars, escape);
     }
 
-    return options.stylize(`'${truncate(string, options.truncate - 2)}'`, "string");
+    return options.stylize(wrapQuotes(`${truncate(string, options.truncate - 2)}`, options), "string");
 };
 
 export default inspectString;

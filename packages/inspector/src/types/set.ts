@@ -1,7 +1,7 @@
-import type { Options } from "../types";
+import type { InspectType, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 
-const inspectSet = (set: Set<unknown>, options: Options): string => {
+const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Options, inspect): string => {
     if (set.size === 0) {
         return "Set{}";
     }
@@ -9,7 +9,7 @@ const inspectSet = (set: Set<unknown>, options: Options): string => {
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 7;
 
-    return `Set{ ${inspectList([...set], options)} }`;
+    return `Set{ ${inspectList([...set], options, inspect)} }`;
 }
 
 export default inspectSet;

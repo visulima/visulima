@@ -1,8 +1,8 @@
-import type { Inspect, Options } from "../types";
+import type { Inspect, InspectType, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 
-const inspectArray = (array: ArrayLike<unknown>, options: Options): string => {
+const inspectArray: InspectType<ArrayLike<unknown>> = (array: ArrayLike<unknown>, options: Options, inspect: Inspect): string => {
     // Object.keys will always output the Array indices first, so we can slice by
     // `array.length` to get non-index properties
     const nonIndexProperties = Object.keys(array).slice(array.length);
@@ -14,7 +14,7 @@ const inspectArray = (array: ArrayLike<unknown>, options: Options): string => {
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 4;
 
-    const listContents = inspectList(array, options);
+    const listContents = inspectList(array, options, inspect);
 
     // eslint-disable-next-line no-param-reassign
     options.truncate -= listContents.length;
@@ -25,7 +25,8 @@ const inspectArray = (array: ArrayLike<unknown>, options: Options): string => {
         propertyContents = inspectList(
             nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
             options,
-            inspectProperty as Inspect,
+            inspect,
+            inspectProperty,
         );
     }
 

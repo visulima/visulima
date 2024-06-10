@@ -1,5 +1,5 @@
 import { inspectHTMLCollection, inspectHTMLElement } from "./html";
-import type { Inspect, Options } from "./types";
+import type { Inspect, InspectType, Options } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
 import inspectBigInt from "./types/bigint";
@@ -32,7 +32,8 @@ try {
 const constructorMap = new WeakMap<Function, Inspect>();
 const stringTagMap: Record<string, Inspect> = {};
 
-const baseTypesMap = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const baseTypesMap: Record<string, InspectType<any>> = {
     Arguments: inspectArguments,
     Array: inspectArray,
 
@@ -120,8 +121,10 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         colors: false,
         customInspect: true,
         depth: 2,
-        inspect,
+        indent: "\t",
         maxArrayLength: Number.POSITIVE_INFINITY,
+        numericSeparator: true,
+        quoteStyle: "single",
         seen: [],
         showHidden: false,
         showProxy: false,
@@ -140,7 +143,8 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
 
     // If it is a base value that we already support, then use Loupe's inspector
     if (type in baseTypesMap) {
-        return (baseTypesMap[type as keyof typeof baseTypesMap] as Inspect)(value, options);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (baseTypesMap[type as keyof typeof baseTypesMap] as InspectType<any>)(value, options, inspect);
     }
 
     // If `options.customInspect` is set to true then try to use the custom inspector
@@ -159,28 +163,28 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
     const proto = value ? Object.getPrototypeOf(value) : false;
     // If it's a plain Object then use inspector
     if (proto === Object.prototype || proto === null) {
-        return inspectObject(value as object, options);
+        return inspectObject(value as object, options, inspect);
     }
 
     // Specifically account for HTMLElements
     if (value && typeof HTMLElement === "function" && value instanceof HTMLElement) {
-        return inspectHTMLElement(value, options);
+        return inspectHTMLElement(value, options, inspect);
     }
 
     if ("constructor" in (value as object)) {
         // If it is a class, inspect it like an object but add the constructor name
         if ((value as object).constructor !== Object) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return inspectClass(value as new (...arguments_: any[]) => unknown, options);
+            return inspectClass(value as new (...arguments_: any[]) => unknown, options, inspect);
         }
 
         // If it is an object with an anonymous prototype, display it as an object.
-        return inspectObject(value as object, options);
+        return inspectObject(value as object, options, inspect);
     }
 
     // last chance to check if it's an object
     if (value === Object(value)) {
-        return inspectObject(value as object, options);
+        return inspectObject(value as object, options, inspect);
     }
 
     // We have run out of options! Just stringify the value

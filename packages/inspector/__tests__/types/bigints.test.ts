@@ -18,38 +18,44 @@ describe("bigints", () => {
 
     describe("truncate", () => {
         it("returns the full representation when truncate is over string length", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 11 })).toBe("3141592654n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 11 })).toBe("3141592654n");
+            expect(inspect(3_141_592_654n, { truncate: 11 })).toBe("3_141_592_654n");
         });
 
         it("truncates numbers longer than truncate (10)", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 10 })).toBe("31415926…n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 10 })).toBe("31415926…n");
+            expect(inspect(3_141_592_654n, { truncate: 10 })).toBe("31_415_926…n");
         });
 
         it("truncates numbers longer than truncate (9)", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 9 })).toBe("3141592…n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 9 })).toBe("3141592…n");
+            expect(inspect(3_141_592_654n, { truncate: 9 })).toBe("3_141_592…n");
         });
         it("truncates numbers longer than truncate (8)", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 8 })).toBe("314159…n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 8 })).toBe("314159…n");
+            expect(inspect(3_141_592_654n, { truncate: 8 })).toBe("314_159…n");
         });
 
         it("truncates numbers longer than truncate (7)", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 7 })).toBe("31415…n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 7 })).toBe("31415…n");
+            expect(inspect(3_141_592_654n, { truncate: 7 })).toBe("31_415…n");
         });
 
         it("truncates numbers longer than truncate (6)", () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            expect(inspect(3_141_592_654n, { truncate: 6 })).toBe("3141…n");
+            expect(inspect(3_141_592_654n, { numericSeparator: false, truncate: 6 })).toBe("3141…n");
+            expect(inspect(3_141_592_654n, { truncate: 6 })).toBe("3_141…n");
         });
 
         it("truncates numbers longer than truncate (5)", () => {

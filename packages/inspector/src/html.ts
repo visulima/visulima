@@ -13,11 +13,11 @@ const inspectAttribute = ([key, value]: [unknown, unknown], options: Options): s
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;
 };
 
-export const inspectHTMLCollection = (collection: ArrayLike<Element>, options: Options): string =>
+export const inspectHTMLCollection = (collection: ArrayLike<Element>, options: Options, inspect: Inspect): string =>
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    inspectList(collection, options, inspectHTMLElement as Inspect, "\n");
+    inspectList(collection, options, inspect, inspectHTMLElement, "\n");
 
-export const inspectHTMLElement = (element: Element, options: Options): string => {
+export const inspectHTMLElement = (element: Element, options: Options, inspect: Inspect): string => {
     const properties = element.getAttributeNames();
     const name = element.tagName.toLowerCase();
     const head = options.stylize(`<${name}`, "special");
@@ -34,7 +34,8 @@ export const inspectHTMLElement = (element: Element, options: Options): string =
         propertyContents += inspectList(
             properties.map((key: string) => [key, element.getAttribute(key)]),
             options,
-            inspectAttribute as Inspect,
+            inspect,
+            inspectAttribute,
             " ",
         );
     }
@@ -44,7 +45,7 @@ export const inspectHTMLElement = (element: Element, options: Options): string =
 
     const { truncate } = options;
 
-    let children = inspectHTMLCollection(element.children, options);
+    let children = inspectHTMLCollection(element.children, options, inspect);
 
     if (children && children.length > truncate) {
         children = `${TRUNCATOR}(${element.children.length})`;

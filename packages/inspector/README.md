@@ -41,6 +41,12 @@ pnpm add @visulima/inspector
 
 ## Usage
 
+```typescript
+import { inspect } from "@visulima/inspector";
+
+console.log(inspect({ foo: "bar" })); // { foo: 'bar' }
+```
+
 ## Related
 
 -   [object-inspect](https://github.com/inspect-js/object-inspect) - string representations of objects in node and the browser

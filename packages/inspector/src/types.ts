@@ -1,3 +1,5 @@
+export type InspectType<V> = (value: V, options: Options, inspect: Inspect) => string;
+
 export type Inspect = (value: unknown, options: Options) => string;
 
 export interface Options {
@@ -5,8 +7,10 @@ export interface Options {
     colors: boolean;
     customInspect: boolean;
     depth: number;
-    inspect: Inspect;
+    indent: number | "\t" | undefined;
     maxArrayLength: number;
+    numericSeparator: boolean;
+    quoteStyle: "double" | "single";
     seen: unknown[];
     showHidden: boolean;
     showProxy: boolean;

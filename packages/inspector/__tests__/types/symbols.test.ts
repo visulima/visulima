@@ -33,4 +33,23 @@ describe("symbols", () => {
 
         expect(inspect("\u001B")).toBe("'\\u001b'");
     });
+
+    it("should return the correct Symbol.toStringTag", () => {
+        expect.assertions(4);
+
+        const object = { a: 1 };
+
+        expect(inspect(object), "object, no Symbol.toStringTag").toBe("{ a: 1 }");
+
+        object[Symbol.toStringTag] = "foo";
+
+        expect(inspect(object), "object with Symbol.toStringTag").toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: 'foo' }");
+
+        const dict = { __proto__: null, a: 1 };
+        expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Object: null prototype] { a: 1 }");
+
+        dict[Symbol.toStringTag] = "Dict";
+
+        expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Dict: null prototype] { a: 1, [Symbol(Symbol.toStringTag)]: 'Dict' }");
+    });
 });

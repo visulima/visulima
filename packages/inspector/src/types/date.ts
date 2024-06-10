@@ -1,7 +1,7 @@
-import type { Options } from "../types";
+import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
 
-const inspectDate = (dateObject: Date, options: Options): string => {
+const inspectDate: InspectType<Date> = (dateObject: Date, options: Options): string => {
     const stringRepresentation = dateObject.toJSON();
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

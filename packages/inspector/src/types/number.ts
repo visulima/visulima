@@ -1,4 +1,5 @@
 import type { Options } from "../types";
+import addNumericSeparator from "../utils/add-numeric-separator";
 import truncate from "../utils/truncate";
 
 export default function inspectNumber(number: number, options: Options): string {
@@ -18,5 +19,5 @@ export default function inspectNumber(number: number, options: Options): string 
         return options.stylize(1 / number === Number.POSITIVE_INFINITY ? "+0" : "-0", "number");
     }
 
-    return options.stylize(truncate(String(number), options.truncate), "number");
+    return options.stylize(truncate(options.numericSeparator ? addNumericSeparator(number, number + "") : number + "", options.truncate), "number");
 }

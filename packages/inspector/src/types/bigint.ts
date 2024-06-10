@@ -1,5 +1,6 @@
 import { TRUNCATOR } from "../constants";
 import type { Options } from "../types";
+import addNumericSeparator from "../utils/add-numeric-separator";
 import truncate from "../utils/truncate";
 
 const inspectBigInt = (number: bigint, options: Options): string => {
@@ -9,7 +10,7 @@ const inspectBigInt = (number: bigint, options: Options): string => {
         nums += "n";
     }
 
-    return options.stylize(nums, "bigint");
-}
+    return options.stylize(options.numericSeparator ? addNumericSeparator(number, nums) : nums, "bigint");
+};
 
 export default inspectBigInt;

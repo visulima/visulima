@@ -112,4 +112,15 @@ describe("arrays", () => {
             expect(inspect(array)).toBe("[ 'a', 'b', 'c', foo: 'bar' ]");
         });
     });
+
+    it("should return hole in array in the correct order", () => {
+        expect.assertions(1);
+
+        const xs = ["a", "b"];
+        xs[5] = "f";
+        xs[7] = "j";
+        xs[8] = "k";
+
+        expect(inspect(xs)).toBe("[ 'a', 'b', undefined, undefined, undefined, 'f', undefined, 'j', 'k' ]");
+    });
 });

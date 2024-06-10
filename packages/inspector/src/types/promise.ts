@@ -1,7 +1,5 @@
-import type { Options } from "../types";
+import type { InspectType } from "../types";
 
-type GetPromiseValue = (value: Promise<unknown>, options: Options) => string;
-
-const getPromiseValue: GetPromiseValue = () => "Promise{…}";
+const getPromiseValue: InspectType<Promise<unknown>> = () => "Promise{…}";
 
 export default getPromiseValue;
