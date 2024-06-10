@@ -26,13 +26,13 @@ const escape = (char: string): string =>
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     escapeCharacters[char as keyof typeof escapeCharacters] || `\\u${`0000${(char.codePointAt(0) as number).toString(hex)}`.slice(-unicodeLength)}`;
 
-const inspectString: InspectType<string> = (string: string, options: Options): string => {
-    if (stringEscapeChars.test(string)) {
+const inspectString: InspectType<string> = (string_: string, options: Options): string => {
+    if (stringEscapeChars.test(string_)) {
         // eslint-disable-next-line no-param-reassign
-        string = string.replaceAll(stringEscapeChars, escape);
+        string_ = string_.replaceAll(stringEscapeChars, escape);
     }
 
-    return options.stylize(wrapQuotes(`${truncate(string, options.truncate - 2)}`, options), "string");
+    return options.stylize(wrapQuotes(`${truncate(string_, options.truncate - 2)}`, options), "string");
 };
 
 export default inspectString;

@@ -64,7 +64,7 @@ describe.each([
 
     if (name === "objects") {
         // eslint-disable-next-line vitest/no-conditional-tests
-        it("detects circular references", () => {
+        it("should detects circular references", () => {
             expect.assertions(1);
 
             const main = {};
@@ -72,6 +72,29 @@ describe.each([
             main.a = main;
 
             expect(function_(main)).toBe(tag + "{ a: [Circular] }");
+        });
+
+        // eslint-disable-next-line vitest/no-conditional-tests
+        it("should detects circular references in nested objects", () => {
+            expect.assertions(2);
+
+            const object = { a: 1, b: [3, 4] };
+            // @ts-expect-error - missing property
+            object.c = object;
+
+            expect(inspect(object)).toBe("{ a: 1, b: [ 3, 4 ], c: [Circular] }");
+
+            const double = {};
+            // @ts-expect-error - missing property
+            double.a = [double];
+            // @ts-expect-error - missing property
+            double.b = {};
+            // @ts-expect-error - missing property
+            double.b.inner = double.b;
+            // @ts-expect-error - missing property
+            double.b.obj = double;
+
+            expect(inspect(double)).toBe( "{ a: [ [Circular] ], b: { inner: [Circular], obj: [Circular] } }");
         });
     }
 

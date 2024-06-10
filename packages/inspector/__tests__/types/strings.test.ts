@@ -23,14 +23,22 @@ describe("strings", () => {
             inspect('ab"c', {
                 quoteStyle: "double",
             }),
-        // eslint-disable-next-line no-useless-escape
-        ).toBe('"ab\"c"');
+
+        ).toBe('"ab"c"');
     });
 
     it("escapes unicode characters", () => {
         expect.assertions(1);
 
         expect(inspect("\u001B")).toBe("'\\u001b'");
+    });
+
+    it("should interpolate low bytes", () => {
+        expect.assertions(2);
+
+        expect(inspect("a\r\nb")).toBe("'a\\r\\nb'");
+        // eslint-disable-next-line unicorn/no-hex-escape,unicorn/escape-case
+        expect(inspect('\x05! \x1f \x12')).toBe("'\\u0005! \\u001f \\u0012'");
     });
 
     describe("truncate", () => {
