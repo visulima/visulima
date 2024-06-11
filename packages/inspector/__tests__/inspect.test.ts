@@ -1,5 +1,3 @@
-import { inspect as utilInspect } from "node:util";
-
 import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
@@ -101,8 +99,10 @@ describe("objects", () => {
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
     });
 
-    it("should inspect custom util.inspect symbols", () => {
+    it.skipIf(typeof window !== "undefined")("should inspect custom util.inspect symbols", async () => {
         expect.assertions(4);
+
+        const utilInspect = await import("node:util").then((m) => m.inspect);
 
         const object = {
             inspect: function stringInspect() {
@@ -118,6 +118,7 @@ describe("objects", () => {
         const falseResult =
             '[ { inspect: [Function: function stringInspect() {\n        return "string";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return "symbol";\n    }] }, [] ]';
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const symbolStringFallback = utilInspect.custom ? symbolResult : stringResult;
 
         expect(inspect([object, []])).toBe(symbolStringFallback);

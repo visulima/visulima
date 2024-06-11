@@ -78,6 +78,13 @@ module.exports = defineConfig({
                 "import/no-unused-modules": "off",
             },
         },
+        {
+            files: ["__bench__/**"],
+            rules: {
+                "import/no-extraneous-dependencies": "off",
+                "import/no-unused-modules": "off"
+            },
+        },
     ],
     parserOptions: {
         ecmaVersion: 2021,
