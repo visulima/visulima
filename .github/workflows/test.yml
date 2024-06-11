@@ -124,6 +124,30 @@ jobs:
                       pnpm run test:affected --files=${files//\\/\/}
                   fi
 
+            - name: "Run chrome browser tests"
+              shell: "bash"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+
+                  pnpm run test:affected:browser:chrome --files=${files//\\/\/}
+
+            - name: "Run firefox browser tests"
+              shell: "bash"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+
+                  pnpm run test:affected:browser:firefox --files=${files//\\/\/}
+
+            - name: "Run edge browser tests"
+              shell: "bash"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              run: |
+                  files="${{ steps.files.outputs.all_changed_files }}";
+
+                  pnpm run test:affected:browser:edge --files=${files//\\/\/}
+
             - name: "Prepare nx cache"
               shell: "bash"
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
@@ -136,7 +160,7 @@ jobs:
                   codecov-token: "${{ secrets.CODECOV_TOKEN }}"
                   use-affected: "true"
                   affected-files: "${{ steps.files.outputs.all_changed_files }}"
-                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,docs,storybook,nextra-theme-docs"
+                  exclude-affected-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook,nextra-theme-docs"
 
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required checks have successfully passed (Or skipped)

@@ -2,10 +2,10 @@
 import type { UserConfig } from "vitest/config";
 import { defineConfig, configDefaults, coverageConfigDefaults } from "vitest/config";
 
+const VITEST_SEQUENCE_SEED = Date.now();
+
 // https://vitejs.dev/config/
 export const getVitestConfig = (options: UserConfig = {}) => {
-    const VITEST_SEQUENCE_SEED = Date.now();
-
     console.log("VITEST_SEQUENCE_SEED", VITEST_SEQUENCE_SEED);
 
     return defineConfig({

@@ -4,5 +4,5 @@
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": ["__docs__/**/*", "__tests__/**/*", "src/**/*", "*.d.ts", "packem.config.ts"]
+    "include": ["__docs__/**/*", "__tests__/**/*", "__bench__/**/*", "src/**/*", "*.d.ts", "packem.config.ts"]
 }
