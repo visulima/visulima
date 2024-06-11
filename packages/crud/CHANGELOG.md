@@ -1,3 +1,19 @@
+## @visulima/crud [2.0.23](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.22...@visulima/crud@2.0.23) (2024-06-11)
+
+### Miscellaneous Chores
+
+* **crud:** added @opentelemetry/api to dev dep ([6d93bfd](https://github.com/visulima/visulima/commit/6d93bfd4edc5a467423b3f4aa5f4ab56ae960a24))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.19
+
 ## @visulima/crud [2.0.22](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.21...@visulima/crud@2.0.22) (2024-06-06)
 
 
