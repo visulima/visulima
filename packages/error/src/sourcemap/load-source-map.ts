@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
-import { dirname, resolve } from "@visulima/path";
+import { dirname, resolve, toNamespacedPath } from "@visulima/path";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
 // eslint-disable-next-line regexp/no-unused-capturing-group,regexp/no-super-linear-backtracking
@@ -42,7 +42,7 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
         sourceMapContent = readFileSync(filename, { encoding: "utf8" });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        error.message = `Error reading sourcemap for file "${filename}":\n${error.message}`;
+        error.message = `Error reading sourcemap for file "${toNamespacedPath(filename)}":\n${error.message}`;
 
         throw error;
     }
@@ -65,7 +65,7 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
             traceMapContent = readFileSync(sourceMapUrl, { encoding: "utf8" });
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            error.message = `Error reading sourcemap for file "${filename}":\n${error.message}`;
+            error.message = `Error reading sourcemap for file "${toNamespacedPath(filename)}":\n${error.message}`;
 
             throw error;
         }
@@ -75,7 +75,7 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
         return new AnyMap(traceMapContent, sourceMapUrl);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        error.message = `Error parsing sourcemap for file "${filename}":\n${error.message}`;
+        error.message = `Error parsing sourcemap for file "${toNamespacedPath(filename)}":\n${error.message}`;
 
         throw error;
     }
