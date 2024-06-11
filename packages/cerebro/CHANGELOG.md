@@ -1,3 +1,16 @@
+## @visulima/cerebro [1.0.34](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.33...@visulima/cerebro@1.0.34) (2024-06-11)
+
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.10.0
+
 ## @visulima/cerebro [1.0.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.32...@visulima/cerebro@1.0.33) (2024-06-06)
 
 
