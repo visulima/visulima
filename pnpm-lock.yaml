@@ -592,7 +592,7 @@ importers:
         specifier: ^6.12.3
         version: 6.12.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -748,7 +748,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -791,7 +791,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -925,7 +925,7 @@ importers:
         specifier: ^6.12.3
         version: 6.12.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prisma:
         specifier: ^4.15.0
@@ -1978,7 +1978,7 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.1.3(@babel/core@7.24.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-test-api-route-handler:
         specifier: ^4.0.7
@@ -2697,9 +2697,6 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
-      loupe:
-        specifier: ^3.1.1
-        version: 3.1.1
       prettier:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2724,6 +2721,28 @@ importers:
       webdriverio:
         specifier: ^8.38.2
         version: 8.38.2(encoding@0.1.13)(typescript@5.4.5)
+
+  packages/inspector/__bench__:
+    dependencies:
+      '@visulima/inspector':
+        specifier: workspace:*
+        version: link:..
+      loupe:
+        specifier: ^3.1.1
+        version: 3.1.1
+      object-inspect:
+        specifier: ^1.13.1
+        version: 1.13.1
+    devDependencies:
+      '@types/object-inspect':
+        specifier: ^1.13.0
+        version: 1.13.0
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.2)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
 
   packages/is-ansi-color-supported:
     devDependencies:
@@ -8597,6 +8616,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/object-inspect@1.13.0':
+    resolution: {integrity: sha512-lwGTVESDDV+XsQ1pH4UifpJ1f7OtXzQ6QBOX2Afq2bM/T3oOt8hF6exJMjjIjtEWeAN2YAo25J7HxWh97CCz9w==}
 
   '@types/pretty-hrtime@1.0.1':
     resolution: {integrity: sha512-VjID5MJb1eGKthz2qUerWT8+R4b9N+CHvGCzg9fn4kWZgaF9AhdYikQio3R7wV8YY1NsQKPaCwKz1Yff+aHNUQ==}
@@ -15366,7 +15388,7 @@ packages:
   next-seo@6.5.0:
     resolution: {integrity: sha512-MfzUeWTN/x/rsKp/1n0213eojO97lIl0unxqbeCY+6pAucViHDA8GSLRRcXpgjsSmBxfCFdfpu7LXbt4ANQoNQ==}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -15374,7 +15396,7 @@ packages:
     resolution: {integrity: sha512-7lSpltVIVrJK1X06MNVVSgq5MvIzo5LZjdtUmWigt4v4/xpF78QeOgBorB+wfbiIAj6tjzf1/0zeEWiaxbyLsQ==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15698,9 +15720,6 @@ packages:
   object-hash@3.0.0:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
     engines: {node: '>= 6'}
-
-  object-inspect@1.12.3:
-    resolution: {integrity: sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==}
 
   object-inspect@1.13.1:
     resolution: {integrity: sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ==}
@@ -26655,6 +26674,8 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
+  '@types/object-inspect@1.13.0': {}
+
   '@types/pretty-hrtime@1.0.1': {}
 
   '@types/prismjs@1.26.0': {}
@@ -30045,7 +30066,7 @@ snapshots:
       is-string: 1.0.7
       is-typed-array: 1.1.12
       is-weakref: 1.0.2
-      object-inspect: 1.12.3
+      object-inspect: 1.13.1
       object-keys: 1.1.1
       object.assign: 4.1.4
       regexp.prototype.flags: 1.5.0
@@ -36357,8 +36378,6 @@ snapshots:
 
   object-hash@3.0.0: {}
 
-  object-inspect@1.12.3: {}
-
   object-inspect@1.13.1: {}
 
   object-is@1.1.5:
@@ -38947,7 +38966,7 @@ snapshots:
     dependencies:
       call-bind: 1.0.2
       get-intrinsic: 1.2.1
-      object-inspect: 1.12.3
+      object-inspect: 1.13.1
 
   side-channel@1.0.6:
     dependencies:

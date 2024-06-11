@@ -116,38 +116,27 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const internalInspect = (value: unknown, options_: Partial<Options>, depth: number, seen: unknown[]): string => {
-    const options = {
-        breakLength: Number.POSITIVE_INFINITY,
-        colors: false,
-        customInspect: true,
-        depth: 5,
-        indent: undefined,
-        maxArrayLength: Number.POSITIVE_INFINITY,
-        numericSeparator: true,
-        quoteStyle: "single",
-        showHidden: false,
-        showProxy: false,
-        stylize: String,
-        truncate: Number.POSITIVE_INFINITY,
-        ...options_,
-    } satisfies Options;
-
-    // @ts-expect-error - use can put a string in the indent option
-    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent, 10) === options.indent && options.indent > 0)) {
-        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
+const internalInspect = (value: unknown, options: Options, depth: number, seen: unknown[]): string => {
+    if (seen.includes(value)) {
+        return "[Circular]";
     }
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const seenValue of seen) {
-        if (seenValue === value) {
-            return "[Circular]";
+    if (depth >= options.depth && options.depth > 0 && typeof value === "object") {
+        return Array.isArray(value) ? "[Array]" : "[Object]";
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const inspect: InternalInspect = (object: unknown, from: unknown, options: Options): string => {
+        if (from) {
+            // eslint-disable-next-line no-param-reassign
+            seen = [...seen];
+            seen.push(from);
         }
-    }
 
-    if (depth >= options.depth && options.depth > 0 && typeof value === 'object') {
-        return Array.isArray(value) ? '[Array]' : '[Object]';
-    }
+        return internalInspect(object, options, depth + 1, seen);
+    };
+
+    const indent = options.indent ? getIndent(options.indent, depth) : undefined;
 
     let type = value === null ? "null" : typeof value;
 
@@ -155,22 +144,8 @@ const internalInspect = (value: unknown, options_: Partial<Options>, depth: numb
         type = Object.prototype.toString.call(value).slice(8, -1);
     }
 
-    const indent = getIndent(options.indent, depth);
-
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const inspect: InternalInspect = (object: unknown, from: unknown, options: Partial<Options>): string => {
-        if (from) {
-            // eslint-disable-next-line no-param-reassign
-            seen = [...seen];
-
-            seen.push(from);
-        }
-
-        return internalInspect(object, options, depth + 1, seen);
-    }
-
-    // If it is a base value that we already support, then use Loupe's inspector
-    if (type in baseTypesMap) {
+    // If it is a base value that we already support, then use inspector
+    if (baseTypesMap[type as keyof typeof baseTypesMap] !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (baseTypesMap[type as keyof typeof baseTypesMap] as InspectType<any>)(value, options, inspect, indent);
     }
@@ -220,7 +195,29 @@ const internalInspect = (value: unknown, options_: Partial<Options>, depth: numb
     return (options as Options).stylize(String(value), type);
 };
 
-export const inspect = (value: unknown, options: Partial<Options> = {}): string => internalInspect(value, options, 0, []);
+export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
+    const options = {
+        breakLength: Number.POSITIVE_INFINITY,
+        customInspect: true,
+        depth: 5,
+        indent: undefined,
+        maxArrayLength: Number.POSITIVE_INFINITY,
+        numericSeparator: true,
+        quoteStyle: "single",
+        showHidden: false,
+        showProxy: false,
+        stylize: <S extends string>(s: S) => s + "",
+        truncate: Number.POSITIVE_INFINITY,
+        ...options_,
+    } satisfies Options;
+
+    // @ts-expect-error - use can put a string in the indent option
+    if (options.indent !== undefined && options.indent !== "\t" && !(Number.parseInt(options.indent, 10) === options.indent && options.indent > 0)) {
+        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `undefined`');
+    }
+
+   return internalInspect(value, options, 0, []);
+}
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const registerConstructor = (constructor: Function, inspector: Inspect): boolean => {

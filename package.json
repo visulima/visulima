@@ -14,6 +14,7 @@
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
+        "bench:inspector": "pnpm --filter \"inspector-bench\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "bench:redact": "pnpm --filter \"redact-bench\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
@@ -219,11 +220,11 @@
         "@octokit/rest": "^20.1.1",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@types/node": "20.14.2",
+        "audit-ci": "^7.0.1",
         "browserslist-config-anolilab": "^5.0.14",
         "commitizen": "^4.3.0",
         "core-js": "^3.37.1",
         "cross-env": "^7.0.3",
-        "audit-ci": "^7.0.1",
         "husky": "^9.0.11",
         "is-ci": "^3.0.1",
         "lint-staged": "^15.2.5",
@@ -250,14 +251,14 @@
         "overrides": {
             "@types/react": "^18.3.3",
             "@types/react-dom": "^18.3.0",
+            "braces@<3.0.3": ">=3.0.3",
             "chrono-node@<2.2.4": ">=2.7.6",
             "esbuild": "0.21.4",
-            "next@>=0.9.9 <13.4.20-canary.13": ">=13.4.20-canary.13",
-            "next@>=13.4.0 <13.5.1": ">=13.5.1",
             "next@>=13.4.0 <14.1.1": ">=14.1.1",
+            "next@>=13.4.0 <13.5.1": ">=13.5.1",
+            "next@>=0.9.9 <13.4.20-canary.13": ">=13.4.20-canary.13",
             "postcss@<8.4.31": ">=8.4.38",
-            "zod@<=3.22.2": ">=3.23.8",
-            "braces@<3.0.3": ">=3.0.3"
+            "zod@<=3.22.2": ">=3.23.8"
         }
     }
 }

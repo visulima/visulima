@@ -47,6 +47,61 @@ import { inspect } from "@visulima/inspector";
 console.log(inspect({ foo: "bar" })); // { foo: 'bar' }
 ```
 
+### Circular
+
+```typescript
+import { inspect } from "@visulima/inspector";
+
+const obj = { a: 1, b: [3,4] };
+obj.c = obj;
+
+console.log(inspect(obj)); // { a: 1, b: [ 3, 4 ], c: [Circular] }
+```
+
+## API
+
+### inspect(input: any, options?: InspectOptions): string
+
+#### input
+
+Type: `any`
+
+The input value to inspect.
+
+#### options
+
+Type: `InspectOptions`
+
+The options for the inspect function.
+
+#### options.breakLength
+
+Type: `number`
+
+Default: `Number.POSITIVE_INFINITY`
+
+#### options.customInspect
+
+Type: `boolean`
+
+Default: `true`
+
+#### options.depth
+
+Type: `number`
+
+Default: `5`
+
+The maximum depth to traverse.
+
+#### options.indent
+
+Type: `number | "\t" | undefined`
+
+Default: `undefined`
+
+The indentation to use.
+
 ## Related
 
 -   [object-inspect](https://github.com/inspect-js/object-inspect) - string representations of objects in node and the browser

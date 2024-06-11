@@ -3,15 +3,14 @@ export type Indent = {
     prev: string;
 };
 
-export type InternalInspect = (value: unknown, from: unknown, options: Options) => string;
+export type InternalInspect = (input: unknown, from: unknown, options: Options) => string;
 
-export type InspectType<V> = (value: V, options: Options, inspect: InternalInspect, indent: Indent | undefined) => string;
+export type InspectType<V> = (input: V, options: Options, inspect: InternalInspect, indent: Indent | undefined) => string;
 
-export type Inspect = (value: unknown, options: Options) => string;
+export type Inspect = (input: unknown, options: Options) => string;
 
 export interface Options {
     breakLength: number;
-    colors: boolean;
     customInspect: boolean;
     depth: number;
     indent: number | "\t" | undefined;

@@ -1,13 +1,16 @@
 import { TRUNCATOR } from "../constants";
 import type { InternalInspect, Options } from "../types";
 
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type InspectItem = (value: any, object: any, options: Options, inspect: InternalInspect) => string;
+
 const inspectList = (
     list: ArrayLike<unknown>,
     from: unknown,
     options: Options,
     inspect: InternalInspect,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    inspectItem?: (value: any, object: any, options: Options, inspect: InternalInspect) => string,
+    inspectItem?: InspectItem,
     separator = ", ",
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
@@ -15,6 +18,13 @@ const inspectList = (
 
     if (size === 0) {
         return "";
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
+    let inspect_: InspectItem | InternalInspect = inspect;
+
+    if (inspectItem !== undefined) {
+        inspect_ = inspectItem;
     }
 
     const originalLength = options.truncate;
@@ -37,7 +47,7 @@ const inspectList = (
         // eslint-disable-next-line no-param-reassign
         options.truncate = originalLength - output.length - (last ? 0 : separator.length);
 
-        const string = peek || (inspectItem ? inspectItem(value, from, options, inspect) : inspect(value, from, options)) + (last ? "" : separator);
+        const string = peek || inspect_(value, from, options, inspect) + (last ? "" : separator);
         const nextLength = output.length + string.length;
         const truncatedLength = nextLength + truncated.length;
 
@@ -57,7 +67,7 @@ const inspectList = (
 
         // Peek at the next string to determine if we should
         // break early before adding this item to the output
-        peek = last ? "" : (inspectItem ? inspectItem(value, from, options, inspect) : inspect(value, from, options)) + (secondToLast ? "" : separator);
+        peek = last ? "" : inspect_(value, from, options, inspect) + (secondToLast ? "" : separator);
 
         // If we have one element left, but this element and
         // the next takes over length, the break early
