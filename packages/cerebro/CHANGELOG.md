@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.0.35](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.34...@visulima/cerebro@1.0.35) (2024-06-11)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.10.1
+
 ## @visulima/cerebro [1.0.34](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.33...@visulima/cerebro@1.0.34) (2024-06-11)
 
 
