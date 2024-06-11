@@ -1,3 +1,5 @@
+import { inspect as utilInspect } from "node:util";
+
 import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
@@ -97,6 +99,41 @@ describe("objects", () => {
         };
 
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
+    });
+
+    it("should inspect custom util.inspect symbols", () => {
+        expect.assertions(4);
+
+        const object = {
+            inspect: function stringInspect() {
+                return "string";
+            },
+        };
+        object[utilInspect.custom] = function custom() {
+            return "symbol";
+        };
+
+        const symbolResult = "[ symbol, [] ]";
+        const stringResult = "[ string, [] ]";
+        const falseResult =
+            '[ { inspect: [Function: function stringInspect() {\n        return "string";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return "symbol";\n    }] }, [] ]';
+
+        const symbolStringFallback = utilInspect.custom ? symbolResult : stringResult;
+
+        expect(inspect([object, []])).toBe(symbolStringFallback);
+        expect(inspect([object, []], { customInspect: true })).toBe(symbolStringFallback);
+        expect(inspect([object, []], { customInspect: false })).toBe(falseResult);
+
+        const object2 = {
+            inspect: function stringInspect() {
+                return "string";
+            },
+        };
+        object2[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
+            return "symbol";
+        };
+
+        expect(inspect([object2, []], { customInspect: false })).toBe(falseResult);
     });
 
     it("should respect the depth options", () => {

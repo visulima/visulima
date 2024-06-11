@@ -18,17 +18,6 @@ import inspectSymbol from "./types/symbol";
 import inspectTypedArray from "./types/typed-array";
 import { getIndent } from "./utils/indent";
 
-let nodeInspect: symbol | false = false;
-
-try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-var-requires,global-require,unicorn/prefer-module
-    const nodeUtil = require("node:util");
-
-    nodeInspect = nodeUtil.inspect ? nodeUtil.inspect.custom : false;
-} catch {
-    nodeInspect = false;
-}
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 const constructorMap = new WeakMap<Function, Inspect>();
 const stringTagMap: Record<string, Inspect> = {};
@@ -92,10 +81,10 @@ const baseTypesMap: Record<string, InspectType<any>> = {
 } as const;
 
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-    if (nodeInspect && nodeInspect in value && typeof (value as any)[nodeInspect] === "function") {
-        // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any,security/detect-object-injection
-        return ((value as any)[nodeInspect] as Function)(depth, options);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (typeof window === "undefined" && typeof (value as any)[Symbol.for('nodejs.util.inspect.custom')] === "function") {
+        // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any
+        return ((value as any)[Symbol.for('nodejs.util.inspect.custom')] as Function)(depth, options);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {
