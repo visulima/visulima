@@ -1,3 +1,20 @@
+## @visulima/package [1.10.0](https://github.com/visulima/visulima/compare/@visulima/package@1.9.2...@visulima/package@1.10.0) (2024-06-11)
+
+
+### Features
+
+* **inspector:** new inspector package ([#419](https://github.com/visulima/visulima/issues/419)) ([1dc58dd](https://github.com/visulima/visulima/commit/1dc58dd97aabb8e45795274a3fc1a460c005ebbb))
+
+
+### Styles
+
+* cs fixes ([253af1e](https://github.com/visulima/visulima/commit/253af1e788c9544a2286dc0018c6549f62ca6c7b))
+
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/package [1.9.2](https://github.com/visulima/visulima/compare/@visulima/package@1.9.1...@visulima/package@1.9.2) (2024-06-06)
 
 
