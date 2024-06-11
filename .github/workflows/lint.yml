@@ -255,7 +255,6 @@ jobs:
                   # The -ignore flag is used to ignore a specific error for a working solution in test.yml
                   ./actionlint -color -shellcheck=""
 
-
     markdown-lint:
         if: "needs.files-changed.outputs.markdown_lintable == 'true'"
         needs: "files-changed"
