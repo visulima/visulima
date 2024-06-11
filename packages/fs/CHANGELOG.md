@@ -1,3 +1,13 @@
+## @visulima/fs [2.1.5](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.4...@visulima/fs@2.1.5) (2024-06-11)
+
+### Bug Fixes
+
+* **fs:** updated type-fest to v4.20.0 ([b34f417](https://github.com/visulima/visulima/commit/b34f417537b209f4c411103b6eef0e5a6d9b947d))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/fs [2.1.4](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.3...@visulima/fs@2.1.4) (2024-06-06)
 
 
