@@ -21,6 +21,7 @@ packages:
     - "packages/cerebro/__fixtures__/package/mjs"
     - "packages/deep-clone/__bench__"
     - "packages/fmt/__bench__"
+    - "packages/inspector/__bench__"
     - "packages/package/__fixtures__/package/cjs"
     - "packages/package/__fixtures__/package/mjs"
     - "packages/pail/__fixtures__/package/cjs"

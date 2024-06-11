@@ -10,10 +10,11 @@
         "apps/*"
     ],
     "scripts": {
-        "audit": "pnpm dlx audit-ci@^7 --config ./audit-ci.jsonc",
+        "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
         "bench:fmt": "pnpm --filter \"fmt\" run test:bench",
+        "bench:inspector": "pnpm --filter \"inspector-bench\" run test:bench",
         "bench:pail": "pnpm --filter \"pail-bench\" run test:bench",
         "bench:redact": "pnpm --filter \"redact-bench\" run test:bench",
         "build": "nx run-many --target=build --all --parallel",
@@ -132,9 +133,15 @@
         "sort-package-json": "sort-package-json packages/**/package.json apps/**/package.json ./package.json examples/**/package.json",
         "test": "nx run-many --target=test --all --parallel",
         "test:affected": "nx affected --target=test --parallel --exclude=docs,storybook --nxBail",
+        "test:affected:browser:chrome": "nx affected --target=test:browser:chrome --parallel --exclude=docs,storybook --nxBail",
+        "test:affected:browser:edge": "nx affected --target=test:browser:edge --parallel --exclude=docs,storybook --nxBail",
+        "test:affected:browser:firefox": "nx affected --target=test:browser:firefox --parallel --exclude=docs,storybook --nxBail",
         "test:affected:coverage": "nx affected --target=test:coverage --parallel --exclude=docs,storybook --nxBail",
         "test:api-platform": "pnpm --filter \"api-platform\" run test",
         "test:boxen": "pnpm --filter \"boxen\" run test",
+        "test:browser:chrome": "nx run-many --target=test:browser:chrome --all --parallel",
+        "test:browser:edge": "nx run-many --target=test:browser:edge --all --parallel",
+        "test:browser:firefox": "nx run-many --target=test:browser:firefox --all --parallel",
         "test:cerebro": "pnpm --filter \"cerebro\" run test",
         "test:colorize": "pnpm --filter \"colorize\" run test",
         "test:connect": "pnpm --filter \"connect\" run test",
@@ -208,11 +215,12 @@
         "@babel/core": "^7.24.7",
         "@commitlint/cli": "^19.3.0",
         "@commitlint/config-conventional": "^19.2.2",
-        "@nrwl/tao": "19.0.7",
-        "@nrwl/workspace": "19.0.7",
+        "@nrwl/tao": "19.2.3",
+        "@nrwl/workspace": "19.2.3",
         "@octokit/rest": "^20.1.1",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
-        "@types/node": "18.18.14",
+        "@types/node": "20.14.2",
+        "audit-ci": "^7.0.1",
         "browserslist-config-anolilab": "^5.0.14",
         "commitizen": "^4.3.0",
         "core-js": "^3.37.1",
@@ -243,14 +251,14 @@
         "overrides": {
             "@types/react": "^18.3.3",
             "@types/react-dom": "^18.3.0",
+            "braces@<3.0.3": ">=3.0.3",
             "chrono-node@<2.2.4": ">=2.7.6",
             "esbuild": "0.21.4",
-            "next@>=0.9.9 <13.4.20-canary.13": ">=13.4.20-canary.13",
-            "next@>=13.4.0 <13.5.1": ">=13.5.1",
             "next@>=13.4.0 <14.1.1": ">=14.1.1",
+            "next@>=13.4.0 <13.5.1": ">=13.5.1",
+            "next@>=0.9.9 <13.4.20-canary.13": ">=13.4.20-canary.13",
             "postcss@<8.4.31": ">=8.4.38",
-            "zod@<=3.22.2": ">=3.23.8",
-            "braces@<3.0.3": ">=3.0.3"
+            "zod@<=3.22.2": ">=3.23.8"
         }
     }
 }
