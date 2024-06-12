@@ -1,0 +1,55 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Lock File Maintenance"
+
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "0 */3 * * *" # At minute 0 past every 3rd hour.
+    pull_request:
+        branches:
+            - "dependabot/**"
+
+permissions:
+    contents: "read" # for checkout
+
+jobs:
+    lock-file:
+        name: "Lock File Maintenance"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        permissions:
+            contents: "write" # to be able to publish a GitHub release
+            issues: "write" # to be able to comment on released issues
+            pull-requests: "write" # to be able to comment on released pull requests
+            id-token: "write" # to enable use of OIDC for npm provenance
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142" # v2.7.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29" # v4.1.6
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  node-version: "18.x"
+                  cache-prefix: "lock-file"
+
+            - name: "Update lock file"
+              if: "success()"
+              run: "pnpm install --lockfile-only"
+
+            - name: "Commit lock file"
+              if: "success()"
+              uses: "stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842" # v5.0.1
+              with:
+                  file_pattern: "pnpm-lock.yaml"
+                  commit_message: "chore: update lock file [ci skip]"

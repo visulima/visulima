@@ -5,7 +5,6 @@ on: # yamllint disable-line rule:truthy
     push:
         branches:
             - "main"
-    workflow_dispatch: # yamllint disable-line rule:empty-values
 
 defaults:
     run:
