@@ -31,16 +31,15 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "browser": "./dist/index.js",
-    "source": "src/index.ts",
+    "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist",
@@ -72,7 +71,7 @@
         "test:watch": "vitest"
     },
     "engines": {
-        "node": ">=18.* <=21.*"
+        "node": ">=18.* <=22.*"
     },
     "publishConfig": {
         "access": "public",
@@ -86,6 +85,7 @@
         "@babel/core": "^7.24.3",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
+        "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
         "@vitest/coverage-v8": "^1.4.0",
         "@vitest/ui": "^1.4.0",
@@ -100,6 +100,8 @@
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "secretlint": "8.1.2",
+        "@visulima/packem": "^1.0.0-alpha.41",
+        "esbuild": "^0.21.4",
         "semantic-release": "^23.0.5",
         "typescript": "^5.4.3",
         "vitest": "^1.4.0"

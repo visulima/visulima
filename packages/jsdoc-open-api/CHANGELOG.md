@@ -1,3 +1,44 @@
+## @visulima/jsdoc-open-api [2.0.47](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.46...@visulima/jsdoc-open-api@2.0.47) (2024-06-11)
+
+### Bug Fixes
+
+* updated yaml to v2.4.5 ([2bfb655](https://github.com/visulima/visulima/commit/2bfb65550446c15b38d9530eb4c353f43f5a895c))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.5
+
+## @visulima/jsdoc-open-api [2.0.46](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.45...@visulima/jsdoc-open-api@2.0.46) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.4
+
+## @visulima/jsdoc-open-api [2.0.45](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.44...@visulima/jsdoc-open-api@2.0.45) (2024-06-05)
+
+
+### Bug Fixes
+
+* **jsdoc-open-api:** updated yaml to v2.4.3 ([3e46929](https://github.com/visulima/visulima/commit/3e46929f3694148be92473c263f00e92bb32259b))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.3
+
 ## @visulima/jsdoc-open-api [2.0.44](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.43...@visulima/jsdoc-open-api@2.0.44) (2024-05-24)
 
 

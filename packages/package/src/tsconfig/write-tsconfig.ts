@@ -1,5 +1,5 @@
-import type {WriteJsonOptions} from "@visulima/fs";
-import {  writeJson,writeJsonSync  } from "@visulima/fs";
+import type { WriteJsonOptions } from "@visulima/fs";
+import { writeJson, writeJsonSync } from "@visulima/fs";
 import { toPath } from "@visulima/fs/utils";
 import { join } from "@visulima/path";
 import type { TsConfigJson } from "type-fest";

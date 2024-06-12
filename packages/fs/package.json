@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "2.1.2",
+    "version": "2.1.5",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
@@ -132,20 +132,21 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "1.0.1",
-        "type-fest": "^4.19.0"
+        "@visulima/path": "1.0.2",
+        "type-fest": "^4.20.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.0",
-        "@anolilab/semantic-release-preset": "^8.1.0",
-        "@babel/core": "^7.24.6",
+        "@anolilab/semantic-release-pnpm": "^1.1.3",
+        "@anolilab/semantic-release-preset": "^9.0.0",
+        "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@types/node": "18.18.14",
-        "@visulima/error": "3.2.9",
+        "@types/node": "18.19.15",
+        "@visulima/error": "3.2.11",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
+        "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "detect-indent": "^7.0.1",
         "eslint": "^8.57.0",
@@ -156,16 +157,16 @@
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "fast-safe-stringify": "2.1.1",
-        "prettier": "^3.3.0",
+        "prettier": "^3.3.2",
         "redos-detector": "^5.1.0",
         "rimraf": "^5.0.7",
         "safe-regex2": "^3.1.0",
-        "semantic-release": "23.1.1",
+        "semantic-release": "24.0.0",
         "tempy": "^3.1.0",
         "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
-        "yaml": "^2.4.3"
+        "yaml": "^2.4.5"
     },
     "peerDependencies": {
         "yaml": "^2.4.0"
@@ -176,7 +177,7 @@
         }
     },
     "engines": {
-        "node": ">=18.* <=21.*"
+        "node": ">=18.* <=22.*"
     },
     "os": [
         "darwin",

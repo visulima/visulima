@@ -1,3 +1,58 @@
+## @visulima/package [1.10.1](https://github.com/visulima/visulima/compare/@visulima/package@1.10.0...@visulima/package@1.10.1) (2024-06-11)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.5
+
+## @visulima/package [1.10.0](https://github.com/visulima/visulima/compare/@visulima/package@1.9.2...@visulima/package@1.10.0) (2024-06-11)
+
+
+### Features
+
+* **inspector:** new inspector package ([#419](https://github.com/visulima/visulima/issues/419)) ([1dc58dd](https://github.com/visulima/visulima/commit/1dc58dd97aabb8e45795274a3fc1a460c005ebbb))
+
+
+### Styles
+
+* cs fixes ([253af1e](https://github.com/visulima/visulima/commit/253af1e788c9544a2286dc0018c6549f62ca6c7b))
+
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+## @visulima/package [1.9.2](https://github.com/visulima/visulima/compare/@visulima/package@1.9.1...@visulima/package@1.9.2) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.4
+* **@visulima/path:** upgraded to 1.0.2
+
+## @visulima/package [1.9.1](https://github.com/visulima/visulima/compare/@visulima/package@1.9.0...@visulima/package@1.9.1) (2024-06-05)
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.3
+
 ## @visulima/package [1.9.0](https://github.com/visulima/visulima/compare/@visulima/package@1.8.4...@visulima/package@1.9.0) (2024-05-31)
 
 

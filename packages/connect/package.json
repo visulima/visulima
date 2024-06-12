@@ -1,6 +1,6 @@
 {
     "name": "@visulima/connect",
-    "version": "3.0.10",
+    "version": "3.0.12",
     "description": "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
     "keywords": [
         "javascript",
@@ -85,15 +85,16 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.0",
-        "@anolilab/semantic-release-preset": "^8.1.0",
-        "@babel/core": "^7.24.6",
+        "@anolilab/semantic-release-pnpm": "^1.1.3",
+        "@anolilab/semantic-release-preset": "^9.0.0",
+        "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/http-errors": "^2.0.4",
-        "@types/node": "18.18.14",
-        "@visulima/nextra-theme-docs": "4.0.24",
+        "@types/node": "18.19.15",
+        "@visulima/nextra-theme-docs": "4.0.26",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
+        "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
@@ -106,9 +107,9 @@
         "express": "^4.19.2",
         "fastify": "^4.27.0",
         "isomorphic-fetch": "^3.0.0",
-        "prettier": "^3.3.0",
+        "prettier": "^3.3.2",
         "rimraf": "^5.0.7",
-        "semantic-release": "23.1.1",
+        "semantic-release": "24.0.0",
         "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
@@ -118,7 +119,7 @@
         "zod": "^3.22.4"
     },
     "engines": {
-        "node": ">=18.* <=21.*"
+        "node": ">=18.* <=22.*"
     },
     "os": [
         "darwin",

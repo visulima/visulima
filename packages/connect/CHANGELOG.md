@@ -1,3 +1,35 @@
+## @visulima/connect [3.0.12](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.11...@visulima/connect@3.0.12) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.26
+
+## @visulima/connect [3.0.11](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.10...@visulima/connect@3.0.11) (2024-06-05)
+
+
+### Styles
+
+* cs fixes on some package.json files ([12fc0f7](https://github.com/visulima/visulima/commit/12fc0f74e206cef77863b0b89ec41174ca9ff0bd))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.25
+
 ## @visulima/connect [3.0.10](https://github.com/visulima/visulima/compare/@visulima/connect@3.0.9...@visulima/connect@3.0.10) (2024-05-15)
 
 

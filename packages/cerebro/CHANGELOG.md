@@ -1,3 +1,59 @@
+## @visulima/cerebro [1.0.35](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.34...@visulima/cerebro@1.0.35) (2024-06-11)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.10.1
+
+## @visulima/cerebro [1.0.34](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.33...@visulima/cerebro@1.0.34) (2024-06-11)
+
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.10.0
+
+## @visulima/cerebro [1.0.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.32...@visulima/cerebro@1.0.33) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.9
+* **@visulima/colorize:** upgraded to 1.4.2
+* **@visulima/pail:** upgraded to 1.1.12
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.26
+* **@visulima/package:** upgraded to 1.9.2
+* **@visulima/path:** upgraded to 1.0.2
+
+## @visulima/cerebro [1.0.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.31...@visulima/cerebro@1.0.32) (2024-06-05)
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/nextra-theme-docs:** upgraded to 4.0.25
+* **@visulima/package:** upgraded to 1.9.1
+
 ## @visulima/cerebro [1.0.31](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.30...@visulima/cerebro@1.0.31) (2024-05-31)
 
 

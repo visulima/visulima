@@ -1,3 +1,22 @@
+## @visulima/nextra-theme-docs [4.0.26](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.25...@visulima/nextra-theme-docs@4.0.26) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+## @visulima/nextra-theme-docs [4.0.25](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.24...@visulima/nextra-theme-docs@4.0.25) (2024-06-05)
+
+
+### Bug Fixes
+
+* **nextra-theme-docs:** updated react-medium-image-zoom and react-wrap-balancer ([2a31692](https://github.com/visulima/visulima/commit/2a31692b2cf291693bb0965905a00420449a01df))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+
 ## @visulima/nextra-theme-docs [4.0.24](https://github.com/visulima/visulima/compare/@visulima/nextra-theme-docs@4.0.23...@visulima/nextra-theme-docs@4.0.24) (2024-05-15)
 
 

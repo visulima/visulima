@@ -1,3 +1,22 @@
+## @visulima/boxen [1.0.9](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.8...@visulima/boxen@1.0.9) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.2
+* **@visulima/path:** upgraded to 1.0.2
+
 ## @visulima/boxen [1.0.8](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.7...@visulima/boxen@1.0.8) (2024-05-24)
 
 

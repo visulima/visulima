@@ -27,5 +27,6 @@ export const durationLanguage = {
         ",",
     ),
     _digitReplacements: ["۰", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"],
+    _hideCountIf2: true,
     delimiter: " ﻭ ",
 };

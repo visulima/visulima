@@ -1,3 +1,49 @@
+## @visulima/crud [2.0.23](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.22...@visulima/crud@2.0.23) (2024-06-11)
+
+### Miscellaneous Chores
+
+* **crud:** added @opentelemetry/api to dev dep ([6d93bfd](https://github.com/visulima/visulima/commit/6d93bfd4edc5a467423b3f4aa5f4ab56ae960a24))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.19
+
+## @visulima/crud [2.0.22](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.21...@visulima/crud@2.0.22) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Styles
+
+* cs fixes on some package.json files ([12fc0f7](https://github.com/visulima/visulima/commit/12fc0f74e206cef77863b0b89ec41174ca9ff0bd))
+
+
+### Miscellaneous Chores
+
+* changed semantic-release-npm to pnpm ([b6d100a](https://github.com/visulima/visulima/commit/b6d100a2bf3fd026577be48726a37754947f0973))
+* **deps:** updated dev deps ([d91ac38](https://github.com/visulima/visulima/commit/d91ac389cea85a6c6bdc8de97905252a6c467abc))
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+* updated dev dependencies ([abd319c](https://github.com/visulima/visulima/commit/abd319c23576aa1dc751ac874e806bddbc977d51))
+* updated dev dependencies ([0767afe](https://github.com/visulima/visulima/commit/0767afe9be83da6698c1343724400171f952599e))
+* updated dev dependencies ([d7791e3](https://github.com/visulima/visulima/commit/d7791e327917e438757636573b1e5549a97bba7b))
+* updated dev dependencies ([6005345](https://github.com/visulima/visulima/commit/60053456717a3889fc77b4fb5b05d50a662475b2))
+
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.16
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.18
+
 ## @visulima/crud [2.0.21](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.20...@visulima/crud@2.0.21) (2024-04-17)
 
 

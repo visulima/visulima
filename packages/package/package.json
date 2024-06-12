@@ -1,6 +1,6 @@
 {
     "name": "@visulima/package",
-    "version": "1.9.0",
+    "version": "1.10.1",
     "description": "One Package to rule them all, finds your root-dir, monorepo, package manager or tsconfig.json",
     "keywords": [
         "anolilab",
@@ -163,8 +163,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "2.1.2",
-        "@visulima/path": "1.0.1",
+        "@visulima/fs": "2.1.5",
+        "@visulima/path": "1.0.2",
         "jsonc-parser": "^3.2.1",
         "normalize-package-data": "^6.0.1",
         "resolve-pkg-maps": "^1.0.0"
@@ -172,20 +172,21 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.0",
-        "@anolilab/semantic-release-preset": "^8.1.0",
-        "@babel/core": "^7.24.6",
-        "@pnpm/exe": "^9.1.4",
+        "@anolilab/semantic-release-pnpm": "^1.1.3",
+        "@anolilab/semantic-release-preset": "^9.0.0",
+        "@babel/core": "^7.24.7",
+        "@pnpm/exe": "^9.3.0",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@total-typescript/ts-reset": "^0.5.1",
-        "@types/node": "18.18.14",
+        "@types/node": "18.19.15",
         "@types/normalize-package-data": "^2.4.4",
-        "@visulima/packem": "^1.0.0-alpha.20",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
-        "@yarnpkg/pnp": "4.0.2",
+        "@yarnpkg/pnp": "4.0.6",
+        "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "^0.21.4",
+        "esbuild": "^0.21.5",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -193,21 +194,21 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "execa": "^9.1.0",
+        "execa": "^9.2.0",
         "npm": "^10.8.1",
-        "prettier": "^3.3.0",
+        "prettier": "^3.3.2",
         "rimraf": "^5.0.7",
-        "semantic-release": "23.1.1",
+        "semantic-release": "24.0.0",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
-        "type-fest": "^4.19.0",
+        "type-fest": "^4.20.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "which-pm-runs": "file:",
         "yarn": "^1.22.22"
     },
     "engines": {
-        "node": ">=18.* <=21.*"
+        "node": ">=18.* <=22.*"
     },
     "os": [
         "darwin",

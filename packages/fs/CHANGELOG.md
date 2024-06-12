@@ -1,3 +1,45 @@
+## @visulima/fs [2.1.5](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.4...@visulima/fs@2.1.5) (2024-06-11)
+
+### Bug Fixes
+
+* **fs:** updated type-fest to v4.20.0 ([b34f417](https://github.com/visulima/visulima/commit/b34f417537b209f4c411103b6eef0e5a6d9b947d))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+## @visulima/fs [2.1.4](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.3...@visulima/fs@2.1.4) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.2
+* **@visulima/error:** upgraded to 3.2.11
+
+## @visulima/fs [2.1.3](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.2...@visulima/fs@2.1.3) (2024-06-05)
+
+
+### Bug Fixes
+
+* **fs:** updated type-fest ([f1ba811](https://github.com/visulima/visulima/commit/f1ba81100ad6eddeeda80066b2fb0f0b57a4cfa5))
+
+
+### Miscellaneous Chores
+
+* **fs:** added test for dot file ([105c6f3](https://github.com/visulima/visulima/commit/105c6f329312c71d3596b7115c16eb3829d7eac9))
+
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 3.2.10
+
 ## @visulima/fs [2.1.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.1...@visulima/fs@2.1.2) (2024-05-24)
 
 

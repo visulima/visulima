@@ -33,8 +33,10 @@ const toFixed = (number_: number, fixed: number): number => {
     return Number.parseFloat(matches[0]);
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationLanguage, options: InternalOptions): string => {
-    const { maxDecimalPoints, spacer } = options;
+    let { spacer } = options;
+    const { maxDecimalPoints } = options;
 
     let decimal = ".";
 
@@ -64,17 +66,22 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
 
     const countString = normalizedUnitCount.toString();
 
-    if (digitReplacements) {
-        formattedCount = "";
+    // eslint-disable-next-line no-underscore-dangle
+    if (!language._hideCountIf2 || unitCount !== 2) {
+        if (digitReplacements) {
+            formattedCount = "";
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const char of countString) {
-            // @ts-expect-error because `char` should always be 0-9 at this point.
-            // eslint-disable-next-line security/detect-object-injection
-            formattedCount += char === "." ? decimal : digitReplacements[char];
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const char of countString) {
+                // `char` should always be 0-9 at this point.
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                formattedCount += char === "." ? decimal : digitReplacements[char as keyof typeof digitReplacements];
+            }
+        } else {
+            formattedCount = countString.replace(".", decimal);
         }
     } else {
-        formattedCount = countString.replace(".", decimal);
+        formattedCount = "";
     }
 
     // eslint-disable-next-line security/detect-object-injection
@@ -83,6 +90,12 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
 
     if (typeof languageWord === "function") {
         word = languageWord(unitCount) as string;
+    }
+
+    // Never add a spacer if the count is hidden
+    // eslint-disable-next-line no-underscore-dangle
+    if (language._hideCountIf2 && unitCount === 2) {
+        spacer = "";
     }
 
     // eslint-disable-next-line no-underscore-dangle

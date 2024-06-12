@@ -1,3 +1,22 @@
+## @visulima/pail [1.1.12](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.11...@visulima/pail@1.1.12) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.2
+* **@visulima/fmt:** upgraded to 1.1.5
+
 ## @visulima/pail [1.1.11](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.10...@visulima/pail@1.1.11) (2024-05-24)
 
 

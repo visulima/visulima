@@ -1,3 +1,29 @@
+## @visulima/humanizer [1.0.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.4...@visulima/humanizer@1.0.5) (2024-06-06)
+
+
+### Bug Fixes
+
+* allow node v22 ([890d457](https://github.com/visulima/visulima/commit/890d4570f18428e2463944813c0c638b3f142803))
+
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.2
+
+## @visulima/humanizer [1.0.4](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.3...@visulima/humanizer@1.0.4) (2024-06-05)
+
+
+### Bug Fixes
+
+* **humanizer:** hide unit count with dual forms if arabic translation is used, thanks to [@6km](https://github.com/6km) ([ee23b9e](https://github.com/visulima/visulima/commit/ee23b9edaf9e7e22f356aaa91c46ee3fa1aad531))
+* **humanizer:** switching from tsup to packem ([8322fc6](https://github.com/visulima/visulima/commit/8322fc69d82531ff4fe18ac46b4e0fb0305bc657))
+
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a2e0504](https://github.com/visulima/visulima/commit/a2e0504dc239049434c2482756ff15bdbaac9b54))
+
 ## @visulima/humanizer [1.0.3](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.2...@visulima/humanizer@1.0.3) (2024-05-24)
 
 

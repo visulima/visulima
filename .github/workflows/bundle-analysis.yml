@@ -5,7 +5,6 @@ on: # yamllint disable-line rule:truthy
     push:
         branches:
             - "main"
-    workflow_dispatch: # yamllint disable-line rule:empty-values
 
 defaults:
     run:
@@ -75,7 +74,7 @@ jobs:
                   cache: "pnpm"
 
             - name: "Verify the integrity of provenance attestations and registry signatures for installed dependencies"
-              run: "pnpm dlx audit-ci@^6 --config ./audit-ci.jsonc --report-type=summary"
+              run: "pnpm dlx audit-ci@^7 --config ./audit-ci.jsonc --report-type=summary"
 
             - name: "Install packages"
               run: "pnpm install --frozen-lockfile --prefer-offline"

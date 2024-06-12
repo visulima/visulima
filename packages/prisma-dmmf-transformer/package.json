@@ -1,6 +1,6 @@
 {
     "name": "@visulima/prisma-dmmf-transformer",
-    "version": "2.0.17",
+    "version": "2.0.19",
     "description": "A generator for Prisma to generate a valid JSON Schema v7.",
     "keywords": [
         "anolilab",
@@ -76,23 +76,24 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "5.12.1"
+        "@prisma/generator-helper": "5.15.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.0",
-        "@anolilab/semantic-release-preset": "^8.1.0",
-        "@babel/core": "^7.24.6",
-        "@prisma/client": "4.16.2",
-        "@prisma/internals": "5.12.1",
+        "@anolilab/semantic-release-pnpm": "^1.1.3",
+        "@anolilab/semantic-release-preset": "^9.0.0",
+        "@babel/core": "^7.24.7",
+        "@prisma/client": "5.15.0",
+        "@prisma/internals": "5.15.0",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/json-schema": "7.0.15",
-        "@types/micromatch": "4.0.6",
-        "@types/node": "18.18.14",
-        "@vitest/coverage-v8": "1.5.0",
-        "ajv": "8.12.0",
+        "@types/micromatch": "4.0.7",
+        "@types/node": "18.19.15",
+        "@vitest/coverage-v8": "1.6.0",
+        "ajv": "8.16.0",
         "ajv-formats": "3.0.1",
+        "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "7.0.3",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
@@ -101,20 +102,20 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "prettier": "3.2.5",
-        "prisma": "4.16.2",
-        "rimraf": "5.0.5",
-        "semantic-release": "23.0.8",
-        "tsup": "8.0.2",
+        "prettier": "3.3.2",
+        "prisma": "5.15.0",
+        "rimraf": "5.0.7",
+        "semantic-release": "24.0.0",
+        "tsup": "8.1.0",
         "typescript": "5.4.5",
-        "vitest": "1.5.0"
+        "vitest": "1.6.0"
     },
     "peerDependencies": {
         "@prisma/client": "3.* || 4.*",
         "prisma": "3.* || 4.*"
     },
     "engines": {
-        "node": ">=18.* <=21.*"
+        "node": ">=18.* <=22.*"
     },
     "os": [
         "darwin",
