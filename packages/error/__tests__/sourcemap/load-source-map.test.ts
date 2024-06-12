@@ -1,9 +1,9 @@
 import { fileURLToPath } from "node:url";
 
-import { originalPositionFor, type TraceMap } from "@jridgewell/trace-mapping";
-import { dirname, join } from "@visulima/path";
+import type { TraceMap } from "@jridgewell/trace-mapping";
+import { originalPositionFor } from "@jridgewell/trace-mapping";
+import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { describe, expect, it } from "vitest";
-import { toNamespacedPath } from "node:path";
 
 import loadSourceMap from "../../src/sourcemap/load-source-map";
 
@@ -72,6 +72,8 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`);
+        expect(() => loadSourceMap(path)).toThrow(
+            `Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`,
+        );
     });
 });
