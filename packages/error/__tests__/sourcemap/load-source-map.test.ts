@@ -1,8 +1,9 @@
 import { fileURLToPath } from "node:url";
 
-import { originalPositionFor } from "@jridgewell/trace-mapping";
+import { originalPositionFor, type TraceMap } from "@jridgewell/trace-mapping";
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
+import { toNamespacedPath } from "node:path";
 
 import loadSourceMap from "../../src/sourcemap/load-source-map";
 
@@ -25,7 +26,7 @@ describe("load-source-map", () => {
         const generated = { column: 13, line: 30 };
         const expected = { column: 9, line: 15, name: "setState", source: "src/example.js" };
 
-        expect(originalPositionFor(result, generated), "should have correct source mapping").toStrictEqual(expected);
+        expect(originalPositionFor(result as TraceMap, generated), "should have correct source mapping").toStrictEqual(expected);
     });
 
     it("should handle external sourcemaps", () => {
@@ -37,7 +38,7 @@ describe("load-source-map", () => {
 
         const expected = { column: 9, line: 15, name: "setState", source: join(FIXTURES_DIR, "src", "example.js") };
 
-        expect(originalPositionFor(result, generated), "should have correct source mapping").toStrictEqual(expected);
+        expect(originalPositionFor(result as TraceMap, generated), "should have correct source mapping").toStrictEqual(expected);
     });
 
     it("should call back with error on external, missing sourcemap", () => {
@@ -46,7 +47,7 @@ describe("load-source-map", () => {
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(
-            `Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path.replace("missingSourcemap.js", "missing.js.map")}'`,
+            `Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"))}'`,
         );
     });
 
@@ -71,6 +72,6 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path}'`);
+        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`);
     });
 });
