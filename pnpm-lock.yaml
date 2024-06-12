@@ -3505,6 +3505,9 @@ importers:
       '@types/node':
         specifier: 18.19.15
         version: 18.19.15
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -3517,6 +3520,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -3559,9 +3565,6 @@ importers:
       terminal-size:
         specifier: ^4.0.0
         version: 4.0.0
-      tsup:
-        specifier: ^8.1.0
-        version: 8.1.0(@swc/core@1.5.7)(postcss@8.4.38)(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
