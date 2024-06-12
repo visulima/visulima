@@ -26,7 +26,6 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     error: Error | undefined;
     groups: string[];
     label: string | undefined;
-
     message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
     prefix: string | undefined;
     repeated?: number | undefined;

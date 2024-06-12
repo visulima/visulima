@@ -10,53 +10,53 @@ import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
  * by creating and closing a new stream on each write.
  */
 class RotatingFileStream {
-    private readonly _filePath: string;
+    readonly #filePath: string;
 
-    private readonly _immediate: boolean;
+    readonly #immediate: boolean;
 
-    private readonly _stream: Writable | undefined;
+    readonly #stream: Writable | undefined;
 
-    private readonly _options: RfsOptions;
+    readonly #options: RfsOptions;
 
     public constructor(filePath: string, writeImmediately = false, options: RfsOptions = {}) {
-        this._filePath = filePath;
-        this._immediate = writeImmediately;
-        this._options = options;
+        this.#filePath = filePath;
+        this.#immediate = writeImmediately;
+        this.#options = options;
 
-        if (!this._immediate) {
-            this._stream = createRfsStream(this._filePath, options);
+        if (!this.#immediate) {
+            this.#stream = createRfsStream(this.#filePath, options);
         }
     }
 
     /**
-     * Writes `message` to the instance's internal _stream
+     * Writes `message` to the instance's internal #stream
      * @param message Message to write
      */
     public write(message: string): void {
-        let fileStream = this._stream;
+        let fileStream = this.#stream;
 
-        if (this._immediate) {
-            fileStream = createRfsStream(this._filePath, this._options);
+        if (this.#immediate) {
+            fileStream = createRfsStream(this.#filePath, this.#options);
         }
 
-        const stream = new SafeStreamHandler(fileStream as Writable, this._filePath);
+        const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);
 
         stream.write(message);
 
-        if (this._immediate) {
+        if (this.#immediate) {
             stream.end();
         }
     }
 
     /**
-     * Ends the instance's internal _stream
+     * Ends the instance's internal #stream
      *
      * When `immediate` is not `true`, a call to `write` after calling this method
      * will throw an error.
      */
     public end(): void {
-        if (this._stream !== undefined) {
-            this._stream.end();
+        if (this.#stream !== undefined) {
+            this.#stream.end();
         }
     }
 }
