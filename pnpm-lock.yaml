@@ -1142,8 +1142,8 @@ importers:
         specifier: 3.0.12
         version: 3.0.12(zod@3.23.8)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.46
-        version: 2.0.46(@swc/core@1.5.7)(openapi-types@12.1.3)
+        specifier: 2.0.47
+        version: 2.0.47(@swc/core@1.5.7)(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -1260,11 +1260,11 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.5.7)
       '@visulima/crud':
-        specifier: 2.0.22
-        version: 2.0.22(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
+        specifier: 2.0.23
+        version: 2.0.23(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
       '@visulima/fs':
-        specifier: 2.1.4
-        version: 2.1.4(yaml@2.4.5)
+        specifier: 2.1.5
+        version: 2.1.5(yaml@2.4.5)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1579,8 +1579,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(next@14.2.3(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.3(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
-        specifier: 1.10.0
-        version: 1.10.0(yaml@2.4.5)
+        specifier: 1.10.1
+        version: 1.10.1(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -1911,8 +1911,8 @@ importers:
         specifier: 3.0.16
         version: 3.0.16
       '@visulima/prisma-dmmf-transformer':
-        specifier: 2.0.18
-        version: 2.0.18(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
+        specifier: 2.0.19
+        version: 2.0.19(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2873,8 +2873,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.1.4
-        version: 2.1.4(yaml@2.4.5)
+        specifier: 2.1.5
+        version: 2.1.5(yaml@2.4.5)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -3239,8 +3239,8 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.1.4
-        version: 2.1.4(yaml@2.4.5)
+        specifier: 2.1.5
+        version: 2.1.5(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -6627,9 +6627,6 @@ packages:
       prisma:
         optional: true
 
-  '@prisma/debug@5.12.1':
-    resolution: {integrity: sha512-kd/wNsR0klrv79o1ITsbWxYyh4QWuBidvxsXSParPsYSu0ircUmNk3q4ojsgNc3/81b0ozg76iastOG43tbf8A==}
-
   '@prisma/debug@5.15.0':
     resolution: {integrity: sha512-QpEAOjieLPc/4sMny/WrWqtpIAmBYsgqwWlWwIctqZO0AbhQ9QcT6x2Ut3ojbDo/pFRCCA1Z1+xm2MUy7fAkZA==}
 
@@ -6647,9 +6644,6 @@ packages:
 
   '@prisma/fetch-engine@5.15.0':
     resolution: {integrity: sha512-z6AY5yyXxc20Klj7wwnfGP0iIUkVKzybqapT02zLYR/nf9ynaeN8bq73WRmi1TkLYn+DJ5Qy+JGu7hBf1pE78A==}
-
-  '@prisma/generator-helper@5.12.1':
-    resolution: {integrity: sha512-TlaI4J6jDKO06P68ve5czz1SionzI5ciUIw2tWFO4FM4qPID5+7nrxTVlecFTUD7Nc+IaO1hYT1YBOPKLiUncQ==}
 
   '@prisma/generator-helper@5.15.0':
     resolution: {integrity: sha512-7pB3v57GU4Q/iBauGbvQQGenMJSu2ArQboge4Ca6bw0gA7nConfIHP48MdNIYCrBbNPcIVFmrNomyhqCb3IuWQ==}
@@ -9107,8 +9101,8 @@ packages:
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.22':
-    resolution: {integrity: sha512-kQPrpTsro6fof7FRGegP5xysRYOyYVKMg8c38QgndVYxrH9zvFeA37EicX4CxRr5inqPxe29ymcVdzcJGMKGWw==}
+  '@visulima/crud@2.0.23':
+    resolution: {integrity: sha512-CHM4F1C1jjru+Nx8x8QXPhc3FGNrazKU8R6nqXeOddN7WQcEi9kqOyKmcya1G2NBnPPL+UUWd1YysSliJ3gj1w==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9137,6 +9131,16 @@ packages:
       yaml:
         optional: true
 
+  '@visulima/fs@2.1.5':
+    resolution: {integrity: sha512-eVw/8+5x0JIA9GQzIpFgwSe/oQcGHePu3tK1y44T/FclQHaRwQ52QaqvVF/Y40NgH0rRIdChJKjXvKKolgBT9Q==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.4.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
+
   '@visulima/humanizer@1.0.3':
     resolution: {integrity: sha512-ou4QnI4KovCr3C5yxdmXC/0y1SGEmpMGmoY35fVGGpJs73pZm2j0YOBgRMRAjiXif+MXQ3I1uRcVGoilybgIpA==}
     engines: {node: '>=18.* <=21.*'}
@@ -9151,8 +9155,8 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.46':
-    resolution: {integrity: sha512-z415or41epjGTnFkuSiDcLW3qHRqHhJ+HTyXY3WBw8AaT+t1ZMS48jRxF10UNGsLTvHSKTi/Z/jdjsof7wAivg==}
+  '@visulima/jsdoc-open-api@2.0.47':
+    resolution: {integrity: sha512-vGh/dBLPLnKSzdxI0DBZ3yiTXjpvr58f9MHnwx9FyvxjMFK+E9IwWHnsMCgDQZia7FDJWOgJAXuQRSdH4n+r+A==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -9169,6 +9173,11 @@ packages:
 
   '@visulima/package@1.10.0':
     resolution: {integrity: sha512-7h3wnk/RA+pKUSbPigybEjnFTn2fEMmvhetCLG3hlR1550BCm6v3NqI8W/20FUdGI5lDB0+T55QW0VZRVyJYhw==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/package@1.10.1':
+    resolution: {integrity: sha512-GJgHa/TGt19oUfZ2hNZOHfgFIgLCN2FL1fZFqUepZSB/SXtQFT2NjJW4TNFvRTZNIuTjGeUniewowbsBo4dl7g==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9221,8 +9230,8 @@ packages:
     resolution: {integrity: sha512-swUmYnU83E9KTMXCIkatLlsyMLZfIKG0r6EByYVuJPoZu58MTyOFHWu+nMwIVr04VFYAkoFUTHzmzgU0F1HbyA==}
     engines: {node: '>=18.* <=22.*'}
 
-  '@visulima/prisma-dmmf-transformer@2.0.18':
-    resolution: {integrity: sha512-eFsyKF2i2Phv9hEAXMGfhAkqyn5qBdtMLAgy4uqpqT+B9W1V7iJKr4ExkhAyDoGxhrEscqYXdkdq8hwd8zkH8Q==}
+  '@visulima/prisma-dmmf-transformer@2.0.19':
+    resolution: {integrity: sha512-ogVAuy79guDB+GeBFlLKcmuNwObVCmnaI5ZXdYG9IrhcjNJlByvOIz7nvW3H33VckWhE9x6rGmkxfDOTxgOfsA==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -20119,7 +20128,7 @@ snapshots:
 
   '@anolilab/rc@1.1.2(yaml@2.4.5)':
     dependencies:
-      '@visulima/fs': 2.1.4(yaml@2.4.5)
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
       ini: 4.1.3
       ts-deepmerge: 7.0.0
     transitivePeerDependencies:
@@ -20129,7 +20138,7 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.2(yaml@2.4.5)
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 2.1.4(yaml@2.4.5)
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
       '@visulima/package': 1.10.0(yaml@2.4.5)
       '@visulima/path': 1.0.2
       aggregate-error: 5.0.0
@@ -23160,8 +23169,6 @@ snapshots:
     optionalDependencies:
       prisma: 5.15.0
 
-  '@prisma/debug@5.12.1': {}
-
   '@prisma/debug@5.15.0': {}
 
   '@prisma/engines-version@4.16.1-1.4bc8b6e1b66cb932731fb1bdbbc550d1e010de81': {}
@@ -23182,10 +23189,6 @@ snapshots:
       '@prisma/debug': 5.15.0
       '@prisma/engines-version': 5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022
       '@prisma/get-platform': 5.15.0
-
-  '@prisma/generator-helper@5.12.1':
-    dependencies:
-      '@prisma/debug': 5.12.1
 
   '@prisma/generator-helper@5.15.0':
     dependencies:
@@ -27248,10 +27251,10 @@ snapshots:
       regexparam: 3.0.0
       zod: 3.23.8
 
-  '@visulima/crud@2.0.22(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)':
+  '@visulima/crud@2.0.23(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)':
     dependencies:
       '@visulima/pagination': 3.0.16
-      '@visulima/prisma-dmmf-transformer': 2.0.18(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
+      '@visulima/prisma-dmmf-transformer': 2.0.19(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)
       http-errors: 2.0.0
       path-to-regexp: 6.2.2
     transitivePeerDependencies:
@@ -27274,16 +27277,23 @@ snapshots:
     optionalDependencies:
       yaml: 2.4.5
 
+  '@visulima/fs@2.1.5(yaml@2.4.5)':
+    dependencies:
+      '@visulima/path': 1.0.2
+      type-fest: 4.20.0
+    optionalDependencies:
+      yaml: 2.4.5
+
   '@visulima/humanizer@1.0.3': {}
 
   '@visulima/is-ansi-color-supported@2.2.0': {}
 
   '@visulima/is-ansi-color-supported@2.2.1': {}
 
-  '@visulima/jsdoc-open-api@2.0.46(@swc/core@1.5.7)(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.47(@swc/core@1.5.7)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.1.4(yaml@2.4.5)
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -27340,6 +27350,16 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+  '@visulima/package@1.10.1(yaml@2.4.5)':
+    dependencies:
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
+      '@visulima/path': 1.0.2
+      jsonc-parser: 3.2.1
+      normalize-package-data: 6.0.1
+      resolve-pkg-maps: 1.0.0
+    transitivePeerDependencies:
+      - yaml
+
   '@visulima/packem@1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)':
     dependencies:
       '@antfu/install-pkg': 0.3.3
@@ -27356,9 +27376,9 @@ snapshots:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
       '@visulima/cerebro': 1.0.31(rotating-file-stream@3.2.3)
       '@visulima/colorize': 1.4.2
-      '@visulima/fs': 2.1.4(yaml@2.4.5)
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
       '@visulima/humanizer': 1.0.3
-      '@visulima/package': 1.10.0(yaml@2.4.5)
+      '@visulima/package': 1.10.1(yaml@2.4.5)
       '@visulima/pail': 1.1.12(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.2
       defu: 6.1.4
@@ -27406,10 +27426,10 @@ snapshots:
 
   '@visulima/path@1.0.2': {}
 
-  '@visulima/prisma-dmmf-transformer@2.0.18(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)':
+  '@visulima/prisma-dmmf-transformer@2.0.19(@prisma/client@5.15.0(prisma@5.15.0))(prisma@5.15.0)':
     dependencies:
       '@prisma/client': 5.15.0(prisma@5.15.0)
-      '@prisma/generator-helper': 5.12.1
+      '@prisma/generator-helper': 5.15.0
       prisma: 5.15.0
 
   '@vitejs/plugin-react@4.3.1(vite@5.2.13(@types/node@18.18.14)(lightningcss@1.22.0)(terser@5.27.0))':
