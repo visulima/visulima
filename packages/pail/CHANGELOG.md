@@ -1,3 +1,18 @@
+## @visulima/pail [1.1.13](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.12...@visulima/pail@1.1.13) (2024-06-13)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.3
+
 ## @visulima/pail [1.1.12](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.11...@visulima/pail@1.1.12) (2024-06-06)
 
 
