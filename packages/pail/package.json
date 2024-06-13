@@ -219,6 +219,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.19.15",
         "@visulima/packem": "^1.0.0-alpha.41",
+        "@visulima/redact": "^1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -244,10 +245,14 @@
         "wrap-ansi": "^9.0.0"
     },
     "peerDependencies": {
-        "rotating-file-stream": "^3.1.1"
+        "rotating-file-stream": "^3.1.1",
+        "@visulima/redact": "^1.0.2"
     },
     "peerDependenciesMeta": {
         "rotating-file-stream": {
+            "optional": true
+        },
+        "@visulima/redact": {
             "optional": true
         }
     },
