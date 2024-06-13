@@ -1,3 +1,18 @@
+## @visulima/colorize [1.4.3](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.2...@visulima/colorize@1.4.3) (2024-06-13)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.2
+
 ## @visulima/colorize [1.4.2](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.1...@visulima/colorize@1.4.2) (2024-06-06)
 
 
