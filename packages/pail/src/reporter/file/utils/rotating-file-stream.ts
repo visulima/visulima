@@ -1,7 +1,6 @@
 import type { Writable } from "node:stream";
 
 import type { Options as RfsOptions } from "rotating-file-stream";
-import { createStream as createRfsStream } from "rotating-file-stream";
 
 import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
 
@@ -24,7 +23,14 @@ class RotatingFileStream {
         this.#options = options;
 
         if (!this.#immediate) {
-            this.#stream = createRfsStream(this.#filePath, options);
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+                const createRfsStream = require("rotating-file-stream");
+
+                this.#stream = createRfsStream(this.#filePath, options);
+            } catch {
+                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
+            }
         }
     }
 
@@ -36,7 +42,14 @@ class RotatingFileStream {
         let fileStream = this.#stream;
 
         if (this.#immediate) {
-            fileStream = createRfsStream(this.#filePath, this.#options);
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+                const createRfsStream = require("rotating-file-stream");
+
+                fileStream = createRfsStream(this.#filePath, this.#options);
+            } catch {
+                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
+            }
         }
 
         const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);

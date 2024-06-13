@@ -107,6 +107,7 @@ Reporters are responsible for writing the log messages to the console or a file.
 | ---------------------------- | ------------------------- |
 | `JsonReporter`               | `JsonReporter`            |
 | `PrettyReporter`             | `PrettyReporter`          |
+| x                            | `SimpleReporter`          |
 | x                            | `FileReporter`            |
 
 ### Processors

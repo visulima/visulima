@@ -1,8 +1,10 @@
-import type { ExtendedRfc5424LogLevels, LiteralUnion } from "../../types";
+import type { LiteralUnion } from "type-fest";
+
+import type { ExtendedRfc5424LogLevels } from "../../types";
 import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
 import AbstractJsonReporter from "./abstract-json-reporter";
 
-class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
+class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> {
     public constructor() {
         super();
     }

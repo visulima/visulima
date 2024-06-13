@@ -20,7 +20,7 @@ const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
     return "informational";
 };
 
-export const createPail = <T extends string = never, L extends string = never>(options?: ConstructorOptions<T, L>): PailServerType<T, L> => {
+export const createPail = <T extends string = string, L extends string = string>(options?: ConstructorOptions<T, L>): PailServerType<T, L> => {
     let logLevel: ExtendedRfc5424LogLevels = _getDefaultLogLevel();
 
     if (env.PAIL_LOG_LEVEL !== undefined) {
@@ -35,7 +35,7 @@ export const createPail = <T extends string = never, L extends string = never>(o
         stdout,
         ...options,
     });
-}
+};
 
 export const pail = createPail();
 

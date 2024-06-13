@@ -1,8 +1,9 @@
 import type { stringify } from "safe-stable-stringify";
+import type { LiteralUnion } from "type-fest";
 
-import type { ExtendedRfc5424LogLevels, LiteralUnion, ReadonlyMeta, StringifyAwareReporter } from "../../types";
+import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
+abstract class AbstractJsonReporter<L extends string = string> implements StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected stringify: typeof stringify | undefined;
 

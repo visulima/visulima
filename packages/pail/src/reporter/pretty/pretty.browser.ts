@@ -8,7 +8,7 @@ import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
+class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
         super({
             uppercase: {

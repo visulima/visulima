@@ -12,7 +12,7 @@ declare global {
     }
 }
 
-class ErrorProcessor<L extends string = never> implements Processor<L> {
+class ErrorProcessor<L extends string = string> implements Processor<L> {
     private readonly _options: { maxDepth: number; useToJSON: boolean };
 
     public constructor(options: { maxDepth?: number; useToJSON?: boolean } = {}) {

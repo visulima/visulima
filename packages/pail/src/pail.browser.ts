@@ -1,20 +1,19 @@
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
+import type { LiteralUnion, Primitive } from "type-fest";
 
 import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import RawReporter from "./reporter/raw/raw.browser";
 import type {
-    ConstructorOptions,
+    ConstructorOptions, DefaultLoggerTypes,
     DefaultLogTypes,
     ExtendedRfc5424LogLevels,
-    LiteralUnion,
     LoggerConfiguration,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
     Message,
     Meta,
-    Primitive,
     Processor,
     Reporter,
     StringifyAwareProcessor,
@@ -36,7 +35,7 @@ const EMPTY_META = {
     suffix: undefined,
 };
 
-export class PailBrowserImpl<T extends string = never, L extends string = never> {
+export class PailBrowserImpl<T extends string = string, L extends string = string> {
     protected timersMap: Map<string, number>;
 
     protected countMap: Map<string, number>;
@@ -91,7 +90,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
         this.startTimerMessage = options.messages?.timerStart ?? "Initialized timer...";
         this.endTimerMessage = options.messages?.timerEnd ?? "Timer run for:";
-        this.types = mergeTypes<L, T>(LOG_TYPES, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
+        this.types = mergeTypes<L, T>(LOG_TYPES as DefaultLoggerTypes<L>, (options.types ?? {}) as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>);
         this.longestLabel = getLongestLabel<L, T>(this.types);
 
         this.logLevels = { ...EXTENDED_RFC_5424_LOG_LEVELS, ...options.logLevels };
@@ -371,6 +370,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     private _normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
         // eslint-disable-next-line security/detect-object-injection
         return level && this.logLevels[level] ? level : "debug";
@@ -410,6 +410,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
                 meta.message = message;
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
                 meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
             }
         } else if (arguments_.length > 1 && typeof arguments_[0] === "string") {
@@ -515,11 +516,11 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 }
 
-export type PailBrowserType<T extends string = never, L extends string = never> = PailBrowserImpl<T, L> &
+export type PailBrowserType<T extends string = string, L extends string = string> = PailBrowserImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new<TC extends string = never, LC extends string = never>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
+    (new<TC extends string = string, LC extends string = string>(options?: ConstructorOptions<TC, LC>) => PailBrowserType<TC, LC>);
 
-export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
+export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 
 export const PailBrowser = PailBrowserImpl as unknown as PailBrowserType;

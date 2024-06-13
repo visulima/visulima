@@ -1,7 +1,9 @@
-import type { ExtendedRfc5424LogLevels, LiteralUnion } from "../types";
+import type { LiteralUnion } from "type-fest";
+
+import type { ExtendedRfc5424LogLevels } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const writeConsoleLogBasedOnLevel = <L extends string = never>(level: LiteralUnion<ExtendedRfc5424LogLevels, L>): ((...data: any[]) => void) => {
+const writeConsoleLogBasedOnLevel = <L extends string = string>(level: LiteralUnion<ExtendedRfc5424LogLevels, L>): ((...data: any[]) => void) => {
     if (level === "error") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-console
         return (console as any).__error ?? console.error;

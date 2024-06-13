@@ -1,4 +1,6 @@
-import type { DefaultLoggerTypes, DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../types";
+import type { LiteralUnion } from "type-fest";
+
+import type { DefaultLoggerTypes, DefaultLogTypes, LoggerTypesConfig } from "../types";
 
 const mergeTypes = <L extends string, T extends string>(
     standard: DefaultLoggerTypes<L>,
