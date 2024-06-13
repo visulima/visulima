@@ -1,3 +1,21 @@
+## @visulima/is-ansi-color-supported [2.2.2](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.1...@visulima/is-ansi-color-supported@2.2.2) (2024-06-13)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** switched from tsup to packem ([d13332f](https://github.com/visulima/visulima/commit/d13332f6784aba59259fb9c09c47ae1d67962ec6))
+
+### Styles
+
+* cs fixes ([253af1e](https://github.com/visulima/visulima/commit/253af1e788c9544a2286dc0018c6549f62ca6c7b))
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/is-ansi-color-supported [2.2.1](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.0...@visulima/is-ansi-color-supported@2.2.1) (2024-06-06)
 
 
