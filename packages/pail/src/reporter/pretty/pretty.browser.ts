@@ -147,12 +147,10 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
             }
         }
 
-        if (message) {
-            items.push(message);
+        items.push(message);
 
-            if (context) {
-                items.push(...context);
-            }
+        if (context) {
+            items.push(...context);
         }
 
         if (error) {

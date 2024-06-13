@@ -1,3 +1,5 @@
+import { stderr, stdout } from "node:process";
+
 import colorize, { bgGrey, grey, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -35,16 +37,16 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
             ...options,
         });
 
-        this.#stdout = process.stdout;
-        this.#stderr = process.stderr;
-    }
-
-    public setStdout(stdout: NodeJS.WriteStream): void {
         this.#stdout = stdout;
+        this.#stderr = stderr;
     }
 
-    public setStderr(stderr: NodeJS.WriteStream): void {
-        this.#stderr = stderr;
+    public setStdout(stdout_: NodeJS.WriteStream): void {
+        this.#stdout = stdout_;
+    }
+
+    public setStderr(stderr_: NodeJS.WriteStream): void {
+        this.#stderr = stderr_;
     }
 
     public setInteractiveManager(manager?: InteractiveManager): void {
@@ -81,7 +83,7 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push((groupSpaces + grey("[" + groups.at(-1) + "] ")) as string);
+            items.push(groupSpaces + grey("[" + groups.at(-1) + "]") + " ");
         }
 
         if (date) {
@@ -112,7 +114,7 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(grey(" [" + scope.join(" > ") + "] "));
+            items.push(" " + grey("[" + scope.join(" > ") + "]") + " ");
         }
 
         if (prefix) {
@@ -121,8 +123,8 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
                     (Array.isArray(scope) && scope.length > 0 ? ". " : " ") +
                         "[" +
                         (this._styles.underline.prefix ? underline(prefix as string) : prefix) +
-                        "] ",
-                ),
+                        "]",
+                ) + " ",
             );
         }
 
@@ -145,40 +147,38 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
             items.push("\n\n");
         }
 
-        if (message) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+        const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+
+        items.push(
+            groupSpaces +
+                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                    hard: true,
+                    trim: true,
+                    wordWrap: true,
+                }),
+        );
+
+        if (context) {
+            let hasError = false;
 
             items.push(
-                groupSpaces +
-                    wrapAnsi(formattedMessage ?? "undefined", size - 3, {
-                        hard: true,
-                        trim: true,
-                        wordWrap: true,
-                    }),
+                ...context.map((value) => {
+                    if (value instanceof Error) {
+                        hasError = true;
+                        return "\n\n" + formatError(value, size, groupSpaces);
+                    }
+
+                    if (typeof value === "object") {
+                        return " " + (this._stringify as typeof stringify)(value);
+                    }
+
+                    const newValue = (hasError ? "\n\n" : " ") + value;
+
+                    hasError = false;
+
+                    return newValue;
+                }),
             );
-
-            if (context) {
-                let hasError = false;
-
-                items.push(
-                    ...context.map((value) => {
-                        if (value instanceof Error) {
-                            hasError = true;
-                            return "\n\n" + formatError(value, size, groupSpaces);
-                        }
-
-                        if (typeof value === "object") {
-                            return " " + (this._stringify as typeof stringify)(value);
-                        }
-
-                        const newValue = (hasError ? "\n\n" : " ") + value;
-
-                        hasError = false;
-
-                        return newValue;
-                    }),
-                );
-            }
         }
 
         if (error) {

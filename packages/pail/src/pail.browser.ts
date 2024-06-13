@@ -1,3 +1,5 @@
+import { on as processOn } from "node:process";
+
 import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 
@@ -165,14 +167,14 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
 
     public wrapException(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        process.on("uncaughtException", (error: any) => {
+        processOn("uncaughtException", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
             (this as unknown as PailBrowserImpl<T, L>).error(error);
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        process.on("unhandledRejection", (error: any) => {
+        processOn("unhandledRejection", (error: any) => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
             (this as unknown as PailBrowserImpl<T, L>).error(error);

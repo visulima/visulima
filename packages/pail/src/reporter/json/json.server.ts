@@ -1,4 +1,4 @@
-import process from "node:process";
+import { stderr, stdout } from "node:process";
 
 import type { ExtendedRfc5424LogLevels, LiteralUnion, StreamAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
@@ -12,18 +12,18 @@ class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> imp
     public constructor() {
         super();
 
-        this.#stdout = process.stdout;
-        this.#stderr = process.stderr;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStdout(stdout: NodeJS.WriteStream) {
         this.#stdout = stdout;
+        this.#stderr = stderr;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStderr(stderr: NodeJS.WriteStream) {
-        this.#stderr = stderr;
+    public setStdout(stdout_: NodeJS.WriteStream) {
+        this.#stdout = stdout_;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    public setStderr(stderr_: NodeJS.WriteStream) {
+        this.#stderr = stderr_;
     }
 
     protected override _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {

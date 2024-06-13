@@ -1,3 +1,5 @@
+import { stderr, stdout } from "node:process";
+
 import type { stringify } from "safe-stable-stringify";
 
 import type InteractiveManager from "../../interactive/interactive-manager";
@@ -17,18 +19,18 @@ class RawReporter<L extends string = never> implements StreamAwareReporter<L>, S
     #interactive = false;
 
     public constructor() {
-        this.#stdout = process.stdout;
-        this.#stderr = process.stderr;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStdout(stdout: NodeJS.WriteStream) {
         this.#stdout = stdout;
+        this.#stderr = stderr;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStderr(stderr: NodeJS.WriteStream) {
-        this.#stderr = stderr;
+    public setStdout(stdout_: NodeJS.WriteStream) {
+        this.#stdout = stdout_;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    public setStderr(stderr_: NodeJS.WriteStream) {
+        this.#stderr = stderr_;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any

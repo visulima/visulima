@@ -1,3 +1,5 @@
+import { env, stderr, stdout } from "node:process";
+
 import type { PailServerType } from "./pail.server";
 import { PailServer } from "./pail.server";
 import ErrorProcessor from "./processor/error/error-processor";
@@ -7,11 +9,11 @@ import type { ConstructorOptions, ExtendedRfc5424LogLevels } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _getDefaultLogLevel = (): ExtendedRfc5424LogLevels => {
-    if (process.env.NODE_ENV === "debug" || process.env.DEBUG !== undefined) {
+    if (env.NODE_ENV === "debug" || env.DEBUG !== undefined) {
         return "debug";
     }
 
-    if (process.env.NODE_ENV === "test") {
+    if (env.NODE_ENV === "test") {
         return "warning";
     }
 
@@ -23,8 +25,8 @@ export const createPail = <T extends string = never, L extends string = never>(o
         logLevel: _getDefaultLogLevel(),
         processors: [new MessageFormatterProcessor<L>(), new ErrorProcessor<L>()],
         reporters: [new PrettyReporter()],
-        stderr: process.stderr,
-        stdout: process.stdout,
+        stderr,
+        stdout,
         ...options,
     });
 

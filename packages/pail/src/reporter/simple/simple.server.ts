@@ -1,3 +1,5 @@
+import { stderr, stdout } from "node:process";
+
 import colorize, { bgGrey, bold, grey, underline, white } from "@visulima/colorize";
 import type { stringify } from "safe-stable-stringify";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -35,16 +37,16 @@ class SimpleReporter<T extends string = never, L extends string = never> extends
             ...options,
         });
 
-        this.#stdout = process.stdout;
-        this.#stderr = process.stderr;
-    }
-
-    public setStdout(stdout: NodeJS.WriteStream): void {
         this.#stdout = stdout;
+        this.#stderr = stderr;
     }
 
-    public setStderr(stderr: NodeJS.WriteStream): void {
-        this.#stderr = stderr;
+    public setStdout(stdout_: NodeJS.WriteStream): void {
+        this.#stdout = stdout_;
+    }
+
+    public setStderr(stderr_: NodeJS.WriteStream): void {
+        this.#stderr = stderr_;
     }
 
     public setInteractiveManager(manager?: InteractiveManager): void {
@@ -81,7 +83,7 @@ class SimpleReporter<T extends string = never, L extends string = never> extends
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push((groupSpaces + grey("[" + groups.at(-1) + "] ")) as string);
+            items.push((groupSpaces + grey("[" + groups.at(-1) + "]") + " ") as string);
         }
 
         if (date) {
@@ -101,7 +103,7 @@ class SimpleReporter<T extends string = never, L extends string = never> extends
         const longestLabel: string = getLongestLabel<L, T>(this._loggerTypes);
 
         if (label) {
-            items.push(bold(colorized(formatLabel(label as string, this._styles)) + " "), " ".repeat(longestLabel.length - stringLength(label as string)));
+            items.push(bold(colorized(formatLabel(label as string, this._styles))) + " ", " ".repeat(longestLabel.length - stringLength(label as string)));
         } else {
             items.push(" ".repeat(longestLabel.length + 1));
         }
@@ -111,27 +113,25 @@ class SimpleReporter<T extends string = never, L extends string = never> extends
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
-            items.push(grey("[" + scope.join(" > ") + "] "));
+            items.push(grey("[" + scope.join(" > ") + "]") + " ");
         }
 
         if (prefix) {
-            items.push(grey("[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "] "));
+            items.push(grey("[" + (this._styles.underline.prefix ? underline(prefix as string) : prefix) + "]") + " ");
         }
 
         const titleSize = stringLength(items.join(""));
 
-        if (message) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+        const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
 
-            items.push(
-                groupSpaces +
-                    wrapAnsi(formattedMessage ?? "undefined", size - 3, {
-                        hard: true,
-                        trim: true,
-                        wordWrap: true,
-                    }),
-            );
-        }
+        items.push(
+            groupSpaces +
+                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                    hard: true,
+                    trim: true,
+                    wordWrap: true,
+                }),
+        );
 
         if (context) {
             let hasError = false;

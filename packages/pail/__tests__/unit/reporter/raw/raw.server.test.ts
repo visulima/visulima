@@ -1,3 +1,5 @@
+import { stderr, stdout } from "node:process";
+
 import { describe, expect, it, vi } from "vitest";
 
 import RawReporter from "../../../../src/reporter/raw/raw.server";
@@ -9,8 +11,8 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -32,7 +34,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(process.stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write");
 
         rawReporter.log(meta);
 
@@ -44,8 +46,8 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -67,7 +69,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(process.stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write");
 
         rawReporter.log(meta);
 
@@ -79,8 +81,8 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -102,7 +104,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(process.stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write");
 
         rawReporter.log(meta);
 
@@ -113,8 +115,8 @@ describe("raw-reporter", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -136,7 +138,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stderrWriteSpy = vi.spyOn(process.stderr, "write");
+        const stderrWriteSpy = vi.spyOn(stderr, "write");
 
         rawReporter.log(meta);
 
@@ -147,8 +149,8 @@ describe("raw-reporter", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -170,7 +172,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stderrWriteSpy = vi.spyOn(process.stderr, "write");
+        const stderrWriteSpy = vi.spyOn(stderr, "write");
 
         rawReporter.log(meta);
 
@@ -181,8 +183,8 @@ describe("raw-reporter", () => {
         expect.assertions(1);
 
         const rawReporter = new RawReporter();
-        rawReporter.setStdout(process.stdout);
-        rawReporter.setStderr(process.stderr);
+        rawReporter.setStdout(stdout);
+        rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
         const meta: ReadonlyMeta = {
@@ -204,7 +206,7 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(process.stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write");
 
         rawReporter.log(meta);
 

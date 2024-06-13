@@ -1,15 +1,31 @@
-import SimpleReporter from "../../../../src/reporter/simple/simple.server";
-import { describe, it, expect, vi } from "vitest";
+import { stderr, stdout } from "node:process";
 
-describe("SimpleReporter", () => {
+import { blueBright, bold, grey, red } from "@visulima/colorize";
+import { describe, expect, it, vi } from "vitest";
+
+import SimpleReporter from "../../../../src/reporter/simple/simple.server";
+import { stringify } from "safe-stable-stringify";
+
+vi.mock("terminal-size", () => {
+    return {
+        default: () => {
+            return {
+                columns: 80,
+                rows: 24,
+            };
+        },
+    };
+});
+
+describe("simpleReporter", () => {
     it("should format and write messages correctly to stdout", () => {
         expect.assertions(1);
 
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "INFO",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
             type: {
@@ -17,10 +33,38 @@ describe("SimpleReporter", () => {
                 name: "info",
             },
         };
-        const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        const stdoutSpy = vi.spyOn(stdout, "write");
         simpleReporter.log(meta);
 
-        expect(stdoutSpy).toHaveBeenCalled();
+        expect(stdoutSpy).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+        );
+
+        stdoutSpy.mockRestore();
+    });
+
+    it("should format and write messages correctly to stdout with scope", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+        const meta = {
+            badge: "INFO",
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
+            label: "Label",
+            message: "This is a sample message",
+            scope: ["Scope1", "Scope2"],
+            type: {
+                level: "informational",
+                name: "info",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write");
+        simpleReporter.log(meta);
+
+        expect(stdoutSpy).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
+        );
 
         stdoutSpy.mockRestore();
     });
@@ -31,8 +75,8 @@ describe("SimpleReporter", () => {
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "ERROR",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
             type: {
@@ -40,11 +84,13 @@ describe("SimpleReporter", () => {
                 name: "error",
             },
         };
-        const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+        const stderrSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
 
         simpleReporter.log(meta);
 
-        expect(stderrSpy).toHaveBeenCalled();
+        expect(stderrSpy).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+        );
 
         stderrSpy.mockRestore();
     });
@@ -59,8 +105,8 @@ describe("SimpleReporter", () => {
 
         const meta = {
             badge: "INFO",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
             type: {
@@ -71,7 +117,10 @@ describe("SimpleReporter", () => {
 
         simpleReporter.log(meta);
 
-        expect(newStdout.write).toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(newStdout.write).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+        );
     });
 
     it("should update the stderr stream correctly", () => {
@@ -84,8 +133,8 @@ describe("SimpleReporter", () => {
 
         const meta = {
             badge: "ERROR",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
             type: {
@@ -96,13 +145,18 @@ describe("SimpleReporter", () => {
 
         simpleReporter.log(meta);
 
-        expect(newStderr.write).toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        expect(newStderr.write).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+        );
     });
 
     it("should handle undefined or null meta fields gracefully", () => {
         expect.assertions(1);
 
         const simpleReporter = new SimpleReporter();
+        simpleReporter.setStringify(stringify);
+
         const meta = {
             badge: undefined,
             date: null,
@@ -114,7 +168,7 @@ describe("SimpleReporter", () => {
                 name: "info",
             },
         };
-        const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
         expect(() => simpleReporter.log(meta)).not.toThrow();
 
@@ -127,18 +181,19 @@ describe("SimpleReporter", () => {
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "INFO",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            context: [],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
-            context: [],
             type: {
                 level: "informational",
                 name: "info",
             },
         };
 
-        const formattedMessage = simpleReporter["_formatMessage"](meta);
+        // @ts-expect-error - just for testing
+        const formattedMessage = simpleReporter._formatMessage(meta);
 
         expect(formattedMessage).toContain("This is a sample message");
     });
@@ -149,8 +204,8 @@ describe("SimpleReporter", () => {
         const simpleReporter = new SimpleReporter({ messageLength: 20 });
         const meta = {
             badge: "INFO",
-            date: new Date(),
-            groups: ["Group1", "Group2"],
+            date: new Date("2021-09-16T09:16:52.000Z"),
+            groups: ["Group1"],
             label: "Label",
             message: "This is a very long sample message that should be wrapped correctly.",
             type: {
@@ -158,7 +213,7 @@ describe("SimpleReporter", () => {
                 name: "info",
             },
         };
-        const formattedMessage = simpleReporter["_formatMessage"](meta);
+        const formattedMessage = simpleReporter._formatMessage(meta);
 
         expect(formattedMessage.split("\n").length).toBeGreaterThan(1);
     });
