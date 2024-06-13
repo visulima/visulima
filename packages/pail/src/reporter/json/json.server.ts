@@ -1,10 +1,12 @@
 import { stderr, stdout } from "node:process";
 
-import type { ExtendedRfc5424LogLevels, LiteralUnion, StreamAwareReporter } from "../../types";
+import type { LiteralUnion } from "type-fest";
+
+import type { ExtendedRfc5424LogLevels, StreamAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
 import AbstractJsonReporter from "./abstract-json-reporter";
 
-class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> implements StreamAwareReporter<L> {
+class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> implements StreamAwareReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;

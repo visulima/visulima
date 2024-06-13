@@ -1,4 +1,5 @@
 import type { AnsiColors } from "@visulima/colorize";
+import type { LiteralUnion, Primitive } from "type-fest";
 
 import type InteractiveManager from "./interactive/interactive-manager";
 
@@ -13,10 +14,6 @@ declare global {
     }
 }
 
-export type Primitive = bigint | boolean | number | string | symbol | null | undefined;
-
-export type LiteralUnion<LiteralType, BaseType extends Primitive> = LiteralType | (BaseType & Record<never, never>);
-
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
 // @ts-ignore -- wrong extend type
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
@@ -27,6 +24,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     error: Error | undefined;
     groups: string[];
     label: string | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
     prefix: string | undefined;
     repeated?: number | undefined;
@@ -62,13 +60,13 @@ export type DefaultLogTypes =
     | "watch";
 
 export interface LoggerFunction {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (...message: any[]): void;
     (message: Message): void;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    (...message: (Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown> | undefined)[]): void;
 }
 
 // alias for backward-compatibility
-export interface LoggerConfiguration<L extends string = never> {
+export interface LoggerConfiguration<L extends string> {
     badge?: string;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     color?: AnsiColors | undefined;
@@ -76,42 +74,42 @@ export interface LoggerConfiguration<L extends string = never> {
     logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;
 }
 
-export type LoggerTypesConfig<T extends string, L extends string = never> = Record<T, Partial<LoggerConfiguration<L>>>;
-export type DefaultLoggerTypes<L extends string = never> = Record<DefaultLogTypes, LoggerConfiguration<L>>;
+export type LoggerTypesConfig<T extends string, L extends string> = Record<T, Partial<LoggerConfiguration<L>>>;
+export type DefaultLoggerTypes<L extends string = string> = Record<DefaultLogTypes, LoggerConfiguration<L>>;
 
-export type ReadonlyMeta<L extends string = never> = Readonly<Meta<L>>;
+export type ReadonlyMeta<L extends string> = Readonly<Meta<L>>;
 
-export interface Reporter<L extends string = never> {
+export interface Reporter<L extends string> {
     log: (meta: ReadonlyMeta<L>) => void;
 }
 
-export interface StreamAwareReporter<L extends string = never> extends Reporter<L> {
+export interface StreamAwareReporter<L extends string> extends Reporter<L> {
     setStderr: (stderr: NodeJS.WriteStream) => void;
     setStdout: (stdout: NodeJS.WriteStream) => void;
 }
 
-export interface LoggerTypesAwareReporter<T extends string = never, L extends string = never> extends Reporter<L> {
+export interface LoggerTypesAwareReporter<T extends string, L extends string> extends Reporter<L> {
     setLoggerTypes: (types: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>) => void;
 }
 
-export interface StringifyAwareReporter<L extends string = never> extends Reporter<L> {
+export interface StringifyAwareReporter<L extends string> extends Reporter<L> {
     setStringify: (stringify: typeof JSON.stringify) => void;
 }
 
-export interface InteractiveStreamReporter<L extends string = never> extends StreamAwareReporter<L> {
+export interface InteractiveStreamReporter<L extends string> extends StreamAwareReporter<L> {
     setInteractiveManager: (manager?: InteractiveManager) => void;
     setIsInteractive: (interactive: boolean) => void;
 }
 
-export interface Processor<L extends string = never> {
+export interface Processor<L extends string> {
     process: (meta: Meta<L>) => Meta<L>;
 }
 
-export interface StringifyAwareProcessor<L extends string = never> extends Processor<L> {
+export interface StringifyAwareProcessor<L extends string> extends Processor<L> {
     setStringify: (stringify: typeof JSON.stringify) => void;
 }
 
-export interface ConstructorOptions<T extends string = never, L extends string = never> {
+export interface ConstructorOptions<T extends string, L extends string> {
     disabled?: boolean;
     logLevel?: LiteralUnion<ExtendedRfc5424LogLevels, L>;
     logLevels?: Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<L, number>;
@@ -131,7 +129,7 @@ export interface ConstructorOptions<T extends string = never, L extends string =
     types?: LoggerTypesConfig<T, L> & Partial<LoggerTypesConfig<DefaultLogTypes, L>>;
 }
 
-export interface ServerConstructorOptions<T extends string = never, L extends string = never> extends ConstructorOptions<T, L> {
+export interface ServerConstructorOptions<T extends string, L extends string> extends ConstructorOptions<T, L> {
     interactive?: boolean;
     stderr?: NodeJS.WriteStream;
     stdout?: NodeJS.WriteStream;
@@ -140,7 +138,8 @@ export interface ServerConstructorOptions<T extends string = never, L extends st
 export type Message = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any[] | undefined;
-    message: Primitive | ReadonlyArray<unknown> | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown> | undefined;
     prefix?: string;
     suffix?: string;
 };

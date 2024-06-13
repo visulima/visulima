@@ -17,7 +17,7 @@ declare global {
     }
 }
 
-class CallerProcessor<L extends string = never> implements Processor<L> {
+class CallerProcessor<L extends string = string> implements Processor<L> {
     // eslint-disable-next-line class-methods-use-this
     public process(meta: Meta<L>): Meta<L> {
         const { columnNumber, fileName, lineNumber } = getCallerFilename();

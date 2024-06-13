@@ -6,7 +6,7 @@ import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
 
-class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
+class RawReporter<L extends string = string> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 

@@ -9,7 +9,7 @@ export type Options = RfsOptions & {
     writeImmediately?: boolean;
 };
 
-export abstract class AbstractFileReporter<L extends string = never> implements Reporter<L> {
+export abstract class AbstractFileReporter<L extends string = string> implements Reporter<L> {
     protected stream: RotatingFileStream;
 
     protected constructor(options: Options) {

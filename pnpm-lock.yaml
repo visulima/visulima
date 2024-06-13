@@ -1521,8 +1521,8 @@ importers:
         specifier: 1.4.3
         version: 1.4.3
       '@visulima/pail':
-        specifier: 1.1.13
-        version: 1.1.13(rotating-file-stream@3.2.3)
+        specifier: 1.2.0
+        version: 1.2.0(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -3565,6 +3565,9 @@ importers:
       terminal-size:
         specifier: ^4.0.0
         version: 4.0.0
+      type-fest:
+        specifier: ^4.20.0
+        version: 4.20.0
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -9230,8 +9233,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@1.1.13':
-    resolution: {integrity: sha512-UCC1yJgwSiGHTauha1e7nSyAy9rmZ6O5PcS0JDhxOjtM6zbLWXApDILagf1pw340C9ZiTVZV9rJ/YsKGH+eOaQ==}
+  '@visulima/pail@1.2.0':
+    resolution: {integrity: sha512-cuddiaAebpHUkrsAXJyQpUT5EIjd7pMPgaVr9qSA3Z8YHVzY7tS+MsDo+naQHpddRK75DRVOtHiG27vap9452A==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -27404,7 +27407,7 @@ snapshots:
       '@visulima/fs': 2.1.5(yaml@2.4.5)
       '@visulima/humanizer': 1.0.3
       '@visulima/package': 1.10.1(yaml@2.4.5)
-      '@visulima/pail': 1.1.13(rotating-file-stream@3.2.3)
+      '@visulima/pail': 1.2.0(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.2
       defu: 6.1.4
       es-module-lexer: 1.5.3
@@ -27441,7 +27444,7 @@ snapshots:
     optionalDependencies:
       rotating-file-stream: 3.2.3
 
-  '@visulima/pail@1.1.13(rotating-file-stream@3.2.3)':
+  '@visulima/pail@1.2.0(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.3
       '@visulima/fmt': 1.1.5

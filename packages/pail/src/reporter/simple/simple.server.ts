@@ -6,11 +6,12 @@ import type { stringify } from "safe-stable-stringify";
 import stringLength from "string-length";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
+import type { LiteralUnion } from "type-fest";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
 import type InteractiveManager from "../../interactive/interactive-manager";
-import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, LiteralUnion, ReadonlyMeta } from "../../types";
+import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
 import writeStream from "../../utils/write-stream";
@@ -19,7 +20,7 @@ import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 
-class SimpleReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;

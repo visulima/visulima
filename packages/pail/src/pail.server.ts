@@ -1,3 +1,5 @@
+import type { LiteralUnion } from "type-fest";
+
 import InteractiveManager from "./interactive/interactive-manager";
 import InteractiveStreamHook from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
@@ -6,7 +8,6 @@ import type {
     ConstructorOptions,
     DefaultLogTypes,
     InteractiveStreamReporter,
-    LiteralUnion,
     LoggerFunction,
     LoggerTypesAwareReporter,
     Reporter,
@@ -16,7 +17,7 @@ import type {
 } from "./types";
 import { clearTerminal } from "./utils/ansi-escapes";
 
-class PailServerImpl<T extends string = never, L extends string = never> extends PailBrowserImpl<T, L> {
+class PailServerImpl<T extends string = string, L extends string = string> extends PailBrowserImpl<T, L> {
     protected readonly stdout: NodeJS.WriteStream;
 
     protected readonly stderr: NodeJS.WriteStream;
@@ -152,11 +153,11 @@ class PailServerImpl<T extends string = never, L extends string = never> extends
     }
 }
 
-export type PailServerType<T extends string = never, L extends string = never> = PailServerImpl<T, L> &
+export type PailServerType<T extends string = string, L extends string = string> = PailServerImpl<T, L> &
     Record<DefaultLogTypes, LoggerFunction> &
     Record<T, LoggerFunction> &
-    (new<TC extends string = never, LC extends string = never>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
+    (new<TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>);
 
-export type PailConstructor<T extends string = never, L extends string = never> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
+export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
 
 export const PailServer = PailServerImpl as unknown as PailServerType;

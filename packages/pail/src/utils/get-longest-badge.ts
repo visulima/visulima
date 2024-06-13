@@ -1,4 +1,6 @@
-import type { DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../types";
+import type { LiteralUnion } from "type-fest";
+
+import type { DefaultLogTypes, LoggerTypesConfig } from "../types";
 
 const getLongestBadge = <L extends string, T extends string>(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): string => {
     const badges = Object.keys(types).map((x) => types[x as T].badge ?? "");

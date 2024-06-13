@@ -1,12 +1,14 @@
 import type { stringify } from "safe-stable-stringify";
+import type { LiteralUnion } from "type-fest";
 
 import { LOG_TYPES } from "../../constants";
-import type { DefaultLogTypes, LiteralUnion, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, StringifyAwareReporter } from "../../types";
-
+import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
 export const dateFormatter = (date: Date): string => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":");
 
-export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L> {
+export abstract class AbstractPrettyReporter<T extends string = string, L extends string = string>
+    implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L>
+{
     protected readonly _styles: PrettyStyleOptions;
 
     protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;

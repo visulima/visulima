@@ -4,7 +4,7 @@ import type { Meta } from "../../types";
 import type { Options as FileReporterOptions } from "./abstract-file-reporter";
 import { AbstractFileReporter } from "./abstract-file-reporter";
 
-class JsonFileReporter<L extends string = never> extends AbstractFileReporter<L> {
+class JsonFileReporter<L extends string = string> extends AbstractFileReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
