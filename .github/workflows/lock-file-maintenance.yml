@@ -57,4 +57,4 @@ jobs:
                   commit_message: "chore: update lock file [ci skip]"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
-                  commit_author: github-actions-shell <github-actions[bot]@users.noreply.github.com>
+                  commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"

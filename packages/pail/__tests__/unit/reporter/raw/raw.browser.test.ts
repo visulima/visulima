@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { RawReporter } from "../../../../src/reporter/raw/raw.browser";
+import RawReporter from "../../../../src/reporter/raw/raw.browser";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
@@ -14,7 +14,7 @@ describe("raw-reporter", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: "label",
             message: "This is a message",
             prefix: "prefix",
@@ -47,7 +47,7 @@ describe("raw-reporter", () => {
             context: [1, 2, 3],
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: "label",
             message: "This is a message",
             prefix: "prefix",
@@ -80,7 +80,7 @@ describe("raw-reporter", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: "label",
             message: "This is an error message",
             prefix: "prefix",
@@ -113,7 +113,7 @@ describe("raw-reporter", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: "label",
             message: "This is a trace message",
             prefix: "prefix",
@@ -146,7 +146,7 @@ describe("raw-reporter", () => {
             context: undefined,
             date: new Date(),
             error: undefined,
-            groups: undefined,
+            groups: [],
             label: "label",
             message: "",
             prefix: "prefix",

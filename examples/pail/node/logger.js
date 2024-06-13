@@ -4,8 +4,7 @@ import { Buffer } from "node:buffer";
 
 import { pail, createPail } from "@visulima/pail";
 import { CallerProcessor } from "@visulima/pail/processor";
-import { JsonReporter } from "@visulima/pail/reporter/json";
-import { JsonFileReporter } from "@visulima/pail/reporter/json-file";
+import { JsonReporter, JsonFileReporter } from "@visulima/pail/reporter";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 
@@ -15,9 +14,7 @@ pail.complete("Hello World!");
 
 console.log("------------------ TRACE ------------------", "\n");
 
-const traceLevel = pail.clone({ logLevel: "trace" });
-
-traceLevel.trace("This is a trace message");
+pail.trace("This is a trace message");
 
 console.log("------------------ TIME ------------------", "\n");
 

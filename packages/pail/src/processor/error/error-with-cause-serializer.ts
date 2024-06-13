@@ -22,7 +22,7 @@ type Options = {
  * - It's up to `.toJSON()` implementation to handle circular references and enumerability of the properties.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
+const errorWithCauseSerializer = (error: AggregateError | Error, options: Options = {}): SerializedError => {
     // @ts-expect-error - dynamic property
     // eslint-disable-next-line no-param-reassign
     error[seen as keyof Error] = undefined; // tag to prevent re-looking at this
@@ -76,3 +76,5 @@ export const errorWithCauseSerializer = (error: AggregateError | Error, options:
 
     return protoError;
 };
+
+export default errorWithCauseSerializer;

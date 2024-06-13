@@ -1,7 +1,7 @@
-import { InteractiveManager } from "./interactive/interactive-manager";
-import { InteractiveStreamHook } from "./interactive/interactive-stream-hook";
+import InteractiveManager from "./interactive/interactive-manager";
+import InteractiveStreamHook from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
-import { RawReporter } from "./reporter/raw/raw.server";
+import RawReporter from "./reporter/raw/raw.server";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -14,7 +14,7 @@ import type {
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
-import { clearTerminal } from "./util/ansi-escapes";
+import { clearTerminal } from "./utils/ansi-escapes";
 
 class PailServerImpl<T extends string = never, L extends string = never> extends PailBrowserImpl<T, L> {
     protected readonly stdout: NodeJS.WriteStream;

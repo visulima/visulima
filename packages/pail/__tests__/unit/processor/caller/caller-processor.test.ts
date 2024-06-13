@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { CallerProcessor } from "../../../src/processor/caller-processor";
+import CallerProcessor from "../../../../src/processor/caller/caller-processor";
+import type { Meta } from "../../../../src/types";
 
 const defaultMeta = {
     badge: undefined,
@@ -8,13 +9,15 @@ const defaultMeta = {
     date: new Date(),
     error: undefined,
     file: undefined,
+    groups: [],
     label: undefined,
     message: undefined,
     prefix: undefined,
     repeated: undefined,
     scope: undefined,
     suffix: undefined,
-    type: undefined,
+    traceError: undefined,
+    type: { level: "string", name: "string" },
 };
 
 describe("callerProcessor", () => {
@@ -23,7 +26,7 @@ describe("callerProcessor", () => {
 
         const processor = new CallerProcessor<string>();
 
-        const result = processor.process({ ...defaultMeta });
+        const result = processor.process({ ...defaultMeta } satisfies Meta<string>);
 
         expect(result.file).toStrictEqual({
             column: expect.any(Number),

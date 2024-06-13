@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 
 import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
-import { RawReporter } from "./reporter/raw/raw.browser";
+import RawReporter from "./reporter/raw/raw.browser";
 import type {
     ConstructorOptions,
     DefaultLogTypes,
@@ -20,10 +20,9 @@ import type {
     StringifyAwareProcessor,
     StringifyAwareReporter,
 } from "./types";
-import { arrayify } from "./util/arrayify";
-import { getLongestLabel } from "./util/get-longest-label";
-import { mergeTypes } from "./util/merge-types";
-import { padEnd } from "./util/pad-end";
+import arrayify from "./utils/arrayify";
+import getLongestLabel from "./utils/get-longest-label";
+import mergeTypes from "./utils/merge-types";
 
 const EMPTY_META = {
     badge: undefined,
@@ -165,19 +164,21 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
     }
 
     public wrapException(): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        process.on("uncaughtException", (error: any) => {
-            // @TODO: Fix typings
-            // @ts-expect-error - dynamic property
-            (this as unknown as PailBrowserImpl<T, L>).error(error);
-        });
+        if (typeof process !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            process.on("uncaughtException", (error: any) => {
+                // @TODO: Fix typings
+                // @ts-expect-error - dynamic property
+                (this as unknown as PailBrowserImpl<T, L>).error(error);
+            });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        process.on("unhandledRejection", (error: any) => {
-            // @TODO: Fix typings
-            // @ts-expect-error - dynamic property
-            (this as unknown as PailBrowserImpl<T, L>).error(error);
-        });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            process.on("unhandledRejection", (error: any) => {
+                // @TODO: Fix typings
+                // @ts-expect-error - dynamic property
+                (this as unknown as PailBrowserImpl<T, L>).error(error);
+            });
+        }
     }
 
     /**
@@ -424,7 +425,7 @@ export class PailBrowserImpl<T extends string = never, L extends string = never>
         }
 
         if (type.badge) {
-            meta.badge = padEnd(type.badge, type.badge.length + 1);
+            meta.badge = type.badge;
         }
 
         if (type.label) {
