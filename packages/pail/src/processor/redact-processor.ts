@@ -1,26 +1,28 @@
 import type { RedactOptions, Rules } from "@visulima/redact";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { redact, standardRules } from "@visulima/redact";
 
 import type { Meta, Processor } from "../types";
 
 class RedactProcessor<L extends string = string> implements Processor<L> {
-    readonly #rules: Rules;
+    readonly #redact: <T>(input: T) => T;
 
-    readonly #options: RedactOptions;
+    public constructor(rules?: Rules, options?: RedactOptions) {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires,import/no-extraneous-dependencies
+            const { redact, standardRules } = require("@visulima/redact");
 
-    public constructor(rules: Rules = standardRules, options: RedactOptions = {}) {
-        this.#rules = rules;
-        this.#options = options;
+            this.#redact = <T>(input: T) => redact(input, rules || standardRules, options);
+        } catch {
+            throw new Error("The '@visulima/redact' package is missing. Make sure to install the '@visulima/redact' package.");
+        }
     }
 
     public process(meta: Meta<L>): Meta<L> {
         // eslint-disable-next-line no-param-reassign
-        meta.message = redact(meta.message, this.#rules, this.#options);
+        meta.message = this.#redact<typeof meta.message>(meta.message);
         // eslint-disable-next-line no-param-reassign
-        meta.context = redact(meta.context, this.#rules, this.#options);
+        meta.context = this.#redact<typeof meta.context>(meta.context);
         // eslint-disable-next-line no-param-reassign
-        meta.error = redact(meta.error, this.#rules, this.#options);
+        meta.error = this.#redact<typeof meta.error>(meta.error);
 
         return meta;
     }
