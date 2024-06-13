@@ -17,7 +17,7 @@ import writeStream from "../../utils/write-stream";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import AbstractPrettyReporter from "./abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
 class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -87,7 +87,7 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         if (date) {
-            items.push(grey(this._styles.dateFormatter(new Date(date))) + " ");
+            items.push(grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date)) + " ");
         }
 
         if (badge) {

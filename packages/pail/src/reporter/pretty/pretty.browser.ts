@@ -6,7 +6,7 @@ import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
 import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
-import AbstractPrettyReporter from "./abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
 class PrettyReporter<T extends string = never, L extends string = never> extends AbstractPrettyReporter<T, L> {
     public constructor(options: Partial<PrettyStyleOptions> = {}) {
@@ -41,7 +41,7 @@ class PrettyReporter<T extends string = never, L extends string = never> extends
         }
 
         if (date) {
-            const cDate = grey(this._styles.dateFormatter(new Date(date)));
+            const cDate = grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date));
 
             if (isNotBrowser) {
                 items.push(format(cDate[0] as string, cDate.slice(1) as unknown as string[]));

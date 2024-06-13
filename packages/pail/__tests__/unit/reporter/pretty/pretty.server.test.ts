@@ -5,6 +5,7 @@ import { stringify } from "safe-stable-stringify";
 import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
+import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import PrettyReporter from "../../../../src/reporter/pretty/pretty.server";
 
 vi.mock("terminal-size", () => {
@@ -18,6 +19,8 @@ vi.mock("terminal-size", () => {
     };
 });
 
+const date = new Date("2021-09-16T09:16:52.000Z");
+
 describe("prettyReporter", () => {
     it("should format and write messages correctly to stdout", () => {
         expect.assertions(1);
@@ -25,7 +28,7 @@ describe("prettyReporter", () => {
         const prettyReporter = new PrettyReporter();
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -42,7 +45,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -54,7 +57,7 @@ describe("prettyReporter", () => {
         const prettyReporter = new PrettyReporter();
         const meta = {
             badge: "ERROR",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
@@ -71,7 +74,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta);
 
         expect(stderrSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
         );
 
         stderrSpy.mockRestore();
@@ -87,7 +90,7 @@ describe("prettyReporter", () => {
 
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -104,7 +107,7 @@ describe("prettyReporter", () => {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStdout.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
         );
     });
 
@@ -118,7 +121,7 @@ describe("prettyReporter", () => {
 
         const meta = {
             badge: "ERROR",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
@@ -135,7 +138,7 @@ describe("prettyReporter", () => {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStderr.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
         );
     });
 
@@ -148,7 +151,7 @@ describe("prettyReporter", () => {
 
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: null,
@@ -165,7 +168,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    null\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    null\n    ${grey("Suffix")}\n\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -199,7 +202,7 @@ describe("prettyReporter", () => {
         const prettyReporter = new PrettyReporter();
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -254,7 +257,7 @@ describe("prettyReporter", () => {
         const prettyReporter = new PrettyReporter();
         const meta = {
             badge: undefined,
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: [],
             label: undefined,
             message: "This is a sample message",

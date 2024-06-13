@@ -4,6 +4,7 @@ import { blueBright, bold, grey, red } from "@visulima/colorize";
 import { stringify } from "safe-stable-stringify";
 import { describe, expect, it, vi } from "vitest";
 
+import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import SimpleReporter from "../../../../src/reporter/simple/simple.server";
 
 vi.mock("terminal-size", () => {
@@ -17,6 +18,8 @@ vi.mock("terminal-size", () => {
     };
 });
 
+const date = new Date("2021-09-16T09:16:52.000Z");
+
 describe("simpleReporter", () => {
     it("should format and write messages correctly to stdout", () => {
         expect.assertions(1);
@@ -24,7 +27,7 @@ describe("simpleReporter", () => {
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -37,7 +40,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -49,7 +52,7 @@ describe("simpleReporter", () => {
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -63,7 +66,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -75,7 +78,7 @@ describe("simpleReporter", () => {
         const simpleReporter = new SimpleReporter();
         const meta = {
             badge: "ERROR",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
@@ -89,7 +92,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta);
 
         expect(stderrSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
 
         stderrSpy.mockRestore();
@@ -105,7 +108,7 @@ describe("simpleReporter", () => {
 
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -119,7 +122,7 @@ describe("simpleReporter", () => {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStdout.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
         );
     });
 
@@ -133,7 +136,7 @@ describe("simpleReporter", () => {
 
         const meta = {
             badge: "ERROR",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is an error message",
@@ -147,7 +150,7 @@ describe("simpleReporter", () => {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStderr.write).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey("11:16:52")} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
     });
 
@@ -182,7 +185,7 @@ describe("simpleReporter", () => {
         const meta = {
             badge: "INFO",
             context: [],
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a sample message",
@@ -204,7 +207,7 @@ describe("simpleReporter", () => {
         const simpleReporter = new SimpleReporter({ messageLength: 20 });
         const meta = {
             badge: "INFO",
-            date: new Date("2021-09-16T09:16:52.000Z"),
+            date,
             groups: ["Group1"],
             label: "Label",
             message: "This is a very long sample message that should be wrapped correctly.",

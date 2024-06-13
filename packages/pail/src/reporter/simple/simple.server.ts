@@ -15,7 +15,7 @@ import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
 import writeStream from "../../utils/write-stream";
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
-import AbstractPrettyReporter from "../pretty/abstract-pretty-reporter";
+import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 
@@ -87,7 +87,7 @@ class SimpleReporter<T extends string = never, L extends string = never> extends
         }
 
         if (date) {
-            items.push(grey(this._styles.dateFormatter(new Date(date))) + " ");
+            items.push(grey(this._styles.dateFormatter(typeof date === "string" ? new Date(date) : date)) + " ");
         }
 
         if (badge) {

@@ -17,7 +17,8 @@ export type Primitive = bigint | boolean | number | string | symbol | null | und
 
 export type LiteralUnion<LiteralType, BaseType extends Primitive> = LiteralType | (BaseType & Record<never, never>);
 
-// @ts-expect-error -- wrong extend type
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
+// @ts-ignore -- wrong extend type
 export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
     badge: string | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

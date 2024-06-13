@@ -3,7 +3,10 @@ import type { stringify } from "safe-stable-stringify";
 import { LOG_TYPES } from "../../constants";
 import type { DefaultLogTypes, LiteralUnion, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L> {
+
+export const dateFormatter = (date: Date): string => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":");
+
+export abstract class AbstractPrettyReporter<T extends string = never, L extends string = never> implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L> {
     protected readonly _styles: PrettyStyleOptions;
 
     protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
@@ -16,7 +19,7 @@ abstract class AbstractPrettyReporter<T extends string = never, L extends string
             bold: {
                 label: false,
             },
-            dateFormatter: (date: Date) => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":"),
+            dateFormatter,
             underline: {
                 label: false,
                 message: false,
@@ -60,5 +63,3 @@ export type PrettyStyleOptions = {
         label: boolean;
     };
 };
-
-export default AbstractPrettyReporter;
