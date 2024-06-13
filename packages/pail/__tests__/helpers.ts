@@ -16,7 +16,7 @@ export const execScriptSync = async (file: string, flags: string[] = [], environ
     }
 
     const result = execSync(cmd, { encoding: "buffer" });
-    console.log({ result }, result.length);
+
     // replace last newline in result
     return result.toString("utf8").replace(/\n$/, "");
 };

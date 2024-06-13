@@ -1,10 +1,10 @@
 import { stderr, stdout } from "node:process";
 
 import { blueBright, bold, grey, red } from "@visulima/colorize";
+import { stringify } from "safe-stable-stringify";
 import { describe, expect, it, vi } from "vitest";
 
 import SimpleReporter from "../../../../src/reporter/simple/simple.server";
-import { stringify } from "safe-stable-stringify";
 
 vi.mock("terminal-size", () => {
     return {

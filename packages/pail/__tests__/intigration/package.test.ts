@@ -26,7 +26,7 @@ describe("usage `@visulima/pail` npm package", () => {
         expect(JSON.parse(received)).toStrictEqual({
             date: expect.any(String),
             groups: [],
-            label: "success",
+            label: "warning",
             message: "cjs",
             scope: [],
         });
@@ -41,7 +41,7 @@ describe("usage `@visulima/pail` npm package", () => {
         expect(JSON.parse(esc(received))).toStrictEqual({
             date: expect.any(String),
             groups: [],
-            label: "success",
+            label: "warning",
             message: "esm",
             scope: [],
         });
