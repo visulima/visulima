@@ -122,18 +122,7 @@
                 "default": "./dist/reporter.server.mjs"
             }
         },
-        "./browser/reporter": {
-            "require": {
-                "types": "./dist/reporter.browser.d.cts",
-                "default": "./dist/reporter.browser.cjs"
-            },
-            "import": {
-                "types": "./dist/reporter.browser.d.mts",
-                "default": "./dist/reporter.browser.mjs"
-            }
-        },
         "./server/reporter": {
-            "browser": "./dist/reporter.browser.mjs",
             "require": {
                 "types": "./dist/reporter.server.d.cts",
                 "default": "./dist/reporter.server.cjs"
@@ -141,6 +130,17 @@
             "import": {
                 "types": "./dist/reporter.server.d.mts",
                 "default": "./dist/reporter.server.mjs"
+            }
+        },
+        "./browser/reporter": {
+            "browser": "./dist/reporter.browser.mjs",
+            "require": {
+                "types": "./dist/reporter.browser.d.cts",
+                "default": "./dist/reporter.browser.cjs"
+            },
+            "import": {
+                "types": "./dist/reporter.browser.d.mts",
+                "default": "./dist/reporter.browser.mjs"
             }
         },
         "./processor": {
@@ -152,6 +152,27 @@
             "import": {
                 "types": "./dist/processor.server.d.mts",
                 "default": "./dist/processor.server.mjs"
+            }
+        },
+        "./server/processor": {
+            "require": {
+                "types": "./dist/processor.server.d.cts",
+                "default": "./dist/processor.server.cjs"
+            },
+            "import": {
+                "types": "./dist/processor.server.d.mts",
+                "default": "./dist/processor.server.mjs"
+            }
+        },
+        "./browser/processor": {
+            "browser": "./dist/processor.browser.mjs",
+            "require": {
+                "types": "./dist/processor.browser.d.cts",
+                "default": "./dist/processor.browser.cjs"
+            },
+            "import": {
+                "types": "./dist/processor.browser.d.mts",
+                "default": "./dist/processor.browser.mjs"
             }
         },
         "./package.json": "./package.json"
