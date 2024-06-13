@@ -1,3 +1,18 @@
+## @visulima/boxen [1.0.10](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.9...@visulima/boxen@1.0.10) (2024-06-13)
+
+### Miscellaneous Chores
+
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.3
+
 ## @visulima/boxen [1.0.9](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.8...@visulima/boxen@1.0.9) (2024-06-06)
 
 

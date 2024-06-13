@@ -1,6 +1,6 @@
 {
     "name": "@visulima/boxen",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "Util.format-like string formatting utility.",
     "keywords": [
         "anolilab",
@@ -90,7 +90,7 @@
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.19.15",
-        "@visulima/colorize": "1.4.2",
+        "@visulima/colorize": "1.4.3",
         "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
