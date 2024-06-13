@@ -1,3 +1,10 @@
+## @visulima/pail [1.2.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.0...@visulima/pail@1.2.1) (2024-06-13)
+
+### Bug Fixes
+
+* **pail:** fixed wrong require use of rotating-file-stream ([37d9353](https://github.com/visulima/visulima/commit/37d9353e84f9373e1ba05c622e28a5a254d1d5e5))
+* **pail:** moved import of rotating-file-stream into a lazy import, removed wrong never typing ([0513e27](https://github.com/visulima/visulima/commit/0513e2719eebda4d139ae406cfadd2ae483be5ba))
+
 ## @visulima/pail [1.2.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.13...@visulima/pail@1.2.0) (2024-06-13)
 
 ### Features
