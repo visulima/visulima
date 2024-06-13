@@ -1,3 +1,9 @@
+## @visulima/pail [1.2.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.13...@visulima/pail@1.2.0) (2024-06-13)
+
+### Features
+
+* added simple reporter, fixed caller return, changed log color ([#418](https://github.com/visulima/visulima/issues/418)) ([e22b954](https://github.com/visulima/visulima/commit/e22b9543dc9eaf118e415414d31b5119e4a2455a))
+
 ## @visulima/pail [1.1.13](https://github.com/visulima/visulima/compare/@visulima/pail@1.1.12...@visulima/pail@1.1.13) (2024-06-13)
 
 ### Miscellaneous Chores
