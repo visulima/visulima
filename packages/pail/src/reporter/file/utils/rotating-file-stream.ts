@@ -1,8 +1,17 @@
 import type { Writable } from "node:stream";
 
-import type { Options as RfsOptions } from "rotating-file-stream";
+import type { createStream as createRotatingStream, Options as RfsOptions } from "rotating-file-stream";
 
 import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
+
+let createRfsStream: typeof createRotatingStream;
+
+try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+    createRfsStream = require("rotating-file-stream").createStream;
+} catch {
+    throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
+}
 
 /**
  * A wrapper for the `rfs` module that will optionally write to disk immediately
@@ -23,14 +32,7 @@ class RotatingFileStream {
         this.#options = options;
 
         if (!this.#immediate) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
-                const createRfsStream = require("rotating-file-stream");
-
-                this.#stream = createRfsStream(this.#filePath, options);
-            } catch {
-                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
-            }
+            this.#stream = createRfsStream(this.#filePath, options);
         }
     }
 
@@ -42,14 +44,7 @@ class RotatingFileStream {
         let fileStream = this.#stream;
 
         if (this.#immediate) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
-                const createRfsStream = require("rotating-file-stream");
-
-                fileStream = createRfsStream(this.#filePath, this.#options);
-            } catch {
-                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
-            }
+            fileStream = createRfsStream(this.#filePath, this.#options);
         }
 
         const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);
