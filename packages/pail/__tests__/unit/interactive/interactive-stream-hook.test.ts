@@ -2,9 +2,9 @@ import type { WriteStream as TtyWriteStream } from "node:tty";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { InteractiveStreamHook } from "../../../src/interactive/interactive-stream-hook";
-import { cursorHide, cursorShow, eraseLines } from "../../../src/util/ansi-escapes";
-import { WriteStream } from "./__mocks__/write-stream.mock.js";
+import InteractiveStreamHook from "../../../src/interactive/interactive-stream-hook";
+import { cursorHide, cursorShow, eraseLines } from "../../../src/utils/ansi-escapes";
+import WriteStream from "./__mocks__/write-stream.mock.js";
 
 const stream = new WriteStream() as unknown as TtyWriteStream & WriteStream;
 const hook = new InteractiveStreamHook(stream);

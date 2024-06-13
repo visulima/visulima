@@ -1,6 +1,6 @@
 import type { Meta, Processor } from "../../types";
 import type { SerializedError } from "./error-proto";
-import { errorWithCauseSerializer } from "./error-with-cause-serializer";
+import errorWithCauseSerializer from "./error-with-cause-serializer";
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -12,7 +12,7 @@ declare global {
     }
 }
 
-export class ErrorProcessor<L extends string = never> implements Processor<L> {
+class ErrorProcessor<L extends string = never> implements Processor<L> {
     private readonly _options: { maxDepth: number; useToJSON: boolean };
 
     public constructor(options: { maxDepth?: number; useToJSON?: boolean } = {}) {
@@ -32,3 +32,5 @@ export class ErrorProcessor<L extends string = never> implements Processor<L> {
         return meta;
     }
 }
+
+export default ErrorProcessor;

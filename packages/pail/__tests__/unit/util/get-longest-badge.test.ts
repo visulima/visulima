@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../../../src/types";
-import { getLongestBadge } from "../../../src/util/get-longest-badge";
+import getLongestBadge from "../../../src/utils/get-longest-badge";
 
 describe("getLongestBadge", () => {
     it("should return the longest badge when given a non-empty list of badges", () => {

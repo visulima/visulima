@@ -1,6 +1,6 @@
 import type { DefaultLogTypes, LiteralUnion, LoggerTypesConfig } from "../types";
 
-export const getLongestLabel = <L extends string, T extends string>(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): string => {
+const getLongestLabel = <L extends string, T extends string>(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): string => {
     const labels = Object.keys(types).map((x) => types[x as T].label ?? "");
 
     if (labels.length === 0) {
@@ -10,3 +10,5 @@ export const getLongestLabel = <L extends string, T extends string>(types: Logge
     // eslint-disable-next-line unicorn/no-array-reduce
     return labels.reduce((x, y) => (x.length > y.length ? x : y));
 };
+
+export default getLongestLabel;

@@ -1,4 +1,4 @@
-export class WriteStream {
+class WriteStream {
     private static readonly COLUMNS = 80;
 
     private static readonly ROWS = 12;
@@ -23,3 +23,5 @@ export class WriteStream {
         return !!this._stack.push(...(typeof string_ === "string" ? string_.split("\n") : [string_]));
     }
 }
+
+export default WriteStream;

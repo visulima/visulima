@@ -1,8 +1,8 @@
 import type { ExtendedRfc5424LogLevels, LiteralUnion } from "../../types";
-import { writeConsoleLogBasedOnLevel } from "../../util/write-console-log";
-import { AbstractJsonReporter } from "./abstract-json-reporter";
+import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
+import AbstractJsonReporter from "./abstract-json-reporter";
 
-export class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
+class JsonReporter<L extends string = never> extends AbstractJsonReporter<L> {
     public constructor() {
         super();
     }
@@ -14,3 +14,5 @@ export class JsonReporter<L extends string = never> extends AbstractJsonReporter
         consoleLogFunction(message);
     }
 }
+
+export default JsonReporter;

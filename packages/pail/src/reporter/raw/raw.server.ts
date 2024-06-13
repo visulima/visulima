@@ -1,10 +1,12 @@
+import { stderr, stdout } from "node:process";
+
 import type { stringify } from "safe-stable-stringify";
 
-import type { InteractiveManager } from "../../interactive/interactive-manager";
+import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "../../types";
-import { writeStream } from "../../util/write-stream";
+import writeStream from "../../utils/write-stream";
 
-export class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
+class RawReporter<L extends string = never> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #stringify: typeof stringify | undefined;
 
@@ -17,18 +19,18 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
     #interactive = false;
 
     public constructor() {
-        this.#stdout = process.stdout;
-        this.#stderr = process.stderr;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStdout(stdout: NodeJS.WriteStream) {
         this.#stdout = stdout;
+        this.#stderr = stderr;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    public setStderr(stderr: NodeJS.WriteStream) {
-        this.#stderr = stderr;
+    public setStdout(stdout_: NodeJS.WriteStream) {
+        this.#stdout = stdout_;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    public setStderr(stderr_: NodeJS.WriteStream) {
+        this.#stderr = stderr_;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
@@ -76,3 +78,5 @@ export class RawReporter<L extends string = never> implements StreamAwareReporte
         }
     }
 }
+
+export default RawReporter;

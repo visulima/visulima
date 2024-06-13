@@ -5,4 +5,4 @@ const pail = createPail({
     reporters: [new JsonReporter()],
 });
 
-pail.success("cjs");
+pail.warn("cjs");

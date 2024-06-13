@@ -6,14 +6,17 @@ import { execSync } from "node:child_process";
  */
 export const esc = (string_: string): string => string_.replaceAll("", "\\x1b");
 
-/**
- * Return output of javascript file.
- */
-export const execScriptSync = (file: string, flags: string[] = [], environment: string[] = []): string => {
+export const execScriptSync = async (file: string, flags: string[] = [], environment: string[] = [], crossEnvironment = false): Promise<string> => {
     const environmentVariables = environment.length > 0 ? `${environment.join(" ")} ` : "";
-    const cmd = `cross-env ${environmentVariables}node "${file}" ${flags.join(" ")}`;
-    const result = execSync(cmd);
+
+    let cmd = `node "${file}"${flags.length > 0 ? " " + flags.join(" ") : ""}`;
+
+    if (environmentVariables) {
+        cmd = (crossEnvironment ? "cross-env " : "") + `${environmentVariables}${cmd}`;
+    }
+
+    const result = execSync(cmd, { encoding: "buffer" });
 
     // replace last newline in result
-    return result.toString().replace(/\n$/, "");
+    return result.toString("utf8").replace(/\n$/, "");
 };

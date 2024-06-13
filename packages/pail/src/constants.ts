@@ -33,7 +33,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
     critical: {
-        color: "red",
+        color: "redBright",
         label: "critical",
         logLevel: "critical",
     },
@@ -43,7 +43,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "debug",
     },
     emergency: {
-        color: "red",
+        color: "redBright",
         label: "emergency",
         logLevel: "emergency",
     },
@@ -53,7 +53,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "error",
     },
     info: {
-        color: "blue",
+        color: "blueBright",
         label: "info",
         logLevel: "informational",
     },
@@ -62,7 +62,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
     notice: {
-        color: "blue",
+        color: "magentaBright",
         label: "notice",
         logLevel: "notice",
     },
@@ -72,12 +72,12 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
     start: {
-        color: "green",
+        color: "greenBright",
         label: "start",
         logLevel: "informational",
     },
     stop: {
-        color: "yellow",
+        color: "red",
         label: "stop",
         logLevel: "informational",
     },
@@ -87,7 +87,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
     trace: {
-        color: "magenta",
+        color: "cyanBright",
         label: "trace",
         logLevel: "trace",
     },
@@ -102,7 +102,7 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "warning",
     },
     watch: {
-        color: "yellow",
+        color: "yellowBright",
         label: "watching",
         logLevel: "informational",
     },

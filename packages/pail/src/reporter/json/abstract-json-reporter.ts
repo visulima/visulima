@@ -2,13 +2,13 @@ import type { stringify } from "safe-stable-stringify";
 
 import type { ExtendedRfc5424LogLevels, LiteralUnion, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-export abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
+abstract class AbstractJsonReporter<L extends string = never> implements StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected _stringify: typeof stringify | undefined;
+    protected stringify: typeof stringify | undefined;
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public setStringify(function_: any): void {
-        this._stringify = function_;
+        this.stringify = function_;
     }
 
     public log(meta: ReadonlyMeta<L>): void {
@@ -25,8 +25,10 @@ export abstract class AbstractJsonReporter<L extends string = never> implements 
             (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = file.name + ":" + file.line + (file.column ? ":" + file.column : "");
         }
 
-        this._log((this._stringify as typeof stringify)(rest) as string, type.level);
+        this._log((this.stringify as typeof stringify)(rest) as string, type.level);
     }
 
     protected abstract _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void;
 }
+
+export default AbstractJsonReporter;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { arrayify } from "../../../src/util/arrayify";
+import arrayify from "../../../src/utils/arrayify";
 
 describe("arrayify", () => {
     it("should return an empty array when input is undefined", () => {

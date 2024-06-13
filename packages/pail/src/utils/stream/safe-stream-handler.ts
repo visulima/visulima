@@ -4,7 +4,7 @@ import type { Writable } from "node:stream";
  * A handler for writable streams that only writes if the stream has finished
  * processing or draining
  */
-export class SafeStreamHandler {
+class SafeStreamHandler {
     public _ready = true;
 
     protected _stream: Writable;
@@ -52,3 +52,5 @@ export class SafeStreamHandler {
         this._ready = this._stream.write(message, () => {});
     }
 }
+
+export default SafeStreamHandler;
