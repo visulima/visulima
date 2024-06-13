@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "1.1.12",
+    "version": "1.1.13",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "anolilab",
@@ -179,7 +179,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.2",
+        "@visulima/colorize": "1.4.3",
         "@visulima/fmt": "1.1.5",
         "safe-stable-stringify": "^2.4.3"
     },
