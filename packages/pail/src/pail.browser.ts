@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
 
-import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
+import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import RawReporter from "./reporter/raw/raw.browser";
 import type {
     ConstructorOptions,
@@ -23,18 +23,6 @@ import type {
 import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
-
-const EMPTY_META = {
-    badge: undefined,
-    context: undefined,
-    error: undefined,
-    label: undefined,
-    message: undefined,
-    prefix: undefined,
-    repeated: undefined,
-    scope: undefined,
-    suffix: undefined,
-};
 
 export class PailBrowserImpl<T extends string = string, L extends string = string> {
     protected timersMap: Map<string, number>;
@@ -379,7 +367,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
     private _buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
-        const meta = { ...EMPTY_META } as Meta<L>;
+        const meta = {
+            badge: undefined,
+            context: undefined,
+            error: undefined,
+            label: undefined,
+            message: EMPTY_SYMBOL,
+            prefix: undefined,
+            repeated: undefined,
+            scope: undefined,
+            suffix: undefined,
+        } as Meta<L>;
 
         meta.type = {
             level: type.logLevel as LiteralUnion<ExtendedRfc5424LogLevels, L>,

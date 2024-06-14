@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import JsonFileReporter from "../../../../src/reporter/file/json-file-reporter";
 import type { Meta } from "../../../../src/types";
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 
 describe("jsonFileReporter", () => {
     it("should correctly format and write log messages to the file", () => {
@@ -27,6 +28,7 @@ describe("jsonFileReporter", () => {
 
         reporter.setStringify(JSON.stringify);
 
+        // @ts-expect-error - spy
         const writeSpy = vi.spyOn(reporter.stream, "write");
 
         reporter.log(meta);
@@ -34,7 +36,7 @@ describe("jsonFileReporter", () => {
         expect(writeSpy).toHaveBeenCalledWith(
             '{"badge":"informational","context":[],"date":"' +
                 meta.date.toISOString() +
-                '","groups":["group1"],"label":"Test Label","message":"Test message","scope":["scope1"]}\n',
+                '","groups":["group1"],"label":"Test Label","scope":["scope1"],"message":"Test message"}\n',
         );
     });
 
@@ -61,6 +63,7 @@ describe("jsonFileReporter", () => {
 
         reporter.setStringify(JSON.stringify);
 
+        // @ts-expect-error - spy
         const formattedMessage = reporter._formatMessage(meta);
 
         expect(formattedMessage).toContain('"label":"Test Label"');
@@ -79,7 +82,7 @@ describe("jsonFileReporter", () => {
             file: undefined,
             groups: [],
             label: undefined,
-            message: undefined,
+            message: EMPTY_SYMBOL,
             prefix: undefined,
             scope: undefined,
             suffix: undefined,

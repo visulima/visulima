@@ -2,6 +2,7 @@ import { stderr, stdout } from "node:process";
 
 import type { stringify } from "safe-stable-stringify";
 
+import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
@@ -51,9 +52,11 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L>, 
 
         const items: string[] = [];
 
-        const formattedMessage: string | undefined = typeof message === "string" ? message : (this.#stringify as typeof stringify)(message);
+        if (message !== EMPTY_SYMBOL) {
+            const formattedMessage: string | undefined = typeof message === "string" ? message : (this.#stringify as typeof stringify)(message);
 
-        items.push(formattedMessage + "");
+            items.push(formattedMessage + "");
+        }
 
         if (context) {
             items.push(

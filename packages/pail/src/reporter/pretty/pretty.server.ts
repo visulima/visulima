@@ -10,6 +10,7 @@ import type { LiteralUnion } from "type-fest";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
+import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
@@ -148,16 +149,18 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             items.push("\n\n");
         }
 
-        const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+        if (message !== EMPTY_SYMBOL) {
+            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
 
-        items.push(
-            groupSpaces +
-                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
-                    hard: true,
-                    trim: true,
-                    wordWrap: true,
-                }),
-        );
+            items.push(
+                groupSpaces +
+                    wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                        hard: true,
+                        trim: true,
+                        wordWrap: true,
+                    }),
+            );
+        }
 
         if (context) {
             let hasError = false;

@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import PrettyReporter from "../../../../src/reporter/pretty/pretty.server";
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 
 vi.mock("terminal-size", () => {
     return {
@@ -142,7 +143,7 @@ describe("prettyReporter", () => {
         );
     });
 
-    it("should handle undefined or null message gracefully when log is called", () => {
+    it("should handle undefined and null message gracefully when log is called", () => {
         expect.assertions(1);
 
         const prettyReporter = new PrettyReporter();
@@ -192,7 +193,9 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
+        // @ts-expect-error - spy
         const formattedMessage = prettyReporter._formatMessage(meta);
+
         expect(formattedMessage).toBeDefined();
     });
 
