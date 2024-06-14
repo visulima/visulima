@@ -1,6 +1,7 @@
 import colorize, { bold, grey, underline, white } from "@visulima/colorize/browser";
 import { format } from "@visulima/fmt";
 
+import { EMPTY_SYMBOL } from "../../constants";
 import type { ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
@@ -147,7 +148,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             }
         }
 
-        items.push(message);
+        if (message !== EMPTY_SYMBOL) {
+            items.push(message);
+        }
 
         if (context) {
             items.push(...context);

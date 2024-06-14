@@ -107,3 +107,5 @@ export const LOG_TYPES: DefaultLoggerTypes = {
         logLevel: "informational",
     },
 };
+
+export const EMPTY_SYMBOL = Symbol("EMPTY");
