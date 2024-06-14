@@ -1,3 +1,9 @@
+## @visulima/pail [1.4.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.1...@visulima/pail@1.4.0) (2024-06-14)
+
+### Features
+
+* **pail:** adding inspector into pretty reporters ([#424](https://github.com/visulima/visulima/issues/424)) ([76b1435](https://github.com/visulima/visulima/commit/76b14350904eb9b2e5c3b92b273204db11a2b6f8))
+
 ## @visulima/pail [1.3.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.0...@visulima/pail@1.3.1) (2024-06-14)
 
 ### Bug Fixes
