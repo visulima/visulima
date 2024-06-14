@@ -8,10 +8,10 @@ import * as winston from "winston";
 import bunyan from "bunyan";
 
 import pkg from "../package.json";
-import { createPail as createServerPail } from "../src/index.server";
-import { createPail as createBrowserPail } from "../src/index.browser";
-import { JsonReporter as ServerJsonReporter } from "../src/reporter/json/json.server";
-import { JsonReporter as BrowserJsonReporter } from "../src/reporter/json/json.browser";
+import { createPail as createServerPail } from "@visulima/pail/server";
+import { createPail as createBrowserPail } from "@visulima/pail/browser";
+import { JsonReporter as ServerJsonReporter } from "@visulima/pail/server/reporter";
+import { JsonReporter as BrowserJsonReporter } from "@visulima/pail/browser/reporter";
 import { JsonBrowserConsolaReporter, JsonServerConsolaReporter } from "./utils";
 
 const deep = Object.assign({}, pkg, { level: "info" });
