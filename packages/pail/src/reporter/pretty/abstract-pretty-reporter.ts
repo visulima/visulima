@@ -1,20 +1,16 @@
-import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion } from "type-fest";
 
 import { LOG_TYPES } from "../../constants";
-import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta, StringifyAwareReporter } from "../../types";
+import type { DefaultLogTypes, LoggerTypesAwareReporter, LoggerTypesConfig, ReadonlyMeta } from "../../types";
 
 export const dateFormatter = (date: Date): string => [date.getHours(), date.getMinutes(), date.getSeconds()].map((n) => String(n).padStart(2, "0")).join(":");
 
 export abstract class AbstractPrettyReporter<T extends string = string, L extends string = string>
-    implements LoggerTypesAwareReporter<T, L>, StringifyAwareReporter<L>
+    implements LoggerTypesAwareReporter<T, L>
 {
     protected readonly _styles: PrettyStyleOptions;
 
     protected _loggerTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
-
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    protected _stringify: typeof stringify | undefined;
 
     protected constructor(options: Partial<PrettyStyleOptions>) {
         this._styles = {
@@ -35,11 +31,6 @@ export abstract class AbstractPrettyReporter<T extends string = string, L extend
         } as PrettyStyleOptions;
 
         this._loggerTypes = LOG_TYPES as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    public setStringify(function_: any): void {
-        this._stringify = function_;
     }
 
     public setLoggerTypes(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): void {

@@ -1,7 +1,8 @@
 import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, grey, underline, white } from "@visulima/colorize";
-import type { stringify } from "safe-stable-stringify";
+import type { Options as InspectorOptions } from "@visulima/inspector";
+import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import stringLength from "string-length";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -16,10 +17,15 @@ import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta 
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
 import writeStream from "../../utils/write-stream";
+import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
+
+type PrettyReporterOptions = PrettyStyleOptions & {
+    inspect: InspectorOptions;
+};
 
 class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -30,15 +36,20 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
     #interactive = false;
 
-    public constructor(options: Partial<PrettyStyleOptions> = {}) {
+    readonly #inspectOptions: Partial<InspectorOptions>;
+
+    public constructor(options: Partial<PrettyReporterOptions> = {}) {
+        const { inspect: inspectOptions, ...rest } = options;
+
         super({
             uppercase: {
                 label: true,
-                ...options.uppercase,
+                ...rest.uppercase,
             },
-            ...options,
+            ...rest,
         });
 
+        this.#inspectOptions = { ...defaultInspectorConfig, ...inspectOptions };
         this.#stdout = stdout;
         this.#stderr = stderr;
     }
@@ -150,7 +161,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (message !== EMPTY_SYMBOL) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+            const formattedMessage: string | undefined = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
                 groupSpaces +
@@ -173,7 +184,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                     }
 
                     if (typeof value === "object") {
-                        return " " + (this._stringify as typeof stringify)(value);
+                        return " " + inspect(value, this.#inspectOptions);
                     }
 
                     const newValue = (hasError ? "\n\n" : " ") + value;

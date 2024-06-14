@@ -1,7 +1,8 @@
 import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, bold, grey, underline, white } from "@visulima/colorize";
-import type { stringify } from "safe-stable-stringify";
+import type { Options as InspectorOptions } from "@visulima/inspector";
+import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import stringLength from "string-length";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -18,8 +19,13 @@ import getLongestLabel from "../../utils/get-longest-label";
 import writeStream from "../../utils/write-stream";
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
+import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
+
+type PrettyReporterOptions = PrettyStyleOptions & {
+    inspect: InspectorOptions;
+};
 
 class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -30,15 +36,20 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
 
     #interactive = false;
 
-    public constructor(options: Partial<PrettyStyleOptions> = {}) {
+    readonly #inspectOptions: Partial<InspectorOptions>;
+
+    public constructor(options: Partial<PrettyReporterOptions> = {}) {
+        const { inspect: inspectOptions, ...rest } = options;
+
         super({
             uppercase: {
                 label: true,
-                ...options.uppercase,
+                ...rest.uppercase,
             },
-            ...options,
+            ...rest,
         });
 
+        this.#inspectOptions = { ...defaultInspectorConfig, indent: undefined, ...inspectOptions };
         this.#stdout = stdout;
         this.#stderr = stderr;
     }
@@ -125,15 +136,15 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
         const titleSize = stringLength(items.join(""));
 
         if (message !== EMPTY_SYMBOL) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : (this._stringify as typeof stringify)(message);
+            const formattedMessage: string | undefined = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
                 groupSpaces +
-                    wrapAnsi(formattedMessage ?? "undefined", size - 3, {
-                        hard: true,
-                        trim: true,
-                        wordWrap: true,
-                    }),
+                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                    hard: true,
+                    trim: true,
+                    wordWrap: true,
+                }),
             );
         }
 
@@ -148,7 +159,7 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
                     }
 
                     if (typeof value === "object") {
-                        return " " + (this._stringify as typeof stringify)(value);
+                        return " " + inspect(value, this.#inspectOptions);
                     }
 
                     const newValue = (hasError ? "\n\n" : " ") + value;
