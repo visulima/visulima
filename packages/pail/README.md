@@ -42,7 +42,7 @@
 -   Custom pluggable processors and reporters
 -   TypeScript support
 -   Interactive and regular modes
--   Secrets & sensitive information filtering (soon)
+-   Secrets & sensitive information filtering
 -   Filename, date and timestamp support
 -   Scoped loggers and timers
 -   Scaled logging levels mechanism
@@ -121,7 +121,9 @@ A processor can be added to a logger directly (and is subsequently applied to lo
 
 -   `CallerProcessor` - adds the caller information to the log message
     -   The Meta Object is extended with a file name, line number and column number
--   `RedactProcessor` - redacts sensitive information from the log message (Soon)
+-   `RedactProcessor` - redacts sensitive information from the log message
+> The redact processor needs the "@visulima/redact" package to work.
+> Use `npm install @visulima/redact`, `pnpm add @visulima/redact` or `yarn add @visulima/redact` to install it.
 -   `MessageFormatterProcessor` - formats the log message (Util.format-like unescaped string formatting utility) [@visulima/fmt][fmt]
 -   `ErrorProcessor` - serializes the error with cause object to a std error object that can be serialized.
 
