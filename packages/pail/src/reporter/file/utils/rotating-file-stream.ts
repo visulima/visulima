@@ -4,15 +4,6 @@ import type { createStream as createRotatingStream, Options as RfsOptions } from
 
 import SafeStreamHandler from "../../../utils/stream/safe-stream-handler";
 
-let createRfsStream: typeof createRotatingStream;
-
-try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
-    createRfsStream = require("rotating-file-stream").createStream;
-} catch {
-    throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
-}
-
 /**
  * A wrapper for the `rfs` module that will optionally write to disk immediately
  * by creating and closing a new stream on each write.
@@ -26,13 +17,23 @@ class RotatingFileStream {
 
     readonly #options: RfsOptions;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    readonly #createRfsStream: typeof createRotatingStream | undefined;
+
     public constructor(filePath: string, writeImmediately = false, options: RfsOptions = {}) {
         this.#filePath = filePath;
         this.#immediate = writeImmediately;
         this.#options = options;
 
         if (!this.#immediate) {
-            this.#stream = createRfsStream(this.#filePath, options);
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,unicorn/prefer-module,@typescript-eslint/no-var-requires
+                this.#createRfsStream = require("rotating-file-stream").createStream;
+            } catch {
+                throw new Error("The 'rotating-file-stream' package is missing. Make sure to install the 'rotating-file-stream' package.");
+            }
+
+            this.#stream = (this.#createRfsStream as typeof createRotatingStream)(this.#filePath, options);
         }
     }
 
@@ -44,7 +45,7 @@ class RotatingFileStream {
         let fileStream = this.#stream;
 
         if (this.#immediate) {
-            fileStream = createRfsStream(this.#filePath, this.#options);
+            fileStream = (this.#createRfsStream as typeof createRotatingStream)(this.#filePath, this.#options);
         }
 
         const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);

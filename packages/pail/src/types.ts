@@ -61,8 +61,8 @@ export type DefaultLogTypes =
 
 export interface LoggerFunction {
     (message: Message): void;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    (...message: (Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown> | undefined)[]): void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (...message: any[]): void;
 }
 
 // alias for backward-compatibility
@@ -138,8 +138,8 @@ export interface ServerConstructorOptions<T extends string, L extends string> ex
 export type Message = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     context?: any[] | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown> | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    message: any;
     prefix?: string;
     suffix?: string;
 };

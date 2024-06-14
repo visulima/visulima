@@ -5,7 +5,8 @@ import type { LiteralUnion, Primitive } from "type-fest";
 import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import RawReporter from "./reporter/raw/raw.browser";
 import type {
-    ConstructorOptions, DefaultLoggerTypes,
+    ConstructorOptions,
+    DefaultLoggerTypes,
     DefaultLogTypes,
     ExtendedRfc5424LogLevels,
     LoggerConfiguration,
