@@ -3477,6 +3477,9 @@ importers:
       '@visulima/fmt':
         specifier: 1.1.5
         version: 1.1.5
+      '@visulima/inspector':
+        specifier: ^1.0.2
+        version: 1.0.2
       safe-stable-stringify:
         specifier: ^2.4.3
         version: 2.4.3
@@ -3509,8 +3512,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.41
-        version: 1.0.0-alpha.41(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+        specifier: ^1.0.0-alpha.42
+        version: 1.0.0-alpha.42(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
       '@visulima/redact':
         specifier: 1.0.2
         version: 1.0.2
@@ -7155,6 +7158,15 @@ packages:
       rollup:
         optional: true
 
+  '@rollup/plugin-commonjs@26.0.1':
+    resolution: {integrity: sha512-UnsKoZK6/aGIH6AdkptXhNvhaqftcjq3zZdT+LY5Ftms6JR06nADcDsYp5hTU9E2lbJUEOhdlY5J4DNTneM+jQ==}
+    engines: {node: '>=16.0.0 || 14 >= 14.17'}
+    peerDependencies:
+      rollup: ^2.68.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
   '@rollup/plugin-dynamic-import-vars@2.1.2':
     resolution: {integrity: sha512-4lr2oXxs9hcxtGGaK8s0i9evfjzDrAs7ngw28TqruWKTEm0+U4Eljb+F6HXGYdFv8xRojQlrQwV7M/yxeh3yzQ==}
     engines: {node: '>=14.0.0'}
@@ -7193,6 +7205,15 @@ packages:
 
   '@rollup/plugin-replace@5.0.5':
     resolution: {integrity: sha512-rYO4fOi8lMaTg/z5Jb+hKnrHHVn8j2lwkqwyS4kTRhKyWOLf2wST2sWXr4WzWiTcoHTp2sTjqUbqIj2E39slKQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
+  '@rollup/plugin-replace@5.0.7':
+    resolution: {integrity: sha512-PqxSfuorkHz/SPpyngLyg5GCEkOcee9M1bkxiVDr41Pd61mqP1PLOoDPbpl44SB2mQGKwV/In74gqQmGITOhEQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
@@ -9107,6 +9128,11 @@ packages:
     engines: {node: '>=18.* <=21.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/cerebro@1.0.40':
+    resolution: {integrity: sha512-TLhC462uwKvKiw/kpEQThF7vZcSWzj5FAkOLKW1we9t/V6fdu4W9ZvG8wwtboURDhuVmuISimX0/ExhAtocetw==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
   '@visulima/colorize@1.4.1':
     resolution: {integrity: sha512-O3oh+m1X1hY7iKdEL+TjqXkGW1HYeDlr8xnzQaxJbkgGW8bLqxPSYDilxSx0EMf6AS45NxlNIy7/fsnRTWfY7Q==}
     engines: {node: '>=18.* <=21.*'}
@@ -9168,6 +9194,14 @@ packages:
     resolution: {integrity: sha512-ou4QnI4KovCr3C5yxdmXC/0y1SGEmpMGmoY35fVGGpJs73pZm2j0YOBgRMRAjiXif+MXQ3I1uRcVGoilybgIpA==}
     engines: {node: '>=18.* <=21.*'}
 
+  '@visulima/humanizer@1.0.5':
+    resolution: {integrity: sha512-TU/v2Nn3eoY4u1OJrXEXzBeUn/98KcJylUyh6i1IdTiNCKmR8hep6udrAB+AoIOyedCTwYocOKLnn5dObBTUHg==}
+    engines: {node: '>=18.* <=22.*'}
+
+  '@visulima/inspector@1.0.2':
+    resolution: {integrity: sha512-ZL32+y4CHdvuOjpEgVezXLCA6kxW6X7/fJ4TgAG55ppf6vk8oFJEerqiyu3LHlaJt02PXoh+E4Re3jLDnBEqzw==}
+    engines: {node: '>=18.* <=22.*'}
+
   '@visulima/is-ansi-color-supported@2.2.0':
     resolution: {integrity: sha512-wVAI7RCYqclom5amyUQ51NEZZhUPr/M2PhCd/+Q9bU3g/JpmoArr3if16AiwrOArwCuQwEeRO6EzDTUQh+dqpg==}
     engines: {node: '>=18.* <=21.*'}
@@ -9206,6 +9240,26 @@ packages:
 
   '@visulima/packem@1.0.0-alpha.41':
     resolution: {integrity: sha512-s1k3gOSBtWp62vHbS2kP/bOaGrTvWoNvuQQogYu3Z/73laVso+EopQsgnS696vXObRs4y1E7dfPCejDQyZQFNg==}
+    engines: {node: '>=18.* <=22.*'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.5.7
+      esbuild: 0.21.4
+      jiti: ^1.21.0
+      sucrase: ^3.35.0
+      typescript: ^4.5 || ^5.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      sucrase:
+        optional: true
+      typescript:
+        optional: true
+
+  '@visulima/packem@1.0.0-alpha.42':
+    resolution: {integrity: sha512-P4fQfsqvY1aw5ZainaJ/A3TnD24i+M2e3p/nk/+bVOOgTCFTZk8xNemwvNJsVH9y/u68er56TvsDjkTcKbm++A==}
     engines: {node: '>=18.* <=22.*'}
     hasBin: true
     peerDependencies:
@@ -15378,6 +15432,9 @@ packages:
 
   mlly@1.7.0:
     resolution: {integrity: sha512-U9SDaXGEREBYQgfejV97coK0UL1r+qnF2SyO9A3qcI8MzKnsIFKHNVEkrDyNncQTKQQumsasmeq84eNMdBfsNQ==}
+
+  mlly@1.7.1:
+    resolution: {integrity: sha512-rrVRZRELyQzrIUAVMHxP97kv+G786pHmOKzuFII8zDYahFBS7qnHh2AlYSl1GAHhaMPCz6/oHjVMcfFYgFYHgA==}
 
   mobx-react-lite@4.0.7:
     resolution: {integrity: sha512-RjwdseshK9Mg8On5tyJZHtGD+J78ZnCnRaxeQDSiciKVQDUbfZcXhmld0VMxAwvcTnPEHZySGGewm467Fcpreg==}
@@ -23843,6 +23900,17 @@ snapshots:
     optionalDependencies:
       rollup: 4.18.0
 
+  '@rollup/plugin-commonjs@26.0.1(rollup@4.18.0)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
+      commondir: 1.0.1
+      estree-walker: 2.0.2
+      glob: 10.4.1
+      is-reference: 1.2.1
+      magic-string: 0.30.10
+    optionalDependencies:
+      rollup: 4.18.0
+
   '@rollup/plugin-dynamic-import-vars@2.1.2(rollup@4.18.0)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
@@ -23879,6 +23947,13 @@ snapshots:
       rollup: 4.18.0
 
   '@rollup/plugin-replace@5.0.5(rollup@4.18.0)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
+      magic-string: 0.30.10
+    optionalDependencies:
+      rollup: 4.18.0
+
+  '@rollup/plugin-replace@5.0.7(rollup@4.18.0)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
       magic-string: 0.30.10
@@ -27278,6 +27353,18 @@ snapshots:
     transitivePeerDependencies:
       - rotating-file-stream
 
+  '@visulima/cerebro@1.0.40(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
+    dependencies:
+      '@visulima/boxen': 1.0.10
+      '@visulima/colorize': 1.4.3
+      '@visulima/pail': 1.3.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      cli-table3: 0.6.5
+      command-line-args: 5.2.1
+      fastest-levenshtein: 1.0.16
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - rotating-file-stream
+
   '@visulima/colorize@1.4.1':
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.0
@@ -27326,6 +27413,10 @@ snapshots:
       yaml: 2.4.5
 
   '@visulima/humanizer@1.0.3': {}
+
+  '@visulima/humanizer@1.0.5': {}
+
+  '@visulima/inspector@1.0.2': {}
 
   '@visulima/is-ansi-color-supported@2.2.0': {}
 
@@ -27431,6 +27522,51 @@ snapshots:
       jiti: 1.21.0
       magic-string: 0.30.10
       mlly: 1.7.0
+      rollup: 4.18.0
+      rollup-plugin-dts: 6.1.1(rollup@4.18.0)(typescript@5.4.5)
+      rollup-plugin-license: 3.4.0(rollup@4.18.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.18.0)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.18.0)
+      semver: 7.6.2
+    optionalDependencies:
+      '@swc/core': 1.5.7(@swc/helpers@0.5.5)
+      esbuild: 0.21.4
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - rotating-file-stream
+      - yaml
+
+  '@visulima/packem@1.0.0-alpha.42(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)':
+    dependencies:
+      '@antfu/install-pkg': 0.3.3
+      '@babel/parser': 7.24.7
+      '@clack/prompts': 0.7.0
+      '@rollup/plugin-alias': 5.1.0(rollup@4.18.0)
+      '@rollup/plugin-commonjs': 26.0.1(rollup@4.18.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.18.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.18.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.18.0)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.18.0)
+      '@rollup/plugin-replace': 5.0.7(rollup@4.18.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.18.0)
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
+      '@visulima/cerebro': 1.0.40(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      '@visulima/colorize': 1.4.3
+      '@visulima/fs': 2.1.5(yaml@2.4.5)
+      '@visulima/humanizer': 1.0.5
+      '@visulima/package': 1.10.1(yaml@2.4.5)
+      '@visulima/pail': 1.3.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      '@visulima/path': 1.0.2
+      defu: 6.1.4
+      es-module-lexer: 1.5.3
+      fastest-levenshtein: 1.0.16
+      glob: 10.4.1
+      glob-parent: 6.0.2
+      hookable: 5.5.3
+      jiti: 1.21.0
+      magic-string: 0.30.10
+      mlly: 1.7.1
       rollup: 4.18.0
       rollup-plugin-dts: 6.1.1(rollup@4.18.0)(typescript@5.4.5)
       rollup-plugin-license: 3.4.0(rollup@4.18.0)
@@ -35819,6 +35955,13 @@ snapshots:
       ufo: 1.5.3
 
   mlly@1.7.0:
+    dependencies:
+      acorn: 8.11.3
+      pathe: 1.1.2
+      pkg-types: 1.1.1
+      ufo: 1.5.3
+
+  mlly@1.7.1:
     dependencies:
       acorn: 8.11.3
       pathe: 1.1.2
