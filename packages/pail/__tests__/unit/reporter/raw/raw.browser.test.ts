@@ -9,7 +9,7 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -32,7 +32,7 @@ describe("raw-reporter", () => {
 
         vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(consoleLogFunction).toHaveBeenCalledWith("This is a message");
     });
@@ -42,7 +42,7 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: [1, 2, 3],
             date: new Date(),
@@ -65,7 +65,7 @@ describe("raw-reporter", () => {
 
         vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(consoleLogFunction).toHaveBeenCalledWith("This is a message", 1, 2, 3);
     });
@@ -75,7 +75,7 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -98,7 +98,7 @@ describe("raw-reporter", () => {
 
         vi.spyOn(global.console, "error").mockImplementation(consoleLogFunction);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(consoleLogFunction).toHaveBeenCalledWith("This is an error message");
     });
@@ -108,7 +108,7 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -131,7 +131,7 @@ describe("raw-reporter", () => {
 
         vi.spyOn(global.console, "trace").mockImplementation(consoleLogFunction);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(consoleLogFunction).toHaveBeenCalledWith("This is a trace message");
     });
@@ -141,7 +141,7 @@ describe("raw-reporter", () => {
 
         const rawReporter = new RawReporter();
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -164,7 +164,7 @@ describe("raw-reporter", () => {
 
         vi.spyOn(global.console, "log").mockImplementation(consoleLogFunction);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(consoleLogFunction).toHaveBeenCalledWith("");
     });

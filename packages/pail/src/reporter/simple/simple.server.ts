@@ -136,11 +136,11 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
         const titleSize = stringLength(items.join(""));
 
         if (message !== EMPTY_SYMBOL) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
+            const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
                 groupSpaces +
-                wrapAnsi(formattedMessage ?? "undefined", size - 3, {
+                wrapAnsi(formattedMessage, size - 3, {
                     hard: true,
                     trim: true,
                     wordWrap: true,

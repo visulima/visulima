@@ -49,9 +49,9 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
         const items: string[] = [];
 
         if (message !== EMPTY_SYMBOL) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
+            const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
-            items.push(formattedMessage + "");
+            items.push(formattedMessage);
         }
 
         if (context) {
