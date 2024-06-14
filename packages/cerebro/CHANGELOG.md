@@ -1,3 +1,10 @@
+## @visulima/cerebro [1.0.45](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.44...@visulima/cerebro@1.0.45) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.3
+
 ## @visulima/cerebro [1.0.44](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.43...@visulima/cerebro@1.0.44) (2024-06-14)
 
 
