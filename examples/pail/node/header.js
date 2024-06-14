@@ -1,12 +1,12 @@
 import { createPail } from "@visulima/pail";
 
-console.log("\n");
+console.log("------------------ HEADER ------------------", "\n");
 
 const pail = createPail({
     scope: "pail",
     types: {
         santa: {
-            badge: "🎅",
+            badge: "🎅 ",
             color: "red",
             label: "santa",
             logLevel: "informational",

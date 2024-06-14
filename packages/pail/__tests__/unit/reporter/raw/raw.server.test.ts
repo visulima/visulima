@@ -3,6 +3,7 @@ import { stderr, stdout } from "node:process";
 import { describe, expect, it, vi } from "vitest";
 
 import RawReporter from "../../../../src/reporter/raw/raw.server";
+import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
     it("should log a message to stdout when given a message and no context or groups", () => {
@@ -12,7 +13,6 @@ describe("raw-reporter", () => {
 
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -33,9 +33,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stdoutWriteSpy).toHaveBeenCalledWith("This is a message");
     });
@@ -47,7 +47,6 @@ describe("raw-reporter", () => {
 
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -68,9 +67,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stdoutWriteSpy).toHaveBeenCalledWith("    This is a message");
     });
@@ -82,7 +81,6 @@ describe("raw-reporter", () => {
 
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -103,9 +101,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stdoutWriteSpy).toHaveBeenCalledWith("This is a message 1 2 3");
     });
@@ -116,7 +114,6 @@ describe("raw-reporter", () => {
         const rawReporter = new RawReporter();
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -137,9 +134,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stderrWriteSpy = vi.spyOn(stderr, "write");
+        const stderrWriteSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stderrWriteSpy).toHaveBeenCalledWith("This is an error message");
     });
@@ -150,7 +147,6 @@ describe("raw-reporter", () => {
         const rawReporter = new RawReporter();
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -171,9 +167,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stderrWriteSpy = vi.spyOn(stderr, "write");
+        const stderrWriteSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stderrWriteSpy).toHaveBeenCalledWith("This is a trace message");
     });
@@ -184,7 +180,6 @@ describe("raw-reporter", () => {
         const rawReporter = new RawReporter();
         rawReporter.setStdout(stdout);
         rawReporter.setStderr(stderr);
-        rawReporter.setStringify(JSON.stringify);
 
         const meta = {
             badge: "info",
@@ -205,9 +200,9 @@ describe("raw-reporter", () => {
             },
         };
 
-        const stdoutWriteSpy = vi.spyOn(stdout, "write");
+        const stdoutWriteSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        rawReporter.log(meta);
+        rawReporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stdoutWriteSpy).toHaveBeenCalledWith("");
     });

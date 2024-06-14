@@ -55,6 +55,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, label: "  label  ", message: "test message", type: { level: "informational", name: "informational" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining('"label":"label"'));
     });
@@ -68,6 +69,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: null, type: { level: "informational", name: "informational" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("null"));
     });
@@ -81,6 +83,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "", type: { level: "informational", name: "informational" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining('""'));
     });
@@ -95,6 +98,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "custom level message", type: { level: "custom", name: "custom" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("custom level message"));
     });
@@ -108,6 +112,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "message without file", type: { level: "informational", name: "informational" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("message without file"));
     });
@@ -121,6 +126,7 @@ describe("jsonReporter server", () => {
         reporter.setStdout(mockStdout);
         reporter.setStringify(JSON.stringify);
         reporter.log({ ...baseMeta, message: "message without label", type: { level: "informational", name: "informational" } });
+
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockStdout.write).toHaveBeenCalledWith(expect.stringContaining("message without label"));
     });

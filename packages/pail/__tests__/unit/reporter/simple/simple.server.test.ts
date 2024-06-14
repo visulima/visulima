@@ -1,7 +1,6 @@
 import { stderr, stdout } from "node:process";
 
 import { blueBright, bold, grey, red } from "@visulima/colorize";
-import { stringify } from "safe-stable-stringify";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
@@ -31,17 +30,18 @@ describe("simpleReporter", () => {
             date,
             groups: ["Group1"],
             label: "Label",
-            message: "This is a sample message",
+            message: "This is a sample message1",
             type: {
                 level: "informational",
                 name: "info",
             },
         };
-        const stdoutSpy = vi.spyOn(stdout, "write");
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message1\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -63,7 +63,8 @@ describe("simpleReporter", () => {
                 name: "info",
             },
         };
-        const stdoutSpy = vi.spyOn(stdout, "write");
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
@@ -159,7 +160,6 @@ describe("simpleReporter", () => {
         expect.assertions(1);
 
         const simpleReporter = new SimpleReporter();
-        simpleReporter.setStringify(stringify);
 
         const meta = {
             badge: undefined,

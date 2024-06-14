@@ -107,7 +107,6 @@ describe("mergeTypes", () => {
         });
     });
 
-    // Should handle empty badge strings
     it("should handle empty badge strings when given standard and custom types", () => {
         expect.assertions(1);
 

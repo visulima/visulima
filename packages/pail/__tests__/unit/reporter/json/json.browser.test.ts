@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import JsonReporter from "../../../../src/reporter/json/json.browser";
-import type { Meta } from "../../../../src/types";
+import type { ReadonlyMeta } from "../../../../src/types";
 
 const baseMeta = {
     badge: "informational",
@@ -26,9 +26,9 @@ describe("jsonReporter browser", () => {
 
         reporter.setStringify(stringifyMock);
 
-        const logSpy = vi.spyOn(reporter, "_log" as any);
+        const logSpy = vi.spyOn(reporter, "_log" as any).mockImplementation(() => true);
 
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(logSpy).toHaveBeenCalledWith(
             '{"badge":"informational","context":[],"date":"' +
@@ -38,7 +38,6 @@ describe("jsonReporter browser", () => {
         );
     });
 
-    // setStringify method correctly sets the stringify function
     it("should correctly set the stringify function when setStringify is called", () => {
         expect.assertions(1);
 
@@ -51,7 +50,6 @@ describe("jsonReporter browser", () => {
         expect(reporter.stringify).toBe(stringifyFunction);
     });
 
-    // log method trims label if present
     it("should trim label if present when log is called", () => {
         expect.assertions(1);
 
@@ -60,27 +58,24 @@ describe("jsonReporter browser", () => {
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ label: "test" }));
     });
 
-    // log method formats file property correctly if present
     it("should format file property correctly if present when log is called", () => {
         expect.assertions(1);
 
         const reporter = new JsonReporter();
-        // @ts-expect-error - expected typing
         const meta = { ...baseMeta, file: { column: 5, line: 10, name: "test.js" }, label: "test", type: { level: "informational", name: "test" } };
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ file: "test.js:10:5" }));
     });
 
-    // log method handles meta without file property
     it("should handle meta without file property when log is called", () => {
         expect.assertions(1);
 
@@ -89,7 +84,7 @@ describe("jsonReporter browser", () => {
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stringifyMock).toHaveBeenCalledWith(expect.not.objectContaining({ file: expect.anything() }));
     });
@@ -102,7 +97,7 @@ describe("jsonReporter browser", () => {
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stringifyMock).toHaveBeenCalledWith(expect.not.objectContaining({ label: expect.anything() }));
     });
@@ -115,7 +110,7 @@ describe("jsonReporter browser", () => {
         const stringifyMock = vi.fn().mockReturnValue(JSON.stringify(meta));
 
         reporter.setStringify(stringifyMock);
-        reporter.log(meta as Meta<never>);
+        reporter.log(meta as unknown as ReadonlyMeta<string>);
 
         expect(stringifyMock).toHaveBeenCalledWith(expect.objectContaining({ label: "" }));
     });

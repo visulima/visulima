@@ -1,16 +1,14 @@
 import { stderr, stdout } from "node:process";
 
-import type { stringify } from "safe-stable-stringify";
+import type { Options as InspectorOptions } from "@visulima/inspector";
+import { inspect } from "@visulima/inspector";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type InteractiveManager from "../../interactive/interactive-manager";
-import type { ReadonlyMeta, StreamAwareReporter, StringifyAwareReporter } from "../../types";
+import type { ReadonlyMeta, StreamAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
 
-class RawReporter<L extends string = string> implements StreamAwareReporter<L>, StringifyAwareReporter<L> {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    #stringify: typeof stringify | undefined;
-
+class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -19,9 +17,12 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L>, 
 
     #interactive = false;
 
-    public constructor() {
+    readonly #inspectOptions: Partial<InspectorOptions>;
+
+    public constructor(inspectOptions: Partial<InspectorOptions> = {}) {
         this.#stdout = stdout;
         this.#stderr = stderr;
+        this.#inspectOptions = inspectOptions;
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -32,11 +33,6 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L>, 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public setStderr(stderr_: NodeJS.WriteStream) {
         this.#stderr = stderr_;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    public setStringify(function_: any): void {
-        this.#stringify = function_;
     }
 
     public setInteractiveManager(manager?: InteractiveManager): void {
@@ -53,16 +49,16 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L>, 
         const items: string[] = [];
 
         if (message !== EMPTY_SYMBOL) {
-            const formattedMessage: string | undefined = typeof message === "string" ? message : (this.#stringify as typeof stringify)(message);
+            const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
-            items.push(formattedMessage + "");
+            items.push(formattedMessage);
         }
 
         if (context) {
             items.push(
                 ...context.map((value) => {
                     if (typeof value === "object") {
-                        return " " + (this.#stringify as typeof stringify)(value);
+                        return " " + inspect(value, this.#inspectOptions);
                     }
 
                     return " " + value;
