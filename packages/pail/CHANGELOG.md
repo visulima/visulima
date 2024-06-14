@@ -1,3 +1,9 @@
+## @visulima/pail [1.4.3](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.2...@visulima/pail@1.4.3) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed striping of spaces from messages ([6d6ae8b](https://github.com/visulima/visulima/commit/6d6ae8baac4844b2b90baee62105fa66e772d529))
+
 ## @visulima/pail [1.4.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.1...@visulima/pail@1.4.2) (2024-06-14)
 
 ### Bug Fixes
