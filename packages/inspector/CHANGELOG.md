@@ -1,3 +1,9 @@
+## @visulima/inspector [1.0.2](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.1...@visulima/inspector@1.0.2) (2024-06-14)
+
+### Bug Fixes
+
+* **inspector:** exported missing option type ([8e27954](https://github.com/visulima/visulima/commit/8e2795435e51f5e7f27ebe936bc6484b7f713744))
+
 ## @visulima/inspector [1.0.1](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.0...@visulima/inspector@1.0.1) (2024-06-13)
 
 ### Miscellaneous Chores
