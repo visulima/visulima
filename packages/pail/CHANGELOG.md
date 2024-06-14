@@ -1,3 +1,9 @@
+## @visulima/pail [1.2.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.1...@visulima/pail@1.2.2) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed wrong global import of rotating-file-stream, this did call the require to early ([ac0c8bc](https://github.com/visulima/visulima/commit/ac0c8bcf3dfc5fb197e7b89ab5d32d3dc2ec5abd))
+
 ## @visulima/pail [1.2.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.0...@visulima/pail@1.2.1) (2024-06-13)
 
 ### Bug Fixes
