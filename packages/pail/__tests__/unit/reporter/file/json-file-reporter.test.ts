@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { EMPTY_SYMBOL } from "../../../../src/constants";
 import JsonFileReporter from "../../../../src/reporter/file/json-file-reporter";
 import type { Meta } from "../../../../src/types";
-import { EMPTY_SYMBOL } from "../../../../src/constants";
 
 describe("jsonFileReporter", () => {
     it("should correctly format and write log messages to the file", () => {

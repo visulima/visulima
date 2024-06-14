@@ -140,11 +140,11 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
 
             items.push(
                 groupSpaces +
-                wrapAnsi(formattedMessage, size - 3, {
-                    hard: true,
-                    trim: true,
-                    wordWrap: true,
-                }),
+                    wrapAnsi(formattedMessage, size - 3, {
+                        hard: true,
+                        trim: true,
+                        wordWrap: true,
+                    }),
             );
         }
 

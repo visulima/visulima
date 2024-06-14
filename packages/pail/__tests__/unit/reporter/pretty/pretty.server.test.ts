@@ -166,7 +166,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold('null')}\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n\n`,
         );
 
         stdoutSpy.mockRestore();
