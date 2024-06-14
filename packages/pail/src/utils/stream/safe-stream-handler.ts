@@ -5,15 +5,15 @@ import type { Writable } from "node:stream";
  * processing or draining
  */
 class SafeStreamHandler {
-    public _ready = true;
+    #ready = true;
 
-    protected _stream: Writable;
+    readonly #stream: Writable;
 
-    protected _name: string;
+    readonly #name: string;
 
     public constructor(stream: Writable, name: string) {
-        this._stream = stream;
-        this._name = name;
+        this.#stream = stream;
+        this.#name = name;
     }
 
     /**
@@ -29,27 +29,35 @@ class SafeStreamHandler {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public end(...arguments_: any[]): void {
-        this._stream.end(...arguments_);
+        this.#stream.end(...arguments_);
+    }
+
+    public get isReady(): boolean {
+        return this.#ready;
     }
 
     protected writeStream(message: string): void {
-        if (!this._ready) {
+        if (!this.#ready) {
             // eslint-disable-next-line no-console
-            console.warn("Stream busy: " + this._name + '. Write will be dropped: "' + message + '"');
+            console.warn("Stream busy: " + this.#name + '. Write will be dropped: "' + message + '"');
             return;
         }
-        this._ready = false;
 
-        this._stream.on("error", (error) => {
+        this.#ready = false;
+
+        this.#stream.on("error", (error) => {
             throw error;
         });
-        this._stream.on("drain", () => {
-            this._ready = true;
+
+        this.#stream.on("drain", () => {
+            this.#ready = true;
         });
-        this._stream.on("finish", () => {
-            this._ready = true;
+
+        this.#stream.on("finish", () => {
+            this.#ready = true;
         });
-        this._ready = this._stream.write(message, () => {});
+
+        this.#ready = this.#stream.write(message, () => {});
     }
 }
 
