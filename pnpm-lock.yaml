@@ -3511,6 +3511,9 @@ importers:
       '@visulima/packem':
         specifier: ^1.0.0-alpha.41
         version: 1.0.0-alpha.41(@swc/core@1.5.7)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+      '@visulima/redact':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -9257,6 +9260,10 @@ packages:
     peerDependencies:
       '@prisma/client': 3.* || 4.*
       prisma: 3.* || 4.*
+
+  '@visulima/redact@1.0.2':
+    resolution: {integrity: sha512-Y7aCtogKlvLFVP1WfpOkIbOGzBDVpl9g1mAS0lH6/XMzLiWPMsNhI1jXFr24GAtOSZGtgO3aL5qEmmyx+msUUA==}
+    engines: {node: '>=18.* <=22.*'}
 
   '@vitejs/plugin-react@4.3.1':
     resolution: {integrity: sha512-m/V2syj5CuVnaxcUJOQRel/Wr31FFXRFlnOoq1TVtkCxsY5veGMTEmpWHndrhB2U8ScHtCQB1e+4hWYExQc6Lg==}
@@ -27462,6 +27469,10 @@ snapshots:
       '@prisma/client': 5.15.0(prisma@5.15.0)
       '@prisma/generator-helper': 5.15.0
       prisma: 5.15.0
+
+  '@visulima/redact@1.0.2':
+    dependencies:
+      compromise: 14.13.0
 
   '@vitejs/plugin-react@4.3.1(vite@5.2.13(@types/node@18.18.14)(lightningcss@1.22.0)(terser@5.27.0))':
     dependencies:
