@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import SimpleReporter from "../../../../src/reporter/simple/simple.server";
+import type { Meta, ReadonlyMeta } from "../../../../src/types";
 
 vi.mock("terminal-size", () => {
     return {
@@ -37,7 +38,7 @@ describe("simpleReporter", () => {
             },
         };
         const stdoutSpy = vi.spyOn(stdout, "write");
-        simpleReporter.log(meta);
+        simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
             `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
@@ -63,7 +64,7 @@ describe("simpleReporter", () => {
             },
         };
         const stdoutSpy = vi.spyOn(stdout, "write");
-        simpleReporter.log(meta);
+        simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
             `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
@@ -89,7 +90,7 @@ describe("simpleReporter", () => {
         };
         const stderrSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
 
-        simpleReporter.log(meta);
+        simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stderrSpy).toHaveBeenCalledWith(
             `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
@@ -118,7 +119,7 @@ describe("simpleReporter", () => {
             },
         };
 
-        simpleReporter.log(meta);
+        simpleReporter.log(meta as ReadonlyMeta<string>);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStdout.write).toHaveBeenCalledWith(
@@ -146,7 +147,7 @@ describe("simpleReporter", () => {
             },
         };
 
-        simpleReporter.log(meta);
+        simpleReporter.log(meta as ReadonlyMeta<string>);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStderr.write).toHaveBeenCalledWith(
@@ -173,7 +174,7 @@ describe("simpleReporter", () => {
         };
         const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        expect(() => simpleReporter.log(meta)).not.toThrow();
+        expect(() => simpleReporter.log(meta as unknown as Meta<string>)).not.toThrow();
 
         stdoutSpy.mockRestore();
     });
@@ -196,7 +197,7 @@ describe("simpleReporter", () => {
         };
 
         // @ts-expect-error - just for testing
-        const formattedMessage = simpleReporter._formatMessage(meta);
+        const formattedMessage = simpleReporter._formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage).toContain("This is a sample message");
     });
@@ -216,7 +217,8 @@ describe("simpleReporter", () => {
                 name: "info",
             },
         };
-        const formattedMessage = simpleReporter._formatMessage(meta);
+        // @ts-expect-error - just for testing
+        const formattedMessage = simpleReporter._formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage.split("\n").length).toBeGreaterThan(1);
     });
