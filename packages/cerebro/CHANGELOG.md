@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.0.39](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.38...@visulima/cerebro@1.0.39) (2024-06-14)
+
+### Bug Fixes
+
+* **cerebro:** fixed wrong typing of error log ([2aee6e4](https://github.com/visulima/visulima/commit/2aee6e4b8aa8d20f252aba52c7d73d83e4979163))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.2.2
+
 ## @visulima/cerebro [1.0.38](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.37...@visulima/cerebro@1.0.38) (2024-06-13)
 
 
