@@ -131,8 +131,8 @@ export interface ConstructorOptions<T extends string, L extends string> {
 
 export interface ServerConstructorOptions<T extends string, L extends string> extends ConstructorOptions<T, L> {
     interactive?: boolean;
-    stderr?: NodeJS.WriteStream;
-    stdout?: NodeJS.WriteStream;
+    stderr: NodeJS.WriteStream;
+    stdout: NodeJS.WriteStream;
 }
 
 export type Message = {
