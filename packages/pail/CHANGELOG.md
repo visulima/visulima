@@ -1,3 +1,9 @@
+## @visulima/pail [1.4.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.0...@visulima/pail@1.4.1) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed missing warning on timeEnd, added more tests, fixed wrong default of pail server and browser ([a67254d](https://github.com/visulima/visulima/commit/a67254d3fce460b49b41c1183bd8b1cfd4a11a1c))
+
 ## @visulima/pail [1.4.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.1...@visulima/pail@1.4.0) (2024-06-14)
 
 ### Features
