@@ -1,7 +1,6 @@
 import { stderr, stdout } from "node:process";
 
-import { blueBright, grey, red } from "@visulima/colorize";
-import { stringify } from "safe-stable-stringify";
+import { blueBright, bold, grey, red } from "@visulima/colorize";
 import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
@@ -148,8 +147,6 @@ describe("prettyReporter", () => {
 
         const prettyReporter = new PrettyReporter();
 
-        prettyReporter.setStringify(stringify);
-
         const meta = {
             badge: "INFO",
             date,
@@ -169,7 +166,7 @@ describe("prettyReporter", () => {
         prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    null\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -228,7 +225,6 @@ describe("prettyReporter", () => {
         expect(writeStreamSpy).toHaveBeenCalledWith(expect.any(String), "informational");
     });
 
-    // _formatMessage method handles large messages that exceed terminal width
     it("should handle large messages that exceed terminal width when _formatMessage is called", () => {
         expect.assertions(1);
 
@@ -254,7 +250,6 @@ describe("prettyReporter", () => {
         expect(formattedMessage).toContain(largeMessage.slice(0, terminalSize().columns - 3));
     });
 
-    // _formatMessage method handles missing optional meta properties like badge, label, and file
     it("should handle missing optional meta properties like badge, label, and file when _formatMessage is called", () => {
         expect.assertions(1);
 

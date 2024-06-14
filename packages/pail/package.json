@@ -206,6 +206,7 @@
     "dependencies": {
         "@visulima/colorize": "1.4.3",
         "@visulima/fmt": "1.1.5",
+        "@visulima/inspector": "^1.0.2",
         "safe-stable-stringify": "^2.4.3"
     },
     "devDependencies": {
@@ -218,7 +219,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.19.15",
-        "@visulima/packem": "^1.0.0-alpha.41",
+        "@visulima/packem": "^1.0.0-alpha.42",
         "@visulima/redact": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
