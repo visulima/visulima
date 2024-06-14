@@ -142,7 +142,7 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
                 groupSpaces +
                     wrapAnsi(formattedMessage, size - 3, {
                         hard: true,
-                        trim: true,
+                        trim: false,
                         wordWrap: true,
                     }),
             );

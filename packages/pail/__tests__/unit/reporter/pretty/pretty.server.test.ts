@@ -273,4 +273,33 @@ describe("prettyReporter", () => {
 
         expect(formattedMessage).toBeDefined();
     });
+
+    it("should not strip spaces from messages", () => {
+        expect.assertions(1);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = {
+            badge: "INFO",
+            date,
+            groups: [],
+            label: "Label",
+            message: "  a  This is a sample message",
+            prefix: "Prefix",
+            scope: ["Scope1", "Scope2"],
+            suffix: "Suffix",
+            type: {
+                level: "informational",
+                name: "info",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        prettyReporter.log(meta as ReadonlyMeta<string>);
+
+        expect(stdoutSpy).toHaveBeenCalledWith(
+            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n\n`,
+        );
+
+        stdoutSpy.mockRestore();
+    });
 });
