@@ -1,3 +1,13 @@
+## @visulima/pail [1.3.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.0...@visulima/pail@1.3.1) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed rendering of undefined and null as a message ([eb80d23](https://github.com/visulima/visulima/commit/eb80d2309641eb79aed02eafe743d77f6c402d02))
+
+### Styles
+
+* **pail:** cs fixes ([f1b9549](https://github.com/visulima/visulima/commit/f1b9549bcb24b3f31f8c21dc0b5af30b50e61859))
+
 ## @visulima/pail [1.3.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.2...@visulima/pail@1.3.0) (2024-06-14)
 
 ### Features
