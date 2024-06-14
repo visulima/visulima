@@ -311,7 +311,7 @@ export class Cli implements ICli {
 
                 this.logger.error(`"${error.command}" is not an available command.${alternatives}`);
             } else {
-                this.logger.error(error as object);
+                this.logger.error(error as Error);
             }
 
             return shouldExitProcess ? exit(1) : undefined;
