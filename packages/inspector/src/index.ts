@@ -184,6 +184,8 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     return (options as Options).stylize(String(value), type);
 };
 
+export type { Options } from "./types";
+
 export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
     const options = {
         breakLength: Number.POSITIVE_INFINITY,

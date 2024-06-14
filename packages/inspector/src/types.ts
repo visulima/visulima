@@ -1,3 +1,5 @@
+import type { LiteralUnion } from "type-fest";
+
 export type Indent = {
     base: string;
     prev: string;
@@ -21,8 +23,7 @@ export interface Options {
     showProxy: boolean;
     stylize: <S extends string>(
         value: S,
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        styleType: string | "bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined",
+        styleType: LiteralUnion<"bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined", string>
     ) => string;
     truncate: number;
 }
