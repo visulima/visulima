@@ -3,7 +3,6 @@ import { stderr, stdout } from "node:process";
 import { describe, expect, it, vi } from "vitest";
 
 import RawReporter from "../../../../src/reporter/raw/raw.server";
-import type { ReadonlyMeta } from "../../../../src/types";
 
 describe("raw-reporter", () => {
     it("should log a message to stdout when given a message and no context or groups", () => {
@@ -15,7 +14,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -50,7 +49,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -85,7 +84,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: [1, 2, 3],
             date: new Date(),
@@ -119,7 +118,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -153,7 +152,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
@@ -187,7 +186,7 @@ describe("raw-reporter", () => {
         rawReporter.setStderr(stderr);
         rawReporter.setStringify(JSON.stringify);
 
-        const meta: ReadonlyMeta = {
+        const meta = {
             badge: "info",
             context: undefined,
             date: new Date(),
