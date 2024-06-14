@@ -258,6 +258,11 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                 message: this.endTimerMessage + " " + (span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s"),
                 prefix: label,
             });
+        } else {
+            this._logger("warn", false, {
+                message: "Timer not found",
+                prefix: label,
+            });
         }
     }
 

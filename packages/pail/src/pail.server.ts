@@ -26,15 +26,15 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
     protected readonly interactive: boolean;
 
-    public constructor(public readonly options: ServerConstructorOptions<T, L> = {}) {
+    public constructor(public readonly options: ServerConstructorOptions<T, L>) {
         const { interactive, rawReporter, reporters, stderr, stdout, ...rest } = options;
 
         super(rest as ConstructorOptions<T, L>);
 
         this.interactive = interactive ?? false;
 
-        this.stdout = stdout as NodeJS.WriteStream;
-        this.stderr = stderr as NodeJS.WriteStream;
+        this.stdout = stdout;
+        this.stderr = stderr;
 
         if (this.interactive) {
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
@@ -47,6 +47,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         this.rawReporter = this.extendReporter(options.rawReporter ?? new RawReporter<L>());
     }
 
+    // @ts-expect-error - this returns a different type
     public override scope<N extends string = T>(...name: string[]): PailServerType<N, L> {
         if (name.length === 0) {
             throw new Error("No scope name was defined.");
