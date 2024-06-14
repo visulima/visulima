@@ -1,3 +1,9 @@
+## @visulima/pail [1.3.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.2...@visulima/pail@1.3.0) (2024-06-14)
+
+### Features
+
+* **pail:** added new redact processor ([#423](https://github.com/visulima/visulima/issues/423)) ([0614067](https://github.com/visulima/visulima/commit/0614067bec83a46ffe92abfb8a715b2c385b1d7d))
+
 ## @visulima/pail [1.2.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.1...@visulima/pail@1.2.2) (2024-06-14)
 
 ### Bug Fixes

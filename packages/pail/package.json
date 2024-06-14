@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "1.2.2",
+    "version": "1.3.0",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "ansi",
@@ -219,7 +219,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.19.15",
         "@visulima/packem": "^1.0.0-alpha.41",
-        "@visulima/redact": "^1.0.2",
+        "@visulima/redact": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -245,7 +245,7 @@
         "wrap-ansi": "^9.0.0"
     },
     "peerDependencies": {
-        "@visulima/redact": "^1.0.2",
+        "@visulima/redact": "1.0.2",
         "rotating-file-stream": "^3.1.1"
     },
     "peerDependenciesMeta": {
