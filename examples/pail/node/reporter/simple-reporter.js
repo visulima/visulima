@@ -25,6 +25,8 @@ pail.trace("Hello World!");
 pail.wait("Hello World!");
 pail.warn("Hello World!");
 pail.watch("Hello World!");
+// should have a line break and 4 spaces
+pail.info("\n    test ");
 
 pail.info({
     message: "Hello World!",

@@ -114,4 +114,33 @@ describe("pailServerImpl", () => {
 
         expect(() => pailServer.log(circularObject)).not.toThrow();
     });
+
+    it("should group messages correctly", () => {
+        expect.assertions(7);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+
+        const newLogger3 = pailServer.scope("group");
+
+        newLogger3.log("This is the outer level");
+        newLogger3.group();
+        newLogger3.log("Level 2");
+        newLogger3.info("Hello world!");
+        newLogger3.group();
+        newLogger3.log("Level 3");
+        newLogger3.warn("More of level 3");
+        newLogger3.groupEnd();
+        newLogger3.log("Back to level 2");
+        newLogger3.groupEnd();
+        newLogger3.log("Back to the outer level");
+
+        expect(logStdoutSpy).toHaveBeenCalledWith("This is the outer level");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Hello world!");
+        expect(logStdoutSpy).toHaveBeenCalledWith("        Level 3");
+        expect(logStdoutSpy).toHaveBeenCalledWith("        More of level 3");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Back to level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("Back to the outer level");
+    });
 });

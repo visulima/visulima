@@ -110,7 +110,7 @@ describe("pailBrowserImpl", () => {
         consoleSpy.mockRestore();
     });
 
-    it("should group and ungroup logs correctly", () => {
+    it.skipIf(typeof window === "undefined")("should group and ungroup logs correctly", () => {
         expect.assertions(2);
 
         const logger = new PailBrowser({

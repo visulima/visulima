@@ -268,19 +268,19 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     public group(label = "console.group"): void {
         if (typeof window === "undefined") {
+            this.groups.push(label);
+        } else {
             // eslint-disable-next-line no-console
             console.group(label);
-        } else {
-            this.groups.push(label);
         }
     }
 
     public groupEnd(): void {
         if (typeof window === "undefined") {
+            this.groups.pop();
+        } else {
             // eslint-disable-next-line no-console
             console.groupEnd();
-        } else {
-            this.groups.pop();
         }
     }
 
