@@ -1,3 +1,9 @@
+## @visulima/pail [1.4.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.1...@visulima/pail@1.4.2) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed broken grouping of logs ([2922a17](https://github.com/visulima/visulima/commit/2922a17dd983e06b9a76f2abe4bf19eec5c263f1))
+
 ## @visulima/pail [1.4.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.0...@visulima/pail@1.4.1) (2024-06-14)
 
 ### Bug Fixes
