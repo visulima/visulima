@@ -222,4 +222,30 @@ describe("simpleReporter", () => {
 
         expect(formattedMessage.split("\n").length).toBeGreaterThan(1);
     });
+
+    it("should not strip spaces from messages", () => {
+        expect.assertions(1);
+
+        const simpleReporter = new SimpleReporter();
+        const meta = {
+            badge: "INFO",
+            date,
+            groups: ["Group1"],
+            label: "Label",
+            message: "  a  This is a sample message1",
+            type: {
+                level: "informational",
+                name: "info",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        simpleReporter.log(meta as ReadonlyMeta<string>);
+
+        expect(stdoutSpy).toHaveBeenCalledWith(
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
+        );
+
+        stdoutSpy.mockRestore();
+    });
 });

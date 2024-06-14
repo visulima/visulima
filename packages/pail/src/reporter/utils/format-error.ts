@@ -11,7 +11,7 @@ const formatError = (error: Error, size: number, groupSpaces: string, hideName =
         ...(hideName ? [] : [groupSpaces + red(name), ": "]),
         wrapAnsi(message, size - 3, {
             hard: true,
-            trim: true,
+            trim: false,
             wordWrap: true,
         }),
     );
