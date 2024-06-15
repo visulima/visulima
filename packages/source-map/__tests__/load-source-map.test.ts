@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import loadSourceMap from "../src/load-source-map";
 
-const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "source-maps");
+const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "__fixtures__", "source-maps");
 
 describe("load-source-map", () => {
     it("should give back undefined as result if no sourcemap is referenced", () => {
