@@ -55,8 +55,8 @@
         "url": "https://github.com/visulima/visulima/issues"
     },
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
