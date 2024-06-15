@@ -115,6 +115,7 @@
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.15",
+        "@visulima/path": "^1.0.2",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
