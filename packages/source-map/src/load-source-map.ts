@@ -34,6 +34,7 @@ const decodeInlineMap = (data: string) => {
     return Buffer.from(rawData, "base64").toString();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const loadSourceMap = (filename: string): TraceMap | undefined => {
     let sourceMapContent: string | undefined;
 
