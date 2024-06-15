@@ -228,29 +228,6 @@ console.log(stack);
 // ];
 ```
 
-## Source Map
-
-```ts
-import { loadSourceMap, originalPositionFor, sourceContentFor } from "@visulima/error";
-
-const sourceMap = loadSourceMap("your_path/src/index.js"); // returns a TraceMap
-
-const traced = originalPositionFor(sourceMap, { column: 13, line: 30 });
-
-console.log(traced);
-
-// {
-//     column: 9,
-//     line: 15,
-//     name: "setState",
-//     source: "your_path/src/index.js"
-// }
-
-console.log(sourceContentFor(sourceMap, traced.source)); // 'content for your_path/src/index.js'
-```
-
-For more information about the TraceMap see [@jridgewell/trace-mapping](https://github.com/jridgewell/trace-mapping)
-
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
