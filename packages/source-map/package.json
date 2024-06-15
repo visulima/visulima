@@ -1,0 +1,127 @@
+{
+    "name": "@visulima/source-map",
+    "version": "0.0.0",
+    "description": "Provides functionality related to source maps.",
+    "keywords": [
+        "visulima",
+        "source-map"
+    ],
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "homepage": "https://visulima.com/packages/source-map",
+    "license": "MIT",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/source-map"
+    },
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "scripts": {
+        "build": "cross-env NODE_ENV=development tsup",
+        "build:prod": "cross-env NODE_ENV=production tsup",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
+        "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "engines": {
+        "node": ">=18.* <=22.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "dependencies": {
+        "@jridgewell/trace-mapping": "^0.3.25",
+        "@visulima/path": "1.0.2"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "^15.0.3",
+        "@anolilab/prettier-config": "^5.0.14",
+        "@anolilab/semantic-release-pnpm": "1.1.3",
+        "@anolilab/semantic-release-preset": "^9.0.0",
+        "@babel/core": "^7.24.7",
+        "@rushstack/eslint-plugin-security": "^0.8.1",
+        "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
+        "@total-typescript/ts-reset": "^0.5.1",
+        "@types/node": "20.14.2",
+        "@vitest/coverage-v8": "^1.6.0",
+        "@vitest/ui": "^1.6.0",
+        "conventional-changelog-conventionalcommits": "8.0.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.57.0",
+        "eslint-plugin-deprecation": "^3.0.0",
+        "eslint-plugin-etc": "^2.0.3",
+        "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
+        "eslint-plugin-mdx": "^3.1.5",
+        "eslint-plugin-vitest": "^0.4.1",
+        "eslint-plugin-vitest-globals": "^1.5.0",
+        "prettier": "^3.3.2",
+        "rimraf": "^5.0.7",
+        "secretlint": "8.2.4",
+        "@visulima/packem": "^1.0.0-alpha.41",
+        "esbuild": "^0.21.5",
+        "semantic-release": "^24.0.0",
+        "typescript": "^5.4.5",
+        "vitest": "^1.6.0"
+    },
+    "anolilab": {
+        "eslint-config": {
+            "plugin": {
+                "tsdoc": false,
+                "etc": false
+            },
+            "warn_on_unsupported_typescript_version": false,
+            "info_on_disabling_jsx_react_rule": false,
+            "info_on_disabling_prettier_conflict_rule": false,
+            "info_on_disabling_jsonc_sort_keys_rule": false,
+            "info_on_disabling_etc_no_deprecated": false
+        }
+    }
+}

@@ -4,7 +4,7 @@ import { originalPositionFor } from "@jridgewell/trace-mapping";
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import loadSourceMap from "../../src/sourcemap/load-source-map";
+import loadSourceMap from "../src/load-source-map";
 
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "source-maps");
 
