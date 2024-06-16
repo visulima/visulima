@@ -1,9 +1,5 @@
 const addNumericSeparator = (number_: bigint | number, string_: string): string => {
-    if (
-        number_ === Number.POSITIVE_INFINITY ||
-        number_ === Number.NEGATIVE_INFINITY ||
-        string_.includes("e")
-    ) {
+    if (number_ === Number.POSITIVE_INFINITY || number_ === Number.NEGATIVE_INFINITY || string_.includes("e")) {
         return string_;
     }
 

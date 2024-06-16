@@ -2,12 +2,7 @@ import type { Indent, InspectType, InternalInspect, Options } from "../types";
 import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 
-const inspectMapEntry = (
-    [key, value]: [unknown, unknown],
-    object: unknown,
-    options: Options,
-    inspect: InternalInspect,
-): string => {
+const inspectMapEntry = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 4;
 

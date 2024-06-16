@@ -34,6 +34,6 @@ const inspectObject: InspectType<Error> = (error: Error, options: Options, inspe
     );
 
     return `${name}${message}${propertyContents ? ` { ${propertyContents} }` : ""}`;
-}
+};
 
 export default inspectObject;

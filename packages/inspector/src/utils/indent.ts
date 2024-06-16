@@ -25,4 +25,4 @@ export const indentedJoin = (values: string, indent: Indent): string => {
     const lineJoiner = indent.prev + indent.base;
 
     return lineJoiner + values.split(", ").join("," + lineJoiner) + indent.prev;
-}
+};
