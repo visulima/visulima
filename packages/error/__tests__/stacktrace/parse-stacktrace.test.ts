@@ -1,6 +1,6 @@
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { dirname } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../../__fixtures__/captured-errors";
@@ -1291,7 +1291,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
-
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
                 1289,
                 49,
@@ -1300,7 +1299,6 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             ]);
             expect(stackFrames[1]).toMatchStackFrame([
                 "<unknown>",
-
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
                 1289,
                 49,

@@ -55,8 +55,31 @@ const toMatchStackFrame: (
     }
 
     return {
+        actual: {
+            column: columnNumber,
+            evalOrigin,
+            file,
+            line: lineNumber,
+            methodName: function_,
+            type,
+        },
+        expected: {
+            column: received.column,
+            evalOrigin: received.evalOrigin,
+            file: received.file,
+            line: received.line,
+            methodName: received.methodName,
+            type: received.type,
+        },
         message: () =>
-            `expected ${JSON.stringify(received)} to match stack frame ${JSON.stringify({
+            `expected ${JSON.stringify({
+                column: received.column,
+                evalOrigin: received.evalOrigin,
+                file: received.file,
+                line: received.line,
+                methodName: received.methodName,
+                type: received.type,
+            })} to match stack frame ${JSON.stringify({
                 column: columnNumber,
                 evalOrigin,
                 file,

@@ -45,6 +45,10 @@ const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
 const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
 
+// eval at <anonymous> (C:\\Users\\user\\project\\visulima\\packages\\error\\__tests__\\stacktrace\\parse-stacktrace.test.ts
+// eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group,security/detect-unsafe-regex
+const WINDOWS_EVAL_REGEX = /(eval)\sat\s(<anonymous>)\s\((.*)\)?:(\d+)?:(\d+)\),\s*(<anonymous>)?:(\d+)?:(\d+)/;
+
 // in AppProviders (at App.tsx:28)
 // eslint-disable-next-line security/detect-unsafe-regex
 const NODE_REGEX = /^\s*in\s(?:([^\\/]+(?:\s\[as\s\S+\])?)\s\(?)?\(at?\s?(.*?):(\d+)(?::(\d+))?\)?\s*$/;
@@ -169,6 +173,13 @@ const parseChromium = (line: string): Trace | undefined => {
         const isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
 
         let evalOrigin: Trace | undefined;
+        let windowsParts:
+            | {
+                  column: number | undefined;
+                  file: string | undefined;
+                  line: number | undefined;
+              }
+            | undefined;
 
         if (isEval) {
             const subMatch = CHROMIUM_EVAL_REGEX.exec(line);
@@ -198,6 +209,25 @@ const parseChromium = (line: string): Trace | undefined => {
                         type: "eval" as TraceType,
                     };
                 }
+            } else {
+                const windowsSubMatch = WINDOWS_EVAL_REGEX.exec(line);
+
+                if (windowsSubMatch) {
+                    windowsParts = {
+                        column: windowsSubMatch[5] ? +windowsSubMatch[5] : undefined,
+                        file: windowsSubMatch[3],
+                        line: windowsSubMatch[4] ? +windowsSubMatch[4] : undefined,
+                    };
+
+                    evalOrigin = {
+                        column: windowsSubMatch[8] ? +windowsSubMatch[8] : undefined,
+                        file: windowsSubMatch[2],
+                        line: windowsSubMatch[7] ? +windowsSubMatch[7] : undefined,
+                        methodName: "eval",
+                        raw: windowsSubMatch[0],
+                        type: "eval" as TraceType,
+                    };
+                }
             }
         }
 
@@ -212,13 +242,18 @@ const parseChromium = (line: string): Trace | undefined => {
             evalOrigin,
             file,
             line: parts[3] ? +parts[3] : undefined,
-            // Normalize IE's 'Anonymous function'
             methodName,
             raw: line,
             type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
         };
 
-        parseMapped(trace, `${file}:${parts[3]}:${parts[4]}`);
+        if (windowsParts) {
+            trace.column = windowsParts.column;
+            trace.file = windowsParts.file as string;
+            trace.line = windowsParts.line;
+        } else {
+            parseMapped(trace, `${file}:${parts[3]}:${parts[4]}`);
+        }
 
         return trace;
     }
