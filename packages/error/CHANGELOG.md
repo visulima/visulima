@@ -1,3 +1,31 @@
+## @visulima/error [4.0.0](https://github.com/visulima/visulima/compare/@visulima/error@3.2.11...@visulima/error@4.0.0) (2024-06-16)
+
+### ⚠ BREAKING CHANGES
+
+* **error:** moved source-map handling into a new package @visulima/source-map
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **error:** removed source-map handling ([716ef11](https://github.com/visulima/visulima/commit/716ef11a054fd9405f58ba448a868054b5368b50))
+* **source-map:** new source-map package ([d4114c6](https://github.com/visulima/visulima/commit/d4114c6e7cd73bacf14ba7d8df509507d8daa3ee))
+
+### Bug Fixes
+
+* **error:** fixed new eval syntax on windows ([e50a816](https://github.com/visulima/visulima/commit/e50a8164d6b2f15818b77d67ac876bbe638bba8a))
+
+### Miscellaneous Chores
+
+* **error:** added missing @visulima/path as dev dep ([c83d103](https://github.com/visulima/visulima/commit/c83d1035209a9b0f4674ede207918b403efc5fbf))
+* **source-map:** moved fixtures from error to source-map ([664b287](https://github.com/visulima/visulima/commit/664b2870d4405fb27b65f7dc264b89f1bf29306d))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/error [3.2.11](https://github.com/visulima/visulima/compare/@visulima/error@3.2.10...@visulima/error@3.2.11) (2024-06-06)
 
 
