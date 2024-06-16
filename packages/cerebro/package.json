@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "1.0.45",
+    "version": "1.0.46",
     "description": "A delightful toolkit for building Node-powered CLIs.",
     "keywords": [
         "command",
@@ -116,7 +116,7 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
-        "@visulima/package": "1.10.1",
+        "@visulima/package": "1.10.2",
         "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",
