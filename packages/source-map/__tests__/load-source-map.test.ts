@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 
 import { originalPositionFor } from "@jridgewell/trace-mapping";
-import { dirname, join } from "@visulima/path";
+import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import loadSourceMap from "../src/load-source-map";
@@ -46,7 +46,7 @@ describe("load-source-map", () => {
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
 
         expect(() => loadSourceMap(path)).toThrow(
-            `Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path.replace("missingSourcemap.js", "missing.js.map")}'`,
+            `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"))}'`,
         );
     });
 
@@ -55,7 +55,7 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "invalidSourcemap.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${path}":\n`);
+        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
     });
 
     it("should call back with error on inline, invalid sourcemap", () => {
@@ -63,7 +63,7 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "invalidInlineSourcemap.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${path}":\n`);
+        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
     });
 
     it("should call back with error if source file does not exist", () => {
@@ -71,6 +71,6 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${path}":\nENOENT: no such file or directory, open '${path}'`);
+        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`);
     });
 });
