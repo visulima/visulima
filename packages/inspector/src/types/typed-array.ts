@@ -69,6 +69,6 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     }
 
     return `${name}[ ${output}${propertyContents ? `, ${propertyContents}` : ""} ]`;
-}
+};
 
 export default inspectTypedArray;

@@ -3,7 +3,6 @@ import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
 
-
 const multiLineValues = (values: unknown[]): boolean => {
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const value of values) {

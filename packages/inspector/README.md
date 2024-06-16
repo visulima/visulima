@@ -52,7 +52,7 @@ console.log(inspect({ foo: "bar" })); // { foo: 'bar' }
 ```typescript
 import { inspect } from "@visulima/inspector";
 
-const obj = { a: 1, b: [3,4] };
+const obj = { a: 1, b: [3, 4] };
 obj.c = obj;
 
 console.log(inspect(obj)); // { a: 1, b: [ 3, 4 ], c: [Circular] }

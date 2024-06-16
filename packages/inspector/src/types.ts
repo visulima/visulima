@@ -23,7 +23,7 @@ export interface Options {
     showProxy: boolean;
     stylize: <S extends string>(
         value: S,
-        styleType: LiteralUnion<"bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined", string>
+        styleType: LiteralUnion<"bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined", string>,
     ) => string;
     truncate: number;
 }

@@ -11,11 +11,8 @@ const quoteComplexKey = (key: string, options: Options): string => {
         return stringifiedKey.replaceAll('"', '\\"');
     }
 
-    return stringifiedKey
-        .replaceAll("'", "\\'")
-        .replaceAll('\\"', '"')
-        .replaceAll(/^"|"$/g, "'");
-}
+    return stringifiedKey.replaceAll("'", "\\'").replaceAll('\\"', '"').replaceAll(/^"|"$/g, "'");
+};
 
 const inspectProperty = ([key, value]: [unknown, unknown], object: unknown, options: Options, inspect: InternalInspect): string => {
     // eslint-disable-next-line no-param-reassign

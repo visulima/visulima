@@ -82,7 +82,7 @@ module.exports = defineConfig({
             files: ["__bench__/**"],
             rules: {
                 "import/no-extraneous-dependencies": "off",
-                "import/no-unused-modules": "off"
+                "import/no-unused-modules": "off",
             },
         },
     ],

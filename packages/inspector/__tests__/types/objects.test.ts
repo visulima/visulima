@@ -94,7 +94,7 @@ describe.each([
             // @ts-expect-error - missing property
             double.b.obj = double;
 
-            expect(inspect(double)).toBe( "{ a: [ [Circular] ], b: { inner: [Circular], obj: [Circular] } }");
+            expect(inspect(double)).toBe("{ a: [ [Circular] ], b: { inner: [Circular], obj: [Circular] } }");
         });
     }
 

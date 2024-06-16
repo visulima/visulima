@@ -4,8 +4,8 @@ import { inspect } from "../../src";
 
 // eslint-disable-next-line func-style,@typescript-eslint/naming-convention,no-underscore-dangle
 function arguments_() {
-  // eslint-disable-next-line prefer-rest-params
-  return arguments
+    // eslint-disable-next-line prefer-rest-params
+    return arguments;
 }
 
 describe("arguments", () => {

@@ -1,11 +1,11 @@
-import { pail } from "@visulima/pail"
+import { pail } from "@visulima/pail";
 
-pail.wrapConsole()
+pail.wrapConsole();
 
 const scaryObject = {
-  get value () {
-    console.warn('Do not access me!', scaryObject)
-  }
-}
+    get value() {
+        console.warn("Do not access me!", scaryObject);
+    },
+};
 
-pail.log(scaryObject)
+pail.log(scaryObject);

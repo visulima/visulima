@@ -6,6 +6,6 @@ const inspectSymbol: InspectType<symbol> = (value: symbol): string => {
     }
 
     return value.toString();
-}
+};
 
 export default inspectSymbol;

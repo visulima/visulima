@@ -1,7 +1,6 @@
 import { TRUNCATOR } from "../constants";
 import type { InternalInspect, Options } from "../types";
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type InspectItem = (value: any, object: any, options: Options, inspect: InternalInspect) => string;
 

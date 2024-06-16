@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-----
+---
 
 Modified code from the original [loupe](https://github.com/chaijs/loupe/tree/main) repository.
 
@@ -40,11 +40,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
+
 The published @visulima/inspector artifact additionally contains code with the following licenses:
 (MIT OR CC0-1.0)
 
 # Bundled types:
+
 ## type-fest
+
 License: (MIT OR CC0-1.0)
 By: Sindre Sorhus
 Repository: sindresorhus/type-fest
