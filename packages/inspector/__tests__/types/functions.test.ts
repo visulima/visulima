@@ -21,7 +21,7 @@ describe("functions", () => {
 
         expect(inspect(() => 3)).toBe("[Function: () => 3]");
 
-        expect(inspect((a: string, b: string, c: string) => a + b + c)).toBe("[Function: function(a, b, c) {\n      return a + b + c;\n    }]");
+        expect(inspect((a: string, b: string, c: string) => a + b + c)).toBe("[Function: (a, b, c) => a + b + c]");
     });
 
     describe("truncate", () => {
