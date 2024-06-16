@@ -1,6 +1,6 @@
 {
     "name": "@visulima/source-map",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Provides functionality related to source maps.",
     "keywords": [
         "visulima",
