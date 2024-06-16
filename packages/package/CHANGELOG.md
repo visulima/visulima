@@ -1,3 +1,14 @@
+## @visulima/package [1.10.2](https://github.com/visulima/visulima/compare/@visulima/package@1.10.1...@visulima/package@1.10.2) (2024-06-16)
+
+### Styles
+
+* fixed found code style issue with eslint and prettier ([114e9c9](https://github.com/visulima/visulima/commit/114e9c9f23518cbfa3814af6cee868233431f312))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.6
+
 ## @visulima/package [1.10.1](https://github.com/visulima/visulima/compare/@visulima/package@1.10.0...@visulima/package@1.10.1) (2024-06-11)
 
 ### Miscellaneous Chores
