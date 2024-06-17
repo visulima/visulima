@@ -1,3 +1,45 @@
+## @visulima/cerebro [1.0.46](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.45...@visulima/cerebro@1.0.46) (2024-06-16)
+
+
+### Dependencies
+
+* **@visulima/package:** upgraded to 1.10.2
+
+## @visulima/cerebro [1.0.45](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.44...@visulima/cerebro@1.0.45) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.3
+
+## @visulima/cerebro [1.0.44](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.43...@visulima/cerebro@1.0.44) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.2
+
+## @visulima/cerebro [1.0.43](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.42...@visulima/cerebro@1.0.43) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.1
+
+## @visulima/cerebro [1.0.42](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.41...@visulima/cerebro@1.0.42) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.0
+
+## @visulima/cerebro [1.0.41](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.40...@visulima/cerebro@1.0.41) (2024-06-14)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.3.1
+
 ## @visulima/cerebro [1.0.40](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.39...@visulima/cerebro@1.0.40) (2024-06-14)
 
 

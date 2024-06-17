@@ -5,6 +5,6 @@ const inspectRegExp: InspectType<RegExp> = (regExp: RegExp, options: Options): s
     const sourceLength = options.truncate - (2 + (regExp.flags as string).length);
 
     return options.stylize(`/${truncate(regExp.source, sourceLength)}/${regExp.flags}`, "regexp");
-}
+};
 
 export default inspectRegExp;

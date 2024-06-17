@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "2.1.5",
+    "version": "2.1.6",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
@@ -80,8 +80,8 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./utils": {
@@ -90,8 +90,8 @@
                 "default": "./dist/utils.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
             }
         },
         "./error": {
@@ -100,14 +100,14 @@
                 "default": "./dist/error.cjs"
             },
             "import": {
-                "types": "./dist/error.d.ts",
-                "default": "./dist/error.js"
+                "types": "./dist/error.d.mts",
+                "default": "./dist/error.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -116,8 +116,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -132,8 +132,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "1.0.2",
-        "type-fest": "^4.20.0"
+        "@visulima/path": "1.0.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -143,12 +142,14 @@
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@types/node": "18.19.15",
-        "@visulima/error": "3.2.11",
+        "@visulima/error": "4.0.0",
+        "@visulima/packem": "^1.0.0-alpha.42",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "detect-indent": "^7.0.1",
+        "esbuild": "^0.21.5",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -163,7 +164,7 @@
         "safe-regex2": "^3.1.0",
         "semantic-release": "24.0.0",
         "tempy": "^3.1.0",
-        "tsup": "^8.1.0",
+        "type-fest": "^4.20.1",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "yaml": "^2.4.5"

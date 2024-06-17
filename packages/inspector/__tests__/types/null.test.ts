@@ -11,7 +11,7 @@ describe("null", () => {
 
     describe("truncate", () => {
         it("returns the full string representation regardless of truncate", () => {
-        expect.assertions(9);
+            expect.assertions(9);
 
             expect(inspect(null, { truncate: 9 })).toBe("null");
             expect(inspect(null, { truncate: 8 })).toBe("null");

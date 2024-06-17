@@ -1,7 +1,7 @@
 {
     "name": "@visulima/error",
-    "version": "3.2.11",
-    "description": "Error with more than just a message, stacktrace parsing and sourcemap loading.",
+    "version": "4.0.0",
+    "description": "Error with more than just a message, stacktrace parsing.",
     "keywords": [
         "anolilab",
         "character",
@@ -18,7 +18,6 @@
         "location",
         "parser",
         "position",
-        "source-map",
         "stack",
         "stack-trace",
         "stacktrace",
@@ -70,12 +69,6 @@
                 "default": "./dist/error/index.js"
             }
         },
-        "./sourcemap": {
-            "import": {
-                "types": "./dist/sourcemap/index.d.ts",
-                "default": "./dist/sourcemap/index.js"
-            }
-        },
         "./stacktrace": {
             "import": {
                 "types": "./dist/stacktrace/index.d.ts",
@@ -107,10 +100,6 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "dependencies": {
-        "@jridgewell/trace-mapping": "^0.3.25",
-        "@visulima/path": "1.0.2"
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
@@ -127,6 +116,7 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
+        "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -173,7 +163,6 @@
         "src/index.ts",
         "src/code-frame/index.ts",
         "src/error/index.ts",
-        "src/sourcemap/index.ts",
         "src/stacktrace/index.ts"
     ]
 }

@@ -2,7 +2,7 @@ import type { stringify } from "safe-stable-stringify";
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
 
-import { EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
+import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import RawReporter from "./reporter/raw/raw.browser";
 import type {
     ConstructorOptions,
@@ -23,18 +23,6 @@ import type {
 import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
-
-const EMPTY_META = {
-    badge: undefined,
-    context: undefined,
-    error: undefined,
-    label: undefined,
-    message: undefined,
-    prefix: undefined,
-    repeated: undefined,
-    scope: undefined,
-    suffix: undefined,
-};
 
 export class PailBrowserImpl<T extends string = string, L extends string = string> {
     protected timersMap: Map<string, number>;
@@ -270,24 +258,29 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                 message: this.endTimerMessage + " " + (span < 1000 ? span + " ms" : (span / 1000).toFixed(2) + " s"),
                 prefix: label,
             });
+        } else {
+            this._logger("warn", false, {
+                message: "Timer not found",
+                prefix: label,
+            });
         }
     }
 
     public group(label = "console.group"): void {
         if (typeof window === "undefined") {
+            this.groups.push(label);
+        } else {
             // eslint-disable-next-line no-console
             console.group(label);
-        } else {
-            this.groups.push(label);
         }
     }
 
     public groupEnd(): void {
         if (typeof window === "undefined") {
+            this.groups.pop();
+        } else {
             // eslint-disable-next-line no-console
             console.groupEnd();
-        } else {
-            this.groups.pop();
         }
     }
 
@@ -379,7 +372,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
     private _buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
-        const meta = { ...EMPTY_META } as Meta<L>;
+        const meta = {
+            badge: undefined,
+            context: undefined,
+            error: undefined,
+            label: undefined,
+            message: EMPTY_SYMBOL,
+            prefix: undefined,
+            repeated: undefined,
+            scope: undefined,
+            suffix: undefined,
+        } as Meta<L>;
 
         meta.type = {
             level: type.logLevel as LiteralUnion<ExtendedRfc5424LogLevels, L>,

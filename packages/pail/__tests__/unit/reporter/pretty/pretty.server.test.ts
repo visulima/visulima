@@ -1,12 +1,12 @@
 import { stderr, stdout } from "node:process";
 
-import { blueBright, grey, red } from "@visulima/colorize";
-import { stringify } from "safe-stable-stringify";
+import { blueBright, bold, grey, red } from "@visulima/colorize";
 import terminalSize from "terminal-size";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateFormatter } from "../../../../src/reporter/pretty/abstract-pretty-reporter";
 import PrettyReporter from "../../../../src/reporter/pretty/pretty.server";
+import type { ReadonlyMeta } from "../../../../src/types";
 
 vi.mock("terminal-size", () => {
     return {
@@ -42,7 +42,7 @@ describe("prettyReporter", () => {
         };
         const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
             `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    This is a sample message\n    ${grey("Suffix")}\n\n`,
@@ -71,7 +71,7 @@ describe("prettyReporter", () => {
         };
         const stderrSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stderrSpy).toHaveBeenCalledWith(
             `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${red("ERROR") + red("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey("......")}\n\n    This is an error message\n    ${grey("Suffix")}\n\n`,
@@ -103,7 +103,7 @@ describe("prettyReporter", () => {
             },
         };
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStdout.write).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe("prettyReporter", () => {
             },
         };
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(newStderr.write).toHaveBeenCalledWith(
@@ -142,12 +142,10 @@ describe("prettyReporter", () => {
         );
     });
 
-    it("should handle undefined or null message gracefully when log is called", () => {
+    it("should handle undefined and null message gracefully when log is called", () => {
         expect.assertions(1);
 
         const prettyReporter = new PrettyReporter();
-
-        prettyReporter.setStringify(stringify);
 
         const meta = {
             badge: "INFO",
@@ -165,10 +163,10 @@ describe("prettyReporter", () => {
         };
         const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledWith(
-            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    null\n    ${grey("Suffix")}\n\n`,
+            `    ${grey("[Group1]") + " " + grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".......")}\n\n    ${bold("null")}\n    ${grey("Suffix")}\n\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -192,7 +190,9 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
-        const formattedMessage = prettyReporter._formatMessage(meta);
+        // @ts-expect-error - spy
+        const formattedMessage = prettyReporter._formatMessage(meta as ReadonlyMeta<string>);
+
         expect(formattedMessage).toBeDefined();
     });
 
@@ -220,12 +220,11 @@ describe("prettyReporter", () => {
 
         const writeStreamSpy = vi.spyOn(prettyReporter as any, "_log");
 
-        prettyReporter.log(meta);
+        prettyReporter.log(meta as ReadonlyMeta<string>);
 
         expect(writeStreamSpy).toHaveBeenCalledWith(expect.any(String), "informational");
     });
 
-    // _formatMessage method handles large messages that exceed terminal width
     it("should handle large messages that exceed terminal width when _formatMessage is called", () => {
         expect.assertions(1);
 
@@ -245,12 +244,12 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
+        // @ts-expect-error - spy
         const formattedMessage = prettyReporter._formatMessage(meta);
 
         expect(formattedMessage).toContain(largeMessage.slice(0, terminalSize().columns - 3));
     });
 
-    // _formatMessage method handles missing optional meta properties like badge, label, and file
     it("should handle missing optional meta properties like badge, label, and file when _formatMessage is called", () => {
         expect.assertions(1);
 
@@ -269,8 +268,38 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
-        const formattedMessage = prettyReporter._formatMessage(meta);
+        // @ts-expect-error - spy
+        const formattedMessage = prettyReporter._formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage).toBeDefined();
+    });
+
+    it("should not strip spaces from messages", () => {
+        expect.assertions(1);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = {
+            badge: "INFO",
+            date,
+            groups: [],
+            label: "Label",
+            message: "  a  This is a sample message",
+            prefix: "Prefix",
+            scope: ["Scope1", "Scope2"],
+            suffix: "Suffix",
+            type: {
+                level: "informational",
+                name: "info",
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+
+        prettyReporter.log(meta as ReadonlyMeta<string>);
+
+        expect(stdoutSpy).toHaveBeenCalledWith(
+            `${grey(dateFormatter(date))} ${blueBright("INFO") + blueBright("LABEL")} ${grey("....")} ${grey("[Scope1 > Scope2]")} ${grey(". [Prefix]")} ${grey(".....................")}\n\n  a  This is a sample message\n${grey("Suffix")}\n\n`,
+        );
+
+        stdoutSpy.mockRestore();
     });
 });

@@ -20,8 +20,8 @@ describe("functions", () => {
         expect.assertions(2);
 
         expect(inspect(() => 3)).toBe("[Function: () => 3]");
-        /* eslint-disable-next-line prefer-arrow-callback,func-names */
-        expect(inspect(function(a: string, b: string, c: string) { return a + b + c })).toBe("[Function: function(a, b, c) {\n      return a + b + c;\n    }]");
+
+        expect(inspect((a: string, b: string, c: string) => a + b + c)).toBe("[Function: (a, b, c) => a + b + c]");
     });
 
     describe("truncate", () => {

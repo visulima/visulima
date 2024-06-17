@@ -1,4 +1,4 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import RedactProcessor from "../../../src/processor/redact-processor";
 import type { Meta } from "../../../src/types";
@@ -48,7 +48,6 @@ describe("redactProcessor", () => {
 
         expect(result.message).toBe("<REDACT> data");
     });
-
 
     it("should handle undefined values in meta fields", () => {
         expect.assertions(3);

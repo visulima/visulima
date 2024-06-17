@@ -1,3 +1,37 @@
+## @visulima/pail [1.4.3](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.2...@visulima/pail@1.4.3) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed striping of spaces from messages ([6d6ae8b](https://github.com/visulima/visulima/commit/6d6ae8baac4844b2b90baee62105fa66e772d529))
+
+## @visulima/pail [1.4.2](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.1...@visulima/pail@1.4.2) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed broken grouping of logs ([2922a17](https://github.com/visulima/visulima/commit/2922a17dd983e06b9a76f2abe4bf19eec5c263f1))
+
+## @visulima/pail [1.4.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.0...@visulima/pail@1.4.1) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed missing warning on timeEnd, added more tests, fixed wrong default of pail server and browser ([a67254d](https://github.com/visulima/visulima/commit/a67254d3fce460b49b41c1183bd8b1cfd4a11a1c))
+
+## @visulima/pail [1.4.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.1...@visulima/pail@1.4.0) (2024-06-14)
+
+### Features
+
+* **pail:** adding inspector into pretty reporters ([#424](https://github.com/visulima/visulima/issues/424)) ([76b1435](https://github.com/visulima/visulima/commit/76b14350904eb9b2e5c3b92b273204db11a2b6f8))
+
+## @visulima/pail [1.3.1](https://github.com/visulima/visulima/compare/@visulima/pail@1.3.0...@visulima/pail@1.3.1) (2024-06-14)
+
+### Bug Fixes
+
+* **pail:** fixed rendering of undefined and null as a message ([eb80d23](https://github.com/visulima/visulima/commit/eb80d2309641eb79aed02eafe743d77f6c402d02))
+
+### Styles
+
+* **pail:** cs fixes ([f1b9549](https://github.com/visulima/visulima/commit/f1b9549bcb24b3f31f8c21dc0b5af30b50e61859))
+
 ## @visulima/pail [1.3.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.2.2...@visulima/pail@1.3.0) (2024-06-14)
 
 ### Features

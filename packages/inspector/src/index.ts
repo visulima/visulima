@@ -82,9 +82,9 @@ const baseTypesMap: Record<string, InspectType<any>> = {
 
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof window === "undefined" && typeof (value as any)[Symbol.for('nodejs.util.inspect.custom')] === "function") {
+    if (typeof window === "undefined" && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
         // eslint-disable-next-line @typescript-eslint/ban-types,@typescript-eslint/no-explicit-any
-        return ((value as any)[Symbol.for('nodejs.util.inspect.custom')] as Function)(depth, options);
+        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(depth, options);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {
@@ -207,8 +207,8 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         throw new TypeError('option "indent" must be "\\t", an integer > 0, or `undefined`');
     }
 
-   return internalInspect(value, options, 0, []);
-}
+    return internalInspect(value, options, 0, []);
+};
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const registerConstructor = (constructor: Function, inspector: Inspect): boolean => {

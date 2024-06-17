@@ -23,7 +23,6 @@ describe("strings", () => {
             inspect('ab"c', {
                 quoteStyle: "double",
             }),
-
         ).toBe('"ab"c"');
     });
 
@@ -38,7 +37,7 @@ describe("strings", () => {
 
         expect(inspect("a\r\nb")).toBe("'a\\r\\nb'");
         // eslint-disable-next-line unicorn/no-hex-escape,unicorn/escape-case
-        expect(inspect('\x05! \x1f \x12')).toBe("'\\u0005! \\u001f \\u0012'");
+        expect(inspect("\x05! \x1f \x12")).toBe("'\\u0005! \\u001f \\u0012'");
     });
 
     describe("truncate", () => {
