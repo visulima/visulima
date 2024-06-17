@@ -32,3 +32,5 @@ packages:
     - "packages/redact/__bench__"
     - "packages/redact/__fixtures__/package/cjs"
     - "packages/redact/__fixtures__/package/mjs"
+    - "packages/tsconfig/__fixtures__/package/cjs"
+    - "packages/tsconfig/__fixtures__/package/mjs"

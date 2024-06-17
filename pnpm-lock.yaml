@@ -4038,7 +4038,7 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.14.2)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
 
-  packages/ts-config:
+  packages/tsconfig:
     dependencies:
       '@visulima/fs':
         specifier: 2.1.7
@@ -4134,6 +4134,9 @@ importers:
       semantic-release:
         specifier: ^23.0.5
         version: 23.1.1(typescript@5.4.5)
+      strip-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       tempy:
         specifier: ^3.1.0
         version: 3.1.0
@@ -4147,23 +4150,23 @@ importers:
         specifier: ^1.4.0
         version: 1.6.0(@types/node@18.18.14)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
 
-  packages/ts-config/__fixtures__/package/cjs:
+  packages/tsconfig/__fixtures__/package/cjs:
     dependencies:
-      '@visulima/ts-config':
+      '@visulima/tsconfig':
         specifier: workspace:*
         version: link:../../..
 
-  packages/ts-config/__fixtures__/package/mjs:
+  packages/tsconfig/__fixtures__/package/mjs:
     dependencies:
-      '@visulima/ts-config':
+      '@visulima/tsconfig':
         specifier: workspace:*
         version: link:../../..
 
-  packages/ts-config/__fixtures__/read-tsconfig/org-tsconfig-package: {}
+  packages/tsconfig/__fixtures__/read-tsconfig/org-tsconfig-package: {}
 
-  packages/ts-config/__fixtures__/read-tsconfig/tsconfig-package: {}
+  packages/tsconfig/__fixtures__/read-tsconfig/tsconfig-package: {}
 
-  packages/ts-config/__fixtures__/read-tsconfig/yarn-pnp:
+  packages/tsconfig/__fixtures__/read-tsconfig/yarn-pnp:
     dependencies:
       '@org/tsconfig-package':
         specifier: ../org-tsconfig-package

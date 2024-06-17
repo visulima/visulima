@@ -26,7 +26,7 @@ SOFTWARE.
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-The published @visulima/package artifact additionally contains code with the following licenses:
+The published @visulima/tsconfig artifact additionally contains code with the following licenses:
 (MIT OR CC0-1.0)
 
 # Bundled types:
