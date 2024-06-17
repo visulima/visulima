@@ -1,3 +1,15 @@
+## @visulima/api-platform [3.0.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.6...@visulima/api-platform@3.0.7) (2024-06-17)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.49
+* **@visulima/fs:** upgraded to 2.1.7
+
 ## @visulima/api-platform [3.0.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.5...@visulima/api-platform@3.0.6) (2024-06-16)
 
 
