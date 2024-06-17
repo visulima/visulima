@@ -17,7 +17,7 @@ export const getVitestConfig = (options: UserConfig = {}) => {
                 provider: "v8",
                 reporter: ["clover", "cobertura", "lcov", "text"],
                 include: ["src"],
-                exclude: ["__fixtures__/**", "__bench__/**", "scripts/**"],
+                exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts"],
             },
             environment: "node",
             reporters: process.env.CI_PREFLIGHT ? ["basic", "github-actions"] : ["basic"],
