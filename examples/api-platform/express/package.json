@@ -17,7 +17,7 @@
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
         "rimraf": "^5.0.7",
-        "tsx": "^4.15.1",
+        "tsx": "^4.15.5",
         "typescript": "^5.4.5"
     }
 }

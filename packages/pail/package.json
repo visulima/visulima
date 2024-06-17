@@ -225,7 +225,7 @@
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "^0.21.4",
+        "esbuild": "^0.21.5",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -240,7 +240,7 @@
         "semantic-release": "24.0.0",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
-        "type-fest": "^4.20.0",
+        "type-fest": "^4.20.1",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "wrap-ansi": "^9.0.0"

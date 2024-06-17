@@ -6,9 +6,9 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
+        "@visulima/inspector": "workspace:*",
         "loupe": "^3.1.1",
-        "object-inspect": "^1.13.1",
-        "@visulima/inspector": "workspace:*"
+        "object-inspect": "^1.13.1"
     },
     "devDependencies": {
         "@types/object-inspect": "^1.13.0",
