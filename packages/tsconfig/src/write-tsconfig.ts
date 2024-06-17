@@ -13,16 +13,14 @@ import type { TsConfigJson } from "type-fest";
  * @returns A `Promise` that resolves when the tsconfig.json file has been written.
  * The return type of function is `Promise<void>`.
  */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export const writeTsConfig = async (tsConfig: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
     const { cwd, ...writeOptions } = options;
 
-    const directory = toPath(options.cwd ?? process.cwd());
+    const directory = toPath(cwd ?? process.cwd());
 
     await writeJson(join(directory, "tsconfig.json"), tsConfig, writeOptions);
 };
-
-// @deprecate Please use `writeTsconfig` instead.
-export const writeTSConfig = writeTsConfig;
 
 /**
  * A function that writes the provided TypeScript configuration object to a tsconfig.json file.
@@ -33,10 +31,11 @@ export const writeTSConfig = writeTsConfig;
  * @returns A `Promise` that resolves when the tsconfig.json file has been written.
  * The return type of function is `Promise<void>`.
  */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export const writeTsConfigSync = (tsConfig: TsConfigJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
     const { cwd, ...writeOptions } = options;
 
-    const directory = toPath(options.cwd ?? process.cwd());
+    const directory = toPath(cwd ?? process.cwd());
 
     writeJsonSync(join(directory, "tsconfig.json"), tsConfig, writeOptions);
 };
