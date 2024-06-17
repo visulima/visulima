@@ -71,6 +71,8 @@ describe("load-source-map", () => {
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
 
-        expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`);
+        expect(() => loadSourceMap(path)).toThrow(
+            `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`,
+        );
     });
 });

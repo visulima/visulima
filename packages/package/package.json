@@ -201,7 +201,7 @@
         "semantic-release": "24.0.0",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
-        "type-fest": "^4.20.0",
+        "type-fest": "^4.20.1",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
         "which-pm-runs": "file:",
