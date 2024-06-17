@@ -1,3 +1,14 @@
+## @visulima/package [1.10.3](https://github.com/visulima/visulima/compare/@visulima/package@1.10.2...@visulima/package@1.10.3) (2024-06-17)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.7
+
 ## @visulima/package [1.10.2](https://github.com/visulima/visulima/compare/@visulima/package@1.10.1...@visulima/package@1.10.2) (2024-06-16)
 
 ### Styles
