@@ -1,7 +1,7 @@
 {
     "name": "@visulima/package",
     "version": "1.10.3",
-    "description": "One Package to rule them all, finds your root-dir, monorepo, package manager or tsconfig.json",
+    "description": "One Package to rule them all, finds your root-dir, monorepo, or package manager.",
     "keywords": [
         "anolilab",
         "find",
@@ -11,7 +11,6 @@
         "find-monorepo-root",
         "find-up-pkg",
         "find-package-manager",
-        "get-tsconfig",
         "mono-repo",
         "monorepo",
         "package",
@@ -25,10 +24,7 @@
         "pkg-up",
         "read-pkg",
         "read-pkg-up",
-        "read-tsconfig",
         "root",
-        "tsconfig",
-        "tsconfig.json",
         "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/package",
@@ -115,16 +111,6 @@
                 "default": "./dist/package-manager.mjs"
             }
         },
-        "./tsconfig": {
-            "require": {
-                "types": "./dist/tsconfig/index.d.cts",
-                "default": "./dist/tsconfig/index.cjs"
-            },
-            "import": {
-                "types": "./dist/tsconfig/index.d.mts",
-                "default": "./dist/tsconfig/index.mjs"
-            }
-        },
         "./error": {
             "require": {
                 "types": "./dist/error.d.cts",
@@ -165,9 +151,7 @@
     "dependencies": {
         "@visulima/fs": "2.1.7",
         "@visulima/path": "1.0.2",
-        "jsonc-parser": "^3.2.1",
-        "normalize-package-data": "^6.0.1",
-        "resolve-pkg-maps": "^1.0.0"
+        "normalize-package-data": "^6.0.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",

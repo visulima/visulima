@@ -1,14 +1,24 @@
 {
-    "name": "@visulima/{{packageName}}",
+    "name": "@visulima/tsconfig",
     "version": "0.0.0",
-    "description": "{{description}}",
+    "description": "Find and/or parse the tsconfig.json file from a directory path.",
     "keywords": [
+        "anolilab",
         "visulima",
-        "{{packageName}}"
+        "ts-config",
+        "get-tsconfig",
+        "read-tsconfig",
+        "tsconfig",
+        "tsconfig.json"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/tsconfig",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/tsconfig"
     },
     "funding": [
         {
@@ -20,8 +30,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/{{packageName}}",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -46,14 +59,6 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/{{packageName}}"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
@@ -70,12 +75,11 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=18.* <=22.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
+    "dependencies": {
+        "@visulima/fs": "2.1.7",
+        "@visulima/path": "1.0.2",
+        "jsonc-parser": "^3.2.1",
+        "resolve-pkg-maps": "^1.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -87,25 +91,36 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.1.2",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.18.14",
+        "@visulima/packem": "^1.0.0-alpha.41",
         "@vitest/coverage-v8": "^1.4.0",
         "@vitest/ui": "^1.4.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
+        "esbuild": "^0.21.4",
         "eslint": "^8.57.0",
+        "strip-ansi": "^7.1.0",
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
+        "execa": "^9.2.0",
         "prettier": "^3.2.5",
         "rimraf": "^5.0.5",
         "secretlint": "8.1.2",
-        "@visulima/packem": "^1.0.0-alpha.41",
-        "esbuild": "^0.21.4",
         "semantic-release": "^23.0.5",
+        "tempy": "^3.1.0",
+        "type-fest": "^4.20.1",
         "typescript": "^5.4.3",
         "vitest": "^1.4.0"
+    },
+    "engines": {
+        "node": ">=18.* <=22.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
     "anolilab": {
         "eslint-config": {

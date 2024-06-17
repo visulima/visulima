@@ -5,8 +5,8 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { TsConfigResult } from "../../src/tsconfig/find-tsconfig";
-import { findTsConfig, findTsConfigSync } from "../../src/tsconfig/find-tsconfig";
+import type { TsConfigResult } from "../../src/find-tsconfig";
+import { findTsConfig, findTsConfigSync } from "../../src/find-tsconfig";
 
 describe("tsconfig", () => {
     let distribution: string;
@@ -61,7 +61,7 @@ describe("tsconfig", () => {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(function_("/noMatch")).rejects.toThrow(expectedErrorMessage);
             } else {
-                // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/promise-function-async
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => function_("/noMatch")).toThrow(expectedErrorMessage);
             }
         });

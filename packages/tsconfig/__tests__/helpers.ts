@@ -1,4 +1,10 @@
 import { execSync } from "node:child_process";
+import { resolve } from "node:path";
+
+import { execa } from "execa";
+import type { TsConfigJson } from "type-fest";
+
+const tscPath = resolve("node_modules/.bin/tsc");
 
 /**
  * Escape the slash `\` in ESC-symbol.
@@ -16,4 +22,16 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
 
     // replace last newline in result
     return result.toString().replace(/\n$/, "");
+};
+
+/**
+ * Copy of the function from the package `get-tsconfig`.
+ *
+ * MIT License
+ * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
+ */
+export const getTscTsconfig = async (cwd: string): Promise<TsConfigJson> => {
+    const output = await execa(tscPath, ["--showConfig"], { cwd });
+
+    return JSON.parse(output.stdout);
 };

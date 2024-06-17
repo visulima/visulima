@@ -1,8 +1,8 @@
 import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 
-import type { TsConfigJsonResolved } from "../types";
 import { readTsConfig } from "./read-tsconfig";
+import type { TsConfigJsonResolved } from "./types";
 
 type Options = {
     cache?: Map<string, TsConfigJsonResolved> | boolean;
@@ -63,9 +63,6 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     return output;
 };
 
-// @deprecate Please use `findTsConfig` instead.
-export const findTSConfig = findTsConfig;
-
 export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsConfigResult => {
     const configFileName = options.configFileName ?? "tsconfig.json";
 
@@ -102,6 +99,3 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
 
     return output;
 };
-
-// @deprecate Please use `findTsConfigSync` instead.
-export const findTSConfigSync = findTsConfigSync;
