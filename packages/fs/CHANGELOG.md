@@ -1,3 +1,13 @@
+## @visulima/fs [2.1.7](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.6...@visulima/fs@2.1.7) (2024-06-17)
+
+### Bug Fixes
+
+* **fs:** changed from tsup to packem ([#426](https://github.com/visulima/visulima/issues/426)) ([e74adad](https://github.com/visulima/visulima/commit/e74adaded8d0f5298fb755afe4536a1ec3f88f1c))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
 ## @visulima/fs [2.1.6](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.5...@visulima/fs@2.1.6) (2024-06-16)
 
 
