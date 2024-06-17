@@ -5,7 +5,7 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { writeTsConfig, writeTsConfigSync } from "../../src/tsconfig/write-tsconfig";
+import { writeTsConfig, writeTsConfigSync } from "../../src/write-tsconfig";
 
 describe("tsconfig", () => {
     let distribution: string;

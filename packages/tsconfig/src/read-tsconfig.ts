@@ -10,8 +10,8 @@ import { dirname, join, normalize, relative, resolve, toNamespacedPath } from "@
 import { parse } from "jsonc-parser";
 import type { TsConfigJson } from "type-fest";
 
-import type { TsConfigJsonResolved } from "../types";
-import resolveExtendsPath from "../utils/resolve-extends-path";
+import type { TsConfigJsonResolved } from "./types";
+import resolveExtendsPath from "./utils/resolve-extends-path";
 
 type Options = {
     tscCompatible?: boolean;
@@ -101,6 +101,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     if (config.compilerOptions) {
         const { compilerOptions } = config;
         if (compilerOptions.paths && !compilerOptions.baseUrl) {
+            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 [implicitBaseUrlSymbol]: string;
@@ -115,7 +116,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
         delete config.extends;
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,etc/no-assign-mutated-array
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const extendsPath of extendsPathList.reverse()) {
             const extendsConfig = resolveExtends(extendsPath, directoryPath, new Set(circularExtendsTracker), options);
             const merged = {

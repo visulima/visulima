@@ -1,13 +1,12 @@
 <div align="center">
   <h3>Visulima package</h3>
   <p>
-  One Package to rule them all, finds your root-dir, monorepo, package manager or tsconfig.json is built on top of
+  One Package to rule them all, finds your root-dir, monorepo or package manager is built on top of
 
 [@visulima/fs](https://github.com/visulima/visulima/tree/main/packages/fs),
-[jsonc-parser](https://github.com/microsoft/node-jsonc-parser),
+[@visulima/path](https://github.com/visulima/visulima/tree/main/packages/path),
 [normalize-package-data](https://github.com/npm/normalize-package-data),
-[pathe](https://github.com/unjs/pathe),
-[resolve-pkg-maps](https://github.com/privatenumber/resolve-pkg-maps) and
+[pathe](https://github.com/unjs/pathe),and
 [type-fest](https://github.com/sindresorhus/type-fest)
 
   </p>
@@ -140,28 +139,6 @@ import { getPackageManagerVersion } from "@visulima/package";
 const version = await getPackageManagerVersion("npm"); // => 7.5.4
 ```
 
-### findTsConfig
-
-Retrieves the TsConfig by searching for the "tsconfig.json" file from a given current working directory.
-
-```ts
-import { findTsConfig } from "@visulima/package";
-// or import { findTsConfig } from '@visulima/package/tsconfig';
-
-const tsconfig = await findTsConfig(); // => { path: "/Users/../Projects/visulima/packages/package/tsconfig.json", config: { compilerOptions: { ... } } }
-```
-
-### writeTsConfig
-
-Writes the provided TypeScript configuration object to a tsconfig.json file.
-
-```ts
-import { writeTsConfig } from '@visulima/package';
-// or import { writeTsConfig } from '@visulima/package/tsconfig';
-
-writeTsConfig({ compilerOptions: { ... } }/* ,{ cwd: "./" }*/);
-```
-
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
@@ -182,7 +159,6 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ### Related Projects
 
--   [get-tsconfig](https://github.com/privatenumber/get-tsconfig) - Get the TypeScript configuration from a project.
 -   [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
 -   [find-cache-dir](https://github.com/sindresorhus/find-cache-dir) - Find the cache directory.
 
