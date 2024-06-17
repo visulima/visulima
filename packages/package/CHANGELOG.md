@@ -1,3 +1,19 @@
+## @visulima/package [2.0.0](https://github.com/visulima/visulima/compare/@visulima/package@1.10.3...@visulima/package@2.0.0) (2024-06-17)
+
+### ⚠ BREAKING CHANGES
+
+* **package:** You can find all ts-config function inside the new @visulima/tsconfig package
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **package:** moved all ts-config helpers into a new package ([17871de](https://github.com/visulima/visulima/commit/17871de99ca3e70a558141af78031f3f15c2186b))
+* **tsconfig:** new package for tsconfig out of @visulima/package ([98f5e12](https://github.com/visulima/visulima/commit/98f5e12c43430a03f783e2e44692e431c9a1915a))
+
+### Miscellaneous Chores
+
+* **package:** removed not used package ([52b0cc2](https://github.com/visulima/visulima/commit/52b0cc2b142c0ce1b75debdff536fe196c7eb603))
+
 ## @visulima/package [1.10.3](https://github.com/visulima/visulima/compare/@visulima/package@1.10.2...@visulima/package@1.10.3) (2024-06-17)
 
 ### Miscellaneous Chores
