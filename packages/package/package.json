@@ -159,7 +159,7 @@
         "@anolilab/semantic-release-pnpm": "^1.1.3",
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@babel/core": "^7.24.7",
-        "@pnpm/exe": "^9.3.0",
+        "@pnpm/exe": "^9.4.0",
         "@rushstack/eslint-plugin-security": "^0.8.1",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.19.15",
