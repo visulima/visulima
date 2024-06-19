@@ -1,3 +1,13 @@
+## @visulima/package [2.0.1](https://github.com/visulima/visulima/compare/@visulima/package@2.0.0...@visulima/package@2.0.1) (2024-06-19)
+
+### Bug Fixes
+
+* **package:** removed TsConfigJson export ([efbdf58](https://github.com/visulima/visulima/commit/efbdf58b7faaa3c1927d45f0a8cfd13fed6662e6))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+
 ## @visulima/package [2.0.0](https://github.com/visulima/visulima/compare/@visulima/package@1.10.3...@visulima/package@2.0.0) (2024-06-17)
 
 ### ⚠ BREAKING CHANGES
