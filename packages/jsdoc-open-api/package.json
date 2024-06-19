@@ -142,12 +142,12 @@
         "tsup": "^8.1.0",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0",
-        "webpack": "^5.92.0"
+        "webpack": "^5.92.1"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
-        "webpack": "^5.92.0"
+        "webpack": "^5.92.1"
     },
     "engines": {
         "node": ">=18.* <=22.*"
