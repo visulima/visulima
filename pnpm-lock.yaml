@@ -1579,8 +1579,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(next@14.2.3(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.3(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
-        specifier: 1.10.3
-        version: 1.10.3(yaml@2.4.5)
+        specifier: 2.0.0
+        version: 2.0.0(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -9527,6 +9527,11 @@ packages:
   '@visulima/package@1.8.1':
     resolution: {integrity: sha512-ksrIqIKeZn1ba2AOrPx5ipYtCRwOXhMBHCS0BQWjTrmlcaZgiBqrw9Bx7EbyJflqedOesIbQTTWAaGw8G86rog==}
     engines: {node: '>=18.* <=21.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/package@2.0.0':
+    resolution: {integrity: sha512-Mq7JfgRGi9hnS7svWkQdyIoG9vQj5FSsBo27StbpmSpzy0eJGy55QMkvFi2rSUwxNyaKkynbZoz6GzRvqeZ1AQ==}
+    engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
   '@visulima/packem@1.0.0-alpha.41':
@@ -27997,6 +28002,14 @@ snapshots:
       pathe: 1.1.2
       resolve-pkg-maps: 1.0.0
       type-fest: 4.20.1
+    transitivePeerDependencies:
+      - yaml
+
+  '@visulima/package@2.0.0(yaml@2.4.5)':
+    dependencies:
+      '@visulima/fs': 2.1.7(yaml@2.4.5)
+      '@visulima/path': 1.0.2
+      normalize-package-data: 6.0.1
     transitivePeerDependencies:
       - yaml
 
