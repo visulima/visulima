@@ -15,4 +15,3 @@ export {
     identifyInitiatingPackageManager,
 } from "./package-manager";
 export type { NormalizedPackageJson, PackageJson } from "./types";
-export type { TsConfigJson } from "type-fest";
