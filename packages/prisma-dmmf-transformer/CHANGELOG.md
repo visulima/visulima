@@ -1,3 +1,17 @@
+## @visulima/prisma-dmmf-transformer [2.0.20](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.19...@visulima/prisma-dmmf-transformer@2.0.20) (2024-06-19)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** updated @prisma/generator-helper to v 5.15.1 ([e82322a](https://github.com/visulima/visulima/commit/e82322a2cec254102654f58163b9aa749a1003a9))
+
+### Styles
+
+* fixed found code style issue with eslint and prettier ([114e9c9](https://github.com/visulima/visulima/commit/114e9c9f23518cbfa3814af6cee868233431f312))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+
 ## @visulima/prisma-dmmf-transformer [2.0.19](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.18...@visulima/prisma-dmmf-transformer@2.0.19) (2024-06-11)
 
 ### Bug Fixes
