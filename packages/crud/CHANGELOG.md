@@ -1,3 +1,18 @@
+## @visulima/crud [2.0.24](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.23...@visulima/crud@2.0.24) (2024-06-19)
+
+### Styles
+
+* **crud:** sort package.json ([a115a96](https://github.com/visulima/visulima/commit/a115a962ca7c685e192c783c2350e13182d9be56))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.20
+
 ## @visulima/crud [2.0.23](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.22...@visulima/crud@2.0.23) (2024-06-11)
 
 ### Miscellaneous Chores
