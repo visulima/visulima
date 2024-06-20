@@ -7,6 +7,7 @@
 [@visulima/path](https://github.com/visulima/visulima/tree/main/packages/path),
 [jsonc-parser](https://github.com/microsoft/node-jsonc-parser) and
 [resolve-pkg-maps](https://github.com/privatenumber/resolve-pkg-maps)
+
   </p>
 </div>
 
@@ -71,9 +72,9 @@ writeTsConfig({ compilerOptions: { ... } }/* ,{ cwd: "./" }*/);
 Reads the TypeScript configuration from a tsconfig.json file.
 
 ```ts
-import { readTsConfig } from '@visulima/package';
+import { readTsConfig } from "@visulima/package";
 
-const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconfig.json", /* { tscCompatible: false } */);
+const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconfig.json" /* { tscCompatible: false } */);
 ```
 
 > tscCompatible: If true, the configuration will be parsed in a way that is compatible with the TypeScript compiler.

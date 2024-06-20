@@ -1,5 +1,4 @@
 export { default as PackageNotFoundError } from "./error/package-not-found-error";
-export { findCacheDirectory, findCacheDirectorySync } from "./find-cache-dir";
 export type { RootMonorepo, Strategy } from "./monorepo";
 export { findMonorepoRoot, findMonorepoRootSync } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
