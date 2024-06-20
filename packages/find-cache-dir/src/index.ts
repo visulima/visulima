@@ -20,7 +20,7 @@ const useDirectory = (directory: string, options?: Options): string => {
     return directory;
 };
 
-export const findCacheDirectory = async (name: string, options?: Options): Promise<string | undefined> => {
+const findCacheDirectory = async (name: string, options?: Options): Promise<string | undefined> => {
     if (env.CACHE_DIR && !["0", "1", "false", "true"].includes(env.CACHE_DIR)) {
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
@@ -63,7 +63,7 @@ export const findCacheDirectory = async (name: string, options?: Options): Promi
     return useDirectory(cacheNameDirectory, options);
 };
 
-export const findCacheDirectorySync = (name: string, options?: Options): string | undefined => {
+const findCacheDirectorySync = (name: string, options?: Options): string | undefined => {
     if (env.CACHE_DIR && !["0", "1", "false", "true"].includes(env.CACHE_DIR)) {
         return useDirectory(join(env.CACHE_DIR, name), options);
     }
@@ -105,3 +105,7 @@ export const findCacheDirectorySync = (name: string, options?: Options): string 
 
     return useDirectory(cacheNameDirectory, options);
 };
+
+
+export const findCacheDir = findCacheDirectory;
+export const findCacheDirSync = findCacheDirectorySync;

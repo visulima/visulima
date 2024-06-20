@@ -1,8 +1,8 @@
 {
-    "name": "package-cjs",
+    "name": "find-cache-dir-cjs",
     "description": "CommonJS version",
     "type": "commonjs",
     "dependencies": {
-        "@visulima/package": "workspace:*"
+        "@visulima/find-cache-dir": "workspace:*"
     }
 }
