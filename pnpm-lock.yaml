@@ -2351,18 +2351,6 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
 
-  packages/find-cache-dir/__fixtures__/package/cjs:
-    dependencies:
-      '@visulima/find-cache-dir':
-        specifier: workspace:*
-        version: link:../../..
-
-  packages/find-cache-dir/__fixtures__/package/mjs:
-    dependencies:
-      '@visulima/find-cache-dir':
-        specifier: workspace:*
-        version: link:../../..
-
   packages/fmt:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3467,6 +3455,18 @@ importers:
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
+
+  packages/package/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/package/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/pagination:
     dependencies:
