@@ -1521,6 +1521,9 @@ importers:
       '@visulima/colorize':
         specifier: 1.4.3
         version: 1.4.3
+      '@visulima/find-cache-dir':
+        specifier: 1.0.0
+        version: 1.0.0(yaml@2.4.5)
       '@visulima/pail':
         specifier: 1.4.3
         version: 1.4.3(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
@@ -1582,6 +1585,9 @@ importers:
       '@visulima/package':
         specifier: 3.0.0
         version: 3.0.0(yaml@2.4.5)
+      '@visulima/packem':
+        specifier: 1.0.0-alpha.42
+        version: 1.0.0-alpha.42(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -1597,6 +1603,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -1627,9 +1636,6 @@ importers:
       strip-ansi:
         specifier: ^7.1.0
         version: 7.1.0
-      tsup:
-        specifier: ^8.1.0
-        version: 8.1.0(@swc/core@1.5.7)(postcss@8.4.38)(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -9523,6 +9529,10 @@ packages:
     resolution: {integrity: sha512-bTeRLy2kWEpg9zPHV+cfh06Lhm8YGUvaMZ/FQBkA/k2VWZrL/ZtX2y8GBxa8m5a1d9hCpFvepkkkZ58qNG3J7A==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
+
+  '@visulima/find-cache-dir@1.0.0':
+    resolution: {integrity: sha512-DMz1LVeF7EukCMKfclXXeK+JqtYRQPIH4J4fAuT1N1xYG6H9w+KdigBWKhBaavds9xpU/7zqtQxM/wZOLbr94w==}
+    engines: {node: '>=18.* <=22.*'}
 
   '@visulima/fmt@1.1.4':
     resolution: {integrity: sha512-+QsYiZ6uoy3KSNhUjiQem3uNnMsR881KrE9fvNYvhzXandELLMJ0N0wfOm8CRtS9ekkMnFU+uD97mBdl68ISjQ==}
@@ -27908,6 +27918,13 @@ snapshots:
       - prisma
 
   '@visulima/error@4.0.0': {}
+
+  '@visulima/find-cache-dir@1.0.0(yaml@2.4.5)':
+    dependencies:
+      '@visulima/fs': 2.1.7(yaml@2.4.5)
+      '@visulima/path': 1.0.2
+    transitivePeerDependencies:
+      - yaml
 
   '@visulima/fmt@1.1.4': {}
 
