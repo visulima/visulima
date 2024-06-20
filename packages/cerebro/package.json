@@ -94,6 +94,7 @@
     "dependencies": {
         "@visulima/boxen": "1.0.10",
         "@visulima/colorize": "1.4.3",
+        "@visulima/find-cache-dir": "1.0.0",
         "@visulima/pail": "1.4.3",
         "cli-table3": "^0.6.5",
         "command-line-args": "^5.2.1",
@@ -116,8 +117,8 @@
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@visulima/package": "3.0.0",
-        "@visulima/path": "1.0.2",
         "@visulima/packem": "1.0.0-alpha.42",
+        "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
