@@ -7,14 +7,15 @@ settings:
 overrides:
   '@types/react': ^18.3.3
   '@types/react-dom': ^18.3.0
+  braces@<3.0.3: '>=3.0.3'
   chrono-node@<2.2.4: '>=2.7.6'
   esbuild: 0.21.4
-  next@>=0.9.9 <13.4.20-canary.13: '>=13.4.20-canary.13'
-  next@>=13.4.0 <13.5.1: '>=13.5.1'
   next@>=13.4.0 <14.1.1: '>=14.1.1'
+  next@>=13.4.0 <13.5.1: '>=13.5.1'
+  next@>=0.9.9 <13.4.20-canary.13: '>=13.4.20-canary.13'
   postcss@<8.4.31: '>=8.4.38'
   zod@<=3.22.2: '>=3.23.8'
-  braces@<3.0.3: '>=3.0.3'
+  ws@>=8.0.0 <8.17.1: '>=8.17.1'
 
 importers:
 
@@ -1579,8 +1580,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/package':
-        specifier: 2.0.1
-        version: 2.0.1(yaml@2.4.5)
+        specifier: 3.0.0
+        version: 3.0.0(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -2272,11 +2273,11 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: workspace:*
-        version: link:../fs
+        specifier: 2.1.7
+        version: 2.1.7(yaml@2.4.5)
       '@visulima/path':
-        specifier: workspace:*
-        version: link:../path
+        specifier: 1.0.2
+        version: 1.0.2
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -9586,8 +9587,8 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@2.0.1':
-    resolution: {integrity: sha512-/1GYfjADTIjrfGtUKLT3XDQht8b/rKrAkGCVtlK3xOBzrk1JQnGhxLel4C/N31vKL/7GiN6rRR7XPaqExTKiZw==}
+  '@visulima/package@3.0.0':
+    resolution: {integrity: sha512-J5Spz5EFwecR/wDlhvBlAZkCmwArty226H2ff/V/UNAgK83faQLQzThN70vQvH00qyJ/+yUHMf0m2mhvmGuqHA==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -20226,20 +20227,8 @@ packages:
     resolution: {integrity: sha512-/lg70HAjtkUgWPVZhZcm+T4hkL8Zbtp1nFNOn3lRrxnlv50SRBv7cR7RqR+GMsd3hUXy9hWBo4CHTbFTcOYwig==}
     engines: {node: '>=4'}
 
-  ws@8.13.0:
-    resolution: {integrity: sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
-  ws@8.17.0:
-    resolution: {integrity: sha512-uJq6108EgZMAl20KagGkzCKfMEjxmKvZHG7Tlq0Z6nOky7YF7aq4mOx6xK8TJ/i1LeK4Qus7INktacctDgY8Ow==}
+  ws@8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -25436,7 +25425,7 @@ snapshots:
       util: 0.12.5
       util-deprecate: 1.0.2
       watchpack: 2.4.1
-      ws: 8.17.0
+      ws: 8.17.1
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -28000,7 +27989,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/package@2.0.1(yaml@2.4.5)':
+  '@visulima/package@3.0.0(yaml@2.4.5)':
     dependencies:
       '@visulima/fs': 2.1.7(yaml@2.4.5)
       '@visulima/path': 1.0.2
@@ -34824,7 +34813,7 @@ snapshots:
       whatwg-encoding: 3.1.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.0.0
-      ws: 8.17.0
+      ws: 8.17.1
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -38228,7 +38217,7 @@ snapshots:
       cross-fetch: 4.0.0(encoding@0.1.13)
       debug: 4.3.4
       devtools-protocol: 0.0.1147663
-      ws: 8.13.0
+      ws: 8.17.1
     optionalDependencies:
       typescript: 5.4.5
     transitivePeerDependencies:
@@ -42226,7 +42215,7 @@ snapshots:
       deepmerge-ts: 5.1.0
       got: 12.6.1
       ky: 0.33.3
-      ws: 8.17.0
+      ws: 8.17.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -42490,9 +42479,7 @@ snapshots:
     dependencies:
       mkdirp: 0.5.6
 
-  ws@8.13.0: {}
-
-  ws@8.17.0: {}
+  ws@8.17.1: {}
 
   xdg-basedir@4.0.0: {}
 
