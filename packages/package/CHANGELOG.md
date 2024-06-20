@@ -1,3 +1,19 @@
+## @visulima/package [3.0.0](https://github.com/visulima/visulima/compare/@visulima/package@2.0.1...@visulima/package@3.0.0) (2024-06-20)
+
+### ⚠ BREAKING CHANGES
+
+* moved findCacheDirectory, findCacheDirectorySync into a new package
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* **find-cache-dir:** a new package out of package find-cache functions ([b9a2728](https://github.com/visulima/visulima/commit/b9a27280216a2230ca84605fe4226763b0ba5e2a))
+* removed findCacheDirectory, findCacheDirectorySync from this package ([a84fa91](https://github.com/visulima/visulima/commit/a84fa9136c554ca2ee40ac2c4c8ed57a8a935ab2))
+
+### Miscellaneous Chores
+
+* **package:** added removed files back ([753c10c](https://github.com/visulima/visulima/commit/753c10c7d9f1bbd51bb6623b09de9d42e5f54d24))
+
 ## @visulima/package [2.0.1](https://github.com/visulima/visulima/compare/@visulima/package@2.0.0...@visulima/package@2.0.1) (2024-06-19)
 
 ### Bug Fixes
