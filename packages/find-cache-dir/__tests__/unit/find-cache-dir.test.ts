@@ -8,7 +8,7 @@ import { dirname, join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { findCacheDirectory, findCacheDirectorySync } from "../../src";
+import { findCacheDir as findCacheDirectory, findCacheDirSync as findCacheDirectorySync } from "../../src";
 
 // Windows does not support chmod in the same way as Unix
 const isWindows = platform === "win32";
@@ -265,7 +265,7 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findCacheDirectory") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(async () => await function_("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true })).rejects.toThrow(
+            await expect(async () => (function_ as typeof findCacheDirectory)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true })).rejects.toThrow(
                 "ENOENT: No such file or directory found.",
             );
         } else {

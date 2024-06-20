@@ -3,12 +3,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { esc, execScriptSync } from "../helpers";
+import { execScriptSync } from "../helpers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-describe("usage `@visulima/package` npm package", () => {
+describe("usage `@visulima/find-cache-directory` npm package", () => {
     it(`should work as CommonJS package`, () => {
         expect.assertions(1);
 
@@ -16,12 +16,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(JSON.parse(esc(received))).toStrictEqual({
-            config: expect.objectContaining({
-                $schema: "https://json.schemastore.org/tsconfig",
-            }),
-            path: join(__dirname, "..", "..", "tsconfig.json"),
-        });
+        expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
     });
 
     it(`should work as ESM package`, async () => {
@@ -31,11 +26,6 @@ describe("usage `@visulima/package` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(JSON.parse(esc(received))).toStrictEqual({
-            config: expect.objectContaining({
-                $schema: "https://json.schemastore.org/tsconfig",
-            }),
-            path: join(__dirname, "..", "..", "tsconfig.json"),
-        });
+        expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
     });
 });

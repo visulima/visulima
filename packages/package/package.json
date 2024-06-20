@@ -5,9 +5,6 @@
     "keywords": [
         "anolilab",
         "find",
-        "find-cache",
-        "find-cache-dir",
-        "find-cache-directory",
         "find-monorepo-root",
         "find-up-pkg",
         "find-package-manager",
@@ -79,16 +76,6 @@
             "import": {
                 "types": "./dist/package.d.mts",
                 "default": "./dist/package.mjs"
-            }
-        },
-        "./cache": {
-            "require": {
-                "types": "./dist/find-cache-dir.d.cts",
-                "default": "./dist/find-cache-dir.cjs"
-            },
-            "import": {
-                "types": "./dist/find-cache-dir.d.mts",
-                "default": "./dist/find-cache-dir.mjs"
             }
         },
         "./package-json": {
