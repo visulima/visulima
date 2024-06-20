@@ -18,7 +18,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         expect(JSON.parse(esc(received))).toStrictEqual({
             config: expect.objectContaining({
-                "$schema": "https://json.schemastore.org/tsconfig",
+                $schema: "https://json.schemastore.org/tsconfig",
             }),
             path: join(__dirname, "..", "..", "tsconfig.json"),
         });
@@ -33,7 +33,7 @@ describe("usage `@visulima/package` npm package", () => {
 
         expect(JSON.parse(esc(received))).toStrictEqual({
             config: expect.objectContaining({
-                "$schema": "https://json.schemastore.org/tsconfig",
+                $schema: "https://json.schemastore.org/tsconfig",
             }),
             path: join(__dirname, "..", "..", "tsconfig.json"),
         });

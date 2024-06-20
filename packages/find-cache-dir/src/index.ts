@@ -1,4 +1,4 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations
+
 import { existsSync } from "node:fs";
 import { cwd, env } from "node:process";
 
@@ -106,6 +106,7 @@ const findCacheDirectorySync = (name: string, options?: Options): string | undef
     return useDirectory(cacheNameDirectory, options);
 };
 
-
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export const findCacheDir = findCacheDirectory;
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export const findCacheDirSync = findCacheDirectorySync;
