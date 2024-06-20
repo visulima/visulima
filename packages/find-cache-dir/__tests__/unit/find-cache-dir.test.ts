@@ -265,7 +265,7 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findCacheDirectory") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(async () => await function_("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true })).rejects.toThrow(
+            await expect(async () => (function_ as typeof findCacheDirectory)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true })).rejects.toThrow(
                 "ENOENT: No such file or directory found.",
             );
         } else {

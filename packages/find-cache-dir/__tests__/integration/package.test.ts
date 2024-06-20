@@ -16,7 +16,7 @@ describe("usage `@visulima/find-cache-directory` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received).toEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
+        expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
     });
 
     it(`should work as ESM package`, async () => {
@@ -26,6 +26,6 @@ describe("usage `@visulima/find-cache-directory` npm package", () => {
 
         const received = execScriptSync(filename);
 
-        expect(received).toEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
+        expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
     });
 });

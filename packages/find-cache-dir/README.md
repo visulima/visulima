@@ -42,14 +42,13 @@ pnpm add @visulima/find-cache-dir
 ## Usage
 
 ```typescript
-import { findCacheDir, findCacheDirSync } from '@visulima/find-cache-dir';
+import { findCacheDir, findCacheDirSync } from "@visulima/find-cache-dir";
 
-const cacheDir = await findCacheDir('my-app');
+const cacheDir = await findCacheDir("my-app");
 
 console.log(cacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 
-
-const syncCacheDir = findCacheDirSync('my-app');
+const syncCacheDir = findCacheDirSync("my-app");
 
 console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 ```
@@ -57,13 +56,13 @@ console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 The same can be done for cjs:
 
 ```javascript
-const { findCacheDir, findCacheDirSync } = require('@visulima/find-cache-dir');
+const { findCacheDir, findCacheDirSync } = require("@visulima/find-cache-dir");
 
-const cacheDir = findCacheDir('my-app');
+const cacheDir = findCacheDir("my-app");
 
 console.log(cacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 
-const syncCacheDir = findCacheDirSync('my-app');
+const syncCacheDir = findCacheDirSync("my-app");
 
 console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 ```
@@ -72,7 +71,7 @@ console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 
 ### name
 
-*Required*\
+_Required_\
 Type: `string`
 
 Should be the same as your project name in `package.json`.
@@ -104,7 +103,7 @@ Throw an error if a `.cache` folder can't be found.
 
 ## Tips
 
-- To test modules using `@visulima/find-cache-dir`, set the `CACHE_DIR` environment variable to temporarily override the directory that is resolved.
+-   To test modules using `@visulima/find-cache-dir`, set the `CACHE_DIR` environment variable to temporarily override the directory that is resolved.
 
 ## Related
 
