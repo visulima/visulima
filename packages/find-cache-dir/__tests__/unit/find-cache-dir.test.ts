@@ -8,14 +8,14 @@ import { dirname, join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { findCacheDirectory, findCacheDirectorySync } from "../../src";
+import { findCacheDir as findCacheDirectory, findCacheDirSync as findCacheDirectorySync } from "../../src";
 
 // Windows does not support chmod in the same way as Unix
 const isWindows = platform === "win32";
 
 describe.each([
-    ["findCacheDirectory", findCacheDirectory],
-    ["findCacheDirectorySync", findCacheDirectorySync],
+    ["findCacheDir", findCacheDirectory],
+    ["findCacheDirSync", findCacheDirectorySync],
 ])("%s", (name, function_) => {
     let distribution: string;
 
