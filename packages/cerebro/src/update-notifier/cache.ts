@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { findCacheDirectorySync } from "@visulima/package";
+import { findCacheDirSync } from "@visulima/find-cache-dir";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, join } from "@visulima/path";
 
@@ -15,7 +14,7 @@ const FILE_NAME = "last-update-check.json";
  * @returns {string} - The absolute path to the configuration file.
  */
 const getConfigFile = (packageName: string): string => {
-    const cacheDirectory = findCacheDirectorySync(packageName);
+    const cacheDirectory = findCacheDirSync(packageName);
 
     if (cacheDirectory === undefined) {
         throw new Error("Could not find cache directory");

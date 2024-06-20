@@ -77,6 +77,7 @@ export class Cli implements ICli {
      * @param options The options for the CLI.
      *        - argv           This should be in the base case process.argv
      *        - cwd            The path of main folder.
+     *        - logger         The logger options.
      *        - packageName    The packageJson name.
      *        - packageVersion The packageJson version.
      */
