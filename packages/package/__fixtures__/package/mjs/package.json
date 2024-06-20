@@ -1,8 +1,8 @@
 {
-    "name": "find-cache-dir-esm",
+    "name": "package-esm",
     "description": "ESM version",
     "type": "module",
     "dependencies": {
-        "@visulima/find-cache-dir": "workspace:*"
+        "@visulima/package": "workspace:*"
     }
 }
