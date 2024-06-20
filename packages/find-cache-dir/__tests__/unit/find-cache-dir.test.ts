@@ -14,8 +14,8 @@ import { findCacheDir as findCacheDirectory, findCacheDirSync as findCacheDirect
 const isWindows = platform === "win32";
 
 describe.each([
-    ["findCacheDir", findCacheDirectory],
-    ["findCacheDirSync", findCacheDirectorySync],
+    ["findCacheDirectory", findCacheDirectory],
+    ["findCacheDirectorySync", findCacheDirectorySync],
 ])("%s", (name, function_) => {
     let distribution: string;
 
