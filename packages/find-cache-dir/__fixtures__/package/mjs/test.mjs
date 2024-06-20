@@ -1,6 +1,6 @@
-import { findCacheDirectorySync } from "@visulima/find-cache-dir";
+import { findCacheDirSync } from "@visulima/find-cache-dir";
 
-const cache = findCacheDirectorySync();
+const cache = findCacheDirSync();
 
 console.log(cache);
 

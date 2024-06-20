@@ -1,5 +1,5 @@
-const { findCacheDirectorySync } = require("@visulima/find-cache-dir");
+const { findCacheDirSync } = require("@visulima/find-cache-dir");
 
-const cache = findCacheDirectorySync();
+const cache = findCacheDirSync();
 
 console.log(cache);
