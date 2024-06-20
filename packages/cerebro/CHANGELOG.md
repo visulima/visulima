@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.0.51](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.50...@visulima/cerebro@1.0.51) (2024-06-20)
+
+### Bug Fixes
+
+* **cerebro:** fixed handling of option conflicts ([#425](https://github.com/visulima/visulima/issues/425)) ([97856a3](https://github.com/visulima/visulima/commit/97856a32030ffd5382f9c84a9f479db2dc7034f6))
+
 ## @visulima/cerebro [1.0.50](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.49...@visulima/cerebro@1.0.50) (2024-06-20)
 
 
