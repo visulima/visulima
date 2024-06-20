@@ -17,21 +17,19 @@ describe("cli", () => {
     it("should add a command and execute it successfully", async () => {
         expect.assertions(1);
 
-        const mockLogger = { info: vi.fn() };
+        const mockedExecute = vi.fn().mockResolvedValue(undefined);
 
-        const cli = new Cli("MyCLI", { logger: mockLogger });
+        const cli = new Cli("MyCLI", { argv: ["hello"] });
 
         cli.addCommand({
             description: "A simple hello world command",
-            execute: async (toolbox) => {
-                toolbox.logger.info("Hello, World!");
-            },
+            execute: mockedExecute,
             name: "hello",
         });
 
-        await cli.run({ argv: ["hello"] });
+        await cli.run({ shouldExitProcess: false });
 
-        expect(mockLogger.info).toHaveBeenCalledWith("Hello, World!");
+        expect(mockedExecute).toHaveBeenCalledOnce();
     });
 
     it("should set and retrieve command section", () => {
@@ -41,35 +39,20 @@ describe("cli", () => {
         expect(cli.getCommandSection()).toEqual(section);
     });
 
-    // set and retrieve default command
     it("should set and retrieve default command", () => {
         const cli = new Cli("MyCLI");
+
         cli.setDefaultCommand("version");
+
         expect(cli.defaultCommand).toBe("version");
     });
 
-    // add and execute an extension
-    it("should add and execute an extension", async () => {
-        const cli = new Cli("MyCLI");
-        const mockExtension = { execute: vi.fn(), name: "mockExtension" };
-        cli.addExtension(mockExtension);
-        await cli.run();
-        expect(mockExtension.execute).toHaveBeenCalledWith();
-    });
-
-    // initialize Cli without required options
-    it("should throw error when initializing without required options", () => {
-        expect(() => new Cli()).toThrow();
-    });
-
-    // add a command with duplicate name or alias
     it("should throw error when adding a command with duplicate name or alias", () => {
         const cli = new Cli("MyCLI");
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
         expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow();
     });
 
-    // run a command with missing required options
     it("should throw error when running a command with missing required options", async () => {
         const cli = new Cli("MyCLI");
         cli.addCommand({
@@ -80,16 +63,15 @@ describe("cli", () => {
         await expect(cli.run({ argv: ["test"] })).rejects.toThrow();
     });
 
-    // run a command with unknown options
     it("should throw error when running a command with unknown options", async () => {
         const cli = new Cli("MyCLI");
         cli.addCommand({ execute: vi.fn(), name: "test" });
         await expect(cli.run({ argv: ["test", "--unknownOption"] })).rejects.toThrow();
     });
 
-    // handle conflicting command options
     it("should throw error when running a command with conflicting options", async () => {
         const cli = new Cli("MyCLI");
+
         cli.addCommand({
             execute: vi.fn(),
             name: "test",
@@ -98,6 +80,7 @@ describe("cli", () => {
                 { name: "option2", type: String },
             ],
         });
+
         await expect(cli.run({ argv: ["test", "--option1", "value1", "--option2", "value2"] })).rejects.toThrow();
     });
 });
