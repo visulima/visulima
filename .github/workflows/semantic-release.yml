@@ -11,6 +11,7 @@ on: # yamllint disable-line rule:truthy
             - "next-major"
             - "alpha"
             - "beta"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
 
 permissions:
     contents: "read" # for checkout
