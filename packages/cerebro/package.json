@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "1.0.50",
+    "version": "1.0.51",
     "description": "A delightful toolkit for building Node-powered CLIs.",
     "keywords": [
         "command",
