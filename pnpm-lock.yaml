@@ -2254,6 +2254,115 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
 
+  packages/find-cache-dir:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../fs
+      '@visulima/path':
+        specifier: workspace:*
+        version: link:../path
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.3
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.7)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.8.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.3)(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.14
+        version: 5.0.14(prettier@3.3.2)
+      '@anolilab/semantic-release-pnpm':
+        specifier: 1.1.3
+        version: 1.1.3(yaml@2.4.5)
+      '@anolilab/semantic-release-preset':
+        specifier: ^9.0.0
+        version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.4.5))(semantic-release@24.0.0(typescript@5.4.5))
+      '@babel/core':
+        specifier: ^7.24.7
+        version: 7.24.7
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.8.1
+        version: 0.8.1(eslint@8.57.0)(typescript@5.4.5)
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: ^8.2.4
+        version: 8.2.4
+      '@total-typescript/ts-reset':
+        specifier: ^0.5.1
+        version: 0.5.1
+      '@types/node':
+        specifier: 20.14.6
+        version: 20.14.6
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.41
+        version: 1.0.0-alpha.42(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+      '@vitest/coverage-v8':
+        specifier: ^1.6.0
+        version: 1.6.0(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
+      '@vitest/ui':
+        specifier: ^1.6.0
+        version: 1.6.0(vitest@1.6.0)
+      conventional-changelog-conventionalcommits:
+        specifier: 8.0.0
+        version: 8.0.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-deprecation:
+        specifier: ^3.0.0
+        version: 3.0.0(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.9.1(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-plugin-mdx:
+        specifier: ^3.1.5
+        version: 3.1.5(eslint@8.57.0)
+      eslint-plugin-vitest:
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
+      eslint-plugin-vitest-globals:
+        specifier: ^1.5.0
+        version: 1.5.0
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.2
+      rimraf:
+        specifier: ^5.0.7
+        version: 5.0.7
+      secretlint:
+        specifier: 8.2.4
+        version: 8.2.4
+      semantic-release:
+        specifier: ^24.0.0
+        version: 24.0.0(typescript@5.4.5)
+      tempy:
+        specifier: ^3.1.0
+        version: 3.1.0
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
+
+  packages/find-cache-dir/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/find-cache-dir':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/find-cache-dir/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/find-cache-dir':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/fmt:
     devDependencies:
       '@anolilab/eslint-config':
@@ -3358,18 +3467,6 @@ importers:
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
-
-  packages/package/__fixtures__/package/cjs:
-    dependencies:
-      '@visulima/package':
-        specifier: workspace:*
-        version: link:../../..
-
-  packages/package/__fixtures__/package/mjs:
-    dependencies:
-      '@visulima/package':
-        specifier: workspace:*
-        version: link:../../..
 
   packages/pagination:
     dependencies:
@@ -9450,16 +9547,6 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/fs@2.1.5':
-    resolution: {integrity: sha512-eVw/8+5x0JIA9GQzIpFgwSe/oQcGHePu3tK1y44T/FclQHaRwQ52QaqvVF/Y40NgH0rRIdChJKjXvKKolgBT9Q==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      yaml: ^2.4.0
-    peerDependenciesMeta:
-      yaml:
-        optional: true
-
   '@visulima/fs@2.1.7':
     resolution: {integrity: sha512-zrdAoYrjayGWLVZgxbBvumxMeBgXyh3TPpyyZXKYkllCn2+9lTjYmBUhHyq8IwnDFWMBD6/04I2CaWzTJvW48g==}
     engines: {node: '>=18.* <=22.*'}
@@ -9507,11 +9594,6 @@ packages:
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
       zod: ^3.22.4
-
-  '@visulima/package@1.10.1':
-    resolution: {integrity: sha512-GJgHa/TGt19oUfZ2hNZOHfgFIgLCN2FL1fZFqUepZSB/SXtQFT2NjJW4TNFvRTZNIuTjGeUniewowbsBo4dl7g==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/package@1.10.3':
     resolution: {integrity: sha512-ckuhAjkLqnalawTxpTgLSbT7FSlkv7UUEi69jZevFrg63+U23wcM8TEOrQqRbGIfgBUlwSYIdRxPGOgDM0fsiQ==}
@@ -20653,7 +20735,7 @@ snapshots:
       '@anolilab/rc': 1.1.2(yaml@2.4.5)
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 2.1.7(yaml@2.4.5)
-      '@visulima/package': 1.10.1(yaml@2.4.5)
+      '@visulima/package': 1.10.3(yaml@2.4.5)
       '@visulima/path': 1.0.2
       aggregate-error: 5.0.0
       execa: 9.2.0
@@ -28052,13 +28134,6 @@ snapshots:
 
   '@visulima/fmt@1.1.5': {}
 
-  '@visulima/fs@2.1.5(yaml@2.4.5)':
-    dependencies:
-      '@visulima/path': 1.0.2
-      type-fest: 4.20.1
-    optionalDependencies:
-      yaml: 2.4.5
-
   '@visulima/fs@2.1.7(yaml@2.4.5)':
     dependencies:
       '@visulima/path': 1.0.2
@@ -28124,16 +28199,6 @@ snapshots:
       zod: 3.23.8
     transitivePeerDependencies:
       - csstype
-
-  '@visulima/package@1.10.1(yaml@2.4.5)':
-    dependencies:
-      '@visulima/fs': 2.1.5(yaml@2.4.5)
-      '@visulima/path': 1.0.2
-      jsonc-parser: 3.2.1
-      normalize-package-data: 6.0.1
-      resolve-pkg-maps: 1.0.0
-    transitivePeerDependencies:
-      - yaml
 
   '@visulima/package@1.10.3(yaml@2.4.5)':
     dependencies:
@@ -28369,6 +28434,25 @@ snapshots:
       strip-literal: 2.0.0
       test-exclude: 6.0.0
       vitest: 1.6.0(@types/node@20.14.2)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))':
+    dependencies:
+      '@ampproject/remapping': 2.2.1
+      '@bcoe/v8-coverage': 0.2.3
+      debug: 4.3.5
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.4
+      istanbul-reports: 3.1.6
+      magic-string: 0.30.5
+      magicast: 0.3.3
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      strip-literal: 2.0.0
+      test-exclude: 6.0.0
+      vitest: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -32450,6 +32534,16 @@ snapshots:
       eslint: 8.57.0
     optionalDependencies:
       vitest: 1.6.0(@types/node@20.14.2)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)):
+    dependencies:
+      '@typescript-eslint/utils': 7.6.0(eslint@8.57.0)(typescript@5.4.5)
+      eslint: 8.57.0
+    optionalDependencies:
+      vitest: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
