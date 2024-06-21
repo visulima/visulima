@@ -1166,6 +1166,9 @@ importers:
       '@types/node':
         specifier: 20.14.6
         version: 20.14.6
+      '@visulima/colorize':
+        specifier: ^1.4.3
+        version: 1.4.3
       '@visulima/packem':
         specifier: ^1.0.0-alpha.43
         version: 1.0.0-alpha.44(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
@@ -1217,6 +1220,9 @@ importers:
       semantic-release:
         specifier: ^24.0.0
         version: 24.0.0(typescript@5.4.5)
+      type-fest:
+        specifier: ^4.20.1
+        version: 4.20.1
       typescript:
         specifier: ^5.4.5
         version: 5.4.5

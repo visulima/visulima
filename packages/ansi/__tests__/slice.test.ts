@@ -1,3 +1,4 @@
+import { black, green } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import slice from "../src/slice";
@@ -78,5 +79,93 @@ describe(`slice`, () => {
             slice: "안녕",
             visible: 4,
         });
+    });
+
+    it("supports unicode surrogate pairs", () => {
+        expect.assertions(1);
+
+        expect(slice("a\uD83C\uDE00BC", 0, 2).slice).toBe("a\uD83C\uDE00");
+    });
+
+    it("doesn't add unnecessary escape codes", () => {
+        expect.assertions(1);
+
+        expect(slice("\u001B[31municorn\u001B[39m", 0, 3).slice).toBe("\u001B[31muni\u001B[39m");
+    });
+
+    it("should slice a normal character before a colored character", () => {
+        expect.assertions(1);
+
+        expect(slice("a\u001B[31mb\u001B[39m", 0, 1).slice).toBe("a");
+    });
+
+    it("should slice a normal character after a colored character", () => {
+        expect.assertions(1);
+
+        expect(slice("\u001B[31ma\u001B[39mb", 1, 2).slice).toBe("b");
+    });
+
+    // See https://github.com/chalk/slice-ansi/issues/22
+    it("should slice a string styled with both background and foreground", () => {
+        expect.assertions(1);
+
+        // Test string: `chalk.bgGreen.black('test');`
+        expect(slice("\u001B[42m\u001B[30mtest\u001B[39m\u001B[49m", 0, 1).slice).toBe("\u001B[42m\u001B[30mt\u001B[39m\u001B[49m");
+    });
+
+    it("should slice a string styled with modifier", () => {
+        expect.assertions(1);
+
+        // Test string: `chalk.underline('test');`
+        expect(slice("\u001B[4mtest\u001B[24m", 0, 1).slice).toBe("\u001B[4mt\u001B[24m");
+    });
+
+    it("should slice a string with unknown ANSI color", () => {
+        expect.assertions(3);
+
+        expect(slice("\u001B[20mTEST\u001B[49m", 0, 4).slice).toBe("\u001B[20mTEST\u001B[0m");
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3).slice).toBe("\u001B[1001mTES\u001B[0m");
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2).slice).toBe("\u001B[1001mTE\u001B[0m");
+    });
+
+    it("weird null issue", () => {
+        expect.assertions(1);
+
+        const s = '\u001B[1mautotune.flipCoin("easy as") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m';
+        const result = slice(s, 38).slice;
+
+        expect(result.includes("null")).toBeFalsy();
+    });
+
+    it("should support true color escape sequences", () => {
+        expect.assertions(1);
+
+        expect(slice("\u001B[1m\u001B[48;2;255;255;255m\u001B[38;2;255;0;0municorn\u001B[39m\u001B[49m\u001B[22m", 0, 3).slice).toBe(
+            "\u001B[1m\u001B[48;2;255;255;255m\u001B[38;2;255;0;0muni\u001B[39m\u001B[49m\u001B[22m",
+        );
+    });
+
+    // See https://github.com/chalk/slice-ansi/issues/24
+    it("shouldn't add extra escapes", () => {
+        expect.assertions(1);
+
+        const output = `${black.bgYellow(" RUNS ")}  ${green("test")}`;
+
+        expect(slice(output, 0, 7).slice).toBe(`${black.bgYellow(" RUNS ")} `);
+        expect(slice(output, 0, 8).slice).toBe(`${black.bgYellow(" RUNS ")}  `);
+        expect(JSON.stringify(slice("\u001B[31m" + output, 0, 4).slice)).toBe(JSON.stringify(black.bgYellow(" RUN")));
+    });
+
+    // See https://github.com/chalk/slice-ansi/issues/26
+    it("shouldn't lose fullwidth characters", () => {
+        expect.assertions(1);
+
+        expect(slice("古古test", 0).slice).toBe("古古test");
+    });
+
+    it("should create empty slices", () => {
+        expect.assertions(1);
+
+        expect(slice("test", 0, 0).slice).toBe("");
     });
 });

@@ -1,4 +1,4 @@
-import { CSI } from "./helpers";
+import { CSI } from "./constants";
 
 const scroll = {
     down: (count = 1): string => `${CSI}T`.repeat(count),

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import cursor from "../src/cursor";
+import { isTerminalApp } from "../src/helpers";
 
 describe(`cursor`, () => {
     it.each([
@@ -43,12 +44,12 @@ describe(`cursor`, () => {
     it("should return the correct ansi string for save", () => {
         expect.assertions(1);
 
-        expect(cursor.save).toBe("\u001B7");
+        expect(cursor.save).toBe(isTerminalApp ? "\u001B7" : "\u001Bs");
     });
 
     it("should return the correct ansi string for restore", () => {
         expect.assertions(1);
 
-        expect(cursor.restore).toBe("\u001B8");
+        expect(cursor.restore).toBe(isTerminalApp ? "\u001B8" : "\u001Bu");
     });
 });
