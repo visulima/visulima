@@ -1,8 +1,17 @@
+/** @ts-check */
+// eslint-disable-next-line import/no-commonjs,import/no-unused-modules
+const { defineConfig } = require("@anolilab/eslint-config/define-config");
+// eslint-disable-next-line import/no-commonjs
 const globals = require("@anolilab/eslint-config/globals");
 
-/** @ts-check */
+/// <reference types="@eslint-types/unicorn" />
+/// <reference types="@eslint-types/typescript-eslint" />
+/// <reference types="@eslint-types/jsdoc" />
+/// <reference types="@eslint-types/import" />
+/// <reference types="@eslint-types/deprecation" />
+
 /** @type {import('eslint').Linter.Config} */
-module.exports = {
+module.exports = defineConfig({
     env: {
         // Your environments (which contains several predefined global variables)
         // Most environments are loaded automatically if our rules are added
@@ -25,16 +34,18 @@ module.exports = {
             files: ["*.ts", "*.tsx", "*.mts", "*.cts"],
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
-            rules: {},
+            rules: {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "prefer-template": "off",
+            },
         },
         {
-            files: ["src/language/*.ts"],
-            rules: {
-                "import/no-unused-modules": "off",
-                "import/prefer-default-export": "off",
-                "unicorn/filename-case": "off",
-                "unicorn/prevent-abbreviations": "off",
-            },
+            files: ["*.js", "*.jsx"],
+            rules: {},
         },
         {
             files: ["*.mdx"],
@@ -45,20 +56,25 @@ module.exports = {
             },
         },
         {
-            files: ["index.ts"],
+            files: ["src/index.ts"],
             rules: {
                 "import/no-unused-modules": "off",
             },
         },
         {
-            files: ["*.test.ts", "*.bench.ts"],
-            // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
-            parserOptions: {},
+            files: ["__docs__/**"],
             rules: {
-                "@typescript-eslint/no-unsafe-argument": "off",
-                "@typescript-eslint/no-unsafe-assignment": "off",
-                "@typescript-eslint/no-unsafe-call": "off",
-                "@typescript-eslint/no-unsafe-member-access": "off",
+                "import/no-unresolved": "off",
+                "import/no-unused-modules": "off",
+                "no-console": "off",
+                "no-undef": "off",
+                "no-unused-vars": "off",
+                "unicorn/prefer-top-level-await": "off",
+            },
+        },
+        {
+            files: ["__tests__/**"],
+            rules: {
                 "import/no-unused-modules": "off",
             },
         },
@@ -67,12 +83,8 @@ module.exports = {
         ecmaVersion: 2021,
         project: "./tsconfig.eslint.json",
         sourceType: "module",
-        tsconfigRootDir: __dirname,
     },
     // Report unused `eslint-disable` comments.
     reportUnusedDisableDirectives: true,
     root: true,
-    rules: {
-        // Customize your rules
-    },
-};
+});

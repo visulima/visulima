@@ -1137,6 +1137,93 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/pail
 
+  packages/ansi:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: ^15.0.3
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.7)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.9.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.3)(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+      '@anolilab/prettier-config':
+        specifier: ^5.0.14
+        version: 5.0.14(prettier@3.3.2)
+      '@anolilab/semantic-release-pnpm':
+        specifier: 1.1.3
+        version: 1.1.3(yaml@2.4.5)
+      '@anolilab/semantic-release-preset':
+        specifier: ^9.0.0
+        version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.4.5))(semantic-release@24.0.0(typescript@5.4.5))
+      '@babel/core':
+        specifier: ^7.24.7
+        version: 7.24.7
+      '@rushstack/eslint-plugin-security':
+        specifier: ^0.8.1
+        version: 0.8.1(eslint@8.57.0)(typescript@5.4.5)
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: ^8.2.4
+        version: 8.2.4
+      '@total-typescript/ts-reset':
+        specifier: ^0.5.1
+        version: 0.5.1
+      '@types/node':
+        specifier: 20.14.6
+        version: 20.14.6
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.43
+        version: 1.0.0-alpha.44(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+      '@vitest/coverage-v8':
+        specifier: ^1.6.0
+        version: 1.6.0(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
+      '@vitest/ui':
+        specifier: ^1.6.0
+        version: 1.6.0(vitest@1.6.0)
+      conventional-changelog-conventionalcommits:
+        specifier: 8.0.0
+        version: 8.0.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-deprecation:
+        specifier: ^3.0.0
+        version: 3.0.0(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-etc:
+        specifier: ^2.0.3
+        version: 2.0.3(eslint@8.57.0)(typescript@5.4.5)
+      eslint-plugin-import:
+        specifier: npm:eslint-plugin-i@^2.29.1
+        version: eslint-plugin-i@2.29.1(eslint@8.57.0)
+      eslint-plugin-mdx:
+        specifier: ^3.1.5
+        version: 3.1.5(eslint@8.57.0)
+      eslint-plugin-vitest:
+        specifier: ^0.4.1
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
+      eslint-plugin-vitest-globals:
+        specifier: ^1.5.0
+        version: 1.5.0
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.2
+      rimraf:
+        specifier: ^5.0.7
+        version: 5.0.7
+      secretlint:
+        specifier: 8.2.4
+        version: 8.2.4
+      semantic-release:
+        specifier: ^24.0.0
+        version: 24.0.0(typescript@5.4.5)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
+
   packages/api-platform:
     dependencies:
       '@visulima/connect':
@@ -9503,6 +9590,11 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/cerebro@1.0.51':
+    resolution: {integrity: sha512-MzvEara8GG1YIDyyLXsyG5oP6c8Q/hrKhjInecaDVCh67HG+UE/wv+J8o5W6c626ME63Wg+rnqdkLKYxkY7OiQ==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
   '@visulima/colorize@1.4.1':
     resolution: {integrity: sha512-O3oh+m1X1hY7iKdEL+TjqXkGW1HYeDlr8xnzQaxJbkgGW8bLqxPSYDilxSx0EMf6AS45NxlNIy7/fsnRTWfY7Q==}
     engines: {node: '>=18.* <=21.*'}
@@ -9586,7 +9678,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=14.1.1'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -9624,6 +9716,26 @@ packages:
 
   '@visulima/packem@1.0.0-alpha.42':
     resolution: {integrity: sha512-P4fQfsqvY1aw5ZainaJ/A3TnD24i+M2e3p/nk/+bVOOgTCFTZk8xNemwvNJsVH9y/u68er56TvsDjkTcKbm++A==}
+    engines: {node: '>=18.* <=22.*'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.5.7
+      esbuild: 0.21.4
+      jiti: ^1.21.0
+      sucrase: ^3.35.0
+      typescript: ^4.5 || ^5.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      sucrase:
+        optional: true
+      typescript:
+        optional: true
+
+  '@visulima/packem@1.0.0-alpha.44':
+    resolution: {integrity: sha512-ToNmj+UwQqPoFtZn5B5f2JWAPLXOsi0OJlwK+lh+qhKGkH9/yD4dbJmfmcSGMIYxPcDaEX8JUS5Uz5jauoPA+g==}
     engines: {node: '>=18.* <=22.*'}
     hasBin: true
     peerDependencies:
@@ -9697,6 +9809,10 @@ packages:
 
   '@visulima/redact@1.0.2':
     resolution: {integrity: sha512-Y7aCtogKlvLFVP1WfpOkIbOGzBDVpl9g1mAS0lH6/XMzLiWPMsNhI1jXFr24GAtOSZGtgO3aL5qEmmyx+msUUA==}
+    engines: {node: '>=18.* <=22.*'}
+
+  '@visulima/tsconfig@1.0.1':
+    resolution: {integrity: sha512-FcE3cwp4aBTibp7gHG/B2DJGbq5VynZPsWyeXwx66fdRd8XoY7cGq22hABZ/hkQetESYo/9bj2tBUaxP7nahIQ==}
     engines: {node: '>=18.* <=22.*'}
 
   '@vitejs/plugin-react@4.3.1':
@@ -13293,6 +13409,11 @@ packages:
     engines: {node: '>=16 || 14 >=14.18'}
     hasBin: true
 
+  glob@10.4.2:
+    resolution: {integrity: sha512-GwMlUF6PkPo3Gk21UxkCohOv0PLcIXVtKyLlpEI28R/cO/4eNOdmLk3CMW1wROV/WR/EsZOWAfBbBOqYvs88/w==}
+    engines: {node: '>=16 || 14 >=14.18'}
+    hasBin: true
+
   glob@6.0.4:
     resolution: {integrity: sha512-MKZeRNyYZAVVVG1oZeLaWie1uweH40m9AZwIwxyPbTSX4hHrVYSzLg0Ro5Z5R7XKkIX+Cc6oD1rqeDJnwsB8/A==}
     deprecated: Glob versions prior to v9 are no longer supported
@@ -15970,7 +16091,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -16018,7 +16139,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=14.1.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -16582,6 +16703,9 @@ packages:
   package-hash@4.0.0:
     resolution: {integrity: sha512-whdkPIooSu/bASggZ96BWVvZTRMOFxnyUG5PnTSGKoJE2gd5mbVNmR2Nj20QFzxYYgAXpoqC+AiXzl+UMRh7zQ==}
     engines: {node: '>=8'}
+
+  package-json-from-dist@1.0.0:
+    resolution: {integrity: sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==}
 
   package-json@8.1.1:
     resolution: {integrity: sha512-cbH9IAIJHNj9uXi196JVsRlt7cHKak6u/e6AkL/bkRelZ7rlL3X1YKxsZwa36xipOEKAsdtmaG6aAJoM1fx2zA==}
@@ -27893,6 +28017,20 @@ snapshots:
       - '@visulima/redact'
       - rotating-file-stream
 
+  '@visulima/cerebro@1.0.51(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)(yaml@2.4.5)':
+    dependencies:
+      '@visulima/boxen': 1.0.10
+      '@visulima/colorize': 1.4.3
+      '@visulima/find-cache-dir': 1.0.0(yaml@2.4.5)
+      '@visulima/pail': 1.4.3(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      cli-table3: 0.6.5
+      command-line-args: 5.2.1
+      fastest-levenshtein: 1.0.16
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - rotating-file-stream
+      - yaml
+
   '@visulima/colorize@1.4.1':
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.0
@@ -28104,6 +28242,53 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+  '@visulima/packem@1.0.0-alpha.44(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)':
+    dependencies:
+      '@antfu/install-pkg': 0.3.3
+      '@babel/parser': 7.24.7
+      '@clack/prompts': 0.7.0
+      '@rollup/plugin-alias': 5.1.0(rollup@4.18.0)
+      '@rollup/plugin-commonjs': 26.0.1(rollup@4.18.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.18.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.18.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.18.0)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.18.0)
+      '@rollup/plugin-replace': 5.0.7(rollup@4.18.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.18.0)
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
+      '@visulima/cerebro': 1.0.51(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)(yaml@2.4.5)
+      '@visulima/colorize': 1.4.3
+      '@visulima/find-cache-dir': 1.0.0(yaml@2.4.5)
+      '@visulima/fs': 2.1.7(yaml@2.4.5)
+      '@visulima/humanizer': 1.0.5
+      '@visulima/package': 3.0.0(yaml@2.4.5)
+      '@visulima/pail': 1.4.3(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      '@visulima/path': 1.0.2
+      '@visulima/tsconfig': 1.0.1(yaml@2.4.5)
+      defu: 6.1.4
+      es-module-lexer: 1.5.3
+      fastest-levenshtein: 1.0.16
+      glob: 10.4.2
+      glob-parent: 6.0.2
+      hookable: 5.5.3
+      jiti: 1.21.0
+      magic-string: 0.30.10
+      mlly: 1.7.1
+      rollup: 4.18.0
+      rollup-plugin-dts: 6.1.1(rollup@4.18.0)(typescript@5.4.5)
+      rollup-plugin-license: 3.4.0(rollup@4.18.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.18.0)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.18.0)
+      semver: 7.6.2
+    optionalDependencies:
+      '@swc/core': 1.5.7(@swc/helpers@0.5.5)
+      esbuild: 0.21.4
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - rotating-file-stream
+      - yaml
+
   '@visulima/pagination@3.0.16':
     dependencies:
       qs: 6.12.1
@@ -28146,6 +28331,15 @@ snapshots:
   '@visulima/redact@1.0.2':
     dependencies:
       compromise: 14.13.0
+
+  '@visulima/tsconfig@1.0.1(yaml@2.4.5)':
+    dependencies:
+      '@visulima/fs': 2.1.7(yaml@2.4.5)
+      '@visulima/path': 1.0.2
+      jsonc-parser: 3.2.1
+      resolve-pkg-maps: 1.0.0
+    transitivePeerDependencies:
+      - yaml
 
   '@vitejs/plugin-react@4.3.1(vite@5.3.1(@types/node@20.14.6)(lightningcss@1.22.0)(terser@5.27.0))':
     dependencies:
@@ -33098,6 +33292,15 @@ snapshots:
       minipass: 7.1.2
       path-scurry: 1.11.1
 
+  glob@10.4.2:
+    dependencies:
+      foreground-child: 3.1.1
+      jackspeak: 3.1.2
+      minimatch: 9.0.4
+      minipass: 7.1.2
+      package-json-from-dist: 1.0.0
+      path-scurry: 1.11.1
+
   glob@6.0.4:
     dependencies:
       inflight: 1.0.6
@@ -37543,6 +37746,8 @@ snapshots:
       hasha: 5.2.2
       lodash.flattendeep: 4.4.0
       release-zalgo: 1.0.0
+
+  package-json-from-dist@1.0.0: {}
 
   package-json@8.1.1:
     dependencies:

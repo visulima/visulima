@@ -7,8 +7,3 @@ CHANGELOG.md
 coverage
 node_modules
 .eslintcache
-
-__fixtures__
-
-**/tsconfig.json
-**/jsconfig.json

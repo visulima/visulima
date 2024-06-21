@@ -1,5 +1,5 @@
 <div align="center">
-  <h3>Visulima ansi</h3>
+  <h3>visulima ansi</h3>
   <p>
   ANSI escape codes for some terminal swag.
   </p>
