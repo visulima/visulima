@@ -42,6 +42,7 @@ pnpm add @visulima/ansi
 ## Usage
 
 ## Related
+- [ansi-align](https://github.com/nexdrew/ansi-align) - align-text with ANSI support for CLIs
 
 ## Supported Node.js Versions
 

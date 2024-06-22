@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import cursor from "../src/cursor";
-import { isTerminalApp } from "../src/helpers";
+import cursor from "../../src/cursor";
+import { isTerminalApp } from "../../src/helpers";
 
 describe(`cursor`, () => {
     it.each([

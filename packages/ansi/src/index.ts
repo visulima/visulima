@@ -1,18 +1,22 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import ansiRegex from 'ansi-regex';
 import type { LiteralUnion } from "type-fest";
 
 import { BEL, OSC, SEP } from "./constants";
 
-export { default as alternativeScreen } from "./alternative-screen";
+const regex = ansiRegex();
+
+export { default as align } from "./align";
 
 /**
  * Output a beeping sound.
  */
 export const beep = "\u0007";
+export { default as alternativeScreen } from "./alternative-screen";
 export { default as clear } from "./clear";
 export { default as cursor } from "./cursor";
 export { default as erase } from "./erase";
 export { default as scroll } from "./scroll";
-export { default as slice } from "./slice";
 
 // eslint-disable-next-line no-secrets/no-secrets
 /**
@@ -65,3 +69,6 @@ export const image = (
 
     return returnValue + ":" + Buffer.from(data).toString("base64") + BEL;
 };
+
+export const strip = (input: string): string => input.replace(regex, '');
+export { default as slice } from "./slice";

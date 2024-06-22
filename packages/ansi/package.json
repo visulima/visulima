@@ -110,6 +110,7 @@
         "@visulima/packem": "^1.0.0-alpha.43",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
+        "ansi-regex": "^6.0.1",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "esbuild": "^0.21.5",
@@ -124,6 +125,7 @@
         "rimraf": "^5.0.7",
         "secretlint": "8.2.4",
         "semantic-release": "^24.0.0",
+        "string-width": "^7.1.0",
         "type-fest": "^4.20.1",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"

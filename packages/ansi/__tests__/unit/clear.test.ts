@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import clear from "../src/clear";
+import clear from "../../src/clear";
 
 describe(`clear`, () => {
     it("should return the correct ansi for screen", () => {

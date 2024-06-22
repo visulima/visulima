@@ -1,7 +1,7 @@
 import { black, green } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import slice from "../src/slice";
+import slice from "../../src/slice";
 
 describe(`slice`, () => {
     it(`should slice empty strings just fine`, () => {

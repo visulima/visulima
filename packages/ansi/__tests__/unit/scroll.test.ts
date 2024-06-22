@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import scroll from "../src/scroll";
+import scroll from "../../src/scroll";
 
 describe(`scroll`, () => {
     it("should return the correct ansi for up", () => {
