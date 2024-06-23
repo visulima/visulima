@@ -95,3 +95,5 @@ export const cursorTo = (x: number, y: number): string => {
  * @param count - Count of rows to move up. Default is `1`.
  */
 export const cursorUp = (count = 1): string => CSI + count + "A";
+
+export { default as restoreCursor } from "restore-cursor";
