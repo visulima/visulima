@@ -69,6 +69,106 @@
                 "default": "./dist/index.mjs"
             }
         },
+        "./align": {
+            "require": {
+                "types": "./dist/align.d.cts",
+                "default": "./dist/align.cjs"
+            },
+            "import": {
+                "types": "./dist/align.d.mts",
+                "default": "./dist/align.mjs"
+            }
+        },
+        "./alternative-screen": {
+            "require": {
+                "types": "./dist/alternative-screen.d.cts",
+                "default": "./dist/alternative-screen.cjs"
+            },
+            "import": {
+                "types": "./dist/alternative-screen.d.mts",
+                "default": "./dist/alternative-screen.mjs"
+            }
+        },
+        "./clear": {
+            "require": {
+                "types": "./dist/clear.d.cts",
+                "default": "./dist/clear.cjs"
+            },
+            "import": {
+                "types": "./dist/clear.d.mts",
+                "default": "./dist/clear.mjs"
+            }
+        },
+        "./cursor": {
+            "require": {
+                "types": "./dist/cursor.d.cts",
+                "default": "./dist/cursor.cjs"
+            },
+            "import": {
+                "types": "./dist/cursor.d.mts",
+                "default": "./dist/cursor.mjs"
+            }
+        },
+        "./erase": {
+            "require": {
+                "types": "./dist/erase.d.cts",
+                "default": "./dist/erase.cjs"
+            },
+            "import": {
+                "types": "./dist/erase.d.mts",
+                "default": "./dist/erase.mjs"
+            }
+        },
+        "./image": {
+            "require": {
+                "types": "./dist/image.d.cts",
+                "default": "./dist/image.cjs"
+            },
+            "import": {
+                "types": "./dist/image.d.mts",
+                "default": "./dist/image.mjs"
+            }
+        },
+        "./link": {
+            "require": {
+                "types": "./dist/link.d.cts",
+                "default": "./dist/link.cjs"
+            },
+            "import": {
+                "types": "./dist/link.d.mts",
+                "default": "./dist/link.mjs"
+            }
+        },
+        "./scroll": {
+            "require": {
+                "types": "./dist/scroll.d.cts",
+                "default": "./dist/scroll.cjs"
+            },
+            "import": {
+                "types": "./dist/scroll.d.mts",
+                "default": "./dist/scroll.mjs"
+            }
+        },
+        "./slice": {
+            "require": {
+                "types": "./dist/slice.d.cts",
+                "default": "./dist/slice.cjs"
+            },
+            "import": {
+                "types": "./dist/slice.d.mts",
+                "default": "./dist/slice.mjs"
+            }
+        },
+        "./strip": {
+            "require": {
+                "types": "./dist/strip.d.cts",
+                "default": "./dist/strip.cjs"
+            },
+            "import": {
+                "types": "./dist/strip.d.mts",
+                "default": "./dist/strip.mjs"
+            }
+        },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",

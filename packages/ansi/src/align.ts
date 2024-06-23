@@ -34,9 +34,6 @@ const baseAlign = (input: string, align: "center" | "right", options: Options = 
         .join(split);
 };
 
-const align = {
-    center: (input: string, options: Options = {}): string => baseAlign(input, "center", options),
-    right: (input: string, options: Options = {}): string => baseAlign(input, "right", options),
-};
 
-export default align;
+export const alignCenter = (input: string, options: Options = {}): string => baseAlign(input, "center", options);
+export const alignRight = (input: string, options: Options = {}): string => baseAlign(input, "right", options);

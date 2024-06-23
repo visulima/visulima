@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { strip } from "../../src";
+import strip from "../../src/strip";
 
 describe(`ansi`, () => {
     /**
