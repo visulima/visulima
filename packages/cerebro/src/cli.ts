@@ -169,7 +169,7 @@ export class Cli implements ICli {
         // add the command to the runtime (if it isn't already there)
 
         if (this.commands.has(command.name)) {
-            throw new Error(`Ignored command with name "${command.name}, it was found in the command list."`);
+            throw new Error(`Ignored command with name "${command.name}", it was found in the command list.`);
         } else {
             command.options?.map((option) => mapOptionTypeLabel<OT>(option));
 
