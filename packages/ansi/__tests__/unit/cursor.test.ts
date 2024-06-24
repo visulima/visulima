@@ -8,7 +8,7 @@ import {
     cursorLeft,
     cursorMove,
     cursorNextLine,
-    cursorPrevLine as cursorPreviousLine,
+    cursorPreviousLine,
     cursorRestore,
     cursorSave,
     cursorShow,

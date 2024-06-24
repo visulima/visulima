@@ -12,7 +12,7 @@ export {
     cursorLeft,
     cursorMove,
     cursorNextLine,
-    cursorPrevLine,
+    cursorPreviousLine,
     cursorRestore,
     cursorSave,
     cursorShow,

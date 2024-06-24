@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import ansiRegex from 'ansi-regex';
+import ansiRegex from "ansi-regex";
 
 const regex = ansiRegex();
 
@@ -21,6 +21,6 @@ const regex = ansiRegex();
  * @returns The input string with all ANSI escape codes removed.
  */
 // eslint-disable-next-line no-control-regex,regexp/no-control-character
-const strip = (input: string): string => input.replace(/\u001B\]0;.*\u0007/, '').replace(regex, '');
+const strip = (input: string): string => input.replace(/\u001B\]0;.*\u0007/, "").replace(regex, "");
 
 export default strip;

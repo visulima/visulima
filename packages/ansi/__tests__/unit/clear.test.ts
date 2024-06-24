@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clearTerminal, clearScrollbar, clearScreen, clearLine, fullReset } from "../../src/clear";
+import { clearLine, clearScreen, clearScrollbar, clearTerminal, fullReset } from "../../src/clear";
 
 describe(`clear`, () => {
     it("should return the correct ansi for clear screen", () => {

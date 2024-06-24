@@ -61,7 +61,7 @@ export const cursorNextLine = (count = 1): string => (CSI + "E").repeat(count);
 /**
  * Move cursor to the previous line.
  */
-export const cursorPrevLine = (count = 1): string => (CSI + "F").repeat(count);
+export const cursorPreviousLine = (count = 1): string => (CSI + "F").repeat(count);
 
 /**
  * Restore saved cursor position.
@@ -96,4 +96,5 @@ export const cursorTo = (x: number, y: number): string => {
  */
 export const cursorUp = (count = 1): string => CSI + count + "A";
 
+// eslint-disable-next-line import/no-extraneous-dependencies,import/no-unused-modules
 export { default as restoreCursor } from "restore-cursor";

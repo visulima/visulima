@@ -11,7 +11,7 @@ describe(`scroll`, () => {
         expect(scrollUp(0)).toBe(``);
     });
 
-        it("should return the correct ansi for down", () => {
+    it("should return the correct ansi for down", () => {
         expect.assertions(3);
 
         expect(scrollDown()).toBe(`\u001B[T`);

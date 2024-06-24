@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { eraseDown, eraseLine, eraseLineEnd, eraseLines,eraseLineStart, eraseScreen, eraseUp } from "../../src/erase";
+import { eraseDown, eraseLine, eraseLineEnd, eraseLines, eraseLineStart, eraseScreen, eraseUp } from "../../src/erase";
 
 describe(`scroll`, () => {
     it("should return the correct ansi for up", () => {
