@@ -3,34 +3,40 @@
     "version": "0.0.0",
     "description": "ANSI escape codes for some terminal swag.",
     "keywords": [
-        "visulima",
+        "alternative-screen",
         "ansi",
-        "terminal",
-        "console",
+        "clear",
         "cli",
-        "string",
-        "tty",
+        "code",
+        "codes",
+        "command-line",
+        "console",
+        "control",
+        "cursor",
+        "erase",
         "escape",
         "escapes",
         "formatting",
-        "shell",
-        "xterm",
-        "log",
-        "logging",
-        "command-line",
-        "text",
-        "vt100",
-        "sequence",
-        "control",
-        "code",
-        "codes",
-        "cursor",
+        "image",
         "iterm",
         "iterm2",
-        "clear",
+        "link",
+        "log",
+        "logging",
         "screen",
-        "erase",
-        "scrollback"
+        "scroll",
+        "scrollback",
+        "sequence",
+        "shell",
+        "string",
+        "strip",
+        "strip-ansi",
+        "terminal",
+        "text",
+        "tty",
+        "visulima",
+        "vt100",
+        "xterm"
     ],
     "homepage": "https://visulima.com/packages/ansi",
     "bugs": {
@@ -67,16 +73,6 @@
             "import": {
                 "types": "./dist/index.d.mts",
                 "default": "./dist/index.mjs"
-            }
-        },
-        "./align": {
-            "require": {
-                "types": "./dist/align.d.cts",
-                "default": "./dist/align.cjs"
-            },
-            "import": {
-                "types": "./dist/align.d.mts",
-                "default": "./dist/align.mjs"
             }
         },
         "./alternative-screen": {
@@ -149,16 +145,6 @@
                 "default": "./dist/scroll.mjs"
             }
         },
-        "./slice": {
-            "require": {
-                "types": "./dist/slice.d.cts",
-                "default": "./dist/slice.cjs"
-            },
-            "import": {
-                "types": "./dist/slice.d.mts",
-                "default": "./dist/slice.mjs"
-            }
-        },
         "./strip": {
             "require": {
                 "types": "./dist/strip.d.cts",
@@ -214,6 +200,7 @@
         "ansi-regex": "^6.0.1",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
+        "@visulima/path": "^1.0.2",
         "esbuild": "^0.21.5",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
@@ -226,7 +213,6 @@
         "rimraf": "^5.0.7",
         "secretlint": "8.2.4",
         "semantic-release": "^24.0.0",
-        "string-width": "^7.1.0",
         "type-fest": "^4.20.1",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"

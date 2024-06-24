@@ -41,8 +41,34 @@ pnpm add @visulima/ansi
 
 ## Usage
 
+```js
+import { cursorUp, cursorLeft } from "@visulima/ansi";
+
+// Moves the cursor two rows up and to the left
+process.stdout.write(cursorUp(2) + cursorLeft);
+//=> '\u001B[2A\u001B[1000D'
+```
+
+or
+
+```js
+import { cursorUp, cursorLeft } from "@visulima/ansi/cursor";
+
+// etc, as above...
+```
+
+And for commonjs:
+
+```js
+const { cursorUp, cursorLeft } = require("@visulima/ansi");
+
+// etc, as above...
+```
+
 ## Related
-- [ansi-align](https://github.com/nexdrew/ansi-align) - align-text with ANSI support for CLIs
+
+-   [ansi-escapes](https://github.com/sindresorhus/ansi-escapes) - ANSI escape codes for manipulating the terminal
+-   [sisteransi](https://github.com/terkelg/sisteransi) - ANSI escape codes for some terminal swag.
 
 ## Supported Node.js Versions
 

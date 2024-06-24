@@ -1,5 +1,3 @@
-export { alignCenter, alignRight } from "./align";
-
 /**
  * Output a beeping sound.
  */
@@ -25,5 +23,4 @@ export { eraseDown, eraseLine, eraseLineEnd, eraseLines, eraseLineStart, eraseSc
 export { default as image } from "./image";
 export { default as link } from "./link";
 export { scrollDown, scrollUp } from "./scroll";
-export { default as slice } from "./slice";
 export { default as strip } from "./strip";

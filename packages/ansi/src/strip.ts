@@ -20,6 +20,7 @@ const regex = ansiRegex();
  * @param input - Input string to strip.
  * @returns The input string with all ANSI escape codes removed.
  */
-const strip = (input: string): string => input.replace(regex, '');
+// eslint-disable-next-line no-control-regex,regexp/no-control-character
+const strip = (input: string): string => input.replace(/\u001B\]0;.*\u0007/, '').replace(regex, '');
 
 export default strip;

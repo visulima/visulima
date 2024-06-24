@@ -1172,6 +1172,9 @@ importers:
       '@visulima/packem':
         specifier: ^1.0.0-alpha.43
         version: 1.0.0-alpha.44(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+      '@visulima/path':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0))
@@ -1226,9 +1229,6 @@ importers:
       semantic-release:
         specifier: ^24.0.0
         version: 24.0.0(typescript@5.4.5)
-      string-width:
-        specifier: ^7.1.0
-        version: 7.1.0
       type-fest:
         specifier: ^4.20.1
         version: 4.20.1
@@ -1238,6 +1238,18 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.14.6)(@vitest/browser@1.6.0(vitest@1.6.0))(@vitest/ui@1.6.0(vitest@1.6.0))(jsdom@24.1.0)(lightningcss@1.22.0)(terser@5.27.0)
+
+  packages/ansi/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/ansi':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/ansi/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/ansi':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/api-platform:
     dependencies:

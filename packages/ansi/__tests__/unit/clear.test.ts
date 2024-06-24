@@ -12,13 +12,13 @@ describe(`clear`, () => {
     it("should return the correct ansi for clear line", () => {
         expect.assertions(1);
 
-        expect(clearLine).toBe("\u001B[2K\u001B0D");
+        expect(clearLine).toBe("\u001B[2K\u001B[0D");
     });
 
     it("should return the correct ansi for clear terminal", () => {
         expect.assertions(1);
 
-        expect(clearTerminal).toBe("\u001B[2J\u001BH");
+        expect(clearTerminal).toBe("\u001B[2J\u001B3J\u001BH");
     });
 
     it("should return the correct ansi for clear scrollbar", () => {
