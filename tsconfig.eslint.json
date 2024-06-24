@@ -11,7 +11,7 @@
         "build/**/*",
         "scripts/**/*",
         "verify-node-version.cjs",
-        "plopfile.js",
+        "plopfile.ts",
         "plop/**",
         "packages/**/*",
         "examples/**/*",
