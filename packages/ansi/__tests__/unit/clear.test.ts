@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { clearLine, clearScreen, clearScrollbar, clearTerminal, fullReset } from "../../src/clear";
+import { isWindows } from "../../src/helpers";
 
 describe(`clear`, () => {
     it("should return the correct ansi for clear screen", () => {
@@ -18,7 +19,14 @@ describe(`clear`, () => {
     it("should return the correct ansi for clear terminal", () => {
         expect.assertions(1);
 
-        expect(clearTerminal).toBe("\u001B[2J\u001B3J\u001BH");
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (isWindows) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(clearTerminal).toBe("\u001B[2J\u001B[0f");
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(clearTerminal).toBe("\u001B[2J\u001B3J\u001BH\u001Bc");
+        }
     });
 
     it("should return the correct ansi for clear scrollbar", () => {

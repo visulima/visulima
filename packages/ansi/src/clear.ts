@@ -25,4 +25,4 @@ export const clearTerminal = isWindows
       // 2. Erases the whole screen including scrollback buffer
       // 3. Moves cursor to the top-left position
       // More info: https://www.real-world-systems.com/docs/ANSIcode.html
-      eraseScreen + ESC + "3J" + ESC + "H";
+      eraseScreen + ESC + "3J" + ESC + "H" + ESC + "c";
