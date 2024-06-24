@@ -148,9 +148,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/is-color-supported.browser.ts",
-        "src/is-color-supported.server.ts"
-    ]
+    }
 }
