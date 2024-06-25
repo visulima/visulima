@@ -117,7 +117,7 @@
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@visulima/package": "3.0.0",
-        "@visulima/packem": "1.0.0-alpha.42",
+        "@visulima/packem": "1.0.0-alpha.45",
         "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
         "camelcase": "8.0.0",

@@ -18,10 +18,11 @@ export interface Cli {
      *
      * @return self
      */
-    addCommand: (command: ICommand) => this;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    addCommand: <O = any>(command: ICommand<O>) => this;
 
     /**
-     * Adds an extension so it is available when commands execute. They usually live
+     * Adds an extension, so it is available when commands execute. They usually live
      * the given name on the toolbox object passed to commands, but are able
      * to manipulate the toolbox object however they want. The second
      * parameter is a function that allows the extension to attach itself.
