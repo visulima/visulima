@@ -412,7 +412,7 @@ export class Cli implements ICli {
         this.mapNegatableOptions(toolbox, command);
         this.mapImpliesOptions(toolbox, command);
 
-        this.validateCommandArgsForConflicts(arguments_, toolbox.options.options, command);
+        this.validateCommandArgsForConflicts(arguments_, toolbox.options, command);
 
         this.logger.debug("command options parsed from options:");
         this.logger.debug(JSON.stringify(toolbox.options, null, 2));
