@@ -2,7 +2,9 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 
 import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
-import type { ConstructorOptions, Pail } from "@visulima/pail/server";
+import type { ExtendedRfc5424LogLevels } from "@visulima/pail";
+import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
+import type { ConstructorOptions, Pail, Processor } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import camelCase from "camelcase";
@@ -50,7 +52,7 @@ export type CliOptions = {
 };
 
 export class Cli implements ICli {
-    private readonly logger: Pail<never, string>;
+    private readonly logger: Pail;
 
     private readonly argv: string[];
 
@@ -105,16 +107,23 @@ export class Cli implements ICli {
             env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
         }
 
-        const cerebroLevelToPailLevel: Record<string, string> = {
+        const cerebroLevelToPailLevel: Record<string, ExtendedRfc5424LogLevels> = {
             "32": "informational",
             "64": "trace",
             "128": "debug",
         };
 
+        const processors: Processor<string>[] = [new MessageFormatterProcessor(), new ErrorProcessor()];
+
+        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+            processors.push(new CallerProcessor());
+        }
+
         this.logger = createPail({
             logLevel: env.CEREBRO_OUTPUT_LEVEL
                 ? cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational"
                 : "informational",
+            processors,
             ...options.logger,
         });
 
@@ -167,7 +176,6 @@ export class Cli implements ICli {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public addCommand<OT = any>(command: ICommand<OT>): this {
         // add the command to the runtime (if it isn't already there)
-
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}", it was found in the command list.`);
         } else {
@@ -377,15 +385,15 @@ export class Cli implements ICli {
         this.validateCommandOptions<any>(arguments_, commandArgs, command);
 
         // prepare the execute toolbox
-        const toolbox = new EmptyToolbox(command.name, command);
+        const toolbox = new EmptyToolbox(command.name, command) as unknown as IToolbox;
 
         // attach the runtime
         toolbox.runtime = this as ICli;
 
         // allow extensions to attach themselves to the toolbox
-        await this.registerExtensions(toolbox as IToolbox);
+        await this.registerExtensions(toolbox);
 
-        await this.updateNotifier(toolbox as IToolbox);
+        await this.updateNotifier(toolbox);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { _all, positionals } = commandArgs;
@@ -401,17 +409,17 @@ export class Cli implements ICli {
         toolbox.argv = this.argv;
         toolbox.options = { ..._all, ...otherExtraOptions };
 
-        this.mapNegatableOptions(toolbox as IToolbox, command);
-        this.mapImpliesOptions(toolbox as IToolbox, command);
+        this.mapNegatableOptions(toolbox, command);
+        this.mapImpliesOptions(toolbox, command);
 
-        this.validateCommandArgsForConflicts(arguments_, toolbox.options as IToolbox["options"], command);
+        this.validateCommandArgsForConflicts(arguments_, toolbox.options.options, command);
 
         this.logger.debug("command options parsed from options:");
         this.logger.debug(JSON.stringify(toolbox.options, null, 2));
         this.logger.debug("command argument parsed from argument:");
         this.logger.debug(JSON.stringify(toolbox.argument, null, 2));
 
-        await this.prepareToolboxResult(commandArgs, toolbox as IToolbox, command);
+        await this.prepareToolboxResult(commandArgs, toolbox, command);
 
         return shouldExitProcess ? exit(0) : undefined;
     }
@@ -540,7 +548,7 @@ export class Cli implements ICli {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity,unicorn/prevent-abbreviations,class-methods-use-this
-    private validateCommandOptions<T>(arguments_: PossibleOptionDefinition<T>[], commandArgs: CommandLineOptions, command: ICommand): void {
+    private validateCommandOptions<POD>(arguments_: PossibleOptionDefinition<POD>[], commandArgs: CommandLineOptions, command: ICommand): void {
         const missingOptions = listMissingArguments(arguments_, commandArgs);
 
         if (missingOptions.length > 0) {
@@ -583,7 +591,7 @@ export class Cli implements ICli {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    private validateCommandArgsForConflicts<T>(arguments_: PossibleOptionDefinition<T>[], commandArguments: IToolbox["options"], command: ICommand): void {
+    private validateCommandArgsForConflicts<POD>(arguments_: PossibleOptionDefinition<POD>[], commandArguments: IToolbox["options"], command: ICommand): void {
         const conflicts = arguments_.filter((argument) => argument.conflicts !== undefined);
 
         if (conflicts.length > 0) {

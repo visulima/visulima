@@ -1167,13 +1167,13 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/colorize':
-        specifier: ^1.4.3
+        specifier: 1.4.3
         version: 1.4.3
       '@visulima/packem':
         specifier: ^1.0.0-alpha.43
         version: 1.0.0-alpha.44(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
       '@visulima/path':
-        specifier: ^1.0.2
+        specifier: 1.0.2
         version: 1.0.2
       '@vitest/coverage-v8':
         specifier: ^1.6.0
@@ -1700,8 +1700,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0(yaml@2.4.5)
       '@visulima/packem':
-        specifier: 1.0.0-alpha.42
-        version: 1.0.0-alpha.42(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
+        specifier: 1.0.0-alpha.45
+        version: 1.0.0-alpha.45(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)
       '@visulima/path':
         specifier: 1.0.2
         version: 1.0.2
@@ -9781,6 +9781,26 @@ packages:
       typescript:
         optional: true
 
+  '@visulima/packem@1.0.0-alpha.45':
+    resolution: {integrity: sha512-Kwkv92AuvZe/W9RwleyWwO5azlEzHi/aBAk+oaLMw6DgDxEnRyg7Z657FpX8DPfBnveWjSTJTMYuLTr1ao9a0w==}
+    engines: {node: '>=18.* <=22.*'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.5.7
+      esbuild: 0.21.4
+      jiti: ^1.21.0
+      sucrase: ^3.35.0
+      typescript: ^4.5 || ^5.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      sucrase:
+        optional: true
+      typescript:
+        optional: true
+
   '@visulima/pagination@3.0.16':
     resolution: {integrity: sha512-Mvl36TIpjEWuQrDwXgmVnw8gvupGhLVnqinb3N8hiXz3TBVMVFnje8FCEBOGqea9OjT0utY8CSzNuH9ge7+I8Q==}
     engines: {node: '>=18.* <=22.*'}
@@ -12175,6 +12195,9 @@ packages:
   es-module-lexer@1.5.3:
     resolution: {integrity: sha512-i1gCgmR9dCl6Vil6UKPI/trA69s08g/syhiDK9TG0Nf1RJjjFI+AzoWW7sPufzkgYAn861skuCwJa0pIIHYxvg==}
 
+  es-module-lexer@1.5.4:
+    resolution: {integrity: sha512-MVNK56NiMrOwitFB7cqDwq0CQutbw+0BvLshJSse0MUNU+y1FC3bUS/AQg7oUng+/wKrrki7JfmwtVHkVfPLlw==}
+
   es-object-atoms@1.0.0:
     resolution: {integrity: sha512-MZ4iQ6JwHOBQjahnjwaC1ZtIBH+2ohjamzAO3oaHcXYup7qxjF2fixyH+Q71voWHeOkI2q/TnJao/KfXYIZWbw==}
     engines: {node: '>= 0.4'}
@@ -12914,6 +12937,14 @@ packages:
 
   fd-slicer@1.1.0:
     resolution: {integrity: sha512-cE1qsB/VwyQozZ+q1dGxR8LBYNZeofhEdUNGSMbQD3Gw2lAzX9Zb3uIU6Ebc/Fmyjo9AWWfnn0AUCHqtevs/8g==}
+
+  fdir@6.1.1:
+    resolution: {integrity: sha512-QfKBVg453Dyn3mr0Q0O+Tkr1r79lOTAKSi9f/Ot4+qVEwxWhav2Z+SudrG9vQjM2aYRMQQZ2/Q1zdA8ACM1pDg==}
+    peerDependencies:
+      picomatch: 3.x
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
 
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
@@ -18142,6 +18173,12 @@ packages:
 
   rollup-plugin-license@3.4.0:
     resolution: {integrity: sha512-Nwx4dDjoPlzR7QWcsswezxFAOC000+JLACganH3L+5toit0TEAfD4SF1DsvJR/kunHWJgqnhmzvOO+iLI1oKPw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.0.0 || ^2.0.0 || ^3.0.0 || ^4.0.0
+
+  rollup-plugin-license@3.5.1:
+    resolution: {integrity: sha512-z/UN/d5KbJhyvmmAg6no/2M2XK1QH8DUZyhbQeuaxe48hkIBTvvMlUP97g4txOzEC82HlZzb7dlWslc/rmBskg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.0.0 || ^2.0.0 || ^3.0.0 || ^4.0.0
@@ -28320,6 +28357,54 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+  '@visulima/packem@1.0.0-alpha.45(@swc/core@1.5.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.0)(rotating-file-stream@3.2.3)(typescript@5.4.5)(yaml@2.4.5)':
+    dependencies:
+      '@antfu/install-pkg': 0.3.3
+      '@babel/parser': 7.24.7
+      '@clack/prompts': 0.7.0
+      '@rollup/plugin-alias': 5.1.0(rollup@4.18.0)
+      '@rollup/plugin-commonjs': 26.0.1(rollup@4.18.0)
+      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.18.0)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.18.0)
+      '@rollup/plugin-json': 6.1.0(rollup@4.18.0)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.18.0)
+      '@rollup/plugin-replace': 5.0.7(rollup@4.18.0)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.18.0)
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
+      '@visulima/cerebro': 1.0.51(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)(yaml@2.4.5)
+      '@visulima/colorize': 1.4.3
+      '@visulima/find-cache-dir': 1.0.0(yaml@2.4.5)
+      '@visulima/fs': 2.1.7(yaml@2.4.5)
+      '@visulima/humanizer': 1.0.5
+      '@visulima/package': 3.0.0(yaml@2.4.5)
+      '@visulima/pail': 1.4.3(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      '@visulima/path': 1.0.2
+      '@visulima/tsconfig': 1.0.1(yaml@2.4.5)
+      defu: 6.1.4
+      es-module-lexer: 1.5.4
+      fastest-levenshtein: 1.0.16
+      glob: 10.4.2
+      glob-parent: 6.0.2
+      hookable: 5.5.3
+      jiti: 1.21.0
+      magic-string: 0.30.10
+      mlly: 1.7.1
+      rollup: 4.18.0
+      rollup-plugin-dts: 6.1.1(rollup@4.18.0)(typescript@5.4.5)
+      rollup-plugin-license: 3.5.1(rollup@4.18.0)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.18.0)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.18.0)
+      semver: 7.6.2
+    optionalDependencies:
+      '@swc/core': 1.5.7(@swc/helpers@0.5.5)
+      esbuild: 0.21.4
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - picomatch
+      - rotating-file-stream
+      - yaml
+
   '@visulima/pagination@3.0.16':
     dependencies:
       qs: 6.12.1
@@ -31215,6 +31300,8 @@ snapshots:
 
   es-module-lexer@1.5.3: {}
 
+  es-module-lexer@1.5.4: {}
+
   es-object-atoms@1.0.0:
     dependencies:
       es-errors: 1.3.0
@@ -32761,6 +32848,8 @@ snapshots:
   fd-slicer@1.1.0:
     dependencies:
       pend: 1.2.0
+
+  fdir@6.1.1: {}
 
   fecha@4.2.3: {}
 
@@ -39481,6 +39570,20 @@ snapshots:
       rollup: 4.18.0
       spdx-expression-validate: 2.0.0
       spdx-satisfies: 5.0.1
+
+  rollup-plugin-license@3.5.1(rollup@4.18.0):
+    dependencies:
+      commenting: 1.1.0
+      fdir: 6.1.1
+      lodash: 4.17.21
+      magic-string: 0.30.10
+      moment: 2.30.1
+      package-name-regex: 2.0.6
+      rollup: 4.18.0
+      spdx-expression-validate: 2.0.0
+      spdx-satisfies: 5.0.1
+    transitivePeerDependencies:
+      - picomatch
 
   rollup-plugin-polyfill-node@0.13.0(rollup@4.18.0):
     dependencies:

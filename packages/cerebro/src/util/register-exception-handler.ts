@@ -1,6 +1,6 @@
 import type { Pail } from "@visulima/pail/server";
 
-const registerExceptionHandler = (logger: Pail<never, string>): void => {
+const registerExceptionHandler = (logger: Pail): void => {
     // we want to see real exceptions with backtraces and stuff
     process.on("uncaughtException", (error: Partial<Error> | null | undefined) => {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
