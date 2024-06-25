@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.1.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.51...@visulima/cerebro@1.1.0) (2024-06-25)
+
+### Features
+
+* **cerebro:** added caller processor for pail when debug mode is used, fixed some typing issues ([db6cac5](https://github.com/visulima/visulima/commit/db6cac52abb216148bddca93f421119c4f56bbd3))
+
+### Bug Fixes
+
+* **cerebro:** fixed wrong variable call for options ([4748502](https://github.com/visulima/visulima/commit/47485029110ee743e57cb93a584903904937160d))
+
+### Miscellaneous Chores
+
+* **cerebro:** fixed issues with new cli test ([2ee88cd](https://github.com/visulima/visulima/commit/2ee88cde7737097331ccf5cd23262c450109a069))
+* **cerebro:** removed old dev dependency ([6e96425](https://github.com/visulima/visulima/commit/6e96425717d53e06ba9297b2f20dda67cccfe4da))
+
 ## @visulima/cerebro [1.0.51](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.50...@visulima/cerebro@1.0.51) (2024-06-20)
 
 ### Bug Fixes
