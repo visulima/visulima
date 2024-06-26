@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.0...@visulima/cerebro@1.1.1) (2024-06-26)
+
+### Bug Fixes
+
+* **cerebro:** fixed typing of command options ([6eca24b](https://github.com/visulima/visulima/commit/6eca24b95528842d898a69415c86abfbf2fab871))
+
 ## @visulima/cerebro [1.1.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.0.51...@visulima/cerebro@1.1.0) (2024-06-25)
 
 ### Features
