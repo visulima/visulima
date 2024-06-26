@@ -1,9 +1,12 @@
 import type { CommandLineOptions } from "command-line-args";
 
-import type { PossibleOptionDefinition } from "../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../@types/command";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const listMissingArguments = <T = any>(commandLineConfig: PossibleOptionDefinition<T>[], parsedArguments: CommandLineOptions): PossibleOptionDefinition<T>[] =>
+const listMissingArguments = <OD extends OptionDefinition<any>>(
+    commandLineConfig: PossibleOptionDefinition<OD>[],
+    parsedArguments: CommandLineOptions,
+): PossibleOptionDefinition<OD>[] =>
     commandLineConfig
         .filter((config) => config.required && parsedArguments[config.name] == null)
         .filter((config) => {

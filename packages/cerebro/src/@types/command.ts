@@ -51,20 +51,20 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T> &
         typeLabel?: string | undefined;
     };
 
-export type PossibleOptionDefinition<T> =
+export type PossibleOptionDefinition<OD> =
+    | OD
     | OptionDefinition<boolean[]>
     | OptionDefinition<boolean>
     | OptionDefinition<number[]>
     | OptionDefinition<number>
     | OptionDefinition<string[]>
-    | OptionDefinition<string>
-    | OptionDefinition<T>;
+    | OptionDefinition<string>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ArgumentDefinition<T = any> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface Command<O = any, TContext extends IToolbox = IToolbox> {
+export interface Command<O extends OptionDefinition<any> = any, TContext extends IToolbox = IToolbox> {
     /** Potential other names for this command */
     alias?: string[] | string;
 
@@ -93,11 +93,11 @@ export interface Command<O = any, TContext extends IToolbox = IToolbox> {
     name: string;
 
     options?: (
+        | O
         | OptionDefinition<boolean[]>
         | OptionDefinition<boolean>
         | OptionDefinition<number[]>
         | OptionDefinition<number>
-        | OptionDefinition<O>
         | OptionDefinition<string[]>
         | OptionDefinition<string>
     )[];

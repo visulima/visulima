@@ -20,7 +20,7 @@ export interface Content {
 
 /** A OptionList section adds a table displaying details of the available options. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface OptionList<T = any> {
+export interface OptionList<O extends OptionDefinition<any> = any> {
     /** If specified, only options from this particular group will be printed.  */
     group?: string[] | string;
     header?: string | undefined;
@@ -29,8 +29,16 @@ export interface OptionList<T = any> {
     /** If specified, the -- prefix will be omitted from the option name. */
     isArgument?: boolean;
     /** An array of option definition objects. */
-
-    optionList?: (ArgumentDefinition | OptionDefinition<T>)[];
+    optionList?: (
+        | ArgumentDefinition
+        | O
+        | OptionDefinition<boolean[]>
+        | OptionDefinition<boolean>
+        | OptionDefinition<number[]>
+        | OptionDefinition<number>
+        | OptionDefinition<string[]>
+        | OptionDefinition<string>
+    )[];
     /** If true, the option alias will be displayed after the name, i.e. --verbose, -v instead of -v, --verbose). */
     reverseNameOrder?: boolean;
     /** An options object suitable for passing into table. */

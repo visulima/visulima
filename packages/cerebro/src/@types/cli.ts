@@ -1,5 +1,5 @@
 import type { UpdateNotifierOptions } from "../update-notifier/has-new-version";
-import type { Command as ICommand } from "./command";
+import type { Command as ICommand, OptionDefinition } from "./command";
 import type { Extension as IExtension } from "./extension";
 
 export type CommandSection = { footer?: string; header?: string };
@@ -19,7 +19,7 @@ export interface Cli {
      * @return self
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    addCommand: <O = any>(command: ICommand<O>) => this;
+    addCommand: <OD extends OptionDefinition<any> = any>(command: ICommand<OD>) => this;
 
     /**
      * Adds an extension, so it is available when commands execute. They usually live

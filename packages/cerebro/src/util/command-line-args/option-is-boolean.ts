@@ -1,5 +1,6 @@
-import type { PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 
-const isBoolean = <T>(option: PossibleOptionDefinition<T>): boolean => option.type?.name === "Boolean";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isBoolean = <OD extends OptionDefinition<any>>(option: PossibleOptionDefinition<OD>): boolean => option.type?.name === "Boolean";
 
 export default isBoolean;

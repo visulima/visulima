@@ -1,19 +1,20 @@
-import type { PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 import getParameterOption from "./get-parameter-option";
 import isBoolean from "./option-is-boolean";
 
-type ArgumentsAndLastOption<T> = { args: string[]; lastOption?: PossibleOptionDefinition<T> };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ArgumentsAndLastOption<OD extends OptionDefinition<any>> = { args: string[]; lastOption?: PossibleOptionDefinition<OD> };
 
 const booleanValue = new Set(["1", "0", "true", "false"]);
 
 /**
  * commandLineArgs throws an error if we pass aa value for a boolean arg as follows:
  * myCommand -a=true --booleanArg=false --otherArg true
- * this function removes these booleans so as to avoid errors from commandLineArgs
+ * this function removes these booleans to avoid errors from commandLineArgs
  */
-
-const removeBooleanValues = <T>(arguments_: string[], options: PossibleOptionDefinition<T>[]): string[] => {
-    const removeBooleanArguments = (argumentsAndLastValue: ArgumentsAndLastOption<T>, argument: string): ArgumentsAndLastOption<T> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const removeBooleanValues = <OD extends OptionDefinition<any>>(arguments_: string[], options: PossibleOptionDefinition<OD>[]): string[] => {
+    const removeBooleanArguments = (argumentsAndLastValue: ArgumentsAndLastOption<OD>, argument: string): ArgumentsAndLastOption<OD> => {
         const { argValue, option } = getParameterOption(argument, options);
 
         const { lastOption } = argumentsAndLastValue;
@@ -31,11 +32,11 @@ const removeBooleanValues = <T>(arguments_: string[], options: PossibleOptionDef
             return { args: argumentsAndLastValue.args };
         }
 
-        return { args: [...argumentsAndLastValue.args, argument], lastOption: option as PossibleOptionDefinition<T> };
+        return { args: [...argumentsAndLastValue.args, argument], lastOption: option as PossibleOptionDefinition<OD> };
     };
 
     // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-reduce
-    return arguments_.reduce<ArgumentsAndLastOption<T>>(removeBooleanArguments, { args: [] }).args;
+    return arguments_.reduce<ArgumentsAndLastOption<OD>>(removeBooleanArguments, { args: [] }).args;
 };
 
 export default removeBooleanValues;

@@ -84,8 +84,14 @@ const printGeneralHelp = (logger: Pail<never, string>, runtime: ICli, commands: 
     );
 };
 
-const printCommandHelp = (logger: Pail<never, string>, runtime: ICli, commands: Map<string, ICommand>, name: string): void => {
-    const command = commands.get(name) as ICommand;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const printCommandHelp = <OD extends OptionDefinition<any>>(
+    logger: Pail<never, string>,
+    runtime: ICli,
+    commands: Map<string, ICommand<OD>>,
+    name: string,
+): void => {
+    const command = commands.get(name) as ICommand<OD>;
 
     const usageGroups: Section[] = [];
 
