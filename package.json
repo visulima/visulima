@@ -223,7 +223,7 @@
         "@commitlint/config-conventional": "^19.2.2",
         "@nrwl/tao": "19.3.0",
         "@nrwl/workspace": "19.3.0",
-        "@octokit/rest": "^20.1.1",
+        "@octokit/rest": "^21.0.0",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@types/node": "20.14.2",
         "audit-ci": "^7.0.1",
