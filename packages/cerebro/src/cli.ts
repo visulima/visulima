@@ -174,15 +174,15 @@ export class Cli implements ICli {
      * Add an arbitrary command to the CLI.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public addCommand<OT = any>(command: ICommand<OT>): this {
+    public addCommand<OD extends OptionDefinition<any> = any>(command: ICommand<OD>): this {
         // add the command to the runtime (if it isn't already there)
         if (this.commands.has(command.name)) {
             throw new Error(`Ignored command with name "${command.name}", it was found in the command list.`);
         } else {
-            command.options?.map((option) => mapOptionTypeLabel<OT>(option));
+            command.options?.map((option) => mapOptionTypeLabel<OD>(option));
 
-            this.validateDoubleOptions<OT>(command);
-            this.addNegatableOption<OT>(command);
+            this.validateDoubleOptions<OD>(command);
+            this.addNegatableOption<OD>(command);
 
             command.options?.forEach((option) => {
                 // eslint-disable-next-line no-underscore-dangle,no-param-reassign
@@ -424,11 +424,11 @@ export class Cli implements ICli {
         return shouldExitProcess ? exit(0) : undefined;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    private validateDoubleOptions<OT>(command: ICommand): void {
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
+    private validateDoubleOptions<OD extends OptionDefinition<any> = any>(command: ICommand<OD>): void {
         if (Array.isArray(command.options)) {
             // eslint-disable-next-line unicorn/no-array-reduce
-            const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition<OT>[]>>((accumulator, object) => {
+            const groupedDuplicatedOption = command.options.reduce<Record<string, OptionDefinition<OD>[]>>((accumulator, object) => {
                 const key = `${object.name}-${object.alias}`;
 
                 // eslint-disable-next-line security/detect-object-injection
@@ -438,7 +438,7 @@ export class Cli implements ICli {
                 }
 
                 // eslint-disable-next-line security/detect-object-injection
-                (accumulator[key] as OptionDefinition<OT>[]).push(object as OptionDefinition<OT>);
+                (accumulator[key] as OptionDefinition<OD>[]).push(object as OptionDefinition<OD>);
 
                 return accumulator;
             }, {});
@@ -447,8 +447,8 @@ export class Cli implements ICli {
             let errorMessages = "";
 
             duplicatedOptions.forEach((options) => {
-                const matchingOption = options[0] as OptionDefinition<OT>;
-                const duplicate = options[1] as OptionDefinition<OT>;
+                const matchingOption = options[0] as OptionDefinition<OD>;
+                const duplicate = options[1] as OptionDefinition<OD>;
 
                 let flag = "alias";
 
@@ -485,8 +485,8 @@ export class Cli implements ICli {
         });
     }
 
-    // eslint-disable-next-line unicorn/prevent-abbreviations
-    private async prepareToolboxResult(commandArgs: CommandLineOptions, toolbox: IToolbox, command: ICommand) {
+    // eslint-disable-next-line unicorn/prevent-abbreviations,@typescript-eslint/no-explicit-any
+    private async prepareToolboxResult<OD extends OptionDefinition<any>>(commandArgs: CommandLineOptions, toolbox: IToolbox, command: ICommand<OD>) {
         // Help is a special argument for displaying help for the given command.
         // If found, run the help command instead, with the given command name as
         // an option.
@@ -547,9 +547,13 @@ export class Cli implements ICli {
         }
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity,unicorn/prevent-abbreviations,class-methods-use-this
-    private validateCommandOptions<POD>(arguments_: PossibleOptionDefinition<POD>[], commandArgs: CommandLineOptions, command: ICommand): void {
-        const missingOptions = listMissingArguments(arguments_, commandArgs);
+    // eslint-disable-next-line sonarjs/cognitive-complexity,class-methods-use-this,@typescript-eslint/no-explicit-any
+    private validateCommandOptions<OD extends OptionDefinition<any>>(
+        arguments_: PossibleOptionDefinition<OD>[],
+        commandArguments: CommandLineOptions,
+        command: ICommand<OD>,
+    ): void {
+        const missingOptions = listMissingArguments(arguments_, commandArguments);
 
         if (missingOptions.length > 0) {
             throw new Error(
@@ -558,11 +562,11 @@ export class Cli implements ICli {
         }
 
         // eslint-disable-next-line no-underscore-dangle
-        if (commandArgs._unknown && commandArgs._unknown.length > 0) {
+        if (commandArguments._unknown && commandArguments._unknown.length > 0) {
             const errors: string[] = [];
 
             // eslint-disable-next-line no-underscore-dangle
-            commandArgs._unknown.forEach((unknownOption) => {
+            commandArguments._unknown.forEach((unknownOption) => {
                 const isOption = unknownOption.startsWith("--");
 
                 let error = `Found unknown ${isOption ? "option" : "argument"} "${unknownOption}"`;
@@ -590,8 +594,12 @@ export class Cli implements ICli {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    private validateCommandArgsForConflicts<POD>(arguments_: PossibleOptionDefinition<POD>[], commandArguments: IToolbox["options"], command: ICommand): void {
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
+    private validateCommandArgsForConflicts<OD extends OptionDefinition<any>>(
+        arguments_: PossibleOptionDefinition<OD>[],
+        commandArguments: IToolbox["options"],
+        command: ICommand<OD>,
+    ): void {
         const conflicts = arguments_.filter((argument) => argument.conflicts !== undefined);
 
         if (conflicts.length > 0) {
@@ -614,10 +622,11 @@ export class Cli implements ICli {
         }
     }
 
-    private addNegatableOption<OT>(command: ICommand): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private addNegatableOption<OD extends OptionDefinition<any>>(command: ICommand<OD>): void {
         if (Array.isArray(command.options)) {
             command.options.forEach((option) => {
-                if (option.name.startsWith("no-") && !(command.options as OptionDefinition<OT>[]).some((o) => o.name === option.name.replace("no-", ""))) {
+                if (option.name.startsWith("no-") && !(command.options as OD[]).some((o) => o.name === option.name.replace("no-", ""))) {
                     if (option.type !== Boolean) {
                         this.logger.debug(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
 
@@ -628,9 +637,9 @@ export class Cli implements ICli {
                         ...option,
                         defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
                         name: `${option.name.replace("no-", "")}`,
-                    } as OptionDefinition<OT>;
+                    } as OD;
 
-                    (command.options as OptionDefinition<OT>[]).push(negatedOption);
+                    (command.options as OD[]).push(negatedOption);
                 }
             });
         }
@@ -657,8 +666,8 @@ export class Cli implements ICli {
     }
 
     // combining negatable options with their non-negated counterparts
-
-    private mapNegatableOptions(toolbox: IToolbox, command: ICommand): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private mapNegatableOptions<OD extends OptionDefinition<any>>(toolbox: IToolbox, command: ICommand<OD>): void {
         Object.entries(toolbox.options as IToolbox["options"]).forEach(([key, value]) => {
             if (/^no\w+/.test(key)) {
                 const nonNegatedKey: string = lowerFirstChar(key.replace("no", ""));
@@ -679,8 +688,8 @@ export class Cli implements ICli {
     }
 
     // Apply any implied option values, if option is undefined or default value.
-    // eslint-disable-next-line class-methods-use-this
-    private mapImpliesOptions(toolbox: IToolbox, command: ICommand): void {
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
+    private mapImpliesOptions<OD extends OptionDefinition<any>>(toolbox: IToolbox, command: ICommand<OD>): void {
         Object.keys(toolbox.options as IToolbox["options"]).forEach((optionKey) => {
             const option = command.options?.find(
                 // eslint-disable-next-line no-underscore-dangle

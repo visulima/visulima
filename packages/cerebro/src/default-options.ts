@@ -1,6 +1,6 @@
-import type { PossibleOptionDefinition } from "./@types/command";
+import type { OptionDefinition } from "./@types/command";
 
-const defaultOptions: PossibleOptionDefinition<boolean>[] = [
+const defaultOptions: OptionDefinition<boolean>[] = [
     {
         description: "Turn on verbose output",
         group: "global",

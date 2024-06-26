@@ -1,7 +1,8 @@
-import type { PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 import isBoolean from "./option-is-boolean";
 
-const getTypeLabel = <T>(definition: PossibleOptionDefinition<T>) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getTypeLabel = <OD extends OptionDefinition<any>>(definition: PossibleOptionDefinition<OD>) => {
     let typeLabel = definition.type ? definition.type.name.toLowerCase() : "string";
 
     const multiple = definition.multiple ?? definition.lazyMultiple ? "[]" : "";
@@ -13,13 +14,14 @@ const getTypeLabel = <T>(definition: PossibleOptionDefinition<T>) => {
     return typeLabel;
 };
 
-const mapOptionTypeLabel = <T>(definition: PossibleOptionDefinition<T>): PossibleOptionDefinition<T> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapOptionTypeLabel = <OD extends OptionDefinition<any>>(definition: PossibleOptionDefinition<OD>): PossibleOptionDefinition<OD> => {
     if (isBoolean(definition)) {
         return definition;
     }
 
     // eslint-disable-next-line no-param-reassign
-    definition.typeLabel = definition.typeLabel ?? getTypeLabel<T>(definition);
+    definition.typeLabel = definition.typeLabel ?? getTypeLabel<OD>(definition);
 
     if (definition.defaultOption) {
         // eslint-disable-next-line no-param-reassign

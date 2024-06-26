@@ -1,15 +1,16 @@
-import type { PossibleOptionDefinition } from "../../@types/command";
+import type { OptionDefinition, PossibleOptionDefinition } from "../../@types/command";
 
 // eslint-disable-next-line security/detect-unsafe-regex
 const argumentNameRegExp = /^-{1,2}(\w+)(=(\w+))?$/;
 
-const getParameterOption = <T>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getParameterOption = <OD extends OptionDefinition<any>>(
     argument: string,
-    options: PossibleOptionDefinition<T>[],
+    options: PossibleOptionDefinition<OD>[],
 ): {
     argName?: string;
     argValue?: string;
-    option?: PossibleOptionDefinition<T>;
+    option?: PossibleOptionDefinition<OD>;
 } => {
     const regExpResult = argumentNameRegExp.exec(argument);
 
