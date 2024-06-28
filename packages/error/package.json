@@ -85,8 +85,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -130,7 +130,8 @@
         "prettier": "^3.3.2",
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
-        "tsup": "^8.1.0",
+        "@visulima/packem": "^1.0.0-alpha.46",
+        "esbuild": "^0.21.5",
         "typescript": "^5.4.5",
         "vitest": "^1.6.0"
     },
@@ -158,11 +159,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/code-frame/index.ts",
-        "src/error/index.ts",
-        "src/stacktrace/index.ts"
-    ]
+    }
 }

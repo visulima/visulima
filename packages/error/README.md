@@ -228,6 +228,31 @@ console.log(stack);
 // ];
 ```
 
+## `serialize` and `deserialize` a error object
+
+- Ensures errors are safe to serialize with JSON
+- Can be used as error.toJSON()
+- Deep serialization/parsing, including transforming
+- Custom serialization/parsing (e.g. YAML or process.send())
+- Keeps both native (TypeError, etc.) and custom error classes
+- Preserves errors' additional properties
+- Can keep constructor's arguments
+- Works recursively with error.cause and AggregateError
+
+```ts
+import { serialize, parse } from '@visulima/error'
+
+const error = new TypeError('example')
+const errorObject = serialize(error)
+// Plain object: { name: 'TypeError', message: 'example', stack: '...' }
+
+const errorString = JSON.stringify(errorObject)
+const newErrorObject = JSON.parse(errorString)
+
+const newError = parse(newErrorObject)
+// Error instance: 'TypeError: example ...'
+```
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
