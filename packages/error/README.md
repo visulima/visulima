@@ -244,17 +244,14 @@ console.log(stack);
 -   It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
 
 ```ts
-import { serialize } from "@visulima/error";
+import { serializeError } from "@visulima/error";
 
 const error = new TypeError("example");
-const errorObject = serialize(error);
+const errorObject = serializeError(error);
 // Plain object: { name: 'TypeError', message: 'example', stack: '...' }
 
 const errorString = JSON.stringify(errorObject);
 const newErrorObject = JSON.parse(errorString);
-
-const newError = parse(newErrorObject);
-// Error instance: 'TypeError: example ...'
 ```
 
 ## Supported Node.js Versions
