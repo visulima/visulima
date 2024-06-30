@@ -228,19 +228,23 @@ console.log(stack);
 // ];
 ```
 
-## `serialize` and `deserialize` a error object
+## `serialize` an error object
 
 - Ensures errors are safe to serialize with JSON
 - Can be used as error.toJSON()
-- Deep serialization/parsing, including transforming
-- Custom serialization/parsing (e.g. YAML or process.send())
+- Deep serialization, including transforming
+- Custom serialization (e.g. YAML or process.send())
 - Keeps both native (TypeError, etc.) and custom error classes
 - Preserves errors' additional properties
 - Can keep constructor's arguments
 - Works recursively with error.cause and AggregateError
+- Buffer properties are replaced with [object Buffer]
+- Circular references are handled.
+- If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
+- It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
 
 ```ts
-import { serialize, parse } from '@visulima/error'
+import { serialize } from '@visulima/error'
 
 const error = new TypeError('example')
 const errorObject = serialize(error)

@@ -173,13 +173,6 @@ export type Options = {
 
 /**
  * Serialize an `Error` object into a plain object.
- *
- * - Non-error values are passed through.
- * - Custom properties are preserved.
- * - Buffer properties are replaced with `[object Buffer]`.
- * - Circular references are handled.
- * - If the input object has a `.toJSON()` method, then it's called instead of serializing the object's properties.
- * - It's up to `.toJSON()` implementation to handle circular references and enumerability of the properties.
  */
 export const serialize = (error: AggregateError | Error | JsonError, options: Options = {}): SerializedError =>
     _serialize(
