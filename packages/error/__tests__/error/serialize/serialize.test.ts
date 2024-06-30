@@ -193,11 +193,11 @@ describe("error serializer", () => {
             const serialized = serialize(aggregate);
 
             expect(serialized.message).toBe("aggregated message");
-            expect(serialized.aggregateErrors).toHaveLength(2);
-            expect(serialized.aggregateErrors[0].message).toBe("foo");
-            expect(serialized.aggregateErrors[1].message).toBe("bar");
-            expect(serialized.aggregateErrors[0].stack).toContain("Error: foo");
-            expect(serialized.aggregateErrors[1].stack).toContain("Error: bar");
+            expect(serialized.errors).toHaveLength(2);
+            expect(serialized.errors[0].message).toBe("foo");
+            expect(serialized.errors[1].message).toBe("bar");
+            expect(serialized.errors[0].stack).toContain("Error: foo");
+            expect(serialized.errors[1].stack).toContain("Error: bar");
             expect(serialized.stack).toContain("serialize.test.ts:");
         }
     });
@@ -257,16 +257,19 @@ describe("error serializer", () => {
         const recursiveCauseError = new Error("test");
         recursiveCauseError.cause = recursiveCauseError;
 
-        expect(serialize(recursiveCauseError).cause).toBe("[Circular]")
+        expect(serialize(recursiveCauseError).cause).toBe("[Circular]");
     });
 
-    it("should handle recursion in aggregate errors", () => {
-        expect.assertions(1);
+    it.skipIf(!global.AggregateError)("should handle recursion in aggregate errors", () => {
+        expect.assertions(2);
 
-        const recursiveAggregateError = new Error("test");
+        const recursiveAggregateError = new AggregateError([], "test");
         recursiveAggregateError.errors = [recursiveAggregateError];
 
-        expect(serialize(recursiveAggregateError).errors).toBe("")
+        const serialized = serialize(recursiveAggregateError);
+
+        expect(Array.isArray(serialized.errors)).toBeTruthy();
+        expect(serialized.errors).toHaveLength(0);
     });
 
     // eslint-disable-next-line no-secrets/no-secrets
@@ -293,13 +296,13 @@ describe("error serializer", () => {
     it("should only destroy parent references", () => {
         expect.assertions(2);
 
-        const object: Error & { one?: any; two?: any } = new Error("foo");
+        const error: Error & { one?: any; two?: any } = new Error("foo");
 
-        const common = { thing: object };
-        object.one = { firstThing: common };
-        object.two = { secondThing: common };
+        const common = { thing: error };
+        error.one = { firstThing: common };
+        error.two = { secondThing: common };
 
-        const serialized = serialize(object);
+        const serialized = serialize(error);
 
         expect(serialized.one.firstThing).toBeTypeOf("object");
         expect(serialized.two.secondThing).toBeTypeOf("object");
@@ -322,6 +325,17 @@ describe("error serializer", () => {
         const serialized = serialize(error);
 
         expect(serialized.a).toBe("[Function: a]");
+    });
+
+    it("should serialize Date as ISO string", () => {
+        expect.assertions(1);
+
+        const error = new Error("foo") as Error & { date: Date };
+        error.date = new Date(0);
+
+        const serialized = serialize(error);
+
+        expect(serialized.date).toStrictEqual(error.date.toISOString());
     });
 
     it("should discard buffers", () => {
@@ -373,9 +387,9 @@ describe("error serializer", () => {
             }
         }
         const error = new CustomError();
-        const serialized = serialize(error);
+        const serialized = serialize(error, { useToJSON: true });
 
-        expect(serialized).toBe({
+        expect(serialized).toStrictEqual({
             amount: "$10",
             message: "foo",
         });
@@ -406,45 +420,49 @@ describe("error serializer", () => {
 
         const error = new CustomError(value);
 
-        const serialized = serialize(error);
+        const serialized = serialize(error, { useToJSON: true });
 
         const { stack, ...rest } = serialized;
 
-        expect(rest).toBe({
+        expect(rest).toStrictEqual({
             message: "foo",
             name: "CustomError",
             value: {
                 amount: "$20",
             },
         });
-        expect(stack).toBeUndefined();
+        expect(serialized.stack).toContain("serialize.test.ts:");
     });
 
     it("should serialize custom error with `.toJSON` defined with `serialize`", () => {
         expect.assertions(2);
 
         class CustomError extends Error {
+            private readonly value: number;
+
             public constructor() {
                 super("foo");
                 this.name = this.constructor.name;
+                this.value = 30;
             }
 
             public toJSON() {
                 return serialize(this);
             }
         }
+
         const error = new CustomError();
 
-        const serialized = serialize(error);
+        const serialized = serialize(error, { useToJSON: true });
 
         const { stack, ...rest } = serialized;
 
-        expect(rest).toBe({
+        expect(rest).toStrictEqual({
             message: "foo",
             name: "CustomError",
             value: 30,
         });
-        expect(stack).toBeUndefined();
+        expect(serialized.stack).toContain("serialize.test.ts:");
     });
 
     it("should serialize custom non-extensible error with custom `.toJSON` property", () => {
@@ -462,18 +480,18 @@ describe("error serializer", () => {
         }
 
         const error = Object.preventExtensions(new CustomError());
-        const serialized = serialize(error);
+        const serialized = serialize(error, { useToJSON: true });
 
         const { stack, ...rest } = serialized;
 
-        expect(rest).toBe({
+        expect(rest).toStrictEqual({
             name: "CustomError",
         });
-        expect(stack).toBeUndefined();
+        expect(serialized.stack).toContain("serialize.test.ts:");
     });
 
     it("should ignore `.toJSON` methods if set in the options", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         class CustomError extends Error {
             private readonly value: number;
@@ -495,7 +513,7 @@ describe("error serializer", () => {
         const error = new CustomError();
         const serialized = serialize(error, { useToJSON: false });
 
-        expect(serialized).toBe({
+        expect(serialized).toStrictEqual({
             message: "foo",
             name: "CustomError",
             stack: expect.any(String),
@@ -506,14 +524,14 @@ describe("error serializer", () => {
     it("should serialize properties up to `Options.maxDepth` levels deep", () => {
         expect.assertions(4);
 
-        const error = new Error("errorMessage");
+        const error = new Error("errorMessage") as Error & { one: { two: { three: Record<sdtring, string> } } };
         error.one = { two: { three: {} } };
 
         const { message, name, stack } = error;
 
         const levelZero = serialize(error, { maxDepth: 0 });
 
-        // expect(levelZero).toStrictEqual({});
+        expect(levelZero).toStrictEqual({});
 
         const levelOne = serialize(error, { maxDepth: 1 });
 

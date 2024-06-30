@@ -26,11 +26,12 @@ const toJSON = (from: JsonError) => {
 const _serialize = (
     error: AggregateError | Error | JsonError,
     options: Options,
-    seen: WeakSet<Error>,
+    seen: Error[],
     depth: number,
     to?: SerializedError,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): SerializedError => {
-    seen.add(error);
+    seen.push(error);
 
     if (options.useToJSON && typeof (error as JsonError).toJSON === "function" && !toJsonWasCalled.has(error)) {
         return toJSON(error as JsonError);
@@ -43,12 +44,28 @@ const _serialize = (
     protoError.stack = error.stack;
 
     if (Array.isArray((error as AggregateError).errors)) {
-        protoError.errors = (error as AggregateError).errors.map((error_: AggregateError | Error) => _serialize(error_, options, seen, depth, to));
+        const aggregateErrors: SerializedError[] = [];
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const aggregateError of (error as AggregateError).errors) {
+            if (!(aggregateError instanceof Error)) {
+                throw new TypeError("All errors in the 'errors' property must be instances of Error");
+            }
+
+            if (seen.includes(aggregateError)) {
+                protoError.errors = [];
+                return protoError;
+            }
+
+            aggregateErrors.push(_serialize(aggregateError, options, seen, depth, to));
+        }
+
+        protoError.errors = aggregateErrors;
     }
 
     // Handle aggregate errors
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    if ((error as CauseError).cause instanceof Error && !seen.has((error as CauseError).cause)) {
+    if ((error as CauseError).cause instanceof Error && !seen.includes((error as CauseError).cause)) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         protoError.cause = _serialize((error as CauseError).cause, options, seen, depth, to);
     }
@@ -67,7 +84,7 @@ const _serialize = (
                 // eslint-disable-next-line security/detect-object-injection
                 protoError[key] = "[object Stream]";
             } else if (value instanceof Error) {
-                if (seen.has(value)) {
+                if (seen.includes(value)) {
                     // eslint-disable-next-line security/detect-object-injection
                     protoError[key] = "[Circular]";
                 } else {
@@ -77,6 +94,12 @@ const _serialize = (
                     // eslint-disable-next-line security/detect-object-injection
                     protoError[key] = _serialize(value, options, seen, depth, to);
                 }
+            } else if (options.useToJSON && typeof value.toJSON === "function") {
+                // eslint-disable-next-line security/detect-object-injection
+                protoError[key] = value.toJSON();
+            } else if (typeof value === "object" && value instanceof Date) {
+                // eslint-disable-next-line security/detect-object-injection
+                protoError[key] = value.toISOString();
             } else if (typeof value === "function") {
                 // eslint-disable-next-line security/detect-object-injection
                 protoError[key] = "[Function: " + (value.name || "anonymous") + "]";
@@ -91,8 +114,6 @@ const _serialize = (
             }
         }
     }
-
-    seen.delete(error); // clean up tag in case err is serialized again later
 
     if (Array.isArray(options.exclude) && options.exclude.length > 0) {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
@@ -128,17 +149,14 @@ export type Options = {
  * - If the input object has a `.toJSON()` method, then it's called instead of serializing the object's properties.
  * - It's up to `.toJSON()` implementation to handle circular references and enumerability of the properties.
  */
-export const serialize = (error: AggregateError | Error | JsonError, options: Options = {}): SerializedError => {
-    const seenSet = new WeakSet();
-
-    return _serialize(
+export const serialize = (error: AggregateError | Error | JsonError, options: Options = {}): SerializedError =>
+    _serialize(
         error,
         {
             exclude: options.exclude ?? [],
             maxDepth: options.maxDepth ?? Number.POSITIVE_INFINITY,
             useToJSON: options.useToJSON ?? false,
         },
-        seenSet,
+        [],
         0,
     );
-};
