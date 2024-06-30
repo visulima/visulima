@@ -2380,6 +2380,9 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
+      is-plain-obj:
+        specifier: ^4.1.0
+        version: 4.1.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2

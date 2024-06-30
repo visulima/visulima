@@ -294,7 +294,7 @@ describe("error serializer", () => {
     });
 
     it("should only destroy parent references", () => {
-        expect.assertions(2);
+        expect.assertions(4);
 
         const error: Error & { one?: any; two?: any } = new Error("foo");
 
@@ -524,7 +524,7 @@ describe("error serializer", () => {
     it("should serialize properties up to `Options.maxDepth` levels deep", () => {
         expect.assertions(4);
 
-        const error = new Error("errorMessage") as Error & { one: { two: { three: Record<sdtring, string> } } };
+        const error = new Error("errorMessage") as Error & { one: { two: { three: Record<string, string> } } };
         error.one = { two: { three: {} } };
 
         const { message, name, stack } = error;
