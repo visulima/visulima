@@ -230,30 +230,30 @@ console.log(stack);
 
 ## `serialize` an error object
 
-- Ensures errors are safe to serialize with JSON
-- Can be used as error.toJSON()
-- Deep serialization, including transforming
-- Custom serialization (e.g. YAML or process.send())
-- Keeps both native (TypeError, etc.) and custom error classes
-- Preserves errors' additional properties
-- Can keep constructor's arguments
-- Works recursively with error.cause and AggregateError
-- Buffer properties are replaced with [object Buffer]
-- Circular references are handled.
-- If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
-- It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
+-   Ensures errors are safe to serialize with JSON
+-   Can be used as error.toJSON()
+-   Deep serialization, including transforming
+-   Custom serialization (e.g. YAML or process.send())
+-   Keeps both native (TypeError, etc.) and custom error classes
+-   Preserves errors' additional properties
+-   Can keep constructor's arguments
+-   Works recursively with error.cause and AggregateError
+-   Buffer properties are replaced with [object Buffer]
+-   Circular references are handled.
+-   If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
+-   It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
 
 ```ts
-import { serialize } from '@visulima/error'
+import { serialize } from "@visulima/error";
 
-const error = new TypeError('example')
-const errorObject = serialize(error)
+const error = new TypeError("example");
+const errorObject = serialize(error);
 // Plain object: { name: 'TypeError', message: 'example', stack: '...' }
 
-const errorString = JSON.stringify(errorObject)
-const newErrorObject = JSON.parse(errorString)
+const errorString = JSON.stringify(errorObject);
+const newErrorObject = JSON.parse(errorString);
 
-const newError = parse(newErrorObject)
+const newError = parse(newErrorObject);
 // Error instance: 'TypeError: example ...'
 ```
 

@@ -296,6 +296,7 @@ describe("error serializer", () => {
     it("should only destroy parent references", () => {
         expect.assertions(4);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const error: Error & { one?: any; two?: any } = new Error("foo");
 
         const common = { thing: error };
@@ -319,7 +320,7 @@ describe("error serializer", () => {
         function b() {}
         a.b = b;
 
-        const error = new Error("foo") as Error & { a: Function };
+        const error = new Error("foo") as Error & { a: VoidFunction };
         error.a = a;
 
         const serialized = serialize(error);
@@ -400,8 +401,10 @@ describe("error serializer", () => {
         expect.assertions(2);
 
         class CustomError extends Error {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             private readonly value: any;
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             public constructor(value: any) {
                 super("foo");
                 this.name = this.constructor.name;
