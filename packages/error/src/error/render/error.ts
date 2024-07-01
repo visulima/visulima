@@ -3,7 +3,9 @@ import { relative } from "node:path";
 import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import wrapAnsi from "wrap-ansi";
 
 import type { CodeFrameOptions, ColorizeMethod } from "../../code-frame";
@@ -16,11 +18,11 @@ import type { VisulimaError } from "../visulima-error";
 const getRelativePath = (filePath: string, cwdPath: string) => {
     /**
      * Node.js error stack is all messed up. Some lines have file info
-     * enclosed in parenthesis and some are not
+     * enclosed in parentheses and some are not
      */
-    filePath = filePath.replace("async file:", "file:");
+    const path = filePath.replace("async file:", "file:");
 
-    return relative(cwdPath, filePath.startsWith("file:") ? fileURLToPath(filePath) : filePath);
+    return relative(cwdPath, path.startsWith("file:") ? fileURLToPath(path) : path);
 };
 
 /**
@@ -93,7 +95,7 @@ const getCode = (trace: Trace, options: Options): string | undefined => {
     );
 };
 
-const getCause = (error: AggregateError | Error | VisulimaError, options: Options): string | undefined => {
+const getCause = (error: AggregateError | Error | VisulimaError, options: Options, terminalWidth: number): string | undefined => {
     if (error.cause !== undefined) {
         let message = "Caused by: \n\n";
 
@@ -101,11 +103,18 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const cause of causes) {
-            message += cause.name + ": " + cause.message + "\n";
+            message += options.color.title(cause.name + ": " + cause.message) + "\n";
 
             const stacktrace = parseStacktrace(cause);
             const mainFrame = stacktrace.shift() as Trace;
 
+            const hint = getHint(cause, options, terminalWidth);
+
+            if (hint) {
+                message += hint + "\n";
+            }
+
+            message += getMainFrame(mainFrame, options) + "\n";
             message += getCode(mainFrame, options);
         }
 
@@ -121,7 +130,7 @@ const getStacktrace = (stack: Trace[], options: Options): string => {
     return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options)).join("\n");
 };
 
-export type Options = CodeFrameOptions & {
+export type Options = Omit<CodeFrameOptions, "message"> & {
     color: CodeFrameOptions["color"] & {
         fileLine: ColorizeMethod;
         hint: ColorizeMethod;
@@ -176,7 +185,7 @@ export const renderError = (error: AggregateError | Error | VisulimaError, optio
         "",
         getMainFrame(mainFrame, config),
         getCode(mainFrame, config),
-        getCause(error, config),
+        getCause(error, config, columns),
         getStacktrace(stack, config),
     ]
         .filter(Boolean)

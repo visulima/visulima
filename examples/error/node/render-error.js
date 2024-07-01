@@ -1,3 +1,4 @@
+import {greenBright, cyan, red, green} from "@visulima/colorize";
 import { renderError, VisulimaError } from "@visulima/error";
 
 console.log("------------------ ERROR ------------------");
@@ -39,7 +40,14 @@ console.log(
             cause: new Error("This is the cause of the error"),
         }),
         {
-
-        }
+            color: {
+                title: red,
+                hint: cyan,
+                message: red,
+                marker: red,
+                method: greenBright,
+                fileLine: green
+            },
+        },
     ),
 );

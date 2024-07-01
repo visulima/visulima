@@ -974,6 +974,9 @@ importers:
 
   examples/error/node:
     dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../../packages/colorize
       '@visulima/error':
         specifier: workspace:*
         version: link:../../../packages/error
@@ -2392,9 +2395,6 @@ importers:
       semantic-release:
         specifier: 24.0.0
         version: 24.0.0(typescript@5.4.5)
-      string-width:
-        specifier: ^7.2.0
-        version: 7.2.0
       terminal-size:
         specifier: ^4.0.0
         version: 4.0.0
