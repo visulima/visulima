@@ -19,7 +19,7 @@
         "commander": "^12.1.0",
         "core-js": "^3.37.1",
         "encoding": "^0.1.13",
-        "mobx": "^6.12.4",
+        "mobx": "^6.12.5",
         "next": "13.1.5",
         "prisma": "^4.15.0",
         "react": "^18.3.1",
@@ -36,7 +36,7 @@
         "eslint": "^8.51.0",
         "eslint-config-next": "13.5.4",
         "rimraf": "^5.0.7",
-        "typescript": "^5.4.5"
+        "typescript": "^5.5.2"
     },
     "prisma": {
         "schema": "prisma/schema.prisma"
