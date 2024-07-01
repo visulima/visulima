@@ -99,7 +99,7 @@
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "cross-env": "^7.0.3",
-        "esbuild": "^0.21.5",
+        "esbuild": "0.22.0",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
