@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [2.0.50](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.49...@visulima/jsdoc-open-api@2.0.50) (2024-07-01)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.8
+
 ## @visulima/jsdoc-open-api [2.0.49](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.48...@visulima/jsdoc-open-api@2.0.49) (2024-06-17)
 
 
