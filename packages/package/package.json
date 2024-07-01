@@ -138,7 +138,7 @@
     "dependencies": {
         "@visulima/fs": "2.1.8",
         "@visulima/path": "1.0.2",
-        "normalize-package-data": "^6.0.1"
+        "normalize-package-data": "^6.0.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
