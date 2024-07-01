@@ -1,0 +1,12 @@
+{
+    "name": "node_example_error",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node cli.js"
+    },
+    "dependencies": {
+        "@visulima/error": "workspace:*"
+    }
+}
