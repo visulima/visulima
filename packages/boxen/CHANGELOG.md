@@ -1,3 +1,9 @@
+## @visulima/boxen [1.0.11](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.10...@visulima/boxen@1.0.11) (2024-07-01)
+
+### Bug Fixes
+
+* update dev-dependency string-width to 7.2.0 ([0cdc4e9](https://github.com/visulima/visulima/commit/0cdc4e969e90ad1713ebacf5285901405dfb5486))
+
 ## @visulima/boxen [1.0.10](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.9...@visulima/boxen@1.0.10) (2024-06-13)
 
 ### Miscellaneous Chores
