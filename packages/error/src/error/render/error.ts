@@ -10,6 +10,18 @@ import { parseStacktrace } from "../../stacktrace";
 import getErrorCauses from "../get-error-causes";
 import type { VisulimaError } from "../visulima-error";
 
+const getPrefix = (indentation: number | "\t", deep: number): string => {
+    if (deep === 0) {
+        return "";
+    }
+
+    if (indentation === "\t") {
+        return "\t".repeat(deep);
+    }
+
+    return " ".repeat(indentation * deep);
+};
+
 const getRelativePath = (filePath: string, cwdPath: string) => {
     /**
      * Node.js error stack is all messed up. Some lines have file info
@@ -23,48 +35,37 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
 /**
  * Returns the error message
  */
-const getMessage = (error: AggregateError | Error | VisulimaError, options: Options): string | undefined => {
-    if (options.hideMessage) {
-        return undefined;
-    }
+const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle }: Options, prefix: string): string =>
+    prefix + (hideErrorTitle ? color.title(error.message) : color.title(error.name + ": " + error.message)) + "\n";
 
-    const { color, hideErrorTitle } = options;
-
-    const { title } = color;
-
-    return (hideErrorTitle ? title(error.message) : title(error.name + ": " + error.message)) + "\n";
-};
-
-const getHint = (error: AggregateError | Error | VisulimaError, options: Options): string | undefined => {
+const getHint = (error: AggregateError | Error | VisulimaError, { color }: Options, prefix: string): string | undefined => {
     if ((error as VisulimaError).hint === undefined) {
         return undefined;
     }
-
-    const { hint } = options.color;
 
     let message = "";
 
     if (Array.isArray((error as VisulimaError).hint)) {
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
         for (const line of (error as VisulimaError).hint as string[]) {
-            message += line + "\n";
+            message += prefix + line + "\n";
         }
     } else {
-        message += (error as VisulimaError).hint as string;
+        message += prefix + ((error as VisulimaError).hint as string);
     }
 
-    return hint(message);
+    return color.hint(message);
 };
 
-const getMainFrame = (trace: Trace, options: Options): string => {
-    const filePath = options.displayShortPath ? getRelativePath(trace.file as string, options.cwd) : trace.file;
+const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath }: Options, prefix: string): string => {
+    const filePath = displayShortPath ? getRelativePath(trace.file as string, cwdPath) : trace.file;
 
-    const { fileLine, method } = options.color;
+    const { fileLine, method } = color;
 
-    return "at " + (trace.methodName ? method(trace.methodName) + " " : "") + fileLine(filePath as string) + ":" + fileLine(trace.line + "");
+    return prefix + "at " + (trace.methodName ? method(trace.methodName) + " " : "") + fileLine(filePath as string) + ":" + fileLine(trace.line + "");
 };
 
-const getCode = (trace: Trace, options: Options): string | undefined => {
+const getCode = (trace: Trace, options: Options, prefix: string): string | undefined => {
     const { color, linesAbove, linesBelow, showGutter, showLineNumbers, tabWidth } = options;
 
     if (trace.file === undefined) {
@@ -86,17 +87,20 @@ const getCode = (trace: Trace, options: Options): string | undefined => {
         {
             start: { column: trace.column, line: trace.line as number },
         },
-        { color, linesAbove, linesBelow, showGutter, showLineNumbers, tabWidth },
+        { color, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth },
     );
 };
 
-const getErrors = (error: AggregateError, options: Options): string | undefined => {
+const getErrors = (error: AggregateError, options: Options, deep: number): string | undefined => {
     if (error.errors.length === 0) {
         return undefined;
     }
 
-    let message = "Errors:\n\n";
+    const prefix = getPrefix(options.indentation, deep);
+
+    let message = prefix + "Errors:\n\n";
     let first = true;
+
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,@typescript-eslint/naming-convention,no-underscore-dangle
     for (const error_ of error.errors) {
         if (first) {
@@ -105,52 +109,118 @@ const getErrors = (error: AggregateError, options: Options): string | undefined 
             message += "\n\n";
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define,@typescript-eslint/no-unsafe-argument
-        message += renderError(error_, { ...options, framesMaxLimit: 0, hideErrorCodeView: options.hideErrorErrorsCodeView });
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        message += internalRenderError(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            error_,
+            { ...options, framesMaxLimit: 0, hideErrorCodeView: options.hideErrorErrorsCodeView },
+            deep + 1,
+        );
     }
 
     return "\n" + message;
 };
 
-const getCause = (error: AggregateError | Error | VisulimaError, options: Options): string | undefined => {
-    if (error.cause !== undefined) {
-        let message = "Caused by:\n\n";
+const getCause = (error: AggregateError | Error | VisulimaError, options: Options, deep: number): string => {
+    let message = "Caused by:\n\n";
 
-        const causes = getErrorCauses(error.cause as Error | VisulimaError);
+    const causes = getErrorCauses(error.cause as Error | VisulimaError);
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const cause of causes) {
-            message += options.color.title(cause.name + ": " + cause.message) + "\n";
+    // eslint-disable-next-line no-param-reassign
+    deep += 1;
 
-            const stacktrace = parseStacktrace(cause);
-            const mainFrame = stacktrace.shift() as Trace;
+    const prefix = getPrefix(options.indentation, deep);
 
-            const hint = getHint(cause, options);
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const cause of causes) {
+        message += prefix + options.color.title(cause.name + ": " + cause.message) + "\n";
 
-            if (hint) {
-                message += hint + "\n";
-            }
+        const stacktrace = parseStacktrace(cause);
+        const mainFrame = stacktrace.shift() as Trace;
 
-            message += getMainFrame(mainFrame, options);
+        const hint = getHint(cause, options, prefix);
 
-            if (!options.hideErrorCauseCodeView) {
-                message += "\n" + getCode(mainFrame, options);
-            }
+        if (hint) {
+            message += hint + "\n";
         }
 
-        return "\n" + message;
+        message += getMainFrame(mainFrame, options, prefix);
+
+        if (!options.hideErrorCauseCodeView) {
+            // eslint-disable-next-line no-param-reassign
+            deep += 1;
+
+            message += "\n" + getCode(mainFrame, options, getPrefix(options.indentation, deep));
+        }
+
+        if (cause.cause) {
+            // eslint-disable-next-line no-param-reassign
+            deep += 1;
+
+            message += getCause(cause, options, deep);
+        } else if (cause instanceof AggregateError) {
+            message += "\n" + getErrors(cause, options, deep);
+        }
     }
 
-    return undefined;
+    return "\n" + message;
 };
 
 const getStacktrace = (stack: Trace[], options: Options): string => {
     const frames = stack.slice(0, options.framesMaxLimit);
 
-    return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options)).join("\n");
+    return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options, "")).join("\n");
 };
 
-export type Options = Omit<CodeFrameOptions, "message"> & {
+const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
+    const config = {
+        cwd: cwd(),
+        displayShortPath: false,
+        framesMaxLimit: Number.POSITIVE_INFINITY,
+        hideErrorCauseCodeView: false,
+        hideErrorCodeView: false,
+        hideErrorErrorsCodeView: false,
+        hideErrorTitle: false,
+        hideMessage: false,
+        indentation: 4,
+        linesAbove: 2,
+        linesBelow: 3,
+        showGutter: true,
+        showLineNumbers: true,
+        tabWidth: 4,
+        ...options,
+        color: {
+            fileLine: (value: string) => value,
+            gutter: (value: string) => value,
+            hint: (value: string) => value,
+            marker: (value: string) => value,
+            message: (value: string) => value,
+            method: (value: string) => value,
+            title: (value: string) => value,
+            ...options.color,
+        },
+    } satisfies Options;
+
+    const stack = parseStacktrace(error);
+    const mainFrame = stack.shift();
+    const prefix = getPrefix(config.indentation, deep);
+
+    return [
+        options.hideMessage ? undefined : getMessage(error, config, prefix),
+        "",
+        getHint(error, config, prefix),
+        "",
+        mainFrame ? getMainFrame(mainFrame, config, prefix) : undefined,
+        mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, prefix) : undefined,
+        error instanceof AggregateError ? getErrors(error, config, deep) : undefined,
+        error.cause === undefined ? undefined : getCause(error, config, deep),
+        stack.length > 0 ? getStacktrace(stack, config) : undefined,
+    ]
+        .filter(Boolean)
+        .join("\n");
+};
+
+export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     color: CodeFrameOptions["color"] & {
         fileLine: ColorizeMethod;
         hint: ColorizeMethod;
@@ -165,50 +235,7 @@ export type Options = Omit<CodeFrameOptions, "message"> & {
     hideErrorErrorsCodeView: boolean;
     hideErrorTitle: boolean;
     hideMessage: boolean;
+    indentation: number | "\t";
 };
 
-export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => {
-    const config = {
-        cwd: cwd(),
-        displayShortPath: false,
-        framesMaxLimit: Number.POSITIVE_INFINITY,
-        hideErrorCauseCodeView: false,
-        hideErrorCodeView: false,
-        hideErrorErrorsCodeView: false,
-        hideErrorTitle: false,
-        hideMessage: false,
-        ...options,
-        color: {
-            fileLine: (value: string) => value,
-            gutter: (value: string) => value,
-            hint: (value: string) => value,
-            marker: (value: string) => value,
-            message: (value: string) => value,
-            method: (value: string) => value,
-            title: (value: string) => value,
-            ...options.color,
-        },
-        linesAbove: 2,
-        linesBelow: 3,
-        showGutter: true,
-        showLineNumbers: true,
-        tabWidth: 4,
-    } satisfies Options;
-
-    const stack = parseStacktrace(error);
-    const mainFrame = stack.shift();
-
-    return [
-        getMessage(error, config),
-        "",
-        getHint(error, config),
-        "",
-        mainFrame ? getMainFrame(mainFrame, config) : undefined,
-        mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config) : undefined,
-        error instanceof AggregateError ? getErrors(error, config) : undefined,
-        getCause(error, config),
-        stack.length > 0 ? getStacktrace(stack, config) : undefined,
-    ]
-        .filter(Boolean)
-        .join("\n");
-};
+export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => internalRenderError(error, options, 0);

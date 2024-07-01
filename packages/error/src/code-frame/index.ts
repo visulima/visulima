@@ -22,10 +22,11 @@ export const codeFrame = (
     options?: CodeFrameOptions,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
-    // grab 2 lines before, and 3 lines after focused line
     const config = {
+        // grab 2 lines before, and 3 lines after focused line
         linesAbove: 2,
         linesBelow: 3,
+        prefix: "",
         showGutter: true,
         showLineNumbers: true,
         tabWidth: 4,
@@ -72,24 +73,28 @@ export const codeFrame = (
                     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                     const numberOfMarkers = hasMarker[1] || 1;
 
-                    markerLine = ["\n ", colorizeGutter(gutter.replaceAll(/\d/g, " ")), " ", markerSpacing, colorizeMarker("^").repeat(numberOfMarkers)].join(
-                        "",
-                    );
+                    markerLine = [
+                        "\n ",
+                        config.prefix + colorizeGutter(gutter.replaceAll(/\d/g, " ")),
+                        " ",
+                        markerSpacing,
+                        colorizeMarker("^").repeat(numberOfMarkers),
+                    ].join("");
 
                     if (lastMarkerLine && config.message) {
                         markerLine += ` ${colorizeMessage(config.message)}`;
                     }
                 }
 
-                return [colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
+                return [config.prefix + colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
             }
 
-            return ` ${colorizeGutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
+            return config.prefix + ` ${colorizeGutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
         })
         .join("\n");
 
     if (config.message && !hasColumns) {
-        frame = `${" ".repeat(numberMaxWidth + 1)}${config.message}\n${frame}`;
+        frame = config.prefix + `${" ".repeat(numberMaxWidth + 1)}${config.message}\n${frame}`;
     }
 
     return frame;
