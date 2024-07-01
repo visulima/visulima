@@ -1,3 +1,14 @@
+## @visulima/package [3.0.1](https://github.com/visulima/visulima/compare/@visulima/package@3.0.0...@visulima/package@3.0.1) (2024-07-01)
+
+### Styles
+
+* cs fixes ([cf19938](https://github.com/visulima/visulima/commit/cf199384f25cd6e97d4041317b35b6a3cc586f88))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.8
+
 ## @visulima/package [3.0.0](https://github.com/visulima/visulima/compare/@visulima/package@2.0.1...@visulima/package@3.0.0) (2024-06-20)
 
 ### ⚠ BREAKING CHANGES
