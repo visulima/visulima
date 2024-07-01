@@ -387,6 +387,7 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
 -   [serialize-error](https://github.com/sindresorhus/serialize-error) - Serialize/deserialize an error into a plain object
 -   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
+-   [callsite-record](https://github.com/inikulin/callsite-record) - Create fancy log entries for errors and function call sites
 
 ## License
 
