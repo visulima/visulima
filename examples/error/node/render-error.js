@@ -1,1 +1,1 @@
-import {} from "@visulima/error"
+import {} from "@visulima/error";

@@ -21,6 +21,7 @@ const Summary = ({
     const [open, setOpenState] = useState(false);
 
     return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events
         <summary
             aria-expanded={open ? "true" : "false"}
             className={cn(

@@ -38,6 +38,12 @@ module.exports = {
             rules: {},
         },
         {
+            files: ["main.ts", "preview.ts"],
+            rules: {
+                "etc/no-internal": "off",
+            },
+        },
+        {
             files: ["*.mdx"],
             rules: {
                 "jsx-a11y/anchor-has-content": "off",
