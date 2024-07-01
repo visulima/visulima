@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.1.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.2...@visulima/cerebro@1.1.3) (2024-07-01)
+
+### Styles
+
+* cs fixes ([66b9583](https://github.com/visulima/visulima/commit/66b9583f7ee8591b92955e65bc2dc7cbba7d03be))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.11
+
 ## @visulima/cerebro [1.1.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.1...@visulima/cerebro@1.1.2) (2024-07-01)
 
 
