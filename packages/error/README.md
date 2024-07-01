@@ -206,11 +206,11 @@ Currently supported browsers/platforms:
 -   Opera (Chromium based)
 
 ```ts
-import { parseStack } from "@visulima/error";
+import { parseStacktrace } from "@visulima/error";
 
 const error = new Error("My error message");
 
-const stack = parseStack(error);
+const stack = parseStacktrace(error);
 
 console.log(stack);
 
@@ -275,7 +275,6 @@ If you would like to help take a look at the [list of issues](https://github.com
 ### Related Projects
 
 -   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
--   [callsite-record](https://github.com/inikulin/callsite-record): create a fancy log entries for errors and function call sites.
 -   [callsites](https://github.com/sindresorhus/callsites): get callsites from the V8 stack trace API.
 -   [explain-error](https://github.com/dominictarr/explain-error): wrap an error with additional explanation.
 -   [error-wrapper](https://github.com/spudly/error-wrapper): merges the stack of another error to its own.
@@ -284,11 +283,14 @@ If you would like to help take a look at the [list of issues](https://github.com
 -   [clarify](https://github.com/AndreasMadsen/clarify): remove node related stack trace noise.
 -   [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
 -   [pretty-error](https://github.com/AriaMinaei/pretty-error): make the call stacks clear.
+-   [node-pretty-exceptions](https://github.com/ahmadnassri/node-pretty-exceptions) - Pretty and more helpful uncaught exceptions, automatically
+-   [youch-terminal](https://github.com/poppinss/youch-terminal/tree/develop) - Display youch error message on terminal
 -   [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
--   [ololog](https://github.com/xpl/ololog): another logger with a similar motivation but only support console.log as its sole transport.
 -   [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
 -   [marvinhagemeister/errorstacks](https://github.com/marvinhagemeister/errorstacks) Tiny library to parse error stack traces
 -   [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
+-   [serialize-error](https://github.com/sindresorhus/serialize-error) - Serialize/deserialize an error into a plain object
+-   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
 
 ## License
 
