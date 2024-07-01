@@ -78,7 +78,7 @@
     "dependencies": {
         "@visulima/fs": "2.1.8",
         "@visulima/path": "1.0.2",
-        "jsonc-parser": "^3.2.1",
+        "jsonc-parser": "^3.3.1",
         "resolve-pkg-maps": "^1.0.0"
     },
     "devDependencies": {
