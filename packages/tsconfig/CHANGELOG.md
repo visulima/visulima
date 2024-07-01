@@ -1,3 +1,15 @@
+## @visulima/tsconfig [1.0.2](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.1...@visulima/tsconfig@1.0.2) (2024-07-01)
+
+### Styles
+
+* cs fixes ([cf19938](https://github.com/visulima/visulima/commit/cf199384f25cd6e97d4041317b35b6a3cc586f88))
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.8
+
 ## @visulima/tsconfig [1.0.1](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.0...@visulima/tsconfig@1.0.1) (2024-06-19)
 
 ### Bug Fixes
