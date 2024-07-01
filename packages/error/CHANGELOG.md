@@ -1,3 +1,13 @@
+## @visulima/error [4.1.0](https://github.com/visulima/visulima/compare/@visulima/error@4.0.0...@visulima/error@4.1.0) (2024-07-01)
+
+### Features
+
+* **error:** added new error serialize ([#443](https://github.com/visulima/visulima/issues/443)) ([b6f109b](https://github.com/visulima/visulima/commit/b6f109b108e608e310ec1bc95de7e249763ad095))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
 ## @visulima/error [4.0.0](https://github.com/visulima/visulima/compare/@visulima/error@3.2.11...@visulima/error@4.0.0) (2024-06-16)
 
 ### ⚠ BREAKING CHANGES
