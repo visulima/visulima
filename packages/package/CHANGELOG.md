@@ -1,3 +1,13 @@
+## @visulima/package [3.0.2](https://github.com/visulima/visulima/compare/@visulima/package@3.0.1...@visulima/package@3.0.2) (2024-07-01)
+
+### Bug Fixes
+
+* update dependency normalize-package-data to 6.0.2 ([d70f125](https://github.com/visulima/visulima/commit/d70f12511ee7adeb7b50f4f1de024b3e0df106e6))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
 ## @visulima/package [3.0.1](https://github.com/visulima/visulima/compare/@visulima/package@3.0.0...@visulima/package@3.0.1) (2024-07-01)
 
 ### Styles
