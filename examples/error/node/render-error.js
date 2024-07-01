@@ -27,6 +27,31 @@ console.log(
     ),
 );
 
+console.log("\n------------------ ERROR WITH COLOR ------------------");
+console.log(
+    renderError(
+        new VisulimaError({
+            name: "DatabaseError",
+            message: "This is an error message",
+            hint: [
+                'We tried looking for using inside the "users" table',
+                "The search was performed using the where (email = user.email) and (is_active = true)",
+            ],
+        }),
+        {
+            color: {
+                title: red,
+                hint: cyan,
+                message: red,
+                marker: red,
+                method: greenBright,
+                fileLine: green
+            },
+        },
+    ),
+);
+
+
 console.log("\n------------------ ERROR WITH HINT, CAUSE and COLOR ------------------");
 console.log(
     renderError(
@@ -50,4 +75,20 @@ console.log(
             },
         },
     ),
+);
+
+console.log("\n------------------ AGGREGATE ERROR ------------------");
+console.log(
+    renderError(new AggregateError([
+        new Error("This is an error message"),
+        new Error("This is another error message"),
+    ], "This is an error message with multiple errors")),
+);
+
+console.log("\n------------------ AGGREGATE ERROR NESTED ------------------");
+const nestedError = new AggregateError([new Error("Nested Error")]);
+const aggregateError = new AggregateError([nestedError]);
+
+console.log(
+    renderError(aggregateError),
 );

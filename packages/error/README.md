@@ -254,6 +254,102 @@ const errorString = JSON.stringify(errorObject);
 const newErrorObject = JSON.parse(errorString);
 ```
 
+## renderError - pretty print an error
+
+```ts
+import { renderError } from "@visulima/error";
+
+const error = new Error("This is an error message");
+
+console.log(renderError(error));
+
+// Error: This is an error message
+//
+// at <unknown> file:///home/visulima/visulima/examples/error/node/render-error.js:5
+//   1 | import { renderError } from "@visulima/error";
+//   2 |
+//   3 | const error = new Error("This is an error message");
+//   4 |
+// ❯ 5 | console.log(renderError(new Error("This is an error message")));
+//     |                         ^
+//   6 |
+//
+// at ModuleJob.run node:internal/modules/esm/module_job:195
+// at async ModuleLoader.import node:internal/modules/esm/loader:336
+// at async loadESM node:internal/process/esm_loader:34
+// at async handleMainPromise node:internal/modules/run_main:106
+```
+
+#### colorized output
+
+Use the `@visulima/colorize`, `chalk` or some other package to colorize the output.
+
+![colorized output](./__assets__/pretty-error-render-with-cause-and-hint.png)
+
+### API
+
+#### error
+
+Type: `AggregateError | Error | VisulimaError` \
+The error to render.
+
+#### options
+
+Type: `object`
+
+##### options.color
+
+Type: `object` \
+The color options.
+
+##### options.cwd
+
+Type: `string`
+
+The current working directory.
+
+##### options.displayShortPath
+
+Type: `boolean` \
+Default: `false`
+
+Display the short path.
+
+##### options.framesMaxLimit
+
+Type: `number` \
+Default: `Number.Infinity`
+
+The maximum number of frames to display.
+
+##### options.hideErrorCauseCodeView
+
+Type: `boolean` \
+Default: `false`
+
+Hide the error cause code view.
+
+##### options.hideErrorCodeView
+
+Type: `boolean` \
+Default: `false`
+
+Hide the error code view.
+
+##### options.hideErrorTitle
+
+Type: `boolean` \
+Default: `false`
+
+Hide the error title.
+
+##### options.hideMessage
+
+Type: `boolean` \
+Default: `false`
+
+Hide the error message.
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
