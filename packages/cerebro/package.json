@@ -133,7 +133,7 @@
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
         "strip-ansi": "^7.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0"
     },
     "engines": {

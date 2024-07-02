@@ -36,7 +36,7 @@
         "eslint": "^8.51.0",
         "eslint-config-next": "13.5.4",
         "rimraf": "^5.0.7",
-        "typescript": "^5.5.2"
+        "typescript": "5.4.5"
     },
     "prisma": {
         "schema": "prisma/schema.prisma"
