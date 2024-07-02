@@ -35,7 +35,9 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
  * Returns the error message
  */
 const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle, indentation, prefix }: Options, deep: number): string =>
-    getPrefix(prefix, indentation, deep) + (hideErrorTitle ? color.title(error.message) : color.title(error.name + ": " + error.message)) + "\n";
+    getPrefix(prefix, indentation, deep) +
+    (hideErrorTitle ? color.title(error.message) : color.title(error.name + (error.message ? ": " + error.message : ""))) +
+    "\n";
 
 const getHint = (error: AggregateError | Error | VisulimaError, { color, indentation, prefix }: Options, deep: number): string | undefined => {
     if ((error as VisulimaError).hint === undefined) {
@@ -69,6 +71,7 @@ const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, ind
         (trace.methodName ? method(trace.methodName) + " " : "") +
         fileLine(filePath as string) +
         ":" +
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         fileLine(trace.line + "")
     );
 };
@@ -106,9 +109,7 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
         return undefined;
     }
 
-    const prefix = getPrefix(options.prefix, options.indentation, deep);
-
-    let message = prefix + "Errors:\n\n";
+    let message = getPrefix(options.prefix, options.indentation, deep) + "Errors:\n\n";
     let first = true;
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,@typescript-eslint/naming-convention,no-underscore-dangle
@@ -123,7 +124,7 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
         message += internalRenderError(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             error_,
-            { ...options, framesMaxLimit: 0, hideErrorCodeView: options.hideErrorErrorsCodeView },
+            { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView },
             deep + 1,
         );
     }
@@ -150,28 +151,34 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
     message += getMainFrame(mainFrame, options, deep);
 
     if (!options.hideErrorCauseCodeView) {
-        message += "\n" + getCode(mainFrame, options, deep);
+        const code = getCode(mainFrame, options, deep);
+
+        if (code !== undefined) {
+            message += "\n" + code;
+        }
     }
 
     if (cause.cause) {
         message += "\n" + getCause(cause, options, deep + 1);
     } else if (cause instanceof AggregateError) {
-        message += "\n" + getErrors(cause, options, deep);
+        const errors = getErrors(cause, options, deep);
+
+        if (errors !== undefined) {
+            message += "\n" + errors;
+        }
     }
 
     return "\n" + message;
 };
 
-const getStacktrace = (stack: Trace[], options: Options): string => {
-    const frames = stack.slice(0, options.framesMaxLimit);
-
-    return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options)).join("\n");
-};
+const getStacktrace = (stack: Trace[], options: Options): string =>
+    (stack.length > 0 ? "\n" : "") + stack.map((frame) => getMainFrame(frame, options)).join("\n");
 
 const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
     const config = {
         cwd: cwd(),
         displayShortPath: false,
+        filterStacktrace: undefined,
         framesMaxLimit: Number.POSITIVE_INFINITY,
         hideErrorCauseCodeView: false,
         hideErrorCodeView: false,
@@ -198,14 +205,20 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
         },
     } satisfies Options;
 
-    const stack = parseStacktrace(error);
+    let stack = parseStacktrace(error, {
+        frameLimit: config.framesMaxLimit,
+    });
+
     const mainFrame = stack.shift();
+
+    if (options.filterStacktrace !== undefined) {
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        stack = stack.filter(options.filterStacktrace);
+    }
 
     return [
         options.hideMessage ? undefined : getMessage(error, config, deep),
-        "",
         getHint(error, config, deep),
-        "",
         mainFrame ? getMainFrame(mainFrame, config, deep) : undefined,
         mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, deep) : undefined,
         error instanceof AggregateError ? getErrors(error, config, deep) : undefined,
@@ -225,6 +238,7 @@ export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     };
     cwd: string;
     displayShortPath: boolean;
+    filterStacktrace: ((value: Trace, index: number, array: Trace[]) => boolean) | undefined;
     framesMaxLimit: number;
     hideErrorCauseCodeView: boolean;
     hideErrorCodeView: boolean;
@@ -235,4 +249,10 @@ export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     prefix: string;
 };
 
-export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => internalRenderError(error, options, 0);
+export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => {
+    if (options.framesMaxLimit !== undefined && options.framesMaxLimit <= 0) {
+        throw new RangeError("The 'framesMaxLimit' option must be a positive number");
+    }
+
+    return internalRenderError(error, options, 0);
+}
