@@ -117,7 +117,7 @@
         "secretlint": "8.2.4",
         "semantic-release": "24.0.0",
         "tsup": "^8.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0"
     },
     "engines": {
