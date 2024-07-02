@@ -1,6 +1,6 @@
 import { stderr, stdout } from "node:process";
 
-import colorize, { bgGrey, bold, grey, underline, white } from "@visulima/colorize";
+import colorize, { bgGrey, bold, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -20,12 +20,16 @@ import writeStream from "../../utils/write-stream";
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
-import formatError from "../utils/format-error";
 import formatLabel from "../utils/format-label";
+import type { RenderErrorOptions } from "@visulima/error";
+import { renderError } from "@visulima/error";
 
 type PrettyReporterOptions = PrettyStyleOptions & {
+    error: Omit<RenderErrorOptions, "color | prefix | indentation">;
     inspect: InspectorOptions;
 };
+
+const pailFileFilter = (line: string) => !/[\\\/]pail[\\\/]dist/.test(line);
 
 class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -38,8 +42,10 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
 
     readonly #inspectOptions: Partial<InspectorOptions>;
 
+    readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
+
     public constructor(options: Partial<PrettyReporterOptions> = {}) {
-        const { inspect: inspectOptions, ...rest } = options;
+        const { error: errorOptions, inspect: inspectOptions, ...rest } = options;
 
         super({
             uppercase: {
@@ -50,6 +56,17 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
         });
 
         this.#inspectOptions = { ...defaultInspectorConfig, indent: undefined, ...inspectOptions };
+        this.#errorOptions = {
+            ...errorOptions,
+            color: {
+                fileLine: green,
+                hint: cyan,
+                marker: red,
+                message: red,
+                method: greenBright,
+                title: red,
+            },
+        };
         this.#stdout = stdout;
         this.#stderr = stderr;
     }
@@ -155,7 +172,15 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
                 ...context.map((value) => {
                     if (value instanceof Error) {
                         hasError = true;
-                        return "\n\n" + formatError(value, size, groupSpaces);
+
+                        return (
+                            "\n\n" +
+                            renderError(value as Error, {
+                                ...this.#errorOptions,
+                                prefix: groupSpaces,
+                                filterStacktrace: pailFileFilter,
+                            })
+                        );
                     }
 
                     if (typeof value === "object") {
@@ -172,11 +197,28 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
         }
 
         if (error) {
-            items.push(formatError(error as Error, size, groupSpaces));
+            items.push(
+                renderError(error as Error, {
+                    ...this.#errorOptions,
+                    prefix: groupSpaces,
+                    filterStacktrace: pailFileFilter,
+                }),
+            );
         }
 
         if (traceError) {
-            items.push(formatError(traceError as Error, size, groupSpaces, true));
+            items.push(
+                "\n\n" +
+                    renderError(traceError as Error, {
+                        ...this.#errorOptions,
+                        hideMessage: true,
+                        hideErrorCauseCodeView: true,
+                        hideErrorCodeView: true,
+                        hideErrorErrorsCodeView: true,
+                        prefix: groupSpaces,
+                        filterStacktrace: pailFileFilter,
+                    }),
+            );
         }
 
         if (suffix) {
