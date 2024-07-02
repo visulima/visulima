@@ -14,18 +14,13 @@ export class VisulimaError extends Error {
 
     public type = "VisulimaError";
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-    public constructor(properties: ErrorProperties, ...parameters: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        super(...parameters);
+    public constructor({ cause, hint, location, message, name, stack, title }: ErrorProperties) {
+        super(message, {
+            cause,
+        });
 
-        const { hint, location, message, name, stack, title } = properties;
         this.title = title;
         this.name = name;
-
-        if (message) {
-            this.message = message;
-        }
 
         // Only set this if we actually have a stack passed, otherwise uses Error's
         this.stack = stack ?? (this.stack as string);
