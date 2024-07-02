@@ -34,7 +34,7 @@
         "fathom-client": "^3.7.0",
         "framer-motion": "^11.2.12",
         "fs-extra": "^11.2.0",
-        "lucide-react": "^0.399.0",
+        "lucide-react": "^0.400.0",
         "next": "^14.2.4",
         "nextra": "2.13.4",
         "publint": "^0.2.8",
@@ -84,7 +84,7 @@
         "sort-package-json": "^2.10.0",
         "symlink-dir": "^6.0.0",
         "tailwindcss": "^3.4.4",
-        "typescript": "5.4.5",
+        "typescript": "5.5.3",
         "vitest": "^1.6.0"
     },
     "anolilab": {

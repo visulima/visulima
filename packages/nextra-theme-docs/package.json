@@ -169,7 +169,7 @@
         "tailwindcss": "^3.4.4",
         "tailwindcss-hyphens": "^0.1.0",
         "tsup": "8.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "^5.5.3",
         "vitest": "^1.6.0",
         "zod": "^3.23.8"
     },
@@ -178,7 +178,7 @@
         "nextra": ">=2.2.13",
         "react": ">=16.13.1",
         "react-dom": ">=16.13.1",
-        "zod": "^3.22.4"
+        "zod": "^3.23.8"
     },
     "engines": {
         "node": ">=18.* <=22.*"

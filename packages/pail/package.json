@@ -225,7 +225,7 @@
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "0.22.0",
+        "esbuild": "0.23.0",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -241,13 +241,13 @@
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
         "type-fest": "^4.20.1",
-        "typescript": "^5.4.5",
+        "typescript": "^5.5.3",
         "vitest": "^1.6.0",
         "wrap-ansi": "^9.0.0"
     },
     "peerDependencies": {
         "@visulima/redact": "1.0.2",
-        "rotating-file-stream": "^3.1.1"
+        "rotating-file-stream": "^3.2.3"
     },
     "peerDependenciesMeta": {
         "@visulima/redact": {
