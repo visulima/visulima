@@ -19,6 +19,7 @@ export type CodeFrameOptions = {
     linesAbove?: number;
     linesBelow?: number;
     message?: string;
+    prefix?: string;
     showGutter?: boolean;
     showLineNumbers?: boolean;
     tabWidth?: number | false;

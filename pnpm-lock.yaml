@@ -974,6 +974,9 @@ importers:
 
   examples/error/node:
     dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../../packages/colorize
       '@visulima/error':
         specifier: workspace:*
         version: link:../../../packages/error
@@ -1636,8 +1639,8 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.10
-        version: 1.0.10
+        specifier: 1.0.11
+        version: 1.0.11
       '@visulima/colorize':
         specifier: 1.4.3
         version: 1.4.3
@@ -9607,6 +9610,11 @@ packages:
 
   '@visulima/boxen@1.0.10':
     resolution: {integrity: sha512-uG7+vQMNbJ+riCBU7Ekmg46VFBv+XfuqWt6ZZVSjuG7CYEnTo9fY0CbcpxC1GJfuYYp46hpqLB9maAFB7qhqWA==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/boxen@1.0.11':
+    resolution: {integrity: sha512-e/0xJzFCsxjiHF1PpyhoFfPaLvMeRR4Yt/Byo0KcDZjkV50L0MHiPrX5WP6xBEHoX/MrgfxP8OhgBcoi+/GCcg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -28320,6 +28328,8 @@ snapshots:
       yoga-wasm-web: 0.3.3
 
   '@visulima/boxen@1.0.10': {}
+
+  '@visulima/boxen@1.0.11': {}
 
   '@visulima/boxen@1.0.8': {}
 

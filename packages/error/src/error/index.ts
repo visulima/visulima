@@ -1,5 +1,6 @@
 export { default as getErrorCauses } from "./get-error-causes";
-// export { default as renderTerminal } from "./render/terminal";
+export type { Options as RenderErrorOptions } from "./render/error";
+export { renderError } from "./render/error";
 export type { SerializedError } from "./serialize/error-proto";
 export type { Options as ErrorWithCauseSerializerOptions } from "./serialize/serialize";
 export { serialize as serializeError } from "./serialize/serialize";
