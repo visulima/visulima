@@ -1,3 +1,18 @@
+## @visulima/error [4.3.0](https://github.com/visulima/visulima/compare/@visulima/error@4.2.0...@visulima/error@4.3.0) (2024-07-02)
+
+### Features
+
+* **error:** added a prefix option to renderError ([e164d52](https://github.com/visulima/visulima/commit/e164d528dfef4195a7cbd9f8843f58148dfc5e08))
+* **error:** added stackFilter to parseStacktrace, fixed parsing AggregateError stack, added filterStacktrace to renderError ([bb4b4f7](https://github.com/visulima/visulima/commit/bb4b4f72ab00c63bf0ac5e9e6a9a01110c102a1c))
+
+### Bug Fixes
+
+* **error:** renamed stackFilter to filter and changed interface for filterStacktrace ([b95dfb6](https://github.com/visulima/visulima/commit/b95dfb640b0d243122bff2ddf2e32a79101652e1))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
 ## @visulima/error [4.2.0](https://github.com/visulima/visulima/compare/@visulima/error@4.1.0...@visulima/error@4.2.0) (2024-07-02)
 
 ### Features
