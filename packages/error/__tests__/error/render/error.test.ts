@@ -200,4 +200,26 @@ describe("renderError", () => {
 
         expect(errorsOutput).toMatchSnapshot();
     });
+
+    it("should respect base prefix option", () => {
+        expect.assertions(1);
+
+        const errorsOutput = renderError(
+            new Error("This is an error message", {
+                cause: new Error("This is the cause of the error", {
+                    cause: new Error("This is the cause of the cause of the error"),
+                }),
+            }),
+            {
+                displayShortPath: true,
+                framesMaxLimit: 0,
+                hideErrorCauseCodeView: true,
+                hideErrorCodeView: true,
+                hideErrorErrorsCodeView: true,
+                prefix: "prefix"
+            },
+        );
+
+        expect(errorsOutput).toMatchSnapshot();
+    });
 });
