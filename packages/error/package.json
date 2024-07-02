@@ -151,7 +151,7 @@
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "0.22.0",
+        "esbuild": "0.23.0",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
@@ -162,7 +162,7 @@
         "prettier": "^3.3.2",
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
-        "typescript": "^5.4.5",
+        "typescript": "^5.5.3",
         "vitest": "^1.6.0"
     },
     "engines": {
