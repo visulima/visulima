@@ -55,6 +55,7 @@ const serializeValue = (value: any, seen: Error[], depth: number, options: Optio
     }
 
     if (typeof value === "function") {
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         return "[Function: " + (value.name || "anonymous") + "]";
     }
 

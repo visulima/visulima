@@ -60,10 +60,11 @@ export const codeFrame = (
             const number = start + 1 + index;
             // eslint-disable-next-line security/detect-object-injection
             const hasMarker = markerLines[number];
-            const paddedNumber = ` ${number}`.slice(-numberMaxWidth);
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            const paddedNumber = (" " + number).slice(-numberMaxWidth);
             const lastMarkerLine = !markerLines[number + 1];
 
-            const gutter = ` ${paddedNumber}${config.showGutter ? ` |` : ""}`;
+            const gutter = " " + paddedNumber + (config.showGutter ? " |" : "");
 
             if (hasMarker) {
                 let markerLine = "";
@@ -86,15 +87,15 @@ export const codeFrame = (
                     }
                 }
 
-                return [config.prefix + colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
+                return [config.prefix + colorizeMarker(CODE_FRAME_POINTER), colorizeGutter(gutter), line.length > 0 ? " " + line : "", markerLine].join("");
             }
 
-            return config.prefix + ` ${colorizeGutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
+            return config.prefix + " " + colorizeGutter(gutter) + (line.length > 0 ? " " + line : "");
         })
         .join("\n");
 
     if (config.message && !hasColumns) {
-        frame = config.prefix + `${" ".repeat(numberMaxWidth + 1)}${config.message}\n${frame}`;
+        frame = config.prefix + " ".repeat(numberMaxWidth + 1) + config.message + "\n" + frame;
     }
 
     return frame;
