@@ -7,3 +7,5 @@ pail.error(
         cause: newError,
     }),
 );
+
+pail.trace("test")
