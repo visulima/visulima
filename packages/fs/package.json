@@ -141,9 +141,9 @@
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@types/node": "18.19.15",
+        "@types/node": "18.19.39",
         "@visulima/error": "4.2.0",
-        "@visulima/packem": "^1.0.0-alpha.42",
+        "@visulima/packem": "^1.0.0-alpha.46",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -170,7 +170,7 @@
         "yaml": "^2.4.5"
     },
     "peerDependencies": {
-        "yaml": "^2.4.0"
+        "yaml": "^2.4.5"
     },
     "peerDependenciesMeta": {
         "yaml": {

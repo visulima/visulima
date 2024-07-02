@@ -70,7 +70,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "qs": "^6.12.1"
+        "qs": "^6.12.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -79,7 +79,7 @@
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@types/node": "18.19.15",
+        "@types/node": "18.19.39",
         "@types/qs": "^6.9.15",
         "@vitest/coverage-v8": "^1.6.0",
         "@vitest/ui": "^1.6.0",

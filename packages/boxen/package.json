@@ -89,7 +89,7 @@
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@types/node": "18.19.15",
+        "@types/node": "18.19.39",
         "@visulima/colorize": "1.4.3",
         "@visulima/path": "1.0.2",
         "@vitest/coverage-v8": "^1.6.0",
