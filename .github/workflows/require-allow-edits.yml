@@ -20,6 +20,6 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - uses: "ljharb/require-allow-edits@2bf6dc5607979ae0e3f8739b9f9a4018e024b9a0" # main
+            - uses: "ljharb/require-allow-edits@13f90bc8cc5de000f2b44a0e2c3a11d108e8cd9f" # main
               with:
                   pull_number: "${{ github.event.pull_request.number }}"
