@@ -205,16 +205,12 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
         },
     } satisfies Options;
 
-    let stack = parseStacktrace(error, {
+    const stack = parseStacktrace(error, {
+        filter: options.filterStacktrace,
         frameLimit: config.framesMaxLimit,
     });
 
     const mainFrame = stack.shift();
-
-    if (options.filterStacktrace !== undefined) {
-        // eslint-disable-next-line unicorn/no-array-callback-reference
-        stack = stack.filter(options.filterStacktrace);
-    }
 
     return [
         options.hideMessage ? undefined : getMessage(error, config, deep),
@@ -238,7 +234,7 @@ export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     };
     cwd: string;
     displayShortPath: boolean;
-    filterStacktrace: ((value: Trace, index: number, array: Trace[]) => boolean) | undefined;
+    filterStacktrace: ((line: string) => boolean) | undefined;
     framesMaxLimit: number;
     hideErrorCauseCodeView: boolean;
     hideErrorCodeView: boolean;
@@ -255,4 +251,4 @@ export const renderError = (error: AggregateError | Error | VisulimaError, optio
     }
 
     return internalRenderError(error, options, 0);
-}
+};
