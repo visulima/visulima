@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.1.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.4...@visulima/cerebro@1.1.5) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.3
+
 ## @visulima/cerebro [1.1.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.3...@visulima/cerebro@1.1.4) (2024-07-02)
 
 
