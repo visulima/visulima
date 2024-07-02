@@ -170,9 +170,34 @@ describe("renderError", () => {
         // eslint-disable-next-line unicorn/error-message
         const aggregateError = new AggregateError([nestedError]);
 
-        const options = {};
+        const errorsOutput = renderError(aggregateError, {
+            displayShortPath: true,
+            framesMaxLimit: 0,
+            hideErrorCauseCodeView: true,
+            hideErrorCodeView: true,
+            hideErrorErrorsCodeView: true,
+        });
+        expect(errorsOutput).toMatchSnapshot();
+    });
 
-        const errorsOutput = renderError(aggregateError, options);
-        expect(errorsOutput).toContain("Nested Error");
+    it("should handle nested cause errors", () => {
+        expect.assertions(1);
+
+        const errorsOutput = renderError(
+            new Error("This is an error message", {
+                cause: new Error("This is the cause of the error", {
+                    cause: new Error("This is the cause of the cause of the error"),
+                }),
+            }),
+            {
+                displayShortPath: true,
+                framesMaxLimit: 0,
+                hideErrorCauseCodeView: true,
+                hideErrorCodeView: true,
+                hideErrorErrorsCodeView: true,
+            },
+        );
+
+        expect(errorsOutput).toMatchSnapshot();
     });
 });

@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderError > should handle nested cause errors 1`] = `
+"Error: This is an error message
+
+at <unknown> __tests__/error/render/error.test.ts:187
+
+Caused by:
+
+Error: This is the cause of the error
+at <unknown> __tests__/error/render/error.test.ts:188
+
+    Caused by:
+
+    Error: This is the cause of the cause of the error
+    at <unknown> __tests__/error/render/error.test.ts:189"
+`;
+
+exports[`renderError > should handle nested errors within AggregateError 1`] = `
+"AggregateError: 
+
+at <unknown> __tests__/error/render/error.test.ts:171
+
+Errors:
+
+    AggregateError: 
+
+    at <unknown> __tests__/error/render/error.test.ts:169
+
+    Errors:
+
+        Error: Nested Error
+
+        at <unknown> __tests__/error/render/error.test.ts:169"
+`;

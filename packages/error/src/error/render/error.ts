@@ -7,7 +7,6 @@ import type { CodeFrameOptions, ColorizeMethod } from "../../code-frame";
 import { codeFrame } from "../../code-frame";
 import type { Trace } from "../../stacktrace";
 import { parseStacktrace } from "../../stacktrace";
-import getErrorCauses from "../get-error-causes";
 import type { VisulimaError } from "../visulima-error";
 
 const getPrefix = (indentation: number | "\t", deep: number): string => {
@@ -35,13 +34,15 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
 /**
  * Returns the error message
  */
-const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle }: Options, prefix: string): string =>
-    prefix + (hideErrorTitle ? color.title(error.message) : color.title(error.name + ": " + error.message)) + "\n";
+const getMessage = (error: AggregateError | Error | VisulimaError, { color, hideErrorTitle, indentation }: Options, deep: number): string =>
+    getPrefix(indentation, deep) + (hideErrorTitle ? color.title(error.message) : color.title(error.name + ": " + error.message)) + "\n";
 
-const getHint = (error: AggregateError | Error | VisulimaError, { color }: Options, prefix: string): string | undefined => {
+const getHint = (error: AggregateError | Error | VisulimaError, { color, indentation }: Options, deep: number): string | undefined => {
     if ((error as VisulimaError).hint === undefined) {
         return undefined;
     }
+
+    const prefix = getPrefix(indentation, deep);
 
     let message = "";
 
@@ -57,17 +58,26 @@ const getHint = (error: AggregateError | Error | VisulimaError, { color }: Optio
     return color.hint(message);
 };
 
-const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath }: Options, prefix: string): string => {
+const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, indentation }: Options, deep = 0): string => {
     const filePath = displayShortPath ? getRelativePath(trace.file as string, cwdPath) : trace.file;
 
     const { fileLine, method } = color;
 
-    return prefix + "at " + (trace.methodName ? method(trace.methodName) + " " : "") + fileLine(filePath as string) + ":" + fileLine(trace.line + "");
+    return (
+        getPrefix(indentation, deep) +
+        "at " +
+        (trace.methodName ? method(trace.methodName) + " " : "") +
+        fileLine(filePath as string) +
+        ":" +
+        fileLine(trace.line + "")
+    );
 };
 
-const getCode = (trace: Trace, options: Options, prefix: string): string | undefined => {
-    const { color, linesAbove, linesBelow, showGutter, showLineNumbers, tabWidth } = options;
-
+const getCode = (
+    trace: Trace,
+    { color, indentation, linesAbove, linesBelow, showGutter, showLineNumbers, tabWidth }: Options,
+    deep: number,
+): string | undefined => {
     if (trace.file === undefined) {
         return undefined;
     }
@@ -87,7 +97,7 @@ const getCode = (trace: Trace, options: Options, prefix: string): string | undef
         {
             start: { column: trace.column, line: trace.line as number },
         },
-        { color, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth },
+        { color, linesAbove, linesBelow, prefix: getPrefix(indentation, deep), showGutter, showLineNumbers, tabWidth },
     );
 };
 
@@ -122,45 +132,31 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
 };
 
 const getCause = (error: AggregateError | Error | VisulimaError, options: Options, deep: number): string => {
-    let message = "Caused by:\n\n";
+    let message = getPrefix(options.indentation, deep) + "Caused by:\n\n";
 
-    const causes = getErrorCauses(error.cause as Error | VisulimaError);
+    const cause = error.cause as Error;
 
-    // eslint-disable-next-line no-param-reassign
-    deep += 1;
+    message += getMessage(cause, options, deep);
 
-    const prefix = getPrefix(options.indentation, deep);
+    const stacktrace = parseStacktrace(cause);
+    const mainFrame = stacktrace.shift() as Trace;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const cause of causes) {
-        message += prefix + options.color.title(cause.name + ": " + cause.message) + "\n";
+    const hint = getHint(cause, options, deep);
 
-        const stacktrace = parseStacktrace(cause);
-        const mainFrame = stacktrace.shift() as Trace;
+    if (hint) {
+        message += hint + "\n";
+    }
 
-        const hint = getHint(cause, options, prefix);
+    message += getMainFrame(mainFrame, options, deep);
 
-        if (hint) {
-            message += hint + "\n";
-        }
+    if (!options.hideErrorCauseCodeView) {
+        message += "\n" + getCode(mainFrame, options, deep);
+    }
 
-        message += getMainFrame(mainFrame, options, prefix);
-
-        if (!options.hideErrorCauseCodeView) {
-            // eslint-disable-next-line no-param-reassign
-            deep += 1;
-
-            message += "\n" + getCode(mainFrame, options, getPrefix(options.indentation, deep));
-        }
-
-        if (cause.cause) {
-            // eslint-disable-next-line no-param-reassign
-            deep += 1;
-
-            message += getCause(cause, options, deep);
-        } else if (cause instanceof AggregateError) {
-            message += "\n" + getErrors(cause, options, deep);
-        }
+    if (cause.cause) {
+        message += "\n" + getCause(cause, options, deep + 1);
+    } else if (cause instanceof AggregateError) {
+        message += "\n" + getErrors(cause, options, deep);
     }
 
     return "\n" + message;
@@ -169,7 +165,7 @@ const getCause = (error: AggregateError | Error | VisulimaError, options: Option
 const getStacktrace = (stack: Trace[], options: Options): string => {
     const frames = stack.slice(0, options.framesMaxLimit);
 
-    return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options, "")).join("\n");
+    return (frames.length > 0 ? "\n" : "") + frames.map((frame) => getMainFrame(frame, options)).join("\n");
 };
 
 const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
@@ -203,15 +199,14 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
 
     const stack = parseStacktrace(error);
     const mainFrame = stack.shift();
-    const prefix = getPrefix(config.indentation, deep);
 
     return [
-        options.hideMessage ? undefined : getMessage(error, config, prefix),
+        options.hideMessage ? undefined : getMessage(error, config, deep),
         "",
-        getHint(error, config, prefix),
+        getHint(error, config, deep),
         "",
-        mainFrame ? getMainFrame(mainFrame, config, prefix) : undefined,
-        mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, prefix) : undefined,
+        mainFrame ? getMainFrame(mainFrame, config, deep) : undefined,
+        mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, deep) : undefined,
         error instanceof AggregateError ? getErrors(error, config, deep) : undefined,
         error.cause === undefined ? undefined : getCause(error, config, deep),
         stack.length > 0 ? getStacktrace(stack, config) : undefined,

@@ -116,3 +116,14 @@ console.log(
         }),
     ),
 );
+
+console.log("\n------------------ ERROR WITH NESTED CAUSE ------------------");
+console.log(
+    renderError(
+        new Error("This is an error message", {
+            cause: new Error("This is the cause of the error", {
+                cause: new Error("This is the cause of the cause of the error"),
+            }),
+        }),
+    ),
+);
