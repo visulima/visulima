@@ -29,7 +29,7 @@ type PrettyReporterOptions = PrettyStyleOptions & {
     inspect: InspectorOptions;
 };
 
-const pailFileFilter = (line: string) => !/[\\\/]pail[\\\/]dist/.test(line);
+const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
 
 class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -201,8 +201,8 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                             "\n\n" +
                             renderError(value as Error, {
                                 ...this.#errorOptions,
+                                filterStacktrace: pailFileFilter,
                                 prefix: groupSpaces,
-                                stackFilter: pailFileFilter,
                             })
                         );
                     }
@@ -224,8 +224,8 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             items.push(
                 renderError(error as Error, {
                     ...this.#errorOptions,
+                    filterStacktrace: pailFileFilter,
                     prefix: groupSpaces,
-                    stackFilter: pailFileFilter,
                 }),
             );
         }
@@ -235,12 +235,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 "\n\n" +
                     renderError(traceError as Error, {
                         ...this.#errorOptions,
-                        hideMessage: true,
+                        filterStacktrace: pailFileFilter,
                         hideErrorCauseCodeView: true,
                         hideErrorCodeView: true,
                         hideErrorErrorsCodeView: true,
+                        hideMessage: true,
                         prefix: groupSpaces,
-                        stackFilter: pailFileFilter,
                     }),
             );
         }

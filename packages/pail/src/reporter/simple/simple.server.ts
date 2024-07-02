@@ -1,6 +1,8 @@
 import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, bold, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
+import type { RenderErrorOptions } from "@visulima/error";
+import { renderError } from "@visulima/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -21,15 +23,13 @@ import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
-import type { RenderErrorOptions } from "@visulima/error";
-import { renderError } from "@visulima/error";
 
 type PrettyReporterOptions = PrettyStyleOptions & {
     error: Omit<RenderErrorOptions, "color | prefix | indentation">;
     inspect: InspectorOptions;
 };
 
-const pailFileFilter = (line: string) => !/[\\\/]pail[\\\/]dist/.test(line);
+const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
 
 class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -177,8 +177,8 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
                             "\n\n" +
                             renderError(value as Error, {
                                 ...this.#errorOptions,
-                                prefix: groupSpaces,
                                 filterStacktrace: pailFileFilter,
+                                prefix: groupSpaces,
                             })
                         );
                     }
@@ -200,8 +200,8 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
             items.push(
                 renderError(error as Error, {
                     ...this.#errorOptions,
-                    prefix: groupSpaces,
                     filterStacktrace: pailFileFilter,
+                    prefix: groupSpaces,
                 }),
             );
         }
@@ -211,12 +211,12 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
                 "\n\n" +
                     renderError(traceError as Error, {
                         ...this.#errorOptions,
-                        hideMessage: true,
+                        filterStacktrace: pailFileFilter,
                         hideErrorCauseCodeView: true,
                         hideErrorCodeView: true,
                         hideErrorErrorsCodeView: true,
+                        hideMessage: true,
                         prefix: groupSpaces,
-                        filterStacktrace: pailFileFilter,
                     }),
             );
         }
