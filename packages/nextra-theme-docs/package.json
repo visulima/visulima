@@ -175,7 +175,7 @@
     },
     "peerDependencies": {
         "next": ">=13.1.6",
-        "nextra": ">=2.2.13",
+        "nextra": ">=2.2.20",
         "react": ">=16.13.1",
         "react-dom": ">=16.13.1",
         "zod": "^3.22.4"
