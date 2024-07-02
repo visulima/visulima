@@ -1,7 +1,7 @@
 import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
-import type { RenderErrorOptions } from "@visulima/error";
+import type { RenderErrorOptions, Trace } from "@visulima/error";
 import { renderError } from "@visulima/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
@@ -28,6 +28,8 @@ type PrettyReporterOptions = PrettyStyleOptions & {
     error: Omit<RenderErrorOptions, "color | prefix | indentation">;
     inspect: InspectorOptions;
 };
+
+const pailFileFilter = (value: Trace) => !value.file?.includes("/pail/dist");
 
 class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
@@ -200,6 +202,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                             renderError(value as Error, {
                                 ...this.#errorOptions,
                                 prefix: groupSpaces,
+                                stackFilter: pailFileFilter,
                             })
                         );
                     }
@@ -222,6 +225,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 renderError(error as Error, {
                     ...this.#errorOptions,
                     prefix: groupSpaces,
+                    stackFilter: pailFileFilter,
                 }),
             );
         }
@@ -231,10 +235,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 "\n\n" +
                     renderError(traceError as Error, {
                         ...this.#errorOptions,
+                        hideMessage: true,
                         hideErrorCauseCodeView: true,
                         hideErrorCodeView: true,
                         hideErrorErrorsCodeView: true,
                         prefix: groupSpaces,
+                        stackFilter: pailFileFilter,
                     }),
             );
         }
