@@ -369,7 +369,7 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const parse = (error: Error, { frameLimit = 50, stackFilter }: Partial<{ frameLimit: number; stackFilter?: (line: string) => boolean }> = {}): Trace[] => {
+const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // @ts-expect-error missing stacktrace property
     let lines = (error.stacktrace ?? error.stack ?? "")
         .split("\n")
@@ -387,8 +387,8 @@ const parse = (error: Error, { frameLimit = 50, stackFilter }: Partial<{ frameLi
         // Skip eval code without more context
         .filter((line: string): boolean => !/\S*(?:Error: |AggregateError:)/.test(line) && line !== "eval code");
 
-    if (stackFilter) {
-        lines = lines.filter((element: string) => stackFilter(element));
+    if (filter) {
+        lines = lines.filter((element: string) => filter(element));
     }
 
     lines = lines.slice(0, frameLimit);
