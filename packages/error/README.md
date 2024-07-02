@@ -228,6 +228,30 @@ console.log(stack);
 // ];
 ```
 
+### API
+
+#### error
+
+Type: `Error`
+
+The error to parse.
+
+#### options
+
+Type: `object`
+
+##### options.filter
+
+Type: `Function`
+
+A function to filter the stack frames.
+
+##### options.frameLimit
+
+Type: `number`
+
+The maximum number of frames to parse.
+
 ## `serialize` an error object
 
 -   Ensures errors are safe to serialize with JSON

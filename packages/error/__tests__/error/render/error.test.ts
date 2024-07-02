@@ -168,11 +168,9 @@ describe("renderError", () => {
         // eslint-disable-next-line unicorn/error-message
         const nestedError = new AggregateError([new Error("Nested Error")]);
         // eslint-disable-next-line unicorn/error-message
-        const aggregateError = new AggregateError([nestedError]);
-
-        const errorsOutput = renderError(aggregateError, {
+        const errorsOutput = renderError(new AggregateError([nestedError]), {
             displayShortPath: true,
-            framesMaxLimit: 0,
+            framesMaxLimit: 1,
             hideErrorCauseCodeView: true,
             hideErrorCodeView: true,
             hideErrorErrorsCodeView: true,
@@ -191,10 +189,32 @@ describe("renderError", () => {
             }),
             {
                 displayShortPath: true,
-                framesMaxLimit: 0,
+                framesMaxLimit: 1,
                 hideErrorCauseCodeView: true,
                 hideErrorCodeView: true,
                 hideErrorErrorsCodeView: true,
+            },
+        );
+
+        expect(errorsOutput).toMatchSnapshot();
+    });
+
+    it("should respect base prefix option", () => {
+        expect.assertions(1);
+
+        const errorsOutput = renderError(
+            new Error("This is an error message", {
+                cause: new Error("This is the cause of the error", {
+                    cause: new Error("This is the cause of the cause of the error"),
+                }),
+            }),
+            {
+                displayShortPath: true,
+                framesMaxLimit: 1,
+                hideErrorCauseCodeView: true,
+                hideErrorCodeView: true,
+                hideErrorErrorsCodeView: true,
+                prefix: "prefix",
             },
         );
 

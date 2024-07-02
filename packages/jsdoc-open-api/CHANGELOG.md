@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [2.0.52](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.51...@visulima/jsdoc-open-api@2.0.52) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.10
+
 ## @visulima/jsdoc-open-api [2.0.51](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.50...@visulima/jsdoc-open-api@2.0.51) (2024-07-02)
 
 

@@ -112,7 +112,7 @@
         "secretlint": "8.2.4",
         "semantic-release": "^24.0.0",
         "type-fest": "^4.20.1",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "typescript-coverage-report": "^1.0.0",
         "vitest": "^1.6.0",
         "webdriverio": "^8.39.0"

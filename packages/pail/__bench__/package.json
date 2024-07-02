@@ -14,7 +14,7 @@
         "winston": "^3.13.0"
     },
     "devDependencies": {
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0"
     }
 }

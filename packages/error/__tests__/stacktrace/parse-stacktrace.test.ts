@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import capturedErrors from "../../__fixtures__/captured-errors";
+import { VisulimaError } from "../../src";
 import parseStacktrace from "../../src/stacktrace/parse-stacktrace";
 
 const isWin = process.platform === "win32";
@@ -1292,7 +1293,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[0]).toMatchStackFrame([
                 "eval",
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1289,
+                1290,
                 49,
                 "eval",
                 { column: 1, file: "<anonymous>", line: 1, methodName: "eval", type: "eval" },
@@ -1300,7 +1301,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[1]).toMatchStackFrame([
                 "<unknown>",
                 `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
-                1289,
+                1290,
                 49,
             ]);
         });
@@ -1717,5 +1718,118 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                 ]);
             });
         });
+    });
+
+    it.skipIf(!global.AggregateError)("should parse AggregateError stack", () => {
+        expect.assertions(2);
+
+        const stackFrames = parseStacktrace(new AggregateError([new Error("foo"), new Error("bar"), new Error("baz")], "test"));
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "<unknown>",
+            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            1726,
+            45,
+        ]);
+    });
+
+    it.skipIf(!global.AggregateError)("should parse AggregateError stack with empty message", () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line unicorn/error-message
+        const stackFrames = parseStacktrace(new AggregateError([new Error("foo"), new Error("bar"), new Error("baz")]));
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "<unknown>",
+            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            1741,
+            45,
+        ]);
+    });
+
+    it.skipIf(!global.AggregateError)("should parse AggregateError stack with nested AggregateError", () => {
+        expect.assertions(2);
+        // eslint-disable-next-line unicorn/error-message
+        const nestedError = new AggregateError([new Error("Nested Error")]);
+
+        // eslint-disable-next-line unicorn/error-message
+        const stackFrames = parseStacktrace(new AggregateError([nestedError]));
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "<unknown>",
+            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            1758,
+            45,
+        ]);
+    });
+
+    it("should parse a stack trace with a single frame", () => {
+        expect.assertions(2);
+
+        const stackFrames = parseStacktrace({
+            stack: "Error\n    at <anonymous>:1:1",
+        } as unknown as Error);
+
+        expect(stackFrames).toHaveLength(1);
+        expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "<anonymous>", 1, 1]);
+    });
+
+    it("should parse a stack trace with frameLimit set to 1", () => {
+        expect.assertions(2);
+
+        const stackFrames = parseStacktrace(
+            {
+                stack:
+                    "Error: Default error\n" +
+                    "    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n" +
+                    "    at dumpExceptionError (http://localhost:8080/file.js:50:21)\n",
+            } as unknown as Error,
+            {
+                frameLimit: 1,
+            },
+        );
+
+        expect(stackFrames).toHaveLength(1);
+        expect(stackFrames[0]).toMatchStackFrame(["dumpExceptionError", "http://localhost:8080/file.js", 41, 27]);
+    });
+
+    it("should parse a stack trace with a custom error", () => {
+        expect.assertions(2);
+
+        const stackFrames = parseStacktrace(
+            new VisulimaError({
+                message: "Visulima error message",
+                name: "VisulimaError",
+            }),
+        );
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "<unknown>",
+            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            1803,
+            13,
+        ]);
+    });
+
+    it("should parse a stack trace with a custom error name", () => {
+        expect.assertions(2);
+
+        const error = new Error("error message");
+
+        error.name = "Database";
+
+        const stackFrames = parseStacktrace(error);
+
+        expect(stackFrames).toHaveLength(10);
+        expect(stackFrames[0]).toMatchStackFrame([
+            "<unknown>",
+            `${dirname(fileURLToPath(import.meta.url))}${isWin ? "\\" : "/"}parse-stacktrace.test.ts`,
+            1821,
+            23,
+        ]);
     });
 });

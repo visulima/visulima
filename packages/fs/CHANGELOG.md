@@ -1,3 +1,14 @@
+## @visulima/fs [2.1.10](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.9...@visulima/fs@2.1.10) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.3.0
+
 ## @visulima/fs [2.1.9](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.8...@visulima/fs@2.1.9) (2024-07-02)
 
 ### Miscellaneous Chores

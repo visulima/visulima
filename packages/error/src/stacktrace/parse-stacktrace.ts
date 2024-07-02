@@ -154,7 +154,7 @@ const parseNode = (line: string): Trace | undefined => {
             type: line.startsWith("internal") ? ("internal" as TraceType) : undefined,
         };
 
-        parseMapped(trace, `${node[2]}:${node[3]}:${node[4]}`);
+        parseMapped(trace, (node[2] as string) + ":" + (node[3] as string) + ":" + (node[4] as string));
 
         return trace;
     }
@@ -169,8 +169,9 @@ const parseChromium = (line: string): Trace | undefined => {
     if (parts) {
         debugLog(`parse chrome error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
-        const isNative = parts[2] && parts[2].startsWith("native"); // start of line
-        const isEval = (parts[2] && parts[2].startsWith("eval")) || (parts[1] && parts[1].startsWith("eval")); // start of line
+        const isNative = parts[2]?.startsWith("native"); // start of line
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        const isEval = parts[2]?.startsWith("eval") || parts[1]?.startsWith("eval"); // start of line
 
         let evalOrigin: Trace | undefined;
         let windowsParts:
@@ -252,7 +253,7 @@ const parseChromium = (line: string): Trace | undefined => {
             trace.file = windowsParts.file as string;
             trace.line = windowsParts.line;
         } else {
-            parseMapped(trace, `${file}:${parts[3]}:${parts[4]}`);
+            parseMapped(trace, file + ":" + (parts[3] as string) + ":" + (parts[4] as string));
         }
 
         return trace;
@@ -368,9 +369,7 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const parse = (error: Error, options: Partial<{ frameLimit: number }> = {}): Trace[] => {
-    const { frameLimit = 50 } = options;
-
+const parse = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // @ts-expect-error missing stacktrace property
     let lines = (error.stacktrace ?? error.stack ?? "")
         .split("\n")
@@ -384,12 +383,15 @@ const parse = (error: Error, options: Partial<{ frameLimit: number }> = {}): Tra
         })
         // https://github.com/getsentry/sentry-javascript/issues/7813
         // Skip Error: lines
+        // Skip AggregateError: lines
         // Skip eval code without more context
-        .filter((line: string): boolean => !/\S*Error: /.test(line) && line !== "eval code");
+        .filter((line: string): boolean => !/\S*(?:Error: |AggregateError:)/.test(line) && line !== "eval code");
 
-    if (lines.length > frameLimit) {
-        lines = lines.slice(0, frameLimit);
+    if (filter) {
+        lines = lines.filter((element: string) => filter(element));
     }
+
+    lines = lines.slice(0, frameLimit);
 
     // eslint-disable-next-line unicorn/no-array-reduce,@typescript-eslint/no-unsafe-return
     return lines.reduce((stack: Trace[], line: string, currentIndex: number): Trace[] => {

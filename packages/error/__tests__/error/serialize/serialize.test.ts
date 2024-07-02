@@ -382,6 +382,7 @@ describe("error serializer", () => {
 
             public toJSON() {
                 return {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     amount: `$${this.value}`,
                     message: this.message,
                 };
@@ -416,6 +417,7 @@ describe("error serializer", () => {
             amount: 20,
             toJSON() {
                 return {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     amount: `$${this.amount}`,
                 };
             },
@@ -507,6 +509,7 @@ describe("error serializer", () => {
 
             public toJSON() {
                 return {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     amount: `$${this.value}`,
                     message: this.message,
                 };
