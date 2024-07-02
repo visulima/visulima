@@ -1,3 +1,13 @@
+## @visulima/error [4.2.0](https://github.com/visulima/visulima/compare/@visulima/error@4.1.0...@visulima/error@4.2.0) (2024-07-02)
+
+### Features
+
+* **error:** added renderError, added cause to visulima-error ([#449](https://github.com/visulima/visulima/issues/449)) ([4e78638](https://github.com/visulima/visulima/commit/4e7863890ccbc66a1427d4e6fd4c1879cf448b77))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
 ## @visulima/error [4.1.0](https://github.com/visulima/visulima/compare/@visulima/error@4.0.0...@visulima/error@4.1.0) (2024-07-01)
 
 ### Features
