@@ -1,6 +1,8 @@
 import { stderr, stdout } from "node:process";
 
-import colorize, { bgGrey, grey, underline, white } from "@visulima/colorize";
+import colorize, { bgGrey, cyan, green,greenBright, grey, red, underline, white } from "@visulima/colorize";
+import { renderError } from "@visulima/error";
+import type { RenderErrorOptions } from "@visulima/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -38,6 +40,8 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
     readonly #inspectOptions: Partial<InspectorOptions>;
 
+    readonly #errorColor: RenderErrorOptions["color"];
+
     public constructor(options: Partial<PrettyReporterOptions> = {}) {
         const { inspect: inspectOptions, ...rest } = options;
 
@@ -52,6 +56,14 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         this.#inspectOptions = { ...defaultInspectorConfig, ...inspectOptions };
         this.#stdout = stdout;
         this.#stderr = stderr;
+        this.#errorColor = {
+            fileLine: green,
+            hint: cyan,
+            marker: red,
+            message: red,
+            method: greenBright,
+            title: red,
+        };
     }
 
     public setStdout(stdout_: NodeJS.WriteStream): void {
@@ -197,7 +209,10 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (error) {
-            items.push(formatError(error as Error, size, groupSpaces));
+            items.push(renderError(error as Error, {
+                color: this.#errorColor,
+                prefix: groupSpaces,
+            }));
         }
 
         if (traceError) {
