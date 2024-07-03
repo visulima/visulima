@@ -82,7 +82,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/setup@0cb408aa7aacffd0e9ea9eeeac06bc524917307e # main"
               with:
                   node-version: "18.x"
                   cache-prefix: "semantic-release"
