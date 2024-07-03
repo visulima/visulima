@@ -17,4 +17,4 @@ jobs:
         permissions: # yamllint disable-line rule:truthy
             contents: "write" # commit and push
         with:
-            target-repo: "visulima/packem"
+            target-repo: "visulima/visulima"
