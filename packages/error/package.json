@@ -28,13 +28,11 @@
         "source",
         "code",
         "frame",
-        "stack",
         "callstack",
         "call",
         "source-code",
         "pretty-error",
         "pretty-exceptions",
-        "exception",
         "pretty",
         "visulima"
     ],

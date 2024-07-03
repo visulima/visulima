@@ -1,6 +1,7 @@
 {
     "name": "ts-config-cjs",
     "description": "CommonJS version",
+    "private": true,
     "type": "commonjs",
     "dependencies": {
         "@visulima/tsconfig": "workspace:*"
