@@ -1,5 +1,6 @@
 {
     "name": "cli-esm",
     "description": "ESM version",
+    "private": true,
     "type": "module"
 }
