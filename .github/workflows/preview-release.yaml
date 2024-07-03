@@ -2,7 +2,7 @@ name: "Preview Release"
 
 on: # yamllint disable-line rule:truthy
     issue_comment:
-        types: [created]
+        types: ["created"]
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)
@@ -16,7 +16,7 @@ env:
 jobs:
     preview:
         name: "Preview Release"
-        if: "github.repository == 'vitejs/vite' && (github.event_name == 'push' || github.event.issue.pull_request && startsWith(github.event.comment.body, '/pkg-pr-new'))"
+        if: "github.repository == 'visulima/visulima' && (github.event_name == 'push' || github.event.issue.pull_request && startsWith(github.event.comment.body, '/pkg-pr-new'))"
         runs-on: "ubuntu-latest"
 
         steps:
