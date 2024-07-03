@@ -14,5 +14,7 @@ permissions:
 jobs:
     stale-issues:
         uses: "anolilab/workflows/.github/workflows/lock-file-maintenance.yml@main"
+        permissions: # yamllint disable-line rule:truthy
+            contents: "write" # commit and push
         with:
             target-repo: "visulima/packem"
