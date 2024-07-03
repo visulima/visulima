@@ -29,4 +29,8 @@ const packages = affectedRepoPackages.map((path) => {
     return join(packagesPath, path);
 });
 
-execSync(`pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, { stdio: "inherit" });
+if (packages.length > 0) {
+    execSync(`pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, {stdio: "inherit"});
+} else {
+    console.log("No packages to publish");
+}

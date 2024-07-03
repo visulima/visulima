@@ -79,9 +79,12 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands manually"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
+              shell: "bash"
+              run: |
+                echo "NX_BASE=$(echo $(git merge-base origin/${{ env.HEAD_REF }} HEAD))" >> $GITHUB_ENV
+                echo "NX_HEAD=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -98,6 +101,8 @@ jobs:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
+                  sha_base: "${{ steps.setSHAs.outputs.NX_BASE }}"
+                  sha: "${{ steps.setSHAs.outputs.NX_HEAD }}"
 
             - name: "Build"
               shell: "bash"
