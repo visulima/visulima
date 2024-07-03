@@ -106,4 +106,4 @@ jobs:
 
             - name: "Preview Release"
               shell: "bash"
-              run: ""
+              run: "node ./scripts/publish-preview-release.js"
