@@ -112,3 +112,5 @@ jobs:
             - name: "Preview Release"
               shell: "bash"
               run: "node ./scripts/publish-preview-release.js"
+              env:
+                  CHANGED_FILES: "${{ steps.files.outputs.all_changed_files }}"
