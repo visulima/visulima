@@ -14,7 +14,7 @@ permissions:
 jobs:
     lock-file:
         name: "Lock File Maintenance"
-        if: "github.repository == visulima/visulima"
+        if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
         permissions:
             contents: "write"
