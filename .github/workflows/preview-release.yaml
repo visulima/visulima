@@ -22,6 +22,7 @@ jobs:
             contents: write
             issues: write
             checks: write
+            pull-requests: write
 
         steps:
             - name: "Harden Runner"
