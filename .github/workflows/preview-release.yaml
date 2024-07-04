@@ -1,8 +1,8 @@
 name: "Preview Release"
 
 on: # yamllint disable-line rule:truthy
-    issue_comment:
-        types: ["created"]
+    # eslint-disable-next-line yml/no-empty-mapping-value
+    pull_request: # yamllint disable-line rule:empty-values
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)
@@ -30,68 +30,27 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - name: "Validate user"
-              if: "github.event.issue.pull_request"
-              uses: "actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea" # v7.0.1
-              with:
-                  script: |
-                      const user = context.payload.sender.login
-                      console.log(`Validate user: ${user}`)
-
-                      let hasTriagePermission = false
-                      try {
-                        const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          username: user,
-                        });
-                        hasTriagePermission = data.user.permissions.triage
-                      } catch (e) {
-                        console.warn(e)
-                      }
-
-                      if (hasTriagePermission) {
-                        console.log('Allowed')
-                        await github.rest.reactions.createForIssueComment({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          comment_id: context.payload.comment.id,
-                          content: '+1',
-                        })
-                      } else {
-                        console.log('Not allowed')
-                        await github.rest.reactions.createForIssueComment({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          comment_id: context.payload.comment.id,
-                          content: '-1',
-                        })
-                        throw new Error('not allowed')
-                      }
-
             - name: "Git checkout"
               uses: "actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29" # v4.1.6
               with:
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
                   fetch-depth: 0
-                  persist-credentials: false
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands manually"
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              shell: "bash"
-              run: |
-                echo "NX_BASE=$(echo $(git merge-base origin/${{ env.HEAD_REF }} HEAD))" >> $GITHUB_ENV
-                echo "NX_HEAD=$(git rev-parse HEAD)" >> $GITHUB_ENV
+              uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
 
             - name: "Setup resources and environment"
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "18.x"
-                  cache-prefix: "semantic-release"
+                  cache-prefix: "preview-release"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -101,8 +60,6 @@ jobs:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
-                  sha_base: "${{ steps.setSHAs.outputs.NX_BASE }}"
-                  sha: "${{ steps.setSHAs.outputs.NX_HEAD }}"
 
             - name: "Build"
               shell: "bash"
