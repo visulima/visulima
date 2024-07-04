@@ -90,7 +90,7 @@
     },
     "dependencies": {
         "@giscus/react": "^3.0.0",
-        "@headlessui/react": "^1.7.19",
+        "@headlessui/react": "^2.1.1",
         "@popperjs/core": "^2.11.8",
         "clsx": "^2.1.1",
         "copy-to-clipboard": "^3.3.3",
