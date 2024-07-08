@@ -10,7 +10,7 @@ class DirectoryError extends Error {
         super(`EISDIR: Illegal operation on a directory, ${message}`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "EISDIR";
     }
@@ -20,7 +20,7 @@ class DirectoryError extends Error {
         throw new Error("Cannot overwrite code EISDIR");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "DirectoryError";
     }

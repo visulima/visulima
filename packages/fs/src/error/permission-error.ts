@@ -10,7 +10,7 @@ class PermissionError extends Error {
         super(`EPERM: Operation not permitted, ${message}`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "EPERM";
     }
@@ -20,7 +20,7 @@ class PermissionError extends Error {
         throw new Error("Cannot overwrite code EPERM");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "PermissionError";
     }

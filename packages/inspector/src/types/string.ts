@@ -32,7 +32,7 @@ const inspectString: InspectType<string> = (string_: string, options: Options): 
         string_ = string_.replaceAll(stringEscapeChars, escape);
     }
 
-    return options.stylize(wrapQuotes(`${truncate(string_, options.truncate - 2)}`, options), "string");
+    return options.stylize(wrapQuotes(truncate(string_, options.truncate - 2), options), "string");
 };
 
 export default inspectString;
