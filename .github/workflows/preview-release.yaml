@@ -19,10 +19,10 @@ jobs:
         if: "github.repository == 'visulima/visulima' && (github.event_name == 'push' || github.event.issue.pull_request && startsWith(github.event.comment.body, '/pkg-pr-new'))"
         runs-on: "ubuntu-latest"
         permissions:
-            contents: write
-            issues: write
-            checks: write
-            pull-requests: write
+            contents: "write"
+            issues: "write"
+            checks: "write"
+            pull-requests: "write"
 
         steps:
             - name: "Harden Runner"
