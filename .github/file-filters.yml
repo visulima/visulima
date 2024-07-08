@@ -27,9 +27,5 @@ packages: &packages
     - "package.json"
     - "packages/**"
 
-nextra:
-    - "packages/nextra-theme-docs/**"
-    - "examples/nextra/**"
-
 codecov:
     - "codecov.yml"
