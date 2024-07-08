@@ -148,8 +148,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/fs
       '@visulima/nextra-theme-docs':
-        specifier: workspace:*
-        version: link:../../packages/nextra-theme-docs
+        specifier: 4.0.26
+        version: 4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1042,8 +1042,8 @@ importers:
   examples/nextra:
     dependencies:
       '@visulima/nextra-theme-docs':
-        specifier: workspace:*
-        version: link:../../packages/nextra-theme-docs
+        specifier: 4.0.26
+        version: 4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(zod@3.23.8)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1707,7 +1707,7 @@ importers:
         version: 18.19.15
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
-        version: 4.0.26(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
         specifier: 1.0.0-alpha.45
         version: 1.0.0-alpha.45(@swc/core@1.6.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.6)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.4.5)
@@ -1967,7 +1967,7 @@ importers:
         version: 18.19.15
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
-        version: 4.0.26(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2346,7 +2346,7 @@ importers:
         version: 18.19.15
       '@visulima/nextra-theme-docs':
         specifier: 4.0.26
-        version: 4.0.26(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
         specifier: ^1.0.0-alpha.46
         version: 1.0.0-alpha.46(@swc/core@1.6.7)(@visulima/redact@1.0.2)(esbuild@0.21.4)(jiti@1.21.6)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.4.5)
@@ -3256,253 +3256,6 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.25.1)(terser@5.31.1)
-
-  packages/nextra-theme-docs:
-    dependencies:
-      '@giscus/react':
-        specifier: ^3.0.0
-        version: 3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@headlessui/react':
-        specifier: ^1.7.19
-        version: 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@popperjs/core':
-        specifier: ^2.11.8
-        version: 2.11.8
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      copy-to-clipboard:
-        specifier: ^3.3.3
-        version: 3.3.3
-      escape-string-regexp:
-        specifier: ^5.0.0
-        version: 5.0.0
-      flexsearch:
-        specifier: ^0.7.43
-        version: 0.7.43
-      focus-visible:
-        specifier: ^5.2.0
-        version: 5.2.0
-      git-url-parse:
-        specifier: ^14.0.0
-        version: 14.0.0
-      he:
-        specifier: ^1.2.0
-        version: 1.2.0
-      intersection-observer:
-        specifier: ^0.12.2
-        version: 0.12.2
-      next-seo:
-        specifier: ^6.5.0
-        version: 6.5.0(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next-themes:
-        specifier: ^0.3.0
-        version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      prism-react-renderer:
-        specifier: ^2.3.1
-        version: 2.3.1(react@18.3.1)
-      prismjs:
-        specifier: ^1.29.0
-        version: 1.29.0
-      react-hot-toast:
-        specifier: ^2.4.1
-        version: 2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-live:
-        specifier: ^4.1.6
-        version: 4.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-medium-image-zoom:
-        specifier: ^5.2.4
-        version: 5.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-wrap-balancer:
-        specifier: ^1.1.1
-        version: 1.1.1(react@18.3.1)
-      scroll-into-view-if-needed:
-        specifier: ^3.1.0
-        version: 3.1.0
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
-    devDependencies:
-      '@anolilab/eslint-config':
-        specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.7)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.9.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.4))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
-      '@anolilab/prettier-config':
-        specifier: ^5.0.14
-        version: 5.0.14(prettier@3.3.2)
-      '@anolilab/semantic-release-pnpm':
-        specifier: ^1.1.3
-        version: 1.1.3(yaml@2.4.5)
-      '@anolilab/semantic-release-preset':
-        specifier: ^9.0.0
-        version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.4.5))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
-      '@arthurgeron/eslint-plugin-react-usememo':
-        specifier: ^2.4.0
-        version: 2.4.0
-      '@babel/core':
-        specifier: ^7.24.7
-        version: 7.24.7
-      '@mdx-js/react':
-        specifier: ^3.0.1
-        version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
-      '@rushstack/eslint-plugin-security':
-        specifier: ^0.8.1
-        version: 0.8.1(eslint@8.57.0)(typescript@5.4.5)
-      '@secretlint/secretlint-rule-preset-recommend':
-        specifier: ^8.2.4
-        version: 8.2.4
-      '@tailwindcss/nesting':
-        specifier: ^0.0.0-insiders.565cd3e
-        version: 0.0.0-insiders.565cd3e(postcss@8.4.39)
-      '@tailwindcss/typography':
-        specifier: ^0.5.13
-        version: 0.5.13(tailwindcss@3.4.4)
-      '@testing-library/react':
-        specifier: ^16.0.0
-        version: 16.0.0(@testing-library/dom@10.3.0)(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@total-typescript/ts-reset':
-        specifier: ^0.5.1
-        version: 0.5.1
-      '@types/flexsearch':
-        specifier: ^0.7.6
-        version: 0.7.6
-      '@types/git-url-parse':
-        specifier: ^9.0.3
-        version: 9.0.3
-      '@types/he':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.3
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.0
-      '@vitest/coverage-v8':
-        specifier: ^1.6.0
-        version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.25.1)(terser@5.31.1))
-      '@vitest/ui':
-        specifier: ^1.6.0
-        version: 1.6.0(vitest@1.6.0)
-      concurrently:
-        specifier: ^8.2.2
-        version: 8.2.2
-      conventional-changelog-conventionalcommits:
-        specifier: 8.0.0
-        version: 8.0.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
-      csstype:
-        specifier: ^3.1.3
-        version: 3.1.3
-      eslint:
-        specifier: ^8.57.0
-        version: 8.57.0
-      eslint-plugin-deprecation:
-        specifier: ^3.0.0
-        version: 3.0.0(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-etc:
-        specifier: ^2.0.3
-        version: 2.0.3(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-import:
-        specifier: npm:eslint-plugin-i@^2.29.1
-        version: eslint-plugin-i@2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-jsx-a11y:
-        specifier: ^6.9.0
-        version: 6.9.0(eslint@8.57.0)
-      eslint-plugin-mdx:
-        specifier: ^3.1.5
-        version: 3.1.5(eslint@8.57.0)
-      eslint-plugin-react:
-        specifier: 7.34.2
-        version: 7.34.2(eslint@8.57.0)
-      eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.0)
-      eslint-plugin-ssr-friendly:
-        specifier: ^1.3.0
-        version: 1.3.0(eslint@8.57.0)
-      eslint-plugin-testing-library:
-        specifier: ^6.2.2
-        version: 6.2.2(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-validate-jsx-nesting:
-        specifier: ^0.1.1
-        version: 0.1.1(eslint@8.57.0)
-      eslint-plugin-vitest:
-        specifier: ^0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.25.1)(terser@5.31.1))
-      eslint-plugin-vitest-globals:
-        specifier: ^1.5.0
-        version: 1.5.0
-      eslint-plugin-zod:
-        specifier: ^1.4.0
-        version: 1.4.0(eslint@8.57.0)
-      jsdom:
-        specifier: ^24.1.0
-        version: 24.1.0
-      lightningcss-cli:
-        specifier: ^1.25.1
-        version: 1.25.1
-      next:
-        specifier: ^14.2.4
-        version: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      nextra:
-        specifier: 2.13.4
-        version: 2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      postcss:
-        specifier: ^8.4.39
-        version: 8.4.39
-      postcss-cli:
-        specifier: ^11.0.0
-        version: 11.0.0(jiti@1.21.6)(postcss@8.4.39)(tsx@4.16.2)
-      postcss-focus-visible:
-        specifier: ^9.0.1
-        version: 9.0.1(postcss@8.4.39)
-      postcss-import:
-        specifier: ^16.1.0
-        version: 16.1.0(postcss@8.4.39)
-      postcss-lightningcss:
-        specifier: 1.0.0
-        version: 1.0.0(postcss@8.4.39)
-      prettier:
-        specifier: ^3.3.2
-        version: 3.3.2
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      rimraf:
-        specifier: ^5.0.7
-        version: 5.0.7
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.1
-      semantic-release:
-        specifier: 24.0.0
-        version: 24.0.0(typescript@5.4.5)
-      tailwindcss:
-        specifier: ^3.4.4
-        version: 3.4.4
-      tailwindcss-hyphens:
-        specifier: ^0.1.0
-        version: 0.1.0
-      tsup:
-        specifier: 8.1.0
-        version: 8.1.0(@swc/core@1.6.7)(postcss@8.4.39)(typescript@5.4.5)
-      typescript:
-        specifier: 5.4.5
-        version: 5.4.5
-      vitest:
-        specifier: ^1.6.0
-        version: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@1.6.0)(jsdom@24.1.0)(lightningcss@1.25.1)(terser@5.31.1)
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
 
   packages/package:
     dependencies:
@@ -8477,12 +8230,6 @@ packages:
   '@types/fined@1.1.5':
     resolution: {integrity: sha512-2N93vadEGDFhASTIRbizbl4bNqpMOId5zZfj6hHqYZfEzEfO9onnU4Im8xvzo8uudySDveDHBOOSlTWf38ErfQ==}
 
-  '@types/flexsearch@0.7.6':
-    resolution: {integrity: sha512-H5IXcRn96/gaDmo+rDl2aJuIJsob8dgOXDqf8K0t8rWZd1AFNaaspmRsElESiU+EWE33qfbFPgI0OC/B1g9FCA==}
-
-  '@types/git-url-parse@9.0.3':
-    resolution: {integrity: sha512-Wrb8zeghhpKbYuqAOg203g+9YSNlrZWNZYvwxJuDF4dTmerijqpnGbI79yCuPtHSXHPEwv1pAFUB4zsSqn82Og==}
-
   '@types/glob@7.2.0':
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
 
@@ -8494,9 +8241,6 @@ packages:
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
-
-  '@types/he@1.2.3':
-    resolution: {integrity: sha512-q67/qwlxblDzEDvzHhVkwc1gzVWxaNxeyHUBF4xElrvjL11O+Ytze+1fGpBHlr/H9myiBUaUXNnNPmBHxxfAcA==}
 
   '@types/http-assert@1.5.5':
     resolution: {integrity: sha512-4+tE/lwdAahgZT1g30Jkdm9PzFRde0xwxBNUyRsCitRvCQB90iuA2uJYdUnhnANRcqGXaWOGY4FEoxeElNAK2g==}
@@ -10324,11 +10068,6 @@ packages:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
 
-  concurrently@8.2.2:
-    resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
-    engines: {node: ^14.13.0 || >=16.0.0}
-    hasBin: true
-
   confbox@0.1.7:
     resolution: {integrity: sha512-uJcB/FKZtBMCJpK8MQji6bJHgu1tixKPxRLeGkNzBoOZzpnZUJm0jm2/sBDWcuBx1dYgxV4JU+g5hmNxCyAmdA==}
 
@@ -10772,10 +10511,6 @@ packages:
   data-view-byte-offset@1.0.0:
     resolution: {integrity: sha512-t/Ygsytq+R995EJ5PZlD4Cu56sWa8InXySaViRzw9apusqsOO2bQP+SbYzAhR0pFKoB+43lYy8rWban9JSuXnA==}
     engines: {node: '>= 0.4'}
-
-  date-fns@2.30.0:
-    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
-    engines: {node: '>=0.11'}
 
   dayjs@1.11.11:
     resolution: {integrity: sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==}
@@ -11619,12 +11354,6 @@ packages:
     engines: {node: '>=10'}
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
-
-  eslint-plugin-react@7.34.2:
-    resolution: {integrity: sha512-2HCmrU+/JNigDN6tg55cRDKCQWicYAPB38JGSFDQt95jDm8rrvSUo7YPkOIm5l6ts1j1zCvysNcasvfTMQzUOw==}
-    engines: {node: '>=4'}
-    peerDependencies:
-      eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
 
   eslint-plugin-react@7.34.3:
     resolution: {integrity: sha512-aoW4MV891jkUulwDApQbPYTVZmeuSyFrudpbTAQuj5Fv8VL+o6df2xIGpw8B0hPjAaih1/Fb0om9grCdyFYemA==}
@@ -13901,65 +13630,6 @@ packages:
   light-my-request@5.13.0:
     resolution: {integrity: sha512-9IjUN9ZyCS9pTG+KqTDEQo68Sui2lHsYBrfMyVUTTZ3XhH8PMZq7xO94Kr+eP9dhi/kcKsx4N41p2IXEBil1pQ==}
 
-  lightningcss-cli-darwin-arm64@1.25.1:
-    resolution: {integrity: sha512-T+8n8AtfRnNxI97dKLT3+FpYDyioH0KLkoAjBxnUZVdyScmgqsBGtqXsdObLxyiNpLCJUfrL4oSQbMI1Fq5KVw==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [arm64]
-    os: [darwin]
-
-  lightningcss-cli-darwin-x64@1.25.1:
-    resolution: {integrity: sha512-x0N9I4f4NXUesFQa03EmOb3kIg/4TPAGPNY/UZDMAEhGA8bDTOgesvMdQqD4dss1ADsbWA5kIMeUyPKS8A12SQ==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [x64]
-    os: [darwin]
-
-  lightningcss-cli-freebsd-x64@1.25.1:
-    resolution: {integrity: sha512-uzEwexbRy/GkaPhW1GbTgXB6CKQhR7abVcp1uuMP1G9yICy8o6bCC941xCPtICDW6VfimPrAe9a9xt6UJwKI1A==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [x64]
-    os: [freebsd]
-
-  lightningcss-cli-linux-arm-gnueabihf@1.25.1:
-    resolution: {integrity: sha512-Wgu0WoEPgGzdB4pSmfsiTnyQf2/nzz794R9YMa0tOReW/JP75pvTdv6vjUGvo0L9sasMKEehWAKoWi8s86YuMg==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [arm]
-    os: [linux]
-
-  lightningcss-cli-linux-arm64-gnu@1.25.1:
-    resolution: {integrity: sha512-nwCPUmsbjtJaKfaqGc2Cbsc1An1e40wgWa1sWrIL6pjLGlCGAym37jbe54h9U9UuAjQAik14lRZ45n9jJgeojg==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [arm64]
-    os: [linux]
-
-  lightningcss-cli-linux-arm64-musl@1.25.1:
-    resolution: {integrity: sha512-Fj/XW+ahY5VXIWGjf4/GCMxVDn5W+qJKaa0V35qmjGmdGSeR/utCq7f4qDxzzPTgrAlQ/zxJ4M94eaQL3aac0w==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [arm64]
-    os: [linux]
-
-  lightningcss-cli-linux-x64-gnu@1.25.1:
-    resolution: {integrity: sha512-ax5XP0ZIoA7A8JVbVmgjsNdyKzzRKVllBASpAJZq6a7BJWceZ/QM9ScUdjs15J4Q4FSsz1Uvk5JKq5y3/lOzFA==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [x64]
-    os: [linux]
-
-  lightningcss-cli-linux-x64-musl@1.25.1:
-    resolution: {integrity: sha512-6OK8l3mNDStoAh6v1v5bZumfh4uGqu+8ZxrFVYplyKSKNZcGVvP3Vh5VlRfOIFyOHB0td8BOW/V3aOR8X//WxQ==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [x64]
-    os: [linux]
-
-  lightningcss-cli-win32-x64-msvc@1.25.1:
-    resolution: {integrity: sha512-78SN/Yn2alLEQd/PF4TvcRzIGeu1EXLV6XZZs4M+aEqn4IMEY/k6JWXDvighXpHOM2KyIDfmUA72pARQKFeAAg==}
-    engines: {node: '>= 12.0.0'}
-    cpu: [x64]
-    os: [win32]
-
-  lightningcss-cli@1.25.1:
-    resolution: {integrity: sha512-rrAgDqDIcG3bPHG7a77jxqvLIXkm3nvMIFbfeD6GPjlIs+EtTMdKMKDR917RE5MGdLseRKf+3yu+1nsroMZHnQ==}
-    engines: {node: '>= 12.0.0'}
-    hasBin: true
-
   lightningcss-darwin-arm64@1.25.1:
     resolution: {integrity: sha512-G4Dcvv85bs5NLENcu/s1f7ehzE3D5ThnlWSDwE190tWXRQCQaqwcuHe+MGSVI/slm0XrxnaayXY+cNl3cSricw==}
     engines: {node: '>= 12.0.0'}
@@ -15071,7 +14741,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15104,7 +14774,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -16002,12 +15672,6 @@ packages:
     resolution: {integrity: sha512-xMITAI7M0u1yolVcXJ9XTZiO9aO49mcoKQy6pCDFdMh9kGqhzLVpWxeD/32M/QBmkhcGypZFFOLNLmIW4Pg4RA==}
     engines: {node: '>=18'}
     hasBin: true
-    peerDependencies:
-      postcss: '>=8.4.39'
-
-  postcss-focus-visible@9.0.1:
-    resolution: {integrity: sha512-N2VQ5uPz3Z9ZcqI5tmeholn4d+1H14fKXszpjogZIrFbhaq0zNAtq8sAnw6VLiqGbL8YBzsnu7K9bBkTqaRimQ==}
-    engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: '>=8.4.39'
 
@@ -17475,9 +17139,6 @@ packages:
   spacetrim@0.11.36:
     resolution: {integrity: sha512-jqv5aAfMLkBnFK+38QUtEGgU7x1KrfpDnCdjX4+W1IEVgA8Kf3tk8K9je8j2nkCSXdIngjda53fuXERr4/61kw==}
 
-  spawn-command@0.0.2:
-    resolution: {integrity: sha512-zC8zGoGkmc8J9ndvml8Xksr1Amk9qBujgbF0JAIWO7kXr43w0h/0GJNM/Vustixu+YE8N/MTrQ7N31FvHUACxQ==}
-
   spawn-error-forwarder@1.0.0:
     resolution: {integrity: sha512-gRjMgK5uFjbCvdibeGJuy3I5OYz6VLoVdsOJdA6wV0WlfQVLFueoqMxwwYD9RODdgb6oUIvlRlsyFSiQkMKu0g==}
 
@@ -17881,9 +17542,6 @@ packages:
     resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
-
-  tailwindcss-hyphens@0.1.0:
-    resolution: {integrity: sha512-Fdbb37iC3G33RX5YaIkBjT7NM0qL6EhE1ifMy6MdQkybpo6cuOVwnQnW+KHMB0fM0ep5nPI3C9bc1R3OanuJNg==}
 
   tailwindcss@3.4.4:
     resolution: {integrity: sha512-ZoyXOdJjISB7/BcLTR6SEsLgKtDStYyYZVLsUtWChO4Ps20CBad7lfJKVDiejocV4ME1hLmyY0WJE3hSDcmQ2A==}
@@ -19322,75 +18980,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - typescript
-
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.7)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.9.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.4))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
-    dependencies:
-      '@anolilab/package-json-utils': 3.0.9
-      '@babel/core': 7.24.7
-      '@babel/eslint-parser': 7.24.7(@babel/core@7.24.7)(eslint@8.57.0)
-      '@babel/plugin-syntax-import-assertions': 7.24.7(@babel/core@7.24.7)
-      '@eslint/js': 8.57.0
-      '@html-eslint/eslint-plugin': 0.20.0
-      '@html-eslint/parser': 0.20.0
-      '@jsenv/eslint-import-resolver': 8.1.2
-      '@rushstack/eslint-patch': 1.10.3
-      '@rushstack/eslint-plugin-security': 0.7.1(eslint@8.57.0)(typescript@5.4.5)
-      '@typescript-eslint/eslint-plugin': 7.15.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0)(typescript@5.4.5)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@5.4.5)
-      confusing-browser-globals: 1.0.11
-      eslint: 8.57.0
-      eslint-define-config: 1.24.1
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-antfu: 1.0.13(eslint@8.57.0)
-      eslint-plugin-compat: 4.2.0(eslint@8.57.0)
-      eslint-plugin-es-x: 7.8.0(eslint@8.57.0)
-      eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.0)
-      eslint-plugin-html: 7.1.0
-      eslint-plugin-i: 2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-jsonc: 2.16.0(eslint@8.57.0)
-      eslint-plugin-markdown: 3.0.1(eslint@8.57.0)
-      eslint-plugin-mdx: 2.3.4(eslint@8.57.0)
-      eslint-plugin-n: 16.6.2(eslint@8.57.0)
-      eslint-plugin-no-loops: 0.3.0(eslint@8.57.0)
-      eslint-plugin-no-only-tests: 3.1.0
-      eslint-plugin-no-secrets: 0.8.9(eslint@8.57.0)
-      eslint-plugin-no-use-extend-native: 0.5.0
-      eslint-plugin-perfectionist: 2.11.0(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-promise: 6.4.0(eslint@8.57.0)
-      eslint-plugin-regexp: 2.6.0(eslint@8.57.0)
-      eslint-plugin-security: 1.7.1
-      eslint-plugin-simple-import-sort: 10.0.0(eslint@8.57.0)
-      eslint-plugin-sonarjs: 0.22.0(eslint@8.57.0)
-      eslint-plugin-toml: 0.6.1(eslint@8.57.0)
-      eslint-plugin-unicorn: 49.0.0(eslint@8.57.0)
-      eslint-plugin-yml: 1.14.0(eslint@8.57.0)
-      find-up: 5.0.0
-      globals: 13.24.0
-      jsonc-eslint-parser: 2.4.0
-      read-pkg-up: 7.0.1
-      semver: 7.6.2
-      toml-eslint-parser: 0.6.1
-      yaml-eslint-parser: 1.2.3
-    optionalDependencies:
-      '@arthurgeron/eslint-plugin-react-usememo': 2.4.0
-      eslint-plugin-editorconfig: 4.0.3
-      eslint-plugin-jsx-a11y: 6.9.0(eslint@8.57.0)
-      eslint-plugin-react: 7.34.2(eslint@8.57.0)
-      eslint-plugin-react-hooks: 4.6.2(eslint@8.57.0)
-      eslint-plugin-ssr-friendly: 1.3.0(eslint@8.57.0)
-      eslint-plugin-tailwindcss: 3.17.4(tailwindcss@3.4.4)
-      eslint-plugin-testing-library: 6.2.2(eslint@8.57.0)(typescript@5.4.5)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@8.57.0)
-      typescript: 5.4.5
-    transitivePeerDependencies:
-      - astro-eslint-parser
-      - eslint-import-resolver-webpack
-      - eslint-plugin-import
-      - supports-color
-      - svelte
-      - svelte-eslint-parser
-      - vue-eslint-parser
 
   '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.0)(@babel/core@7.24.7)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.9.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-storybook@0.8.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.4))(eslint-plugin-testing-library@6.2.2(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
@@ -21028,6 +20617,12 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/utils@0.2.4': {}
+
+  '@giscus/react@3.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      giscus: 1.5.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   '@giscus/react@3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -25119,10 +24714,6 @@ snapshots:
 
   '@types/fined@1.1.5': {}
 
-  '@types/flexsearch@0.7.6': {}
-
-  '@types/git-url-parse@9.0.3': {}
-
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
@@ -25139,8 +24730,6 @@ snapshots:
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.2
-
-  '@types/he@1.2.3': {}
 
   '@types/http-assert@1.5.5': {}
 
@@ -25751,7 +25340,38 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@visulima/nextra-theme-docs@4.0.26(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)':
+  '@visulima/nextra-theme-docs@4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(zod@3.23.8)':
+    dependencies:
+      '@giscus/react': 3.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@headlessui/react': 1.7.19(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@popperjs/core': 2.11.8
+      clsx: 2.1.1
+      copy-to-clipboard: 3.3.3
+      escape-string-regexp: 5.0.0
+      flexsearch: 0.7.43
+      focus-visible: 5.2.0
+      git-url-parse: 14.0.0
+      he: 1.2.0
+      intersection-observer: 0.12.2
+      next: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      next-seo: 6.5.0(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      next-themes: 0.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      nextra: 2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      prism-react-renderer: 2.3.1(react@18.2.0)
+      prismjs: 1.29.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-live: 4.1.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-medium-image-zoom: 5.2.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-wrap-balancer: 1.1.1(react@18.2.0)
+      scroll-into-view-if-needed: 3.1.0
+      tailwind-merge: 2.3.0
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - csstype
+
+  '@visulima/nextra-theme-docs@4.0.26(csstype@3.1.3)(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)':
     dependencies:
       '@giscus/react': 3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@headlessui/react': 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -27448,18 +27068,6 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  concurrently@8.2.2:
-    dependencies:
-      chalk: 4.1.2
-      date-fns: 2.30.0
-      lodash: 4.17.21
-      rxjs: 7.8.1
-      shell-quote: 1.8.1
-      spawn-command: 0.0.2
-      supports-color: 8.1.1
-      tree-kill: 1.2.2
-      yargs: 17.7.2
-
   confbox@0.1.7: {}
 
   config-chain@1.1.13:
@@ -27970,10 +27578,6 @@ snapshots:
       call-bind: 1.0.7
       es-errors: 1.3.0
       is-data-view: 1.0.1
-
-  date-fns@2.30.0:
-    dependencies:
-      '@babel/runtime': 7.24.7
 
   dayjs@1.11.11: {}
 
@@ -29138,28 +28742,6 @@ snapshots:
   eslint-plugin-react-hooks@4.6.2(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
-
-  eslint-plugin-react@7.34.2(eslint@8.57.0):
-    dependencies:
-      array-includes: 3.1.8
-      array.prototype.findlast: 1.2.5
-      array.prototype.flatmap: 1.3.2
-      array.prototype.toreversed: 1.1.2
-      array.prototype.tosorted: 1.1.4
-      doctrine: 2.1.0
-      es-iterator-helpers: 1.0.19
-      eslint: 8.57.0
-      estraverse: 5.3.0
-      jsx-ast-utils: 3.3.5
-      minimatch: 3.1.2
-      object.entries: 1.1.8
-      object.fromentries: 2.0.8
-      object.hasown: 1.1.4
-      object.values: 1.2.0
-      prop-types: 15.8.1
-      resolve: 2.0.0-next.5
-      semver: 6.3.1
-      string.prototype.matchall: 4.0.11
 
   eslint-plugin-react@7.34.3(eslint@8.51.0):
     dependencies:
@@ -32181,47 +31763,6 @@ snapshots:
       process-warning: 3.0.0
       set-cookie-parser: 2.6.0
 
-  lightningcss-cli-darwin-arm64@1.25.1:
-    optional: true
-
-  lightningcss-cli-darwin-x64@1.25.1:
-    optional: true
-
-  lightningcss-cli-freebsd-x64@1.25.1:
-    optional: true
-
-  lightningcss-cli-linux-arm-gnueabihf@1.25.1:
-    optional: true
-
-  lightningcss-cli-linux-arm64-gnu@1.25.1:
-    optional: true
-
-  lightningcss-cli-linux-arm64-musl@1.25.1:
-    optional: true
-
-  lightningcss-cli-linux-x64-gnu@1.25.1:
-    optional: true
-
-  lightningcss-cli-linux-x64-musl@1.25.1:
-    optional: true
-
-  lightningcss-cli-win32-x64-msvc@1.25.1:
-    optional: true
-
-  lightningcss-cli@1.25.1:
-    dependencies:
-      detect-libc: 1.0.3
-    optionalDependencies:
-      lightningcss-cli-darwin-arm64: 1.25.1
-      lightningcss-cli-darwin-x64: 1.25.1
-      lightningcss-cli-freebsd-x64: 1.25.1
-      lightningcss-cli-linux-arm-gnueabihf: 1.25.1
-      lightningcss-cli-linux-arm64-gnu: 1.25.1
-      lightningcss-cli-linux-arm64-musl: 1.25.1
-      lightningcss-cli-linux-x64-gnu: 1.25.1
-      lightningcss-cli-linux-x64-musl: 1.25.1
-      lightningcss-cli-win32-x64-msvc: 1.25.1
-
   lightningcss-darwin-arm64@1.25.1:
     optional: true
 
@@ -33839,6 +33380,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  next-seo@6.5.0(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      next: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+
   next-seo@6.5.0(next@14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       next: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -33851,6 +33398,11 @@ snapshots:
       cookie: 0.6.0
       core-js: 3.37.1
       next: 14.2.4(@babel/core@7.24.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+
+  next-themes@0.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   next-themes@0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -35025,11 +34577,6 @@ snapshots:
       - jiti
       - tsx
 
-  postcss-focus-visible@9.0.1(postcss@8.4.39):
-    dependencies:
-      postcss: 8.4.39
-      postcss-selector-parser: 6.1.0
-
   postcss-import@15.1.0(postcss@8.4.39):
     dependencies:
       postcss: 8.4.39
@@ -35187,6 +34734,12 @@ snapshots:
   pretty-ms@9.0.0:
     dependencies:
       parse-ms: 4.0.0
+
+  prism-react-renderer@2.3.1(react@18.2.0):
+    dependencies:
+      '@types/prismjs': 1.26.4
+      clsx: 2.1.1
+      react: 18.2.0
 
   prism-react-renderer@2.3.1(react@18.3.1):
     dependencies:
@@ -35500,6 +35053,14 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-is: 18.1.0
 
+  react-hot-toast@2.4.1(csstype@3.1.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      goober: 2.1.14(csstype@3.1.3)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    transitivePeerDependencies:
+      - csstype
+
   react-hot-toast@2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       goober: 2.1.14(csstype@3.1.3)
@@ -35547,6 +35108,14 @@ snapshots:
 
   react-is@18.3.1: {}
 
+  react-live@4.1.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      prism-react-renderer: 2.3.1(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      sucrase: 3.35.0
+      use-editable: 2.3.3(react@18.2.0)
+
   react-live@4.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       prism-react-renderer: 2.3.1(react@18.3.1)
@@ -35554,6 +35123,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       sucrase: 3.35.0
       use-editable: 2.3.3(react@18.3.1)
+
+  react-medium-image-zoom@5.2.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   react-medium-image-zoom@5.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -35658,6 +35232,10 @@ snapshots:
       clsx: 2.1.1
       prop-types: 15.8.1
       react: 18.3.1
+
+  react-wrap-balancer@1.1.1(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   react-wrap-balancer@1.1.1(react@18.3.1):
     dependencies:
@@ -36875,8 +36453,6 @@ snapshots:
 
   spacetrim@0.11.36: {}
 
-  spawn-command@0.0.2: {}
-
   spawn-error-forwarder@1.0.0: {}
 
   spawn-to-readstream@0.1.3:
@@ -37459,8 +37035,6 @@ snapshots:
   tailwindcss-animate@1.0.7(tailwindcss@3.4.4):
     dependencies:
       tailwindcss: 3.4.4
-
-  tailwindcss-hyphens@0.1.0: {}
 
   tailwindcss@3.4.4:
     dependencies:
@@ -38513,6 +38087,10 @@ snapshots:
       tslib: 2.6.3
     optionalDependencies:
       '@types/react': 18.3.3
+
+  use-editable@2.3.3(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   use-editable@2.3.3(react@18.3.1):
     dependencies:

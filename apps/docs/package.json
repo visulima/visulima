@@ -29,7 +29,7 @@
         "@t3-oss/env-nextjs": "^0.10.1",
         "@vercel/og": "^0.6.2",
         "@visulima/fs": "workspace:*",
-        "@visulima/nextra-theme-docs": "workspace:*",
+        "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.0",
         "framer-motion": "^11.2.12",

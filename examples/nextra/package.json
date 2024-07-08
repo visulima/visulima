@@ -12,7 +12,7 @@
         "start": "next start"
     },
     "dependencies": {
-        "@visulima/nextra-theme-docs": "workspace:*",
+        "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "eslint": "8.51.0",
         "eslint-config-next": "13.5.4",

@@ -4,5 +4,5 @@
     "sourceRoot": "docs",
     "projectType": "app",
     "tags": ["docs", "nextra-theme-docs"],
-    "implicitDependencies": ["fs", "nextra-theme-docs"]
+    "implicitDependencies": ["fs"]
 }
