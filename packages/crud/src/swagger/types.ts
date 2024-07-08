@@ -19,7 +19,7 @@ export interface SwaggerOperation {
 export interface SwaggerParameter {
     description?: string;
     name: string;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+     
     schema: any & {
         type: string;
     };

@@ -10,7 +10,7 @@ class NotEmptyError extends Error {
         super(`ENOTEMPTY: Directory not empty, ${message}`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "ENOTEMPTY";
     }
@@ -20,7 +20,7 @@ class NotEmptyError extends Error {
         throw new Error("Cannot overwrite code ENOTEMPTY");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "NotEmptyError";
     }

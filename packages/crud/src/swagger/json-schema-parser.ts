@@ -167,9 +167,6 @@ class PrismaJsonSchemaParser {
 
             return {
                 ...accumulator,
-                [`${modelName}`]: {
-                    value,
-                },
                 [`${modelName}Page`]: {
                     value: {
                         data: [value],
@@ -178,6 +175,9 @@ class PrismaJsonSchemaParser {
                 },
                 [`${modelName}s`]: {
                     value: [value],
+                },
+                [modelName]: {
+                    value,
                 },
             };
         }, {});

@@ -22,7 +22,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public log(meta: ReadonlyMeta<L>): void {
-        // eslint-disable-next-line unicorn/no-typeof-undefined,@typescript-eslint/prefer-optional-chain
+        // eslint-disable-next-line unicorn/no-typeof-undefined
         const isNotBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
 

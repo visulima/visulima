@@ -10,8 +10,8 @@ const formattedText = `
 !!!  Unicorns are lit !!!
 Hello this is a formatted text !
 				It has alignements
-				already includes${" "}
-				in it.${" "}
+				already includes 
+				in it. 
 Boxen should protect this alignement,
 		otherwise the users would be sad !
 Hehe          Haha${" ".repeat(33)}

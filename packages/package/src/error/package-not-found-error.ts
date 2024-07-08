@@ -38,7 +38,7 @@ class PackageNotFoundError extends Error {
         super(`Package '${packageName.join(" ")}' was not found. Please install it using '${packageManager} install ${packageName.join(" ")}'`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "PACKAGE_NOT_FOUND";
     }
@@ -48,7 +48,7 @@ class PackageNotFoundError extends Error {
         throw new Error("Cannot overwrite code PACKAGE_NOT_FOUND");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "PackageNotFoundError";
     }

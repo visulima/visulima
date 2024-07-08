@@ -10,7 +10,7 @@ class AlreadyExistsError extends Error {
         super(`EEXIST: ${message}`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "EEXIST";
     }
@@ -20,7 +20,7 @@ class AlreadyExistsError extends Error {
         throw new Error("Cannot overwrite code EEXIST");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "AlreadyExistsError";
     }

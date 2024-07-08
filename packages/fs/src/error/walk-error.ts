@@ -17,7 +17,7 @@ class WalkError extends Error {
         this.root = root;
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "WalkError";
     }

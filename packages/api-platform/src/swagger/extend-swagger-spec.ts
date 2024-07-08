@@ -300,7 +300,7 @@ const extendSwaggerWithMediaTypeExamples = (
     transformers: Transformers,
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>,
 ) => {
-    const examplesName = `${toHeaderCase(pathKey.trim().replace("/", ""))}`;
+    const examplesName = toHeaderCase(pathKey.trim().replace("/", ""));
 
     Object.keys(responseSpec.content as object).forEach((mediaName) => {
         if (mediaName === jsonMediaType) {

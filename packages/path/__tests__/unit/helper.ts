@@ -21,7 +21,7 @@ const runTest = (
         items = Object.entries(items).map((entry) => entry.flat());
     }
 
-    describe(`${name}`, () => {
+    describe(name, () => {
         let cwd;
 
         // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax,vitest/prefer-each

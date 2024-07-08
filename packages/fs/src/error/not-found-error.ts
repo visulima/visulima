@@ -10,7 +10,7 @@ class NotFoundError extends Error {
         super(`ENOENT: ${message}`);
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public get code(): string {
         return "ENOENT";
     }
@@ -20,7 +20,7 @@ class NotFoundError extends Error {
         throw new Error("Cannot overwrite code ENOENT");
     }
 
-    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/class-literal-property-style
+    // eslint-disable-next-line class-methods-use-this
     public override get name(): string {
         return "NotFoundError";
     }
