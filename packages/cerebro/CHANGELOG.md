@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.1.8](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.7...@visulima/cerebro@1.1.8) (2024-07-09)
+
+### Bug Fixes
+
+* **cerebro:** removed the pail ErrorProcessor ([668a290](https://github.com/visulima/visulima/commit/668a290afb0303a430803d738d6a0d0916892d32))
+
 ## @visulima/cerebro [1.1.7](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.6...@visulima/cerebro@1.1.7) (2024-07-09)
 
 
