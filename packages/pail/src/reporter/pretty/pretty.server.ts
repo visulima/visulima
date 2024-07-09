@@ -1,8 +1,8 @@
 import { stderr, stdout } from "node:process";
 
 import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
-import type { RenderErrorOptions } from "@visulima/error";
-import { renderError } from "@visulima/error";
+import type { RenderErrorOptions } from "@visulima/error/error";
+import { renderError } from "@visulima/error/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 import { inspect } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -24,14 +24,14 @@ import formatLabel from "../utils/format-label";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-type PrettyReporterOptions = PrettyStyleOptions & {
+const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
+
+export type PrettyReporterOptions = PrettyStyleOptions & {
     error: Omit<RenderErrorOptions, "color | prefix | indentation">;
     inspect: InspectorOptions;
 };
 
-const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
-
-class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+export class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -263,5 +263,3 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
     }
 }
-
-export default PrettyReporter;

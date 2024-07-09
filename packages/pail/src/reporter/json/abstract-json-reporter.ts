@@ -1,3 +1,4 @@
+import { serializeError } from "@visulima/error/error";
 import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion } from "type-fest";
 
@@ -13,10 +14,11 @@ abstract class AbstractJsonReporter<L extends string = string> implements String
         this.stringify = function_;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public log(meta: ReadonlyMeta<L>): void {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
         // @ts-ignore -- tsup can find the type
-        const { file, message, type, ...rest } = meta;
+        const { context, error, file, message, type, ...rest } = meta;
 
         if (rest.label) {
             rest.label = rest.label.trim();
@@ -31,6 +33,30 @@ abstract class AbstractJsonReporter<L extends string = string> implements String
             (rest as unknown as Omit<ReadonlyMeta<L>, "message"> & { message: string | undefined }).message = undefined;
         } else {
             (rest as unknown as Omit<ReadonlyMeta<L>, "message"> & { message: ReadonlyMeta<L>["message"] }).message = message;
+        }
+
+        if (error) {
+            (rest as unknown as Omit<ReadonlyMeta<L>, "error"> & { error: ReadonlyMeta<L>["error"] }).error = serializeError(error);
+        }
+
+        if (context) {
+            const newContext: ReadonlyMeta<L>["context"] = [];
+
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const item of context) {
+                if (item === EMPTY_SYMBOL) {
+                    // eslint-disable-next-line no-continue
+                    continue;
+                }
+
+                if (item instanceof Error) {
+                    newContext.push(serializeError(item));
+                } else {
+                    newContext.push(item);
+                }
+            }
+
+            (rest as unknown as Omit<ReadonlyMeta<L>, "context"> & { context: ReadonlyMeta<L>["context"] }).context = newContext;
         }
 
         this._log((this.stringify as typeof stringify)(rest) as string, type.level);
