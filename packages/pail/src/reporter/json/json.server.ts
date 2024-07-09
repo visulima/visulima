@@ -4,15 +4,16 @@ import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels, StreamAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
-import AbstractJsonReporter from "./abstract-json-reporter";
+import type { AbstractJsonReporterOptions } from "./abstract-json-reporter";
+import { AbstractJsonReporter } from "./abstract-json-reporter";
 
 class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> implements StreamAwareReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
 
-    public constructor() {
-        super();
+    public constructor(options: Partial<AbstractJsonReporterOptions> = {}) {
+        super(options);
 
         this.#stdout = stdout;
         this.#stderr = stderr;
