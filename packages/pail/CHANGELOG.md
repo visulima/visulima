@@ -1,3 +1,14 @@
+## @visulima/pail [2.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.4...@visulima/pail@2.0.0) (2024-07-09)
+
+### ⚠ BREAKING CHANGES
+
+* removed abstract-file-reporter - the new base is now the AbstractJsonReporter, removed ErrorProcessor - was replaced with @visulima/error
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* switched error serialize to @visulima/error, export type for reporter options ([a761356](https://github.com/visulima/visulima/commit/a761356a9215a8dc72a1477d5b0a493c73aa7b88))
+
 ## @visulima/pail [1.4.4](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.3...@visulima/pail@1.4.4) (2024-07-09)
 
 ### Bug Fixes
