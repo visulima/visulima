@@ -5,9 +5,23 @@ import type { LiteralUnion } from "type-fest";
 import { EMPTY_SYMBOL } from "../../constants";
 import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
-abstract class AbstractJsonReporter<L extends string = string> implements StringifyAwareReporter<L> {
+export type AbstractJsonReporterOptions = {
+    error: Partial<{
+        exclude?: string[];
+        maxDepth?: number;
+        useToJSON?: boolean;
+    }>;
+};
+
+export abstract class AbstractJsonReporter<L extends string = string> implements StringifyAwareReporter<L> {
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected stringify: typeof stringify | undefined;
+
+    protected errorOptions: AbstractJsonReporterOptions["error"];
+
+    public constructor(options: Partial<AbstractJsonReporterOptions> = {}) {
+        this.errorOptions = options.error ?? {};
+    }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     public setStringify(function_: any): void {
@@ -36,7 +50,7 @@ abstract class AbstractJsonReporter<L extends string = string> implements String
         }
 
         if (error) {
-            (rest as unknown as Omit<ReadonlyMeta<L>, "error"> & { error: ReadonlyMeta<L>["error"] }).error = serializeError(error);
+            (rest as unknown as Omit<ReadonlyMeta<L>, "error"> & { error: ReadonlyMeta<L>["error"] }).error = serializeError(error, this.errorOptions);
         }
 
         if (context) {
@@ -50,7 +64,7 @@ abstract class AbstractJsonReporter<L extends string = string> implements String
                 }
 
                 if (item instanceof Error) {
-                    newContext.push(serializeError(item));
+                    newContext.push(serializeError(item, this.errorOptions));
                 } else {
                     newContext.push(item);
                 }
@@ -64,5 +78,3 @@ abstract class AbstractJsonReporter<L extends string = string> implements String
 
     protected abstract _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void;
 }
-
-export default AbstractJsonReporter;

@@ -1,15 +1,17 @@
 import type { Options as RfsOptions } from "rotating-file-stream";
 
-import AbstractFileReporter from "../json/abstract-json-reporter";
+import type { AbstractJsonReporterOptions } from "../json/abstract-json-reporter";
+import { AbstractJsonReporter } from "../json/abstract-json-reporter";
 import RotatingFileStream from "./utils/rotating-file-stream";
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type FileReporterOptions = RfsOptions & {
-    filePath: string;
-    writeImmediately?: boolean;
-};
+export type FileReporterOptions = AbstractJsonReporterOptions &
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    RfsOptions & {
+        filePath: string;
+        writeImmediately?: boolean;
+    };
 
-export class JsonFileReporter<L extends string = string> extends AbstractFileReporter<L> {
+export class JsonFileReporter<L extends string = string> extends AbstractJsonReporter<L> {
     protected stream: RotatingFileStream;
 
     public constructor(options: FileReporterOptions) {

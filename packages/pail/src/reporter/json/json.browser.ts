@@ -2,11 +2,12 @@ import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels } from "../../types";
 import writeConsoleLogBasedOnLevel from "../../utils/write-console-log";
-import AbstractJsonReporter from "./abstract-json-reporter";
+import type { AbstractJsonReporterOptions } from "./abstract-json-reporter";
+import { AbstractJsonReporter } from "./abstract-json-reporter";
 
 class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> {
-    public constructor() {
-        super();
+    public constructor(options: Partial<AbstractJsonReporterOptions> = {}) {
+        super(options);
     }
 
     // eslint-disable-next-line class-methods-use-this
