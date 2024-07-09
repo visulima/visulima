@@ -3,7 +3,7 @@ import { argv as process_argv, cwd as process_cwd, env, execArgv, execPath, exit
 import { boxen } from "@visulima/boxen";
 import { dim, green, reset, yellow } from "@visulima/colorize";
 import type { ExtendedRfc5424LogLevels } from "@visulima/pail";
-import { CallerProcessor, ErrorProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
+import { CallerProcessor, MessageFormatterProcessor } from "@visulima/pail/processor";
 import type { ConstructorOptions, Pail, Processor } from "@visulima/pail/server";
 import { createPail } from "@visulima/pail/server";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -113,7 +113,7 @@ export class Cli implements ICli {
             "128": "debug",
         };
 
-        const processors: Processor<string>[] = [new MessageFormatterProcessor(), new ErrorProcessor()];
+        const processors: Processor<string>[] = [new MessageFormatterProcessor()];
 
         if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
             processors.push(new CallerProcessor());
