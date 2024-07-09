@@ -1,7 +1,5 @@
 import { pail } from "@visulima/pail";
 
-console.log("\n");
-
 pail.success("Operation successful");
 pail.debug("Hello", "from", "L59");
 pail.pending("Write release notes for %s", "1.2.0");

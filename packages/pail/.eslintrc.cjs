@@ -33,6 +33,10 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-argument": "off",
                 "prefer-template": "off",
+                // @typescript-eslint/sort-type-constituents is not compatible
+                "perfectionist/sort-intersection-types": "off",
+                "@typescript-eslint/restrict-plus-operands": "off", // @TODO fix this
+                "etc/no-internal": "off", // broken
             },
         },
         {
@@ -46,6 +50,7 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/restrict-template-expressions": "off",
             },
         },
         {

@@ -207,6 +207,7 @@
         "@visulima/colorize": "1.4.3",
         "@visulima/fmt": "1.1.5",
         "@visulima/inspector": "1.0.2",
+        "@visulima/error": "workspace:*",
         "safe-stable-stringify": "^2.4.3"
     },
     "devDependencies": {

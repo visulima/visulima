@@ -3477,6 +3477,9 @@ importers:
       '@visulima/colorize':
         specifier: 1.4.3
         version: 1.4.3
+      '@visulima/error':
+        specifier: workspace:*
+        version: link:../error
       '@visulima/fmt':
         specifier: 1.1.5
         version: 1.1.5
