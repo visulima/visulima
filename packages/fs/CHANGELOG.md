@@ -1,3 +1,37 @@
+## @visulima/fs [2.1.10](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.9...@visulima/fs@2.1.10) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.3.0
+
+## @visulima/fs [2.1.9](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.8...@visulima/fs@2.1.9) (2024-07-02)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.2.0
+
+## @visulima/fs [2.1.8](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.7...@visulima/fs@2.1.8) (2024-07-01)
+
+### Styles
+
+* cs fixes ([cf19938](https://github.com/visulima/visulima/commit/cf199384f25cd6e97d4041317b35b6a3cc586f88))
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.1.0
+
 ## @visulima/fs [2.1.7](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.6...@visulima/fs@2.1.7) (2024-06-17)
 
 ### Bug Fixes

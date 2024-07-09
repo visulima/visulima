@@ -1,4 +1,6 @@
 export interface ErrorProperties {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    cause?: Error | unknown;
     hint?: ErrorHint;
     location?: ErrorLocation;
     message?: string;

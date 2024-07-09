@@ -97,7 +97,7 @@ export default function (plop) {
                 pattern: /"scripts": {/,
                 templateFile: `plop/package-scripts.hbs`,
                 data,
-            })
+            });
 
             return actions;
         },

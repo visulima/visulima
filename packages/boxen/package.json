@@ -1,6 +1,6 @@
 {
     "name": "@visulima/boxen",
-    "version": "1.0.10",
+    "version": "1.0.11",
     "description": "Util.format-like string formatting utility.",
     "keywords": [
         "anolilab",
@@ -107,10 +107,10 @@
         "quick-format-unescaped": "^4.0.4",
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
-        "string-width": "^7.1.0",
+        "string-width": "^7.2.0",
         "terminal-size": "^4.0.0",
         "tsup": "^8.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0",
         "wrap-ansi": "^9.0.0"
     },

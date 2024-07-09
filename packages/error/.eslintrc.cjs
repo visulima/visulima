@@ -29,6 +29,8 @@ module.exports = defineConfig({
             // Set parserOptions.project for the project to allow TypeScript to create the type-checker behind the scenes when we run linting
             parserOptions: {},
             rules: {
+                // @typescript-eslint/sort-type-constituents is not compatible
+                "perfectionist/sort-intersection-types": "off",
                 "prefer-template": "off",
             },
         },

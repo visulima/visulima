@@ -12,12 +12,12 @@
         "start": "next start"
     },
     "dependencies": {
-        "@visulima/nextra-theme-docs": "workspace:*",
+        "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "eslint": "8.51.0",
         "eslint-config-next": "13.5.4",
         "focus-visible": "^5.2.0",
-        "framer-motion": "^11.2.10",
+        "framer-motion": "^11.2.12",
         "intersection-observer": "^0.12.2",
         "isomorphic-git": "1.24.5",
         "markdown-to-jsx": "^7.4.7",
@@ -32,7 +32,7 @@
         "@types/react": "18.2.28",
         "@types/react-dom": "18.2.13",
         "cross-env": "^7.0.3",
-        "postcss": "^8.4.38",
+        "postcss": "^8.4.39",
         "postcss-lightningcss": "1.0.0",
         "tailwindcss": "^3.4.4",
         "typescript": "5.2.2"

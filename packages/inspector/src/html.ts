@@ -7,7 +7,7 @@ const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options:
     options.truncate -= 3;
 
     if (!value) {
-        return `${options.stylize(String(key), "yellow")}`;
+        return options.stylize(String(key), "yellow");
     }
 
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;

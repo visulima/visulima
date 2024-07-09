@@ -7,7 +7,7 @@ const walkInclude = (path: string, extensions?: string[], match?: RegExp[], skip
         return false;
     }
 
-    return !(skip && skip.some((pattern): boolean => pattern.test(path)));
+    return !(skip?.some((pattern): boolean => pattern.test(path)));
 };
 
 export default walkInclude;

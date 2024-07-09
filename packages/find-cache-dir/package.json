@@ -1,6 +1,6 @@
 {
     "name": "@visulima/find-cache-dir",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "description": "Finds the common standard cache directory",
     "keywords": [
         "visulima",
@@ -73,7 +73,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "2.1.7",
+        "@visulima/fs": "2.1.10",
         "@visulima/path": "1.0.2"
     },
     "devDependencies": {
@@ -91,7 +91,7 @@
         "@vitest/ui": "^1.6.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "esbuild": "^0.21.5",
+        "esbuild": "0.22.0",
         "eslint": "^8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -104,7 +104,7 @@
         "secretlint": "8.2.4",
         "semantic-release": "^24.0.0",
         "tempy": "^3.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0"
     },
     "engines": {

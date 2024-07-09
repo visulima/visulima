@@ -1,3 +1,34 @@
+## @visulima/pail [2.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.4...@visulima/pail@2.0.0) (2024-07-09)
+
+### ⚠ BREAKING CHANGES
+
+* removed abstract-file-reporter - the new base is now the AbstractJsonReporter, removed ErrorProcessor - was replaced with @visulima/error
+Signed-off-by: prisis <d.bannert@anolilab.de>
+
+### Features
+
+* switched error serialize to @visulima/error, export type for reporter options ([a761356](https://github.com/visulima/visulima/commit/a761356a9215a8dc72a1477d5b0a493c73aa7b88))
+
+## @visulima/pail [1.4.4](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.3...@visulima/pail@1.4.4) (2024-07-09)
+
+### Bug Fixes
+
+* **pail:** adding better error view ([#450](https://github.com/visulima/visulima/issues/450)) ([21f3622](https://github.com/visulima/visulima/commit/21f362256edc903fc2f1ab70f2264fe90234f896))
+
+### Styles
+
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+* cs fixes ([cf19938](https://github.com/visulima/visulima/commit/cf199384f25cd6e97d4041317b35b6a3cc586f88))
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* **pail:** fixed benchmarks ([238aeaf](https://github.com/visulima/visulima/commit/238aeaf550324b19aa4ee9b4b3d5928380abe5ff))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
 ## @visulima/pail [1.4.3](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.2...@visulima/pail@1.4.3) (2024-06-14)
 
 ### Bug Fixes

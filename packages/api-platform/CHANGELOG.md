@@ -1,3 +1,41 @@
+## @visulima/api-platform [3.0.12](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.11...@visulima/api-platform@3.0.12) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.52
+* **@visulima/fs:** upgraded to 2.1.10
+
+## @visulima/api-platform [3.0.11](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.10...@visulima/api-platform@3.0.11) (2024-07-02)
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.51
+* **@visulima/fs:** upgraded to 2.1.9
+
+## @visulima/api-platform [3.0.10](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.9...@visulima/api-platform@3.0.10) (2024-07-01)
+
+### Bug Fixes
+
+* update dependency jstoxml to 5.0.2 ([e823e0d](https://github.com/visulima/visulima/commit/e823e0dc6fed39ad6e18333de0e226810bc23c0f))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([cf7a28a](https://github.com/visulima/visulima/commit/cf7a28ab93565a65e583086c9dce0138e970d1d1))
+
+## @visulima/api-platform [3.0.9](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.8...@visulima/api-platform@3.0.9) (2024-07-01)
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.50
+* **@visulima/fs:** upgraded to 2.1.8
+
 ## @visulima/api-platform [3.0.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.7...@visulima/api-platform@3.0.8) (2024-06-19)
 
 ### Miscellaneous Chores

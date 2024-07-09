@@ -1,3 +1,38 @@
+## @visulima/error [4.3.0](https://github.com/visulima/visulima/compare/@visulima/error@4.2.0...@visulima/error@4.3.0) (2024-07-02)
+
+### Features
+
+* **error:** added a prefix option to renderError ([e164d52](https://github.com/visulima/visulima/commit/e164d528dfef4195a7cbd9f8843f58148dfc5e08))
+* **error:** added stackFilter to parseStacktrace, fixed parsing AggregateError stack, added filterStacktrace to renderError ([bb4b4f7](https://github.com/visulima/visulima/commit/bb4b4f72ab00c63bf0ac5e9e6a9a01110c102a1c))
+
+### Bug Fixes
+
+* **error:** renamed stackFilter to filter and changed interface for filterStacktrace ([b95dfb6](https://github.com/visulima/visulima/commit/b95dfb640b0d243122bff2ddf2e32a79101652e1))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+## @visulima/error [4.2.0](https://github.com/visulima/visulima/compare/@visulima/error@4.1.0...@visulima/error@4.2.0) (2024-07-02)
+
+### Features
+
+* **error:** added renderError, added cause to visulima-error ([#449](https://github.com/visulima/visulima/issues/449)) ([4e78638](https://github.com/visulima/visulima/commit/4e7863890ccbc66a1427d4e6fd4c1879cf448b77))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
+## @visulima/error [4.1.0](https://github.com/visulima/visulima/compare/@visulima/error@4.0.0...@visulima/error@4.1.0) (2024-07-01)
+
+### Features
+
+* **error:** added new error serialize ([#443](https://github.com/visulima/visulima/issues/443)) ([b6f109b](https://github.com/visulima/visulima/commit/b6f109b108e608e310ec1bc95de7e249763ad095))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+
 ## @visulima/error [4.0.0](https://github.com/visulima/visulima/compare/@visulima/error@3.2.11...@visulima/error@4.0.0) (2024-06-16)
 
 ### ⚠ BREAKING CHANGES

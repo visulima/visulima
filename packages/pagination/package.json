@@ -79,7 +79,6 @@
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@babel/core": "^7.24.7",
         "@rushstack/eslint-plugin-security": "^0.8.1",
-        "@types/micromatch": "^4.0.7",
         "@types/node": "18.19.15",
         "@types/qs": "^6.9.15",
         "@vitest/coverage-v8": "^1.6.0",
@@ -98,7 +97,7 @@
         "rimraf": "^5.0.7",
         "semantic-release": "24.0.0",
         "tsup": "^8.1.0",
-        "typescript": "^5.4.5",
+        "typescript": "5.4.5",
         "vitest": "^1.6.0"
     },
     "engines": {

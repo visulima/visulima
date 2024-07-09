@@ -1,3 +1,65 @@
+## @visulima/cerebro [1.1.7](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.6...@visulima/cerebro@1.1.7) (2024-07-09)
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 2.0.0
+
+## @visulima/cerebro [1.1.6](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.5...@visulima/cerebro@1.1.6) (2024-07-09)
+
+### Styles
+
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 1.4.4
+
+## @visulima/cerebro [1.1.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.4...@visulima/cerebro@1.1.5) (2024-07-02)
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.3
+
+## @visulima/cerebro [1.1.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.3...@visulima/cerebro@1.1.4) (2024-07-02)
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.2
+
+## @visulima/cerebro [1.1.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.2...@visulima/cerebro@1.1.3) (2024-07-01)
+
+### Styles
+
+* cs fixes ([66b9583](https://github.com/visulima/visulima/commit/66b9583f7ee8591b92955e65bc2dc7cbba7d03be))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.11
+
+## @visulima/cerebro [1.1.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.1...@visulima/cerebro@1.1.2) (2024-07-01)
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.1
+
 ## @visulima/cerebro [1.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.0...@visulima/cerebro@1.1.1) (2024-06-26)
 
 ### Bug Fixes
