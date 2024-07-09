@@ -24,14 +24,14 @@ import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
 
-type PrettyReporterOptions = PrettyStyleOptions & {
+const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
+
+export type SimpleReporterOptions = PrettyStyleOptions & {
     error: Omit<RenderErrorOptions, "color | prefix | indentation">;
     inspect: InspectorOptions;
 };
 
-const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
-
-class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
+export class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
     #stdout: NodeJS.WriteStream;
 
     #stderr: NodeJS.WriteStream;
@@ -44,7 +44,7 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
 
     readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
 
-    public constructor(options: Partial<PrettyReporterOptions> = {}) {
+    public constructor(options: Partial<SimpleReporterOptions> = {}) {
         const { error: errorOptions, inspect: inspectOptions, ...rest } = options;
 
         super({
@@ -245,5 +245,3 @@ class SimpleReporter<T extends string = string, L extends string = string> exten
         }
     }
 }
-
-export default SimpleReporter;
