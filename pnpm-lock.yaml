@@ -1651,8 +1651,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3(yaml@2.4.5)
       '@visulima/pail':
-        specifier: 1.4.4
-        version: 1.4.4(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+        specifier: 2.0.0
+        version: 2.0.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -8816,7 +8816,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -8912,6 +8912,19 @@ packages:
 
   '@visulima/pail@1.4.4':
     resolution: {integrity: sha512-6tkC9FCIyJZW+fsPGMcbJEIBcHt6rqqmHyWvF6kG+rcLuTj/UdtJkCtiMzYJ59tQQ+RJN9vF4bhqKNyx/bWTOA==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: ^3.1.1
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
+  '@visulima/pail@2.0.0':
+    resolution: {integrity: sha512-9sYEXh3PzjRZpHNW7zlIwna8YiFovm+pGr4T+iasFE137HadEzJr3FdtWIQ0YGwxbtU4EnwZ2kphibw0ceaB2g==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -14862,7 +14875,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -14895,7 +14908,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -25849,6 +25862,17 @@ snapshots:
       rotating-file-stream: 3.2.3
 
   '@visulima/pail@1.4.4(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
+    dependencies:
+      '@visulima/colorize': 1.4.3
+      '@visulima/error': 4.3.0
+      '@visulima/fmt': 1.1.5
+      '@visulima/inspector': 1.0.2
+      safe-stable-stringify: 2.4.3
+    optionalDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: 3.2.3
+
+  '@visulima/pail@2.0.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.3
       '@visulima/error': 4.3.0
