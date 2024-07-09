@@ -27,8 +27,8 @@ import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
 
 export type PrettyReporterOptions = PrettyStyleOptions & {
-    error: Omit<RenderErrorOptions, "color | prefix | indentation">;
-    inspect: InspectorOptions;
+    error: Partial<Omit<RenderErrorOptions, "color | prefix | indentation">>;
+    inspect: Partial<InspectorOptions>;
 };
 
 export class PrettyReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {

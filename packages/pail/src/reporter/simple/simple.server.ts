@@ -27,8 +27,8 @@ import formatLabel from "../utils/format-label";
 const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
 
 export type SimpleReporterOptions = PrettyStyleOptions & {
-    error: Omit<RenderErrorOptions, "color | prefix | indentation">;
-    inspect: InspectorOptions;
+    error: Partial<Omit<RenderErrorOptions, "color | prefix | indentation">>;
+    inspect: Partial<InspectorOptions>;
 };
 
 export class SimpleReporter<T extends string = string, L extends string = string> extends AbstractPrettyReporter<T, L> implements InteractiveStreamReporter<L> {
