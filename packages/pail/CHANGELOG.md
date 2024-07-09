@@ -1,3 +1,9 @@
+## @visulima/pail [2.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@2.0.0...@visulima/pail@2.0.1) (2024-07-09)
+
+### Bug Fixes
+
+* **fail:** fixed types for error and inspect options ([cc4202c](https://github.com/visulima/visulima/commit/cc4202c22936e2ebd4d640018387e4e5acc3154f))
+
 ## @visulima/pail [2.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@1.4.4...@visulima/pail@2.0.0) (2024-07-09)
 
 ### ⚠ BREAKING CHANGES
