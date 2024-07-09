@@ -28,7 +28,7 @@ describe("jsonFileReporter", () => {
 
         reporter.setStringify(JSON.stringify);
 
-        // @ts-expect-error - spy
+        // @ts-expect-error - The spy is private
         const writeSpy = vi.spyOn(reporter.stream, "write");
 
         reporter.log(meta);
@@ -63,7 +63,7 @@ describe("jsonFileReporter", () => {
 
         reporter.setStringify(JSON.stringify);
 
-        // @ts-expect-error - spy
+        // @ts-expect-error - The spy is private
         const formattedMessage = reporter._formatMessage(meta);
 
         expect(formattedMessage).toContain('"label":"Test Label"');

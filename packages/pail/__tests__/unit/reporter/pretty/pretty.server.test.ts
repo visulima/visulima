@@ -190,7 +190,7 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
-        // @ts-expect-error - spy
+        // @ts-expect-error - The spy is private
         const formattedMessage = prettyReporter._formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage).toBeDefined();
@@ -244,7 +244,7 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
-        // @ts-expect-error - spy
+        // @ts-expect-error - The spy is private
         const formattedMessage = prettyReporter._formatMessage(meta);
 
         expect(formattedMessage).toContain(largeMessage.slice(0, terminalSize().columns - 3));
@@ -268,7 +268,7 @@ describe("prettyReporter", () => {
                 name: "info",
             },
         };
-        // @ts-expect-error - spy
+        // @ts-expect-error - The spy is private
         const formattedMessage = prettyReporter._formatMessage(meta as ReadonlyMeta<string>);
 
         expect(formattedMessage).toBeDefined();
