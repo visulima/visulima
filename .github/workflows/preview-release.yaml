@@ -16,7 +16,7 @@ env:
 jobs:
     preview:
         name: "Preview Release"
-        if: "github.repository == 'visulima/visulima' && (github.event_name == 'push' || github.event.issue.pull_request && startsWith(github.event.comment.body, '/pkg-pr-new'))"
+        if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
         permissions:
             contents: "write"
