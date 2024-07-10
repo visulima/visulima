@@ -10,6 +10,13 @@
         "apps/*"
     ],
     "scripts": {
+        "lint:eslint:object": "pnpm --filter \"object\" run lint:eslint",
+        "lint:eslint:fix:object": "pnpm --filter \"object\" run lint:eslint:fix",
+        "lint:types:object": "pnpm --filter \"object\" run lint:types",
+        "test:object": "pnpm --filter \"object\" run test",
+        "test:coverage:object": "pnpm --filter \"object\" run test:coverage",
+        "test:ui:object": "pnpm --filter \"object\" run test:ui",
+
         "audit": "audit-ci --config ./audit-ci.jsonc",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
         "bench:deep-clone": "pnpm --filter \"deep-clone\" run test:bench",
