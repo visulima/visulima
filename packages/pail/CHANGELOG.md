@@ -1,3 +1,9 @@
+## @visulima/pail [2.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@2.0.1...@visulima/pail@2.1.0) (2024-07-10)
+
+### Features
+
+* **pail:** added new options for the json error serializer ([6df9535](https://github.com/visulima/visulima/commit/6df95355cacc50f420d9fd6c583c13e69da728fb))
+
 ## @visulima/pail [2.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@2.0.0...@visulima/pail@2.0.1) (2024-07-09)
 
 ### Bug Fixes
