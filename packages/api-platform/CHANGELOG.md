@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.13](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.12...@visulima/api-platform@3.0.13) (2024-07-16)
+
+### Styles
+
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+
+### Miscellaneous Chores
+
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+
+### Dependencies
+
+* **@visulima/crud:** upgraded to 2.0.25
+
 ## @visulima/api-platform [3.0.12](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.11...@visulima/api-platform@3.0.12) (2024-07-02)
 
 ### Miscellaneous Chores
