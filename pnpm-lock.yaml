@@ -9066,6 +9066,19 @@ packages:
       rotating-file-stream:
         optional: true
 
+  '@visulima/pail@2.0.1':
+    resolution: {integrity: sha512-wJwdRzp+fEtU8BcY5iEYklYJVeWIm4Iff0gEO8oqnuEVZ4uZ4jC7WvDBYlwsdrz2nfyk3DPCyGb+FdQ9tUGj2A==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: ^3.1.1
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
   '@visulima/pail@2.1.0':
     resolution: {integrity: sha512-RRyFxleN3VOrsystHeT/i9hn38m1O29rR3+p4vzDya9dWn4QHpnDi20+rXjxkjsnz+yw5D/1dyFBT8QYtQjEFg==}
     engines: {node: '>=18.* <=22.*'}
@@ -26547,7 +26560,7 @@ snapshots:
       '@visulima/fs': 2.1.10(yaml@2.4.5)
       '@visulima/humanizer': 1.0.5
       '@visulima/package': 3.0.4(yaml@2.4.5)
-      '@visulima/pail': 2.0.1(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+      '@visulima/pail': 2.1.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.2
       '@visulima/tsconfig': 1.0.4(yaml@2.4.5)
       defu: 6.1.4
@@ -26602,6 +26615,17 @@ snapshots:
       rotating-file-stream: 3.2.3
 
   '@visulima/pail@2.0.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
+    dependencies:
+      '@visulima/colorize': 1.4.3
+      '@visulima/error': 4.3.0
+      '@visulima/fmt': 1.1.5
+      '@visulima/inspector': 1.0.2
+      safe-stable-stringify: 2.4.3
+    optionalDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: 3.2.3
+
+  '@visulima/pail@2.0.1(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.3
       '@visulima/error': 4.3.0
