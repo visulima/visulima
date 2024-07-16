@@ -3301,6 +3301,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      deeks:
+        specifier: ^3.1.1
+        version: 3.1.1
       dot-prop:
         specifier: ^9.0.0
         version: 9.0.0
@@ -3346,6 +3349,9 @@ importers:
       semantic-release:
         specifier: ^24.0.0
         version: 24.0.0(typescript@5.5.3)
+      type-fest:
+        specifier: ^4.21.0
+        version: 4.21.0
       typescript:
         specifier: ^5.5.3
         version: 5.5.3
@@ -10896,6 +10902,10 @@ packages:
     peerDependenciesMeta:
       babel-plugin-macros:
         optional: true
+
+  deeks@3.1.1:
+    resolution: {integrity: sha512-YD/hG+YZt89ROCS7cXT7tfJ6R3dTIJhJk7gGmXLBV0OhN2A1uCSaagjLIfFr5dK4iUHlSW7Gd+ObKa/gXw1JVQ==}
+    engines: {node: '>= 16'}
 
   deep-copy@1.4.2:
     resolution: {integrity: sha512-VxZwQ/1+WGQPl5nE67uLhh7OqdrmqI1OazrraO9Bbw/M8Bt6Mol/RxzDA6N6ZgRXpsG/W9PgUj8E1LHHBEq2GQ==}
@@ -28783,6 +28793,8 @@ snapshots:
   dedent@0.7.0: {}
 
   dedent@1.5.3: {}
+
+  deeks@3.1.1: {}
 
   deep-copy@1.4.2: {}
 

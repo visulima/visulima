@@ -4,7 +4,10 @@
   Helper functions for working with objects, build on top of
 
 [is-plain-obj][is-plain-obj],
-[dot-prop][dot-prop]
+[dot-prop][dot-prop],
+[deeks][deeks] and
+[type-fest][type-fest]
+
   </p>
 </div>
 
@@ -44,11 +47,66 @@ pnpm add @visulima/object
 
 ## Usage
 
+### deleteProperty
+
+### escapePath
+
+### getProperty
+
+### hasProperty
+
+### setProperty
+
+### deepKeys
+
+### deepKeysFromList
+
+### isPlainObject
+
+### pick
+
+With `pick` you pass an object and an array of keys of an object - **the props which may stay**.
+
+```js
+import { pick } from "@visulima/object";
+
+const squirtle = { id: "007", name: "Squirtle", type: "water" };
+
+const newObject = pick(squirtle, ["name", "type"]);
+// returns { name: 'Squirtle', type: 'water' }
+
+const doc = { items: { keep: "📌", discard: "✂️" } };
+
+pick(doc, ["items.keep"]);
+// returns {items: {keep: '📌'}}
+```
+
+### omit
+
+With `omit` you pass an object and an array of keys of an object - the props which should be removed.
+
+```js
+import { omit } from "@visulima/object";
+
+const squirtle = { id: "007", name: "Squirtle", type: "water" };
+
+const withoutId = omit(squirtle, ["id"]);
+// returns { name: 'Squirtle', type: 'water' }
+
+const doc = { items: { keep: "📌", discard: "✂️" } };
+
+omit(doc, ["items.discard"]);
+// returns {items: {keep: '📌'}}
+```
+
 ## Related
 
-- [is-plain-object](https://github.com/jonschlinkert/is-plain-object) - Returns true if the given value is an object created by the Object constructor.
-- [is-plain-obj][is-plain-obj] - Check if a value is a plain object.
-- [dot-prop][dot-prop] - Get, set, or delete a property from a nested object using a dot path.
+-   [is-plain-object](https://github.com/jonschlinkert/is-plain-object) - Returns true if the given value is an object created by the Object constructor.
+-   [is-plain-obj][is-plain-obj] - Check if a value is a plain object.
+-   [dot-prop][dot-prop] - Get, set, or delete a property from a nested object using a dot path.
+-   [ts-dot-prop](https://github.com/justinlettau/ts-dot-prop) - TypeScript utility to transform nested objects using a dot notation path.
+-   [dset](https://www.npmjs.com/package/dset) - A tiny (194B) utility for safely writing deep Object values~!
+-   [filter-anything](https://github.com/mesqueeb/filter-anything) - A simple (TypeScript) integration of "pick" and "omit" to filter props of an object.
 
 ## Supported Node.js Versions
 
@@ -78,3 +136,5 @@ The visulima object is open-sourced software licensed under the [MIT][license-ur
 [npm-url]: https://www.npmjs.com/package/@visulima/object/v/latest "npm"
 [is-plain-obj]: https://github.com/sindresorhus/is-plain-obj
 [dot-prop]: https://github.com/sindresorhus/dot-prop
+[deeks]: https://github.com/mrodrig/deeks
+[type-fest]: https://github.com/sindresorhus/type-fest
