@@ -38,7 +38,7 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
         }
 
         // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,security/detect-object-injection
-        carry[key] = recursiveOmit(object[key] as any, omittedKeys, path);
+        carry[key] = recursiveOmit<T, OmittedKeys>(object[key] as any, omittedKeys, path);
 
         return carry;
     }, {}) as T;
