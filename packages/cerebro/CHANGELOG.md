@@ -1,3 +1,9 @@
+## @visulima/cerebro [1.1.11](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.10...@visulima/cerebro@1.1.11) (2024-07-16)
+
+### Bug Fixes
+
+* **cerebro:** updated dev deps and command-line-args to v6 ([3458108](https://github.com/visulima/visulima/commit/3458108ada809e851a1e5b0168a0463041d6cf4e))
+
 ## @visulima/cerebro [1.1.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.9...@visulima/cerebro@1.1.10) (2024-07-10)
 
 
