@@ -1,3 +1,19 @@
+## @visulima/pagination [3.0.17](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.16...@visulima/pagination@3.0.17) (2024-07-16)
+
+### Bug Fixes
+
+* **pagination:** switched qs to qs-esm and tsup to packem ([cd07c52](https://github.com/visulima/visulima/commit/cd07c52778ce5f03236973d75aa9631b08e92ae5))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/pagination [3.0.16](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.15...@visulima/pagination@3.0.16) (2024-06-06)
 
 
