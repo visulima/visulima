@@ -42,7 +42,7 @@ jobs:
                   wait-interval: 60 # seconds
                   running-workflow-name: "Semantic Release" # wait for all other checks to complete
                   allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts"
+                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot"
 
             - name: "Git checkout"
               uses: "actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332" # v4.1.7
