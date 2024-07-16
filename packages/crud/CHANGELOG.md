@@ -1,3 +1,21 @@
+## @visulima/crud [2.0.25](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.24...@visulima/crud@2.0.25) (2024-07-16)
+
+### Styles
+
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.17
+
 ## @visulima/crud [2.0.24](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.23...@visulima/crud@2.0.24) (2024-06-19)
 
 ### Styles
