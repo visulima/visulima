@@ -7,7 +7,7 @@
         "dev": "node cli.js"
     },
     "dependencies": {
-        "@visulima/error": "workspace:*",
-        "@visulima/colorize": "workspace:*"
+        "@visulima/colorize": "workspace:*",
+        "@visulima/error": "workspace:*"
     }
 }

@@ -11,13 +11,13 @@
         "cors": "2.8.5",
         "dotenv": "^16.4.5",
         "express": "^4.19.2",
-        "winston": "^3.13.0"
+        "winston": "^3.13.1"
     },
     "devDependencies": {
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
-        "rimraf": "^5.0.7",
-        "tsx": "^4.16.0",
+        "rimraf": "^6.0.1",
+        "tsx": "^4.16.2",
         "typescript": "5.4.5"
     }
 }

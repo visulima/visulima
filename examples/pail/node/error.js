@@ -8,4 +8,4 @@ pail.error(
     }),
 );
 
-pail.trace("test")
+pail.trace("test");
