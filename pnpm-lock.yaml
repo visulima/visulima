@@ -1387,8 +1387,8 @@ importers:
         specifier: ^5.28.5
         version: 5.28.5(@swc/core@1.6.7)
       '@visulima/crud':
-        specifier: 2.0.24
-        version: 2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
+        specifier: 2.0.25
+        version: 2.0.25(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       '@visulima/fs':
         specifier: 2.1.10
         version: 2.1.10(yaml@2.4.5)
@@ -2038,8 +2038,8 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 3.0.16
-        version: 3.0.16
+        specifier: 3.0.17
+        version: 3.0.17
       '@visulima/prisma-dmmf-transformer':
         specifier: 2.0.20
         version: 2.0.20(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
@@ -8820,8 +8820,8 @@ packages:
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.24':
-    resolution: {integrity: sha512-dbsmNwRMijxPjIC9Wr4CGbVDVNl+DS/jFT4TDGbdatkPSfgdb2AzNDdSnMF3vEf8s/KmEcWitZnAI1pCx8IpTA==}
+  '@visulima/crud@2.0.25':
+    resolution: {integrity: sha512-Hyazy4SU4F3LssE3vLe5XSJiaF8Io40FkHa51xZyUHN98yZrPGOEVM4EbgDSvQE9d96TtaGItdJ75oYg7W2BBQ==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -8882,7 +8882,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -8938,8 +8938,8 @@ packages:
       typescript:
         optional: true
 
-  '@visulima/pagination@3.0.16':
-    resolution: {integrity: sha512-Mvl36TIpjEWuQrDwXgmVnw8gvupGhLVnqinb3N8hiXz3TBVMVFnje8FCEBOGqea9OjT0utY8CSzNuH9ge7+I8Q==}
+  '@visulima/pagination@3.0.17':
+    resolution: {integrity: sha512-4xFbjRo0CXDkF8801Bzk6DC2wgv+TYnCVMvWZRDHj8AhhXbCmFVAXGPbsmZHNSqn6HD2fV+fQxnQU3IAmjgUFQ==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -14982,7 +14982,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15033,7 +15033,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -25999,9 +25999,9 @@ snapshots:
       regexparam: 3.0.0
       zod: 3.23.8
 
-  '@visulima/crud@2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
+  '@visulima/crud@2.0.25(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
     dependencies:
-      '@visulima/pagination': 3.0.16
+      '@visulima/pagination': 3.0.17
       '@visulima/prisma-dmmf-transformer': 2.0.20(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       http-errors: 2.0.0
       path-to-regexp: 6.2.2
@@ -26284,9 +26284,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/pagination@3.0.16':
-    dependencies:
-      qs: 6.12.2
+  '@visulima/pagination@3.0.17': {}
 
   '@visulima/pail@1.4.3(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
     dependencies:
