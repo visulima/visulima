@@ -4,10 +4,10 @@
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
-import { existsSync, statSync } from "node:fs";
+import { statSync } from "node:fs";
 import Module from "node:module";
 
-import { findUpSync, readFileSync } from "@visulima/fs";
+import { findUpSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { isAbsolute, join, resolve } from "@visulima/path";
 import { parse } from "jsonc-parser";
 import type { PathConditions } from "resolve-pkg-maps";
@@ -76,8 +76,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     }
 
     if (isAbsolute(filePath)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (existsSync(filePath)) {
+        if (isAccessibleSync(filePath)) {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (statSync(filePath).isFile()) {
                 return filePath;
@@ -85,8 +84,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         } else if (!filePath.endsWith(".json")) {
             const jsonPath = `${filePath}.json`;
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            if (existsSync(jsonPath)) {
+            if (isAccessibleSync(jsonPath)) {
                 return jsonPath;
             }
         }
@@ -110,8 +108,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
                 if (packageJsonPath) {
                     const resolvedPath = resolveFromPackageJsonPath(packageJsonPath, subpath, false, cache);
 
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename
-                    if (resolvedPath && existsSync(resolvedPath)) {
+                    if (resolvedPath && isAccessibleSync(resolvedPath)) {
                         return resolvedPath;
                     }
                 }
@@ -135,10 +132,9 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
 
     const packagePath = findUpSync(
         (directory) => {
-            const path = join(directory, "node_modules", packageName);
+            const path = join(resolve(directory), "node_modules", packageName);
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            if (existsSync(path)) {
+            if (isAccessibleSync(path)) {
                 return join("node_modules", packageName);
             }
 
@@ -157,8 +153,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
 
     const packageJsonPath = join(packagePath, PACKAGE_JSON);
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (existsSync(packageJsonPath)) {
+    if (isAccessibleSync(packageJsonPath)) {
         const resolvedPath = resolveFromPackageJsonPath(packageJsonPath, subpath, false, cache);
 
         // Blocked
@@ -167,7 +162,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (resolvedPath && existsSync(resolvedPath) && statSync(resolvedPath).isFile()) {
+        if (resolvedPath && isAccessibleSync(resolvedPath) && statSync(resolvedPath).isFile()) {
             return resolvedPath;
         }
     }
@@ -178,14 +173,12 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     if (!jsonExtension) {
         const fullPackagePathWithJson = `${fullPackagePath}.json`;
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (existsSync(fullPackagePathWithJson)) {
+        if (isAccessibleSync(fullPackagePathWithJson)) {
             return fullPackagePathWithJson;
         }
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    if (!existsSync(fullPackagePath)) {
+    if (!isAccessibleSync(fullPackagePath)) {
         return undefined;
     }
 
@@ -193,20 +186,17 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     if (statSync(fullPackagePath).isDirectory()) {
         const fullPackageJsonPath = join(fullPackagePath, PACKAGE_JSON);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (existsSync(fullPackageJsonPath)) {
+        if (isAccessibleSync(fullPackageJsonPath)) {
             const resolvedPath = resolveFromPackageJsonPath(fullPackageJsonPath, "", true, cache);
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            if (resolvedPath && existsSync(resolvedPath)) {
+            if (resolvedPath && isAccessibleSync(resolvedPath)) {
                 return resolvedPath;
             }
         }
 
         const tsconfigPath = join(fullPackagePath, TS_CONFIG_JSON);
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        if (existsSync(tsconfigPath)) {
+        if (isAccessibleSync(tsconfigPath)) {
             return tsconfigPath;
         }
     } else if (jsonExtension) {
