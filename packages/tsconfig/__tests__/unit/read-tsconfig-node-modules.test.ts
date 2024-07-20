@@ -331,10 +331,12 @@ describe("node_modules", () => {
     it("extends dependency package far", async () => {
         expect.assertions(1);
 
-        writeJsonSync(join(distribution, "nested", "nested", "nested", "tsconfig.json"), {
+        const fixturePath = join(distribution, "nested", "nested", "nested");
+
+        writeJsonSync(join(fixturePath, "tsconfig.json"), {
             extends: "dep/tsconfig.json",
         });
-        writeFileSync(join(distribution, "nested", "nested", "nested", "file.ts"), "");
+        writeFileSync(join(fixturePath, "file.ts"), "");
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json"), {
             compilerOptions: {
                 jsx: "react",
@@ -342,13 +344,47 @@ describe("node_modules", () => {
             },
         });
 
-        const fixturePath = join(distribution, "nested", "nested", "nested");
         const expectedTsconfig = await getTscTsconfig(fixturePath);
         delete expectedTsconfig.files;
 
         const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"), { tscCompatible: true });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    // https://github.com/privatenumber/get-tsconfig/issues/76
+    it("should resolves config in parent node_modules", async () => {
+        expect.assertions(1);
+
+        const fixturePath = join(distribution, "library");
+
+        writeJsonSync(join(fixturePath, "tsconfig.json"), {
+            extends: "@monorepo/tsconfig/tsconfig.base.json",
+            include: ["src"],
+        });
+        writeJsonSync(join(distribution, "node_modules", "@monorepo", "tsconfig", "tsconfig.base.json"), {
+            compilerOptions: {
+                module: "commonjs",
+            },
+        });
+        writeFileSync(join(fixturePath, "src", "a.ts"), "");
+        writeFileSync(join(fixturePath, "src", "b.ts"), "");
+        writeFileSync(join(fixturePath, "src", "c.ts"), "");
+
+        const originalCwd = process.cwd();
+
+        try {
+            process.chdir(fixturePath);
+
+            const expectedTsconfig = await getTscTsconfig(".");
+            delete expectedTsconfig.files;
+
+            const tsconfig = readTsConfig("./tsconfig.json");
+
+            expect(tsconfig).toStrictEqual(expectedTsconfig);
+        } finally {
+            process.chdir(originalCwd);
+        }
     });
 
     describe("package.json#tsconfig", () => {
