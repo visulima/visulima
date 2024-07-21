@@ -1,3 +1,19 @@
+## @visulima/tsconfig [1.0.5](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.4...@visulima/tsconfig@1.0.5) (2024-07-21)
+
+### Bug Fixes
+
+* resolve relative path extends in parent directory ([300a108](https://github.com/visulima/visulima/commit/300a1083217480103e6310b992c51c7d9c6085fa))
+
+### Styles
+
+* cs fixes ([070c702](https://github.com/visulima/visulima/commit/070c7022724d9f51c6dd034fa498874c377374a1))
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
 ## @visulima/tsconfig [1.0.4](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.3...@visulima/tsconfig@1.0.4) (2024-07-02)
 
 ### Miscellaneous Chores
