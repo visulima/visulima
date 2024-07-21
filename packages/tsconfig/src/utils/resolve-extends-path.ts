@@ -26,7 +26,7 @@ const getPnpApi = () => {
 };
 
 const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ignoreExports?: boolean, cache?: Cache<string>) => {
-    const cacheKey = `resolveFromPackageJsonPath:${packageJsonPath}:${subpath}:${ignoreExports}`;
+    const cacheKey = "resolveFromPackageJsonPath:" + packageJsonPath + ":" + subpath + ":" + (ignoreExports ? "yes" : "no");
 
     if (cache?.has(cacheKey)) {
         return cache.get(cacheKey);
@@ -93,7 +93,8 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     }
 
     const [orgOrName, ...remaining] = requestedPath.split("/");
-    const packageName = ((orgOrName as string).startsWith("@") ? `${orgOrName}/${remaining.shift()}` : orgOrName) as string;
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    const packageName = ((orgOrName as string).startsWith("@") ? (orgOrName as string) + "/" + (remaining as string[]).shift() : orgOrName) as string;
     const subpath = remaining.join("/");
 
     const pnpApi = getPnpApi();
@@ -167,11 +168,11 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         }
     }
 
-    const fullPackagePath = join(packagePath, subpath);
+    const fullPackagePath: string = join(packagePath, subpath);
     const jsonExtension = fullPackagePath.endsWith(".json");
 
     if (!jsonExtension) {
-        const fullPackagePathWithJson = `${fullPackagePath}.json`;
+        const fullPackagePathWithJson = fullPackagePath + ".json";
 
         if (isAccessibleSync(fullPackagePathWithJson)) {
             return fullPackagePathWithJson;
