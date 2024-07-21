@@ -197,7 +197,8 @@ describe("parse-tsconfig merges", () => {
         expect({
             ...tsconfig,
             // See https://github.com/privatenumber/get-tsconfig/issues/73
-            include: tsconfig.include?.map((includePath) => `symlink/../${includePath}`),
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            include: tsconfig.include?.map((includePath) => ("symlink/../" + includePath) as string),
         }).toStrictEqual(expectedTsconfig);
     });
 
