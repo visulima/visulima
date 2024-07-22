@@ -1,3 +1,14 @@
+## @visulima/pail [2.1.1](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.0...@visulima/pail@2.1.1) (2024-07-22)
+
+### Miscellaneous Chores
+
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+
+### Dependencies
+
+* **@visulima/inspector:** upgraded to 1.0.3
+
 ## @visulima/pail [2.1.0](https://github.com/visulima/visulima/compare/@visulima/pail@2.0.1...@visulima/pail@2.1.0) (2024-07-10)
 
 ### Features
