@@ -1651,8 +1651,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3(yaml@2.4.5)
       '@visulima/pail':
-        specifier: 2.1.0
-        version: 2.1.0(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
+        specifier: 2.1.1
+        version: 2.1.1(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -3585,8 +3585,8 @@ importers:
         specifier: 1.1.5
         version: 1.1.5
       '@visulima/inspector':
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       safe-stable-stringify:
         specifier: ^2.4.3
         version: 2.4.3
@@ -8867,6 +8867,10 @@ packages:
     resolution: {integrity: sha512-ZL32+y4CHdvuOjpEgVezXLCA6kxW6X7/fJ4TgAG55ppf6vk8oFJEerqiyu3LHlaJt02PXoh+E4Re3jLDnBEqzw==}
     engines: {node: '>=18.* <=22.*'}
 
+  '@visulima/inspector@1.0.3':
+    resolution: {integrity: sha512-gFMHWCcBepvH3IEVwecJX1vA7YAI0XEapy+E+sMig2f0esrOuML4vIhigc195LeVlf9D86tkwViMkTxo2WWOlQ==}
+    engines: {node: '>=18.* <=22.*'}
+
   '@visulima/is-ansi-color-supported@2.2.2':
     resolution: {integrity: sha512-e1/exYM3JHwV8xLey4peeEcOyuC2T/gR3Qrac+4fr5yvBODPKEVkyU5fxgZoDTA4C2Ct7+FeSJZrEd8+ntdCEg==}
     engines: {node: '>=18.* <=22.*'}
@@ -8984,6 +8988,19 @@ packages:
 
   '@visulima/pail@2.1.0':
     resolution: {integrity: sha512-RRyFxleN3VOrsystHeT/i9hn38m1O29rR3+p4vzDya9dWn4QHpnDi20+rXjxkjsnz+yw5D/1dyFBT8QYtQjEFg==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: ^3.1.1
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
+  '@visulima/pail@2.1.1':
+    resolution: {integrity: sha512-e3aLSCpwq+QoEB6soFERhkUQ5C3G0isfq5NF58MMmhHI3O9cjn6BUyI69063EMcuscP+0Ag2bBZkOqooqlABjg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -26036,6 +26053,8 @@ snapshots:
 
   '@visulima/inspector@1.0.2': {}
 
+  '@visulima/inspector@1.0.3': {}
+
   '@visulima/is-ansi-color-supported@2.2.2': {}
 
   '@visulima/jsdoc-open-api@2.0.52(@swc/core@1.6.7)(openapi-types@12.1.3)':
@@ -26324,6 +26343,17 @@ snapshots:
       '@visulima/error': 4.3.0
       '@visulima/fmt': 1.1.5
       '@visulima/inspector': 1.0.2
+      safe-stable-stringify: 2.4.3
+    optionalDependencies:
+      '@visulima/redact': 1.0.2
+      rotating-file-stream: 3.2.3
+
+  '@visulima/pail@2.1.1(@visulima/redact@1.0.2)(rotating-file-stream@3.2.3)':
+    dependencies:
+      '@visulima/colorize': 1.4.3
+      '@visulima/error': 4.3.0
+      '@visulima/fmt': 1.1.5
+      '@visulima/inspector': 1.0.3
       safe-stable-stringify: 2.4.3
     optionalDependencies:
       '@visulima/redact': 1.0.2
