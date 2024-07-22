@@ -22,7 +22,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         return "{ [object Window] }";
     }
 
-    if (typeof global !== "undefined" && object === global) {
+    if ((typeof globalThis !== "undefined" && object === globalThis) || (typeof global !== "undefined" && object === global)) {
         return "{ [object globalThis] }";
     }
 
