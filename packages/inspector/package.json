@@ -1,6 +1,6 @@
 {
     "name": "@visulima/inspector",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Inspect utility for Node.js and Browsers.",
     "keywords": [
         "visulima",
