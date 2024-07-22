@@ -240,3 +240,30 @@ describe.each([
         });
     });
 });
+
+describe("object prototype", () => {
+    it("should display correct when prototype is Object.prototype", () => {
+        expect.assertions(1);
+
+        const object = {};
+        expect(inspect(object)).toBe("{}");
+    });
+
+    it("should display correct when prototype is null", () => {
+        expect.assertions(1);
+
+        const object = Object.create(null);
+        expect(inspect(object)).toBe("[Object: null prototype] {}");
+    });
+
+    it("should display correct when prototype from new", () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line func-style
+        function Foo() {}
+
+        const object = new Foo();
+
+        expect(inspect(object)).toBe("Foo {}");
+    });
+});
