@@ -10,7 +10,7 @@ if (!process.env.CHANGED_FILES) {
     throw new Error("CHANGED_FILES is missing");
 }
 
-const json = execSync(`nx show projects --affected --exclude=*-bench --files=${process.env.CHANGED_FILES} --json`).toString("utf8");
+const json = execSync(`pnpm exec nx show projects --affected --exclude=*-bench --files=${process.env.CHANGED_FILES} --json`).toString("utf8");
 
 /** @type {Array<{ path: string, private: boolean, peerDependencies?: Record<string, string> }>} */
 const affectedRepoPackages = JSON.parse(json);
@@ -30,7 +30,7 @@ const packages = affectedRepoPackages.map((path) => {
 });
 
 if (packages.length > 0) {
-    execSync(`pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, {stdio: "inherit"});
+    execSync(`pnpm exec pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, {stdio: "inherit"});
 } else {
     console.log("No packages to publish");
 }
