@@ -217,7 +217,7 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
         const routeTypes = routes[value] as RouteType[];
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] ?? value;
+        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : (routesMap?.[value as M] ?? value);
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const tag = modelsConfig?.[value]?.tag.name ?? value;

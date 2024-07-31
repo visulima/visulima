@@ -19,7 +19,7 @@ export interface SwaggerOperation {
 export interface SwaggerParameter {
     description?: string;
     name: string;
-     
+
     schema: any & {
         type: string;
     };

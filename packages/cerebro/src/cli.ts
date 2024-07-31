@@ -121,7 +121,7 @@ export class Cli implements ICli {
 
         this.logger = createPail({
             logLevel: env.CEREBRO_OUTPUT_LEVEL
-                ? cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational"
+                ? (cerebroLevelToPailLevel[env.CEREBRO_OUTPUT_LEVEL as keyof typeof cerebroLevelToPailLevel] ?? "informational")
                 : "informational",
             processors,
             ...options.logger,
@@ -521,7 +521,7 @@ export class Cli implements ICli {
 
     private async updateNotifier({ logger }: IToolbox) {
         if (
-            (this.updateNotifierOptions?.alwaysRun) ||
+            this.updateNotifierOptions?.alwaysRun ||
             (!(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || this.argv.includes("--no-update-notifier") || isCI) && this.updateNotifierOptions)
         ) {
             // @TODO add a stream logger

@@ -37,7 +37,7 @@ import colorsJs from "colors";
 import colorsCli from "colors-cli/color-safe";
 import kleur from "kleur";
 import * as kleurColors from "kleur/colors";
-import * as kolorist from 'kolorist';
+import * as kolorist from "kolorist";
 import picocolors from "picocolors";
 
 import Bench from "./lib/bench.js";
@@ -206,7 +206,9 @@ bench("Nested calls")
     .add(packages["colorette"], () => baseColors.forEach((style) => colorette[style](colorette.bold(colorette.underline(colorette.italic("foo"))))))
     .add(packages["colors"], () => baseColors.forEach((style) => colorsJs[style](colorsJs.bold(colorsJs.underline(colorsJs.italic("foo"))))))
     .add(packages["kleur"], () => baseColors.forEach((style) => kleur[style](kleur.bold(kleur.underline(kleur.italic("foo"))))))
-    .add(packages["kleur"] + "/colors", () => baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))))
+    .add(packages["kleur"] + "/colors", () =>
+        baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))),
+    )
     .add(packages["picocolors"], () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))))
     .run();
 

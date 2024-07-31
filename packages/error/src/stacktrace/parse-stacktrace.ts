@@ -336,9 +336,9 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
         debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         return {
-            column: parts[4] ? +parts[4] : topFrameMeta?.column ?? undefined,
+            column: parts[4] ? +parts[4] : (topFrameMeta?.column ?? undefined),
             file: parts[2],
-            line: parts[3] ? +parts[3] : topFrameMeta?.line ?? undefined,
+            line: parts[3] ? +parts[3] : (topFrameMeta?.line ?? undefined),
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
