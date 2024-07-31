@@ -71,7 +71,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        await chmod(temporaryPath, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         await rename(temporaryPath, path);

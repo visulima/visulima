@@ -152,7 +152,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const base = fromBase(givenBase as 2 | 10);
 
     const absoluteBytes = Math.abs(bytes);
-    const space = options?.space ?? true ? " " : "";
+    const space = (options?.space ?? true) ? " " : "";
 
     const requestedUnitIndex = BYTE_SIZES.findIndex((unit) => unit.short === requestedUnit);
 

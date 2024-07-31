@@ -71,7 +71,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
         }
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         renameSync(temporaryPath, path);
