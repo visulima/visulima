@@ -16,6 +16,7 @@ import { ansi256To16, rgbToAnsi16, rgbToAnsi256 } from "./util/convert-rgb-to-an
 
 const closeCode = 39;
 const bgCloseCode = 49;
+const bgOffset = 10;
 
 const supportedColor: ColorSupportLevel = isStdoutColorSupported();
 
@@ -48,9 +49,9 @@ let createBgRgb = (r: number | string, g: number | string, b: number | string): 
 if (supportedColor === 1) {
     // ANSI 16 colors
     createAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)), closeCode);
-    createBgAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)) + 10, bgCloseCode);
+    createBgAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)) + bgOffset, bgCloseCode);
     createRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)), closeCode);
-    createBgRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)) + 10, bgCloseCode);
+    createBgRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)) + bgOffset, bgCloseCode);
 } else if (supportedColor === 2) {
     // ANSI 256 colors
     createRgb = createRgbFunction(createAnsi256);
