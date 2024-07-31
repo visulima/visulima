@@ -34,13 +34,16 @@ import chalk from "chalk";
 import cliColor from "cli-color";
 import * as colorette from "colorette";
 import colorsJs from "colors";
-import colorCli from "colors-cli/color-safe";
+import colorsCli from "colors-cli/color-safe";
 import kleur from "kleur";
 import * as kleurColors from "kleur/colors";
+import * as kolorist from 'kolorist';
 import picocolors from "picocolors";
 
 import Bench from "./lib/bench.js";
 import { createFixture } from "./lib/utils.js";
+
+import packages from "./packages.js";
 
 const colorSpace = isStdoutColorSupported();
 
@@ -61,8 +64,8 @@ const vendors = [
     { lib: ansiColors, name: "ansi-colors" },
     { lib: ansis, name: "ansis" },
     { lib: cliColor, name: "cli-color" },
-    { lib: colorCli, name: "color-cli" },
-    { lib: colorsJs, name: "colors-js" },
+    { lib: colorsCli, name: "colors-cli" },
+    { lib: colorsJs, name: "colors" },
     { lib: colorette, name: "colorette" },
     { lib: chalk, name: "chalk" },
     { lib: kleurColors, name: "kleur/colors" },
@@ -88,6 +91,62 @@ let fixture = [];
 
 console.log(colorize.hex("#F88").inverse.bold` -= Benchmark =- `);
 
+bench("Using 1 style (red)")
+    .add(packages["@visulima/colorize"], () => colorize.red("foo"))
+    .add(packages["chalk"], () => chalk.red("foo"))
+    .add(packages["ansis"], () => ansis.red("foo"))
+    .add(packages["colors"], () => colorsJs.red("foo"))
+    .add(packages["colorette"], () => colorette.red("foo"))
+    .add(packages["picocolors"], () => picocolors.red("foo"))
+    .add(packages["cli-color"], () => cliColor.red("foo"))
+    .add(packages["colors-cli"], () => colorsCli.red("foo"))
+    .add(packages["ansi-colors"], () => ansiColors.red("foo"))
+    .add(packages["kleur"], () => kleur.red("foo"))
+    .add(packages["kolorist"], () => kolorist.red("foo"))
+    .run();
+
+bench(`Using 2 styles (red, bold)`)
+    .add(packages["@visulima/colorize"], () => colorize.red.bold("foo"))
+    .add(packages["chalk"], () => chalk.red.bold("foo"))
+    .add(packages["ansis"], () => ansis.red.bold("foo"))
+    .add(packages["colors"], () => colorsJs.red.bold("foo"))
+    .add(packages["colorette"], () => colorette.red(colorette.bold("foo")))
+    .add(packages["picocolors"], () => picocolors.red(picocolors.bold("foo")))
+    .add(packages["cli-color"], () => cliColor.red.bold("foo"))
+    .add(packages["colors-cli"], () => colorsCli.red.bold("foo"))
+    .add(packages["ansi-colors"], () => ansiColors.red.bold("foo"))
+    .add(packages["kleur"], () => kleur.red().bold("foo"))
+    .add(packages["kolorist"], () => kolorist.red(kolorist.bold("foo")))
+    .run();
+
+bench(`Using 3 styles (red, bold, underline)`)
+    .add(packages["@visulima/colorize"], () => colorize.red.bold.underline("foo"))
+    .add(packages["chalk"], () => chalk.red.bold.underline("foo"))
+    .add(packages["ansis"], () => ansis.red.bold.underline("foo"))
+    .add(packages["colors"], () => colorsJs.red.bold.underline("foo"))
+    .add(packages["colorette"], () => colorette.red(colorette.bold(colorette.underline("foo"))))
+    .add(packages["picocolors"], () => picocolors.red(picocolors.bold(picocolors.underline("foo"))))
+    .add(packages["cli-color"], () => cliColor.red.bold.underline("foo"))
+    .add(packages["colors-cli"], () => colorsCli.red.bold.underline("foo"))
+    .add(packages["ansi-colors"], () => ansiColors.red.bold.underline("foo"))
+    .add(packages["kleur"], () => kleur.red().bold().underline("foo"))
+    .add(packages["kolorist"], () => kolorist.red(kolorist.bold(kolorist.underline("foo"))))
+    .run();
+
+bench(`Using 4 styles (bgWhite red, bold, underline)`)
+    .add(packages["@visulima/colorize"], () => colorize.bgWhite.red.bold.underline("foo"))
+    .add(packages["chalk"], () => chalk.bgWhite.red.bold.underline("foo"))
+    .add(packages["ansis"], () => ansis.bgWhite.red.bold.underline("foo"))
+    .add(packages["colors"], () => colorsJs.bgWhite.red.bold.underline("foo"))
+    .add(packages["colorette"], () => colorette.bgWhite(colorette.red(colorette.bold(colorette.underline("foo")))))
+    .add(packages["picocolors"], () => picocolors.bgWhite(picocolors.red(picocolors.bold(picocolors.underline("foo")))))
+    .add(packages["cli-color"], () => cliColor.bgWhite.red.bold.underline("foo"))
+    .add(packages["colors-cli"], () => colorsCli.white_b.red.bold.underline("foo"))
+    .add(packages["ansi-colors"], () => ansiColors.bgWhite.red.bold.underline("foo"))
+    .add(packages["kleur"], () => kleur.bgWhite().red().bold().underline()("foo"))
+    .add(packages["kolorist"], () => kolorist.bgWhite(kolorist.red(kolorist.bold(kolorist.underline("foo")))))
+    .run();
+
 // Colorette bench
 // https://github.com/jorgebucaran/colorette/blob/main/bench/index.js
 fixture = createFixture(vendors, coloretteBench);
@@ -108,102 +167,102 @@ bench("Colorette bench")
 
 // Base colors
 bench("Base colors")
-    .add("@visulima/colorize", () => baseColors.forEach((style) => colorize[style]("foo")))
-    .add("ansi-colors", () => baseColors.forEach((style) => ansiColors[style]("foo")))
-    .add("ansis", () => baseColors.forEach((style) => ansis[style]("foo")))
-    .add("chalk", () => baseColors.forEach((style) => chalk[style]("foo")))
-    .add("cli-color", () => baseColors.forEach((style) => cliColor[style]("foo")))
-    .add("color-cli", () => baseColors.forEach((style) => colorCli[style]("foo")))
-    .add("colorette", () => baseColors.forEach((style) => colorette[style]("foo")))
-    .add("colors-js", () => baseColors.forEach((style) => colorsJs[style]("foo")))
-    .add("kleur", () => baseColors.forEach((style) => kleur[style]("foo")))
-    .add("kleur/colors", () => baseColors.forEach((style) => kleurColors[style]("foo")))
-    .add("picocolors", () => baseColors.forEach((style) => picocolors[style]("foo")))
+    .add(packages["@visulima/colorize"], () => baseColors.forEach((style) => colorize[style]("foo")))
+    .add(packages["ansi-colors"], () => baseColors.forEach((style) => ansiColors[style]("foo")))
+    .add(packages["ansis"], () => baseColors.forEach((style) => ansis[style]("foo")))
+    .add(packages["chalk"], () => baseColors.forEach((style) => chalk[style]("foo")))
+    .add(packages["cli-color"], () => baseColors.forEach((style) => cliColor[style]("foo")))
+    .add(packages["colors-cli"], () => baseColors.forEach((style) => colorsCli[style]("foo")))
+    .add(packages["colorette"], () => baseColors.forEach((style) => colorette[style]("foo")))
+    .add(packages["colors"], () => baseColors.forEach((style) => colorsJs[style]("foo")))
+    .add(packages["kleur"], () => baseColors.forEach((style) => kleur[style]("foo")))
+    .add(packages["kleur"] + "/colors", () => baseColors.forEach((style) => kleurColors[style]("foo")))
+    .add(packages["picocolors"], () => baseColors.forEach((style) => picocolors[style]("foo")))
     .run();
 
 // Chained styles
 bench("Chained styles")
-    .add("@visulima/colorize", () => baseColors.forEach((style) => colorize[style].bold.underline.italic("foo")))
-    .add("ansi-colors", () => baseColors.forEach((style) => ansiColors[style].bold.underline.italic("foo")))
-    .add("ansis", () => baseColors.forEach((style) => ansis[style].bold.underline.italic("foo")))
-    .add("chalk", () => baseColors.forEach((style) => chalk[style].bold.underline.italic("foo")))
-    .add("cli-color", () => baseColors.forEach((style) => cliColor[style].bold.underline.italic("foo")))
-    .add("color-cli", () => baseColors.forEach((style) => colorCli[style].bold.underline.italic("foo")))
+    .add(packages["@visulima/colorize"], () => baseColors.forEach((style) => colorize[style].bold.underline.italic("foo")))
+    .add(packages["ansi-colors"], () => baseColors.forEach((style) => ansiColors[style].bold.underline.italic("foo")))
+    .add(packages["ansis"], () => baseColors.forEach((style) => ansis[style].bold.underline.italic("foo")))
+    .add(packages["chalk"], () => baseColors.forEach((style) => chalk[style].bold.underline.italic("foo")))
+    .add(packages["cli-color"], () => baseColors.forEach((style) => cliColor[style].bold.underline.italic("foo")))
+    .add(packages["colors-cli"], () => baseColors.forEach((style) => colorsCli[style].bold.underline.italic("foo")))
     .add("colorette (not supported)", () => baseColors.forEach((style) => colorette[style].bold.underline.italic("foo")))
-    .add("colors-js", () => baseColors.forEach((style) => colorsJs[style].bold.underline.italic("foo")))
-    .add("kleur", () => baseColors.forEach((style) => kleur[style]().bold().underline().italic("foo"))) // alternate syntax
+    .add(packages["colors"], () => baseColors.forEach((style) => colorsJs[style].bold.underline.italic("foo")))
+    .add(packages["kleur"], () => baseColors.forEach((style) => kleur[style]().bold().underline().italic("foo"))) // alternate syntax
     .add("kleur/colors (not supported)", () => baseColors.forEach((style) => kleurColors[style].bold.underline.italic("foo")))
     .add("picocolors (not supported)", () => baseColors.forEach((style) => picocolors[style].bold.underline.italic("foo")))
     .run();
 
 // Nested calls
 bench("Nested calls")
-    .add("@visulima/colorize", () => baseColors.forEach((style) => colorize[style](colorize.bold(colorize.underline(colorize.italic("foo"))))))
-    .add("ansi-colors", () => baseColors.forEach((style) => ansiColors[style](ansiColors.bold(ansiColors.underline(ansiColors.italic("foo"))))))
-    .add("ansis", () => baseColors.forEach((style) => ansis[style](ansis.bold(ansis.underline(ansis.italic("foo"))))))
-    .add("chalk", () => baseColors.forEach((style) => chalk[style](chalk.bold(chalk.underline(chalk.italic("foo"))))))
-    .add("cli-color", () => baseColors.forEach((style) => cliColor[style](cliColor.bold(cliColor.underline(cliColor.italic("foo"))))))
-    .add("color-cli", () => baseColors.forEach((style) => colorCli[style](colorCli.bold(colorCli.underline(colorCli.italic("foo"))))))
-    .add("colorette", () => baseColors.forEach((style) => colorette[style](colorette.bold(colorette.underline(colorette.italic("foo"))))))
-    .add("colors-js", () => baseColors.forEach((style) => colorsJs[style](colorsJs.bold(colorsJs.underline(colorsJs.italic("foo"))))))
-    .add("kleur", () => baseColors.forEach((style) => kleur[style](kleur.bold(kleur.underline(kleur.italic("foo"))))))
-    .add("kleur/colors", () => baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))))
-    .add("picocolors", () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))))
+    .add(packages["@visulima/colorize"], () => baseColors.forEach((style) => colorize[style](colorize.bold(colorize.underline(colorize.italic("foo"))))))
+    .add(packages["ansi-colors"], () => baseColors.forEach((style) => ansiColors[style](ansiColors.bold(ansiColors.underline(ansiColors.italic("foo"))))))
+    .add(packages["ansis"], () => baseColors.forEach((style) => ansis[style](ansis.bold(ansis.underline(ansis.italic("foo"))))))
+    .add(packages["chalk"], () => baseColors.forEach((style) => chalk[style](chalk.bold(chalk.underline(chalk.italic("foo"))))))
+    .add(packages["cli-color"], () => baseColors.forEach((style) => cliColor[style](cliColor.bold(cliColor.underline(cliColor.italic("foo"))))))
+    .add(packages["colors-cli"], () => baseColors.forEach((style) => colorsCli[style](colorsCli.bold(colorsCli.underline(colorsCli.italic("foo"))))))
+    .add(packages["colorette"], () => baseColors.forEach((style) => colorette[style](colorette.bold(colorette.underline(colorette.italic("foo"))))))
+    .add(packages["colors"], () => baseColors.forEach((style) => colorsJs[style](colorsJs.bold(colorsJs.underline(colorsJs.italic("foo"))))))
+    .add(packages["kleur"], () => baseColors.forEach((style) => kleur[style](kleur.bold(kleur.underline(kleur.italic("foo"))))))
+    .add(packages["kleur"] + "/colors", () => baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))))
+    .add(packages["picocolors"], () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))))
     .run();
 
 // Nested styles
 fixture = createFixture(vendors, nestedFixture);
 
 bench("Nested styles")
-    .add("@visulima/colorize", () => fixture[8](colorize))
-    .add("ansi-colors", () => fixture[4](ansiColors))
-    .add("ansis", () => fixture[8](ansis))
-    .add("chalk", () => fixture[7](chalk))
-    .add("cli-color", () => fixture[2](cliColor))
-    .add("color-cli", () => fixture[3](colorCli))
-    .add("colorette", () => fixture[0](colorette))
-    .add("colors.js", () => fixture[9](colorsJs))
-    .add("kleur", () => fixture[6](kleur))
-    .add("kleur/colors", () => fixture[5](kleurColors))
-    .add("picocolors", () => fixture[1](picocolors))
+    .add(packages["@visulima/colorize"], () => fixture[8](colorize))
+    .add(packages["ansi-colors"], () => fixture[4](ansiColors))
+    .add(packages["ansis"], () => fixture[8](ansis))
+    .add(packages["chalk"], () => fixture[7](chalk))
+    .add(packages["cli-color"], () => fixture[2](cliColor))
+    .add(packages["colors-cli"], () => fixture[3](colorsCli))
+    .add(packages["colorette"], () => fixture[0](colorette))
+    .add(packages["colors.js"], () => fixture[9](colorsJs))
+    .add(packages["kleur"], () => fixture[6](kleur))
+    .add(packages["kleur"] + "/colors", () => fixture[5](kleurColors))
+    .add(packages["picocolors"], () => fixture[1](picocolors))
     .run();
 
 // Deep nested styles
 fixture = createFixture(vendors, deepNestedFixture);
 
 bench("Deep nested styles")
-    .add("@visulima/colorize", () => fixture[8](colorize))
-    .add("ansi-colors", () => fixture[4](ansiColors))
-    .add("ansis", () => fixture[8](ansis))
-    .add("chalk", () => fixture[7](chalk))
-    .add("cli-color", () => fixture[2](cliColor))
-    .add("color-cli", () => fixture[3](colorCli))
-    .add("colorette", () => fixture[0](colorette))
-    .add("colors.js", () => fixture[9](colorsJs))
-    .add("kleur", () => fixture[6](kleur))
-    .add("kleur/colors", () => fixture[5](kleurColors))
-    .add("picocolors", () => fixture[1](picocolors))
+    .add(packages["@visulima/colorize"], () => fixture[8](colorize))
+    .add(packages["ansi-colors"], () => fixture[4](ansiColors))
+    .add(packages["ansis"], () => fixture[8](ansis))
+    .add(packages["chalk"], () => fixture[7](chalk))
+    .add(packages["cli-color"], () => fixture[2](cliColor))
+    .add(packages["colors-cli"], () => fixture[3](colorsCli))
+    .add(packages["colorette"], () => fixture[0](colorette))
+    .add(packages["colors.js"], () => fixture[9](colorsJs))
+    .add(packages["kleur"], () => fixture[6](kleur))
+    .add(packages["kleur"] + "/colors", () => fixture[5](kleurColors))
+    .add(packages["picocolors"], () => fixture[1](picocolors))
     .run();
 
 // Check support of correct break style at new line
 
 // Break style at new line
 bench("New Line")
-    .add("@visulima/colorize", () => colorize.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
-    .add("ansi-colors", () => ansiColors.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
-    .add("ansis", () => ansis.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
-    .add("chalk", () => chalk.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
-    .add("colors.js", () => colorsJs.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
+    .add(packages["@visulima/colorize"], () => colorize.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
+    .add(packages["ansi-colors"], () => ansiColors.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
+    .add(packages["ansis"], () => ansis.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
+    .add(packages["chalk"], () => chalk.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
+    .add(packages["colors.js"], () => colorsJs.bgGreen(`\nColor\nNEW LINE\nNEXT NEW LINE\n`))
     .run();
 
 bench("RGB colors")
-    .add("@visulima/colorize", () => {
+    .add(packages["@visulima/colorize"], () => {
         for (let index = 0; index < 256; index++) colorize.rgb(index, 150, 200)("foo");
     })
-    .add("ansis", () => {
+    .add(packages["ansis"], () => {
         for (let index = 0; index < 256; index++) ansis.rgb(index, 150, 200)("foo");
     })
-    .add("chalk", () => {
+    .add(packages["chalk"], () => {
         for (let index = 0; index < 256; index++) chalk.rgb(index, 150, 200)("foo");
     })
     .run();
@@ -211,21 +270,21 @@ bench("RGB colors")
 // HEX colors
 // the hex(), rgb(), bgHex(), bgRgb() methods support only chalk and ansis
 bench("HEX colors")
-    .add("@visulima/colorize", () => colorize.hex("#FBA")("foo"))
-    .add("ansis", () => ansis.hex("#FBA")("foo"))
-    .add("chalk", () => chalk.hex("#FBA")("foo"))
+    .add(packages["@visulima/colorize"], () => colorize.hex("#FBA")("foo"))
+    .add(packages["ansis"], () => ansis.hex("#FBA")("foo"))
+    .add(packages["chalk"], () => chalk.hex("#FBA")("foo"))
     .run();
 
 // Spectrum HEX colors
 bench("Spectrum HEX colors")
-    .add("chalk", () => {
+    .add(packages["chalk"], () => {
         let str = "";
         spectrum.forEach((color) => {
             str += chalk.hex(color)("█");
         });
         return str;
     })
-    .add("ansis", () => {
+    .add(packages["ansis"], () => {
         let str = "";
         spectrum.forEach((color) => {
             str += hex(color)("█");
@@ -236,14 +295,14 @@ bench("Spectrum HEX colors")
 
 // Template literals
 bench("Template literals")
-    .add("@visulima/colorize", () => red`red ${yellow`yellow ${green`green`} yellow`} red`)
-    .add("ansis", () => red`red ${yellow`yellow ${green`green`} yellow`} red`)
+    .add(packages["@visulima/colorize"], () => red`red ${yellow`yellow ${green`green`} yellow`} red`)
+    .add(packages["ansis"], () => red`red ${yellow`yellow ${green`green`} yellow`} red`)
     .run();
 
 // Tagged Template Literals
 bench("Tagged Template literals")
-    .add("@visulima/colorize", () => colorize`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
-    .add("ansis", () => chalk`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
+    .add(packages["@visulima/colorize"], () => colorize`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
+    .add(packages["ansis"], () => chalk`{bold Hello, {cyan World!} This is a} test. {green Woo!}`)
     .run();
 
 function coloretteBench(c) {
