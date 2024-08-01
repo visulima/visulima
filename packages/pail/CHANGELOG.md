@@ -1,3 +1,22 @@
+## @visulima/pail [2.1.2](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.1...@visulima/pail@2.1.2) (2024-08-01)
+
+### Bug Fixes
+
+* upgraded @visulima/packem ([dc0cb57](https://github.com/visulima/visulima/commit/dc0cb5701b30f3f81404346c909fd4daf891b894))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.4
+* **@visulima/error:** upgraded to 4.3.1
+* **@visulima/fmt:** upgraded to 1.1.6
+* **@visulima/inspector:** upgraded to 1.0.4
+* **@visulima/redact:** upgraded to 1.0.3
+
 ## @visulima/pail [2.1.1](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.0...@visulima/pail@2.1.1) (2024-07-22)
 
 ### Miscellaneous Chores
