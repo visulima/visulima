@@ -1,3 +1,21 @@
+## @visulima/fmt [1.1.6](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.5...@visulima/fmt@1.1.6) (2024-08-01)
+
+### Bug Fixes
+
+* **fmt:** switched to packem from tsup ([24d86a9](https://github.com/visulima/visulima/commit/24d86a94cdc8d8130b5a95241a7cdc7e39f399cf))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* cs fixes ([ab59375](https://github.com/visulima/visulima/commit/ab59375452fa289aed240bfd0b54b76d0c6ee2b4))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/fmt [1.1.5](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.4...@visulima/fmt@1.1.5) (2024-06-06)
 
 
