@@ -10,6 +10,6 @@ __bench__
 .eslintrc.cjs
 .secretlintrc.cjs
 _meta.*.json
-tsup.config.ts
+packem.config.ts
 
 package.json
