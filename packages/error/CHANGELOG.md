@@ -1,3 +1,20 @@
+## @visulima/error [4.3.1](https://github.com/visulima/visulima/compare/@visulima/error@4.3.0...@visulima/error@4.3.1) (2024-08-01)
+
+### Styles
+
+* cs fixes ([6f727ec](https://github.com/visulima/visulima/commit/6f727ec36437384883ca4b764d920cf03ffe44df))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.3
+
 ## @visulima/error [4.3.0](https://github.com/visulima/visulima/compare/@visulima/error@4.2.0...@visulima/error@4.3.0) (2024-07-02)
 
 ### Features
