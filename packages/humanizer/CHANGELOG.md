@@ -1,3 +1,32 @@
+## @visulima/humanizer [1.0.6](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.5...@visulima/humanizer@1.0.6) (2024-08-01)
+
+### Bug Fixes
+
+* upgraded @visulima/packem ([dc0cb57](https://github.com/visulima/visulima/commit/dc0cb5701b30f3f81404346c909fd4daf891b894))
+
+### Styles
+
+* cs fixes ([6f727ec](https://github.com/visulima/visulima/commit/6f727ec36437384883ca4b764d920cf03ffe44df))
+* cs fixes ([253af1e](https://github.com/visulima/visulima/commit/253af1e788c9544a2286dc0018c6549f62ca6c7b))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.3
+
 ## @visulima/humanizer [1.0.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.4...@visulima/humanizer@1.0.5) (2024-06-06)
 
 
