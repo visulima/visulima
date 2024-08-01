@@ -72,11 +72,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
     "scripts": {
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
@@ -102,14 +97,14 @@
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@types/node": "18.19.15",
+        "@visulima/packem": "^1.0.0-alpha.60",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
         "binary-extensions": "^3.0.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
-        "eslint": "8.57.0",
         "esbuild": "0.23.0",
-        "@visulima/packem": "^1.0.0-alpha.60",
+        "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
@@ -126,6 +121,11 @@
     "engines": {
         "node": ">=18.* <=22.*"
     },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
