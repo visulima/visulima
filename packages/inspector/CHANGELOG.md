@@ -1,3 +1,18 @@
+## @visulima/inspector [1.0.4](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.3...@visulima/inspector@1.0.4) (2024-08-01)
+
+### Bug Fixes
+
+* upgraded @visulima/packem ([dc0cb57](https://github.com/visulima/visulima/commit/dc0cb5701b30f3f81404346c909fd4daf891b894))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.4
+
 ## @visulima/inspector [1.0.3](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.2...@visulima/inspector@1.0.3) (2024-07-22)
 
 ### Bug Fixes
