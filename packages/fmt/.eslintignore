@@ -6,7 +6,7 @@ coverage
 vitest.config.ts
 .prettierrc.js
 _meta.*.json
-tsup.config.ts
+packem.config.ts
 
 # TODO fix rules on bench files
 __tests__/*.bench.ts
