@@ -46,8 +46,8 @@
                 "default": "./dist/index.cjs"
             },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./utils": {
@@ -56,22 +56,30 @@
                 "default": "./dist/utils.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "browser": "./dist/index.js",
+    "module": "dist/index.mjs",
+    "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
     "files": [
-        "dist"
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -100,6 +108,8 @@
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "eslint": "8.57.0",
+        "esbuild": "0.23.0",
+        "@visulima/packem": "^1.0.0-alpha.60",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
@@ -110,7 +120,6 @@
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
         "semantic-release": "24.0.0",
-        "tsup": "^8.2.3",
         "typescript": "5.4.5",
         "vitest": "^2.0.5"
     },
@@ -133,9 +142,5 @@
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
         }
-    },
-    "sources": [
-        "src/index.ts",
-        "src/utils.ts"
-    ]
+    }
 }
