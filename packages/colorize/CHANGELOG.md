@@ -1,3 +1,25 @@
+## @visulima/colorize [1.4.4](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.3...@visulima/colorize@1.4.4) (2024-08-01)
+
+### Styles
+
+* cs fixes ([6f727ec](https://github.com/visulima/visulima/commit/6f727ec36437384883ca4b764d920cf03ffe44df))
+
+### Miscellaneous Chores
+
+* added private true into fixture package.json files ([4a9494c](https://github.com/visulima/visulima/commit/4a9494c642fa98f224505a1d231b5af4e73d6c79))
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* **colorize:** fixed test for ci cjs output test ([b0b30a8](https://github.com/visulima/visulima/commit/b0b30a8b042aee526c6afc96b942e19c46f0eaa4))
+* **colorize:** updated benchmark and deps for benchmark ([95448ce](https://github.com/visulima/visulima/commit/95448ce06f2776d41fd8ed7deb7a5df506126698))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.3
+* **@visulima/path:** upgraded to 1.0.3
+
 ## @visulima/colorize [1.4.3](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.2...@visulima/colorize@1.4.3) (2024-06-13)
 
 ### Miscellaneous Chores
