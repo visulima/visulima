@@ -1,3 +1,19 @@
+## @visulima/tsconfig [1.0.6](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.5...@visulima/tsconfig@1.0.6) (2024-08-01)
+
+### Bug Fixes
+
+* upgraded @visulima/packem ([dc0cb57](https://github.com/visulima/visulima/commit/dc0cb5701b30f3f81404346c909fd4daf891b894))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.11
+* **@visulima/path:** upgraded to 1.0.3
+
 ## @visulima/tsconfig [1.0.5](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.4...@visulima/tsconfig@1.0.5) (2024-07-21)
 
 ### Bug Fixes
