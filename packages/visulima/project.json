@@ -1,0 +1,8 @@
+{
+    "name": "vis",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/vis/src",
+    "projectType": "library",
+    "tags": ["vis", "type:package"],
+    "implicitDependencies": []
+}
