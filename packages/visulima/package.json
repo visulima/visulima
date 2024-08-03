@@ -5,9 +5,14 @@
     "keywords": [
         "visulima"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/vis",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/visulima"
     },
     "funding": [
         {
@@ -19,8 +24,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/vis",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -40,19 +48,14 @@
     "module": "dist/index.mjs",
     "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
+    "bin": {
+        "visulima": "./dist/cli/index.mjs"
+    },
     "files": [
         "dist",
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/visulima"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "cross-env NODE_ENV=development packem build",
         "build:prod": "cross-env NODE_ENV=production packem build",
@@ -69,18 +72,19 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
-    "engines": {
-        "node": ">=18.* <=22.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "dependencies": {
         "@visulima/cerebro": "workspace:*",
+        "@visulima/fs": "workspace:*",
         "@visulima/pail": "workspace:*",
+        "@visulima/path": "workspace:*",
+        "@visulima/tsconfig": "workspace:*",
+        "ufo": "^1.5.4",
+        "c12": "^1.11.1",
         "nitropack": "2.9.7",
-        "vite": "^5.3.5"
+        "std-env": "^3.7.0",
+        "vite": "^5.3.5",
+        "zod": "^3.23.8",
+        "zod-validation-error": "^3.3.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -111,6 +115,13 @@
         "semantic-release": "^24.0.0",
         "typescript": "^5.4.5",
         "vitest": "^2.0.5"
+    },
+    "engines": {
+        "node": ">=18.* <=22.*"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
     "anolilab": {
         "eslint-config": {
