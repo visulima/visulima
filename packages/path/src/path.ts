@@ -40,7 +40,8 @@ export const sep = "/";
 /**
  * Path delimiter constant, used to separate paths in environment variables.
  */
-export const delimiter = ":";
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+export const delimiter = /^win/i.test(globalThis.process?.platform) ? ";" : ":";
 
 /**
  * Resolves a string path, resolving '.' and '.' segments and allowing paths above the root.
