@@ -1,3 +1,9 @@
+## @visulima/path [1.0.4](https://github.com/visulima/visulima/compare/@visulima/path@1.0.3...@visulima/path@1.0.4) (2024-08-04)
+
+### Bug Fixes
+
+* **path:** fixed delimiter return based on the platform ([967f221](https://github.com/visulima/visulima/commit/967f221b4cea689ab32e5f42fec37db5d413b61b))
+
 ## @visulima/path [1.0.3](https://github.com/visulima/visulima/compare/@visulima/path@1.0.2...@visulima/path@1.0.3) (2024-08-01)
 
 ### Bug Fixes
