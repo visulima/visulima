@@ -1,3 +1,10 @@
+## @visulima/error [4.3.2](https://github.com/visulima/visulima/compare/@visulima/error@4.3.1...@visulima/error@4.3.2) (2024-08-04)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.4
+
 ## @visulima/error [4.3.1](https://github.com/visulima/visulima/compare/@visulima/error@4.3.0...@visulima/error@4.3.1) (2024-08-01)
 
 ### Styles
