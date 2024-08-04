@@ -79,6 +79,7 @@
         "@visulima/path": "workspace:*",
         "@visulima/tsconfig": "workspace:*",
         "ufo": "^1.5.4",
+        "unstorage": "^1.10.2",
         "c12": "^1.11.1",
         "nitropack": "2.9.7",
         "std-env": "^3.7.0",
