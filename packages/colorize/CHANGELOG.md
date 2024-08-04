@@ -1,3 +1,10 @@
+## @visulima/colorize [1.4.5](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.4...@visulima/colorize@1.4.5) (2024-08-04)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.4
+
 ## @visulima/colorize [1.4.4](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.3...@visulima/colorize@1.4.4) (2024-08-01)
 
 ### Styles
