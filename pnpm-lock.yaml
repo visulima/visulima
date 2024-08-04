@@ -9118,7 +9118,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=14.1.1'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -15201,7 +15201,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15252,7 +15252,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
