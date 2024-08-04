@@ -326,10 +326,10 @@ runTest("toNamespacedPath", toNamespacedPath, {
 });
 
 describe("constants", () => {
-    it("delimiter should equal :", () => {
+    it("delimiter should equal : on linux and ; on windows", () => {
         expect.assertions(1);
 
-        expect(delimiter).toBe(":");
+        expect(delimiter).toBe(/^win/i.test(globalThis.process.platform) ? ";" : ":");
     });
 
     it("sep should equal /", () => {
