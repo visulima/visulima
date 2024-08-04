@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "1.4.4",
+    "version": "1.4.5",
     "description": "Terminal and Console string styling done right.",
     "keywords": [
         "256",
@@ -166,7 +166,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.5.1",
         "@types/node": "18.19.15",
-        "@visulima/path": "1.0.3",
+        "@visulima/path": "1.0.4",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
         "ansi-regex": "^6.0.1",
