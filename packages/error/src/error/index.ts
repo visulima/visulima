@@ -1,3 +1,4 @@
+export { default as captureRawStackTrace } from "./capture-raw-stack-trace";
 export { default as getErrorCauses } from "./get-error-causes";
 export type { Options as RenderErrorOptions } from "./render/error";
 export { renderError } from "./render/error";

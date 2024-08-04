@@ -374,6 +374,18 @@ Default: `false`
 
 Hide the error message.
 
+### captureRawStackTrace
+
+Capture a raw stack trace.
+
+```ts
+import { captureRawStackTrace } from "@visulima/error";
+
+const stack = captureRawStackTrace();
+
+console.log(stack);
+```
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
