@@ -5,9 +5,12 @@ import { execSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { env, exit } from "node:process";
 
-if (!process.env.CHANGED_FILES) {
-    throw new Error("CHANGED_FILES is missing");
+if (!env.CHANGED_FILES) {
+    console.log("No changed files found");
+
+    exit(0);
 }
 
 const json = execSync(`pnpm exec nx show projects --affected --exclude=*-bench --files=${process.env.CHANGED_FILES} --json`).toString("utf8");
@@ -30,7 +33,7 @@ const packages = affectedRepoPackages.map((path) => {
 });
 
 if (packages.length > 0) {
-    execSync(`pnpm exec pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, {stdio: "inherit"});
+    execSync(`pnpm exec pkg-pr-new publish --comment="update" --pnpm ${packages.join(" ")}`, { stdio: "inherit" });
 } else {
     console.log("No packages to publish");
 }
