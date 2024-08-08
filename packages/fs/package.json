@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "2.1.12",
+    "version": "2.1.13",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
@@ -142,7 +142,7 @@
         "@babel/core": "^7.25.2",
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@types/node": "18.19.15",
-        "@visulima/error": "4.3.2",
+        "@visulima/error": "4.4.0",
         "@visulima/packem": "^1.0.0-alpha.60",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",

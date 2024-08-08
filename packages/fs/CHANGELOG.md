@@ -1,3 +1,14 @@
+## @visulima/fs [2.1.13](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.12...@visulima/fs@2.1.13) (2024-08-08)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.4.0
+
 ## @visulima/fs [2.1.12](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.11...@visulima/fs@2.1.12) (2024-08-04)
 
 
