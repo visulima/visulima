@@ -606,10 +606,10 @@ export class Cli implements ICli {
             const conflict = conflicts.find((argument) => {
                 if (Array.isArray(argument.conflicts)) {
                     // eslint-disable-next-line security/detect-object-injection
-                    return argument.conflicts.some((c) => commandArguments[c] !== undefined);
+                    return argument.conflicts.some((c) => commandArguments[c] !== undefined) && commandArguments[argument.name] !== undefined;
                 }
 
-                return commandArguments[argument.conflicts as string] !== undefined;
+                return commandArguments[argument.conflicts as string] !== undefined && commandArguments[argument.name] !== undefined;
             });
 
             if (conflict) {

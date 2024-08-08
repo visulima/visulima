@@ -78,7 +78,9 @@ describe("cli", () => {
             options: [{ name: "requiredOption", required: true, type: String }],
         });
 
-        await expect(() => cli.run()).rejects.toThrow('You called the command "test" without the required options: requiredOption');
+        await expect(cli.run({
+            shouldExitProcess: false
+        })).rejects.toThrow('You called the command "test" without the required options: requiredOption');
     });
 
     it("should throw error when running a command with unknown options", async () => {
@@ -88,7 +90,9 @@ describe("cli", () => {
 
         cli.addCommand({ execute: vi.fn(), name: "test" });
 
-        await expect(cli.run()).rejects.toThrow('Found unknown option "--unknownOption"');
+        await expect(cli.run({
+            shouldExitProcess: false
+        })).rejects.toThrow('Found unknown option "--unknownOption"');
     });
 
     it("should throw error when running a command with conflicting options", async () => {
@@ -105,6 +109,31 @@ describe("cli", () => {
             ],
         });
 
-        await expect(cli.run()).rejects.toThrow('You called the command "test" with conflicting options: option1 and option2');
+        await expect(cli.run({
+            shouldExitProcess: false
+        })).rejects.toThrow('You called the command "test" with conflicting options: option1 and option2');
+    });
+
+    it("should not throw a error when running a command with one options that dont conflict", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["test", "--option1", "value1",] });
+
+        const execute = vi.fn();
+
+        cli.addCommand({
+            execute,
+            name: "test",
+            options: [
+                { conflicts: "option2", name: "option1", type: String },
+                { conflicts: "option1", name: "option2", type: String },
+            ],
+        });
+
+        await cli.run({
+            shouldExitProcess: false
+        });
+
+        expect(execute).toHaveBeenCalledOnce();
     });
 });
