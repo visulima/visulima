@@ -1,3 +1,15 @@
+## @visulima/cerebro [1.1.15](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.14...@visulima/cerebro@1.1.15) (2024-08-08)
+
+### Bug Fixes
+
+* **cerebro:** fixed conflict handling on commands ([#471](https://github.com/visulima/visulima/issues/471)) ([5a19ebc](https://github.com/visulima/visulima/commit/5a19ebc91e35fcb502bd17c7282c609e498b95e6))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.6
+* **@visulima/pail:** upgraded to 2.1.4
+
 ## @visulima/cerebro [1.1.14](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.13...@visulima/cerebro@1.1.14) (2024-08-04)
 
 
