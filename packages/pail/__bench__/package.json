@@ -11,7 +11,7 @@
         "consola": "^3.2.3",
         "pino": "^9.3.2",
         "tslog": "^4.9.3",
-        "winston": "^3.13.1"
+        "winston": "^3.14.1"
     },
     "devDependencies": {
         "typescript": "5.4.5",

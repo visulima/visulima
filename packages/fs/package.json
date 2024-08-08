@@ -164,7 +164,7 @@
         "safe-regex2": "^4.0.0",
         "semantic-release": "24.0.0",
         "tempy": "^3.1.0",
-        "type-fest": "^4.23.0",
+        "type-fest": "^4.24.0",
         "typescript": "5.4.5",
         "vitest": "^2.0.5",
         "yaml": "^2.5.0"
