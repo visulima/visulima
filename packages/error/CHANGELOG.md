@@ -1,3 +1,13 @@
+## @visulima/error [4.4.0](https://github.com/visulima/visulima/compare/@visulima/error@4.3.2...@visulima/error@4.4.0) (2024-08-08)
+
+### Features
+
+* **error:** added captureRawStackTrace ([1c988a3](https://github.com/visulima/visulima/commit/1c988a33d6ce9ab1afec6c94efd7fa091205742c))
+
+### Tests
+
+* **error:** fixed assertions on test ([f315754](https://github.com/visulima/visulima/commit/f3157544173590e8695c1419ba7f29cb480d43cf))
+
 ## @visulima/error [4.3.2](https://github.com/visulima/visulima/compare/@visulima/error@4.3.1...@visulima/error@4.3.2) (2024-08-04)
 
 
