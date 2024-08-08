@@ -1,3 +1,14 @@
+## @visulima/pail [2.1.4](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.3...@visulima/pail@2.1.4) (2024-08-08)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 4.4.0
+
 ## @visulima/pail [2.1.3](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.2...@visulima/pail@2.1.3) (2024-08-04)
 
 
