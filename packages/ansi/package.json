@@ -213,7 +213,7 @@
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
         "semantic-release": "^24.0.0",
-        "type-fest": "^4.23.0",
+        "type-fest": "^4.24.0",
         "typescript": "5.4.5",
         "vitest": "^2.0.5"
     },

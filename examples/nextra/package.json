@@ -17,7 +17,7 @@
         "eslint": "8.51.0",
         "eslint-config-next": "13.5.4",
         "focus-visible": "^5.2.0",
-        "framer-motion": "^11.3.19",
+        "framer-motion": "^11.3.24",
         "intersection-observer": "^0.12.2",
         "isomorphic-git": "1.24.5",
         "markdown-to-jsx": "^7.4.7",
@@ -32,9 +32,9 @@
         "@types/react": "18.2.28",
         "@types/react-dom": "18.2.13",
         "cross-env": "^7.0.3",
-        "postcss": "^8.4.40",
+        "postcss": "^8.4.41",
         "postcss-lightningcss": "1.0.0",
-        "tailwindcss": "^3.4.7",
+        "tailwindcss": "^3.4.9",
         "typescript": "5.2.2"
     },
     "nextBundleAnalysis": {
