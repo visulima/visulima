@@ -1,6 +1,6 @@
 {
     "name": "@visulima/find-cache-dir",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "Finds the common standard cache directory",
     "keywords": [
         "visulima",
@@ -73,7 +73,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "2.1.12",
+        "@visulima/fs": "2.1.13",
         "@visulima/path": "1.0.4"
     },
     "devDependencies": {

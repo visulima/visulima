@@ -1,3 +1,10 @@
+## @visulima/find-cache-dir [1.0.6](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.5...@visulima/find-cache-dir@1.0.6) (2024-08-08)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.13
+
 ## @visulima/find-cache-dir [1.0.5](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@1.0.4...@visulima/find-cache-dir@1.0.5) (2024-08-04)
 
 
