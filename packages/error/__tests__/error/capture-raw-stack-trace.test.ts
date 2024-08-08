@@ -4,7 +4,7 @@ import captureRawStackTrace from "../../src/error/capture-raw-stack-trace";
 
 describe("captureRawStackTrace", () => {
     it("should return stack trace when Error.captureStackTrace is available", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const stackTrace = captureRawStackTrace();
 
