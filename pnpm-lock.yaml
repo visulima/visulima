@@ -3159,8 +3159,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
       read-pkg-up:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^11.0.0
+        version: 11.0.0
       yaml:
         specifier: ^2.4.5
         version: 2.5.0
