@@ -90,7 +90,7 @@
         "@babel/core": "^7.25.2",
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@types/http-errors": "^2.0.4",
-        "@types/node": "18.19.15",
+        "@types/node": "18.19.43",
         "@visulima/nextra-theme-docs": "4.0.26",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
@@ -108,7 +108,7 @@
         "fastify": "^4.28.1",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^3.3.3",
-        "rimraf": "5.0.9",
+        "rimraf": "5.0.10",
         "semantic-release": "24.0.0",
         "tsup": "^8.2.4",
         "typescript": "5.4.5",
@@ -116,7 +116,7 @@
         "zod": "^3.23.8"
     },
     "peerDependencies": {
-        "zod": "^3.22.4"
+        "zod": "^3.22.5"
     },
     "engines": {
         "node": ">=18.* <=22.*"
