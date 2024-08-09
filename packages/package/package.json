@@ -172,7 +172,7 @@
         "semantic-release": "24.0.0",
         "tempy": "^3.1.0",
         "type-fest": "^4.24.0",
-        "typescript": "5.4.5",
+        "typescript": "5.5.4",
         "vitest": "^2.0.5",
         "which-pm-runs": "file:",
         "yarn": "^1.22.22"
