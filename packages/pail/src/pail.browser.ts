@@ -92,8 +92,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.scopeName = arrayify(options.scope).filter(Boolean) as string[];
 
-        this.timersMap = new Map();
-        this.countMap = new Map();
+        this.timersMap = new Map<string, number>();
+        this.countMap = new Map<string, number>();
 
         this.groups = [];
 
