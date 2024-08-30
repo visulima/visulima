@@ -2053,8 +2053,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       path-to-regexp:
-        specifier: ^7.1.0
-        version: 7.1.0
+        specifier: ^6.2.2
+        version: 6.2.2
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -16110,10 +16110,6 @@ packages:
 
   path-to-regexp@6.2.2:
     resolution: {integrity: sha512-GQX3SSMokngb36+whdpRXE+3f9V8UzyAorlYvOGx87ufGHehNTn5lCxrKtLyZ4Yl/wEKnNnr98ZzOwwDZV5ogw==}
-
-  path-to-regexp@7.1.0:
-    resolution: {integrity: sha512-ZToe+MbUF4lBqk6dV8GKot4DKfzrxXsplOddH8zN3YK+qw9/McvP7+4ICjZvOne0jQhN4eJwHsX6tT0Ns19fvw==}
-    engines: {node: '>=16'}
 
   path-type@1.1.0:
     resolution: {integrity: sha512-S4eENJz1pkiQn9Znv33Q+deTOKmbl+jj1Fl+qiP/vYezj+S8x+J3Uo0ISrx/QoEvIlOaDWJhPaRd1flJ9HXZqg==}
@@ -36563,8 +36559,6 @@ snapshots:
   path-to-regexp@2.2.1: {}
 
   path-to-regexp@6.2.2: {}
-
-  path-to-regexp@7.1.0: {}
 
   path-type@1.1.0:
     dependencies:
