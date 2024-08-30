@@ -1,6 +1,6 @@
 {
     "name": "@visulima/inspector",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "Inspect utility for Node.js and Browsers.",
     "keywords": [
         "visulima",
@@ -93,7 +93,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
         "@total-typescript/ts-reset": "^0.6.0",
         "@types/node": "18.19.15",
-        "@visulima/colorize": "1.4.5",
+        "@visulima/colorize": "1.4.6",
         "@visulima/packem": "^1.0.0-alpha.86",
         "@vitest/browser": "1.6.0",
         "@vitest/coverage-v8": "^2.0.5",
