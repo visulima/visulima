@@ -1,3 +1,15 @@
+## @visulima/inspector [1.0.6](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.5...@visulima/inspector@1.0.6) (2024-08-30)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.6
+
 ## @visulima/inspector [1.0.5](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.4...@visulima/inspector@1.0.5) (2024-08-04)
 
 
