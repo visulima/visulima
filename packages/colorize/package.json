@@ -164,7 +164,7 @@
         "@babel/core": "^7.25.2",
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
-        "@total-typescript/ts-reset": "^0.5.1",
+        "@total-typescript/ts-reset": "^0.6.0",
         "@types/node": "18.19.15",
         "@visulima/path": "1.0.4",
         "@vitest/coverage-v8": "^2.0.5",
