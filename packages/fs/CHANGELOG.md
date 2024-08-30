@@ -1,3 +1,19 @@
+## @visulima/fs [2.1.14](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.13...@visulima/fs@2.1.14) (2024-08-30)
+
+### Bug Fixes
+
+* updated license content ([63e34b3](https://github.com/visulima/visulima/commit/63e34b3a173d0b05b4eea97f85d37f08559559dd))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.5
+* **@visulima/error:** upgraded to 4.4.1
+
 ## @visulima/fs [2.1.13](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.12...@visulima/fs@2.1.13) (2024-08-08)
 
 ### Miscellaneous Chores
