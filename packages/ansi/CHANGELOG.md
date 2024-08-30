@@ -1,3 +1,20 @@
+## @visulima/ansi [1.0.3](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.2...@visulima/ansi@1.0.3) (2024-08-30)
+
+### Bug Fixes
+
+* updated license content ([63e34b3](https://github.com/visulima/visulima/commit/63e34b3a173d0b05b4eea97f85d37f08559559dd))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.6
+* **@visulima/path:** upgraded to 1.0.5
+
 ## @visulima/ansi [1.0.2](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.1...@visulima/ansi@1.0.2) (2024-08-04)
 
 
