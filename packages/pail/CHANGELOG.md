@@ -1,3 +1,25 @@
+## @visulima/pail [2.1.5](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.4...@visulima/pail@2.1.5) (2024-08-30)
+
+### Bug Fixes
+
+* **pail:** update safe-stable-stringify package to version 2.5.0 ([e463964](https://github.com/visulima/visulima/commit/e4639641231b73f3928cbef1753017b532378389))
+
+### Styles
+
+* **pail:** cs fix ([06b3af0](https://github.com/visulima/visulima/commit/06b3af06029421be64130ce591344a659f111275))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.6
+* **@visulima/error:** upgraded to 4.4.1
+* **@visulima/inspector:** upgraded to 1.0.6
+* **@visulima/redact:** upgraded to 1.0.4
+
 ## @visulima/pail [2.1.4](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.3...@visulima/pail@2.1.4) (2024-08-08)
 
 ### Miscellaneous Chores
