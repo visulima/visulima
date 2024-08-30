@@ -108,7 +108,7 @@
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
-        "yaml": "^2.4.5"
+        "yaml": "^2.5.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -142,12 +142,12 @@
         "tsup": "^8.2.4",
         "typescript": "5.4.5",
         "vitest": "^2.0.5",
-        "webpack": "^5.93.0"
+        "webpack": "^5.94.0"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
-        "webpack": "^5.93.0"
+        "webpack": "^5.94.0"
     },
     "engines": {
         "node": ">=18.* <=22.*"
