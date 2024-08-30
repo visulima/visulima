@@ -208,7 +208,7 @@
         "@visulima/error": "4.4.0",
         "@visulima/fmt": "1.1.6",
         "@visulima/inspector": "1.0.5",
-        "safe-stable-stringify": "^2.4.3"
+        "safe-stable-stringify": "^2.5.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -218,9 +218,9 @@
         "@babel/core": "^7.25.2",
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@secretlint/secretlint-rule-preset-recommend": "^8.2.4",
-        "@total-typescript/ts-reset": "^0.5.1",
+        "@total-typescript/ts-reset": "^0.6.0",
         "@types/node": "18.19.15",
-        "@visulima/packem": "^1.0.0-alpha.60",
+        "@visulima/packem": "^1.0.0-alpha.86",
         "@visulima/redact": "1.0.3",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
@@ -241,7 +241,7 @@
         "semantic-release": "24.0.0",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
-        "type-fest": "^4.24.0",
+        "type-fest": "^4.26.0",
         "typescript": "5.4.5",
         "vitest": "^2.0.5",
         "wrap-ansi": "^9.0.0"
