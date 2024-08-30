@@ -47,11 +47,11 @@ Repository: chalk/ansi-regex
 
 ---
 
-## mimic-fn
+## mimic-function
 
 License: MIT
 By: Sindre Sorhus
-Repository: sindresorhus/mimic-fn
+Repository: sindresorhus/mimic-function
 
 > MIT License
 >
