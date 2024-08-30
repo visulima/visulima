@@ -1,3 +1,16 @@
+## @visulima/api-platform [3.0.17](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.16...@visulima/api-platform@3.0.17) (2024-08-30)
+
+### Bug Fixes
+
+* **api-platform:** updated yaml package to 2.5.0 and debug package to 4.3.6 ([a06732b](https://github.com/visulima/visulima/commit/a06732bfcc2e58aef3ec9115f5ac23d3a29bbffb))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.56
+* **@visulima/path:** upgraded to 1.0.5
+* **@visulima/fs:** upgraded to 2.1.14
+
 ## @visulima/api-platform [3.0.16](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.15...@visulima/api-platform@3.0.16) (2024-08-08)
 
 ### Miscellaneous Chores
