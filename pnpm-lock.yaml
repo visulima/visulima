@@ -599,7 +599,7 @@ importers:
         specifier: ^6.13.1
         version: 6.13.1
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -755,7 +755,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -798,7 +798,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -932,7 +932,7 @@ importers:
         specifier: ^6.13.1
         version: 6.13.1
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prisma:
         specifier: ^4.15.0
@@ -1166,6 +1166,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.4.5)))(semantic-release@24.1.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -1678,6 +1681,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2320,6 +2326,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2432,6 +2441,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.4.5)))(semantic-release@24.1.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2522,6 +2534,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2607,6 +2622,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2848,6 +2866,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -2956,6 +2977,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.4.5)))(semantic-release@24.1.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3077,6 +3101,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3280,6 +3307,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.5.4)))(semantic-release@24.1.0(typescript@5.5.4))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3392,6 +3422,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3512,6 +3545,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3612,6 +3648,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3760,6 +3799,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -3960,6 +4002,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -4091,6 +4136,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.4.5)))(semantic-release@24.1.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -4191,6 +4239,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.1.0(typescript@5.4.5)))(semantic-release@24.1.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.15.4
+        version: 0.15.4
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -4316,6 +4367,9 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@andrewbranch/untar.js@1.0.3':
+    resolution: {integrity: sha512-Jh15/qVmrLGhkKJBdXlK1+9tY4lZruYjsgkDFj08ZmDiWVBLJcqkok7Z0/R0In+i1rScBpJlSvrTS2Lm41Pbnw==}
 
   '@anolilab/commitlint-config@5.0.3':
     resolution: {integrity: sha512-nNlDmf8BtAuTkMo2uGgnhadmkJa7S7oUefPd+WLql5qLXq+SQ+HvsufLO4UXvEFXLs6FbbMk6Hgfg9nHhYfU7Q==}
@@ -4515,6 +4569,15 @@ packages:
     resolution: {integrity: sha512-9Kt7EuS/7WbMAUv2gSziqjvxwDbFSg3Xeyfuj5laUODX8o/k/CpsAKiQ8W7/R88eXFTMbJYg6+7uAmOWNKmwnw==}
     peerDependencies:
       openapi-types: '>=7'
+
+  '@arethetypeswrong/cli@0.15.4':
+    resolution: {integrity: sha512-YDbImAi1MGkouT7f2yAECpUMFhhA1J0EaXzIqoC5GGtK0xDgauLtcsZezm8tNq7d3wOFXH7OnY+IORYcG212rw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  '@arethetypeswrong/core@0.15.1':
+    resolution: {integrity: sha512-FYp6GBAgsNz81BkfItRz8RLZO03w5+BaeiPma1uCfmxTnxbtuMrI/dbzGiOk8VghO108uFI0oJo0OkewdSHw7g==}
+    engines: {node: '>=18'}
 
   '@arthurgeron/eslint-plugin-react-usememo@2.4.1':
     resolution: {integrity: sha512-AIMQGiZQXc+G6mA1UPGcmHW/YUPwYOtOs/1tQGvVB5IPjyUSV2/1qaa+eZiv55yH89cWD1sfmCFsFAMR3SJj6Q==}
@@ -14681,6 +14744,11 @@ packages:
     engines: {node: '>= 12'}
     hasBin: true
 
+  marked@9.1.6:
+    resolution: {integrity: sha512-jcByLnIFkd5gSXZmjNvS1TlmRhCXZjIzHYlaGkPlLIekG55JDR2Z4va9tZwCiP+/RDERiNhMOFu01xd6O5ct1Q==}
+    engines: {node: '>= 16'}
+    hasBin: true
+
   match-casing@1.0.3:
     resolution: {integrity: sha512-oMyC3vUVCFbGu+M2Zxl212LPJThcaw7QxB5lFuJPQCgV/dsGBP0yZeCoLmX6CiBkoBcVbAKDJZrBpJVu0XcLMw==}
 
@@ -15377,7 +15445,7 @@ packages:
   next-seo@6.5.0:
     resolution: {integrity: sha512-MfzUeWTN/x/rsKp/1n0213eojO97lIl0unxqbeCY+6pAucViHDA8GSLRRcXpgjsSmBxfCFdfpu7LXbt4ANQoNQ==}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -15385,7 +15453,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15436,7 +15504,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -18690,6 +18758,9 @@ packages:
     resolution: {integrity: sha512-WZ/iAJrKDhdINv1WG6KZIGHrZDar6VfhftG1QJFpVbOYZMYJLJOvZOo1amictRXVdBXZIgBHKswMTXzElngprA==}
     engines: {node: '>=14.13.1'}
 
+  ts-expose-internals-conditionally@1.0.0-empty.0:
+    resolution: {integrity: sha512-F8m9NOF6ZhdOClDVdlM8gj3fDCav4ZIFSs/EI3ksQbAAXVSCN/Jh5OCJDDZWBuBy9psFc6jULGDlPwjMYMhJDw==}
+
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
@@ -18906,6 +18977,11 @@ packages:
 
   typescript@5.2.2:
     resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -19841,6 +19917,8 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
+  '@andrewbranch/untar.js@1.0.3': {}
+
   '@anolilab/commitlint-config@5.0.3(@commitlint/cli@19.4.1(@types/node@18.19.42)(typescript@5.4.5))(@types/node@18.19.42)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
@@ -20312,6 +20390,25 @@ snapshots:
       ajv-draft-04: 1.0.0(ajv@8.16.0)
       call-me-maybe: 1.0.2
       openapi-types: 12.1.3
+
+  '@arethetypeswrong/cli@0.15.4':
+    dependencies:
+      '@arethetypeswrong/core': 0.15.1
+      chalk: 4.1.2
+      cli-table3: 0.6.5
+      commander: 10.0.1
+      marked: 9.1.6
+      marked-terminal: 7.1.0(marked@9.1.6)
+      semver: 7.6.3
+
+  '@arethetypeswrong/core@0.15.1':
+    dependencies:
+      '@andrewbranch/untar.js': 1.0.3
+      fflate: 0.8.2
+      semver: 7.6.3
+      ts-expose-internals-conditionally: 1.0.0-empty.0
+      typescript: 5.3.3
+      validate-npm-package-name: 5.0.1
 
   '@arthurgeron/eslint-plugin-react-usememo@2.4.1':
     dependencies:
@@ -34351,9 +34448,21 @@ snapshots:
       node-emoji: 2.1.3
       supports-hyperlinks: 3.0.0
 
+  marked-terminal@7.1.0(marked@9.1.6):
+    dependencies:
+      ansi-escapes: 7.0.0
+      chalk: 5.3.0
+      cli-highlight: 2.1.11
+      cli-table3: 0.6.5
+      marked: 9.1.6
+      node-emoji: 2.1.3
+      supports-hyperlinks: 3.0.0
+
   marked@12.0.2: {}
 
   marked@4.3.0: {}
+
+  marked@9.1.6: {}
 
   match-casing@1.0.3: {}
 
@@ -40020,6 +40129,8 @@ snapshots:
 
   ts-deepmerge@7.0.0: {}
 
+  ts-expose-internals-conditionally@1.0.0-empty.0: {}
+
   ts-interface-checker@0.1.13: {}
 
   ts-japi@1.11.4: {}
@@ -40266,6 +40377,8 @@ snapshots:
       typescript: 5.4.5
 
   typescript@5.2.2: {}
+
+  typescript@5.3.3: {}
 
   typescript@5.4.5: {}
 

@@ -37,9 +37,12 @@
         "visulima"
     ],
     "homepage": "https://www.visulima.com/docs/package/error",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
     "repository": {
         "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
+        "url": "git+https://github.com/visulima/visulima.git",
         "directory": "packages/error"
     },
     "funding": [
@@ -105,6 +108,16 @@
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/code-frame/index.d.ts",
+                "./dist/code-frame/index.d.ts",
+                "./dist/error/index.d.ts",
+                "./dist/stacktrace/index.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist",
         "README.md",
@@ -116,6 +129,7 @@
         "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
         "lint:package-json": "publint --strict",
@@ -132,6 +146,7 @@
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-pnpm": "^1.1.3",
         "@anolilab/semantic-release-preset": "^9.0.0",
+        "@arethetypeswrong/cli": "^0.15.4",
         "@babel/core": "^7.25.2",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.1",
