@@ -168,7 +168,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
         "@types/normalize-package-data": "^2.4.4",
-        "@visulima/packem": "^1.0.0-alpha.93",
+        "@visulima/packem": "^1.0.0-alpha.95",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
         "@yarnpkg/pnp": "4.0.6",
