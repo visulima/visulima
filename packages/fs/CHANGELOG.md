@@ -1,3 +1,15 @@
+## @visulima/fs [2.1.16](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.15...@visulima/fs@2.1.16) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.7
+* **@visulima/error:** upgraded to 4.4.3
+
 ## @visulima/fs [2.1.15](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.14...@visulima/fs@2.1.15) (2024-09-07)
 
 ### Bug Fixes
