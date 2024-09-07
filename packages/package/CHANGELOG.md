@@ -1,3 +1,15 @@
+## @visulima/package [3.0.10](https://github.com/visulima/visulima/compare/@visulima/package@3.0.9...@visulima/package@3.0.10) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.16
+* **@visulima/path:** upgraded to 1.0.7
+
 ## @visulima/package [3.0.9](https://github.com/visulima/visulima/compare/@visulima/package@3.0.8...@visulima/package@3.0.9) (2024-09-07)
 
 ### Bug Fixes
