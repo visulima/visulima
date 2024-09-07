@@ -5,11 +5,11 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@dynamicabot/signales": "^2.1.1",
+        "@dynamicabot/signales": "^2.1.2",
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
         "consola": "^3.2.3",
-        "pino": "^9.3.2",
+        "pino": "^9.4.0",
         "tslog": "^4.9.3",
         "winston": "^3.14.2"
     },
