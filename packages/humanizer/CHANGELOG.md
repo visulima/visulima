@@ -1,3 +1,14 @@
+## @visulima/humanizer [1.0.10](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.9...@visulima/humanizer@1.0.10) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.7
+
 ## @visulima/humanizer [1.0.9](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.8...@visulima/humanizer@1.0.9) (2024-09-07)
 
 ### Bug Fixes
