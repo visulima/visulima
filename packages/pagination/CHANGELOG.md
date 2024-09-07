@@ -1,3 +1,9 @@
+## @visulima/pagination [3.0.20](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.19...@visulima/pagination@3.0.20) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
 ## @visulima/pagination [3.0.19](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.18...@visulima/pagination@3.0.19) (2024-09-07)
 
 ### Bug Fixes
