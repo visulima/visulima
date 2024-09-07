@@ -1,3 +1,18 @@
+## @visulima/source-map [1.0.4](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.3...@visulima/source-map@1.0.4) (2024-09-07)
+
+### Bug Fixes
+
+* added types support for node10 ([604583f](https://github.com/visulima/visulima/commit/604583fa3c24b950fafad45d17e7a1333040fd76))
+
+### Miscellaneous Chores
+
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.0.6
+
 ## @visulima/source-map [1.0.3](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.2...@visulima/source-map@1.0.3) (2024-08-30)
 
 ### Miscellaneous Chores
