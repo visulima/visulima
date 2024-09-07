@@ -1,3 +1,23 @@
+## @visulima/ansi [1.0.4](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.3...@visulima/ansi@1.0.4) (2024-09-07)
+
+### Bug Fixes
+
+* added types support for node10 ([604583f](https://github.com/visulima/visulima/commit/604583fa3c24b950fafad45d17e7a1333040fd76))
+
+### Styles
+
+* cs fixes ([f5c4af7](https://github.com/visulima/visulima/commit/f5c4af7cfa9fc79b6d3fa60c1e48d88bffab5a08))
+
+### Miscellaneous Chores
+
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.7
+* **@visulima/path:** upgraded to 1.0.6
+
 ## @visulima/ansi [1.0.3](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.2...@visulima/ansi@1.0.3) (2024-08-30)
 
 ### Bug Fixes
