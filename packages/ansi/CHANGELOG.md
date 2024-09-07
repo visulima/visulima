@@ -1,3 +1,15 @@
+## @visulima/ansi [1.0.5](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.4...@visulima/ansi@1.0.5) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.8
+* **@visulima/path:** upgraded to 1.0.7
+
 ## @visulima/ansi [1.0.4](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.3...@visulima/ansi@1.0.4) (2024-09-07)
 
 ### Bug Fixes
