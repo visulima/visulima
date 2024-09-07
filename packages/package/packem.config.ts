@@ -11,5 +11,5 @@ export default defineConfig({
     },
     transformer,
     writeTypesVersionsToPackageJson: true,
-    cjsInterop: true,
+    // cjsInterop: true,
 }) as BuildConfig;
