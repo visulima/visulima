@@ -126,7 +126,7 @@
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@mfederczuk/deeptools": "2.1.0-indev01",
         "@rushstack/eslint-plugin-security": "^0.8.2",
-        "@total-typescript/ts-reset": "^0.6.0",
+        "@total-typescript/ts-reset": "^0.6.1",
         "@types/lodash.clonedeep": "^4.5.9",
         "@types/node": "18.19.15",
         "@ungap/structured-clone": "^1.2.0",

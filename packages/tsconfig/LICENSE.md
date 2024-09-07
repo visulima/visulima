@@ -26,14 +26,11 @@ SOFTWARE.
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/tsconfig artifact additionally contains code with the following licenses:
 (MIT OR CC0-1.0)
 
 # Bundled types:
-
 ## type-fest
-
 License: (MIT OR CC0-1.0)
 By: Sindre Sorhus
 Repository: sindresorhus/type-fest
