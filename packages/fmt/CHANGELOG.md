@@ -1,3 +1,9 @@
+## @visulima/fmt [1.1.8](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.7...@visulima/fmt@1.1.8) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
 ## @visulima/fmt [1.1.7](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.6...@visulima/fmt@1.1.7) (2024-09-07)
 
 ### Bug Fixes
