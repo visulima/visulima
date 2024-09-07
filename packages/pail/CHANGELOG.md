@@ -1,3 +1,18 @@
+## @visulima/pail [2.1.7](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.6...@visulima/pail@2.1.7) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.8
+* **@visulima/error:** upgraded to 4.4.3
+* **@visulima/fmt:** upgraded to 1.1.8
+* **@visulima/inspector:** upgraded to 1.0.8
+* **@visulima/redact:** upgraded to 1.0.6
+
 ## @visulima/pail [2.1.6](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.5...@visulima/pail@2.1.6) (2024-09-07)
 
 ### Bug Fixes
