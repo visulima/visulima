@@ -1,3 +1,9 @@
+## @visulima/redact [1.0.6](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.5...@visulima/redact@1.0.6) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
 ## @visulima/redact [1.0.5](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.4...@visulima/redact@1.0.5) (2024-09-07)
 
 ### Bug Fixes
