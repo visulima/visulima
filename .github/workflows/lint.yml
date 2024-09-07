@@ -104,6 +104,57 @@ jobs:
               shell: "bash"
               run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
+    attw:
+        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (are the types wrong)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6" # v2.8.1
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              uses: "actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332" # v4.1.7
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              with:
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
+              uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@main"
+              with:
+                  cache-prefix: "lint"
+
+            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
+            - name: "Get changed files"
+              id: "files"
+              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
+              with:
+                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
+                  base_sha: "${{ steps.setSHAs.outputs.base }}"
+                  separator: ","
+
+            - name: "Build"
+              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+
+            - name: "lint attw"
+              run: "pnpm run lint:affected:attw --files=${{ steps.files.outputs.all_changed_files }}"
+
+            - name: "Prepare nx cache"
+              shell: "bash"
+              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
+
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
         needs: "files-changed"
@@ -303,7 +354,7 @@ jobs:
     # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
-        needs: ["files-changed", "eslint", "yaml-lint", "package-json-lint"] # TODO add "markdown-lint"
+        needs: ["files-changed", "eslint", "attw", "yaml-lint", "package-json-lint"] # TODO add "markdown-lint"
         name: "Check Lint Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
         if: "always()"
