@@ -1,3 +1,26 @@
+## @visulima/pail [2.1.6](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.5...@visulima/pail@2.1.6) (2024-09-07)
+
+### Bug Fixes
+
+* added types support for node10 ([604583f](https://github.com/visulima/visulima/commit/604583fa3c24b950fafad45d17e7a1333040fd76))
+
+### Styles
+
+* cs fixes ([f5c4af7](https://github.com/visulima/visulima/commit/f5c4af7cfa9fc79b6d3fa60c1e48d88bffab5a08))
+
+### Miscellaneous Chores
+
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.7
+* **@visulima/error:** upgraded to 4.4.2
+* **@visulima/fmt:** upgraded to 1.1.7
+* **@visulima/inspector:** upgraded to 1.0.7
+* **@visulima/redact:** upgraded to 1.0.5
+
 ## @visulima/pail [2.1.5](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.4...@visulima/pail@2.1.5) (2024-08-30)
 
 ### Bug Fixes
