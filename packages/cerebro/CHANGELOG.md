@@ -1,3 +1,18 @@
+## @visulima/cerebro [1.1.18](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.17...@visulima/cerebro@1.1.18) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.16
+* **@visulima/colorize:** upgraded to 1.4.8
+* **@visulima/find-cache-dir:** upgraded to 1.0.9
+* **@visulima/pail:** upgraded to 2.1.7
+* **@visulima/path:** upgraded to 1.0.7
+
 ## @visulima/cerebro [1.1.17](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.16...@visulima/cerebro@1.1.17) (2024-09-07)
 
 ### Bug Fixes
