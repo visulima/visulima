@@ -70,11 +70,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/path artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## binary-extensions
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/binary-extensions
