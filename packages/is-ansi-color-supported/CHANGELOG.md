@@ -1,3 +1,14 @@
+## @visulima/is-ansi-color-supported [2.2.4](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.3...@visulima/is-ansi-color-supported@2.2.4) (2024-09-07)
+
+### Bug Fixes
+
+* added types support for node10 ([604583f](https://github.com/visulima/visulima/commit/604583fa3c24b950fafad45d17e7a1333040fd76))
+
+### Miscellaneous Chores
+
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+
 ## @visulima/is-ansi-color-supported [2.2.3](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.2...@visulima/is-ansi-color-supported@2.2.3) (2024-08-01)
 
 ### Bug Fixes
