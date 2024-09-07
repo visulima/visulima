@@ -1,3 +1,14 @@
+## @visulima/inspector [1.0.8](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.7...@visulima/inspector@1.0.8) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.8
+
 ## @visulima/inspector [1.0.7](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.6...@visulima/inspector@1.0.7) (2024-09-07)
 
 ### Bug Fixes
