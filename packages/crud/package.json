@@ -120,7 +120,7 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "next": "^14.2.4",
         "next-test-api-route-handler": "^4.0.8",
-        "node-mocks-http": "^1.15.1",
+        "node-mocks-http": "^1.16.0",
         "openapi-types": "^12.1.3",
         "prettier": "^3.3.3",
         "react": "^18.3.1",
