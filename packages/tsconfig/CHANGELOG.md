@@ -1,3 +1,19 @@
+## @visulima/tsconfig [1.0.12](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.11...@visulima/tsconfig@1.0.12) (2024-09-11)
+
+### Bug Fixes
+
+* fixed node10 support ([f5e78d9](https://github.com/visulima/visulima/commit/f5e78d9bff8fd603967666598b34f9338a8726b5))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.1.17
+* **@visulima/path:** upgraded to 1.0.8
+
 ## @visulima/tsconfig [1.0.11](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.10...@visulima/tsconfig@1.0.11) (2024-09-07)
 
 ### Bug Fixes
