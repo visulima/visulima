@@ -50,10 +50,10 @@ importers:
         version: 19.5.0
       '@nrwl/tao':
         specifier: 19.4.3
-        version: 19.4.3(@swc/core@1.6.7)
+        version: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@nrwl/workspace':
         specifier: 19.4.3
-        version: 19.4.3(@swc/core@1.6.7)
+        version: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@octokit/rest':
         specifier: ^21.0.2
         version: 21.0.2
@@ -89,7 +89,7 @@ importers:
         version: 15.2.10
       nx:
         specifier: ^19.7.2
-        version: 19.7.2(@swc/core@1.6.7)
+        version: 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
       pkg-pr-new:
         specifier: ^0.0.24
         version: 0.0.24
@@ -125,7 +125,7 @@ importers:
         version: 14.2.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -361,13 +361,13 @@ importers:
         version: 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@storybook/addon-interactions':
         specifier: ^8.2.9
-        version: 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/addon-links':
         specifier: ^8.2.9
         version: 8.2.9(react@18.3.1)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@storybook/addon-styling':
         specifier: ^1.3.7
-        version: 1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))
+        version: 1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
       '@storybook/addon-themes':
         specifier: ^8.2.9
         version: 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
@@ -1156,7 +1156,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1185,14 +1185,14 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/colorize':
-        specifier: 1.4.8
-        version: 1.4.8
+        specifier: 1.4.9
+        version: 1.4.9
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.6)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -1275,11 +1275,11 @@ importers:
         specifier: 3.0.12
         version: 3.0.12(zod@3.23.8)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.58
-        version: 2.0.58(@swc/core@1.6.7)(openapi-types@12.1.3)
+        specifier: 2.0.59
+        version: 2.0.59(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       accepts:
         specifier: ^1.3.8
         version: 1.3.8
@@ -1313,7 +1313,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1391,13 +1391,13 @@ importers:
         version: 4.18.3
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.6.7)
+        version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@visulima/crud':
-        specifier: 2.0.28
-        version: 2.0.28(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
+        specifier: 2.0.29
+        version: 2.0.29(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       '@visulima/fs':
-        specifier: 2.1.16
-        version: 2.1.16(yaml@2.5.1)
+        specifier: 2.1.17
+        version: 2.1.17(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -1523,7 +1523,7 @@ importers:
         version: 5.17.14(@types/react@18.3.5)(debug@4.3.7)(ramda@0.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       type-fest:
         specifier: ^4.26.1
         version: 4.26.1
@@ -1535,7 +1535,7 @@ importers:
         version: 2.0.5(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
       webpack:
         specifier: ^5.94.0
-        version: 5.94.0(@swc/core@1.6.7)
+        version: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -1544,7 +1544,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1564,11 +1564,11 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/colorize':
-        specifier: 1.4.8
-        version: 1.4.8
+        specifier: 1.4.9
+        version: 1.4.9
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -1622,7 +1622,7 @@ importers:
         version: 4.0.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -1648,17 +1648,17 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.16
-        version: 1.0.16
+        specifier: 1.0.17
+        version: 1.0.17
       '@visulima/colorize':
-        specifier: 1.4.8
-        version: 1.4.8
+        specifier: 1.4.9
+        version: 1.4.9
       '@visulima/find-cache-dir':
-        specifier: 1.0.9
-        version: 1.0.9(yaml@2.5.1)
+        specifier: 1.0.10
+        version: 1.0.10(yaml@2.5.1)
       '@visulima/pail':
-        specifier: 2.1.7
-        version: 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
+        specifier: 2.1.8
+        version: 2.1.8(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1671,7 +1671,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1719,10 +1719,10 @@ importers:
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -1790,12 +1790,12 @@ importers:
   packages/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 2.2.5
-        version: 2.2.5
+        specifier: 2.2.6
+        version: 2.2.6
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1821,8 +1821,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -1876,7 +1876,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -1955,7 +1955,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2036,7 +2036,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2050,8 +2050,8 @@ importers:
   packages/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: 3.0.20
-        version: 3.0.20
+        specifier: 3.0.21
+        version: 3.0.21
       '@visulima/prisma-dmmf-transformer':
         specifier: 2.0.20
         version: 2.0.20(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
@@ -2059,12 +2059,12 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       path-to-regexp:
-        specifier: ^6.2.2
-        version: 6.2.2
+        specifier: ^8.0.0
+        version: 8.1.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2184,7 +2184,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2196,7 +2196,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2304,7 +2304,7 @@ importers:
         version: 17.1.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2316,7 +2316,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2364,10 +2364,10 @@ importers:
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2423,15 +2423,15 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 2.1.16
-        version: 2.1.16(yaml@2.5.1)
+        specifier: 2.1.17
+        version: 2.1.17(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2461,7 +2461,7 @@ importers:
         version: 20.14.6
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.6)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2524,7 +2524,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2548,7 +2548,7 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2607,12 +2607,12 @@ importers:
   packages/fs:
     dependencies:
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2635,11 +2635,11 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/error':
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.4.4
+        version: 4.4.4
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2745,7 +2745,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2844,7 +2844,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2856,7 +2856,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2886,10 +2886,10 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2967,7 +2967,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2996,11 +2996,11 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/colorize':
-        specifier: 1.4.8
-        version: 1.4.8
+        specifier: 1.4.9
+        version: 1.4.9
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/browser':
         specifier: 1.6.0
         version: 1.6.0(playwright@1.45.1)(vitest@2.0.5)(webdriverio@9.0.9)
@@ -3091,7 +3091,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3118,7 +3118,7 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3180,8 +3180,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.1.16
-        version: 2.1.16(yaml@2.5.1)
+        specifier: 2.1.17
+        version: 2.1.17(yaml@2.5.1)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -3203,11 +3203,11 @@ importers:
         version: 12.1.0
       webpack:
         specifier: ^5.94.0
-        version: 5.94.0(@swc/core@1.6.7)
+        version: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3237,7 +3237,7 @@ importers:
         version: 18.19.15
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.6.7)
+        version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3285,7 +3285,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -3297,7 +3297,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3327,7 +3327,7 @@ importers:
         version: 18.19.39
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.39)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3401,18 +3401,18 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.1.16
-        version: 2.1.16(yaml@2.5.1)
+        specifier: 2.1.17
+        version: 2.1.17(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       normalize-package-data:
         specifier: ^6.0.2
         version: 6.0.2
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3445,7 +3445,7 @@ importers:
         version: 2.4.4
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3535,7 +3535,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3559,7 +3559,7 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3621,24 +3621,24 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.8
-        version: 1.4.8
+        specifier: 1.4.9
+        version: 1.4.9
       '@visulima/error':
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.4.4
+        version: 4.4.4
       '@visulima/fmt':
-        specifier: 1.1.8
-        version: 1.1.8
+        specifier: 1.1.9
+        version: 1.1.9
       '@visulima/inspector':
-        specifier: 1.0.8
-        version: 1.0.8
+        specifier: 1.0.9
+        version: 1.0.9
       safe-stable-stringify:
         specifier: ^2.5.0
         version: 2.5.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3668,10 +3668,10 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/redact':
-        specifier: 1.0.6
-        version: 1.0.6
+        specifier: 1.0.7
+        version: 1.0.7
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3789,7 +3789,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3816,7 +3816,7 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3895,7 +3895,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.2)
@@ -3976,7 +3976,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: 8.1.0
-        version: 8.1.0(@swc/core@1.6.7)(postcss@8.4.45)(typescript@5.4.5)
+        version: 8.1.0(@swc/core@1.6.7(@swc/helpers@0.5.5))(postcss@8.4.45)(typescript@5.4.5)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -3992,7 +3992,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4019,7 +4019,7 @@ importers:
         version: 18.19.15
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4121,12 +4121,12 @@ importers:
         specifier: ^0.3.25
         version: 0.3.25
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4156,7 +4156,7 @@ importers:
         version: 20.14.2
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.2)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4215,11 +4215,11 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 2.1.16
-        version: 2.1.16(yaml@2.5.1)
+        specifier: 2.1.17
+        version: 2.1.17(yaml@2.5.1)
       '@visulima/path':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 1.0.8
+        version: 1.0.8
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -4229,7 +4229,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4259,7 +4259,7 @@ importers:
         version: 18.18.14
       '@visulima/packem':
         specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.18.14)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -9205,6 +9205,11 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/boxen@1.0.17':
+    resolution: {integrity: sha512-UaKojF5p3RM42X4yGW5OyE54kbLnxR4GJ8M4m2BzjlK5/QG48GwxKLF2StlOCwQLcK2seuU9AoR51gnUfrROkw==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
   '@visulima/cerebro@1.1.18':
     resolution: {integrity: sha512-x7852JqPwP5Vl3cPHPZ12HQtFASqAH7ajSMmvVcXgrVYgXpWDi988aMsqi/De68AanYWsEvGiv6Fbh7atDGuew==}
     engines: {node: '>=18.* <=22.*'}
@@ -9215,6 +9220,11 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/colorize@1.4.9':
+    resolution: {integrity: sha512-n4UE+JQo8wIg0u2jXNHEelEZkXZ5FvB9E8kv2y9RpuxApEr/nqypewR0FmyMDZL+xvaEV0R38jhv5EOox5u4YA==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
   '@visulima/connect@3.0.12':
     resolution: {integrity: sha512-75EODKozRqQYEsU7ehz1uoUiUMOLqavLuQgpEhmIimtVZs7/rtCSwfpqoZyAkDVRjF6vF5isGrvM5Mj8a+tYzw==}
     engines: {node: '>=18.* <=22.*'}
@@ -9222,8 +9232,8 @@ packages:
     peerDependencies:
       zod: ^3.22.4
 
-  '@visulima/crud@2.0.28':
-    resolution: {integrity: sha512-BqBA3CxuDeJHhWVBn3j2vF9m5alkGSk+vcQYyFxNeEN0e/lSrhAs9IljLMpIl4YEhmEeC+OdZm6suIL0q7Aj8A==}
+  '@visulima/crud@2.0.29':
+    resolution: {integrity: sha512-LvaRpkOIyA4wFsAv7EEpWI/6nR0rFwPc/BxJLDjUeyEwuOKN2heEcDZkzqcjdBZ1qVPA7y42dugMotOeAxHUrQ==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9232,12 +9242,26 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/error@4.4.4':
+    resolution: {integrity: sha512-jPlfec0lht+fX6vGol9I3r8vDHFNofzxYzlWHKjrWUhFhCdBpwseabncUCSBWHgSpSEhYlejB1OVDZ5KPb2Bkg==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/find-cache-dir@1.0.10':
+    resolution: {integrity: sha512-2+rNhpr8WDZOem9QDecZBbUTjeWZcnEqRnLOjMtzSEN6yyM+yIaUomYmZD1PDWPnmjltK0H2nf/6O6DAmMLo5g==}
+    engines: {node: '>=18.* <=22.*'}
+
   '@visulima/find-cache-dir@1.0.9':
     resolution: {integrity: sha512-F5wpy1lkxrO7mh++wbWseXvt32pc7WI/WYVKFpcXZzgGrYcW/+xm7MjumO88JlSthCjfyLV5rC4PV/oUmNW9kA==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/fmt@1.1.8':
     resolution: {integrity: sha512-Hr6nmTORNI6vOmD/qRNTSO7otCIMDjLM67Yc12D94CvN52kgzIMuNsVEvgTroExSFIxye825S1JDejsvHEEnfg==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/fmt@1.1.9':
+    resolution: {integrity: sha512-r1vb6Mv/6RFkKxYlHfjbntvM4Xz6fnQsEUwQLVixPxt9O4Y6JmgeUmTn6QEgPY+agZ2RwO4uizPs7u8rLCK+6w==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9253,6 +9277,16 @@ packages:
 
   '@visulima/fs@2.1.16':
     resolution: {integrity: sha512-PPLZvrd088rwjrGG/C13PBaKwlfRdoeWcUxHlV+hPvFlKiqs0flBKouhCxtyOlefn5GeYXDTMpSC68xiSX8b9g==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.4.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
+
+  '@visulima/fs@2.1.17':
+    resolution: {integrity: sha512-IDqxzQW9cwioxALNJH6cOAPLtA9/ygaDUt71xycKZYsPDzwWvvk5Mgp1YLJe6BHPFPq4GvYkBhnYt5BMDnZO5w==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -9279,13 +9313,22 @@ packages:
     resolution: {integrity: sha512-DFvk7iPQcSetjRxV5UW7euFYoR0HnSmHCMORwz97o1lbGlnUE9vO8QHtbq4OVeEc3aKdbLW8JEjvq39UnnhYfw==}
     engines: {node: '>=18.* <=22.*'}
 
+  '@visulima/inspector@1.0.9':
+    resolution: {integrity: sha512-3ft78diNybLVIBhfD1wz/kZbxyGu/eUbHk3YFk+A6VvLerhq3XiW8GKsrxXH3JLSQG/I+447/j//SxGcP0Iw2Q==}
+    engines: {node: '>=18.* <=22.*'}
+
   '@visulima/is-ansi-color-supported@2.2.5':
     resolution: {integrity: sha512-ZoTMNE5ybZjacB9E4Hpbo/oH5+O3uvQm+PJ1SHLT81+e9m83N2Wkc27J+0HmI5mDAXfA654CqSDTeYCM84dWJg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.58':
-    resolution: {integrity: sha512-4H+EUsuxVff+vpv4PsDyZ8sXn6attEgezLmpq+y/O1fXsx+uolcIc/5sDSCHPrfoThBqgnnkTscpshtPx6E0dw==}
+  '@visulima/is-ansi-color-supported@2.2.6':
+    resolution: {integrity: sha512-GNYZk3RzPFU5G6y2Z3lzdwbOjdSqwahqap2oSuX4veWcU1xMT0S8SP0YLew829k3OsEKLQHnRgpAJsZV/il1Qg==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/jsdoc-open-api@2.0.59':
+    resolution: {integrity: sha512-ZkOnph+3omlCCrny3Wzunj1wak1kRZLByRtIawb+Ppf5GRmvdvDwBjLc+33FZCbXMpqvQI86Po0jWR/GanRBZQ==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -9294,7 +9337,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -9333,8 +9376,8 @@ packages:
       typescript:
         optional: true
 
-  '@visulima/pagination@3.0.20':
-    resolution: {integrity: sha512-GEnLXU1iAfenzBfZt9kSbvVaM+LkW8f8R3PXLXZSfKL5aNp8RRyc52aYDaFuWVoZwhHP9ZFQUVo3BYQn/zerqg==}
+  '@visulima/pagination@3.0.21':
+    resolution: {integrity: sha512-rpZd6FEQ7kYjYtvmk4NNqrcftpAdjkqh3ObYX+rcRj/6n+pGX8lnVXmHvJx3QUQl/RLDqnh8qq/8zc+MJwo6mg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9351,12 +9394,30 @@ packages:
       rotating-file-stream:
         optional: true
 
+  '@visulima/pail@2.1.8':
+    resolution: {integrity: sha512-IxkQIf4IILyEKp3fcEeNNc4mBF7/uZQw0mcxvAelkQJ7h7pRaIg4O3mRsJ6yeF9/UO8qEWZKk98ihAAqTgJ4BQ==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      '@visulima/redact': 1.0.7
+      rotating-file-stream: ^3.1.1
+    peerDependenciesMeta:
+      '@visulima/redact':
+        optional: true
+      rotating-file-stream:
+        optional: true
+
   '@visulima/path@1.0.2':
     resolution: {integrity: sha512-swUmYnU83E9KTMXCIkatLlsyMLZfIKG0r6EByYVuJPoZu58MTyOFHWu+nMwIVr04VFYAkoFUTHzmzgU0F1HbyA==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/path@1.0.7':
     resolution: {integrity: sha512-KKqikK8fbN7SMGvM3Km1RQpgGn2p0TqkzACKhXa+tv/W6jkuhepUk4WDR5mFZAzYc/t1t3oD8NfgbPPRQJwgaw==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+
+  '@visulima/path@1.0.8':
+    resolution: {integrity: sha512-RkI5ej2dZq0W+0t/v835RxsIbbV+yEMuyhc+Dzxug67hLwd1RZQBGWgcivtokK03EiZFMkQiOXWWz3W20YSnxw==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9368,8 +9429,8 @@ packages:
       '@prisma/client': 3.* || 4.*
       prisma: 3.* || 4.*
 
-  '@visulima/redact@1.0.6':
-    resolution: {integrity: sha512-ddyQUP9omBE3nAJNCBpCFaWT6PwSczBNtfXJPpBSxzij9+YNfBh+jmDKhHUzZ2voUGhRuFq/lNeVvl0zw2TGpA==}
+  '@visulima/redact@1.0.7':
+    resolution: {integrity: sha512-AOIBfbuxOO9KKxhLfASJE0jrriAxjsnMgP18suYc5gcSE9zASsR+UOt+W6lkpIOYBa0kZMHrHdxz/LeF+4+J8Q==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/tsconfig@1.0.11':
@@ -15441,7 +15502,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15492,7 +15553,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.5.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -16268,6 +16329,10 @@ packages:
 
   path-to-regexp@6.2.2:
     resolution: {integrity: sha512-GQX3SSMokngb36+whdpRXE+3f9V8UzyAorlYvOGx87ufGHehNTn5lCxrKtLyZ4Yl/wEKnNnr98ZzOwwDZV5ogw==}
+
+  path-to-regexp@8.1.0:
+    resolution: {integrity: sha512-Bqn3vc8CMHty6zuD+tG23s6v2kwxslHEhTj4eYaVKGIEB+YX/2wd0/rgXLFD9G9id9KCtbVy/3ZgmvZjpa0UdQ==}
+    engines: {node: '>=16'}
 
   path-type@1.1.0:
     resolution: {integrity: sha512-S4eENJz1pkiQn9Znv33Q+deTOKmbl+jj1Fl+qiP/vYezj+S8x+J3Uo0ISrx/QoEvIlOaDWJhPaRd1flJ9HXZqg==}
@@ -19936,7 +20001,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -20075,7 +20140,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -20145,7 +20210,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -20265,7 +20330,7 @@ snapshots:
 
   '@anolilab/rc@1.1.2(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
       ini: 4.1.3
       ts-deepmerge: 7.0.0
     transitivePeerDependencies:
@@ -20277,7 +20342,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 2.1.10(yaml@2.5.1)
       '@visulima/package': 1.10.3(yaml@2.5.1)
-      '@visulima/path': 1.0.7
+      '@visulima/path': 1.0.8
       aggregate-error: 5.0.0
       execa: 9.3.0
       ini: 4.1.3
@@ -22614,46 +22679,46 @@ snapshots:
 
   '@npmcli/redact@2.0.1': {}
 
-  '@nrwl/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7))':
+  '@nrwl/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
     dependencies:
-      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
+      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
     transitivePeerDependencies:
       - nx
 
-  '@nrwl/tao@19.4.3(@swc/core@1.6.7)':
+  '@nrwl/tao@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
     dependencies:
-      nx: 19.4.3(@swc/core@1.6.7)
+      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       tslib: 2.6.3
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nrwl/tao@19.7.2(@swc/core@1.6.7)':
+  '@nrwl/tao@19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))':
     dependencies:
-      nx: 19.7.2(@swc/core@1.6.7)
+      nx: 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
       tslib: 2.6.3
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nrwl/workspace@19.4.3(@swc/core@1.6.7)':
+  '@nrwl/workspace@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
     dependencies:
-      '@nx/workspace': 19.4.3(@swc/core@1.6.7)
+      '@nx/workspace': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nx/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7))':
+  '@nx/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
     dependencies:
-      '@nrwl/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
+      '@nrwl/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
       ejs: 3.1.10
       enquirer: 2.3.6
       ignore: 5.3.1
       minimatch: 9.0.3
-      nx: 19.4.3(@swc/core@1.6.7)
+      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       semver: 7.6.3
       tmp: 0.2.3
       tslib: 2.6.3
@@ -22719,13 +22784,13 @@ snapshots:
   '@nx/nx-win32-x64-msvc@19.7.2':
     optional: true
 
-  '@nx/workspace@19.4.3(@swc/core@1.6.7)':
+  '@nx/workspace@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
     dependencies:
-      '@nrwl/workspace': 19.4.3(@swc/core@1.6.7)
-      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
+      '@nrwl/workspace': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
       chalk: 4.1.2
       enquirer: 2.3.6
-      nx: 19.4.3(@swc/core@1.6.7)
+      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       tslib: 2.6.3
       yargs-parser: 21.1.1
     transitivePeerDependencies:
@@ -24448,11 +24513,11 @@ snapshots:
       '@storybook/global': 5.0.0
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
 
-  '@storybook/addon-interactions@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/addon-interactions@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/instrumenter': 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
-      '@storybook/test': 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+      '@storybook/test': 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       polished: 4.3.1
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
       ts-dedent: 2.2.0
@@ -24484,7 +24549,7 @@ snapshots:
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
       ts-dedent: 2.2.0
 
-  '@storybook/addon-styling@1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))':
+  '@storybook/addon-styling@1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
     dependencies:
       '@babel/template': 7.24.7
       '@babel/types': 7.24.7
@@ -24497,18 +24562,18 @@ snapshots:
       '@storybook/preview-api': 7.6.20
       '@storybook/theming': 7.6.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@storybook/types': 7.6.20
-      css-loader: 6.11.0(webpack@5.94.0(@swc/core@1.6.7))
-      less-loader: 11.1.4(webpack@5.94.0(@swc/core@1.6.7))
-      postcss-loader: 7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))
+      css-loader: 6.11.0(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      less-loader: 11.1.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      postcss-loader: 7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
       prettier: 2.8.8
       resolve-url-loader: 5.0.0
-      sass-loader: 13.3.3(webpack@5.94.0(@swc/core@1.6.7))
-      style-loader: 3.3.4(webpack@5.94.0(@swc/core@1.6.7))
+      sass-loader: 13.3.3(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      style-loader: 3.3.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
     optionalDependencies:
       postcss: 8.4.45
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - '@rspack/core'
       - '@types/react'
@@ -24994,12 +25059,12 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@storybook/test@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/test@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@storybook/csf': 0.1.11
       '@storybook/instrumenter': 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@testing-library/dom': 10.1.0
-      '@testing-library/jest-dom': 6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+      '@testing-library/jest-dom': 6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       '@testing-library/user-event': 14.5.2(@testing-library/dom@10.1.0)
       '@vitest/expect': 1.6.0
       '@vitest/spy': 1.6.0
@@ -25627,7 +25692,7 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/jest-dom@6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@testing-library/jest-dom@6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@adobe/css-tools': 4.4.0
       '@babel/runtime': 7.24.7
@@ -26401,11 +26466,11 @@ snapshots:
     dependencies:
       '@types/node': 20.14.11
 
-  '@types/webpack@5.28.5(@swc/core@1.6.7)':
+  '@types/webpack@5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))':
     dependencies:
       '@types/node': 20.14.11
       tapable: 2.2.1
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -27063,12 +27128,14 @@ snapshots:
 
   '@visulima/boxen@1.0.16': {}
 
-  '@visulima/cerebro@1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
+  '@visulima/boxen@1.0.17': {}
+
+  '@visulima/cerebro@1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
     dependencies:
       '@visulima/boxen': 1.0.16
       '@visulima/colorize': 1.4.8
       '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
       cli-table3: 0.6.5
       command-line-args: 6.0.0
       fastest-levenshtein: 1.0.16
@@ -27081,15 +27148,19 @@ snapshots:
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.5
 
+  '@visulima/colorize@1.4.9':
+    dependencies:
+      '@visulima/is-ansi-color-supported': 2.2.6
+
   '@visulima/connect@3.0.12(zod@3.23.8)':
     dependencies:
       http-errors: 2.0.0
       regexparam: 3.0.0
       zod: 3.23.8
 
-  '@visulima/crud@2.0.28(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
+  '@visulima/crud@2.0.29(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
     dependencies:
-      '@visulima/pagination': 3.0.20
+      '@visulima/pagination': 3.0.21
       '@visulima/prisma-dmmf-transformer': 2.0.20(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       http-errors: 2.0.0
       path-to-regexp: 6.2.2
@@ -27099,6 +27170,15 @@ snapshots:
 
   '@visulima/error@4.4.3': {}
 
+  '@visulima/error@4.4.4': {}
+
+  '@visulima/find-cache-dir@1.0.10(yaml@2.5.1)':
+    dependencies:
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
+      '@visulima/path': 1.0.8
+    transitivePeerDependencies:
+      - yaml
+
   '@visulima/find-cache-dir@1.0.9(yaml@2.5.1)':
     dependencies:
       '@visulima/fs': 2.1.16(yaml@2.5.1)
@@ -27107,6 +27187,8 @@ snapshots:
       - yaml
 
   '@visulima/fmt@1.1.8': {}
+
+  '@visulima/fmt@1.1.9': {}
 
   '@visulima/fs@2.1.10(yaml@2.5.1)':
     dependencies:
@@ -27120,6 +27202,12 @@ snapshots:
     optionalDependencies:
       yaml: 2.5.1
 
+  '@visulima/fs@2.1.17(yaml@2.5.1)':
+    dependencies:
+      '@visulima/path': 1.0.8
+    optionalDependencies:
+      yaml: 2.5.1
+
   '@visulima/fs@2.1.7(yaml@2.5.1)':
     dependencies:
       '@visulima/path': 1.0.2
@@ -27130,12 +27218,16 @@ snapshots:
 
   '@visulima/inspector@1.0.8': {}
 
+  '@visulima/inspector@1.0.9': {}
+
   '@visulima/is-ansi-color-supported@2.2.5': {}
 
-  '@visulima/jsdoc-open-api@2.0.58(@swc/core@1.6.7)(openapi-types@12.1.3)':
+  '@visulima/is-ansi-color-supported@2.2.6': {}
+
+  '@visulima/jsdoc-open-api@2.0.59(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -27143,7 +27235,7 @@ snapshots:
     optionalDependencies:
       cli-progress: 3.12.0
       commander: 12.1.0
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -27231,7 +27323,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
@@ -27245,14 +27337,14 @@ snapshots:
       '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
-      '@visulima/colorize': 1.4.8
+      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@visulima/colorize': 1.4.9
       '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
       '@visulima/fs': 2.1.16(yaml@2.5.1)
       '@visulima/humanizer': 1.0.10
       '@visulima/package': 3.0.10(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
-      '@visulima/path': 1.0.7
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
+      '@visulima/path': 1.0.8
       '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
@@ -27282,7 +27374,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
@@ -27296,14 +27388,14 @@ snapshots:
       '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
-      '@visulima/colorize': 1.4.8
+      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@visulima/colorize': 1.4.9
       '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
       '@visulima/fs': 2.1.16(yaml@2.5.1)
       '@visulima/humanizer': 1.0.10
       '@visulima/package': 3.0.10(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
-      '@visulima/path': 1.0.7
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
+      '@visulima/path': 1.0.8
       '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
@@ -27333,9 +27425,9 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/pagination@3.0.20': {}
+  '@visulima/pagination@3.0.21': {}
 
-  '@visulima/pail@2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)':
+  '@visulima/pail@2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.8
       '@visulima/error': 4.4.3
@@ -27343,12 +27435,24 @@ snapshots:
       '@visulima/inspector': 1.0.8
       safe-stable-stringify: 2.5.0
     optionalDependencies:
-      '@visulima/redact': 1.0.6
+      '@visulima/redact': 1.0.7
+      rotating-file-stream: 3.2.3
+
+  '@visulima/pail@2.1.8(rotating-file-stream@3.2.3)':
+    dependencies:
+      '@visulima/colorize': 1.4.9
+      '@visulima/error': 4.4.4
+      '@visulima/fmt': 1.1.9
+      '@visulima/inspector': 1.0.9
+      safe-stable-stringify: 2.5.0
+    optionalDependencies:
       rotating-file-stream: 3.2.3
 
   '@visulima/path@1.0.2': {}
 
   '@visulima/path@1.0.7': {}
+
+  '@visulima/path@1.0.8': {}
 
   '@visulima/prisma-dmmf-transformer@2.0.20(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
     dependencies:
@@ -27356,7 +27460,7 @@ snapshots:
       '@prisma/generator-helper': 5.15.1
       prisma: 5.15.1
 
-  '@visulima/redact@1.0.6':
+  '@visulima/redact@1.0.7':
     dependencies:
       compromise: 14.14.0
 
@@ -27380,6 +27484,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@vitest/browser@1.6.0(playwright@1.45.1)(vitest@1.6.0)(webdriverio@9.0.9)':
+    dependencies:
+      '@vitest/utils': 1.6.0
+      magic-string: 0.30.10
+      sirv: 2.0.4
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
+    optionalDependencies:
+      playwright: 1.45.1
+      webdriverio: 9.0.9
+    optional: true
+
   '@vitest/browser@1.6.0(playwright@1.45.1)(vitest@2.0.5)(webdriverio@9.0.9)':
     dependencies:
       '@vitest/utils': 1.6.0
@@ -27389,14 +27504,6 @@ snapshots:
     optionalDependencies:
       playwright: 1.45.1
       webdriverio: 9.0.9
-
-  '@vitest/browser@1.6.0(vitest@1.6.0)':
-    dependencies:
-      '@vitest/utils': 1.6.0
-      magic-string: 0.30.10
-      sirv: 2.0.4
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
-    optional: true
 
   '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
@@ -29234,7 +29341,7 @@ snapshots:
 
   css-color-keywords@1.0.0: {}
 
-  css-loader@6.11.0(webpack@5.94.0(@swc/core@1.6.7)):
+  css-loader@6.11.0(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.45)
       postcss: 8.4.45
@@ -29245,7 +29352,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.6.2
     optionalDependencies:
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
 
   css-select@5.1.0:
     dependencies:
@@ -34039,9 +34146,9 @@ snapshots:
     dependencies:
       readable-stream: 2.3.8
 
-  less-loader@11.1.4(webpack@5.94.0(@swc/core@1.6.7)):
+  less-loader@11.1.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
 
   leven@3.1.0: {}
 
@@ -36192,9 +36299,9 @@ snapshots:
 
   nwsapi@2.2.12: {}
 
-  nx@19.4.3(@swc/core@1.6.7):
+  nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)):
     dependencies:
-      '@nrwl/tao': 19.4.3(@swc/core@1.6.7)
+      '@nrwl/tao': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
@@ -36243,10 +36350,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  nx@19.7.2(@swc/core@1.6.7):
+  nx@19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5)):
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
-      '@nrwl/tao': 19.7.2(@swc/core@1.6.7)
+      '@nrwl/tao': 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
@@ -36892,6 +36999,8 @@ snapshots:
 
   path-to-regexp@6.2.2: {}
 
+  path-to-regexp@8.1.0: {}
+
   path-type@1.1.0:
     dependencies:
       graceful-fs: 4.2.11
@@ -37130,13 +37239,13 @@ snapshots:
       tsx: 4.19.0
       yaml: 2.5.1
 
-  postcss-loader@7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7)):
+  postcss-loader@7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
       cosmiconfig: 8.3.6(typescript@5.5.3)
       jiti: 1.21.6
       postcss: 8.4.45
       semver: 7.6.2
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - typescript
 
@@ -38571,10 +38680,10 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sass-loader@13.3.3(webpack@5.94.0(@swc/core@1.6.7)):
+  sass-loader@13.3.3(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
       neo-async: 2.6.2
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
 
   satori@0.10.9:
     dependencies:
@@ -39475,9 +39584,9 @@ snapshots:
     dependencies:
       boundary: 2.0.0
 
-  style-loader@3.3.4(webpack@5.94.0(@swc/core@1.6.7)):
+  style-loader@3.3.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
 
   style-to-object@0.4.4:
     dependencies:
@@ -39836,14 +39945,14 @@ snapshots:
 
   terminal-size@4.0.0: {}
 
-  terser-webpack-plugin@5.3.10(@swc/core@1.6.7)(webpack@5.94.0(@swc/core@1.6.7)):
+  terser-webpack-plugin@5.3.10(@swc/core@1.6.7(@swc/helpers@0.5.5))(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.2
       terser: 5.31.1
-      webpack: 5.94.0(@swc/core@1.6.7)
+      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
 
@@ -40258,7 +40367,7 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  tsup@8.1.0(@swc/core@1.6.7)(postcss@8.4.45)(typescript@5.4.5):
+  tsup@8.1.0(@swc/core@1.6.7(@swc/helpers@0.5.5))(postcss@8.4.45)(typescript@5.4.5):
     dependencies:
       bundle-require: 4.2.1(esbuild@0.21.4)
       cac: 6.7.14
@@ -40282,7 +40391,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  tsup@8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1):
+  tsup@8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.21.4)
       cac: 6.7.14
@@ -41388,7 +41497,7 @@ snapshots:
       why-is-node-running: 2.2.2
     optionalDependencies:
       '@types/node': 18.19.15
-      '@vitest/browser': 1.6.0(vitest@1.6.0)
+      '@vitest/browser': 1.6.0(playwright@1.45.1)(vitest@1.6.0)(webdriverio@9.0.9)
       '@vitest/ui': 2.0.5(vitest@2.0.5)
       jsdom: 25.0.0
     transitivePeerDependencies:
@@ -41771,7 +41880,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.94.0(@swc/core@1.6.7):
+  webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)):
     dependencies:
       '@types/estree': 1.0.5
       '@webassemblyjs/ast': 1.12.1
@@ -41793,7 +41902,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(@swc/core@1.6.7)(webpack@5.94.0(@swc/core@1.6.7))
+      terser-webpack-plugin: 5.3.10(@swc/core@1.6.7(@swc/helpers@0.5.5))(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
       watchpack: 2.4.1
       webpack-sources: 3.2.3
     transitivePeerDependencies:
