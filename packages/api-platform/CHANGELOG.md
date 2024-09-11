@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.20](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.19...@visulima/api-platform@3.0.20) (2024-09-11)
+
+### Miscellaneous Chores
+
+* fixed test, because of new express version ([bf0efd7](https://github.com/visulima/visulima/commit/bf0efd707c4c431e3dac6816fa591f44e75195d8))
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+
+
+### Dependencies
+
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.59
+* **@visulima/path:** upgraded to 1.0.8
+* **@visulima/crud:** upgraded to 2.0.29
+* **@visulima/fs:** upgraded to 2.1.17
+
 ## @visulima/api-platform [3.0.19](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.18...@visulima/api-platform@3.0.19) (2024-09-07)
 
 
