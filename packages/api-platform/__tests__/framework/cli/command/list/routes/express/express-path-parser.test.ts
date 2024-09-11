@@ -65,7 +65,7 @@ describe("express-path-parser", () => {
             {
                 metadata: { hidden: true, operationId: "getResourceByEntity", schema: {} },
                 method: "get",
-                path: "/dashboard/:entity/:resourceId",
+                path: "/dashboard/?:/([^/]+?))/:resourceId",
                 pathParams: [
                     { in: "path", name: "entity", required: true },
                     { in: "path", name: "resourceId", required: true },
@@ -306,7 +306,7 @@ describe("express-path-parser", () => {
 
         let { method, path, pathParams } = parsed[0] as RouteMetaData;
 
-        expect(path).toBe("/sub-route/:test1/sub-sub-route/:test2/:test3/endpoint");
+        expect(path).toBe("/sub-route(?:/([^/]+?))/sub-sub-route(?:/([^/]+?))(?:/([^/]+?))/endpoint");
         expect(pathParams).toStrictEqual([
             { in: "path", name: "test1", required: true },
             { in: "path", name: "test2", required: true },
@@ -316,7 +316,7 @@ describe("express-path-parser", () => {
 
         ({ method, path, pathParams } = parsed[1] as RouteMetaData);
 
-        expect(path).toBe("/sub-route/:test1/sub-sub-route/:test2/:test3/endpoint2");
+        expect(path).toBe("/sub-route(?:/([^/]+?))/sub-sub-route(?:/([^/]+?))(?:/([^/]+?))/endpoint2");
         expect(pathParams).toStrictEqual([
             { in: "path", name: "test1", required: true },
             { in: "path", name: "test2", required: true },
@@ -326,7 +326,7 @@ describe("express-path-parser", () => {
 
         ({ method, path, pathParams } = parsed[2] as RouteMetaData);
 
-        expect(path).toBe("/sub-route2/:test/qualifier/:name/endpoint2/:id");
+        expect(path).toBe("/sub-route2/?:/([^/]+?))/qualifier/:name/endpoint2/:id");
         expect(pathParams).toStrictEqual([
             { in: "path", name: "test", required: true },
             { in: "path", name: "name", required: true },
