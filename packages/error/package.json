@@ -109,11 +109,17 @@
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "typesVersions": {
-        "*": {
-            "*": [
-                "./dist/code-frame/index.d.ts",
-                "./dist/code-frame/index.d.ts",
-                "./dist/error/index.d.ts",
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "code-frame": [
+                "./dist/code-frame/index.d.ts"
+            ],
+            "error": [
+                "./dist/error/index.d.ts"
+            ],
+            "stacktrace": [
                 "./dist/stacktrace/index.d.ts"
             ]
         }
@@ -158,7 +164,7 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
-        "@visulima/packem": "^1.0.0-alpha.95",
+        "@visulima/packem": "^1.0.0-alpha.108",
         "@visulima/path": "1.0.7",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",

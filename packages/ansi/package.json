@@ -162,16 +162,32 @@
     "browser": "./dist/index.mjs",
     "types": "dist/index.d.ts",
     "typesVersions": {
-        "*": {
-            "*": [
-                "./dist/alternative-screen.d.ts",
-                "./dist/clear.d.ts",
-                "./dist/cursor.d.ts",
-                "./dist/erase.d.ts",
-                "./dist/image.d.ts",
-                "./dist/index.d.ts",
-                "./dist/link.d.ts",
-                "./dist/scroll.d.ts",
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "alternative-screen": [
+                "./dist/alternative-screen.d.ts"
+            ],
+            "clear": [
+                "./dist/clear.d.ts"
+            ],
+            "cursor": [
+                "./dist/cursor.d.ts"
+            ],
+            "erase": [
+                "./dist/erase.d.ts"
+            ],
+            "image": [
+                "./dist/image.d.ts"
+            ],
+            "link": [
+                "./dist/link.d.ts"
+            ],
+            "scroll": [
+                "./dist/scroll.d.ts"
+            ],
+            "strip": [
                 "./dist/strip.d.ts"
             ]
         }
@@ -210,7 +226,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "20.14.6",
         "@visulima/colorize": "1.4.8",
-        "@visulima/packem": "^1.0.0-alpha.95",
+        "@visulima/packem": "^1.0.0-alpha.108",
         "@visulima/path": "1.0.7",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
