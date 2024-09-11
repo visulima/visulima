@@ -1,3 +1,22 @@
+## @visulima/cerebro [1.1.19](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.18...@visulima/cerebro@1.1.19) (2024-09-11)
+
+### Bug Fixes
+
+* fixed node10 support ([f5e78d9](https://github.com/visulima/visulima/commit/f5e78d9bff8fd603967666598b34f9338a8726b5))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.17
+* **@visulima/colorize:** upgraded to 1.4.9
+* **@visulima/find-cache-dir:** upgraded to 1.0.10
+* **@visulima/pail:** upgraded to 2.1.8
+* **@visulima/path:** upgraded to 1.0.8
+
 ## @visulima/cerebro [1.1.18](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.17...@visulima/cerebro@1.1.18) (2024-09-07)
 
 ### Bug Fixes
