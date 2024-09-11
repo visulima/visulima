@@ -599,7 +599,7 @@ importers:
         specifier: ^6.13.2
         version: 6.13.2
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -755,7 +755,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -798,7 +798,7 @@ importers:
         specifier: ^0.6.0
         version: 0.6.0
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -932,7 +932,7 @@ importers:
         specifier: ^6.13.2
         version: 6.13.2
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prisma:
         specifier: ^4.15.0
@@ -1188,8 +1188,8 @@ importers:
         specifier: 1.4.8
         version: 1.4.8
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.7
         version: 1.0.7
@@ -1658,7 +1658,7 @@ importers:
         version: 1.0.9(yaml@2.5.1)
       '@visulima/pail':
         specifier: 2.1.7
-        version: 2.1.7(rotating-file-stream@3.2.3)
+        version: 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1718,8 +1718,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.7
         version: 1.0.7
@@ -2363,8 +2363,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.7
         version: 1.0.7
@@ -2460,8 +2460,8 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.6)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2547,8 +2547,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2638,8 +2638,8 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2885,8 +2885,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.7
         version: 1.0.7
@@ -2999,8 +2999,8 @@ importers:
         specifier: 1.4.8
         version: 1.4.8
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/browser':
         specifier: 1.6.0
         version: 1.6.0(playwright@1.45.1)(vitest@2.0.5)(webdriverio@9.0.9)
@@ -3117,8 +3117,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3326,8 +3326,8 @@ importers:
         specifier: 18.19.39
         version: 18.19.39
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.39)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3444,8 +3444,8 @@ importers:
         specifier: ^2.4.4
         version: 2.4.4
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3558,8 +3558,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3667,8 +3667,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/redact':
         specifier: 1.0.6
         version: 1.0.6
@@ -3815,8 +3815,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4018,8 +4018,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4155,8 +4155,8 @@ importers:
         specifier: 20.14.2
         version: 20.14.2
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.2)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4258,8 +4258,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.95
-        version: 1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.18.14)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -9200,23 +9200,13 @@ packages:
     resolution: {integrity: sha512-OTe0KE37F5Y2eTys6eMnfopC+P4qr2ooXUTFyFPTplYSPwowmFk/HLD1FXtbKLjqsIH0SgekcJWad+C5uX4nkg==}
     engines: {node: '>=16'}
 
-  '@visulima/boxen@1.0.15':
-    resolution: {integrity: sha512-KPYmTMFlNx69VU0e9l8z7G7NPCnwbrRDe0J/8a6Cs3CUd2fK6YrqDwiBQk5xLMLjZaX9wzbMYIIkPaD6yYEBQQ==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/boxen@1.0.16':
     resolution: {integrity: sha512-AICEI8RFrX2XtedMAvpuv8pWR+Y7yjENu/KqFks7uA7vP2z8XmSXb2dYHgZWUUC21jmT6MyAATfL2WsMHuYCQA==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/cerebro@1.1.17':
-    resolution: {integrity: sha512-kzDNszFgG/Nobad7ftL5xWK88usXNIe7+ELedzAGkFopZxmko98vHnCumnlsHiQDVVB9aEI1QJXKrW0D83FGdQ==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/colorize@1.4.7':
-    resolution: {integrity: sha512-rahGWYbOSwkkIIfUmVe16kppzIsFHZ7EDTPQjNhEfqacX1k6jsH+LyNgPzmfUp3K0tlPsHwdTYGvFJe8FwBcOg==}
+  '@visulima/cerebro@1.1.18':
+    resolution: {integrity: sha512-x7852JqPwP5Vl3cPHPZ12HQtFASqAH7ajSMmvVcXgrVYgXpWDi988aMsqi/De68AanYWsEvGiv6Fbh7atDGuew==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9237,28 +9227,14 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@4.4.2':
-    resolution: {integrity: sha512-Sq+OOvd4bfTLayqyy1Ihy12rB7MbSiijEFLS+wEQWZFuvcZV2PBB7OfC45EYaU9Vye+jHj4JQpEFz1bnj/e+rg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/error@4.4.3':
     resolution: {integrity: sha512-GUOT+RetP35TzMD5TPMmeEPdaLgRaqbirwPZEcnu31sG/m79fRTgjBv7CcyfdB+tWE0FGOHTSbDDqJ+2LVujSg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/find-cache-dir@1.0.8':
-    resolution: {integrity: sha512-BjS6QkOCzVwimFd2kNsKgiheeVP2ycKqC67jO6bEyquk28GwZx5yKng+LWFvMQUZdrlD9RzbhkjHvUZL8ZcunQ==}
-    engines: {node: '>=18.* <=22.*'}
-
   '@visulima/find-cache-dir@1.0.9':
     resolution: {integrity: sha512-F5wpy1lkxrO7mh++wbWseXvt32pc7WI/WYVKFpcXZzgGrYcW/+xm7MjumO88JlSthCjfyLV5rC4PV/oUmNW9kA==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/fmt@1.1.7':
-    resolution: {integrity: sha512-gWa8o8H3coh7bIXBEI9dGTo6GDUVgYyyfCjbpolksCXb7MX8mH0A7EnyUvtxUaadiZHfjrcFD20jc7RN60O+Ug==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/fmt@1.1.8':
     resolution: {integrity: sha512-Hr6nmTORNI6vOmD/qRNTSO7otCIMDjLM67Yc12D94CvN52kgzIMuNsVEvgTroExSFIxye825S1JDejsvHEEnfg==}
@@ -9267,16 +9243,6 @@ packages:
 
   '@visulima/fs@2.1.10':
     resolution: {integrity: sha512-hj1Y358Hh+uW77yUTEBTy+v+FCnO4Tb48NwoQy6BARdMT7n1uF6eR49sxp21JrGYt5IIcTgjwTQmO70YiZtb3A==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      yaml: ^2.4.0
-    peerDependenciesMeta:
-      yaml:
-        optional: true
-
-  '@visulima/fs@2.1.15':
-    resolution: {integrity: sha512-G0BRVM00xJMrZwe+wDLljeEU8JWmDRvUCopoW5QnnIYA5e73hrXZhIaK1tvSHN4LLc03ANidCgHRr1uIQL1n7A==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -9305,22 +9271,13 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/humanizer@1.0.9':
-    resolution: {integrity: sha512-FjxUrOW2T4Qt6VA5HQw9MzX7ImU2CUF6CJGPCukKXD236JfLWIcAiyN47avUiwxRb761aKnjlwwtbxO72hqX6g==}
-    engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/inspector@1.0.7':
-    resolution: {integrity: sha512-BNp8PvZ1gH1vRZc0cFTDuHBFeA5O4t8aI8Ajzrn/u+nSizCZhTbleNBcqkM2NFAgrnrnzX58Fgo2fL53OgB4Zg==}
+  '@visulima/humanizer@1.0.10':
+    resolution: {integrity: sha512-bK3sJKO6DDgENTX36Ekx6KpBjNKNKJLmeei7K5J6G1qV2ldxSWrDEalHLOcrQn+bFxiy27i62vrA7K++DRFGPA==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/inspector@1.0.8':
     resolution: {integrity: sha512-DFvk7iPQcSetjRxV5UW7euFYoR0HnSmHCMORwz97o1lbGlnUE9vO8QHtbq4OVeEc3aKdbLW8JEjvq39UnnhYfw==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/is-ansi-color-supported@2.2.4':
-    resolution: {integrity: sha512-HeBDdWBL0HtJ05CGUt6BJ2lP2skMpdiM4X7wOv4xSM7IgT9okcX9uU03IEfuEJKbkgiBAiGIWV1rdQL+5Whv+g==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/is-ansi-color-supported@2.2.5':
     resolution: {integrity: sha512-ZoTMNE5ybZjacB9E4Hpbo/oH5+O3uvQm+PJ1SHLT81+e9m83N2Wkc27J+0HmI5mDAXfA654CqSDTeYCM84dWJg==}
@@ -9348,13 +9305,13 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@3.0.0':
-    resolution: {integrity: sha512-J5Spz5EFwecR/wDlhvBlAZkCmwArty226H2ff/V/UNAgK83faQLQzThN70vQvH00qyJ/+yUHMf0m2mhvmGuqHA==}
+  '@visulima/package@3.0.10':
+    resolution: {integrity: sha512-T7Zzet9QQ4Cgk4rDdkczcrhjA+tkeG+C9bBs7jMaTefL0LvTCFUZKtuTgeLmP5dkGHXYFo+W/enZj0y0uy1UTA==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/packem@1.0.0-alpha.95':
-    resolution: {integrity: sha512-QJKnLfiH0qBkwxWkbxC0ica35DrUl1Ep0lBpjaa3aluc3ypeo8iFdqVXM5CzNoSmvMwJJugJCDLMkQu9u5zmUg==}
+  '@visulima/packem@1.0.0-alpha.108':
+    resolution: {integrity: sha512-dk9Jh0QGhb4foy93TK5mZXOR8BdkeM4/VRS8yWKZUJY7Bjf/IHc/fnZKZHdb86DF94Yro39XYD5gxboMKWsDvQ==}
     engines: {node: '>=18.* <=22.*'}
     hasBin: true
     peerDependencies:
@@ -9381,19 +9338,6 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/pail@2.1.6':
-    resolution: {integrity: sha512-1PFCPncBf24ZDg3sdkCys2K9d+/eu7aKr75NMX4DMRZ1mfFNunIoVhJrhqGnxXppSk+EFZdQTv0BZmWLHWACOA==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 1.0.5
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
-        optional: true
-
   '@visulima/pail@2.1.7':
     resolution: {integrity: sha512-DcHV9GmLRdVZbEXlWeulDljXmZy0sH4RSSasGe4PJ6rIi53Iu61rQ0+FrFLFRb60UVV2dmRBtBFkIh8cc5ghpg==}
     engines: {node: '>=18.* <=22.*'}
@@ -9410,11 +9354,6 @@ packages:
   '@visulima/path@1.0.2':
     resolution: {integrity: sha512-swUmYnU83E9KTMXCIkatLlsyMLZfIKG0r6EByYVuJPoZu58MTyOFHWu+nMwIVr04VFYAkoFUTHzmzgU0F1HbyA==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/path@1.0.6':
-    resolution: {integrity: sha512-ha8cbnkWlFelpKL535tA5UQ1Zv68TI6roJCtYUMGt3duUpLo5Htiz9ymLcDr1m8o78f/30YUi/jR+LIocHj+fQ==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/path@1.0.7':
     resolution: {integrity: sha512-KKqikK8fbN7SMGvM3Km1RQpgGn2p0TqkzACKhXa+tv/W6jkuhepUk4WDR5mFZAzYc/t1t3oD8NfgbPPRQJwgaw==}
@@ -9433,8 +9372,8 @@ packages:
     resolution: {integrity: sha512-ddyQUP9omBE3nAJNCBpCFaWT6PwSczBNtfXJPpBSxzij9+YNfBh+jmDKhHUzZ2voUGhRuFq/lNeVvl0zw2TGpA==}
     engines: {node: '>=18.* <=22.*'}
 
-  '@visulima/tsconfig@1.0.10':
-    resolution: {integrity: sha512-pGc3Uly/lEHW0W2psY9Z0cC0+HVU/PJRvFus1Q7mMIapPzxM104V9X02cJR4OMOLDmDJTZ9Fyzd6WkA4wkvJTg==}
+  '@visulima/tsconfig@1.0.11':
+    resolution: {integrity: sha512-0cqSMq1LlSP3Qbaz5q24sm1IYt9uXXAMuZHuGphvA4dSCmVRsdGvcbqDL5jIuZEonhMyAPk/dbUEzcYbPiDYVw==}
     engines: {node: '>=18.* <=22.*'}
 
   '@vitejs/plugin-react@4.3.1':
@@ -15494,7 +15433,7 @@ packages:
   next-seo@6.5.0:
     resolution: {integrity: sha512-MfzUeWTN/x/rsKp/1n0213eojO97lIl0unxqbeCY+6pAucViHDA8GSLRRcXpgjsSmBxfCFdfpu7LXbt4ANQoNQ==}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.4.20-canary.13'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -15502,7 +15441,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15553,7 +15492,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=14.1.1'
+      next: '>=13.5.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -18659,6 +18598,10 @@ packages:
 
   tinyglobby@0.2.5:
     resolution: {integrity: sha512-Dlqgt6h0QkoHttG53/WGADNh9QhcjCAIZMTERAVhdpmIBEejSuLI9ZmGKWzB7tweBjlk30+s/ofi4SLmBeTYhw==}
+    engines: {node: '>=12.0.0'}
+
+  tinyglobby@0.2.6:
+    resolution: {integrity: sha512-NbBoFBpqfcgd1tCiO8Lkfdk+xrA7mlLR9zgvZcZWQQwU63XAfUePyd6wZBaU93Hqw347lHnwFzttAkemHzzz4g==}
     engines: {node: '>=12.0.0'}
 
   tinypool@0.8.4:
@@ -27118,16 +27061,14 @@ snapshots:
       satori: 0.10.9
       yoga-wasm-web: 0.3.3
 
-  '@visulima/boxen@1.0.15': {}
-
   '@visulima/boxen@1.0.16': {}
 
-  '@visulima/cerebro@1.1.17(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
+  '@visulima/cerebro@1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
     dependencies:
-      '@visulima/boxen': 1.0.15
-      '@visulima/colorize': 1.4.7
-      '@visulima/find-cache-dir': 1.0.8(yaml@2.5.1)
-      '@visulima/pail': 2.1.6(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
+      '@visulima/boxen': 1.0.16
+      '@visulima/colorize': 1.4.8
+      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
       cli-table3: 0.6.5
       command-line-args: 6.0.0
       fastest-levenshtein: 1.0.16
@@ -27135,10 +27076,6 @@ snapshots:
       - '@visulima/redact'
       - rotating-file-stream
       - yaml
-
-  '@visulima/colorize@1.4.7':
-    dependencies:
-      '@visulima/is-ansi-color-supported': 2.2.4
 
   '@visulima/colorize@1.4.8':
     dependencies:
@@ -27160,16 +27097,7 @@ snapshots:
       - '@prisma/client'
       - prisma
 
-  '@visulima/error@4.4.2': {}
-
   '@visulima/error@4.4.3': {}
-
-  '@visulima/find-cache-dir@1.0.8(yaml@2.5.1)':
-    dependencies:
-      '@visulima/fs': 2.1.15(yaml@2.5.1)
-      '@visulima/path': 1.0.6
-    transitivePeerDependencies:
-      - yaml
 
   '@visulima/find-cache-dir@1.0.9(yaml@2.5.1)':
     dependencies:
@@ -27178,19 +27106,11 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/fmt@1.1.7': {}
-
   '@visulima/fmt@1.1.8': {}
 
   '@visulima/fs@2.1.10(yaml@2.5.1)':
     dependencies:
       '@visulima/path': 1.0.2
-    optionalDependencies:
-      yaml: 2.5.1
-
-  '@visulima/fs@2.1.15(yaml@2.5.1)':
-    dependencies:
-      '@visulima/path': 1.0.6
     optionalDependencies:
       yaml: 2.5.1
 
@@ -27206,13 +27126,9 @@ snapshots:
     optionalDependencies:
       yaml: 2.5.1
 
-  '@visulima/humanizer@1.0.9': {}
-
-  '@visulima/inspector@1.0.7': {}
+  '@visulima/humanizer@1.0.10': {}
 
   '@visulima/inspector@1.0.8': {}
-
-  '@visulima/is-ansi-color-supported@2.2.4': {}
 
   '@visulima/is-ansi-color-supported@2.2.5': {}
 
@@ -27307,15 +27223,15 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/package@3.0.0(yaml@2.5.1)':
+  '@visulima/package@3.0.10(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.1.7(yaml@2.5.1)
-      '@visulima/path': 1.0.2
+      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/path': 1.0.7
       normalize-package-data: 6.0.2
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.95(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
@@ -27329,15 +27245,15 @@ snapshots:
       '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.17(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
       '@visulima/colorize': 1.4.8
-      '@visulima/find-cache-dir': 1.0.8(yaml@2.5.1)
-      '@visulima/fs': 2.1.15(yaml@2.5.1)
-      '@visulima/humanizer': 1.0.9
-      '@visulima/package': 3.0.0(yaml@2.5.1)
-      '@visulima/pail': 2.1.6(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
+      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
+      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/humanizer': 1.0.10
+      '@visulima/package': 3.0.10(yaml@2.5.1)
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.7
-      '@visulima/tsconfig': 1.0.10(yaml@2.5.1)
+      '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
       fastest-levenshtein: 1.0.16
@@ -27354,7 +27270,7 @@ snapshots:
       rollup-plugin-polyfill-node: 0.13.0(rollup@4.21.2)
       rollup-plugin-visualizer: 5.12.0(rollup@4.21.2)
       semver: 7.6.3
-      tinyglobby: 0.2.5
+      tinyglobby: 0.2.6
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
       esbuild: 0.21.4
@@ -27366,7 +27282,7 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.95(@swc/core@1.6.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.6)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
@@ -27380,15 +27296,15 @@ snapshots:
       '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.17(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)(yaml@2.5.1)
       '@visulima/colorize': 1.4.8
-      '@visulima/find-cache-dir': 1.0.8(yaml@2.5.1)
-      '@visulima/fs': 2.1.15(yaml@2.5.1)
-      '@visulima/humanizer': 1.0.9
-      '@visulima/package': 3.0.0(yaml@2.5.1)
-      '@visulima/pail': 2.1.6(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
+      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
+      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/humanizer': 1.0.10
+      '@visulima/package': 3.0.10(yaml@2.5.1)
+      '@visulima/pail': 2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.7
-      '@visulima/tsconfig': 1.0.10(yaml@2.5.1)
+      '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
       fastest-levenshtein: 1.0.16
@@ -27405,7 +27321,7 @@ snapshots:
       rollup-plugin-polyfill-node: 0.13.0(rollup@4.21.2)
       rollup-plugin-visualizer: 5.12.0(rollup@4.21.2)
       semver: 7.6.3
-      tinyglobby: 0.2.5
+      tinyglobby: 0.2.6
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
       esbuild: 0.21.4
@@ -27419,18 +27335,7 @@ snapshots:
 
   '@visulima/pagination@3.0.20': {}
 
-  '@visulima/pail@2.1.6(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)':
-    dependencies:
-      '@visulima/colorize': 1.4.7
-      '@visulima/error': 4.4.2
-      '@visulima/fmt': 1.1.7
-      '@visulima/inspector': 1.0.7
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      '@visulima/redact': 1.0.6
-      rotating-file-stream: 3.2.3
-
-  '@visulima/pail@2.1.7(rotating-file-stream@3.2.3)':
+  '@visulima/pail@2.1.7(@visulima/redact@1.0.6)(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.8
       '@visulima/error': 4.4.3
@@ -27438,11 +27343,10 @@ snapshots:
       '@visulima/inspector': 1.0.8
       safe-stable-stringify: 2.5.0
     optionalDependencies:
+      '@visulima/redact': 1.0.6
       rotating-file-stream: 3.2.3
 
   '@visulima/path@1.0.2': {}
-
-  '@visulima/path@1.0.6': {}
 
   '@visulima/path@1.0.7': {}
 
@@ -27456,10 +27360,10 @@ snapshots:
     dependencies:
       compromise: 14.14.0
 
-  '@visulima/tsconfig@1.0.10(yaml@2.5.1)':
+  '@visulima/tsconfig@1.0.11(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.1.15(yaml@2.5.1)
-      '@visulima/path': 1.0.6
+      '@visulima/fs': 2.1.16(yaml@2.5.1)
+      '@visulima/path': 1.0.7
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
     transitivePeerDependencies:
@@ -40164,6 +40068,11 @@ snapshots:
   tinyexec@0.3.0: {}
 
   tinyglobby@0.2.5:
+    dependencies:
+      fdir: 6.3.0(picomatch@4.0.2)
+      picomatch: 4.0.2
+
+  tinyglobby@0.2.6:
     dependencies:
       fdir: 6.3.0(picomatch@4.0.2)
       picomatch: 4.0.2
