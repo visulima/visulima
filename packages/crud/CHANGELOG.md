@@ -1,3 +1,14 @@
+## @visulima/crud [2.0.29](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.28...@visulima/crud@2.0.29) (2024-09-11)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.21
+
 ## @visulima/crud [2.0.28](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.27...@visulima/crud@2.0.28) (2024-09-07)
 
 
