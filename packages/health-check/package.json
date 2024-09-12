@@ -21,6 +21,7 @@
         "url": "https://github.com/visulima/visulima.git",
         "directory": "packages/health-check"
     },
+    "type": "module",
     "funding": [
         {
             "type": "github",
@@ -40,8 +41,8 @@
     "exports": {
         ".": {
             "require": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
             },
             "import": {
                 "types": "./dist/index.d.mts",
@@ -50,9 +51,8 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
+    "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "source": "src/index.ts",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**",
@@ -61,10 +61,11 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.js --fix",
         "lint:package-json": "publint --strict",
@@ -86,16 +87,19 @@
         "@anolilab/prettier-config": "^5.0.14",
         "@anolilab/semantic-release-pnpm": "^1.1.3",
         "@anolilab/semantic-release-preset": "^9.0.0",
+        "@arethetypeswrong/cli": "^0.16.2",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.4.1",
         "@babel/core": "^7.25.2",
         "@rushstack/eslint-plugin-security": "^0.8.2",
         "@testing-library/react": "^16.0.1",
         "@types/node": "18.19.15",
+        "@visulima/packem": "^1.0.0-alpha.108",
         "@vitest/coverage-v8": "^2.0.5",
         "@vitest/ui": "^2.0.5",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
         "cross-fetch": "^4.0.0",
+        "esbuild": "^0.23.1",
         "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
@@ -117,7 +121,6 @@
         "react-dom": "^18.3.1",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
-        "tsup": "^8.2.4",
         "typescript": "5.4.5",
         "vitest": "^2.0.5"
     },
@@ -146,6 +149,13 @@
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
+        }
+    },
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ]
         }
     }
 }
