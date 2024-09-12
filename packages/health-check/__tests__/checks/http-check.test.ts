@@ -1,10 +1,15 @@
 import "cross-fetch/polyfill";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import httpCheck from "../../src/checks/http-check";
+import { server } from "../../__fixtures__/mock-server";
 
 describe("httpCheck", () => {
+    beforeAll(() => server.listen());
+    afterEach(() => server.resetHandlers());
+    afterAll(() => server.close());
+
     it("should return healthy when the host is reachable", async () => {
         expect.assertions(1);
 
@@ -42,7 +47,6 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
-
                 timestamp: expect.any(String),
             },
             meta: {
@@ -69,7 +73,6 @@ describe("httpCheck", () => {
             health: {
                 healthy: true,
                 message: "HTTP check for https://example.com was successful.",
-
                 timestamp: expect.any(String),
             },
             meta: {
