@@ -1,68 +1,132 @@
 import { fileURLToPath } from "node:url";
 
-import { dirname, join } from "@visulima/path";
-import { describe, expect, it } from "vitest";
+import { dirname, join, toNamespacedPath } from "@visulima/path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { findPackageJson, parsePackageJson } from "../../src/package-json";
+import {
+    findPackageJson,
+    parsePackageJson,
+    getPackageJsonProperty,
+    hasPackageJsonProperty,
+    hasPackageJsonAnyDependency,
+    findPackageJsonSync,
+    writePackageJson,
+    writePackageJsonSync,
+    type NormalizedReadResult,
+} from "../../src/package-json";
+import type { NormalizedPackageJson } from "../../src/types";
+import { rm } from "node:fs/promises";
+import { temporaryDirectory } from "tempy";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
 
 describe("package-json", () => {
-    it("should return the content of the found package.json", async () => {
-        expect.assertions(3);
+    describe.each([
+        ["findPackageJson", findPackageJson],
+        ["findPackageJsonSync", findPackageJsonSync],
+    ])("%s", (name, fn) => {
+        it("should return the content of the found package.json", async () => {
+            expect.assertions(3);
 
-        const result = await findPackageJson(fixturePath);
+            let result = fn(fixturePath);
 
-        expect(result.packageJson).toBeTypeOf("object");
-        expect(result.packageJson.name).toBe("nextjs_12_example_connect");
-        expect(result.path).toBe(join(fixturePath, "package.json"));
-    });
+            if (name === "findPackageJson") {
+                result = await fn(fixturePath);
+            }
 
-    it("should accept a valid package.json object and return a normalized package.json object", () => {
-        expect.assertions(1);
-
-        const packageFile = {
-            dependencies: {
-                "dependency-1": "^1.0.0",
-                "dependency-2": "^2.0.0",
-            },
-            name: "test-package",
-            version: "1.0.0",
-        };
-
-        const result = parsePackageJson(packageFile);
-
-        expect(result).toStrictEqual({
-            _id: "test-package@1.0.0",
-            dependencies: {
-                "dependency-1": "^1.0.0",
-                "dependency-2": "^2.0.0",
-            },
-            name: "test-package",
-            readme: "ERROR: No README data found!",
-            version: "1.0.0",
+            expect((result as NormalizedReadResult).packageJson).toBeTypeOf("object");
+            expect((result as NormalizedReadResult).packageJson.name).toBe("nextjs_12_example_connect");
+            expect((result as NormalizedReadResult).path).toBe(join(fixturePath, "package.json"));
         });
     });
 
-    it("should accept a valid package.json file path and return a normalized package.json object", () => {
-        expect.assertions(1);
+    describe.each([
+        ["writePackageJson", writePackageJson],
+        ["writePackageJsonSync", writePackageJsonSync],
+    ])("%s", (name, fn) => {
+        let distribution: string;
 
-        const packageFile = join(fixturePath, "simple-package.json");
+        beforeEach(async () => {
+            distribution = toNamespacedPath(temporaryDirectory());
+        });
 
-        const result = parsePackageJson(packageFile);
+        afterEach(async () => {
+            await rm(distribution, { recursive: true });
+        });
 
-        expect(result).toStrictEqual({
-            _id: "test@1.0.0",
-            name: "test",
-            readme: "ERROR: No README data found!",
-            version: "1.0.0",
+        it("should write the package.json file with the given data", async () => {
+            expect.assertions(2);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            if (name === "writePackageJson") {
+                await fn(packageJson, {
+                    cwd: distribution,
+                });
+            } else {
+                fn(packageJson, {
+                    cwd: distribution,
+                });
+            }
+
+            expect(isAccessibleSync(join(distribution, "package.json"))).toBe(true);
+
+            const packageJsonFile = readJsonSync(join(distribution, "package.json"));
+
+            expect(packageJsonFile).toStrictEqual(packageJson);
         });
     });
 
-    it("should accept a valid package.json string and return a normalized package.json object", () => {
-        expect.assertions(1);
+    describe("parsePackageJson", () => {
+        it("should accept a valid package.json object and return a normalized package.json object", () => {
+            expect.assertions(1);
 
-        const packageFile = `{
+            const packageFile = {
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const result = parsePackageJson(packageFile);
+
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should accept a valid package.json file path and return a normalized package.json object", () => {
+            expect.assertions(1);
+
+            const packageFile = join(fixturePath, "simple-package.json");
+
+            const result = parsePackageJson(packageFile);
+
+            expect(result).toStrictEqual({
+                _id: "test@1.0.0",
+                name: "test",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should accept a valid package.json string and return a normalized package.json object", () => {
+            expect.assertions(1);
+
+            const packageFile = `{
         "name": "test-package",
         "version": "1.0.0",
         "dependencies": {
@@ -71,42 +135,204 @@ describe("package-json", () => {
         }
       }`;
 
-        const result = parsePackageJson(packageFile);
+            const result = parsePackageJson(packageFile);
 
-        expect(result).toStrictEqual({
-            _id: "test-package@1.0.0",
-            dependencies: {
-                "dependency-1": "^1.0.0",
-                "dependency-2": "^2.0.0",
-            },
-            name: "test-package",
-            readme: "ERROR: No README data found!",
-            version: "1.0.0",
+            expect(result).toStrictEqual({
+                _id: "test-package@1.0.0",
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+                name: "test-package",
+                readme: "ERROR: No README data found!",
+                version: "1.0.0",
+            });
+        });
+
+        it("should throw a TypeError if the input is not an object or a string", () => {
+            expect.assertions(1);
+
+            const packageFile = 123;
+
+            expect(() => {
+                // @ts-expect-error - testing invalid input
+                parsePackageJson(packageFile);
+            }).toThrow(TypeError);
+        });
+
+        it("should handle and return a normalized package.json object for an empty package.json file", () => {
+            expect.assertions(1);
+
+            const packageFile = {};
+
+            const result = parsePackageJson(packageFile);
+
+            expect(result).toStrictEqual({
+                _id: "@",
+                name: "",
+                readme: "ERROR: No README data found!",
+                version: "",
+            });
         });
     });
 
-    it("should throw a TypeError if the input is not an object or a string", () => {
-        expect.assertions(1);
+    describe("getPackageJsonProperty", () => {
+        it("should return the value of the specified property", () => {
+            expect.assertions(1);
 
-        const packageFile = 123;
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
 
-        expect(() => {
-            parsePackageJson(packageFile);
-        }).toThrow(TypeError);
+            const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "name");
+
+            expect(result).toBe("test-package");
+        });
+
+        it("should return the default value if the property does not exist", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "author", "anonymous");
+
+            expect(result).toBe("anonymous");
+        });
+
+        it("should return the default value if the property is undefined", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "dependencies.dependency-1", undefined);
+
+            expect(result).toBeUndefined();
+        });
     });
 
-    it("should handle and return a normalized package.json object for an empty package.json file", () => {
-        expect.assertions(1);
+    describe("hasPackageJsonProperty", () => {
+        it("should return true if the property exists in the package.json file", () => {
+            expect.assertions(1);
 
-        const packageFile = {};
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
 
-        const result = parsePackageJson(packageFile);
+            const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "name");
 
-        expect(result).toStrictEqual({
-            _id: "@",
-            name: "",
-            readme: "ERROR: No README data found!",
-            version: "",
+            expect(result).toBe(true);
+        });
+
+        it("should return false if the property does not exist in the package.json file", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "author");
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe("hasPackageJsonAnyDependency", () => {
+        it("should return true if any of the specified dependencies exist in the package.json file", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-3"]);
+
+            expect(result).toBe(true);
+        });
+
+        it("should return false if none of the specified dependencies exist in the package.json file", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+                dependencies: {
+                    "dependency-1": "^1.0.0",
+                    "dependency-2": "^2.0.0",
+                },
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-3", "dependency-4"]);
+
+            expect(result).toBe(false);
+        });
+
+        it("should return false if the dependencies property is undefined", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
+
+            expect(result).toBe(false);
+        });
+
+        it("should return false if the dependencies property is null", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+                dependencies: null,
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
+
+            expect(result).toBe(false);
+        });
+
+        it("should return false if the dependencies property is an empty object", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+                dependencies: {},
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
+
+            expect(result).toBe(false);
+        });
+
+        it("should return false if the dependencies property is an empty array", () => {
+            expect.assertions(1);
+
+            const packageJson = {
+                name: "test-package",
+                version: "1.0.0",
+                dependencies: [],
+            };
+
+            const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
+
+            expect(result).toBe(false);
         });
     });
 });
