@@ -2317,9 +2317,6 @@ importers:
       standard:
         specifier: ^17.1.0
         version: 17.1.0
-      tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@2.0.0-beta.2)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -37445,15 +37442,6 @@ snapshots:
       tsx: 4.19.0
       yaml: 2.5.1
 
-  postcss-load-config@6.0.1(jiti@2.0.0-beta.2)(postcss@8.4.45)(tsx@4.19.0)(yaml@2.5.1):
-    dependencies:
-      lilconfig: 3.1.2
-    optionalDependencies:
-      jiti: 2.0.0-beta.2
-      postcss: 8.4.45
-      tsx: 4.19.0
-      yaml: 2.5.1
-
   postcss-loader@7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
       cosmiconfig: 8.3.6(typescript@5.5.3)
@@ -40621,34 +40609,6 @@ snapshots:
       joycon: 3.1.1
       picocolors: 1.0.1
       postcss-load-config: 6.0.1(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(yaml@2.5.1)
-      resolve-from: 5.0.0
-      rollup: 4.19.1
-      source-map: 0.8.0-beta.0
-      sucrase: 3.35.0
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.5)
-      postcss: 8.4.45
-      typescript: 5.4.5
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
-
-  tsup@8.2.4(@swc/core@1.6.7)(jiti@2.0.0-beta.2)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1):
-    dependencies:
-      bundle-require: 5.0.0(esbuild@0.21.4)
-      cac: 6.7.14
-      chokidar: 3.6.0
-      consola: 3.2.3
-      debug: 4.3.7
-      esbuild: 0.21.4
-      execa: 5.1.1
-      globby: 11.1.0
-      joycon: 3.1.1
-      picocolors: 1.0.1
-      postcss-load-config: 6.0.1(jiti@2.0.0-beta.2)(postcss@8.4.45)(tsx@4.19.0)(yaml@2.5.1)
       resolve-from: 5.0.0
       rollup: 4.19.1
       source-map: 0.8.0-beta.0
