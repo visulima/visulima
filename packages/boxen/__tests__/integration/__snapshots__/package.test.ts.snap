@@ -11,15 +11,3 @@ exports[`usage \`@visulima/boxen\` npm package > should work as ESM package 1`] 
 │Hello, world!│
 └─────────────┘"
 `;
-
-exports[`usage \`@visulima/fs\` npm package > should work as CommonJS package 1`] = `
-"┌─────────────┐
-│Hello, world!│
-└─────────────┘"
-`;
-
-exports[`usage \`@visulima/fs\` npm package > should work as ESM package 1`] = `
-"┌─────────────┐
-│Hello, world!│
-└─────────────┘"
-`;
