@@ -7,7 +7,8 @@ import { parseJson, toPath } from "@visulima/fs/utils";
 import { join } from "@visulima/path";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
-import type { JsonObject } from "type-fest";
+import type { JsonObject, Paths } from "type-fest";
+import { getProperty, hasProperty } from "dot-prop";
 
 import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
 
@@ -143,4 +144,54 @@ export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPa
     normalizeData(json as Input);
 
     return json as NormalizedPackageJson;
+};
+
+/**
+ * An asynchronous function to get the value of a property from the package.json file.
+ *
+ * @param {NormalizedPackageJson} packageJson
+ * @param {Paths<NormalizedPackageJson>} property
+ * @param {T} defaultValue
+ *
+ * @returns {T}
+ */
+export const getPackageJsonProperty = <T = unknown>(packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>, defaultValue?: T): T => {
+    return getProperty(packageJson, property, defaultValue) as T;
+};
+
+/**
+ * An asynchronous function to check if a property exists in the package.json file.
+ *
+ * @param {NormalizedPackageJson} packageJson
+ * @param {Paths<NormalizedPackageJson>} property
+ *
+ * @returns {boolean}
+ */
+export const hasPackageJsonProperty = (packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>): boolean => {
+    return hasProperty(packageJson, property);
+};
+
+/**
+ * An asynchronous function to check if any of the specified dependencies exist in the package.json file.
+ *
+ * @param {NormalizedPackageJson} packageJson
+ * @param {string[]} arguments_
+ * @param {{peerDeps?: boolean}} options
+ *
+ * @returns {boolean}
+ */
+export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, arguments_: string[], options?: { peerDeps?: boolean }): boolean => {
+    const dependencies = getProperty(packageJson, "dependencies", {});
+    const devDependencies = getProperty(packageJson, "devDependencies", {});
+    const peerDependencies = getProperty(packageJson, "peerDependencies", {});
+
+    const allDependencies = { ...dependencies, ...devDependencies, ...(options?.peerDeps === false ? {} : peerDependencies) };
+
+    for (const argument of arguments_) {
+        if (hasProperty(allDependencies, argument)) {
+            return true;
+        }
+    }
+
+    return false;
 };
