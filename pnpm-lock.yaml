@@ -2767,6 +2767,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.16.2
+        version: 0.16.2
       '@arthurgeron/eslint-plugin-react-usememo':
         specifier: ^2.4.1
         version: 2.4.1
@@ -2782,6 +2785,9 @@ importers:
       '@types/node':
         specifier: 18.19.15
         version: 18.19.15
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2797,6 +2803,9 @@ importers:
       cross-fetch:
         specifier: ^4.0.0
         version: 4.0.0(encoding@0.1.13)
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -2857,9 +2866,6 @@ importers:
       semantic-release:
         specifier: 24.0.0
         version: 24.0.0(typescript@5.4.5)
-      tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
