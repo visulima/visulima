@@ -1,3 +1,26 @@
+## @visulima/deep-clone [2.1.4](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.3...@visulima/deep-clone@2.1.4) (2024-09-12)
+
+### Bug Fixes
+
+* **deep-clone:** moved from tsup to packem ([5b40fb9](https://github.com/visulima/visulima/commit/5b40fb9c72f151537e0c32ef10e125b163455742))
+* **deep-clone:** moved from tsup to packem ([5d11363](https://github.com/visulima/visulima/commit/5d11363e060385e653df30be1ddddfe2ee5e069c))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* clean up ([0c6a87d](https://github.com/visulima/visulima/commit/0c6a87dd9e1f2e755f929c6360b51e3fe377c095))
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/deep-clone [2.1.3](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.2...@visulima/deep-clone@2.1.3) (2024-06-06)
 
 
