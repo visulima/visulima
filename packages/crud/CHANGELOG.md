@@ -1,3 +1,10 @@
+## @visulima/crud [2.0.30](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.29...@visulima/crud@2.0.30) (2024-09-12)
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.21
+
 ## @visulima/crud [2.0.29](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.28...@visulima/crud@2.0.29) (2024-09-11)
 
 ### Miscellaneous Chores
