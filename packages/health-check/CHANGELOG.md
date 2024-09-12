@@ -1,3 +1,32 @@
+## @visulima/health-check [2.0.15](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.14...@visulima/health-check@2.0.15) (2024-09-12)
+
+### Bug Fixes
+
+* **health-check:** moved from tsup to packem ([130ccc2](https://github.com/visulima/visulima/commit/130ccc266ee4a5565dfcdb328f5127228cc10216))
+
+### Styles
+
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+* **health-check:** cs fixes ([a0ec83b](https://github.com/visulima/visulima/commit/a0ec83bb2213f24b83a0641583f34eca91d6a1ae))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* **health-check:** improved tests for health-check ([4d24572](https://github.com/visulima/visulima/commit/4d24572ea3a4ad026ca3965002f29871282c6747))
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+* updated all dev deps ([ef143ce](https://github.com/visulima/visulima/commit/ef143ce2e15952a0910aa5c8bd78d25de9ebd7f3))
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+### Build System
+
+* fixed found audit error, updated all dev package deps, updated deps in apps and examples ([4c51950](https://github.com/visulima/visulima/commit/4c519500dc5504579d35725572920658999885cb))
+
 ## @visulima/health-check [2.0.14](https://github.com/visulima/visulima/compare/@visulima/health-check@2.0.13...@visulima/health-check@2.0.14) (2024-06-06)
 
 
