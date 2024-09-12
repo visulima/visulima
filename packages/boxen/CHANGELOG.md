@@ -1,3 +1,13 @@
+## @visulima/boxen [1.0.18](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.17...@visulima/boxen@1.0.18) (2024-09-12)
+
+### Bug Fixes
+
+* **boxen:** moved from tsup to packem ([ef8c01a](https://github.com/visulima/visulima/commit/ef8c01add9f6908b7003e6b5fc72df4804c14585))
+
+### Styles
+
+* **boxen:** cs fix ([ff34cb6](https://github.com/visulima/visulima/commit/ff34cb69dd5db5ac471782738f8925415369be71))
+
 ## @visulima/boxen [1.0.17](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.16...@visulima/boxen@1.0.17) (2024-09-11)
 
 
