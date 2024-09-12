@@ -1,3 +1,14 @@
+## @visulima/prisma-dmmf-transformer [2.0.21](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.20...@visulima/prisma-dmmf-transformer@2.0.21) (2024-09-12)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** moved from tsup to packem ([39ae471](https://github.com/visulima/visulima/commit/39ae4716c64a2488fd10df64d5c3adc4ae7a5937))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
 ## @visulima/prisma-dmmf-transformer [2.0.20](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@2.0.19...@visulima/prisma-dmmf-transformer@2.0.20) (2024-06-19)
 
 ### Bug Fixes
