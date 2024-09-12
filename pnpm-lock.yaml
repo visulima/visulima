@@ -1554,6 +1554,9 @@ importers:
       '@anolilab/semantic-release-preset':
         specifier: ^9.0.0
         version: 9.0.0(@anolilab/semantic-release-pnpm@1.1.3(yaml@2.5.1))(@semantic-release/npm@12.0.1(semantic-release@24.0.0(typescript@5.4.5)))(semantic-release@24.0.0(typescript@5.4.5))
+      '@arethetypeswrong/cli':
+        specifier: ^0.16.2
+        version: 0.16.2
       '@babel/core':
         specifier: ^7.25.2
         version: 7.25.2
@@ -1566,6 +1569,9 @@ importers:
       '@visulima/colorize':
         specifier: 1.4.9
         version: 1.4.9
+      '@visulima/packem':
+        specifier: ^1.0.0-alpha.108
+        version: 1.0.0-alpha.108(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -1581,6 +1587,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      esbuild:
+        specifier: 0.21.4
+        version: 0.21.4
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -1620,9 +1629,6 @@ importers:
       terminal-size:
         specifier: ^4.0.0
         version: 4.0.0
-      tsup:
-        specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
