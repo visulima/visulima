@@ -21,7 +21,6 @@
         "url": "https://github.com/visulima/visulima.git",
         "directory": "packages/health-check"
     },
-    "type": "module",
     "funding": [
         {
             "type": "github",
@@ -38,6 +37,7 @@
         "email": "d.bannert@anolilab.de"
     },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
             "require": {
@@ -54,6 +54,13 @@
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist/**",
         "README.md",
@@ -149,13 +156,6 @@
             "info_on_disabling_prettier_conflict_rule": false,
             "info_on_disabling_jsonc_sort_keys_rule": false,
             "info_on_disabling_etc_no_deprecated": false
-        }
-    },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ]
         }
     }
 }
