@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "1.1.19",
+    "version": "1.1.20",
     "description": "A delightful toolkit for building Node-powered CLIs.",
     "keywords": [
         "command",
@@ -103,7 +103,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/boxen": "1.0.17",
+        "@visulima/boxen": "1.0.18",
         "@visulima/colorize": "1.4.9",
         "@visulima/find-cache-dir": "1.0.10",
         "@visulima/pail": "2.1.8",
