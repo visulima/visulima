@@ -1,3 +1,11 @@
+## @visulima/api-platform [3.0.21](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.20...@visulima/api-platform@3.0.21) (2024-09-12)
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.13
+* **@visulima/crud:** upgraded to 2.0.30
+
 ## @visulima/api-platform [3.0.20](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.19...@visulima/api-platform@3.0.20) (2024-09-11)
 
 ### Miscellaneous Chores
