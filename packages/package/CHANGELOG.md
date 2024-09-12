@@ -1,3 +1,13 @@
+## @visulima/package [3.1.0](https://github.com/visulima/visulima/compare/@visulima/package@3.0.11...@visulima/package@3.1.0) (2024-09-12)
+
+### Features
+
+* added new getPackageJsonProperty, hasPackageJsonProperty, hasPackageJsonAnyDependency helper function for pacakge.json ([d8f5375](https://github.com/visulima/visulima/commit/d8f5375227d9f0e70cdd0ae14b0eb9b2d2e135c5))
+
+### Miscellaneous Chores
+
+* **health-check:** improved tests for health-check ([4d24572](https://github.com/visulima/visulima/commit/4d24572ea3a4ad026ca3965002f29871282c6747))
+
 ## @visulima/package [3.0.11](https://github.com/visulima/visulima/compare/@visulima/package@3.0.10...@visulima/package@3.0.11) (2024-09-11)
 
 ### Bug Fixes
