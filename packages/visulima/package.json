@@ -78,11 +78,11 @@
         "@visulima/pail": "workspace:*",
         "@visulima/path": "workspace:*",
         "@visulima/tsconfig": "workspace:*",
-        "ufo": "^1.5.4",
-        "unstorage": "^1.10.2",
         "c12": "^1.11.1",
         "nitropack": "2.9.7",
         "std-env": "^3.7.0",
+        "ufo": "^1.5.4",
+        "unstorage": "^1.10.2",
         "vite": "^5.3.5",
         "zod": "^3.23.8",
         "zod-validation-error": "^3.3.1"
