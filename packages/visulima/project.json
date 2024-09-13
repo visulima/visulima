@@ -1,8 +1,8 @@
 {
-    "name": "vis",
+    "name": "visulima",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/vis/src",
+    "sourceRoot": "packages/visulima/src",
     "projectType": "library",
-    "tags": ["vis", "type:package"],
+    "tags": ["visulima", "type:package"],
     "implicitDependencies": []
 }
