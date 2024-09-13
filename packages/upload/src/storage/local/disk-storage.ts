@@ -1,21 +1,18 @@
-import { walk } from "@visulima/readdir";
-import etag from "etag";
 import { createWriteStream } from "node:fs";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import { pipeline } from "node:stream";
 
+import { walk } from "@visulima/readdir";
+import etag from "etag";
+
 import type { HttpError } from "../../utils";
-import {
-    ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode,
-} from "../../utils";
-import MetaStorage from "../meta-storage";
+import { ensureFile, ERRORS, fsp, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
+import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
 import type { DiskStorageOptions } from "../types.d";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
-import {
-    File, getFileStatus, hasContent, partMatch, updateSize,
-} from "../utils/file";
+import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
 import LocalMetaStorage from "./local-meta-storage";
 
@@ -95,7 +92,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         }
 
         if (part.size !== undefined) {
-            updateSize(file, part.size as number);
+            updateSize(file, part.size);
         }
 
         if (!partMatch(part, file)) {
@@ -145,22 +142,20 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
         const file = await this.checkIfExpired(await this.meta.get(id));
-        const {
-            name, originalName, contentType, size, metadata, expiredAt, modifiedAt, bytesWritten,
-        } = file;
+        const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
         const content = await fsp.readFile(this.getFilePath(name));
 
         return {
+            ETag: etag(content),
+            content,
+            contentType,
+            expiredAt,
             id,
+            metadata,
+            modifiedAt,
             name,
             originalName,
-            contentType,
             size: size || bytesWritten,
-            metadata,
-            expiredAt,
-            modifiedAt,
-            content,
-            ETag: etag(content),
         };
     }
 
@@ -198,9 +193,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
     public async list(): Promise<TFile[]> {
         const config = {
-            includeFiles: true,
-            includeDirs: false,
             followSymlinks: false,
+            includeDirs: false,
+            includeFiles: true,
         };
         const uploads: TFile[] = [];
 
@@ -208,14 +203,14 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
         // eslint-disable-next-line no-restricted-syntax
         for await (const founding of walk(directory, config)) {
-            // eslint-disable-next-line unicorn/consistent-destructuring
+
             const { suffix } = this.meta;
             const { path } = founding;
 
             if (!path.includes(suffix)) {
                 const { birthtime, ctime, mtime } = await fsp.stat(path);
 
-                uploads.push({ id: path.replace(directory, ""), createdAt: birthtime || ctime, modifiedAt: mtime } as TFile);
+                uploads.push({ createdAt: birthtime || ctime, id: path.replace(directory, ""), modifiedAt: mtime } as TFile);
             }
         }
 
@@ -229,7 +224,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
         return join(this.directory, filename);
     }
 
-    protected lazyWrite(part: FilePart & File): Promise<[number, ERRORS?]> {
+    protected lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
         // eslint-disable-next-line compat/compat
         return new Promise((resolve, reject) => {
             const destination = createWriteStream(this.getFilePath(part.name), { flags: "r+", start: part.start });

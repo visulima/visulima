@@ -1,22 +1,20 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { RetryConfig } from "gaxios";
-// eslint-disable-next-line import/no-extraneous-dependencies
+
+import type { RetryConfig } from "gaxios";
 import type { GoogleAuthOptions } from "google-auth-library";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { GoogleAuth } from "google-auth-library";
+import type { GoogleAuth } from "google-auth-library";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
-import GCSFile from "./gcs-file";
+import type GCSFile from "./gcs-file";
 
 interface StorageSettings {
-    storageAPI?: string;
-
-    uploadAPI?: string;
-
     projectId: string;
 
     retryOptions?: RetryConfig;
+
+    storageAPI?: string;
+
+    uploadAPI?: string;
 
     // Controls whether or not to use authentication when using a custom endpoint.
     useAuthWithCustomEndpoint?: boolean;
@@ -26,8 +24,8 @@ interface StorageSettings {
 
 export interface ClientError extends Error {
     code: string;
-    response?: Record<string, any>;
     config: Record<string, any>;
+    response?: Record<string, any>;
 }
 
 export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<GoogleAuthOptions, "authClient" | "projectId">, StorageSettings {
@@ -57,14 +55,14 @@ export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<Goog
      * })
      * ```
      */
-    metaStorageConfig?: LocalMetaStorageOptions | GCSMetaStorageOptions;
+    metaStorageConfig?: GCSMetaStorageOptions | LocalMetaStorageOptions;
 }
 
 export interface GCSMetaStorageOptions extends Omit<GoogleAuthOptions, "authClient" | "projectId">, MetaStorageOptions, StorageSettings {
-    bucket?: string;
-
     /**
      * @internal - used for internal client inheritance, if same client is used for meta and file storage
      */
-    authClient?: GoogleAuth
+    authClient?: GoogleAuth;
+
+    bucket?: string;
 }

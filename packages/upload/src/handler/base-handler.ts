@@ -1,15 +1,14 @@
-import { paginate } from "@visulima/pagination";
-import createHttpError, { isHttpError } from "http-errors";
-import mime from "mime";
 import { EventEmitter } from "node:events";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format, parse } from "node:url";
 
-import BaseStorage from "../storage/storage";
+import { paginate } from "@visulima/pagination";
+import createHttpError, { isHttpError } from "http-errors";
+import mime from "mime";
+
+import type BaseStorage from "../storage/storage";
 import type { UploadFile } from "../storage/utils/file";
-import type {
-    ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType, UploadResponse,
-} from "../utils";
+import type { ErrorResponses, HttpError, IncomingMessageWithBody, Logger, ResponseBodyType,     UploadError,UploadResponse } from "../utils";
 import {
     ErrorMap,
     ERRORS,
@@ -20,18 +19,16 @@ import {
     isValidationError,
     pick,
     setHeaders,
-    UploadError,
     uuidRegex,
 } from "../utils";
-import type {
-    AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions,
-} from "./types";
+import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "./types";
 
 const CONTENT_TYPE = "Content-Type";
 
 abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMessage = IncomingMessage, Response extends ServerResponse = ServerResponse>
     extends EventEmitter
-    implements MethodHandler<Request, Response> {
+    implements MethodHandler<Request, Response>
+{
     /**
      * Limiting enabled http method handler
      * @example
@@ -77,7 +74,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     }
 
     protected compose = (): void => {
-        const child = <typeof BaseHandler> this.constructor;
+        const child = this.constructor as typeof BaseHandler;
 
         (child.methods || BaseHandler.methods).forEach((method) => {
             const handler = (this as MethodHandler<Request, Response>)[method];
@@ -91,10 +88,10 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
     };
 
     protected assembleErrors = (customErrors = {}): void => {
-        // eslint-disable-next-line no-underscore-dangle
+
         this.internalErrorResponses = {
             ...ErrorMap,
-            // eslint-disable-next-line no-underscore-dangle
+
             ...this.internalErrorResponses,
             ...this.storage.errorResponses,
             ...customErrors,
@@ -103,7 +100,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
     public handle = (request: Request, response: Response): void => this.upload(request, response);
 
-    // eslint-disable-next-line radar/cognitive-complexity,consistent-return
+    // eslint-disable-next-line radar/cognitive-complexity
     public upload = (request: Request, response: Response, next?: () => void): void => {
         request.on("error", (error) => this.logger?.error("[request error]: %O", error));
 
@@ -128,30 +125,30 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
             .then(async (file: ResponseFile<TFile> | ResponseList<TFile>): Promise<void> => {
                 // eslint-disable-next-line promise/always-return
                 if (["HEAD", "OPTIONS"].includes(request.method as string)) {
-                    const { statusCode, headers } = file as ResponseFile<TFile>;
+                    const { headers, statusCode } = file as ResponseFile<TFile>;
 
-                    this.send(response, { statusCode, headers });
+                    this.send(response, { headers, statusCode });
                 } else if (request.method === "GET") {
                     (request as IncomingMessageWithBody).body = (file as ResponseList<TFile>)?.data === undefined ? file : (file as ResponseList<TFile>).data;
 
-                    const { statusCode, headers } = file as ResponseFile<TFile>;
+                    const { headers, statusCode } = file as ResponseFile<TFile>;
 
-                    let body: ResponseList<TFile>["data"] | Buffer | string = "";
+                    let body: Buffer | ResponseList<TFile>["data"] | string = "";
 
                     if ((file as ResponseFile<TFile>).content !== undefined) {
                         body = (file as ResponseFile<TFile>).content as Buffer;
                     } else if (typeof file === "object" && "data" in file) {
-                        body = (file as ResponseList<TFile>).data;
+                        body = (file).data;
                     }
 
                     if (typeof next === "function") {
                         // eslint-disable-next-line promise/no-callback-in-promise
                         next();
                     } else {
-                        this.send(response, { statusCode, headers, body });
+                        this.send(response, { body, headers, statusCode });
                     }
                 } else {
-                    const { statusCode, headers, ...basicFile } = file as ResponseFile<TFile>;
+                    const { headers, statusCode, ...basicFile } = file as ResponseFile<TFile>;
 
                     this.logger?.debug("[%s]: %s: %d/%d", basicFile.status, basicFile.name, basicFile.bytesWritten, basicFile.size);
 
@@ -185,13 +182,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
                         }
                     } else {
                         this.send(response, {
-                            statusCode,
                             headers: {
                                 ...headers,
                                 ...((file as TFile).hash === undefined
                                     ? {}
                                     : { [`X-Range-${(file as TFile).hash?.algorithm.toUpperCase()}`]: (file as TFile).hash?.value }),
                             } as Record<string, string>,
+                            statusCode,
                         });
                     }
                 }
@@ -217,13 +214,13 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async options(_request: Request, _response: Response): Promise<ResponseFile<TFile>> {
-        const child = <typeof BaseHandler> this.constructor;
+        const child = this.constructor as typeof BaseHandler;
 
         return {
-            statusCode: 204,
             headers: {
                 "Access-Control-Allow-Methods": (child.methods || BaseHandler.methods).map((method) => method.toUpperCase()).join(", "),
             } as Record<string, string>,
+            statusCode: 204,
         } as ResponseFile<TFile>;
     }
 
@@ -237,35 +234,33 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     public async get(request: Request, response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>>;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,consistent-return,radar/cognitive-complexity
+    // eslint-disable-next-line radar/cognitive-complexity
     public async get(request: Request & { originalUrl?: string }, _response: Response): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
         if (pathMatch && pathMatch.params.uuid && uuidRegex.test(pathMatch.params.uuid)) {
-            const { uuid, ext } = pathMatch.params;
+            const { ext, uuid } = pathMatch.params;
 
             try {
-                const file = await this.storage.get({ id: uuid as string });
+                const file = await this.storage.get({ id: uuid });
 
                 let { contentType } = file;
 
                 if (contentType.includes("image") && typeof ext === "string") {
-                    contentType = mime.getType(ext as string) || contentType;
+                    contentType = mime.getType(ext) || contentType;
                 }
 
-                const {
-                    size, expiredAt, modifiedAt, ETag,
-                } = file;
+                const { ETag, expiredAt, modifiedAt, size } = file;
 
                 return {
-                    statusCode: 200,
                     headers: {
-                        "Content-Type": contentType,
                         "Content-Length": String(size),
+                        "Content-Type": contentType,
                         ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
                         ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
                         ...(ETag === undefined ? {} : { ETag }),
                     } as Record<string, string>,
+                    statusCode: 200,
                     ...file,
                     contentType,
                 } as ResponseFile<TFile>;
@@ -286,36 +281,36 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async list(request: Request, _response: Response): Promise<ResponseList<TFile>> {
-        const { page, limit } = parse(request.url || "", true).query as { [key: string]: string };
+        const { limit, page } = parse(request.url || "", true).query as Record<string, string>;
 
         const list = await this.storage.list(Number(limit || 1000));
 
         if (list.length === 0) {
             return {
-                statusCode: 200,
-                headers: {},
                 data: [],
+                headers: {},
+                statusCode: 200,
             };
         }
 
         if (page !== undefined && limit !== undefined) {
             return {
-                statusCode: 200,
-                headers: {},
                 data: paginate(Number(page), Number(limit), list.length, list),
+                headers: {},
+                statusCode: 200,
             };
         }
 
         return {
-            statusCode: 200,
-            headers: {},
             data: list,
+            headers: {},
+            statusCode: 200,
         };
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public send(response: Response, { statusCode = 200, headers = {}, body = "" }: UploadResponse): void {
-        let data: string | Buffer;
+    public send(response: Response, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
+        let data: Buffer | string;
 
         if (typeof body === "string") {
             data = body;
@@ -368,7 +363,7 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
      * Build file url from request
      */
     protected buildFileUrl(request: Request & { originalUrl?: string }, file: TFile): string {
-        const { query, pathname = "" } = parse(request.originalUrl || (request.url as string), true);
+        const { pathname = "", query } = parse(request.originalUrl || (request.url as string), true);
         const relative = format({ pathname: `${pathname as string}/${file.id}`, query });
 
         return `${this.storage.config.useRelativeLocation ? relative : getBaseUrl(request) + relative}.${mime.getExtension(file.contentType)}`;
@@ -390,9 +385,9 @@ abstract class BaseHandler<TFile extends UploadFile, Request extends IncomingMes
         }
 
         this.send(response, {
-            statusCode,
-            headers,
             body,
+            headers,
+            statusCode,
         });
     }
 }

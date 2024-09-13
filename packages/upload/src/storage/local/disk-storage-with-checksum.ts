@@ -1,15 +1,11 @@
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream";
 
-import {
-    ensureFile, ERRORS, RangeHasher, removeFile, streamChecksum, StreamLength, throwErrorCode,
-} from "../../utils";
+import { ensureFile, ERRORS, RangeHasher, removeFile, streamChecksum, StreamLength, throwErrorCode } from "../../utils";
 import { fsp } from "../../utils/fs";
 import type { DiskStorageWithChecksumOptions } from "../types.d";
-import type { FilePart, FileQuery } from "../utils/file";
-import {
-    File, getFileStatus, hasContent, partMatch, updateSize,
-} from "../utils/file";
+import type { File,FilePart, FileQuery } from "../utils/file";
+import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import DiskStorage from "./disk-storage";
 
 /**
@@ -35,7 +31,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
             await this.deleteMeta(id);
 
             return { ...file, status: "deleted" };
-            // eslint-disable-next-line no-empty
+
         } catch (error) {
             this.logger?.error("[error]: Could not delete file: %O", error);
         }
@@ -53,7 +49,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         }
 
         if (part.size !== undefined) {
-            updateSize(file, part.size as number);
+            updateSize(file, part.size);
         }
 
         if (!partMatch(part, file)) {
@@ -107,7 +103,7 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         }
     }
 
-    protected lazyWrite(part: FilePart & File): Promise<[number, ERRORS?]> {
+    protected lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
         // eslint-disable-next-line compat/compat
         return new Promise((resolve, reject) => {
             const path = this.getFilePath(part.name);

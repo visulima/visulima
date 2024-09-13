@@ -1,14 +1,13 @@
 import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
+
 import typeis, { hasBody } from "type-is";
 
 import filePathUrlMatcher from "./file-path-url-matcher";
 import getLastOne from "./primitives/get-last-one";
 import isRecord from "./primitives/is-record";
-import type {
-    Header, Headers, HttpError, HttpErrorBody, IncomingMessageWithBody, UploadResponse,
-} from "./types";
+import type { Header, Headers, HttpError, HttpErrorBody, IncomingMessageWithBody, UploadResponse } from "./types";
 
-const extractForwarded = (request: IncomingMessage): { proto: string; host: string } => {
+const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>
     let proto = "";
     let host = "";
@@ -32,7 +31,7 @@ const extractForwarded = (request: IncomingMessage): { proto: string; host: stri
         });
     }
 
-    return { proto, host };
+    return { host, proto };
 };
 
 /**
@@ -44,7 +43,7 @@ const extractForwarded = (request: IncomingMessage): { proto: string; host: stri
 export function readBody(
     request: IncomingMessage,
     // eslint-disable-next-line default-param-last,unicorn/text-encoding-identifier-case
-    encoding: "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "base64url" | "latin1" | "binary" | "hex" = "utf8" as BufferEncoding,
+    encoding: "ascii" | "base64" | "base64url" | "binary" | "hex" | "latin1" | "ucs-2" | "ucs2" | "utf-8" | "utf8" | "utf16le" = "utf8" as BufferEncoding,
     limit: number | undefined,
 ): Promise<string> {
     // eslint-disable-next-line compat/compat
@@ -95,7 +94,7 @@ export async function getMetadata(request: IncomingMessageWithBody<Record<any, a
     }
 
     if (hasBody(request)) {
-        const bodySize = Number.parseInt(getHeader(request, "content-length") as string, 10);
+        const bodySize = Number.parseInt(getHeader(request, "content-length"), 10);
 
         if (!Number.isNaN(bodySize) && bodySize > limit) {
             throw new Error("body length limit");
@@ -127,10 +126,10 @@ export function setHeaders(response: ServerResponse, headers: Headers = {}): voi
     }
 
     keys.forEach((key) => {
-        if (["location", "link"].includes(key.toLowerCase())) {
-            response.setHeader(key, encodeURI((headers[key as keyof Headers] as Header).toString()));
+        if (["link", "location"].includes(key.toLowerCase())) {
+            response.setHeader(key, encodeURI((headers[key] as Header).toString()));
         } else {
-            response.setHeader(key, headers[key as keyof Headers] as Header);
+            response.setHeader(key, headers[key] as Header);
         }
     });
 }
@@ -154,7 +153,7 @@ export function extractProto(request: IncomingMessage): string {
  * Try build a protocol:hostname:port string from a request object.
  */
 export function getBaseUrl(request: IncomingMessage): string {
-    let { proto, host } = extractForwarded(request);
+    let { host, proto } = extractForwarded(request);
     host ||= extractHost(request);
     proto ||= extractProto(request);
 
@@ -170,11 +169,9 @@ export function normalizeHookResponse<T>(callback: (file: T) => Promise<UploadRe
         const response = await callback(file);
 
         if (isRecord(response)) {
-            const {
-                statusCode, headers, body, ...rest
-            } = response;
+            const { body, headers, statusCode, ...rest } = response;
 
-            return { statusCode, headers, body: body ?? rest };
+            return { body: body ?? rest, headers, statusCode };
         }
 
         return { body: response ?? "" };
@@ -187,11 +184,9 @@ export function normalizeHookResponse<T>(callback: (file: T) => Promise<UploadRe
 export function normalizeOnErrorResponse(callback: (error: HttpError) => UploadResponse) {
     return (error: HttpError) => {
         if (isRecord(error)) {
-            const {
-                statusCode, headers, body, ...rest
-            } = error;
+            const { body, headers, statusCode, ...rest } = error;
 
-            return callback({ statusCode, headers, body: body ?? (rest as HttpErrorBody) });
+            return callback({ body: body ?? (rest as HttpErrorBody), headers, statusCode });
         }
 
         return callback({ body: error ?? "unknown error", statusCode: 500 });
@@ -215,7 +210,7 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 /*
  * @internal
  */
-export const uuidRegex = /(?:[\dA-Za-z]+-){2}[\dA-Za-z]+/;
+export const uuidRegex = /(?:[\dA-Z]+-){2}[\dA-Z]+/i;
 
 /*
  * @internal
@@ -224,7 +219,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     const pathMatch = filePathUrlMatcher(getRealPath(request));
 
     if (pathMatch && pathMatch.params.uuid && uuidRegex.test(pathMatch.params.uuid)) {
-        return pathMatch.params.uuid as string;
+        return pathMatch.params.uuid;
     }
 
     throw new Error("Id is undefined");

@@ -27,7 +27,8 @@ export async function removeFile(path: string): Promise<void> {
     }
 
     return fsp.unlink(path).catch((error: NodeJS.ErrnoException): void => {
-        if (error.code !== "ENOENT") throw error;
+        if (error.code !== "ENOENT")
+throw error;
     });
 }
 
