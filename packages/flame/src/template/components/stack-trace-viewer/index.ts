@@ -1,7 +1,7 @@
 import { codeFrame, parseStacktrace } from "@visulima/error";
 import { getHighlighterCore } from "shikiji/core";
 import nord from "shikiji/themes/nord.mjs";
-import { getWasmInlined } from "shikiji/wasm";
+import { getWasmInlined } from "shikiji";
 
 import findLanguageBasedOnExtension from "../../../util/find-language-based-on-extension";
 import getFileSource from "../../../util/get-file-source";
