@@ -1,7 +1,7 @@
 import { Transform } from "node:stream";
 
 class StreamLength extends Transform {
-    public length: number = 0;
+    public length = 0;
 
     constructor(readonly limit: number = Number.POSITIVE_INFINITY) {
         super();

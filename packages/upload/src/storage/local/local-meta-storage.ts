@@ -1,12 +1,13 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+
 import normalize from "normalize-path";
 
 import { removeFile } from "../../utils";
 import { fsp } from "../../utils/fs";
 import MetaStorage from "../meta-storage";
 import type { MetaStorageOptions } from "../types";
-import { File } from "../utils/file";
+import type { File } from "../utils/file";
 
 /**
  * Stores upload metafiles on local disk
@@ -17,7 +18,7 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     constructor(config?: LocalMetaStorageOptions) {
         super(config);
 
-        this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replace(/\\/g, "/");
+        this.directory = (config?.directory || join(tmpdir(), "Upload_meta")).replaceAll('\\', "/");
 
         this.accessCheck().catch((error) => {
             this.logger?.error("[error]: Could not write to directory: %O", error);

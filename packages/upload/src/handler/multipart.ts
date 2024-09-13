@@ -1,6 +1,7 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import createHttpError from "http-errors";
 import multiparty from "multiparty";
-import { IncomingMessage, ServerResponse } from "node:http";
 
 import type { FileInit, UploadFile } from "../storage/utils/file";
 import { getIdFromRequest } from "../utils";
@@ -12,7 +13,7 @@ const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 interface MultipartyPart extends multiparty.Part {
     headers: {
         [key: string]: any;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars,radar/no-duplicate-string
+        // eslint-disable-next-line radar/no-duplicate-string
         "content-type": string;
     };
 }
@@ -54,9 +55,9 @@ class Multipart<
      * app.use('/upload', new Multipart(opts).handle);
      * ```
      */
-    public static methods: Handlers[] = ["delete", "get", "options", "post"];
+    public static override methods: Handlers[] = ["delete", "get", "options", "post"];
 
-    // eslint-disable-next-line compat/compat,radar/cognitive-complexity
+    // eslint-disable-next-line radar/cognitive-complexity
     public async post(request: Request): Promise<ResponseFile<TFile>> {
         if (!RE_MIME.test(request.headers["content-type"]?.split(";")[0] ?? "")) {
             throw createHttpError(400, "Invalid content-type");
@@ -109,12 +110,14 @@ class Multipart<
 
                 this.storage
                     .create(request, config)
-                    .then(({ id }) => this.storage.write({
-                        start: 0,
-                        contentLength: part.byteCount,
-                        body: part,
-                        id,
-                    }))
+                    .then(({ id }) =>
+                        this.storage.write({
+                            body: part,
+                            contentLength: part.byteCount,
+                            id,
+                            start: 0,
+                        }),
+                    )
                     .then((file) => {
                         if (file.status === "completed") {
                             return resolve({
@@ -123,13 +126,12 @@ class Multipart<
                                     Location: this.buildFileUrl(request, file),
                                     ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
                                     ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
-
                                 },
                                 statusCode: 200,
                             });
                         }
 
-                        return resolve({ ...file, statusCode: 201, headers: {} });
+                        return resolve({ ...file, headers: {}, statusCode: 201 });
                     })
                     .catch((error) => reject(error));
             });
@@ -152,7 +154,7 @@ class Multipart<
                 throw createHttpError(404, "File not found");
             }
 
-            return { ...file, statusCode: 204, headers: {} } as ResponseFile<TFile>;
+            return { ...file, headers: {}, statusCode: 204 } as ResponseFile<TFile>;
         } catch (error: any) {
             this.checkForUndefinedIdOrPath(error);
 
@@ -166,7 +168,7 @@ class Multipart<
 
     // eslint-disable-next-line class-methods-use-this
     private checkForUndefinedIdOrPath(error: any): void {
-        if (["Path is undefined", "Id is undefined"].includes(error.message)) {
+        if (["Id is undefined", "Path is undefined"].includes(error.message)) {
             throw createHttpError(404, "File not found");
         }
     }
