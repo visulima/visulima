@@ -1,4 +1,8 @@
 {
-    "extends": "../../tsconfig.esm.base.json",
-    "include": ["src/**/*", "*.d.ts"]
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../../tsconfig.base.json",
+    "include": ["src/**/*", "*.d.ts"],
+    "compilerOptions": {
+        "moduleResolution": "bundler"
+    }
 }

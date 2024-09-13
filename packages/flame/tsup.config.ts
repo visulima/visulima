@@ -1,4 +1,4 @@
-import { createConfig } from "../../tsup.config";
+import { createConfig } from "../../tools/get-tsup-config";
 import inlineImportPlugin from "esbuild-plugin-inline-import";
 
 const config = createConfig({
