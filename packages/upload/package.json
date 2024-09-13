@@ -107,9 +107,11 @@
         "test:vitest": "vitest"
     },
     "dependencies": {
+        "@mjackson/multipart-parser": "^0.6.3",
         "@sindresorhus/fnv1a": "3.1.0",
-        "@visulima/pagination": "^3.0.21",
-        "@visulima/readdir": "^2.0.12",
+        "@visulima/humanizer": "workspace:*",
+        "@visulima/pagination": "workspace:*",
+        "@visulima/path": "workspace:*",
         "bytes": "^3.1.2",
         "etag": "^1.8.1",
         "http-errors": "^2.0.0",
@@ -119,8 +121,6 @@
         "mime": "^4.0.4",
         "multiparty": "^4.2.3",
         "nanoid": "5.0.7",
-        "normalize-path": "^3.0.0",
-        "parse-duration": "^1.1.0",
         "path-to-regexp": "6.2.1",
         "type-is": "^1.6.18"
     },
