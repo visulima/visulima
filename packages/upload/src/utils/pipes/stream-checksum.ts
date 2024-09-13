@@ -1,15 +1,19 @@
-import type { BinaryToTextEncoding } from "node:crypto";
-import { createHash, Hash } from "node:crypto";
+import type { BinaryToTextEncoding , Hash } from "node:crypto";
+import { createHash } from "node:crypto";
 import { PassThrough, Transform } from "node:stream";
 
 export class StreamChecksum extends Transform {
-    public length: number = 0;
+    public length = 0;
 
-    private digest: string = "";
+    private digest = "";
 
     private hash: Hash;
 
-    constructor(public readonly checksum: string, public readonly algorithm: string, private readonly encoding: BinaryToTextEncoding = "base64") {
+    constructor(
+        public readonly checksum: string,
+        public readonly algorithm: string,
+        private readonly encoding: BinaryToTextEncoding = "base64",
+    ) {
         super();
         this.hash = createHash(algorithm);
     }
@@ -35,6 +39,6 @@ export class StreamChecksum extends Transform {
     }
 }
 
-export function streamChecksum(checksum: string, algorithm: string, encoding: BinaryToTextEncoding = "base64"): StreamChecksum | PassThrough {
+export function streamChecksum(checksum: string, algorithm: string, encoding: BinaryToTextEncoding = "base64"): PassThrough | StreamChecksum {
     return algorithm ? new StreamChecksum(checksum, algorithm, encoding) : new PassThrough();
 }

@@ -1,12 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-    DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists,
-} from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";
-import { File, isExpired } from "../utils/file";
+import type { File} from "../utils/file";
+import { isExpired } from "../utils/file";
 import type { S3MetaStorageOptions } from "./types";
 
 class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -25,11 +24,11 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
                 throw new Error("S3 bucket is not defined");
             }
 
-            // eslint-disable-next-line no-param-reassign
+
             const keyFile = metaConfig.keyFile || process.env.S3_KEYFILE;
 
             if (keyFile) {
-                // eslint-disable-next-line no-param-reassign
+
                 metaConfig.credentials = fromIni({ configFilepath: keyFile });
             }
 
@@ -52,7 +51,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     public async get(id: string): Promise<T> {
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
-        const { Metadata, Expires } = await this.client.send(new HeadObjectCommand(parameters));
+        const { Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters));
 
         if (Expires && isExpired({ expiredAt: Expires } as T)) {
             await this.delete(Key);
@@ -60,7 +59,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
             throw new Error(`Metafile ${id} not found`);
         }
 
-        if (Metadata !== undefined && Metadata.metadata !== undefined) {
+        if (Metadata?.metadata !== undefined) {
             return JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
         }
 
@@ -81,9 +80,9 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         const metadata = encodeURIComponent(JSON.stringify(file));
         const parameters = {
             Bucket: this.bucket,
+            ContentLength: 0,
             Key: this.getMetaName(id),
             Metadata: { metadata },
-            ContentLength: 0,
         };
 
         await this.client.send(new PutObjectCommand(parameters));

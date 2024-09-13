@@ -12,9 +12,9 @@ class MetaStorage<T> {
 
     protected readonly logger?: Logger;
 
-    constructor(config?: MetaStorageOptions) {
-        this.prefix = config?.prefix || "";
-        this.suffix = config?.suffix || ".META";
+    public constructor(config?: MetaStorageOptions) {
+        this.prefix = config?.prefix ?? "";
+        this.suffix = config?.suffix ?? ".META";
 
         if (this.prefix) {
             FileName.INVALID_PREFIXES.push(this.prefix);

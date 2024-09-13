@@ -3,7 +3,7 @@ import { isRecord } from "../../../utils";
 export class Metadata {
     [key: string]: any;
 
-    size?: string | number;
+    size?: number | string;
 
     name?: string;
 
@@ -21,7 +21,7 @@ export class Metadata {
 
     originalName?: string;
 
-    lastModified?: string | number;
+    lastModified?: number | string;
 }
 
 export function isMetadata(raw: unknown): raw is Metadata {

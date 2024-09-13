@@ -1,60 +1,55 @@
 export { default as AbstractBaseHandler } from "./handler/base-handler";
 export { default as Multipart } from "./handler/multipart";
 export { default as Tus, TUS_RESUMABLE, TUS_VERSION } from "./handler/tus";
-export type {
-    BaseHandler, Handlers, MethodHandler, UploadOptions, AsyncHandler, UploadEvent, UploadErrorEvent, RequestEvent,
-} from "./handler/types.d";
-
-export { default as AbstractBaseStorage } from "./storage/storage";
-export type {
-    MetaStorageOptions, BaseStorageOptions, ExpirationOptions, DiskStorageOptions, PurgeList, OnCreate, OnError, OnComplete, OnDelete, OnUpdate,
-} from "./storage/types.d";
-
-export { default as MetaStorage } from "./storage/meta-storage";
-
+export type { AsyncHandler, BaseHandler, Handlers, MethodHandler, RequestEvent,UploadErrorEvent, UploadEvent, UploadOptions } from "./handler/types.d";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as LocalMetaStorage } from "./storage/local/local-meta-storage";
-
+export { default as MetaStorage } from "./storage/meta-storage";
+export { default as AbstractBaseStorage } from "./storage/storage";
 export type {
-    UploadFile, FileInit, FilePart, FileQuery, UploadEventType,
-} from "./storage/utils/file";
+    BaseStorageOptions,
+    DiskStorageOptions,
+    ExpirationOptions,
+    MetaStorageOptions,
+    OnComplete,
+    OnCreate,
+    OnDelete,
+    OnError,
+    OnUpdate,
+    PurgeList,
+} from "./storage/types.d";
+export type { FileInit, FilePart, FileQuery, UploadEventType,UploadFile } from "./storage/utils/file";
 export {
+    extractMimeType,
+    extractOriginalName,
     File,
     getFileStatus,
     hasContent,
-    partMatch,
-    updateSize,
+    isExpired,
     isMetadata,
     Metadata,
-    extractMimeType,
-    extractOriginalName,
-    isExpired,
+    partMatch,
     updateMetadata,
+    updateSize,
 } from "./storage/utils/file";
-
 export { default as tusSwagger } from "./swagger/tus-swagger";
 export { default as multipartSwagger } from "./swagger/xhr-swagger";
-
+export { ErrorMap,ERRORS, isUploadError, throwErrorCode, UploadError } from "./utils/errors";
+export { appendHeader, getBaseUrl,getHeader, getMetadata, readBody, setHeaders } from "./utils/http";
 export type {
-    UploadResponse,
-    HttpErrorBody,
-    HttpError,
-    ResponseBodyType,
-    IncomingMessageWithBody,
-    Validation,
-    ValidatorConfig,
-    ValidationError,
-    Headers,
     Header,
-    ResponseBody,
-    ResponseTuple,
+    Headers,
+    HttpError,
+    HttpErrorBody,
+    IncomingMessageWithBody,
+    Logger,
     RangeChecksum,
     RangeHasher,
-    Logger,
+    ResponseBody,
+    ResponseBodyType,
+    ResponseTuple,
+    UploadResponse,
+    Validation,
+    ValidationError,
+    ValidatorConfig,
 } from "./utils/types";
-export {
-    ERRORS, throwErrorCode, isUploadError, UploadError, ErrorMap,
-} from "./utils/errors";
-export {
-    getHeader, setHeaders, appendHeader, readBody, getMetadata, getBaseUrl,
-} from "./utils/http";

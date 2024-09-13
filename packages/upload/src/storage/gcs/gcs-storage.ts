@@ -1,22 +1,21 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+
+import { randomUUID } from "node:crypto";
+import type { IncomingMessage } from "node:http";
+import { resolve } from "node:url";
+
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import gaxios from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
-import { randomUUID } from "node:crypto";
-import type { IncomingMessage } from "node:http";
-import { resolve } from "node:url";
 
 import package_ from "../../../package.json";
 import type { HttpError } from "../../utils";
 import { ERRORS, getHeader, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
-import MetaStorage from "../meta-storage";
+import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type {
-    FileInit, FilePart, FileQuery, FileReturn,
-} from "../utils/file";
+import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, partMatch } from "../utils/file";
 import FetchError from "./fetch-error";
 import GCSConfig from "./gcs-config";
@@ -93,9 +92,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
         this.authClient = new GoogleAuth(config);
 
-        const {
-            metaStorage, metaStorageConfig, projectId, bucket,
-        } = config;
+        const { bucket, metaStorage, metaStorageConfig, projectId } = config;
 
         if (metaStorage) {
             this.meta = metaStorage;
@@ -129,11 +126,11 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
         if (error.config) {
             return {
-                message: error.message,
                 code: `GCS${statusCode}`,
-                statusCode,
+                message: error.message,
                 name: error.name,
                 retryable: statusCode >= 499,
+                statusCode,
             };
         }
         return super.normalizeError(error);
@@ -227,13 +224,13 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         await this.lock(part.id);
 
         try {
-            // eslint-disable-next-line no-param-reassign
+
             file.bytesWritten = await this.internalWrite({ ...file, ...part });
-            // eslint-disable-next-line no-param-reassign
+
             file.status = getFileStatus(file);
 
             if (file.status === "completed") {
-                // eslint-disable-next-line no-param-reassign
+
                 file.uri = `${this.storageBaseURI}/${file.name}`;
 
                 await this.internalOnComplete(file);
@@ -249,7 +246,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         const file = await this.getMeta(id).catch(() => null);
 
         if (file?.uri) {
-            // eslint-disable-next-line no-param-reassign
+
             file.status = "deleted";
 
             await Promise.all([this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }), this.deleteMeta(file.id)]);
@@ -261,14 +258,14 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
     }
 
     public async copy(name: string, destination: string): Promise<Record<string, string>> {
-        type CopyProgress = {
-            rewriteToken?: string;
+        interface CopyProgress {
+            done: boolean;
             kind: string;
             objectSize: number;
-            totalBytesRewritten: number;
-            done: boolean;
             resource: Record<string, any>;
-        };
+            rewriteToken?: string;
+            totalBytesRewritten: number;
+        }
 
         const newPath = resolve(`/${this.bucket}/${name}`, encodeURI(destination));
         const [, bucket, ...pathSegments] = newPath.split("/");
@@ -308,7 +305,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
      * @param {FileQuery} id
      */
     public async get({ id }: FileQuery): Promise<FileReturn> {
-        const { data } = await this.makeRequest({ url: `${this.storageBaseURI}/${id}`, params: { alt: "json" } });
+        const { data } = await this.makeRequest({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` });
 
         await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
@@ -320,25 +317,25 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         };
     }
 
-    public async list(limit: number = 1000): Promise<GCSFile[]> {
+    public async list(limit = 1000): Promise<GCSFile[]> {
         const items: GCSFile[] = [];
 
         // Declare truncated as a flag that the while loop is based on.
         let truncated = true;
-        let parameters: GaxiosOptions = { url: this.storageBaseURI, params: { maxResults: limit } };
+        let parameters: GaxiosOptions = { params: { maxResults: limit }, url: this.storageBaseURI };
 
         while (truncated) {
             try {
                 // eslint-disable-next-line no-await-in-loop
                 const { data } = await this.makeRequest<{
+                    items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
                     nextPageToken?: string;
-                    items: { name: string; timeCreated: string; metadata?: GCSFile; updated: string }[];
                 }>(parameters);
 
                 (data?.items || []).forEach(({ name, timeCreated, updated }) => {
                     items.push({
-                        id: name,
                         createdAt: timeCreated,
+                        id: name,
                         modifiedAt: updated,
                     } as GCSFile);
                 });
@@ -358,10 +355,8 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         return items;
     }
 
-    protected async internalWrite(part: Partial<FilePart> & GCSFile): Promise<number> {
-        const {
-            size, uri = "", body, bytesWritten,
-        } = part;
+    protected async internalWrite(part: GCSFile & Partial<FilePart>): Promise<number> {
+        const { body, bytesWritten, size, uri = "" } = part;
         const contentRange = buildContentRange(part);
         const options: Record<string, any> = { method: "PUT" };
 
@@ -375,8 +370,8 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         }
 
         options.headers = {
-            "Content-Range": contentRange,
             Accept: "application/json",
+            "Content-Range": contentRange,
             ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
         };
 
@@ -412,15 +407,12 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
                 // Good: https://.../projects:list
-                .replace(/\/:/g, ":");
+                .replaceAll('/:', ":");
         }
 
         // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
-            retry: true,
-            retryConfig: this.retryOptions,
-            timeout: 60_000,
             headers: {
                 "User-Agent": `${package_.name}/${package_.version}`,
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
@@ -428,6 +420,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             params: {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
             },
+            retry: true,
+            retryConfig: this.retryOptions,
+            timeout: 60_000,
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {

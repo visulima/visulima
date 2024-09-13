@@ -1,30 +1,30 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { BlobServiceClient } from "@azure/storage-blob";
 
-import { LocalMetaStorageOptions } from "../local/local-meta-storage";
+import type { BlobServiceClient } from "@azure/storage-blob";
+
+import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
-import AzureFile from "./azure-file";
+import type AzureFile from "./azure-file";
 
 interface ClientConfig {
-    /**
-     * Azure account name.
-     */
-    accountName?: string;
-
     /**
      * Azure account key.
      */
     accountKey?: string;
 
     /**
-     * Azure endpoint.
+     * Azure account name.
      */
-    endpoint?: string;
+    accountName?: string;
 
     /**
      * Azure container name.
      */
     containerName: string;
+
+    /**
+     * Azure endpoint.
+     */
+    endpoint?: string;
 
     /**
      * Azure root path.
@@ -44,7 +44,6 @@ interface ClientConfig {
      * Azure root path.
      */
     root?: string;
-
 }
 
 export interface AzureMetaStorageOptions extends MetaStorageOptions, ClientConfig {
@@ -70,5 +69,5 @@ export interface AzureStorageOptions extends BaseStorageOptions<AzureFile>, Clie
      * })
      * ```
      */
-    metaStorageConfig?: LocalMetaStorageOptions | AzureMetaStorageOptions;
+    metaStorageConfig?: AzureMetaStorageOptions | LocalMetaStorageOptions;
 }

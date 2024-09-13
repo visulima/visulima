@@ -3,14 +3,12 @@ import { nanoid } from "nanoid";
 import { hash } from "../../../utils";
 import extractMimeType from "./extract-mime-type";
 import extractOriginalName from "./extract-original-name";
-import { Metadata } from "./metadata";
+import type { Metadata } from "./metadata";
 import type { FileInit, UploadEventType } from "./types";
 
 const generateFileId = (file: File): string => {
-    const {
-        originalName, size, metadata,
-    } = file;
-    const mtime = String(metadata.lastModified || Date.now());
+    const { metadata, originalName, size } = file;
+    const mtime = String(metadata.lastModified ?? Date.now());
 
     return [originalName, size, mtime]
         .filter(Boolean)
@@ -30,17 +28,17 @@ class File implements FileInit {
 
     metadata: Metadata;
 
-    name: string = "";
+    name = "";
 
     size?: number;
 
     status?: UploadEventType;
 
-    expiredAt?: string | Date | number;
+    expiredAt?: Date | number | string;
 
-    createdAt?: string | Date | number;
+    createdAt?: Date | number | string;
 
-    modifiedAt?: string | Date | number;
+    modifiedAt?: Date | number | string;
 
     hash?: {
         algorithm: string;
@@ -51,9 +49,7 @@ class File implements FileInit {
 
     ETag?: string;
 
-    constructor({
-        metadata = {}, originalName, contentType, size,
-    }: FileInit) {
+    constructor({ contentType, metadata = {}, originalName, size }: FileInit) {
         this.metadata = metadata;
         this.originalName = originalName || extractOriginalName(metadata) || (this.id = nanoid());
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";

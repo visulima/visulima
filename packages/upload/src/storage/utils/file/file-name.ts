@@ -26,9 +26,9 @@ const FileName: {
         const upperCase = name.toUpperCase();
 
         return !(
-            FileName.INVALID_CHARS.filter(Boolean).some((chars) => upperCase.includes(chars))
-            || FileName.INVALID_PREFIXES.filter(Boolean).some((chars) => upperCase.startsWith(chars))
-            || FileName.INVALID_SUFFIXES.filter(Boolean).some((chars) => upperCase.endsWith(chars))
+            FileName.INVALID_CHARS.filter(Boolean).some((chars) => upperCase.includes(chars)) ||
+            FileName.INVALID_PREFIXES.filter(Boolean).some((chars) => upperCase.startsWith(chars)) ||
+            FileName.INVALID_SUFFIXES.filter(Boolean).some((chars) => upperCase.endsWith(chars))
         );
     },
 };

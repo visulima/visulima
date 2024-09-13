@@ -11,22 +11,22 @@
         "start:tus": "tsnd -r dotenv/config index-tus"
     },
     "dependencies": {
-        "@aws-sdk/abort-controller": "^3.310.0",
-        "@aws-sdk/client-s3": "^3.321.1",
-        "@aws-sdk/credential-providers": "^3.321.1",
-        "@aws-sdk/s3-request-presigner": "^3.321.1",
-        "@aws-sdk/types": "^3.310.0",
+        "@aws-sdk/abort-controller": "^3.374.0",
+        "@aws-sdk/client-s3": "^3.651.0",
+        "@aws-sdk/credential-providers": "^3.650.0",
+        "@aws-sdk/s3-request-presigner": "^3.651.0",
+        "@aws-sdk/types": "^3.649.0",
         "@visulima/upload": "workspace:*",
         "cors": "2.8.5",
-        "cp-file": "^10.0.0",
-        "dotenv": "^16.0.3",
-        "express": "^4.18.2",
-        "google-auth-library": "^8.7.0",
-        "winston": "^3.8.2"
+        "cp-file": "^11.0.0",
+        "dotenv": "^16.4.5",
+        "express": "^4.21.0",
+        "google-auth-library": "^9.14.1",
+        "winston": "^3.14.2"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.13",
-        "@types/express": "^4.17.17",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
         "ts-node-dev": "^2.0.0"
     }
 }

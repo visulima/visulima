@@ -1,4 +1,4 @@
-import File from "./file";
+import type File from "./file";
 
 const updateSize = (file: File, size: number): File => {
     if (size < (file.size as number)) {

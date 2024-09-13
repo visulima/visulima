@@ -1,39 +1,34 @@
-import { parse } from "bytes";
-import Cache from "lru-cache";
 import type { IncomingMessage } from "node:http";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
+
+import { parse } from "bytes";
+import { LRUCache as Cache } from "lru-cache";
 import normalize from "normalize-path";
 import typeis from "type-is";
 
-import type {
-    ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig,
-} from "../utils";
-import {
-    ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator,
-} from "../utils";
-import MetaStorage from "./meta-storage";
+import type { ErrorResponses, HttpError, Logger, UploadResponse, ValidatorConfig } from "../utils";
+import { ErrorMap, ERRORS, isEqual, Locker, normalizeHookResponse, normalizeOnErrorResponse, throwErrorCode, toMilliseconds, Validator } from "../utils";
+import type MetaStorage from "./meta-storage";
 import type { BaseStorageOptions, PurgeList } from "./types";
-import type { FileInit, FilePart, FileQuery } from "./utils/file";
-import {
-    File, FileName, isExpired, updateMetadata,
-} from "./utils/file";
+import type { File,FileInit, FilePart, FileQuery } from "./utils/file";
+import { FileName, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
-    maxUploadSize: "5TB",
     filename: ({ id }: File): string => id,
-    useRelativeLocation: false,
+    maxMetadataSize: "8MB",
+    maxUploadSize: "5TB",
     onComplete: (file: File) => file,
-    onUpdate: (file: File) => file,
     onCreate: () => "",
     onDelete: () => "",
-    onError: ({ statusCode, body, headers }: HttpError) => {
-        return { statusCode, body: { error: body }, headers };
+    onError: ({ body, headers, statusCode }: HttpError) => {
+        return { body: { error: body }, headers, statusCode };
     },
+    onUpdate: (file: File) => file,
+    useRelativeLocation: false,
     validation: {},
-    maxMetadataSize: "8MB",
 };
 
 abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
@@ -109,20 +104,20 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         }
 
         const size: Required<ValidatorConfig<TFile>> = {
-            value: this.maxUploadSize,
             isValid(file) {
                 return Number(file.size) <= this.value;
             },
             response: ErrorMap.RequestEntityTooLarge as HttpError,
+            value: this.maxUploadSize,
         };
 
         const mime: Required<ValidatorConfig<TFile>> = {
-            value: options.allowMIME,
             isValid(file) {
                 return !!typeis.is(file.contentType, this.value as string[]);
             },
             // @TODO: add better error handling for mime types
             response: ErrorMap.UnsupportedMediaType as HttpError,
+            value: options.allowMIME,
         };
 
         const filename: ValidatorConfig<TFile> = {
@@ -132,7 +127,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             response: ErrorMap.InvalidFileName,
         };
 
-        this.validation.add({ size, mime, filename });
+        this.validation.add({ filename, mime, size });
         this.validation.add({ ...options.validation });
     }
 
@@ -153,9 +148,9 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
     normalizeError(_error: Error): HttpError {
         return {
+            code: "GenericUploadError",
             message: "Generic Upload Error",
             statusCode: 500,
-            code: "GenericUploadError",
         };
     }
 
@@ -214,7 +209,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             return throwErrorCode(ERRORS.GONE);
         }
 
-        // eslint-disable-next-line compat/compat
+
         return file;
     }
 
@@ -231,14 +226,14 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
             const before = Date.now() - maxAgeMs;
             const list = await this.list();
             const expired = list.filter(
-                (item) => Number(new Date((this.config.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as string | number)) < before,
+                (item) => Number(new Date((this.config.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
             );
 
             // eslint-disable-next-line no-restricted-syntax
             for await (const { id, ...rest } of expired) {
                 const deleted = await this.delete({ id });
 
-                purged.items.push({ ...(deleted as TFile), ...rest });
+                purged.items.push({ ...(deleted), ...rest });
             }
 
             if (purged.items.length > 0) {
@@ -260,7 +255,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
      * Retrieves a list of upload.
      */
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-unused-vars
-    public async list(_limit: number = 1000): Promise<TFile[]> {
+    public async list(_limit = 1000): Promise<TFile[]> {
         throw new Error("Not implemented");
     }
 
@@ -281,7 +276,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
     /**
      * Prevent upload from being accessed by multiple requests
      */
-    // eslint-disable-next-line class-methods-use-this
+
     protected async lock(key: string): Promise<string> {
         try {
             return this.locker.lock(key);
@@ -290,7 +285,7 @@ abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileRe
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     protected async unlock(key: string): Promise<void> {
         this.locker.unlock(key);
     }

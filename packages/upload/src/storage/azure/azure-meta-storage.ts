@@ -1,10 +1,10 @@
+
+import type { BlobItem , ContainerClient} from "@azure/storage-blob";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import type { BlobItem } from "@azure/storage-blob";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 
 import MetaStorage from "../meta-storage";
-import { File } from "../utils/file";
+import type { File } from "../utils/file";
 import type { AzureMetaStorageOptions } from "./types";
 
 class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -96,8 +96,8 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             .filter((blob) => blob.name.endsWith(this.suffix))
             .map((blob) => {
                 return {
-                    id: this.getIdFromMetaName(blob.name),
                     createdAt: blob.properties.createdOn,
+                    id: this.getIdFromMetaName(blob.name),
                 };
             }) as T[];
     }

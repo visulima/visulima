@@ -38,9 +38,9 @@ const TUS_VERSION_VERSION = "1.0.0";
  * ```
  */
 class Tus<TFile extends UploadFile, Request extends IncomingMessage = IncomingMessage, Response extends ServerResponse = ServerResponse> extends BaseHandler<
-TFile,
-Request,
-Response
+    TFile,
+    Request,
+    Response
 > {
     /**
      * Limiting enabled http method handler
@@ -50,13 +50,13 @@ Response
      * app.use('/upload', new Tus(opts).handle);
      * ```
      */
-    public static methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post"];
+    public static override methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post"];
 
     /**
      *  A successful response indicated by the 204 No Content status MUST contain
      *  the Tus-Version header. It MAY include the Tus-Extension and Tus-Max-Size headers.
      */
-    public async options(): Promise<ResponseFile<TFile>> {
+    public override async options(): Promise<ResponseFile<TFile>> {
         const headers = {
             "Tus-Version": TUS_VERSION_VERSION,
             "Tus-Extension": this.storage.tusExtension.toString(),
@@ -83,8 +83,8 @@ Response
         const uploadDeferLength = request.headers["upload-defer-length"] as string | undefined;
 
         if (
-            uploadDeferLength !== undefined // Throw error if extension is not supported
-            && !this.storage.tusExtension.includes("creation-defer-length")
+            uploadDeferLength !== undefined && // Throw error if extension is not supported
+            !this.storage.tusExtension.includes("creation-defer-length")
         ) {
             throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
         }
@@ -121,9 +121,9 @@ Response
         // The Upload-Expires response header indicates the time after which the unfinished upload expires.
         // If expiration is known at creation time, Upload-Expires header MUST be included in the response
         if (
-            this.storage.tusExtension.includes("expiration")
-            && typeof file.expiredAt === "number"
-            && file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
+            this.storage.tusExtension.includes("expiration") &&
+            typeof file.expiredAt === "number" &&
+            file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
         ) {
             headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
         }
@@ -228,15 +228,15 @@ Response
             const headers = {
                 ...(typeof file.size === "number" && !Number.isNaN(file.size)
                     ? {
-                        // If the size of the upload is known, the Server MUST include
-                        // the Upload-Length header in the response.
-                        "Upload-Length": file.size,
-                    }
+                          // If the size of the upload is known, the Server MUST include
+                          // the Upload-Length header in the response.
+                          "Upload-Length": file.size,
+                      }
                     : {
-                        // As long as the length of the upload is not known, the Server
-                        // MUST set Upload-Defer-Length: 1 in all responses to HEAD requests.
-                        "Upload-Defer-Length": "1",
-                    }),
+                          // As long as the length of the upload is not known, the Server
+                          // MUST set Upload-Defer-Length: 1 in all responses to HEAD requests.
+                          "Upload-Defer-Length": "1",
+                      }),
                 ...this.buildHeaders(file, {
                     // The Server MUST always include the Upload-Offset header in
                     // the response for a HEAD request, even if the offset is 0
@@ -284,7 +284,7 @@ Response
         }
     }
 
-    public send(response: Response, { statusCode = 200, headers = {}, body = "" }: UploadResponse): void {
+    public override send(response: Response, { statusCode = 200, headers = {}, body = "" }: UploadResponse): void {
         super.send(response, {
             statusCode,
             headers: {
@@ -323,7 +323,7 @@ Response
 export const TUS_RESUMABLE = TUS_RESUMABLE_VERSION;
 export const TUS_VERSION = TUS_VERSION_VERSION;
 
-export function serializeMetadata(object: Metadata): string {
+export const serializeMetadata = (object: Metadata): string => {
     return Object.entries(object)
         .map(([key, value]) => {
             if (value === undefined) {
@@ -335,12 +335,14 @@ export function serializeMetadata(object: Metadata): string {
         .toString();
 }
 
-export function parseMetadata(encoded = ""): Metadata {
+export const parseMetadata = (encoded = ""): Metadata => {
     const kvPairs = encoded.split(",").map((kv) => kv.split(" "));
     const metadata = Object.create(Metadata.prototype) as Record<string, string>;
 
     Object.values(kvPairs).forEach(([key, value]) => {
-        if (key) metadata[key] = value ? Buffer.from(value, "base64").toString() : "";
+        if (key) {
+            metadata[key] = value ? Buffer.from(value, "base64").toString() : "";
+        }
     });
 
     return metadata;

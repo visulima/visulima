@@ -1,4 +1,4 @@
-import File from "./file";
+import type File from "./file";
 import type { FilePart } from "./types";
 
 const partMatch = (part: Partial<FilePart>, file: File): boolean => {
