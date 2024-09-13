@@ -1,15 +1,16 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-// eslint-disable-next-line import/no-extraneous-dependencies
+
+
+import { randomUUID } from "node:crypto";
+
 import type { GaxiosOptions, GaxiosResponse, RetryConfig } from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import gaxios from "gaxios";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GoogleAuth } from "google-auth-library";
-import { randomUUID } from "node:crypto";
 
 import package_ from "../../../package.json";
 import MetaStorage from "../meta-storage";
-import { File } from "../utils/file";
+import type { File } from "../utils/file";
 import GCSConfig from "./gcs-config";
 import type { ClientError, GCSMetaStorageOptions } from "./types";
 import { retryOptions as baseRetryOptions } from "./utils";
@@ -44,7 +45,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 throw new Error("Sorry, we cannot connect to Cloud Services without a project ID.");
             }
 
-            // eslint-disable-next-line no-param-reassign
+
             metaConfig.scopes ||= GCSConfig.authScopes;
 
             this.authClient = new GoogleAuth(metaConfig);
@@ -120,15 +121,12 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
                 // Good: https://.../projects:list
-                .replace(/\/:/g, ":");
+                .replaceAll('/:', ":");
         }
 
         // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
-            retry: true,
-            retryConfig: this.retryOptions,
-            timeout: 60_000,
             headers: {
                 "User-Agent": `${package_.name}/${package_.version}`,
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
@@ -136,6 +134,9 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             params: {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
             },
+            retry: true,
+            retryConfig: this.retryOptions,
+            timeout: 60_000,
         };
 
         if (this.isCustomEndpoint && !this.useAuthWithCustomEndpoint) {

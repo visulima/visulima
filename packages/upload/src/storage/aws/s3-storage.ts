@@ -1,4 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+
+import type { IncomingMessage } from "node:http";
+import { resolve } from "node:path";
+
 import type {
     CompleteMultipartUploadOutput,
     CopyObjectCommandInput,
@@ -26,25 +29,16 @@ import {
 import { fromIni } from "@aws-sdk/credential-providers";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import type { HttpHandlerOptions, SdkStream } from "@aws-sdk/types";
 import { parse } from "bytes";
-import type { IncomingMessage } from "node:http";
-import { resolve } from "node:path";
 
 import type { HttpError } from "../../utils";
-import {
-    ERRORS, mapValues, throwErrorCode, toSeconds,
-} from "../../utils";
+import { ERRORS, mapValues, throwErrorCode, toSeconds } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
-import MetaStorage from "../meta-storage";
+import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type {
-    FileInit, FilePart, FileQuery, FileReturn,
-} from "../utils/file";
-import {
-    getFileStatus, hasContent, isExpired, partMatch, updateSize,
-} from "../utils/file";
+import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
+import { getFileStatus, hasContent, isExpired, partMatch, updateSize } from "../utils/file";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
 import type { AwsError, S3StorageOptions } from "./types.d";
@@ -149,10 +143,10 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     public normalizeError(error: AwsError): HttpError {
         if (error.$metadata) {
             return {
-                message: error.message,
                 code: error.Code || error.name,
-                statusCode: error.$metadata.httpStatusCode || 500,
+                message: error.message,
                 name: error.name,
+                statusCode: error.$metadata.httpStatusCode || 500,
             };
         }
 
@@ -178,11 +172,11 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
         const { UploadId } = await this.client.send(
             new CreateMultipartUploadCommand({
-                Bucket: this.bucket,
-                Key: file.name,
-                ContentType: file.contentType,
-                Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
                 ACL: this.config.acl,
+                Bucket: this.bucket,
+                ContentType: file.contentType,
+                Key: file.name,
+                Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, encodeURI),
             }),
         );
 
@@ -220,7 +214,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         }
 
         if (typeof part.size === "number" && part.size > 0) {
-            updateSize(file, part.size as number);
+            updateSize(file, part.size);
         }
 
         if (!partMatch(part, file)) {
@@ -256,17 +250,17 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
 
                 const { ETag } = await this.client.send(
                     new UploadPartCommand({
-                        Bucket: this.bucket,
-                        Key: file.name,
-                        UploadId: file.UploadId,
-                        PartNumber: partNumber,
                         Body: part.body,
+                        Bucket: this.bucket,
                         ContentLength: part.contentLength || 0,
                         ContentMD5: checksumMD5,
+                        Key: file.name,
+                        PartNumber: partNumber,
+                        UploadId: file.UploadId,
                     }),
                     { abortSignal } as HttpHandlerOptions,
                 );
-                const uploadPart: Part = { PartNumber: partNumber, Size: part.contentLength, ETag };
+                const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
 
                 file.Parts = [...file.Parts, uploadPart];
                 file.bytesWritten += part.contentLength || 0;
@@ -322,7 +316,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         const newPath = decodeURI(resolve(`/${CopySource}`, destination));
         const [, Bucket, ...pathSegments] = newPath.split("/");
         const Key = pathSegments.join("/");
-        const parameters: CopyObjectCommandInput = { Bucket, Key, CopySource };
+        const parameters: CopyObjectCommandInput = { Bucket, CopySource, Key };
 
         return this.client.send(new CopyObjectCommand(parameters));
     }
@@ -337,7 +331,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
     }
 
     // eslint-disable-next-line radar/cognitive-complexity
-    public async list(limit: number = 1000): Promise<S3File[]> {
+    public async list(limit = 1000): Promise<S3File[]> {
         let parameters: ListObjectsV2CommandInput = {
             Bucket: this.bucket,
             MaxKeys: limit,
@@ -389,9 +383,7 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             Bucket: this.bucket,
             Key: id,
         };
-        const {
-            Body, Metadata, ContentType, LastModified, Expires, ContentLength, ETag,
-        } = await this.client.send(new GetObjectCommand(parameters));
+        const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.client.send(new GetObjectCommand(parameters));
 
         await this.checkIfExpired({ expiredAt: Expires } as S3File);
 
@@ -405,16 +397,16 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         const { originalName, ...meta } = Metadata || {};
 
         return {
+            ETag,
+            content: Buffer.concat(chunks),
+            contentType: ContentType as string,
+            expiredAt: Expires,
             id,
+            metadata: meta,
+            modifiedAt: LastModified,
             name: id,
             originalName: originalName || id,
-            contentType: ContentType as string,
             size: Number(ContentLength),
-            metadata: meta,
-            content: Buffer.concat(chunks),
-            expiredAt: Expires,
-            modifiedAt: LastModified,
-            ETag,
         };
     }
 
@@ -467,8 +459,8 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             const partCommandInput = {
                 Bucket: this.bucket,
                 Key: file.name,
-                UploadId: file.UploadId,
                 PartNumber: index + 1,
+                UploadId: file.UploadId,
             };
 
             promises.push(getSignedUrl(this.client, new UploadPartCommand(partCommandInput), { expiresIn }));
@@ -490,12 +482,12 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
             new CompleteMultipartUploadCommand({
                 Bucket: this.bucket,
                 Key: file.name,
-                UploadId: file.UploadId,
                 MultipartUpload: {
                     Parts: file.Parts?.map(({ ETag, PartNumber }) => {
                         return { ETag, PartNumber };
                     }),
                 },
+                UploadId: file.UploadId,
             }),
         );
     }
@@ -514,8 +506,9 @@ class S3Storage extends BaseStorage<S3File, FileReturn> {
         }
     }
 
-    // eslint-disable-next-line compat/compat,max-len
-    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> => Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+
+    private internalOnComplete = (file: S3File): Promise<[CompleteMultipartUploadOutput, any]> =>
+        Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
 }
 
 export default S3Storage;

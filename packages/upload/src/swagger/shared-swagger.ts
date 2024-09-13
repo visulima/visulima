@@ -2,49 +2,41 @@ import type { OpenAPIV3 } from "openapi-types";
 
 const FileMetaExample: OpenAPIV3.ExampleObject = {
     value: {
-        id: "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
         createdAt: "2022-12-16T10:35:17.466Z",
+        id: "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
         modifiedAt: "2022-12-16T10:35:17.470Z",
     },
 };
 
 export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
     return {
-        // eslint-disable-next-line radar/no-duplicate-string
-        summary: "List upload",
         description: "List upload",
         operationId,
-        tags,
         parameters: [
             {
-                name: "limit",
-                in: "query",
-                schema: {
-                    type: "integer",
-                    nullable: true,
-                },
                 description: "Maximum number of elements to retrieve.",
+                in: "query",
+                name: "limit",
+                schema: {
+                    nullable: true,
+                    type: "integer",
+                },
             },
             {
-                name: "page",
-                in: "query",
-                schema: {
-                    type: "integer",
-                    nullable: true,
-                },
                 description: "Page number. Use only for pagination.",
+                in: "query",
+                name: "page",
+                schema: {
+                    nullable: true,
+                    type: "integer",
+                },
             },
         ],
         responses: {
             200: {
-                description: "OK",
                 content: {
                     // eslint-disable-next-line radar/no-duplicate-string
                     "application/json": {
-                        schema: {
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            $ref: "#/components/schemas/FileMeta",
-                        },
                         examples: {
                             Default: {
                                 $ref: "#/components/examples/FileMeta",
@@ -53,11 +45,15 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                                 $ref: "#/components/examples/FileMetaPagination",
                             },
                         },
+                        schema: {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            $ref: "#/components/schemas/FileMeta",
+                        },
                     },
                 },
+                description: "OK",
             },
             default: {
-                description: "Error",
                 content: {
                     "application/json": {
                         schema: {
@@ -66,21 +62,23 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                         },
                     },
                 },
+                description: "Error",
             },
         },
+        // eslint-disable-next-line radar/no-duplicate-string
+        summary: "List upload",
+        tags,
     };
 };
 
 export const sharedGet = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
     return {
-        tags,
-        summary: "Get the uploaded file",
         description: "Get the uploaded file",
         operationId,
         parameters: [
             {
-                name: "id",
                 in: "path",
+                name: "id",
                 required: true,
                 schema: {
                     type: "string",
@@ -91,55 +89,54 @@ export const sharedGet = (operationId: string, tags: string[] | undefined): Open
             200: {
                 description: "OK",
                 headers: {
-                    "X-Upload-Expires": {
-                        schema: {
-                            type: "string",
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            example: "2021-08-25T11:12:26.635Z",
-                            format: "date-time",
-                        },
-                        // eslint-disable-next-line radar/no-duplicate-string
-                        description: "Upload expiration date",
-                    },
-                    "Last-Modified": {
-                        schema: {
-                            type: "string",
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            example: "2021-08-25T11:12:26.635Z",
-                            format: "date-time",
-                        },
-                        // eslint-disable-next-line radar/no-duplicate-string
-                        description: "Upload last modified date",
-                    },
                     ETag: {
-                        schema: {
-                            type: "string",
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            example: "d41d8cd98f00b204e9800998ecf8427e",
-                        },
                         // eslint-disable-next-line radar/no-duplicate-string
                         description: "Upload ETag",
+                        schema: {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "d41d8cd98f00b204e9800998ecf8427e",
+                            type: "string",
+                        },
+                    },
+                    "Last-Modified": {
+                        // eslint-disable-next-line radar/no-duplicate-string
+                        description: "Upload last modified date",
+                        schema: {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "2021-08-25T11:12:26.635Z",
+                            format: "date-time",
+                            type: "string",
+                        },
+                    },
+                    "X-Upload-Expires": {
+                        // eslint-disable-next-line radar/no-duplicate-string
+                        description: "Upload expiration date",
+                        schema: {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            example: "2021-08-25T11:12:26.635Z",
+                            format: "date-time",
+                            type: "string",
+                        },
                     },
                 },
             },
             404: {
-                description: "Not Found",
                 content: {
                     "application/json": {
-                        schema: {
-                            $ref: "#/components/schemas/Error",
-                        },
                         example: {
                             error: {
                                 code: "FileNotFound",
                                 message: "Not found",
                             },
                         },
+                        schema: {
+                            $ref: "#/components/schemas/Error",
+                        },
                     },
                 },
+                description: "Not Found",
             },
             default: {
-                description: "Error",
                 content: {
                     "application/json": {
                         schema: {
@@ -147,78 +144,81 @@ export const sharedGet = (operationId: string, tags: string[] | undefined): Open
                         },
                     },
                 },
+                description: "Error",
             },
         },
+        summary: "Get the uploaded file",
+        tags,
     };
 };
 
-export const sharedErrorSchemaObject: { [key: string]: OpenAPIV3.NonArraySchemaObject } = {
+export const sharedErrorSchemaObject: Record<string, OpenAPIV3.NonArraySchemaObject> = {
     Error: {
         description: "Error",
-        type: "object",
         properties: {
             error: {
-                type: "object",
-                required: ["message"],
                 properties: {
-                    name: {
-                        type: "string",
-                        minLength: 3,
-                    },
                     code: {
-                        type: "string",
                         minLength: 1,
+                        type: "string",
                     },
                     message: {
-                        type: "string",
                         minLength: 1,
+                        type: "string",
+                    },
+                    name: {
+                        minLength: 3,
+                        type: "string",
                     },
                 },
+                required: ["message"],
+                type: "object",
             },
         },
         required: ["error"],
+        type: "object",
     },
 };
 
-export const sharedFileMetaSchemaObject: { [key: string]: OpenAPIV3.NonArraySchemaObject } = {
+export const sharedFileMetaSchemaObject: Record<string, OpenAPIV3.NonArraySchemaObject> = {
     FileMeta: {
         description: "File meta",
-        type: "object",
         properties: {
-            id: {
-                type: "string",
-                minLength: 1,
-            },
-            name: {
-                type: "string",
-                minLength: 1,
-            },
-            metadata: {
-                type: "object",
-            },
-            originalName: {
-                type: "string",
-                minLength: 1,
+            bytesWritten: {
+                type: "integer",
             },
             contentType: {
                 type: "string",
             },
-            bytesWritten: {
-                type: "integer",
+            createdAt: {
+                format: "date-time",
+                type: "string",
+            },
+            id: {
+                minLength: 1,
+                type: "string",
+            },
+            metadata: {
+                type: "object",
+            },
+            name: {
+                minLength: 1,
+                type: "string",
+            },
+            originalName: {
+                minLength: 1,
+                type: "string",
             },
             status: {
-                type: "string",
                 enum: ["completed", "part", "deleted", "created"],
-            },
-            createdAt: {
                 type: "string",
-                format: "date-time",
             },
         },
+        type: "object",
     },
 };
 
-export const sharedFileMetaExampleObject: { [key: string]: OpenAPIV3.ExampleObject } = {
+export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject> = {
     FileMeta: {
         value: [FileMetaExample],
     },
@@ -226,15 +226,15 @@ export const sharedFileMetaExampleObject: { [key: string]: OpenAPIV3.ExampleObje
         value: {
             data: [FileMetaExample.value],
             meta: {
-                total: 1,
-                perPage: 1,
-                page: 1,
-                lastPage: 1,
                 firstPage: 1,
                 firstPageUrl: "/?page=1",
+                lastPage: 1,
                 lastPageUrl: "/?page=10",
                 nextPageUrl: "/?page=2",
+                page: 1,
+                perPage: 1,
                 previousPageUrl: null,
+                total: 1,
             },
         },
     },

@@ -1,17 +1,16 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem } from "@azure/storage-blob";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+
 import type { IncomingMessage } from "node:http";
+
+import type { BlobBeginCopyFromURLResponse, BlobDeleteIfExistsResponse, BlobItem , ContainerClient} from "@azure/storage-blob";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import normalize from "normalize-path";
 
 import { ERRORS, throwErrorCode } from "../../utils";
 import LocalMetaStorage from "../local/local-meta-storage";
-import MetaStorage from "../meta-storage";
+import type MetaStorage from "../meta-storage";
 import BaseStorage from "../storage";
-import type {
-    FileInit, FilePart, FileQuery, FileReturn,
-} from "../utils/file";
+import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import AzureFile from "./azure-file";
 import AzureMetaStorage from "./azure-meta-storage";
@@ -113,8 +112,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                 blobContentType: file.contentType,
             },
             metadata: {
-                originalName: file.originalName,
                 name: file.name,
+                originalName: file.originalName,
                 ...JSON.parse(JSON.stringify(file.metadata)),
             },
         });
@@ -180,11 +179,11 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                 part.body.on("error", () => abortController.abort());
 
                 const response = await blobClient.uploadStream(part.body, undefined, undefined, {
+                    abortSignal: abortController.signal,
                     blobHTTPHeaders: {
                         blobContentType: file.contentType ?? "application/octet-stream",
                     },
                     metadata: file.metadata,
-                    abortSignal: abortController.signal,
                 });
 
                 if (response.requestId === undefined) {
@@ -215,21 +214,19 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
         const response = await blobClient.getProperties();
 
-        const {
-            metadata, contentType, expiresOn, lastModified, contentLength, etag,
-        } = response;
+        const { contentLength, contentType, etag, expiresOn, lastModified, metadata } = response;
 
         return {
-            id,
-            name: metadata?.name || id,
+            ETag: etag,
+            content: await blobClient.downloadToBuffer(),
             contentType: contentType as string,
             expiredAt: expiresOn,
-            metadata: metadata as Record<string, string> || {},
+            id,
+            metadata: (metadata as Record<string, string>) || {},
             modifiedAt: lastModified,
+            name: metadata?.name || id,
             originalName: metadata?.originalName || "",
             size: contentLength as number,
-            content: await blobClient.downloadToBuffer(),
-            ETag: etag,
         };
     }
 
@@ -241,7 +238,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
         return poller.pollUntilDone();
     }
 
-    public async list(limit: number = 1000): Promise<AzureFile[]> {
+    public async list(limit = 1000): Promise<AzureFile[]> {
         const files: AzureFile[] = [];
 
         // Declare truncated as a flag that the while loop is based on.
@@ -250,10 +247,12 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
         while (truncated) {
             try {
-                const iterator = this.containerClient.listBlobsFlat({
-                    includeMetadata: true,
-                    prefix: this.root,
-                }).byPage({ maxPageSize: limit, continuationToken: token });
+                const iterator = this.containerClient
+                    .listBlobsFlat({
+                        includeMetadata: true,
+                        prefix: this.root,
+                    })
+                    .byPage({ continuationToken: token, maxPageSize: limit });
 
                 // eslint-disable-next-line no-await-in-loop
                 const next = await iterator.next();
@@ -263,8 +262,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     response.segment.blobItems.forEach((blob: BlobItem) => {
                         if (!blob.deleted) {
                             files.push({
-                                id: blob.name,
                                 createdAt: blob.properties.createdOn,
+                                id: blob.name,
                                 modifiedAt: blob.properties.lastModified,
                             } as AzureFile);
                         }
