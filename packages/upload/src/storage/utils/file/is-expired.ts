@@ -1,4 +1,4 @@
-import File from "./file";
+import type File from "./file";
 
 const isExpired = (file: File): boolean => {
     if (!file.expiredAt) {

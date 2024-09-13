@@ -1,29 +1,29 @@
-import { Readable } from "node:stream";
+import type { Readable } from "node:stream";
 
-import { Metadata } from "./metadata";
+import type { Metadata } from "./metadata";
 
 export interface FileInit {
     contentType?: string;
-    originalName?: string;
     metadata: Metadata;
+    originalName?: string;
     size?: number | string;
 }
 
 export interface FileReturn extends Required<FileInit> {
-    id: string;
-
-    name: string;
+    ETag?: string;
 
     content: Buffer;
 
-    expiredAt?: string | Date | number;
+    expiredAt?: Date | number | string;
 
-    modifiedAt?: string | Date | number;
+    id: string;
 
-    ETag?: string;
+    modifiedAt?: Date | number | string;
+
+    name: string;
 }
 
-export type UploadEventType = "created" | "completed" | "deleted" | "part" | "updated";
+export type UploadEventType = "completed" | "created" | "deleted" | "part" | "updated";
 
 export interface FileQuery {
     id: string;
@@ -31,10 +31,10 @@ export interface FileQuery {
     size?: number;
 }
 
-export type Checksum = {
+export interface Checksum {
     checksum?: string;
     checksumAlgorithm?: string;
-};
+}
 
 export interface FilePart extends Checksum, FileQuery {
     body: Readable;

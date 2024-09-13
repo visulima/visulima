@@ -1,243 +1,42 @@
-import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import { createHash } from "node:crypto";
+
+import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import {
-    sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList,
-} from "./shared-swagger";
+import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList } from "./shared-swagger";
 
-const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
+const swaggerSpec = (origin: string, path = "/", tags: string[] | undefined = ["Multipart"]): Partial<OpenAPIV3.Document> => {
     const pathHash = createHash("sha256").update(path).digest("base64");
 
     return {
-        paths: {
-            [path.trimEnd()]: {
-                post: {
-                    // eslint-disable-next-line radar/no-duplicate-string
-                    summary: "Create upload",
-                    description: "Create upload",
-                    operationId: `${pathHash}MultipartCreate`,
-                    tags,
-                    requestBody: {
-                        description: "Upload Metadata",
-                        required: false,
-                        content: {
-                            "multipart/form-data": {
-                                schema: {
-                                    type: "object",
-                                    properties: {
-                                        metadata: {
-                                            type: "string",
-                                            description: "JSON stringifies metadata",
-                                            example: '{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }',
-                                        },
-                                        file: {
-                                            type: "string",
-                                            format: "binary",
-                                            description: "File to upload",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                    responses: {
-                        200: {
-                            description: "The file already exists, send a resume request",
-                            headers: {
-                                Location: {
-                                    schema: {
-                                        type: "string",
-                                        format: "uri",
-                                        // eslint-disable-next-line no-secrets/no-secrets
-                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
-                                    },
-                                    // eslint-disable-next-line radar/no-duplicate-string
-                                    description: "Resumable URI",
-                                },
-                                "X-Upload-Expires": {
-                                    schema: {
-                                        type: "string",
-                                        // eslint-disable-next-line radar/no-duplicate-string
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                    },
-                                    // eslint-disable-next-line radar/no-duplicate-string
-                                    description: "Upload expiration date",
-                                },
-                                ETag: {
-                                    schema: {
-                                        type: "string",
-                                        // eslint-disable-next-line radar/no-duplicate-string
-                                        example: "d41d8cd98f00b204e9800998ecf8427e",
-                                    },
-                                    // eslint-disable-next-line radar/no-duplicate-string
-                                    description: "Upload ETag",
-                                },
-                            },
-                        },
-                        201: {
-                            description: "Upload accepted, send the file contents",
-                            headers: {
-                                Location: {
-                                    schema: {
-                                        type: "string",
-                                        format: "uri",
-                                        // eslint-disable-next-line no-secrets/no-secrets
-                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
-                                    },
-                                    description: "Resumable URI",
-                                },
-                                "X-Upload-Expires": {
-                                    schema: {
-                                        type: "string",
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                    },
-                                    description: "Upload expiration date",
-                                },
-                                ETag: {
-                                    schema: {
-                                        type: "string",
-                                        // eslint-disable-next-line radar/no-duplicate-string
-                                        example: "d41d8cd98f00b204e9800998ecf8427e",
-                                    },
-                                    // eslint-disable-next-line radar/no-duplicate-string
-                                    description: "Upload ETag",
-                                },
-                            },
-                        },
-                        400: {
-                            description: "Bad Request",
-                            content: {
-                                // eslint-disable-next-line radar/no-duplicate-string
-                                "application/json": {
-                                    schema: {
-                                        // eslint-disable-next-line radar/no-duplicate-string
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                    example: {
-                                        error: {
-                                            name: "ValidationError",
-                                            code: "InvalidFileName",
-                                            message: "Invalid file name",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        413: {
-                            description: "Request Entity Too Large",
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                    example: {
-                                        error: {
-                                            name: "ValidationError",
-                                            code: "RequestEntityTooLarge",
-                                            message: "Request entity too large",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        415: {
-                            description: "Unsupported Media Type",
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                    example: {
-                                        error: {
-                                            name: "ValidationError",
-                                            code: "UnsupportedMediaType",
-                                            message: "Unsupported media type",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        423: {
-                            description: "File locked",
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                    example: {
-                                        error: {
-                                            code: "FileLocked",
-                                            message: "File locked",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        500: {
-                            description: "Internal Server Error",
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                    example: {
-                                        error: {
-                                            code: "GenericUploadError",
-                                            message: "Generic Upload Error",
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        default: {
-                            description: "Error",
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                get: sharedGetList(`${pathHash}MultipartGetList`, tags),
-            },
-            [`${path.trimEnd()}/{id}`]: {
-                delete: {
-                    // eslint-disable-next-line radar/no-duplicate-string
-                    summary: "Cancel upload",
-                    description: "Cancel upload",
-                    operationId: `${pathHash}MultipartCancel`,
-                    tags,
-                    parameters: [
-                        {
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            $ref: "#/components/parameters/UploadIDinPath",
-                        },
-                    ],
-                    responses: {
-                        204: {
-                            // eslint-disable-next-line radar/no-duplicate-string
-                            description: "No Content",
-                        },
-                    },
-                },
-                get: sharedGet(`${pathHash}TusGetFile`, tags),
-            },
-        },
         components: {
+            examples: sharedFileMetaExampleObject,
             parameters: {
                 UploadIDinPath: {
-                    name: "id",
-                    in: "path",
                     description: "Upload ID",
+                    in: "path",
+                    name: "id",
                     schema: {
                         type: "string",
                     },
+                },
+            },
+            responses: {
+                404: {
+                    content: {
+                        "application/json": {
+                            example: {
+                                error: {
+                                    code: "FileNotFound",
+                                    message: "Not found",
+                                },
+                            },
+                            schema: {
+                                $ref: "#/components/schemas/Error",
+                            },
+                        },
+                    },
+                    description: "Not Found",
                 },
             },
             schemas: {
@@ -252,25 +51,225 @@ const swaggerSpec = (origin: string, path: string = "/", tags: string[] | undefi
                 ...sharedErrorSchemaObject,
                 ...sharedFileMetaSchemaObject,
             },
-            responses: {
-                404: {
-                    description: "Not Found",
-                    content: {
-                        "application/json": {
-                            schema: {
-                                $ref: "#/components/schemas/Error",
-                            },
-                            example: {
-                                error: {
-                                    code: "FileNotFound",
-                                    message: "Not found",
+        },
+        paths: {
+            [`${path.trimEnd()}/{id}`]: {
+                delete: {
+                    description: "Cancel upload",
+                    operationId: `${pathHash}MultipartCancel`,
+                    parameters: [
+                        {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            $ref: "#/components/parameters/UploadIDinPath",
+                        },
+                    ],
+                    responses: {
+                        204: {
+                            // eslint-disable-next-line radar/no-duplicate-string
+                            description: "No Content",
+                        },
+                    },
+                    // eslint-disable-next-line radar/no-duplicate-string
+                    summary: "Cancel upload",
+                    tags,
+                },
+                get: sharedGet(`${pathHash}TusGetFile`, tags),
+            },
+            [path.trimEnd()]: {
+                get: sharedGetList(`${pathHash}MultipartGetList`, tags),
+                post: {
+                    description: "Create upload",
+                    operationId: `${pathHash}MultipartCreate`,
+                    requestBody: {
+                        content: {
+                            "multipart/form-data": {
+                                schema: {
+                                    properties: {
+                                        file: {
+                                            description: "File to upload",
+                                            format: "binary",
+                                            type: "string",
+                                        },
+                                        metadata: {
+                                            description: "JSON stringifies metadata",
+                                            example: '{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }',
+                                            type: "string",
+                                        },
+                                    },
+                                    type: "object",
                                 },
                             },
                         },
+                        description: "Upload Metadata",
+                        required: false,
                     },
+                    responses: {
+                        200: {
+                            description: "The file already exists, send a resume request",
+                            headers: {
+                                ETag: {
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Upload ETag",
+                                    schema: {
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        example: "d41d8cd98f00b204e9800998ecf8427e",
+                                        type: "string",
+                                    },
+                                },
+                                Location: {
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Resumable URI",
+                                    schema: {
+                                        // eslint-disable-next-line no-secrets/no-secrets
+                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
+                                        format: "uri",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-Expires": {
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Upload expiration date",
+                                    schema: {
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        example: "2021-08-25T11:12:26.635Z",
+                                        format: "date-time",
+                                        type: "string",
+                                    },
+                                },
+                            },
+                        },
+                        201: {
+                            description: "Upload accepted, send the file contents",
+                            headers: {
+                                ETag: {
+                                    // eslint-disable-next-line radar/no-duplicate-string
+                                    description: "Upload ETag",
+                                    schema: {
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        example: "d41d8cd98f00b204e9800998ecf8427e",
+                                        type: "string",
+                                    },
+                                },
+                                Location: {
+                                    description: "Resumable URI",
+                                    schema: {
+                                        // eslint-disable-next-line no-secrets/no-secrets
+                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
+                                        format: "uri",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-Expires": {
+                                    description: "Upload expiration date",
+                                    schema: {
+                                        example: "2021-08-25T11:12:26.635Z",
+                                        format: "date-time",
+                                        type: "string",
+                                    },
+                                },
+                            },
+                        },
+                        400: {
+                            content: {
+                                // eslint-disable-next-line radar/no-duplicate-string
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "InvalidFileName",
+                                            message: "Invalid file name",
+                                            name: "ValidationError",
+                                        },
+                                    },
+                                    schema: {
+                                        // eslint-disable-next-line radar/no-duplicate-string
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "Bad Request",
+                        },
+                        413: {
+                            content: {
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "RequestEntityTooLarge",
+                                            message: "Request entity too large",
+                                            name: "ValidationError",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "Request Entity Too Large",
+                        },
+                        415: {
+                            content: {
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "UnsupportedMediaType",
+                                            message: "Unsupported media type",
+                                            name: "ValidationError",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "Unsupported Media Type",
+                        },
+                        423: {
+                            content: {
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "FileLocked",
+                                            message: "File locked",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "File locked",
+                        },
+                        500: {
+                            content: {
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "GenericUploadError",
+                                            message: "Generic Upload Error",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "Internal Server Error",
+                        },
+                        default: {
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "Error",
+                        },
+                    },
+                    // eslint-disable-next-line radar/no-duplicate-string
+                    summary: "Create upload",
+                    tags,
                 },
             },
-            examples: sharedFileMetaExampleObject,
         },
     };
 };

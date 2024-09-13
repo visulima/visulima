@@ -4,8 +4,10 @@ import type { HttpError } from "./types.d";
 
 export enum ERRORS {
     BAD_REQUEST = "BadRequest",
+    CHECKSUM_MISMATCH = "ChecksumMismatch",
     FILE_CONFLICT = "FileConflict",
     FILE_ERROR = "FileError",
+    FILE_LOCKED = "FileLocked",
     FILE_NOT_ALLOWED = "FileNotAllowed",
     FILE_NOT_FOUND = "FileNotFound",
     FORBIDDEN = "Forbidden",
@@ -15,17 +17,15 @@ export enum ERRORS {
     INVALID_FILE_SIZE = "InvalidFileSize",
     INVALID_RANGE = "InvalidRange",
     METHOD_NOT_ALLOWED = "MethodNotAllowed",
+    REQUEST_ABORTED = "RequestAborted",
     REQUEST_ENTITY_TOO_LARGE = "RequestEntityTooLarge",
     STORAGE_ERROR = "StorageError",
     TOO_MANY_REQUESTS = "TooManyRequests",
     UNKNOWN_ERROR = "UnknownError",
     UNPROCESSABLE_ENTITY = "UnprocessableEntity",
-    UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
-    CHECKSUM_MISMATCH = "ChecksumMismatch",
     // eslint-disable-next-line no-secrets/no-secrets
     UNSUPPORTED_CHECKSUM_ALGORITHM = "UnsupportedChecksumAlgorithm",
-    REQUEST_ABORTED = "RequestAborted",
-    FILE_LOCKED = "FileLocked",
+    UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
 }
 
 export type ErrorResponses<T extends string = string> = {
@@ -35,8 +35,10 @@ export type ErrorResponses<T extends string = string> = {
 export const ErrorMap = mem((): ErrorResponses => {
     const errors: Record<string, [number, string]> = {
         BadRequest: [400, "Bad request"],
+        ChecksumMismatch: [460, "Checksum mismatch"],
         FileConflict: [409, "File conflict"],
         FileError: [500, "Something went wrong writing the file"],
+        FileLocked: [423, "File locked"],
         FileNotAllowed: [403, "File not allowed"],
         FileNotFound: [404, "Not found"],
         Forbidden: [403, "Authenticated user is not allowed access"],
@@ -46,16 +48,14 @@ export const ErrorMap = mem((): ErrorResponses => {
         InvalidFileSize: [400, "File size cannot be retrieved"],
         InvalidRange: [400, "Invalid or missing content-range header"],
         MethodNotAllowed: [405, "Method not allowed"],
+        RequestAborted: [499, "Request aborted"],
         RequestEntityTooLarge: [413, "Request entity too large"],
-        ChecksumMismatch: [460, "Checksum mismatch"],
-        UnsupportedChecksumAlgorithm: [400, "Unsupported checksum algorithm"],
         StorageError: [503, "Storage error"],
         TooManyRequests: [429, "Too many requests"],
         UnknownError: [500, "Something went wrong"],
         UnprocessableEntity: [422, "Validation failed"],
+        UnsupportedChecksumAlgorithm: [400, "Unsupported checksum algorithm"],
         UnsupportedMediaType: [415, "Unsupported media type"],
-        RequestAborted: [499, "Request aborted"],
-        FileLocked: [423, "File locked"],
     };
 
     const errorMap: ErrorResponses = {};
@@ -70,7 +70,7 @@ export const ErrorMap = mem((): ErrorResponses => {
 })();
 
 export class UploadError extends Error {
-    public name: string = "UploadError";
+    public name = "UploadError";
 
     public UploadErrorCode: ERRORS = ERRORS.UNKNOWN_ERROR;
 

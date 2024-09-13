@@ -3,7 +3,7 @@ import duration from "parse-duration";
 /**
  * Convert a human-readable duration to ms
  */
-const toMilliseconds = (value: string | number | undefined): number | null => {
+const toMilliseconds = (value: number | string | undefined): number | null => {
     if (value === Number(value)) {
         return value;
     }

@@ -1,7 +1,8 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import createHttpError from "http-errors";
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { IncomingMessage, ServerResponse } from "node:http";
 
 import Multipart from "../handler/multipart";
 import Tus from "../handler/tus";
@@ -27,8 +28,8 @@ export const nodeMultipartHandler = <
     Request extends IncomingMessage = NextApiRequest,
     Response extends ServerResponse = NextApiResponse,
 >(
-        options: UploadOptions<TFile>,
-    ) => {
+    options: UploadOptions<TFile>,
+) => {
     const multipart = new Multipart<TFile, Request, Response>(options);
 
     return (request: Request, response: Response) => {

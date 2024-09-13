@@ -1,46 +1,42 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import type { S3ClientConfig } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { S3Client } from "@aws-sdk/client-s3";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ResponseMetadata } from "@aws-sdk/types";
+import type { S3Client } from "@aws-sdk/client-s3";
+import type { ResponseMetadata } from "@aws-sdk/types";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
-import S3File from "./s3-file";
+import type S3File from "./s3-file";
 
-export type S3MetaStorageOptions = S3ClientConfig &
-MetaStorageOptions & {
-    bucket?: string;
-    keyFile?: string;
+export type S3MetaStorageOptions = {
+        bucket?: string;
+        keyFile?: string;
 
-    /**
-     * @internal - used for internal client inheritance, if same client is used for meta and file storage
-     */
-    client?: S3Client;
-};
+        /**
+         * @internal - used for internal client inheritance, if same client is used for meta and file storage
+         */
+        client?: S3Client;
+    } & MetaStorageOptions & S3ClientConfig;
 
-export type S3StorageOptions = BaseStorageOptions<S3File> &
-S3ClientConfig & {
-    /**
+export type S3StorageOptions = BaseStorageOptions<S3File> & S3ClientConfig & {
+        /**
          * S3 bucket
          * @defaultValue 'node-Upload'
          */
-    bucket?: string;
-    /**
+        bucket?: string;
+        /**
          *   Specifying access rules for uploaded files
          */
-    acl?: "private" | "public-read" | string;
-    /**
+        acl?: "private" | "public-read" | string;
+        /**
          * Force compatible client upload directly to S3 storage
          */
-    clientDirectUpload?: boolean;
-    /**
+        clientDirectUpload?: boolean;
+        /**
          * The parts size that the client should use for presigned multipart unloading
          * @defaultValue '16MB'
          */
-    partSize?: number | string;
-    /**
+        partSize?: number | string;
+        /**
          * Configure metafiles storage
          * @example
          * Using local metafiles
@@ -60,22 +56,22 @@ S3ClientConfig & {
          * })
          * ```
          */
-    metaStorageConfig?: LocalMetaStorageOptions | S3MetaStorageOptions;
-    /**
+        metaStorageConfig?: LocalMetaStorageOptions | S3MetaStorageOptions;
+        /**
          * @deprecated Use standard auth providers
          */
-    keyFile?: string;
-};
+        keyFile?: string;
+    };
 /**
  * SDK V3
  * A structure containing information about a service or networking error.
  */
 export interface AwsError extends Error {
-    $metadata: ResponseMetadata;
-    Type?: string;
-    Code?: string;
     $fault?: "client" | "server";
+    $metadata: ResponseMetadata;
     $service?: string;
+    Code?: string;
+    Type?: string;
 }
 
 /**
@@ -86,13 +82,37 @@ export interface AwsError extends Error {
 
 export interface AWSErrorV2 extends Error {
     /**
+     * CloudFront request ID associated with the response.
+     */
+    cfId: string;
+    /**
      * A unique short code representing the error that was emitted.
      */
     code: string;
     /**
+     * Second request ID associated with the response from S3.
+     */
+    extendedRequestId: string;
+    /**
+     * Set when a networking error occurs to easily identify the endpoint of the request.
+     */
+    hostname: string;
+    /**
      * A longer human readable error message.
      */
     message: string;
+    /**
+     * Set when a networking error occurs to easily identify the region of the request.
+     */
+    region: string;
+    /**
+     * The unique request ID associated with the response.
+     */
+    requestId: string;
+    /**
+     * Amount of time (in seconds) that the request waited before being resent.
+     */
+    retryDelay: number;
     /**
      * Whether the error message is retryable.
      */
@@ -105,28 +125,4 @@ export interface AWSErrorV2 extends Error {
      * The date time object when the error occurred.
      */
     time: Date;
-    /**
-     * Set when a networking error occurs to easily identify the endpoint of the request.
-     */
-    hostname: string;
-    /**
-     * Set when a networking error occurs to easily identify the region of the request.
-     */
-    region: string;
-    /**
-     * Amount of time (in seconds) that the request waited before being resent.
-     */
-    retryDelay: number;
-    /**
-     * The unique request ID associated with the response.
-     */
-    requestId: string;
-    /**
-     * Second request ID associated with the response from S3.
-     */
-    extendedRequestId: string;
-    /**
-     * CloudFront request ID associated with the response.
-     */
-    cfId: string;
 }

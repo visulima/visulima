@@ -1,13 +1,13 @@
 import type { HttpError, HttpErrorBody, Validation } from "../utils";
-import { LocalMetaStorageOptions } from "./local/local-meta-storage";
-import MetaStorage from "./meta-storage";
+import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
+import type MetaStorage from "./meta-storage";
 import type { UploadFile } from "./utils/file";
-import { File } from "./utils/file";
+import type { File } from "./utils/file";
 
 export interface MetaStorageOptions {
+    logger?: Logger;
     prefix?: string;
     suffix?: string;
-    logger?: Logger;
 }
 
 export type OnCreate<TFile extends File = File, TBody = any> = (file: TFile) => Promise<TBody> | TBody;
@@ -20,7 +20,7 @@ export type OnDelete<TFile extends File = File, TBody = any> = (file: TFile) => 
 
 export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => any;
 
-export type PurgeList = { items: UploadFile[]; maxAgeMs: number };
+export interface PurgeList { items: UploadFile[]; maxAgeMs: number }
 
 export interface ExpirationOptions {
     /**
@@ -40,29 +40,8 @@ export interface ExpirationOptions {
 export interface BaseStorageOptions<T extends File = File> {
     /** Allowed MIME types */
     allowMIME?: string[];
-    /** File size limit */
-    maxUploadSize?: number | string;
-    /** File naming function */
-    filename?: (file: T, request: any) => string;
-    /** Force relative URI in Location header */
-    useRelativeLocation?: boolean;
-    /** Callback function that is called when a new upload is created */
-    onCreate?: OnCreate<T>;
-    /** Callback function that is called when an upload is updated */
-    onUpdate?: OnUpdate<T>;
-    /** Callback function that is called when an upload is completed */
-    onComplete?: OnComplete<T>;
-    /** Callback function that is called when an upload is cancelled */
-    onDelete?: OnDelete<T>;
-    /** Customize error response */
-    onError?: OnError;
-
-    /** Upload validation options */
-    validation?: Validation<T>;
-    /** Limiting the size of custom metadata */
-    maxMetadataSize?: number | string;
-    /** Provide custom meta storage  */
-    metaStorage?: MetaStorage<T>;
+    /** The full path of the folder where the uploaded asset will be stored. */
+    assetFolder?: string;
     /**
      * Automatic cleaning of abandoned and completed upload
      *
@@ -79,11 +58,32 @@ export interface BaseStorageOptions<T extends File = File> {
      * ```
      */
     expiration?: ExpirationOptions;
+    /** File naming function */
+    filename?: (file: T, request: any) => string;
     /** Logger injection */
     logger?: Logger;
+    /** Limiting the size of custom metadata */
+    maxMetadataSize?: number | string;
+    /** File size limit */
+    maxUploadSize?: number | string;
+    /** Provide custom meta storage  */
+    metaStorage?: MetaStorage<T>;
+    /** Callback function that is called when an upload is completed */
+    onComplete?: OnComplete<T>;
 
-    /** The full path of the folder where the uploaded asset will be stored. */
-    assetFolder?: string;
+    /** Callback function that is called when a new upload is created */
+    onCreate?: OnCreate<T>;
+    /** Callback function that is called when an upload is cancelled */
+    onDelete?: OnDelete<T>;
+    /** Customize error response */
+    onError?: OnError;
+    /** Callback function that is called when an upload is updated */
+    onUpdate?: OnUpdate<T>;
+    /** Force relative URI in Location header */
+    useRelativeLocation?: boolean;
+
+    /** Upload validation options */
+    validation?: Validation<T>;
 }
 
 export type DiskStorageOptions<T extends File> = BaseStorageOptions<T> & {

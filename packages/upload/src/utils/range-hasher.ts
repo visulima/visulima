@@ -1,12 +1,16 @@
-import Cache from "lru-cache";
-import { Hash } from "node:crypto";
+import type { Hash } from "node:crypto";
 import { createReadStream } from "node:fs";
+
+import { LRUCache as Cache } from "lru-cache";
 
 import RangeChecksum from "./range-checksum";
 import type { RangeChecksum as IRangeChecksum } from "./types.d";
 
 class RangeHasher extends Cache<string, Hash> {
-    public constructor(public algorithm: "sha1" | "md5" = "sha1", options?: Cache.Options<string, Hash>) {
+    public constructor(
+        public algorithm: "md5" | "sha1" = "sha1",
+        options?: Cache.Options<string, Hash>,
+    ) {
         super({
             ttl: 1000,
             ...options,
