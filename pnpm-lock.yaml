@@ -7502,15 +7502,21 @@ importers:
 =======
   packages/upload:
     dependencies:
+      '@mjackson/multipart-parser':
+        specifier: ^0.6.3
+        version: 0.6.3
       '@sindresorhus/fnv1a':
         specifier: 3.1.0
         version: 3.1.0
+      '@visulima/humanizer':
+        specifier: workspace:*
+        version: link:../humanizer
       '@visulima/pagination':
-        specifier: ^3.0.21
-        version: 3.0.21
-      '@visulima/readdir':
-        specifier: ^2.0.12
-        version: 2.0.12
+        specifier: workspace:*
+        version: link:../pagination
+      '@visulima/path':
+        specifier: workspace:*
+        version: link:../path
       bytes:
         specifier: ^3.1.2
         version: 3.1.2
@@ -7538,12 +7544,6 @@ importers:
       nanoid:
         specifier: 5.0.7
         version: 5.0.7
-      normalize-path:
-        specifier: ^3.0.0
-        version: 3.0.0
-      parse-duration:
-        specifier: ^1.1.0
-        version: 1.1.0
       path-to-regexp:
         specifier: '>=6.3.0'
         version: 8.1.0
@@ -10200,8 +10200,35 @@ packages:
   '@mfederczuk/deeptools@2.1.0-indev01':
     resolution: {integrity: sha512-+vAcEbPNRzN2eH4sPHCs+fv9mZJlD5vFqyx8ScL4rRyYd67cX+J7Di0//QHRGnA79hDQk2/eHataCJLsyAhn5A==}
 
+<<<<<<< HEAD
   '@modelcontextprotocol/sdk@1.21.1':
     resolution: {integrity: sha512-UyLFcJLDvUuZbGnaQqXFT32CpPpGj7VS19roLut6gkQVhb439xUzYWbsUvdI3ZPL+2hnFosuugtYWE0Mcs1rmQ==}
+=======
+<<<<<<< HEAD
+  '@modelcontextprotocol/sdk@1.20.0':
+    resolution: {integrity: sha512-kOQ4+fHuT4KbR2iq2IjeV32HiihueuOf1vJkq18z08CLZ1UQrTc8BXJpVfxZkq45+inLLD+D4xx4nBjUelJa4Q==}
+=======
+  '@microsoft/tsdoc-config@0.17.1':
+    resolution: {integrity: sha512-UtjIFe0C6oYgTnad4q1QP4qXwLhe6tIpNTRStJ2RZEPIkqQPREAwE5spzVxsdn9UaEMUqhh0AqSx3X4nWAKXWw==}
+
+  '@microsoft/tsdoc@0.15.1':
+    resolution: {integrity: sha512-4aErSrCR/On/e5G2hDP0wjooqDdauzEbIq8hIkIe5pXV0rtWJZvdCEKL0ykZxex+IxIwBp0eGeV48hQN07dXtw==}
+
+<<<<<<< HEAD
+  '@modelcontextprotocol/sdk@1.18.0':
+    resolution: {integrity: sha512-JvKyB6YwS3quM+88JPR0axeRgvdDu3Pv6mdZUy+w4qVkCzGgumb9bXG/TmtDRQv+671yaofVfXSQmFLlWU5qPQ==}
+=======
+  '@mjackson/headers@0.5.1':
+    resolution: {integrity: sha512-sJpFgecPT/zJvwk3GRNVWNs8EkwaJoUNU2D0VMlp+gDJs6cuSTm1q/aCZi3ZtuV6CgDEQ4l2ZjUG3A9JrQlbNA==}
+
+  '@mjackson/multipart-parser@0.6.3':
+    resolution: {integrity: sha512-aQhySnM6OpAYMMG+m7LEygYye99hB1md/Cy1AFE0yD5hfNW+X4JDu7oNVY9Gc6IW8PZ45D1rjFLDIUdnkXmwrA==}
+
+  '@mswjs/interceptors@0.35.1':
+    resolution: {integrity: sha512-nMuUaMCtg8oKSTHwAnsoGRN6c1RZXNm6+ebEoe9SBGALVlBIzniZoSuC/itNCLOt51YEEYsF0svB/sOzYhqLPA==}
+>>>>>>> a1e95d34 (fix(upload): more work)
+>>>>>>> 74465f639 (fix(upload): more work)
+>>>>>>> 73ff291ba (fix(upload): more work)
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -16331,6 +16358,7 @@ packages:
         optional: true
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/pail@2.1.27':
     resolution: {integrity: sha512-4Wm1CFB9mKuMdDc5eFz+lSRakyxD1vOliYiTfKW/aeBHEI4BrWMMN6kSFXGU1xrBPcp8Ytnm/gERqt3ZxBnzgg==}
     engines: {node: '>=18.0.0 <=23.x'}
@@ -16340,6 +16368,8 @@ packages:
     resolution: {integrity: sha512-QvuHcmFGq0mvwAJMSQs0f0Vk5csomT/lAC+cED2VwH9hYY5OhxSS+5+ko/uNW5aaDW4eFe9/Uhj+S4+RgKom0Q==}
     engines: {node: '>=18.* <=21.*'}
 
+=======
+>>>>>>> a1e95d34 (fix(upload): more work)
   '@visulima/redact@1.0.7':
     resolution: {integrity: sha512-AOIBfbuxOO9KKxhLfASJE0jrriAxjsnMgP18suYc5gcSE9zASsR+UOt+W6lkpIOYBa0kZMHrHdxz/LeF+4+J8Q==}
     engines: {node: '>=18.* <=22.*'}
@@ -24478,10 +24508,13 @@ packages:
   parse-css-color@0.2.1:
     resolution: {integrity: sha512-bwS/GGIFV3b6KS4uwpzCFj4w297Yl3uqnSgIPsoQkx7GMLROXfMnWvxfNkL0oh8HVhZA4hvJoEoEIqonfJ3BWg==}
 
+<<<<<<< HEAD
   parse-duration@1.1.0:
     resolution: {integrity: sha512-z6t9dvSJYaPoQq7quMzdEagSFtpGu+utzHqqxmpVWNNZRIXnvqyCvn9XsTdh7c/w0Bqmdz3RB3YnRaKtpRtEXQ==}
 
 >>>>>>> fa8a370a (fix(upload): update code)
+=======
+>>>>>>> a1e95d34 (fix(upload): more work)
   parse-english@4.2.0:
     resolution: {integrity: sha512-jw5N6wZUZViIw3VLG/FUSeL3vDhfw5Q2g4E3nYC69Mm5ANbh9ZWd+eligQbeUoyObZM8neynTn3l14e09pjEWg==}
 
@@ -34164,7 +34197,25 @@ snapshots:
 
   '@mfederczuk/deeptools@2.1.0-indev01': {}
 
+<<<<<<< HEAD
   '@modelcontextprotocol/sdk@1.21.1':
+=======
+<<<<<<< HEAD
+  '@modelcontextprotocol/sdk@1.20.0':
+=======
+  '@microsoft/tsdoc-config@0.17.1':
+    dependencies:
+      '@microsoft/tsdoc': 0.15.1
+      ajv: 8.12.0
+      jju: 1.4.0
+      resolve: 1.22.10
+
+  '@microsoft/tsdoc@0.15.1': {}
+
+<<<<<<< HEAD
+  '@modelcontextprotocol/sdk@1.18.0':
+>>>>>>> 74465f639 (fix(upload): more work)
+>>>>>>> 73ff291ba (fix(upload): more work)
     dependencies:
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
@@ -34182,7 +34233,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
   '@mswjs/interceptors@0.40.0':
+=======
+  '@mswjs/interceptors@0.37.1':
+=======
+  '@mjackson/headers@0.5.1': {}
+
+  '@mjackson/multipart-parser@0.6.3':
+    dependencies:
+      '@mjackson/headers': 0.5.1
+
+  '@mswjs/interceptors@0.35.1':
+>>>>>>> a1e95d34 (fix(upload): more work)
+>>>>>>> 74465f639 (fix(upload): more work)
     dependencies:
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/logger': 0.3.0
@@ -44756,12 +44820,15 @@ snapshots:
       rotating-file-stream: 3.2.6
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@visulima/pail@2.1.27(@visulima/redact@1.0.15)(ai@5.0.34(zod@3.25.76))(rotating-file-stream@3.2.6)':
 =======
   '@visulima/readdir@2.0.12':
     dependencies:
       micromatch: 4.0.8
 
+=======
+>>>>>>> a1e95d34 (fix(upload): more work)
   '@visulima/redact@1.0.7':
 >>>>>>> fa8a370a (fix(upload): update code)
     dependencies:
@@ -57660,9 +57727,12 @@ snapshots:
       color-name: 1.1.4
       hex-rgb: 4.3.0
 
+<<<<<<< HEAD
   parse-duration@1.1.0: {}
 
 >>>>>>> fa8a370a (fix(upload): update code)
+=======
+>>>>>>> a1e95d34 (fix(upload): more work)
   parse-english@4.2.0:
     dependencies:
       nlcst-to-string: 2.0.4
