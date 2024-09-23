@@ -1,15 +1,36 @@
+// eslint-disable-next-line import/no-unused-modules,import/no-named-as-default
 import Cli from "@visulima/cerebro";
+import { SimpleReporter } from "@visulima/pail/reporter";
 
-// Create a CLI runtime
-const cli = new Cli("cerebro");
+import { name, version } from "../../package.json";
+// eslint-disable-next-line unicorn/prevent-abbreviations
+import createDevCommand from "./dev";
 
-// Your command
-cli.addCommand({
-    name: "main:colors",
-    description: "Output colors", // This is used in the help output
-    execute: ({ logger }) => {
-        logger.info("Colors command");
+/**
+ * Create a new instance of the packem CLI.
+ *
+ * @type {Cli}
+ */
+const cli = new Cli("packem", {
+    logger: {
+        reporters: [
+            new SimpleReporter({
+                error: {
+                    hideErrorCauseCodeView: true,
+                    hideErrorCodeView: true,
+                    hideErrorErrorsCodeView: true,
+                },
+            }),
+        ],
+        scope: "packem",
     },
+    packageName: name,
+    packageVersion: version,
 });
 
-await cli.run();
+createDevCommand(cli);
+
+// eslint-disable-next-line no-void
+void cli.run({
+    shouldExitProcess: false,
+});
