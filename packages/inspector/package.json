@@ -108,7 +108,7 @@
         "@vitest/coverage-v8": "^2.1.1",
         "@vitest/ui": "^2.1.1",
         "cross-env": "^7.0.3",
-        "esbuild": "0.23.0",
+        "esbuild": "0.24.0",
         "eslint": "8.57.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-etc": "^2.0.3",
