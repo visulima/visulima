@@ -50,10 +50,10 @@ importers:
         version: 19.5.0
       '@nrwl/tao':
         specifier: 19.4.3
-        version: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 19.4.3(@swc/core@1.6.7)
       '@nrwl/workspace':
         specifier: 19.4.3
-        version: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 19.4.3(@swc/core@1.6.7)
       '@octokit/rest':
         specifier: ^21.0.2
         version: 21.0.2
@@ -89,7 +89,7 @@ importers:
         version: 15.2.10
       nx:
         specifier: ^19.7.2
-        version: 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 19.7.2(@swc/core@1.6.7)
       pkg-pr-new:
         specifier: ^0.0.24
         version: 0.0.24
@@ -125,7 +125,7 @@ importers:
         version: 14.2.0
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -361,13 +361,13 @@ importers:
         version: 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@storybook/addon-interactions':
         specifier: ^8.2.9
-        version: 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/addon-links':
         specifier: ^8.2.9
         version: 8.2.9(react@18.3.1)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@storybook/addon-styling':
         specifier: ^1.3.7
-        version: 1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+        version: 1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))
       '@storybook/addon-themes':
         specifier: ^8.2.9
         version: 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
@@ -382,7 +382,7 @@ importers:
         version: 8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)
       '@storybook/react-vite':
         specifier: ^8.2.9
-        version: 8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.21.2)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.22.2)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/test-runner':
         specifier: ^0.19.1
         version: 0.19.1(@swc/helpers@0.5.5)(@types/node@20.14.11)(encoding@0.1.13)(prettier@3.3.3)
@@ -1156,7 +1156,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1188,8 +1188,8 @@ importers:
         specifier: 1.4.9
         version: 1.4.9
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -1276,7 +1276,7 @@ importers:
         version: 3.0.13(zod@3.23.8)
       '@visulima/jsdoc-open-api':
         specifier: 2.0.59
-        version: 2.0.59(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)
+        version: 2.0.59(@swc/core@1.6.7)(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -1313,7 +1313,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1391,7 +1391,7 @@ importers:
         version: 4.18.3
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 5.28.5(@swc/core@1.6.7)
       '@visulima/crud':
         specifier: 2.0.30
         version: 2.0.30(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
@@ -1523,7 +1523,7 @@ importers:
         version: 5.17.14(@types/react@18.3.5)(debug@4.3.7)(ramda@0.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       type-fest:
         specifier: ^4.26.1
         version: 4.26.1
@@ -1535,7 +1535,7 @@ importers:
         version: 2.0.5(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
       webpack:
         specifier: ^5.94.0
-        version: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 5.94.0(@swc/core@1.6.7)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -1544,7 +1544,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1570,8 +1570,8 @@ importers:
         specifier: 1.4.9
         version: 1.4.9
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -1664,7 +1664,7 @@ importers:
         version: 1.0.10(yaml@2.5.1)
       '@visulima/pail':
         specifier: 2.1.8
-        version: 2.1.8(rotating-file-stream@3.2.3)
+        version: 2.1.8(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1677,7 +1677,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1724,8 +1724,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -1801,7 +1801,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1882,7 +1882,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -1961,7 +1961,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -1990,8 +1990,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2076,7 +2076,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2196,7 +2196,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2208,7 +2208,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2240,8 +2240,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2334,7 +2334,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2381,8 +2381,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -2449,7 +2449,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2478,8 +2478,8 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.6)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2542,7 +2542,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2565,8 +2565,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2630,7 +2630,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2656,8 +2656,8 @@ importers:
         specifier: 4.4.4
         version: 4.4.4
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2763,7 +2763,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2792,8 +2792,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -2883,7 +2883,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -2912,8 +2912,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/path':
         specifier: 1.0.8
         version: 1.0.8
@@ -2994,7 +2994,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3026,8 +3026,8 @@ importers:
         specifier: 1.4.9
         version: 1.4.9
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/browser':
         specifier: 1.6.0
         version: 1.6.0(playwright@1.45.1)(vitest@2.0.5)(webdriverio@9.0.9)
@@ -3118,7 +3118,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3144,8 +3144,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3230,11 +3230,11 @@ importers:
         version: 12.1.0
       webpack:
         specifier: ^5.94.0
-        version: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 5.94.0(@swc/core@1.6.7)
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3264,7 +3264,7 @@ importers:
         version: 18.19.15
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))
+        version: 5.28.5(@swc/core@1.6.7)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3312,7 +3312,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.2.4
-        version: 8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
+        version: 8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -3324,7 +3324,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3353,8 +3353,8 @@ importers:
         specifier: 18.19.39
         version: 18.19.39
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.39)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3439,7 +3439,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3471,8 +3471,8 @@ importers:
         specifier: ^2.4.4
         version: 2.4.4
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3565,7 +3565,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3588,8 +3588,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3668,7 +3668,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3697,8 +3697,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@visulima/redact':
         specifier: 1.0.7
         version: 1.0.7
@@ -3819,7 +3819,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -3845,8 +3845,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3925,7 +3925,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.2)
@@ -3960,8 +3960,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4028,7 +4028,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4054,8 +4054,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.19.15)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4162,7 +4162,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4191,8 +4191,8 @@ importers:
         specifier: 20.14.2
         version: 20.14.2
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.2)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -4265,7 +4265,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
-        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
+        version: 15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)
       '@anolilab/prettier-config':
         specifier: ^5.0.14
         version: 5.0.14(prettier@3.3.3)
@@ -4294,8 +4294,8 @@ importers:
         specifier: 18.18.14
         version: 18.18.14
       '@visulima/packem':
-        specifier: ^1.0.0-alpha.108
-        version: 1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
+        specifier: 1.0.0
+        version: 1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@18.18.14)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
@@ -5415,6 +5415,12 @@ packages:
       enzyme: ^3.11.0
       react: '>=18'
       react-dom: '>=18'
+
+  '@ckeditor/typedoc-plugins@43.0.0':
+    resolution: {integrity: sha512-Dgm4kqKu56M7OMspF4TQfp5P6IBU2DLMKhgLFSP3QQt+7DV6Z2Ry/bsmZKbgmpYKttambXWrVRqHh6vXnpWZaQ==}
+    engines: {node: '>=18.0.0', npm: '>=5.7.1'}
+    peerDependencies:
+      typedoc: ^0.23.15
 
   '@clack/core@0.3.4':
     resolution: {integrity: sha512-H4hxZDXgHtWTwV3RAVenqcC4VbJZNegbBjlPvzOzCouXtS2y3sDvlO3IsbrPNWuLWPPlYVYPghQdSF64683Ldw==}
@@ -6675,43 +6681,43 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@oxc-parser/binding-darwin-arm64@0.27.0':
-    resolution: {integrity: sha512-8APIO08svef8rgqkiV2dbrPceNBs5zuWzwC8Xijs9KPBxkM84B8Ob1AJJZaP8/TAuEoMAGJIaTgqbEBD0WLvcg==}
+  '@oxc-parser/binding-darwin-arm64@0.29.0':
+    resolution: {integrity: sha512-/ajC4pQdnqGK5IZT8B4cYuj1oJsBYp7iF09SPfuvsCmhjWsWkB6LaTpQKwZ+nY85jBbMxZaVQ8JkhhbFuYUcMw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxc-parser/binding-darwin-x64@0.27.0':
-    resolution: {integrity: sha512-R1C4jfF/0vMy+Kz6C9gahNUlXpXvqkIdRRwexa7BjvhlyVQkqjLluxUVpWx/1gpqicDxTMT8qBP7qcmyBPbPjw==}
+  '@oxc-parser/binding-darwin-x64@0.29.0':
+    resolution: {integrity: sha512-sOLSZZ7roGOYAgktMrCb3T5gGza4znxAf75MFjh+q33iVFz/vHuWxYMK/VH5313rF6aqQarVYj3pu1YsTQ0xuQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.27.0':
-    resolution: {integrity: sha512-KyMQCRi5crOELO6d4S17C8aEvKX+ZMA7X9VfUBhUAryo6tn14ru9QIU04faBJ3atiPWC7YRqZG7a3JAOkMKaOw==}
+  '@oxc-parser/binding-linux-arm64-gnu@0.29.0':
+    resolution: {integrity: sha512-jZwa+89rNz3SlUopyxHQYFZSwVrlt4EmUsM5XNIaPEFrv+2wTAJ6tn+s7LLucSVD/c3HIYU/NVmbIYnXAgI2yQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-arm64-musl@0.27.0':
-    resolution: {integrity: sha512-LE+pcilyAKZq/frT5rnMiCM+AvYvvbN9IQFaWAdJJBIRkkynlgy5kAyU3zzVKAEbSAKQqY+WdUvG5dTRowg1gA==}
+  '@oxc-parser/binding-linux-arm64-musl@0.29.0':
+    resolution: {integrity: sha512-TqSUrsmNXWXCF+Lcz/ekfOPjK4hzoeANB6mRLaLYw2AbkUoaTtc7oYjOS4qgpXeG3niHhGzs58c2pphBeYLDog==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-gnu@0.27.0':
-    resolution: {integrity: sha512-FgLfOepxA4bgDdfvp7VIP6GhCaCCW0GknZCjZlUjvriq7g5Jtecfvc8i1rmF3pnzaYNOfzcoaYaK0htt6A6ZyA==}
+  '@oxc-parser/binding-linux-x64-gnu@0.29.0':
+    resolution: {integrity: sha512-KfVZJpJFouGmF1pWIvfbWFIU+92vWDAFxBDGim9A02/XNnbXtZF5c29KelGirowyW2fJts9ncaaPjVs73n2Ohg==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-musl@0.27.0':
-    resolution: {integrity: sha512-bpCyMM+uybuWWkUdrjup9VINiTYGl7Uu10vHQJeTRLGYSeM0fA5OPAjEvDGGlg8L2cd5nhcrUnyKalZe/XwX3A==}
+  '@oxc-parser/binding-linux-x64-musl@0.29.0':
+    resolution: {integrity: sha512-XkTg0zyLvfDRzj2aMMJnqD4zNNqZ2HboUWU4TNnGoFuS6iiJm4FlrnaOWhWxto1leoVmASu98/BuAjEhKLOJnw==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.27.0':
-    resolution: {integrity: sha512-yVrpkjfzL+jOx9R4Q1/BFu0rc0TnO3P4reGGmnYOKvbTpGNKWgTepWP4fWC5HyGMlELAwMXhDpjT6B8t2T4BUw==}
+  '@oxc-parser/binding-win32-arm64-msvc@0.29.0':
+    resolution: {integrity: sha512-PKzriUp7Y9xckFCqk1Be0ppFvpw8gXI5wIcRJ6RexFeRZumnY5a1lWM2/zjO5kioasxPz+5lCSljBbq5qNdBUA==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxc-parser/binding-win32-x64-msvc@0.27.0':
-    resolution: {integrity: sha512-6e2MqZysh1iJyDURj+B2OHG3EkfhSNpGy1iUCkSSL/+RUjeCDpQ5ktq00MK7B1mC1gpD8AwtK2a2qJ+XrNxugQ==}
+  '@oxc-parser/binding-win32-x64-msvc@0.29.0':
+    resolution: {integrity: sha512-qmYnAeEdLCf7eWlk9MvCFmr9PFA5UpVhJBuw/OglI7giGvwjDhaAqper8bZLdQIytV5eT7ZrE76wGys6CpPdRg==}
     cpu: [x64]
     os: [win32]
 
@@ -7415,6 +7421,11 @@ packages:
     cpu: [arm]
     os: [android]
 
+  '@rollup/rollup-android-arm-eabi@4.22.2':
+    resolution: {integrity: sha512-8Ao+EDmTPjZ1ZBABc1ohN7Ylx7UIYcjReZinigedTOnGFhIctyGPxY2II+hJ6gD2/vkDKZTyQ0e7++kwv6wDrw==}
+    cpu: [arm]
+    os: [android]
+
   '@rollup/rollup-android-arm64@4.18.1':
     resolution: {integrity: sha512-F/tkdw0WSs4ojqz5Ovrw5r9odqzFjb5LIgHdHZG65dFI1lWTWRVy32KDJLKRISHgJvqUeUhdIvy43fX41znyDg==}
     cpu: [arm64]
@@ -7427,6 +7438,11 @@ packages:
 
   '@rollup/rollup-android-arm64@4.21.2':
     resolution: {integrity: sha512-xGU5ZQmPlsjQS6tzTTGwMsnKUtu0WVbl0hYpTPauvbRAnmIvpInhJtgjj3mcuJpEiuUw4v1s4BimkdfDWlh7gA==}
+    cpu: [arm64]
+    os: [android]
+
+  '@rollup/rollup-android-arm64@4.22.2':
+    resolution: {integrity: sha512-I+B1v0a4iqdS9DvYt1RJZ3W+Oh9EVWjbY6gp79aAYipIbxSLEoQtFQlZEnUuwhDXCqMxJ3hluxKAdPD+GiluFQ==}
     cpu: [arm64]
     os: [android]
 
@@ -7445,6 +7461,11 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@rollup/rollup-darwin-arm64@4.22.2':
+    resolution: {integrity: sha512-BTHO7rR+LC67OP7I8N8GvdvnQqzFujJYWo7qCQ8fGdQcb8Gn6EQY+K1P+daQLnDCuWKbZ+gHAQZuKiQkXkqIYg==}
+    cpu: [arm64]
+    os: [darwin]
+
   '@rollup/rollup-darwin-x64@4.18.1':
     resolution: {integrity: sha512-IgpzXKauRe1Tafcej9STjSSuG0Ghu/xGYH+qG6JwsAUxXrnkvNHcq/NL6nz1+jzvWAnQkuAJ4uIwGB48K9OCGA==}
     cpu: [x64]
@@ -7457,6 +7478,11 @@ packages:
 
   '@rollup/rollup-darwin-x64@4.21.2':
     resolution: {integrity: sha512-ZbRaUvw2iN/y37x6dY50D8m2BnDbBjlnMPotDi/qITMJ4sIxNY33HArjikDyakhSv0+ybdUxhWxE6kTI4oX26w==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rollup/rollup-darwin-x64@4.22.2':
+    resolution: {integrity: sha512-1esGwDNFe2lov4I6GsEeYaAMHwkqk0IbuGH7gXGdBmd/EP9QddJJvTtTF/jv+7R8ZTYPqwcdLpMTxK8ytP6k6Q==}
     cpu: [x64]
     os: [darwin]
 
@@ -7475,6 +7501,11 @@ packages:
     cpu: [arm]
     os: [linux]
 
+  '@rollup/rollup-linux-arm-gnueabihf@4.22.2':
+    resolution: {integrity: sha512-GBHuY07x96OTEM3OQLNaUSUwrOhdMea/LDmlFHi/HMonrgF6jcFrrFFwJhhe84XtA1oK/Qh4yFS+VMREf6dobg==}
+    cpu: [arm]
+    os: [linux]
+
   '@rollup/rollup-linux-arm-musleabihf@4.18.1':
     resolution: {integrity: sha512-5RnjpACoxtS+aWOI1dURKno11d7krfpGDEn19jI8BuWmSBbUC4ytIADfROM1FZrFhQPSoP+KEa3NlEScznBTyQ==}
     cpu: [arm]
@@ -7487,6 +7518,11 @@ packages:
 
   '@rollup/rollup-linux-arm-musleabihf@4.21.2':
     resolution: {integrity: sha512-flOcGHDZajGKYpLV0JNc0VFH361M7rnV1ee+NTeC/BQQ1/0pllYcFmxpagltANYt8FYf9+kL6RSk80Ziwyhr7w==}
+    cpu: [arm]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm-musleabihf@4.22.2':
+    resolution: {integrity: sha512-Dbfa9Sc1G1lWxop0gNguXOfGhaXQWAGhZUcqA0Vs6CnJq8JW/YOw/KvyGtQFmz4yDr0H4v9X248SM7bizYj4yQ==}
     cpu: [arm]
     os: [linux]
 
@@ -7505,6 +7541,11 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@rollup/rollup-linux-arm64-gnu@4.22.2':
+    resolution: {integrity: sha512-Z1YpgBvFYhZIyBW5BoopwSg+t7yqEhs5HCei4JbsaXnhz/eZehT18DaXl957aaE9QK7TRGFryCAtStZywcQe1A==}
+    cpu: [arm64]
+    os: [linux]
+
   '@rollup/rollup-linux-arm64-musl@4.18.1':
     resolution: {integrity: sha512-dJX9u4r4bqInMGOAQoGYdwDP8lQiisWb9et+T84l2WXk41yEej8v2iGKodmdKimT8cTAYt0jFb+UEBxnPkbXEQ==}
     cpu: [arm64]
@@ -7517,6 +7558,11 @@ packages:
 
   '@rollup/rollup-linux-arm64-musl@4.21.2':
     resolution: {integrity: sha512-48pD/fJkTiHAZTnZwR0VzHrao70/4MlzJrq0ZsILjLW/Ab/1XlVUStYyGt7tdyIiVSlGZbnliqmult/QGA2O2w==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm64-musl@4.22.2':
+    resolution: {integrity: sha512-66Zszr7i/JaQ0u/lefcfaAw16wh3oT72vSqubIMQqWzOg85bGCPhoeykG/cC5uvMzH80DQa2L539IqKht6twVA==}
     cpu: [arm64]
     os: [linux]
 
@@ -7535,6 +7581,11 @@ packages:
     cpu: [ppc64]
     os: [linux]
 
+  '@rollup/rollup-linux-powerpc64le-gnu@4.22.2':
+    resolution: {integrity: sha512-HpJCMnlMTfEhwo19bajvdraQMcAq3FX08QDx3OfQgb+414xZhKNf3jNvLFYKbbDSGBBrQh5yNwWZrdK0g0pokg==}
+    cpu: [ppc64]
+    os: [linux]
+
   '@rollup/rollup-linux-riscv64-gnu@4.18.1':
     resolution: {integrity: sha512-f+pJih7sxoKmbjghrM2RkWo2WHUW8UbfxIQiWo5yeCaCM0TveMEuAzKJte4QskBp1TIinpnRcxkquY+4WuY/tg==}
     cpu: [riscv64]
@@ -7547,6 +7598,11 @@ packages:
 
   '@rollup/rollup-linux-riscv64-gnu@4.21.2':
     resolution: {integrity: sha512-RL56JMT6NwQ0lXIQmMIWr1SW28z4E4pOhRRNqwWZeXpRlykRIlEpSWdsgNWJbYBEWD84eocjSGDu/XxbYeCmwg==}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@rollup/rollup-linux-riscv64-gnu@4.22.2':
+    resolution: {integrity: sha512-/egzQzbOSRef2vYCINKITGrlwkzP7uXRnL+xU2j75kDVp3iPdcF0TIlfwTRF8woBZllhk3QaxNOEj2Ogh3t9hg==}
     cpu: [riscv64]
     os: [linux]
 
@@ -7565,6 +7621,11 @@ packages:
     cpu: [s390x]
     os: [linux]
 
+  '@rollup/rollup-linux-s390x-gnu@4.22.2':
+    resolution: {integrity: sha512-qgYbOEbrPfEkH/OnUJd1/q4s89FvNJQIUldx8X2F/UM5sEbtkqZpf2s0yly2jSCKr1zUUOY1hnTP2J1WOzMAdA==}
+    cpu: [s390x]
+    os: [linux]
+
   '@rollup/rollup-linux-x64-gnu@4.18.1':
     resolution: {integrity: sha512-7O5u/p6oKUFYjRbZkL2FLbwsyoJAjyeXHCU3O4ndvzg2OFO2GinFPSJFGbiwFDaCFc+k7gs9CF243PwdPQFh5g==}
     cpu: [x64]
@@ -7577,6 +7638,11 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.21.2':
     resolution: {integrity: sha512-B90tYAUoLhU22olrafY3JQCFLnT3NglazdwkHyxNDYF/zAxJt5fJUB/yBoWFoIQ7SQj+KLe3iL4BhOMa9fzgpw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rollup/rollup-linux-x64-gnu@4.22.2':
+    resolution: {integrity: sha512-a0lkvNhFLhf+w7A95XeBqGQaG0KfS3hPFJnz1uraSdUe/XImkp/Psq0Ca0/UdD5IEAGoENVmnYrzSC9Y2a2uKQ==}
     cpu: [x64]
     os: [linux]
 
@@ -7595,6 +7661,11 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@rollup/rollup-linux-x64-musl@4.22.2':
+    resolution: {integrity: sha512-sSWBVZgzwtsuG9Dxi9kjYOUu/wKW+jrbzj4Cclabqnfkot8Z3VEHcIgyenA3lLn/Fu11uDviWjhctulkhEO60g==}
+    cpu: [x64]
+    os: [linux]
+
   '@rollup/rollup-win32-arm64-msvc@4.18.1':
     resolution: {integrity: sha512-W2ZNI323O/8pJdBGil1oCauuCzmVd9lDmWBBqxYZcOqWD6aWqJtVBQ1dFrF4dYpZPks6F+xCZHfzG5hYlSHZ6g==}
     cpu: [arm64]
@@ -7607,6 +7678,11 @@ packages:
 
   '@rollup/rollup-win32-arm64-msvc@4.21.2':
     resolution: {integrity: sha512-9rRero0E7qTeYf6+rFh3AErTNU1VCQg2mn7CQcI44vNUWM9Ze7MSRS/9RFuSsox+vstRt97+x3sOhEey024FRQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@rollup/rollup-win32-arm64-msvc@4.22.2':
+    resolution: {integrity: sha512-t/YgCbZ638R/r7IKb9yCM6nAek1RUvyNdfU0SHMDLOf6GFe/VG1wdiUAsxTWHKqjyzkRGg897ZfCpdo1bsCSsA==}
     cpu: [arm64]
     os: [win32]
 
@@ -7625,6 +7701,11 @@ packages:
     cpu: [ia32]
     os: [win32]
 
+  '@rollup/rollup-win32-ia32-msvc@4.22.2':
+    resolution: {integrity: sha512-kTmX5uGs3WYOA+gYDgI6ITkZng9SP71FEMoHNkn+cnmb9Zuyyay8pf0oO5twtTwSjNGy1jlaWooTIr+Dw4tIbw==}
+    cpu: [ia32]
+    os: [win32]
+
   '@rollup/rollup-win32-x64-msvc@4.18.1':
     resolution: {integrity: sha512-yjk2MAkQmoaPYCSu35RLJ62+dz358nE83VfTePJRp8CG7aMg25mEJYpXFiD+NcevhX8LxD5OP5tktPXnXN7GDw==}
     cpu: [x64]
@@ -7637,6 +7718,11 @@ packages:
 
   '@rollup/rollup-win32-x64-msvc@4.21.2':
     resolution: {integrity: sha512-6UUxd0+SKomjdzuAcp+HAmxw1FlGBnl1v2yEPSabtx4lBfdXHDVsW7+lQkgz9cNFJGY3AWR7+V8P5BqkD9L9nA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rollup/rollup-win32-x64-msvc@4.22.2':
+    resolution: {integrity: sha512-Yy8So+SoRz8I3NS4Bjh91BICPOSVgdompTIPYTByUqU66AXSIOgmW3Lv1ke3NORPqxdF+RdrZET+8vYai6f4aA==}
     cpu: [x64]
     os: [win32]
 
@@ -7761,6 +7847,21 @@ packages:
 
   '@semrel-extra/topo@1.14.1':
     resolution: {integrity: sha512-V7hlOQoBXgqLSa4ai9S0LGOO7cKTqRu5dh0T83xfE+VqZQmDkuRm956ooJ2/M8y62kWIxS2VEfePnEoB74x6fg==}
+
+  '@shikijs/core@1.18.0':
+    resolution: {integrity: sha512-VK4BNVCd2leY62Nm2JjyxtRLkyrZT/tv104O81eyaCjHq4Adceq2uJVFJJAIof6lT1mBwZrEo2qT/T+grv3MQQ==}
+
+  '@shikijs/engine-javascript@1.18.0':
+    resolution: {integrity: sha512-qoP/aO/ATNwYAUw1YMdaip/YVEstMZEgrwhePm83Ll9OeQPuxDZd48szZR8oSQNQBT8m8UlWxZv8EA3lFuyI5A==}
+
+  '@shikijs/engine-oniguruma@1.18.0':
+    resolution: {integrity: sha512-B9u0ZKI/cud+TcmF8Chyh+R4V5qQVvyDOqXC2l2a4x73PBSBc6sZ0JRAX3eqyJswqir6ktwApUUGBYePdKnMJg==}
+
+  '@shikijs/types@1.18.0':
+    resolution: {integrity: sha512-O9N36UEaGGrxv1yUrN2nye7gDLG5Uq0/c1LyfmxsvzNPqlHzWo9DI0A4+fhW2y3bGKuQu/fwS7EPdKJJCowcVA==}
+
+  '@shikijs/vscode-textmate@9.2.2':
+    resolution: {integrity: sha512-TMp15K+GGYrWlZM8+Lnj9EaHEFmOen0WJBrfa17hF7taDOYthuPPV0GWzfd/9iMij0akS/8Yw2ikquH7uVi/fg==}
 
   '@shuding/opentype.js@1.4.0-beta.0':
     resolution: {integrity: sha512-3NgmNyH3l/Hv6EvsWJbsvpcpUba6R8IREQ83nH83cyakCw7uM1arZKNfHwv1Wz6jgqrF/j4x5ELvR6PnK9nTcA==}
@@ -9210,23 +9311,13 @@ packages:
     resolution: {integrity: sha512-OTe0KE37F5Y2eTys6eMnfopC+P4qr2ooXUTFyFPTplYSPwowmFk/HLD1FXtbKLjqsIH0SgekcJWad+C5uX4nkg==}
     engines: {node: '>=16'}
 
-  '@visulima/boxen@1.0.16':
-    resolution: {integrity: sha512-AICEI8RFrX2XtedMAvpuv8pWR+Y7yjENu/KqFks7uA7vP2z8XmSXb2dYHgZWUUC21jmT6MyAATfL2WsMHuYCQA==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/boxen@1.0.18':
     resolution: {integrity: sha512-I5QfkAnsPP1DxHhco2b0gzm1uCTg3c+gZJj5541tyZefmqyE0T11K4Z62Zk5Z/hiBRo+i5jXBMRw1t4ZCU9smg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/cerebro@1.1.18':
-    resolution: {integrity: sha512-x7852JqPwP5Vl3cPHPZ12HQtFASqAH7ajSMmvVcXgrVYgXpWDi988aMsqi/De68AanYWsEvGiv6Fbh7atDGuew==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/colorize@1.4.8':
-    resolution: {integrity: sha512-Med+gTFJnFmpPQ6Uttva4XQ8VPmzyJrU7SFuGVQvLAap0nTeadkyJYnOkBDm33iHeAerzZ+A4yGZaEAGvpp3rw==}
+  '@visulima/cerebro@1.1.20':
+    resolution: {integrity: sha512-8ToJ6GxIBVq2L1JhqI1GJkkKg8ri1yGHvTZ3VFa6N3Yhr278fQRWlALq+1H+fcLLT/KJeWNPi+FXc2km5q+92A==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9247,11 +9338,6 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@4.4.3':
-    resolution: {integrity: sha512-GUOT+RetP35TzMD5TPMmeEPdaLgRaqbirwPZEcnu31sG/m79fRTgjBv7CcyfdB+tWE0FGOHTSbDDqJ+2LVujSg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/error@4.4.4':
     resolution: {integrity: sha512-jPlfec0lht+fX6vGol9I3r8vDHFNofzxYzlWHKjrWUhFhCdBpwseabncUCSBWHgSpSEhYlejB1OVDZ5KPb2Bkg==}
     engines: {node: '>=18.* <=22.*'}
@@ -9261,15 +9347,6 @@ packages:
     resolution: {integrity: sha512-2+rNhpr8WDZOem9QDecZBbUTjeWZcnEqRnLOjMtzSEN6yyM+yIaUomYmZD1PDWPnmjltK0H2nf/6O6DAmMLo5g==}
     engines: {node: '>=18.* <=22.*'}
 
-  '@visulima/find-cache-dir@1.0.9':
-    resolution: {integrity: sha512-F5wpy1lkxrO7mh++wbWseXvt32pc7WI/WYVKFpcXZzgGrYcW/+xm7MjumO88JlSthCjfyLV5rC4PV/oUmNW9kA==}
-    engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/fmt@1.1.8':
-    resolution: {integrity: sha512-Hr6nmTORNI6vOmD/qRNTSO7otCIMDjLM67Yc12D94CvN52kgzIMuNsVEvgTroExSFIxye825S1JDejsvHEEnfg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/fmt@1.1.9':
     resolution: {integrity: sha512-r1vb6Mv/6RFkKxYlHfjbntvM4Xz6fnQsEUwQLVixPxt9O4Y6JmgeUmTn6QEgPY+agZ2RwO4uizPs7u8rLCK+6w==}
     engines: {node: '>=18.* <=22.*'}
@@ -9277,16 +9354,6 @@ packages:
 
   '@visulima/fs@2.1.10':
     resolution: {integrity: sha512-hj1Y358Hh+uW77yUTEBTy+v+FCnO4Tb48NwoQy6BARdMT7n1uF6eR49sxp21JrGYt5IIcTgjwTQmO70YiZtb3A==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      yaml: ^2.4.0
-    peerDependenciesMeta:
-      yaml:
-        optional: true
-
-  '@visulima/fs@2.1.16':
-    resolution: {integrity: sha512-PPLZvrd088rwjrGG/C13PBaKwlfRdoeWcUxHlV+hPvFlKiqs0flBKouhCxtyOlefn5GeYXDTMpSC68xiSX8b9g==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -9315,22 +9382,13 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/humanizer@1.0.10':
-    resolution: {integrity: sha512-bK3sJKO6DDgENTX36Ekx6KpBjNKNKJLmeei7K5J6G1qV2ldxSWrDEalHLOcrQn+bFxiy27i62vrA7K++DRFGPA==}
-    engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/inspector@1.0.8':
-    resolution: {integrity: sha512-DFvk7iPQcSetjRxV5UW7euFYoR0HnSmHCMORwz97o1lbGlnUE9vO8QHtbq4OVeEc3aKdbLW8JEjvq39UnnhYfw==}
+  '@visulima/humanizer@1.0.11':
+    resolution: {integrity: sha512-HPJTGxekYWk1dzIjq7Ul6MZn1QVSyFIYJOAbdERAwrNEB40v79vGkA8uGXjRjHazmy7+KbYpl6L6/bdQ9p6nJQ==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/inspector@1.0.9':
     resolution: {integrity: sha512-3ft78diNybLVIBhfD1wz/kZbxyGu/eUbHk3YFk+A6VvLerhq3XiW8GKsrxXH3JLSQG/I+447/j//SxGcP0Iw2Q==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/is-ansi-color-supported@2.2.5':
-    resolution: {integrity: sha512-ZoTMNE5ybZjacB9E4Hpbo/oH5+O3uvQm+PJ1SHLT81+e9m83N2Wkc27J+0HmI5mDAXfA654CqSDTeYCM84dWJg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/is-ansi-color-supported@2.2.6':
     resolution: {integrity: sha512-GNYZk3RzPFU5G6y2Z3lzdwbOjdSqwahqap2oSuX4veWcU1xMT0S8SP0YLew829k3OsEKLQHnRgpAJsZV/il1Qg==}
@@ -9347,7 +9405,7 @@ packages:
     resolution: {integrity: sha512-eGQn1GmpnoQJwBWYIOgwGTuCu1o7jnTko68Sb9Z5eBszY0XfMcsU1sm9pYQ6y+EMyj2g2O/Hs8uZ1n8P9CULEg==}
     engines: {node: '>=18.* <=22.*'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=14.1.1'
       nextra: '>=2.2.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
@@ -9358,19 +9416,18 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@3.0.10':
-    resolution: {integrity: sha512-T7Zzet9QQ4Cgk4rDdkczcrhjA+tkeG+C9bBs7jMaTefL0LvTCFUZKtuTgeLmP5dkGHXYFo+W/enZj0y0uy1UTA==}
+  '@visulima/package@3.1.0':
+    resolution: {integrity: sha512-LsqXwwWjLSWt5SbhQdKrR/DgO/zMzRRrt2n+9niBMPBS5JdvZos7XmkSym8KuY1a+Ri7mKRKX3cewqrsXUy7qg==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/packem@1.0.0-alpha.108':
-    resolution: {integrity: sha512-dk9Jh0QGhb4foy93TK5mZXOR8BdkeM4/VRS8yWKZUJY7Bjf/IHc/fnZKZHdb86DF94Yro39XYD5gxboMKWsDvQ==}
+  '@visulima/packem@1.0.0':
+    resolution: {integrity: sha512-SGDdezk+Vdn+nut8UN5mJP6/Q6p/S1NoMg1xwtX8n12HKive0JRWEb09cgn+OhBk2VPzPKTSQKlyD1z8VOWOSg==}
     engines: {node: '>=18.* <=22.*'}
     hasBin: true
     peerDependencies:
       '@swc/core': ^1.5.7
       esbuild: 0.21.4
-      jiti: ^1.21.0
       oxc-transform: ^0.20.0
       sucrase: ^3.35.0
       typescript: ^4.5 || ^5.0
@@ -9391,19 +9448,6 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/pail@2.1.7':
-    resolution: {integrity: sha512-DcHV9GmLRdVZbEXlWeulDljXmZy0sH4RSSasGe4PJ6rIi53Iu61rQ0+FrFLFRb60UVV2dmRBtBFkIh8cc5ghpg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 1.0.6
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
-        optional: true
-
   '@visulima/pail@2.1.8':
     resolution: {integrity: sha512-IxkQIf4IILyEKp3fcEeNNc4mBF7/uZQw0mcxvAelkQJ7h7pRaIg4O3mRsJ6yeF9/UO8qEWZKk98ihAAqTgJ4BQ==}
     engines: {node: '>=18.* <=22.*'}
@@ -9420,11 +9464,6 @@ packages:
   '@visulima/path@1.0.2':
     resolution: {integrity: sha512-swUmYnU83E9KTMXCIkatLlsyMLZfIKG0r6EByYVuJPoZu58MTyOFHWu+nMwIVr04VFYAkoFUTHzmzgU0F1HbyA==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/path@1.0.7':
-    resolution: {integrity: sha512-KKqikK8fbN7SMGvM3Km1RQpgGn2p0TqkzACKhXa+tv/W6jkuhepUk4WDR5mFZAzYc/t1t3oD8NfgbPPRQJwgaw==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/path@1.0.8':
     resolution: {integrity: sha512-RkI5ej2dZq0W+0t/v835RxsIbbV+yEMuyhc+Dzxug67hLwd1RZQBGWgcivtokK03EiZFMkQiOXWWz3W20YSnxw==}
@@ -9443,8 +9482,8 @@ packages:
     resolution: {integrity: sha512-AOIBfbuxOO9KKxhLfASJE0jrriAxjsnMgP18suYc5gcSE9zASsR+UOt+W6lkpIOYBa0kZMHrHdxz/LeF+4+J8Q==}
     engines: {node: '>=18.* <=22.*'}
 
-  '@visulima/tsconfig@1.0.11':
-    resolution: {integrity: sha512-0cqSMq1LlSP3Qbaz5q24sm1IYt9uXXAMuZHuGphvA4dSCmVRsdGvcbqDL5jIuZEonhMyAPk/dbUEzcYbPiDYVw==}
+  '@visulima/tsconfig@1.0.12':
+    resolution: {integrity: sha512-KgrVRVmPmarp0hgWj3v75yEo8KWSQQQDgRmkSsspCTTxhiqSQxIcKQCUVz6tbq5ObnyEX811wiTf5/SzCb9GoQ==}
     engines: {node: '>=18.* <=22.*'}
 
   '@vitejs/plugin-react@4.3.1':
@@ -13171,6 +13210,9 @@ packages:
   hast-util-to-estree@2.3.3:
     resolution: {integrity: sha512-ihhPIUPxN0v0w6M5+IiAZZrn0LH2uZomeWwhn7uP7avZC6TE7lIiEh2yBMPr5+zi1aUCXq6VoYRgs2Bw9xmycQ==}
 
+  hast-util-to-html@9.0.3:
+    resolution: {integrity: sha512-M17uBDzMJ9RPCqLMO92gNNUDuBSq10a25SDBI08iCCxmorf4Yy6sYHK57n9WAbRAAaU+DuR4W6GN9K4DFZesYg==}
+
   hast-util-to-nlcst@2.2.0:
     resolution: {integrity: sha512-BFBvuoEo9yCHklUSCz6+JG/FAkr+qCVaW1bE0/Y8+SBhuaz7s+suHDpkyQxH7FF2kqctYRhquLRCcmn+PS0IUQ==}
 
@@ -13188,6 +13230,9 @@ packages:
 
   hast-util-whitespace@2.0.1:
     resolution: {integrity: sha512-nAxA0v8+vXSBDt3AnRUNjyRIQ0rD+ntpbAp4LnPkumc5M9yUbSMa4XDU9Q6etY4f1Wp4bNgvc1yjiZtsTTrSng==}
+
+  hast-util-whitespace@3.0.0:
+    resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
   hastscript@6.0.0:
     resolution: {integrity: sha512-nDM6bvd7lIqDUiYEiu5Sl/+6ReP0BMk/2f4U/Rooccxkj0P5nm+acM5PrGJ/t5I8qPGiqZSE6hVAwZEdZIvP4w==}
@@ -14120,6 +14165,10 @@ packages:
     resolution: {integrity: sha512-c+PHQZakiQuMKbnhvrjZUvrK6E/AfmTOf4P+E3Y4FNVHcNMX9e/XrnbEvO+m4wS6ZjsvhHh/POQTlfy8uXFc0A==}
     hasBin: true
 
+  jiti@2.0.0-beta.3:
+    resolution: {integrity: sha512-pmfRbVRs/7khFrSAYnSiJ8C0D5GvzkE4Ey2pAvUcJsw1ly/p+7ut27jbJrjY79BpAJQJ4gXYFtK6d1Aub+9baQ==}
+    hasBin: true
+
   jju@1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
 
@@ -14446,6 +14495,9 @@ packages:
   lines-and-columns@2.0.4:
     resolution: {integrity: sha512-wM1+Z03eypVAVUCE7QdSqpVIvelbOakn1M0bPDoA4SGWPx3sNDVUiMo3L6To6WWGClB7VyXnhQ4Sn7gxiJbE6A==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  linkify-it@5.0.0:
+    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
 
   lint-staged@15.2.10:
     resolution: {integrity: sha512-5dY5t743e1byO19P9I4b3x8HJwalIznL5E1FWYnU6OWw33KxNBSLAc6Cy7F2PsFEO8FKnLwjwm5hx7aMF0jzZg==}
@@ -14783,6 +14835,10 @@ packages:
     resolution: {integrity: sha512-WWC0ZuMzCyDHYCasEGs4IPvLyTGftYwh6wIEOULOF0HXcqZlhwRzrK0w2VUlxWA98xnvb/jszw4ZSkJ6ADpM6Q==}
     engines: {node: '>=0.10.0'}
 
+  markdown-it@14.1.0:
+    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+    hasBin: true
+
   markdown-table@2.0.0:
     resolution: {integrity: sha512-Ezda85ToJUBhM6WGaG6veasyym+Tbs3cMAw/ZhOPqXiYsr0jgocBV3j3nx+4lk47plLlIqjwuTm/ywVI+zjJ/A==}
 
@@ -14956,6 +15012,9 @@ packages:
 
   mdn-data@2.0.30:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
+
+  mdurl@2.0.0:
+    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -15530,7 +15589,7 @@ packages:
     resolution: {integrity: sha512-eCGT/axiz6w7JqkT+L2gfekrx1+I5Uq+TSoB2U3lLpdlNehDtF6bd4hiHwXX4/SvdUjBL8g38Wfaylm9FJ+h2w==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -15581,7 +15640,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=13.4.20-canary.13'
+      next: '>=13.5.1'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -15991,6 +16050,9 @@ packages:
     resolution: {integrity: sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==}
     engines: {node: '>=18'}
 
+  oniguruma-to-js@0.4.3:
+    resolution: {integrity: sha512-X0jWUcAlxORhOqqBREgPMgnshB7ZGYszBNspP+tS9hPD3l13CdaXcHbgImoHUHlrvGx/7AvFEkTRhAGYh+jzjQ==}
+
   only@0.0.2:
     resolution: {integrity: sha512-Fvw+Jemq5fjjyWz6CpKx6w9s7xxqo3+JCyM0WXWeCSOboZ8ABkyvP8ID4CZuChA/wxSx+XSJmdOm8rGVyJ1hdQ==}
 
@@ -16039,8 +16101,8 @@ packages:
   outvariant@1.4.3:
     resolution: {integrity: sha512-+Sl2UErvtsoajRDKCE5/dBz4DIvHXQQnAxtQTF04OJxY0+DyZXSo5P5Bb7XYWOh81syohlYL24hbDwxedPUJCA==}
 
-  oxc-parser@0.27.0:
-    resolution: {integrity: sha512-MN2gMocgT7tqM8oTjgA8QIVws6z29Zi49pNJRtp/nbm3YUmJvLvAVEcLZvt+gjGekcFtgxVl0unfibkoO7qfaw==}
+  oxc-parser@0.29.0:
+    resolution: {integrity: sha512-egoHzaoNPRI4dIJsp70nVA4jGIOGku0Q77DhXiTwqbS/CVgIqYzzOfYfJUwQEZWvSET3ipZHJymTthmI2qs+8A==}
 
   p-cancelable@3.0.0:
     resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
@@ -16828,6 +16890,10 @@ packages:
   pump@3.0.0:
     resolution: {integrity: sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==}
 
+  punycode.js@2.3.1:
+    resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
+    engines: {node: '>=6'}
+
   punycode@1.4.1:
     resolution: {integrity: sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==}
 
@@ -17279,6 +17345,9 @@ packages:
   regex-parser@2.3.0:
     resolution: {integrity: sha512-TVILVSz2jY5D47F4mA4MppkBrafEaiUWJO/TcZHEIuI13AqoZMkK1WMA4Om1YkYbTx+9Ki1/tSUXbceyr9saRg==}
 
+  regex@4.3.2:
+    resolution: {integrity: sha512-kK/AA3A9K6q2js89+VMymcboLOlF5lZRCYJv3gzszXFHBr6kO6qLGzbm+UIugBEV8SMMKCTR59txoY6ctRHYVw==}
+
   regexp-ast-analysis@0.7.1:
     resolution: {integrity: sha512-sZuz1dYW/ZsfG17WSAG7eS85r5a0dDsvg+7BiiYR5o6lKCAtUrEwdmRmaGF6rwVj3LcmAeYkOWKEPlbPzN3Y3A==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
@@ -17620,6 +17689,11 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  rollup@4.22.2:
+    resolution: {integrity: sha512-JWWpTrZmqQGQWt16xvNn6KVIUz16VtZwl984TKw0dfqqRpFwtLJYYk1/4BTgplndMQKWUk/yB4uOShYmMzA2Vg==}
+    engines: {node: '>=18.0.0', npm: '>=8.0.0'}
+    hasBin: true
+
   rotating-file-stream@3.2.3:
     resolution: {integrity: sha512-cfmm3tqdnbuYw2FBmRTPBDaohYEbMJ3211T35o6eZdr4d7v69+ZeK1Av84Br7FLj2dlzyeZSbN6qTuXXE6dawQ==}
     engines: {node: '>=14.0'}
@@ -17899,6 +17973,9 @@ packages:
 
   shiki@0.14.7:
     resolution: {integrity: sha512-dNPAPrxSc87ua2sKJ3H5dQ/6ZaY8RNnaAqK+t0eG7p0Soi2ydiqbGOTaZCqaYvA/uZYfS1LJnemt3Q+mSfcPCg==}
+
+  shiki@1.18.0:
+    resolution: {integrity: sha512-8jo7tOXr96h9PBQmOHVrltnETn1honZZY76YA79MHheGQg55jBvbm9dtU+MI5pjC5NJCFuA6rvVTLVeSW5cE4A==}
 
   short-unique-id@5.2.0:
     resolution: {integrity: sha512-cMGfwNyfDZ/nzJ2k2M+ClthBIh//GlZl1JEf47Uoa9XR11bz8Pa2T2wQO4bVrRdH48LrIDWJahQziKo3MjhsWg==}
@@ -19039,6 +19116,24 @@ packages:
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
+  typedoc-plugin-markdown@4.2.7:
+    resolution: {integrity: sha512-bLsQdweSm48P9j6kGqQ3/4GCH5zu2EnURSkkxqirNc+uVFE9YK825ogDw+WbNkRHIV6eZK/1U43gT7YfglyYOg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      typedoc: 0.26.x
+
+  typedoc-plugin-rename-defaults@0.7.1:
+    resolution: {integrity: sha512-hgg4mAy5IumgUmPOnVVGmGywjTGtUCmRJ2jRbseqtXdlUuYKj652ODL9joUWFt5uvNu4Dr/pNILc/qsKGHJw+w==}
+    peerDependencies:
+      typedoc: '>=0.22.x <0.27.x'
+
+  typedoc@0.26.7:
+    resolution: {integrity: sha512-gUeI/Wk99vjXXMi8kanwzyhmeFEGv1LTdTQsiyIsmSYsBebvFxhbcyAx7Zjo4cMbpLGxM4Uz3jVIjksu/I2v6Q==}
+    engines: {node: '>= 18'}
+    hasBin: true
+    peerDependencies:
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
+
   types-ramda@0.30.1:
     resolution: {integrity: sha512-1HTsf5/QVRmLzcGfldPFvkVsAdi1db1BBKzi7iW3KBUlOICg/nKnFS+jGqDJS3YD8VsWbAh7JiHeBvbsw8RPxA==}
 
@@ -19078,6 +19173,9 @@ packages:
   typical@7.1.1:
     resolution: {integrity: sha512-T+tKVNs6Wu7IWiAce5BgMd7OZfNYUndHwc5MknN+UHOudi7sGZzuHdCadllRuqJ3fPtgFtIH9+lt9qRv6lmpfA==}
     engines: {node: '>=12.17'}
+
+  uc.micro@2.1.0:
+    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
   ufo@1.5.3:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
@@ -20014,7 +20112,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.34.3(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -20153,7 +20251,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.4.5))(eslint-plugin-tsdoc@0.3.0)(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -20223,7 +20321,7 @@ snapshots:
       - svelte-eslint-parser
       - vue-eslint-parser
 
-  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4(tailwindcss@3.4.10))(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)':
+  '@anolilab/eslint-config@15.0.3(@arthurgeron/eslint-plugin-react-usememo@2.4.1)(@babel/core@7.25.2)(eslint-plugin-editorconfig@4.0.3)(eslint-plugin-i@2.29.1(eslint@8.57.0))(eslint-plugin-jsx-a11y@6.10.0(eslint@8.57.0))(eslint-plugin-react-hooks@4.6.2(eslint@8.57.0))(eslint-plugin-react@7.35.2(eslint@8.57.0))(eslint-plugin-ssr-friendly@1.3.0(eslint@8.57.0))(eslint-plugin-tailwindcss@3.17.4)(eslint-plugin-testing-library@6.3.0(eslint@8.57.0)(typescript@5.5.4))(eslint-plugin-validate-jsx-nesting@0.1.1(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)':
     dependencies:
       '@anolilab/package-json-utils': 3.0.9
       '@babel/core': 7.25.2
@@ -21457,7 +21555,7 @@ snapshots:
       '@babel/helper-function-name': 7.24.7
       '@babel/helper-hoist-variables': 7.24.7
       '@babel/helper-split-export-declaration': 7.24.7
-      '@babel/parser': 7.24.8
+      '@babel/parser': 7.25.6
       '@babel/types': 7.24.9
       debug: 4.3.7
       globals: 11.12.0
@@ -21530,6 +21628,14 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-is: 18.3.1
       react-shallow-renderer: 16.15.0(react@18.3.1)
+
+  '@ckeditor/typedoc-plugins@43.0.0(typedoc@0.26.7(typescript@5.4.5))':
+    dependencies:
+      typedoc: 0.26.7(typescript@5.4.5)
+
+  '@ckeditor/typedoc-plugins@43.0.0(typedoc@0.26.7(typescript@5.5.4))':
+    dependencies:
+      typedoc: 0.26.7(typescript@5.5.4)
 
   '@clack/core@0.3.4':
     dependencies:
@@ -22741,46 +22847,46 @@ snapshots:
 
   '@npmcli/redact@2.0.1': {}
 
-  '@nrwl/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
+  '@nrwl/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7))':
     dependencies:
-      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
     transitivePeerDependencies:
       - nx
 
-  '@nrwl/tao@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
+  '@nrwl/tao@19.4.3(@swc/core@1.6.7)':
     dependencies:
-      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      nx: 19.4.3(@swc/core@1.6.7)
       tslib: 2.6.3
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nrwl/tao@19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))':
+  '@nrwl/tao@19.7.2(@swc/core@1.6.7)':
     dependencies:
-      nx: 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      nx: 19.7.2(@swc/core@1.6.7)
       tslib: 2.6.3
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nrwl/workspace@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
+  '@nrwl/workspace@19.4.3(@swc/core@1.6.7)':
     dependencies:
-      '@nx/workspace': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      '@nx/workspace': 19.4.3(@swc/core@1.6.7)
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nx/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
+  '@nx/devkit@19.4.3(nx@19.4.3(@swc/core@1.6.7))':
     dependencies:
-      '@nrwl/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      '@nrwl/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
       ejs: 3.1.10
       enquirer: 2.3.6
       ignore: 5.3.1
       minimatch: 9.0.3
-      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      nx: 19.4.3(@swc/core@1.6.7)
       semver: 7.6.3
       tmp: 0.2.3
       tslib: 2.6.3
@@ -22846,13 +22952,13 @@ snapshots:
   '@nx/nx-win32-x64-msvc@19.7.2':
     optional: true
 
-  '@nx/workspace@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))':
+  '@nx/workspace@19.4.3(@swc/core@1.6.7)':
     dependencies:
-      '@nrwl/workspace': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
-      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      '@nrwl/workspace': 19.4.3(@swc/core@1.6.7)
+      '@nx/devkit': 19.4.3(nx@19.4.3(@swc/core@1.6.7))
       chalk: 4.1.2
       enquirer: 2.3.6
-      nx: 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      nx: 19.4.3(@swc/core@1.6.7)
       tslib: 2.6.3
       yargs-parser: 21.1.1
     transitivePeerDependencies:
@@ -23013,28 +23119,28 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@oxc-parser/binding-darwin-arm64@0.27.0':
+  '@oxc-parser/binding-darwin-arm64@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-darwin-x64@0.27.0':
+  '@oxc-parser/binding-darwin-x64@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.27.0':
+  '@oxc-parser/binding-linux-arm64-gnu@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-musl@0.27.0':
+  '@oxc-parser/binding-linux-arm64-musl@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-gnu@0.27.0':
+  '@oxc-parser/binding-linux-x64-gnu@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-musl@0.27.0':
+  '@oxc-parser/binding-linux-x64-musl@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.27.0':
+  '@oxc-parser/binding-win32-arm64-msvc@0.29.0':
     optional: true
 
-  '@oxc-parser/binding-win32-x64-msvc@0.27.0':
+  '@oxc-parser/binding-win32-x64-msvc@0.29.0':
     optional: true
 
   '@phenomnomnominal/tsquery@5.0.1(typescript@5.4.5)':
@@ -23712,78 +23818,78 @@ snapshots:
 
   '@resvg/resvg-wasm@2.4.0': {}
 
-  '@rollup/plugin-alias@5.1.0(rollup@4.21.2)':
+  '@rollup/plugin-alias@5.1.0(rollup@4.22.2)':
     dependencies:
       slash: 4.0.0
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-commonjs@26.0.1(rollup@4.21.2)':
+  '@rollup/plugin-commonjs@26.0.1(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       commondir: 1.0.1
       estree-walker: 2.0.2
       glob: 10.4.5
       is-reference: 1.2.1
       magic-string: 0.30.11
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-dynamic-import-vars@2.1.2(rollup@4.21.2)':
+  '@rollup/plugin-dynamic-import-vars@2.1.2(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       astring: 1.8.6
       estree-walker: 2.0.2
       fast-glob: 3.3.2
       magic-string: 0.30.11
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-inject@5.0.5(rollup@4.21.2)':
+  '@rollup/plugin-inject@5.0.5(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       estree-walker: 2.0.2
       magic-string: 0.30.11
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-json@6.1.0(rollup@4.21.2)':
+  '@rollup/plugin-json@6.1.0(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-node-resolve@15.2.3(rollup@4.21.2)':
+  '@rollup/plugin-node-resolve@15.2.3(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-builtin-module: 3.2.1
       is-module: 1.0.0
       resolve: 1.22.8
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-replace@5.0.7(rollup@4.21.2)':
+  '@rollup/plugin-replace@5.0.7(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       magic-string: 0.30.11
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/plugin-wasm@6.2.2(rollup@4.21.2)':
+  '@rollup/plugin-wasm@6.2.2(rollup@4.22.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
-  '@rollup/pluginutils@5.1.0(rollup@4.21.2)':
+  '@rollup/pluginutils@5.1.0(rollup@4.22.2)':
     dependencies:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
   '@rollup/rollup-android-arm-eabi@4.18.1':
     optional: true
@@ -23792,6 +23898,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-android-arm-eabi@4.21.2':
+    optional: true
+
+  '@rollup/rollup-android-arm-eabi@4.22.2':
     optional: true
 
   '@rollup/rollup-android-arm64@4.18.1':
@@ -23803,6 +23912,9 @@ snapshots:
   '@rollup/rollup-android-arm64@4.21.2':
     optional: true
 
+  '@rollup/rollup-android-arm64@4.22.2':
+    optional: true
+
   '@rollup/rollup-darwin-arm64@4.18.1':
     optional: true
 
@@ -23810,6 +23922,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-darwin-arm64@4.21.2':
+    optional: true
+
+  '@rollup/rollup-darwin-arm64@4.22.2':
     optional: true
 
   '@rollup/rollup-darwin-x64@4.18.1':
@@ -23821,6 +23936,9 @@ snapshots:
   '@rollup/rollup-darwin-x64@4.21.2':
     optional: true
 
+  '@rollup/rollup-darwin-x64@4.22.2':
+    optional: true
+
   '@rollup/rollup-linux-arm-gnueabihf@4.18.1':
     optional: true
 
@@ -23828,6 +23946,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-arm-gnueabihf@4.21.2':
+    optional: true
+
+  '@rollup/rollup-linux-arm-gnueabihf@4.22.2':
     optional: true
 
   '@rollup/rollup-linux-arm-musleabihf@4.18.1':
@@ -23839,6 +23960,9 @@ snapshots:
   '@rollup/rollup-linux-arm-musleabihf@4.21.2':
     optional: true
 
+  '@rollup/rollup-linux-arm-musleabihf@4.22.2':
+    optional: true
+
   '@rollup/rollup-linux-arm64-gnu@4.18.1':
     optional: true
 
@@ -23846,6 +23970,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-arm64-gnu@4.21.2':
+    optional: true
+
+  '@rollup/rollup-linux-arm64-gnu@4.22.2':
     optional: true
 
   '@rollup/rollup-linux-arm64-musl@4.18.1':
@@ -23857,6 +23984,9 @@ snapshots:
   '@rollup/rollup-linux-arm64-musl@4.21.2':
     optional: true
 
+  '@rollup/rollup-linux-arm64-musl@4.22.2':
+    optional: true
+
   '@rollup/rollup-linux-powerpc64le-gnu@4.18.1':
     optional: true
 
@@ -23864,6 +23994,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.21.2':
+    optional: true
+
+  '@rollup/rollup-linux-powerpc64le-gnu@4.22.2':
     optional: true
 
   '@rollup/rollup-linux-riscv64-gnu@4.18.1':
@@ -23875,6 +24008,9 @@ snapshots:
   '@rollup/rollup-linux-riscv64-gnu@4.21.2':
     optional: true
 
+  '@rollup/rollup-linux-riscv64-gnu@4.22.2':
+    optional: true
+
   '@rollup/rollup-linux-s390x-gnu@4.18.1':
     optional: true
 
@@ -23882,6 +24018,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-s390x-gnu@4.21.2':
+    optional: true
+
+  '@rollup/rollup-linux-s390x-gnu@4.22.2':
     optional: true
 
   '@rollup/rollup-linux-x64-gnu@4.18.1':
@@ -23893,6 +24032,9 @@ snapshots:
   '@rollup/rollup-linux-x64-gnu@4.21.2':
     optional: true
 
+  '@rollup/rollup-linux-x64-gnu@4.22.2':
+    optional: true
+
   '@rollup/rollup-linux-x64-musl@4.18.1':
     optional: true
 
@@ -23900,6 +24042,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-linux-x64-musl@4.21.2':
+    optional: true
+
+  '@rollup/rollup-linux-x64-musl@4.22.2':
     optional: true
 
   '@rollup/rollup-win32-arm64-msvc@4.18.1':
@@ -23911,6 +24056,9 @@ snapshots:
   '@rollup/rollup-win32-arm64-msvc@4.21.2':
     optional: true
 
+  '@rollup/rollup-win32-arm64-msvc@4.22.2':
+    optional: true
+
   '@rollup/rollup-win32-ia32-msvc@4.18.1':
     optional: true
 
@@ -23920,6 +24068,9 @@ snapshots:
   '@rollup/rollup-win32-ia32-msvc@4.21.2':
     optional: true
 
+  '@rollup/rollup-win32-ia32-msvc@4.22.2':
+    optional: true
+
   '@rollup/rollup-win32-x64-msvc@4.18.1':
     optional: true
 
@@ -23927,6 +24078,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-win32-x64-msvc@4.21.2':
+    optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.22.2':
     optional: true
 
   '@rushstack/eslint-patch@1.10.3': {}
@@ -24419,6 +24573,33 @@ snapshots:
       js-yaml: 4.1.0
       toposource: 1.2.0
 
+  '@shikijs/core@1.18.0':
+    dependencies:
+      '@shikijs/engine-javascript': 1.18.0
+      '@shikijs/engine-oniguruma': 1.18.0
+      '@shikijs/types': 1.18.0
+      '@shikijs/vscode-textmate': 9.2.2
+      '@types/hast': 3.0.4
+      hast-util-to-html: 9.0.3
+
+  '@shikijs/engine-javascript@1.18.0':
+    dependencies:
+      '@shikijs/types': 1.18.0
+      '@shikijs/vscode-textmate': 9.2.2
+      oniguruma-to-js: 0.4.3
+
+  '@shikijs/engine-oniguruma@1.18.0':
+    dependencies:
+      '@shikijs/types': 1.18.0
+      '@shikijs/vscode-textmate': 9.2.2
+
+  '@shikijs/types@1.18.0':
+    dependencies:
+      '@shikijs/vscode-textmate': 9.2.2
+      '@types/hast': 3.0.4
+
+  '@shikijs/vscode-textmate@9.2.2': {}
+
   '@shuding/opentype.js@1.4.0-beta.0':
     dependencies:
       fflate: 0.7.4
@@ -24536,11 +24717,11 @@ snapshots:
       '@storybook/global': 5.0.0
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
 
-  '@storybook/addon-interactions@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/addon-interactions@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/instrumenter': 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
-      '@storybook/test': 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+      '@storybook/test': 8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       polished: 4.3.1
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
       ts-dedent: 2.2.0
@@ -24572,7 +24753,7 @@ snapshots:
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
       ts-dedent: 2.2.0
 
-  '@storybook/addon-styling@1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))':
+  '@storybook/addon-styling@1.3.7(@types/react-dom@18.3.0)(@types/react@18.3.5)(encoding@0.1.13)(postcss@8.4.45)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))':
     dependencies:
       '@babel/template': 7.24.7
       '@babel/types': 7.24.7
@@ -24585,18 +24766,18 @@ snapshots:
       '@storybook/preview-api': 7.6.20
       '@storybook/theming': 7.6.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@storybook/types': 7.6.20
-      css-loader: 6.11.0(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
-      less-loader: 11.1.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
-      postcss-loader: 7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      css-loader: 6.11.0(webpack@5.94.0(@swc/core@1.6.7))
+      less-loader: 11.1.4(webpack@5.94.0(@swc/core@1.6.7))
+      postcss-loader: 7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7))
       prettier: 2.8.8
       resolve-url-loader: 5.0.0
-      sass-loader: 13.3.3(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
-      style-loader: 3.3.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      sass-loader: 13.3.3(webpack@5.94.0(@swc/core@1.6.7))
+      style-loader: 3.3.4(webpack@5.94.0(@swc/core@1.6.7))
     optionalDependencies:
       postcss: 8.4.45
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
     transitivePeerDependencies:
       - '@rspack/core'
       - '@types/react'
@@ -24984,10 +25165,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       storybook: 8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2))
 
-  '@storybook/react-vite@8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.21.2)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/react-vite@8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.22.2)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.3.1(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
       '@storybook/builder-vite': 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)(vite@5.4.4(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/react': 8.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(typescript@5.5.3)
       find-up: 5.0.0
@@ -25082,12 +25263,12 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@storybook/test@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/test@8.2.9(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@storybook/csf': 0.1.11
       '@storybook/instrumenter': 8.2.9(storybook@8.2.9(@babel/preset-env@7.24.7(@babel/core@7.25.2)))
       '@testing-library/dom': 10.1.0
-      '@testing-library/jest-dom': 6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
+      '@testing-library/jest-dom': 6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))
       '@testing-library/user-event': 14.5.2(@testing-library/dom@10.1.0)
       '@vitest/expect': 1.6.0
       '@vitest/spy': 1.6.0
@@ -25715,7 +25896,7 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/jest-dom@6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5)(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@testing-library/jest-dom@6.4.5(@jest/globals@29.7.0)(jest@29.7.0(@types/node@20.14.11))(vitest@2.0.5(@types/node@20.14.11)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@adobe/css-tools': 4.4.0
       '@babel/runtime': 7.24.7
@@ -26153,7 +26334,7 @@ snapshots:
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.24.8
+      '@babel/parser': 7.25.6
       '@babel/types': 7.24.9
 
   '@types/babel__traverse@7.20.6':
@@ -26501,11 +26682,11 @@ snapshots:
     dependencies:
       '@types/node': 20.14.11
 
-  '@types/webpack@5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.5))':
+  '@types/webpack@5.28.5(@swc/core@1.6.7)':
     dependencies:
       '@types/node': 20.14.11
       tapable: 2.2.1
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -26809,7 +26990,7 @@ snapshots:
       debug: 4.3.7
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.2
+      semver: 7.6.3
       tsutils: 3.21.0(typescript@5.4.5)
     optionalDependencies:
       typescript: 5.4.5
@@ -26823,7 +27004,7 @@ snapshots:
       debug: 4.3.7
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.2
+      semver: 7.6.3
       tsutils: 3.21.0(typescript@5.5.3)
     optionalDependencies:
       typescript: 5.5.3
@@ -26837,7 +27018,7 @@ snapshots:
       debug: 4.3.7
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.6.2
+      semver: 7.6.3
       tsutils: 3.21.0(typescript@5.5.4)
     optionalDependencies:
       typescript: 5.5.4
@@ -26942,7 +27123,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.2
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.4.5)
     optionalDependencies:
       typescript: 5.4.5
@@ -26957,7 +27138,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.2
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.3)
     optionalDependencies:
       typescript: 5.5.3
@@ -26972,7 +27153,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.2
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
       typescript: 5.5.4
@@ -27078,7 +27259,7 @@ snapshots:
       '@typescript-eslint/types': 6.19.1
       '@typescript-eslint/typescript-estree': 6.19.1(typescript@5.4.5)
       eslint: 8.57.0
-      semver: 7.6.2
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -27092,7 +27273,7 @@ snapshots:
       '@typescript-eslint/types': 6.19.1
       '@typescript-eslint/typescript-estree': 6.19.1(typescript@5.5.4)
       eslint: 8.57.0
-      semver: 7.6.2
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -27163,16 +27344,14 @@ snapshots:
       satori: 0.10.9
       yoga-wasm-web: 0.3.3
 
-  '@visulima/boxen@1.0.16': {}
-
   '@visulima/boxen@1.0.18': {}
 
-  '@visulima/cerebro@1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
+  '@visulima/cerebro@1.1.20(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)':
     dependencies:
-      '@visulima/boxen': 1.0.16
-      '@visulima/colorize': 1.4.8
-      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
+      '@visulima/boxen': 1.0.18
+      '@visulima/colorize': 1.4.9
+      '@visulima/find-cache-dir': 1.0.10(yaml@2.5.1)
+      '@visulima/pail': 2.1.8(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
       cli-table3: 0.6.5
       command-line-args: 6.0.0
       fastest-levenshtein: 1.0.16
@@ -27180,10 +27359,6 @@ snapshots:
       - '@visulima/redact'
       - rotating-file-stream
       - yaml
-
-  '@visulima/colorize@1.4.8':
-    dependencies:
-      '@visulima/is-ansi-color-supported': 2.2.5
 
   '@visulima/colorize@1.4.9':
     dependencies:
@@ -27205,8 +27380,6 @@ snapshots:
       - '@prisma/client'
       - prisma
 
-  '@visulima/error@4.4.3': {}
-
   '@visulima/error@4.4.4': {}
 
   '@visulima/find-cache-dir@1.0.10(yaml@2.5.1)':
@@ -27216,26 +27389,11 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/find-cache-dir@1.0.9(yaml@2.5.1)':
-    dependencies:
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
-      '@visulima/path': 1.0.7
-    transitivePeerDependencies:
-      - yaml
-
-  '@visulima/fmt@1.1.8': {}
-
   '@visulima/fmt@1.1.9': {}
 
   '@visulima/fs@2.1.10(yaml@2.5.1)':
     dependencies:
       '@visulima/path': 1.0.2
-    optionalDependencies:
-      yaml: 2.5.1
-
-  '@visulima/fs@2.1.16(yaml@2.5.1)':
-    dependencies:
-      '@visulima/path': 1.0.7
     optionalDependencies:
       yaml: 2.5.1
 
@@ -27251,17 +27409,13 @@ snapshots:
     optionalDependencies:
       yaml: 2.5.1
 
-  '@visulima/humanizer@1.0.10': {}
-
-  '@visulima/inspector@1.0.8': {}
+  '@visulima/humanizer@1.0.11': {}
 
   '@visulima/inspector@1.0.9': {}
 
-  '@visulima/is-ansi-color-supported@2.2.5': {}
-
   '@visulima/is-ansi-color-supported@2.2.6': {}
 
-  '@visulima/jsdoc-open-api@2.0.59(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.59(@swc/core@1.6.7)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
       '@visulima/fs': 2.1.17(yaml@2.5.1)
@@ -27272,7 +27426,7 @@ snapshots:
     optionalDependencies:
       cli-progress: 3.12.0
       commander: 12.1.0
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -27352,54 +27506,58 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/package@3.0.10(yaml@2.5.1)':
+  '@visulima/package@3.1.0(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
-      '@visulima/path': 1.0.7
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
+      '@visulima/path': 1.0.8
       normalize-package-data: 6.0.2
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(@visulima/redact@1.0.7)(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
+      '@ckeditor/typedoc-plugins': 43.0.0(typedoc@0.26.7(typescript@5.4.5))
       '@clack/prompts': 0.7.0
-      '@rollup/plugin-alias': 5.1.0(rollup@4.21.2)
-      '@rollup/plugin-commonjs': 26.0.1(rollup@4.21.2)
-      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.21.2)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.21.2)
-      '@rollup/plugin-json': 6.1.0(rollup@4.21.2)
-      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.21.2)
-      '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@rollup/plugin-alias': 5.1.0(rollup@4.22.2)
+      '@rollup/plugin-commonjs': 26.0.1(rollup@4.22.2)
+      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.22.2)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.22.2)
+      '@rollup/plugin-json': 6.1.0(rollup@4.22.2)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.22.2)
+      '@rollup/plugin-replace': 5.0.7(rollup@4.22.2)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.22.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
+      '@visulima/cerebro': 1.1.20(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
       '@visulima/colorize': 1.4.9
-      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
-      '@visulima/humanizer': 1.0.10
-      '@visulima/package': 3.0.10(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
+      '@visulima/find-cache-dir': 1.0.10(yaml@2.5.1)
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
+      '@visulima/humanizer': 1.0.11
+      '@visulima/package': 3.1.0(yaml@2.5.1)
+      '@visulima/pail': 2.1.8(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.8
-      '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
+      '@visulima/tsconfig': 1.0.12(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
       fastest-levenshtein: 1.0.16
       glob-parent: 6.0.2
       hookable: 5.5.3
       is-glob: 4.0.3
-      jiti: 2.0.0-beta.2
+      jiti: 2.0.0-beta.3
       magic-string: 0.30.11
       mlly: 1.7.1
-      oxc-parser: 0.27.0
-      rollup: 4.21.2
-      rollup-plugin-dts: 6.1.1(rollup@4.21.2)(typescript@5.4.5)
-      rollup-plugin-license: 3.5.2(rollup@4.21.2)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.21.2)
-      rollup-plugin-visualizer: 5.12.0(rollup@4.21.2)
+      oxc-parser: 0.29.0
+      rollup: 4.22.2
+      rollup-plugin-dts: 6.1.1(rollup@4.22.2)(typescript@5.4.5)
+      rollup-plugin-license: 3.5.2(rollup@4.22.2)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.22.2)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.22.2)
       semver: 7.6.3
       tinyglobby: 0.2.6
+      typedoc: 0.26.7(typescript@5.4.5)
+      typedoc-plugin-markdown: 4.2.7(typedoc@0.26.7(typescript@5.4.5))
+      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.7(typescript@5.4.5))
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
       esbuild: 0.21.4
@@ -27411,46 +27569,50 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/packem@1.0.0-alpha.108(@swc/core@1.6.7(@swc/helpers@0.5.5))(esbuild@0.21.4)(jiti@2.0.0-beta.2)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
+  '@visulima/packem@1.0.0(@swc/core@1.6.7)(@visulima/redact@1.0.7)(esbuild@0.21.4)(rotating-file-stream@3.2.3)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.5.1)':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@babel/parser': 7.25.6
+      '@ckeditor/typedoc-plugins': 43.0.0(typedoc@0.26.7(typescript@5.5.4))
       '@clack/prompts': 0.7.0
-      '@rollup/plugin-alias': 5.1.0(rollup@4.21.2)
-      '@rollup/plugin-commonjs': 26.0.1(rollup@4.21.2)
-      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.21.2)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.21.2)
-      '@rollup/plugin-json': 6.1.0(rollup@4.21.2)
-      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.21.2)
-      '@rollup/plugin-replace': 5.0.7(rollup@4.21.2)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.21.2)
-      '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      '@visulima/cerebro': 1.1.18(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
+      '@rollup/plugin-alias': 5.1.0(rollup@4.22.2)
+      '@rollup/plugin-commonjs': 26.0.1(rollup@4.22.2)
+      '@rollup/plugin-dynamic-import-vars': 2.1.2(rollup@4.22.2)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.22.2)
+      '@rollup/plugin-json': 6.1.0(rollup@4.22.2)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@4.22.2)
+      '@rollup/plugin-replace': 5.0.7(rollup@4.22.2)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.22.2)
+      '@rollup/pluginutils': 5.1.0(rollup@4.22.2)
+      '@visulima/cerebro': 1.1.20(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)(yaml@2.5.1)
       '@visulima/colorize': 1.4.9
-      '@visulima/find-cache-dir': 1.0.9(yaml@2.5.1)
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
-      '@visulima/humanizer': 1.0.10
-      '@visulima/package': 3.0.10(yaml@2.5.1)
-      '@visulima/pail': 2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
+      '@visulima/find-cache-dir': 1.0.10(yaml@2.5.1)
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
+      '@visulima/humanizer': 1.0.11
+      '@visulima/package': 3.1.0(yaml@2.5.1)
+      '@visulima/pail': 2.1.8(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)
       '@visulima/path': 1.0.8
-      '@visulima/tsconfig': 1.0.11(yaml@2.5.1)
+      '@visulima/tsconfig': 1.0.12(yaml@2.5.1)
       defu: 6.1.4
       es-module-lexer: 1.5.4
       fastest-levenshtein: 1.0.16
       glob-parent: 6.0.2
       hookable: 5.5.3
       is-glob: 4.0.3
-      jiti: 2.0.0-beta.2
+      jiti: 2.0.0-beta.3
       magic-string: 0.30.11
       mlly: 1.7.1
-      oxc-parser: 0.27.0
-      rollup: 4.21.2
-      rollup-plugin-dts: 6.1.1(rollup@4.21.2)(typescript@5.5.4)
-      rollup-plugin-license: 3.5.2(rollup@4.21.2)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.21.2)
-      rollup-plugin-visualizer: 5.12.0(rollup@4.21.2)
+      oxc-parser: 0.29.0
+      rollup: 4.22.2
+      rollup-plugin-dts: 6.1.1(rollup@4.22.2)(typescript@5.5.4)
+      rollup-plugin-license: 3.5.2(rollup@4.22.2)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.22.2)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.22.2)
       semver: 7.6.3
       tinyglobby: 0.2.6
+      typedoc: 0.26.7(typescript@5.5.4)
+      typedoc-plugin-markdown: 4.2.7(typedoc@0.26.7(typescript@5.5.4))
+      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.7(typescript@5.5.4))
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
       esbuild: 0.21.4
@@ -27464,18 +27626,7 @@ snapshots:
 
   '@visulima/pagination@3.0.21': {}
 
-  '@visulima/pail@2.1.7(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)':
-    dependencies:
-      '@visulima/colorize': 1.4.8
-      '@visulima/error': 4.4.3
-      '@visulima/fmt': 1.1.8
-      '@visulima/inspector': 1.0.8
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      '@visulima/redact': 1.0.7
-      rotating-file-stream: 3.2.3
-
-  '@visulima/pail@2.1.8(rotating-file-stream@3.2.3)':
+  '@visulima/pail@2.1.8(@visulima/redact@1.0.7)(rotating-file-stream@3.2.3)':
     dependencies:
       '@visulima/colorize': 1.4.9
       '@visulima/error': 4.4.4
@@ -27483,11 +27634,10 @@ snapshots:
       '@visulima/inspector': 1.0.9
       safe-stable-stringify: 2.5.0
     optionalDependencies:
+      '@visulima/redact': 1.0.7
       rotating-file-stream: 3.2.3
 
   '@visulima/path@1.0.2': {}
-
-  '@visulima/path@1.0.7': {}
 
   '@visulima/path@1.0.8': {}
 
@@ -27501,10 +27651,10 @@ snapshots:
     dependencies:
       compromise: 14.14.0
 
-  '@visulima/tsconfig@1.0.11(yaml@2.5.1)':
+  '@visulima/tsconfig@1.0.12(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.1.16(yaml@2.5.1)
-      '@visulima/path': 1.0.7
+      '@visulima/fs': 2.1.17(yaml@2.5.1)
+      '@visulima/path': 1.0.8
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
     transitivePeerDependencies:
@@ -27521,17 +27671,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/browser@1.6.0(playwright@1.45.1)(vitest@1.6.0)(webdriverio@9.0.9)':
-    dependencies:
-      '@vitest/utils': 1.6.0
-      magic-string: 0.30.10
-      sirv: 2.0.4
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
-    optionalDependencies:
-      playwright: 1.45.1
-      webdriverio: 9.0.9
-    optional: true
-
   '@vitest/browser@1.6.0(playwright@1.45.1)(vitest@2.0.5)(webdriverio@9.0.9)':
     dependencies:
       '@vitest/utils': 1.6.0
@@ -27541,6 +27680,14 @@ snapshots:
     optionalDependencies:
       playwright: 1.45.1
       webdriverio: 9.0.9
+
+  '@vitest/browser@1.6.0(vitest@1.6.0)':
+    dependencies:
+      '@vitest/utils': 1.6.0
+      magic-string: 0.30.10
+      sirv: 2.0.4
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1)
+    optional: true
 
   '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.0.5(vitest@2.0.5))(jsdom@25.0.0)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
@@ -28591,7 +28738,7 @@ snapshots:
 
   builtins@5.1.0:
     dependencies:
-      semver: 7.6.2
+      semver: 7.6.3
 
   bundle-require@5.0.0(esbuild@0.21.4):
     dependencies:
@@ -29375,7 +29522,7 @@ snapshots:
 
   css-color-keywords@1.0.0: {}
 
-  css-loader@6.11.0(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  css-loader@6.11.0(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.45)
       postcss: 8.4.45
@@ -29386,7 +29533,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.6.2
     optionalDependencies:
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
 
   css-select@5.1.0:
     dependencies:
@@ -29994,7 +30141,7 @@ snapshots:
       '@one-ini/wasm': 0.1.1
       commander: 10.0.1
       minimatch: 9.0.1
-      semver: 7.6.2
+      semver: 7.6.3
 
   ee-first@1.1.1: {}
 
@@ -30301,7 +30448,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
-      semver: 7.6.2
+      semver: 7.6.3
 
   eslint-config-next@13.5.4(eslint@8.51.0)(typescript@5.2.2):
     dependencies:
@@ -30930,7 +31077,7 @@ snapshots:
       is-core-module: 2.14.0
       minimatch: 3.1.2
       resolve: 1.22.8
-      semver: 7.6.2
+      semver: 7.6.3
 
   eslint-plugin-n@16.6.2(eslint@8.57.0):
     dependencies:
@@ -32692,6 +32839,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  hast-util-to-html@9.0.3:
+    dependencies:
+      '@types/hast': 3.0.4
+      '@types/unist': 3.0.2
+      ccount: 2.0.1
+      comma-separated-tokens: 2.0.3
+      hast-util-whitespace: 3.0.0
+      html-void-elements: 3.0.0
+      mdast-util-to-hast: 13.2.0
+      property-information: 6.5.0
+      space-separated-tokens: 2.0.2
+      stringify-entities: 4.0.4
+      zwitch: 2.0.4
+
   hast-util-to-nlcst@2.2.0:
     dependencies:
       '@types/hast': 2.3.10
@@ -32733,6 +32894,10 @@ snapshots:
       unist-util-find-after: 5.0.0
 
   hast-util-whitespace@2.0.1: {}
+
+  hast-util-whitespace@3.0.0:
+    dependencies:
+      '@types/hast': 3.0.4
 
   hastscript@6.0.0:
     dependencies:
@@ -33404,7 +33569,7 @@ snapshots:
   istanbul-lib-instrument@5.2.1:
     dependencies:
       '@babel/core': 7.25.2
-      '@babel/parser': 7.25.3
+      '@babel/parser': 7.25.6
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
       semver: 6.3.1
@@ -33847,7 +34012,7 @@ snapshots:
       jest-util: 29.7.0
       natural-compare: 1.4.0
       pretty-format: 29.7.0
-      semver: 7.6.2
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
 
@@ -33933,6 +34098,8 @@ snapshots:
 
   jiti@2.0.0-beta.2: {}
 
+  jiti@2.0.0-beta.3: {}
+
   jju@1.4.0: {}
 
   joi@17.13.3:
@@ -33969,7 +34136,7 @@ snapshots:
   jscodeshift@0.15.2(@babel/preset-env@7.24.7(@babel/core@7.25.2)):
     dependencies:
       '@babel/core': 7.25.2
-      '@babel/parser': 7.25.3
+      '@babel/parser': 7.25.6
       '@babel/plugin-transform-class-properties': 7.24.7(@babel/core@7.25.2)
       '@babel/plugin-transform-modules-commonjs': 7.24.7(@babel/core@7.25.2)
       '@babel/plugin-transform-nullish-coalescing-operator': 7.24.7(@babel/core@7.25.2)
@@ -34186,9 +34353,9 @@ snapshots:
     dependencies:
       readable-stream: 2.3.8
 
-  less-loader@11.1.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  less-loader@11.1.4(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
 
   leven@3.1.0: {}
 
@@ -34275,6 +34442,10 @@ snapshots:
   lines-and-columns@2.0.3: {}
 
   lines-and-columns@2.0.4: {}
+
+  linkify-it@5.0.0:
+    dependencies:
+      uc.micro: 2.1.0
 
   lint-staged@15.2.10:
     dependencies:
@@ -34563,7 +34734,7 @@ snapshots:
 
   magicast@0.3.4:
     dependencies:
-      '@babel/parser': 7.24.8
+      '@babel/parser': 7.25.6
       '@babel/types': 7.24.9
       source-map-js: 1.2.0
 
@@ -34626,6 +34797,15 @@ snapshots:
   mark.js@8.11.1: {}
 
   markdown-extensions@1.1.1: {}
+
+  markdown-it@14.1.0:
+    dependencies:
+      argparse: 2.0.1
+      entities: 4.5.0
+      linkify-it: 5.0.0
+      mdurl: 2.0.0
+      punycode.js: 2.3.1
+      uc.micro: 2.1.0
 
   markdown-table@2.0.0:
     dependencies:
@@ -35033,6 +35213,8 @@ snapshots:
   mdn-data@2.0.28: {}
 
   mdn-data@2.0.30: {}
+
+  mdurl@2.0.0: {}
 
   media-typer@0.3.0: {}
 
@@ -36361,9 +36543,9 @@ snapshots:
 
   nwsapi@2.2.12: {}
 
-  nx@19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5)):
+  nx@19.4.3(@swc/core@1.6.7):
     dependencies:
-      '@nrwl/tao': 19.4.3(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      '@nrwl/tao': 19.4.3(@swc/core@1.6.7)
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
@@ -36412,10 +36594,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  nx@19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5)):
+  nx@19.7.2(@swc/core@1.6.7):
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
-      '@nrwl/tao': 19.7.2(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      '@nrwl/tao': 19.7.2(@swc/core@1.6.7)
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
@@ -36645,6 +36827,10 @@ snapshots:
     dependencies:
       mimic-function: 5.0.1
 
+  oniguruma-to-js@0.4.3:
+    dependencies:
+      regex: 4.3.2
+
   only@0.0.2: {}
 
   open@8.4.2:
@@ -36718,16 +36904,16 @@ snapshots:
 
   outvariant@1.4.3: {}
 
-  oxc-parser@0.27.0:
+  oxc-parser@0.29.0:
     optionalDependencies:
-      '@oxc-parser/binding-darwin-arm64': 0.27.0
-      '@oxc-parser/binding-darwin-x64': 0.27.0
-      '@oxc-parser/binding-linux-arm64-gnu': 0.27.0
-      '@oxc-parser/binding-linux-arm64-musl': 0.27.0
-      '@oxc-parser/binding-linux-x64-gnu': 0.27.0
-      '@oxc-parser/binding-linux-x64-musl': 0.27.0
-      '@oxc-parser/binding-win32-arm64-msvc': 0.27.0
-      '@oxc-parser/binding-win32-x64-msvc': 0.27.0
+      '@oxc-parser/binding-darwin-arm64': 0.29.0
+      '@oxc-parser/binding-darwin-x64': 0.29.0
+      '@oxc-parser/binding-linux-arm64-gnu': 0.29.0
+      '@oxc-parser/binding-linux-arm64-musl': 0.29.0
+      '@oxc-parser/binding-linux-x64-gnu': 0.29.0
+      '@oxc-parser/binding-linux-x64-musl': 0.29.0
+      '@oxc-parser/binding-win32-arm64-msvc': 0.29.0
+      '@oxc-parser/binding-win32-x64-msvc': 0.29.0
 
   p-cancelable@3.0.0: {}
 
@@ -37301,13 +37487,13 @@ snapshots:
       tsx: 4.19.0
       yaml: 2.5.1
 
-  postcss-loader@7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  postcss-loader@7.3.4(postcss@8.4.45)(typescript@5.5.3)(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
       cosmiconfig: 8.3.6(typescript@5.5.3)
       jiti: 1.21.6
       postcss: 8.4.45
       semver: 7.6.2
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
     transitivePeerDependencies:
       - typescript
 
@@ -37537,6 +37723,8 @@ snapshots:
     dependencies:
       end-of-stream: 1.4.4
       once: 1.4.0
+
+  punycode.js@2.3.1: {}
 
   punycode@1.4.1: {}
 
@@ -38137,6 +38325,8 @@ snapshots:
 
   regex-parser@2.3.0: {}
 
+  regex@4.3.2: {}
+
   regexp-ast-analysis@0.7.1:
     dependencies:
       '@eslint-community/regexpp': 4.11.0
@@ -38544,23 +38734,23 @@ snapshots:
 
   robust-predicates@3.0.2: {}
 
-  rollup-plugin-dts@6.1.1(rollup@4.21.2)(typescript@5.4.5):
+  rollup-plugin-dts@6.1.1(rollup@4.22.2)(typescript@5.4.5):
     dependencies:
       magic-string: 0.30.11
-      rollup: 4.21.2
+      rollup: 4.22.2
       typescript: 5.4.5
     optionalDependencies:
       '@babel/code-frame': 7.24.7
 
-  rollup-plugin-dts@6.1.1(rollup@4.21.2)(typescript@5.5.4):
+  rollup-plugin-dts@6.1.1(rollup@4.22.2)(typescript@5.5.4):
     dependencies:
       magic-string: 0.30.11
-      rollup: 4.21.2
+      rollup: 4.22.2
       typescript: 5.5.4
     optionalDependencies:
       '@babel/code-frame': 7.24.7
 
-  rollup-plugin-license@3.5.2(rollup@4.21.2):
+  rollup-plugin-license@3.5.2(rollup@4.22.2):
     dependencies:
       commenting: 1.1.0
       fdir: 6.1.1
@@ -38568,25 +38758,25 @@ snapshots:
       magic-string: 0.30.11
       moment: 2.30.1
       package-name-regex: 2.0.6
-      rollup: 4.21.2
+      rollup: 4.22.2
       spdx-expression-validate: 2.0.0
       spdx-satisfies: 5.0.1
     transitivePeerDependencies:
       - picomatch
 
-  rollup-plugin-polyfill-node@0.13.0(rollup@4.21.2):
+  rollup-plugin-polyfill-node@0.13.0(rollup@4.22.2):
     dependencies:
-      '@rollup/plugin-inject': 5.0.5(rollup@4.21.2)
-      rollup: 4.21.2
+      '@rollup/plugin-inject': 5.0.5(rollup@4.22.2)
+      rollup: 4.22.2
 
-  rollup-plugin-visualizer@5.12.0(rollup@4.21.2):
+  rollup-plugin-visualizer@5.12.0(rollup@4.22.2):
     dependencies:
       open: 8.4.2
       picomatch: 2.3.1
       source-map: 0.7.4
       yargs: 17.7.2
     optionalDependencies:
-      rollup: 4.21.2
+      rollup: 4.22.2
 
   rollup@4.18.1:
     dependencies:
@@ -38652,6 +38842,28 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.21.2
       '@rollup/rollup-win32-ia32-msvc': 4.21.2
       '@rollup/rollup-win32-x64-msvc': 4.21.2
+      fsevents: 2.3.3
+
+  rollup@4.22.2:
+    dependencies:
+      '@types/estree': 1.0.5
+    optionalDependencies:
+      '@rollup/rollup-android-arm-eabi': 4.22.2
+      '@rollup/rollup-android-arm64': 4.22.2
+      '@rollup/rollup-darwin-arm64': 4.22.2
+      '@rollup/rollup-darwin-x64': 4.22.2
+      '@rollup/rollup-linux-arm-gnueabihf': 4.22.2
+      '@rollup/rollup-linux-arm-musleabihf': 4.22.2
+      '@rollup/rollup-linux-arm64-gnu': 4.22.2
+      '@rollup/rollup-linux-arm64-musl': 4.22.2
+      '@rollup/rollup-linux-powerpc64le-gnu': 4.22.2
+      '@rollup/rollup-linux-riscv64-gnu': 4.22.2
+      '@rollup/rollup-linux-s390x-gnu': 4.22.2
+      '@rollup/rollup-linux-x64-gnu': 4.22.2
+      '@rollup/rollup-linux-x64-musl': 4.22.2
+      '@rollup/rollup-win32-arm64-msvc': 4.22.2
+      '@rollup/rollup-win32-ia32-msvc': 4.22.2
+      '@rollup/rollup-win32-x64-msvc': 4.22.2
       fsevents: 2.3.3
 
   rotating-file-stream@3.2.3: {}
@@ -38720,10 +38932,10 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sass-loader@13.3.3(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  sass-loader@13.3.3(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
       neo-async: 2.6.2
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
 
   satori@0.10.9:
     dependencies:
@@ -39099,6 +39311,15 @@ snapshots:
       jsonc-parser: 3.3.1
       vscode-oniguruma: 1.7.0
       vscode-textmate: 8.0.0
+
+  shiki@1.18.0:
+    dependencies:
+      '@shikijs/core': 1.18.0
+      '@shikijs/engine-javascript': 1.18.0
+      '@shikijs/engine-oniguruma': 1.18.0
+      '@shikijs/types': 1.18.0
+      '@shikijs/vscode-textmate': 9.2.2
+      '@types/hast': 3.0.4
 
   short-unique-id@5.2.0: {}
 
@@ -39626,9 +39847,9 @@ snapshots:
     dependencies:
       boundary: 2.0.0
 
-  style-loader@3.3.4(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  style-loader@3.3.4(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
 
   style-to-object@0.4.4:
     dependencies:
@@ -39987,14 +40208,14 @@ snapshots:
 
   terminal-size@4.0.0: {}
 
-  terser-webpack-plugin@5.3.10(@swc/core@1.6.7(@swc/helpers@0.5.5))(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))):
+  terser-webpack-plugin@5.3.10(@swc/core@1.6.7)(webpack@5.94.0(@swc/core@1.6.7)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.2
       terser: 5.31.1
-      webpack: 5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5))
+      webpack: 5.94.0(@swc/core@1.6.7)
     optionalDependencies:
       '@swc/core': 1.6.7(@swc/helpers@0.5.5)
 
@@ -40409,7 +40630,7 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  tsup@8.2.4(@swc/core@1.6.7(@swc/helpers@0.5.5))(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1):
+  tsup@8.2.4(@swc/core@1.6.7)(jiti@1.21.6)(postcss@8.4.45)(tsx@4.19.0)(typescript@5.4.5)(yaml@2.5.1):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.21.4)
       cac: 6.7.14
@@ -40580,6 +40801,42 @@ snapshots:
 
   typedarray@0.0.6: {}
 
+  typedoc-plugin-markdown@4.2.7(typedoc@0.26.7(typescript@5.4.5)):
+    dependencies:
+      typedoc: 0.26.7(typescript@5.4.5)
+
+  typedoc-plugin-markdown@4.2.7(typedoc@0.26.7(typescript@5.5.4)):
+    dependencies:
+      typedoc: 0.26.7(typescript@5.5.4)
+
+  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.7(typescript@5.4.5)):
+    dependencies:
+      camelcase: 8.0.0
+      typedoc: 0.26.7(typescript@5.4.5)
+
+  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.7(typescript@5.5.4)):
+    dependencies:
+      camelcase: 8.0.0
+      typedoc: 0.26.7(typescript@5.5.4)
+
+  typedoc@0.26.7(typescript@5.4.5):
+    dependencies:
+      lunr: 2.3.9
+      markdown-it: 14.1.0
+      minimatch: 9.0.5
+      shiki: 1.18.0
+      typescript: 5.4.5
+      yaml: 2.5.1
+
+  typedoc@0.26.7(typescript@5.5.4):
+    dependencies:
+      lunr: 2.3.9
+      markdown-it: 14.1.0
+      minimatch: 9.0.5
+      shiki: 1.18.0
+      typescript: 5.5.4
+      yaml: 2.5.1
+
   types-ramda@0.30.1:
     dependencies:
       ts-toolbelt: 9.6.0
@@ -40606,6 +40863,8 @@ snapshots:
   typescript@5.6.1-rc: {}
 
   typical@7.1.1: {}
+
+  uc.micro@2.1.0: {}
 
   ufo@1.5.3: {}
 
@@ -41557,7 +41816,7 @@ snapshots:
       why-is-node-running: 2.2.2
     optionalDependencies:
       '@types/node': 18.19.15
-      '@vitest/browser': 1.6.0(playwright@1.45.1)(vitest@1.6.0)(webdriverio@9.0.9)
+      '@vitest/browser': 1.6.0(vitest@1.6.0)
       '@vitest/ui': 2.0.5(vitest@2.0.5)
       jsdom: 25.0.0
     transitivePeerDependencies:
@@ -41975,7 +42234,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)):
+  webpack@5.94.0(@swc/core@1.6.7):
     dependencies:
       '@types/estree': 1.0.5
       '@webassemblyjs/ast': 1.12.1
@@ -41997,7 +42256,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(@swc/core@1.6.7(@swc/helpers@0.5.5))(webpack@5.94.0(@swc/core@1.6.7(@swc/helpers@0.5.5)))
+      terser-webpack-plugin: 5.3.10(@swc/core@1.6.7)(webpack@5.94.0(@swc/core@1.6.7))
       watchpack: 2.4.1
       webpack-sources: 3.2.3
     transitivePeerDependencies:
