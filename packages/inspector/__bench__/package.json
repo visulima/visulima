@@ -13,6 +13,6 @@
     "devDependencies": {
         "@types/object-inspect": "^1.13.0",
         "typescript": "5.4.5",
-        "vitest": "^2.0.5"
+        "vitest": "^2.1.1"
     }
 }
