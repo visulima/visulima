@@ -1,3 +1,15 @@
+## @visulima/colorize [1.4.10](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.9...@visulima/colorize@1.4.10) (2024-09-24)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([05edb67](https://github.com/visulima/visulima/commit/05edb671285b1cc42875223314b24212e6a12588))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.7
+* **@visulima/path:** upgraded to 1.0.9
+
 ## @visulima/colorize [1.4.9](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.8...@visulima/colorize@1.4.9) (2024-09-11)
 
 ### Miscellaneous Chores
