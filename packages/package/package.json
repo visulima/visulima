@@ -1,6 +1,6 @@
 {
     "name": "@visulima/package",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "One Package to rule them all, finds your root-dir, monorepo, or package manager.",
     "keywords": [
         "anolilab",
@@ -162,8 +162,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "2.1.17",
-        "@visulima/path": "1.0.8",
+        "@visulima/fs": "2.1.18",
+        "@visulima/path": "1.0.9",
         "normalize-package-data": "^6.0.2"
     },
     "devDependencies": {
