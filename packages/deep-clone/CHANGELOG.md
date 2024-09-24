@@ -1,3 +1,14 @@
+## @visulima/deep-clone [2.1.5](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.4...@visulima/deep-clone@2.1.5) (2024-09-24)
+
+### Bug Fixes
+
+* update packem to v1 ([05f3bc9](https://github.com/visulima/visulima/commit/05f3bc960df10a1602e24f9066e2b0117951a877))
+* updated esbuild from v0.23 to v0.24 ([3793010](https://github.com/visulima/visulima/commit/3793010d0d549c0d41f85dea04b8436251be5fe8))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([05edb67](https://github.com/visulima/visulima/commit/05edb671285b1cc42875223314b24212e6a12588))
+
 ## @visulima/deep-clone [2.1.4](https://github.com/visulima/visulima/compare/@visulima/deep-clone@2.1.3...@visulima/deep-clone@2.1.4) (2024-09-12)
 
 ### Bug Fixes
