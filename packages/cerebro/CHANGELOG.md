@@ -1,3 +1,23 @@
+## @visulima/cerebro [1.1.21](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.20...@visulima/cerebro@1.1.21) (2024-09-24)
+
+### Bug Fixes
+
+* update packem to v1 ([05f3bc9](https://github.com/visulima/visulima/commit/05f3bc960df10a1602e24f9066e2b0117951a877))
+* updated esbuild from v0.23 to v0.24 ([3793010](https://github.com/visulima/visulima/commit/3793010d0d549c0d41f85dea04b8436251be5fe8))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([05edb67](https://github.com/visulima/visulima/commit/05edb671285b1cc42875223314b24212e6a12588))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.19
+* **@visulima/colorize:** upgraded to 1.4.10
+* **@visulima/find-cache-dir:** upgraded to 1.0.11
+* **@visulima/pail:** upgraded to 2.1.9
+* **@visulima/path:** upgraded to 1.0.9
+
 ## @visulima/cerebro [1.1.20](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.19...@visulima/cerebro@1.1.20) (2024-09-12)
 
 
