@@ -1,3 +1,15 @@
+## @visulima/crud [2.0.31](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.30...@visulima/crud@2.0.31) (2024-09-24)
+
+### Bug Fixes
+
+* **crud:** updated path-to-regexp to v6.3.0 ([5d7f38c](https://github.com/visulima/visulima/commit/5d7f38cd6aac50b456a47a6f0931d924ff44f483))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.22
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.22
+
 ## @visulima/crud [2.0.30](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.29...@visulima/crud@2.0.30) (2024-09-12)
 
 
