@@ -117,7 +117,7 @@
         "prettier": "^3.3.3",
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
-        "semantic-release": "^24.1.1",
+        "semantic-release": "^24.1.2",
         "strip-ansi": "^7.1.0",
         "tempy": "^3.1.0",
         "type-fest": "^4.26.1",
