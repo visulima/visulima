@@ -22,6 +22,7 @@ const ensureFileSync = (filePath: URL | string): void => {
         const stat = lstatSync(filePath);
 
         if (!stat.isFile()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

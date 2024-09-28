@@ -6,6 +6,7 @@ import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { FIND_UP_STOP } from "../../../src/constants";
+import ensureSymlinkSync from "../../../src/ensure/ensure-symlink-sync";
 import findUp from "../../../src/find/find-up";
 import findUpSync from "../../../src/find/find-up-sync";
 
@@ -34,23 +35,21 @@ const relative: Record<string, string> = {
     fixtureDirectory: testName.fixtureDirectory,
     modulesDirectory: testName.modulesDirectory,
 };
-relative.baz = join(relative.fixtureDirectory, testName.packageDirectory, testName.baz);
-relative.qux = join(relative.fixtureDirectory, testName.packageDirectory, testName.qux);
-relative.barDirQux = join(relative.fixtureDirectory, testName.packageDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
-relative.barDir = join(relative.fixtureDirectory, testName.packageDirectory, testName.fooDirectory, testName.barDirectory);
+relative.baz = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.baz);
+relative.qux = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.qux);
+relative.barDirQux = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
+relative.barDir = join(relative.fixtureDirectory as string, testName.packageDirectory, testName.fooDirectory, testName.barDirectory);
 
 const absolute: Record<string, string> = {
     packageDirectory: join(__dirname, "..", "..", ".."),
 };
-absolute.fixtureDirectory = join(absolute.packageDirectory, testName.fixtureDirectory, testName.packageDirectory);
+absolute.fixtureDirectory = join(absolute.packageDirectory as string, testName.fixtureDirectory, testName.packageDirectory);
 absolute.packageJson = join(absolute.fixtureDirectory, testName.packageJson);
 absolute.baz = join(absolute.fixtureDirectory, testName.baz);
 absolute.qux = join(absolute.fixtureDirectory, testName.qux);
 absolute.fooDir = join(absolute.fixtureDirectory, testName.fooDirectory);
 absolute.barDir = join(absolute.fixtureDirectory, testName.fooDirectory, testName.barDirectory);
 absolute.barDirQux = join(absolute.fixtureDirectory, testName.fooDirectory, testName.barDirectory, testName.qux);
-absolute.fileLink = join(absolute.fixtureDirectory, testName.fileLink);
-absolute.directoryLink = join(absolute.fixtureDirectory, testName.directoryLink);
 absolute.dotDirectory = join(absolute.fixtureDirectory, testName.dotDirectory);
 absolute.dotFile = join(absolute.fixtureDirectory, testName.dotFile);
 
@@ -282,11 +281,13 @@ describe.each([
         expect(foundPath).toStrictEqual(expected);
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
-    it.runIf(!isWindows).skip("should support symbolic links", async () => {
+    it.runIf(!isWindows)("should support symbolic links", async () => {
         expect.assertions(4);
 
         const cwd = absolute.fixtureDirectory;
+        const fileLinkPath = join(absolute.fixtureDirectory, testName.fileLink);
+
+        ensureSymlinkSync(absolute.baz as string, fileLinkPath);
 
         let foundPath = await function_(testName.fileLink, { cwd });
 
@@ -295,9 +296,9 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(absolute.fileLink);
+        expect(foundPath).toStrictEqual(fileLinkPath);
 
-        foundPath = await function_(testName.fileLink, { cwd, followSymlinks: false });
+        foundPath = await function_(testName.fileLink, { allowSymlinks: false, cwd });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -305,6 +306,12 @@ describe.each([
         }
 
         expect(foundPath).toBeUndefined();
+
+        await rm(fileLinkPath);
+
+        const directoryLinkPath = join(absolute.fixtureDirectory, testName.directoryLink);
+
+        ensureSymlinkSync(absolute.fooDir as string, directoryLinkPath);
 
         foundPath = await function_(testName.directoryLink, { cwd, type: "directory" });
 
@@ -313,9 +320,9 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(absolute.directoryLink);
+        expect(foundPath).toStrictEqual(directoryLinkPath);
 
-        foundPath = await function_(testName.directoryLink, { cwd, followSymlinks: false, type: "directory" });
+        foundPath = await function_(testName.directoryLink, { allowSymlinks: false, cwd, type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -323,6 +330,11 @@ describe.each([
         }
 
         expect(foundPath).toBeUndefined();
+
+        await rm(directoryLinkPath, {
+            force: true,
+            recursive: true,
+        });
     });
 
     it.each([
@@ -349,7 +361,7 @@ describe.each([
             { cwd: absolute.fixtureDirectory },
             absolute.packageJson,
         ],
-    ])("should handle a matcher function", async (path, options, expected, assertions = 1) => {
+    ])("should handle a matcher function %s", async (path, options, expected, assertions = 1) => {
         // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(assertions);
 

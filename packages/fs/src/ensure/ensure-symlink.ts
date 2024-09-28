@@ -78,6 +78,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkStatInfo = await lstat(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
         }
 
@@ -86,6 +87,7 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             throw new AlreadyExistsError("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath);
         }
     }

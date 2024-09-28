@@ -127,7 +127,7 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
     it("should handle path as URL or string", async () => {
         expect.assertions(2);
-        // eslint-disable-next-line compat/compat
+        // eslint-disable-next-line compat/compat,@typescript-eslint/restrict-template-expressions
         const path = new URL(`file:///${join(distribution, "file.txt")}`);
         const content = "Hello, World!";
 

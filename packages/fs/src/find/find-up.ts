@@ -1,13 +1,15 @@
-import { stat } from "node:fs/promises";
+import type { PathLike } from "node:fs";
+import { lstat, stat } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 import { dirname, isAbsolute, parse, resolve } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 import { FIND_UP_STOP } from "../constants";
-import type { FindUpOptions, Match } from "../types";
+import type { FindUpName, FindUpOptions } from "../types";
 
 const findUp = async (
-    name: ReadonlyArray<string> | string[] | string | ((directory: string) => Match | Promise<Match>),
+    name: FindUpName,
     options: FindUpOptions = {},
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<string | undefined> => {
@@ -25,7 +27,7 @@ const findUp = async (
     const stopAt = resolve(directory, stopPath);
     const type = options.type ?? "file";
 
-    const getMatchers = async function (currentDirectory: string): Promise<(string | typeof FIND_UP_STOP | undefined)[]> {
+    const getMatchers = async function (currentDirectory: string): Promise<(PathLike | typeof FIND_UP_STOP | undefined)[]> {
         if (typeof name === "function") {
             const match = await name(currentDirectory);
 
@@ -43,10 +45,17 @@ const findUp = async (
         return [name];
     };
 
+    if (options.allowSymlinks === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        options.allowSymlinks = true;
+    }
+
+    const statFunction = options.allowSymlinks ? stat : lstat;
+
     // eslint-disable-next-line no-loops/no-loops
     while (directory && directory !== stopAt && directory !== root) {
         // eslint-disable-next-line no-await-in-loop,no-loops/no-loops,no-restricted-syntax
-        for await (const fileName of await getMatchers(directory)) {
+        for await (let fileName of await getMatchers(directory)) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
             }
@@ -56,11 +65,16 @@ const findUp = async (
                 continue;
             }
 
-            const filePath = isAbsolute(fileName) ? fileName : resolve(directory, fileName);
+            if (Buffer.isBuffer(fileName)) {
+                fileName = fileName.toString();
+            } else if (fileName instanceof URL) {
+                fileName = fileURLToPath(fileName as URL | string);
+            }
+
+            const filePath = isAbsolute(fileName as string) ? (fileName as string) : resolve(directory, fileName as string);
 
             try {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                const stats = await stat(filePath);
+                const stats = await statFunction(filePath);
 
                 if ((type === "file" && stats.isFile()) || (type === "directory" && stats.isDirectory())) {
                     return filePath;

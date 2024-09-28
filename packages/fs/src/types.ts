@@ -1,4 +1,4 @@
-import type { Dirent } from "node:fs";
+import type { Dirent, PathLike } from "node:fs";
 
 import type { DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions } from "yaml";
 
@@ -168,12 +168,15 @@ export type WriteJsonOptions = WriteFileOptions & {
 };
 
 export type FindUpOptions = {
+    allowSymlinks?: boolean;
     cwd?: URL | string;
     stopAt?: URL | string;
     type?: "directory" | "file";
 };
 
-export type Match = string | typeof FIND_UP_STOP | undefined;
+export type FindUpName = string[] | string | ((directory: PathLike) => PathLike | Promise<PathLike | typeof FIND_UP_STOP> | typeof FIND_UP_STOP);
+
+export type FindUpNameSync = string[] | string | ((directory: PathLike) => PathLike | typeof FIND_UP_STOP);
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 export type EmptyDirOptions = {

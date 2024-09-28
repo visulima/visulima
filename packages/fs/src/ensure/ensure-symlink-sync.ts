@@ -80,6 +80,7 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkStatInfo = lstatSync(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             throw new AlreadyExistsError("A " + getFileInfoType(linkStatInfo) + " already exists at the path: " + (linkName as string));
         }
 
@@ -88,7 +89,11 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath);
+
+            throw new AlreadyExistsError(
+                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                ("A symlink targeting to an undesired path already exists: " + (linkName as string) + " -> " + linkRealPath) as string,
+            );
         }
     }
 };

@@ -77,7 +77,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
         renameSync(temporaryPath, path);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/restrict-template-expressions
         throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
     } finally {
         if (isAccessibleSync(`${path}.tmp`)) {
