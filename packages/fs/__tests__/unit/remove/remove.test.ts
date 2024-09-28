@@ -17,20 +17,20 @@ describe.each([
 ])("%s", (name, function_) => {
     it.each([
         // eslint-disable-next-line security/detect-non-literal-fs-filename
-        ["string", join(distribution, "file.txt"), async (path) => await writeFile(path, "Hello, World!")],
-        // eslint-disable-next-line security/detect-non-literal-fs-filename,compat/compat
-        ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path) => await writeFile(path, "Hello, World!")],
+        ["string", join(distribution, "file.txt"), async (path: URL | string) => await writeFile(path, "Hello, World!")],
+        // eslint-disable-next-line security/detect-non-literal-fs-filename,compat/compat,@typescript-eslint/restrict-template-expressions
+        ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path: URL | string) => await writeFile(path, "Hello, World!")],
         [
             "Symbolic link",
             join(distribution, "symlink.txt"),
-            async (path) => {
+            async (path: URL | string) => {
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
                 await writeFile(join(distribution, "temp_file.txt"), "Hello, World!");
                 // eslint-disable-next-line security/detect-non-literal-fs-filename
                 await symlink(join(distribution, "temp_file.txt"), path, isWindows ? "junction" : null);
             },
         ],
-    ])("should remove a file (%s)", async (_, path, write) => {
+    ])("should remove a file (%s)", async (_, path: URL | string, write) => {
         expect.assertions(1);
 
         await write(path);

@@ -191,7 +191,8 @@ console.log(file);
 
 #### name
 
-Type: `string | string[] | (dir: string) => string | symbole | undefined`
+Type: `string[] | string | ((directory: PathLike) => PathLike | Promise<PathLike | typeof FIND_UP_STOP> | typeof FIND_UP_STOP)` \
+Sync Type: `string[] | string | ((directory: PathLike) => PathLike | typeof FIND_UP_STOP)`
 
 The name of the file or directory to find.
 
@@ -226,6 +227,13 @@ Type: `URL | string`\
 Default: Root directory
 
 A directory path where the search halts if no matches are found before reaching this point.
+
+##### allowSymlinks
+
+Type: `boolean`\
+Default: `true`
+
+Allow symbolic links to match if they point to the target file or directory.
 
 ## readFile
 

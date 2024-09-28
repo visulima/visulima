@@ -17,6 +17,7 @@ const ensureDirSync = (directory: URL | string): void => {
         const fileInfo = lstatSync(directory);
 
         if (!fileInfo.isDirectory()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`);
         }
 
@@ -45,6 +46,7 @@ const ensureDirSync = (directory: URL | string): void => {
         const fileInfo = lstatSync(directory);
 
         if (!fileInfo.isDirectory()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`);
         }
     }

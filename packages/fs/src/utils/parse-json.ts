@@ -54,7 +54,7 @@ const addCodePointToUnexpectedToken = (message: string): string =>
         // eslint-disable-next-line regexp/no-potentially-useless-backreference
         /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/,
 
-        (_, _quote, token) => `"${token}"(${getCodePoint(token)})`,
+        (_, _quote, token: string) => `"${token}"(${getCodePoint(token)})`,
     );
 
 function parseJson<T = JsonValue>(string: string, filename?: string, options?: CodeFrameOptions): T;

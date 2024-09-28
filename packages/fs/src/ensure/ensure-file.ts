@@ -22,6 +22,7 @@ const ensureFile = async (filePath: URL | string): Promise<void> => {
         const stat = await lstat(filePath);
 
         if (!stat.isFile()) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -23,6 +23,8 @@ module.exports = {
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "prefer-template": "off",
+                "etc/no-internal": "off",
+                "perfectionist/sort-intersection-types": "off",
             },
         },
         {

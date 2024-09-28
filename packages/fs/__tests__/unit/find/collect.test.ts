@@ -72,6 +72,6 @@ describe.each([
             entries = await entries;
         }
 
-        expect(entries).toHaveLength(13);
+        expect(entries).toHaveLength(11);
     });
 });

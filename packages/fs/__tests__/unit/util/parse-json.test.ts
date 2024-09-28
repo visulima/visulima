@@ -41,7 +41,7 @@ describe("parse-json", () => {
         expect.assertions(1);
 
         const jsonString = '{"name": "John", "age": 30}';
-        const reviver = (key, value) => {
+        const reviver = (key: string, value: number) => {
             if (key === "age") {
                 return value + 10;
             }
@@ -109,7 +109,7 @@ describe("parse-json", () => {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(`  1 | {
   2 |   \t"foo": true,
-${CODE_FRAME_POINTER} 3 |   }
+${CODE_FRAME_POINTER as string} 3 |   }
     |   ^`);
         }
     });
@@ -121,13 +121,13 @@ ${CODE_FRAME_POINTER} 3 |   }
             parseJson("{");
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            let expectedCodeFrame = `${CODE_FRAME_POINTER} 1 | {
+            let expectedCodeFrame: string | undefined = `${CODE_FRAME_POINTER as string} 1 | {
     |  ^`;
 
             if (NODE_JS_VERSION === 18) {
                 expectedCodeFrame = undefined;
             } else if (NODE_JS_VERSION === 20) {
-                expectedCodeFrame = `${CODE_FRAME_POINTER} 1 | {
+                expectedCodeFrame = `${CODE_FRAME_POINTER as string} 1 | {
     | ^`;
             }
 
@@ -141,7 +141,8 @@ ${CODE_FRAME_POINTER} 3 |   }
 
         try {
             parseJson("a");
-        } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error).toBeInstanceOf(JSONError);
 
@@ -163,7 +164,8 @@ ${CODE_FRAME_POINTER} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "foo.json");
-            } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.fileName).toBe("foo.json");
 
@@ -174,7 +176,8 @@ ${CODE_FRAME_POINTER} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING);
-            } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
                 error.fileName = "foo.json";
 
                 throw error;
@@ -184,7 +187,8 @@ ${CODE_FRAME_POINTER} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "bar.json");
-            } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(error.fileName).toBe("bar.json");
 
@@ -209,7 +213,7 @@ ${CODE_FRAME_POINTER} 3 |   }
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(` +++ 1 | {
  +++ 2 |   \t"foo": true,
-${CODE_FRAME_POINTER}+++ 3 |   }
+${CODE_FRAME_POINTER as string}+++ 3 |   }
  +++   |   ^`);
         }
     });
