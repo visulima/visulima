@@ -111,7 +111,7 @@
         "prettier": "^3.3.3",
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
-        "semantic-release": "^24.1.1",
+        "semantic-release": "^24.1.2",
         "tempy": "^3.1.0",
         "typescript": "5.4.5",
         "vitest": "^2.1.1"
