@@ -1,3 +1,9 @@
+## @visulima/fs [2.2.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.18...@visulima/fs@2.2.0) (2024-09-29)
+
+### Features
+
+* **fs:** added allowSymlinks to findUp and findUpSync ([1ef8c03](https://github.com/visulima/visulima/commit/1ef8c039e4e7b054177d25f74b98b56d79f2d27b))
+
 ## @visulima/fs [2.1.18](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.17...@visulima/fs@2.1.18) (2024-09-24)
 
 ### Bug Fixes
