@@ -1,3 +1,14 @@
+## @visulima/tsconfig [1.0.14](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.13...@visulima/tsconfig@1.0.14) (2024-09-29)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([736c6ce](https://github.com/visulima/visulima/commit/736c6ce7270b3e525a8ea9f79646a2a3fde47d4e))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.2.0
+
 ## @visulima/tsconfig [1.0.13](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.12...@visulima/tsconfig@1.0.13) (2024-09-24)
 
 ### Bug Fixes
