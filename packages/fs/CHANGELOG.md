@@ -1,3 +1,16 @@
+## @visulima/fs [2.2.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.0...@visulima/fs@2.2.1) (2024-10-05)
+
+### Bug Fixes
+
+* **fs:** fixed typing of findUp and findUpSync when a function is used, export new result types ([08c322a](https://github.com/visulima/visulima/commit/08c322a12270b65766cd4cef7c30c3b8dee88475))
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.0
+* **@visulima/error:** upgraded to 4.4.6
+
 ## @visulima/fs [2.2.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.1.18...@visulima/fs@2.2.0) (2024-09-29)
 
 ### Features
