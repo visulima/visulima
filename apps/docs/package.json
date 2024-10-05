@@ -25,16 +25,16 @@
     ],
     "dependencies": {
         "@code-hike/mdx": "^0.9.0",
-        "@next/env": "^14.2.13",
+        "@next/env": "^14.2.14",
         "@t3-oss/env-nextjs": "^0.11.1",
         "@vercel/og": "^0.6.3",
         "@visulima/fs": "workspace:*",
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.2",
-        "framer-motion": "^11.9.0",
+        "framer-motion": "^11.11.1",
         "fs-extra": "^11.2.0",
-        "lucide-react": "^0.446.0",
+        "lucide-react": "^0.447.0",
         "next": "^14.2.5",
         "nextra": "2.13.4",
         "publint": "^0.2.11",
@@ -48,10 +48,10 @@
         "@anolilab/prettier-config": "^5.0.14",
         "@arthurgeron/eslint-plugin-react-usememo": "^2.4.1",
         "@axe-core/react": "^4.10.0",
-        "@babel/core": "^7.25.2",
-        "@babel/eslint-parser": "^7.25.1",
-        "@babel/plugin-syntax-import-assertions": "^7.25.6",
-        "@next/eslint-plugin-next": "^14.2.13",
+        "@babel/core": "^7.25.7",
+        "@babel/eslint-parser": "^7.25.7",
+        "@babel/plugin-syntax-import-assertions": "^7.25.7",
+        "@next/eslint-plugin-next": "^14.2.14",
         "@svgr/webpack": "^8.1.0",
         "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
         "@tailwindcss/typography": "^0.5.15",
@@ -85,7 +85,7 @@
         "symlink-dir": "^6.0.2",
         "tailwindcss": "^3.4.13",
         "typescript": "5.5.3",
-        "vitest": "^2.1.1"
+        "vitest": "^2.1.2"
     },
     "anolilab": {
         "eslint-config": {

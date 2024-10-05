@@ -63,7 +63,7 @@ Repository: https://github.com/payloadcms/qs-esm.git
 > OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 > OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-<!-- DEPENDENCIES -->
+<!-- /DEPENDENCIES -->
 
 <!-- TYPE_DEPENDENCIES -->
 
@@ -102,4 +102,4 @@ Repository: https://github.com/kogosoftwarellc/open-api/tree/master/packages/ope
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
-<!-- TYPE_DEPENDENCIES -->
+<!-- /TYPE_DEPENDENCIES -->

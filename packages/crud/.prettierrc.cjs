@@ -1,22 +1,5 @@
+const config = require("@anolilab/prettier-config");
+
 module.exports = {
-    arrowParens: "always",
-    bracketSpacing: true,
-    embeddedLanguageFormatting: "auto",
-    endOfLine: "lf",
-    htmlWhitespaceSensitivity: "css",
-    insertPragma: false,
-    jsxBracketSameLine: false,
-    jsxSingleQuote: false,
-    printWidth: 160,
-    proseWrap: "preserve",
-    quoteProps: "as-needed",
-    rangeEnd: Number.POSITIVE_INFINITY,
-    rangeStart: 0,
-    requirePragma: false,
-    semi: true,
-    singleQuote: false,
-    tabWidth: 4,
-    trailingComma: "all",
-    useTabs: false,
-    vueIndentScriptAndStyle: false,
+    ...config,
 };

@@ -1,12 +1,12 @@
 import { fileURLToPath } from "node:url";
+import { stripVTControlCharacters } from "node:util";
 
 import { dirname, join } from "@visulima/path";
-import stripAnsi from "strip-ansi";
 import { describe, expect, it } from "vitest";
 
 import { esc, execScriptSync } from "../helpers";
 
-const strip = (string: string): string => esc(stripAnsi(string)).replaceAll("\r\n", "\n").trimEnd();
+const strip = (string: string): string => esc(stripVTControlCharacters(string)).replaceAll("\r\n", "\n").trimEnd();
 
 describe("usage `@visulima/cerebro` npm package", () => {
     it(`should work as CommonJS package`, () => {

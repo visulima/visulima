@@ -117,7 +117,7 @@
         "@anolilab/semantic-release-pnpm": "^1.1.3",
         "@anolilab/semantic-release-preset": "^9.0.0",
         "@arethetypeswrong/cli": "^0.16.4",
-        "@babel/core": "^7.25.2",
+        "@babel/core": "^7.25.7",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.1",
         "@eslint-types/jsdoc": "^48.2.2",
@@ -128,9 +128,9 @@
         "@types/command-line-args": "^5.2.3",
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
-        "@visulima/packem": "1.0.1",
+        "@visulima/packem": "1.0.7",
         "@visulima/path": "1.0.9",
-        "@vitest/coverage-v8": "^2.1.1",
+        "@vitest/coverage-v8": "^2.1.2",
         "camelcase": "8.0.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
         "cross-env": "^7.0.3",
@@ -144,9 +144,8 @@
         "prettier": "^3.3.3",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
-        "strip-ansi": "^7.1.0",
         "typescript": "5.4.5",
-        "vitest": "^2.1.1"
+        "vitest": "^2.1.2"
     },
     "engines": {
         "node": ">=18.* <=22.*"

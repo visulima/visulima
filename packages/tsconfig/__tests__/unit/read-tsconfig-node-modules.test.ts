@@ -6,11 +6,11 @@
  */
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { stripVTControlCharacters } from "node:util";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 import { execaNode } from "execa";
-import stripAnsi from "strip-ansi";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -464,7 +464,7 @@ describe("node_modules", () => {
             reject: false,
         });
 
-        expect(esc(stripAnsi(stdout))).toBe(
+        expect(esc(stripVTControlCharacters(stdout))).toBe(
             esc(
                 [
                     "{ compilerOptions: { strict: true, jsx: 'react' } }",

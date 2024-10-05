@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 <!-- DEPENDENCIES -->
-<!-- DEPENDENCIES -->
+<!-- /DEPENDENCIES -->
 
 <!-- TYPE_DEPENDENCIES -->
 
@@ -38,4 +38,4 @@ License: (MIT OR CC0-1.0)
 By: Sindre Sorhus
 Repository: sindresorhus/type-fest
 
-<!-- TYPE_DEPENDENCIES -->
+<!-- /TYPE_DEPENDENCIES -->

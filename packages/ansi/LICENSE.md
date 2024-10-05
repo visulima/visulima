@@ -124,7 +124,7 @@ Repository: https://github.com/tapjs/signal-exit.git
 > WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 > ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-<!-- DEPENDENCIES -->
+<!-- /DEPENDENCIES -->
 
 <!-- TYPE_DEPENDENCIES -->
 
@@ -159,4 +159,4 @@ License: (MIT OR CC0-1.0)
 By: Sindre Sorhus
 Repository: sindresorhus/type-fest
 
-<!-- TYPE_DEPENDENCIES -->
+<!-- /TYPE_DEPENDENCIES -->

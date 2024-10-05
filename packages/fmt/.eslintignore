@@ -4,7 +4,7 @@ __fixtures__
 coverage
 
 vitest.config.ts
-.prettierrc.js
+.prettierrc.cjs
 _meta.*.json
 packem.config.ts
 

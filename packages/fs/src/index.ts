@@ -29,6 +29,10 @@ export { default as removeSync } from "./remove/remove-sync";
 export type {
     CodeFrameLocation,
     EmptyDirOptions,
+    FindUpName,
+    FindUpNameFnResult,
+    FindUpNameSync,
+    FindUpNameSyncFnResult,
     FindUpOptions,
     JsonReplacer,
     JsonReviver,
@@ -40,10 +44,6 @@ export type {
     WriteFileOptions,
     WriteJsonOptions,
     YamlReplacer,
-    FindUpName,
-    FindUpNameFnResult,
-    FindUpNameSyncFnResult,
-    FindUpNameSync,
 } from "./types";
 export { default as writeFile } from "./write/write-file";
 export { default as writeFileSync } from "./write/write-file-sync";
