@@ -1,3 +1,15 @@
+## @visulima/package [3.1.3](https://github.com/visulima/visulima/compare/@visulima/package@3.1.2...@visulima/package@3.1.3) (2024-10-05)
+
+### Bug Fixes
+
+* **package:** fixed typing of findup fn, update dev dependencies ([6f15edc](https://github.com/visulima/visulima/commit/6f15edceaade689df3eebc9b87dd12fd09d3bdfb))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.2.1
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/package [3.1.2](https://github.com/visulima/visulima/compare/@visulima/package@3.1.1...@visulima/package@3.1.2) (2024-09-29)
 
 
