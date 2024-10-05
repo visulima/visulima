@@ -1,3 +1,9 @@
+## @visulima/path [1.1.1](https://github.com/visulima/visulima/compare/@visulima/path@1.1.0...@visulima/path@1.1.1) (2024-10-05)
+
+### Bug Fixes
+
+* **path:** fixing wrong export of isAbsolute on utils ([92148a8](https://github.com/visulima/visulima/commit/92148a8dd7c986536aefdbc3d316d16f32239e57))
+
 ## @visulima/path [1.1.0](https://github.com/visulima/visulima/compare/@visulima/path@1.0.9...@visulima/path@1.1.0) (2024-10-05)
 
 ### Features
