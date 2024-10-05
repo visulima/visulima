@@ -59,7 +59,7 @@ export const normalizeAliases = (_aliases: Record<string, string>): Record<strin
 
             // eslint-disable-next-line security/detect-object-injection
             if ((aliases[key] as string).startsWith(alias) && pathSeparators.has((aliases[key] as string)[alias.length])) {
-                // eslint-disable-next-line security/detect-object-injection
+                // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/restrict-plus-operands
                 aliases[key] = aliases[alias] + (aliases[key] as string).slice(alias.length);
             }
         }
@@ -108,8 +108,8 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
 /**
  * Extracts the filename from a given path, excluding any directory paths and the file extension.
  *
- * @param path - The full path of the file from which to extract the filename.
- * @returns the filename without the extension, or `undefined` if the filename cannot be extracted.
+ * @param {string} path - The full path of the file from which to extract the filename.
+ * @returns {string} the filename without the extension, or `undefined` if the filename cannot be extracted.
  */
 export const filename = (path: string): string => <string>FILENAME_RE.exec(path)?.[2];
 
@@ -144,8 +144,29 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     return path;
 };
 
+/**
+ * Determines whether a given path is relative.
+ *
+ * @param {string} path - The path to check.
+ * @returns {boolean} `true` if the path is relative, otherwise `false`.
+ */
 export const isRelative = (path: string): boolean => /^\.?\.[/\\]/.test(path);
 
+/**
+ * Determines whether a given path is an absolute path.
+ *
+ * @param {string} path
+ * @returns {boolean} `true` if the path is absolute, otherwise `false`.
+ */
+export const isAbsolute = (path: string): boolean => /^(?:\/|(?:[A-Z]:)?[/\\|])/i.test(path);
+
+/**
+ * Determines whether a given path is a binary file.
+ * This function checks the file extension against a list of known binary file extensions.
+ *
+ * @param {string} path
+ * @returns {boolean} `true` if the path is a binary file, otherwise `false`.
+ */
 export const isBinaryPath = (path: string): boolean => extensions.has(extname(path).slice(1).toLowerCase());
 
 export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath(urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath);
