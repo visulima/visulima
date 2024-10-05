@@ -1,3 +1,14 @@
+## @visulima/error [4.4.6](https://github.com/visulima/visulima/compare/@visulima/error@4.4.5...@visulima/error@4.4.6) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/error [4.4.5](https://github.com/visulima/visulima/compare/@visulima/error@4.4.4...@visulima/error@4.4.5) (2024-09-24)
 
 ### Bug Fixes
