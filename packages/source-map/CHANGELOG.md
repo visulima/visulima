@@ -1,3 +1,18 @@
+## @visulima/source-map [1.0.8](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.7...@visulima/source-map@1.0.8) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([736c6ce](https://github.com/visulima/visulima/commit/736c6ce7270b3e525a8ea9f79646a2a3fde47d4e))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/source-map [1.0.7](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.6...@visulima/source-map@1.0.7) (2024-09-24)
 
 ### Bug Fixes
