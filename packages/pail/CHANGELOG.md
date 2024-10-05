@@ -1,3 +1,18 @@
+## @visulima/pail [2.1.10](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.9...@visulima/pail@2.1.10) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.11
+* **@visulima/error:** upgraded to 4.4.6
+* **@visulima/fmt:** upgraded to 1.1.11
+* **@visulima/inspector:** upgraded to 1.0.11
+* **@visulima/redact:** upgraded to 1.0.9
+
 ## @visulima/pail [2.1.9](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.8...@visulima/pail@2.1.9) (2024-09-24)
 
 ### Bug Fixes
