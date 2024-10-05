@@ -1,3 +1,15 @@
+## @visulima/boxen [1.0.20](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.19...@visulima/boxen@1.0.20) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.11
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/boxen [1.0.19](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.18...@visulima/boxen@1.0.19) (2024-09-24)
 
 ### Bug Fixes
