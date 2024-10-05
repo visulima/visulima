@@ -1,3 +1,13 @@
+## @visulima/path [1.1.0](https://github.com/visulima/visulima/compare/@visulima/path@1.0.9...@visulima/path@1.1.0) (2024-10-05)
+
+### Features
+
+* **path:** added isAbsolute util ([57dac59](https://github.com/visulima/visulima/commit/57dac5933b454782eb61683bb60cc7fe9a7a1b62))
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
 ## @visulima/path [1.0.9](https://github.com/visulima/visulima/compare/@visulima/path@1.0.8...@visulima/path@1.0.9) (2024-09-24)
 
 ### Bug Fixes
