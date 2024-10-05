@@ -1,23 +1,23 @@
+import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { dirname, join, toNamespacedPath } from "@visulima/path";
+import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { NormalizedReadResult } from "../../src/package-json";
 import {
     findPackageJson,
-    parsePackageJson,
-    getPackageJsonProperty,
-    hasPackageJsonProperty,
-    hasPackageJsonAnyDependency,
     findPackageJsonSync,
+    getPackageJsonProperty,
+    hasPackageJsonAnyDependency,
+    hasPackageJsonProperty,
+    parsePackageJson,
     writePackageJson,
     writePackageJsonSync,
-    type NormalizedReadResult,
 } from "../../src/package-json";
 import type { NormalizedPackageJson } from "../../src/types";
-import { rm } from "node:fs/promises";
-import { temporaryDirectory } from "tempy";
-import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
 
@@ -25,14 +25,14 @@ describe("package-json", () => {
     describe.each([
         ["findPackageJson", findPackageJson],
         ["findPackageJsonSync", findPackageJsonSync],
-    ])("%s", (name, fn) => {
+    ])("%s", (name, function_) => {
         it("should return the content of the found package.json", async () => {
             expect.assertions(3);
 
-            let result = fn(fixturePath);
+            let result = function_(fixturePath);
 
             if (name === "findPackageJson") {
-                result = await fn(fixturePath);
+                result = await function_(fixturePath);
             }
 
             expect((result as NormalizedReadResult).packageJson).toBeTypeOf("object");
@@ -44,7 +44,7 @@ describe("package-json", () => {
     describe.each([
         ["writePackageJson", writePackageJson],
         ["writePackageJsonSync", writePackageJsonSync],
-    ])("%s", (name, fn) => {
+    ])("%s", (name, function_) => {
         let distribution: string;
 
         beforeEach(async () => {
@@ -64,16 +64,16 @@ describe("package-json", () => {
             };
 
             if (name === "writePackageJson") {
-                await fn(packageJson, {
+                await function_(packageJson, {
                     cwd: distribution,
                 });
             } else {
-                fn(packageJson, {
+                function_(packageJson, {
                     cwd: distribution,
                 });
             }
 
-            expect(isAccessibleSync(join(distribution, "package.json"))).toBe(true);
+            expect(isAccessibleSync(join(distribution, "package.json"))).toBeTruthy();
 
             const packageJsonFile = readJsonSync(join(distribution, "package.json"));
 
@@ -228,7 +228,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "name");
 
-            expect(result).toBe(true);
+            expect(result).toBeTruthy();
         });
 
         it("should return false if the property does not exist in the package.json file", () => {
@@ -241,7 +241,7 @@ describe("package-json", () => {
 
             const result = hasPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "author");
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
     });
 
@@ -250,34 +250,34 @@ describe("package-json", () => {
             expect.assertions(1);
 
             const packageJson = {
-                name: "test-package",
-                version: "1.0.0",
                 dependencies: {
                     "dependency-1": "^1.0.0",
                     "dependency-2": "^2.0.0",
                 },
+                name: "test-package",
+                version: "1.0.0",
             };
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-3"]);
 
-            expect(result).toBe(true);
+            expect(result).toBeTruthy();
         });
 
         it("should return false if none of the specified dependencies exist in the package.json file", () => {
             expect.assertions(1);
 
             const packageJson = {
-                name: "test-package",
-                version: "1.0.0",
                 dependencies: {
                     "dependency-1": "^1.0.0",
                     "dependency-2": "^2.0.0",
                 },
+                name: "test-package",
+                version: "1.0.0",
             };
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-3", "dependency-4"]);
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
 
         it("should return false if the dependencies property is undefined", () => {
@@ -290,49 +290,49 @@ describe("package-json", () => {
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
 
         it("should return false if the dependencies property is null", () => {
             expect.assertions(1);
 
             const packageJson = {
+                dependencies: null,
                 name: "test-package",
                 version: "1.0.0",
-                dependencies: null,
             };
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
 
         it("should return false if the dependencies property is an empty object", () => {
             expect.assertions(1);
 
             const packageJson = {
+                dependencies: {},
                 name: "test-package",
                 version: "1.0.0",
-                dependencies: {},
             };
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
 
         it("should return false if the dependencies property is an empty array", () => {
             expect.assertions(1);
 
             const packageJson = {
+                dependencies: [],
                 name: "test-package",
                 version: "1.0.0",
-                dependencies: [],
             };
 
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
-            expect(result).toBe(false);
+            expect(result).toBeFalsy();
         });
     });
 });

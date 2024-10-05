@@ -9,7 +9,7 @@ import { parsePackageJson } from "./package-json";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
-const packageMangerFindUpMatcher = (directory: string) => {
+const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     let lockFile: string | undefined;
 
     lockFileNames.forEach((lockFileName) => {
