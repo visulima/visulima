@@ -1,3 +1,18 @@
+## @visulima/api-platform [3.0.24](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.23...@visulima/api-platform@3.0.24) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.15
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.62
+* **@visulima/path:** upgraded to 1.1.0
+* **@visulima/crud:** upgraded to 2.0.32
+* **@visulima/fs:** upgraded to 2.2.1
+
 ## @visulima/api-platform [3.0.23](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.22...@visulima/api-platform@3.0.23) (2024-09-29)
 
 ### Miscellaneous Chores
