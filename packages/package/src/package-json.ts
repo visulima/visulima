@@ -5,10 +5,10 @@ import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } 
 import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
 import { join } from "@visulima/path";
+import { getProperty, hasProperty } from "dot-prop";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
 import type { JsonObject, Paths } from "type-fest";
-import { getProperty, hasProperty } from "dot-prop";
 
 import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
 
@@ -155,9 +155,8 @@ export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPa
  *
  * @returns {T}
  */
-export const getPackageJsonProperty = <T = unknown>(packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>, defaultValue?: T): T => {
-    return getProperty(packageJson, property, defaultValue) as T;
-};
+export const getPackageJsonProperty = <T = unknown>(packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>, defaultValue?: T): T =>
+    getProperty(packageJson, property, defaultValue) as T;
 
 /**
  * An asynchronous function to check if a property exists in the package.json file.
@@ -167,9 +166,8 @@ export const getPackageJsonProperty = <T = unknown>(packageJson: NormalizedPacka
  *
  * @returns {boolean}
  */
-export const hasPackageJsonProperty = (packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>): boolean => {
-    return hasProperty(packageJson, property);
-};
+export const hasPackageJsonProperty = (packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>): boolean =>
+    hasProperty(packageJson, property);
 
 /**
  * An asynchronous function to check if any of the specified dependencies exist in the package.json file.

@@ -6,7 +6,7 @@ import { dirname, join } from "@visulima/path";
 import { findLockFile, findLockFileSync } from "./package-manager";
 import type { PackageJson } from "./types";
 
-const packageJsonMatcher = (directory: string) => {
+const packageJsonMatcher = (directory: string): string | undefined => {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(join(directory, "package.json"))) {
         const packageJson = readJsonSync<PackageJson>(join(directory, "package.json"));
