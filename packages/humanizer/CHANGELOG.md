@@ -1,3 +1,14 @@
+## @visulima/humanizer [1.0.13](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.12...@visulima/humanizer@1.0.13) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/humanizer [1.0.12](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.11...@visulima/humanizer@1.0.12) (2024-09-24)
 
 ### Bug Fixes
