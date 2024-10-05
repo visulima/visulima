@@ -1,3 +1,11 @@
+## @visulima/package [3.1.4](https://github.com/visulima/visulima/compare/@visulima/package@3.1.3...@visulima/package@3.1.4) (2024-10-05)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.2.2
+* **@visulima/path:** upgraded to 1.1.1
+
 ## @visulima/package [3.1.3](https://github.com/visulima/visulima/compare/@visulima/package@3.1.2...@visulima/package@3.1.3) (2024-10-05)
 
 ### Bug Fixes
