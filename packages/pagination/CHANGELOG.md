@@ -1,3 +1,9 @@
+## @visulima/pagination [3.0.23](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.22...@visulima/pagination@3.0.23) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
 ## @visulima/pagination [3.0.22](https://github.com/visulima/visulima/compare/@visulima/pagination@3.0.21...@visulima/pagination@3.0.22) (2024-09-24)
 
 ### Bug Fixes
