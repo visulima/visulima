@@ -1,3 +1,9 @@
+## @visulima/redact [1.0.9](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.8...@visulima/redact@1.0.9) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
 ## @visulima/redact [1.0.8](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.7...@visulima/redact@1.0.8) (2024-09-24)
 
 ### Bug Fixes
