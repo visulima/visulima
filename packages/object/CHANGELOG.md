@@ -1,3 +1,13 @@
+## @visulima/object [1.0.6](https://github.com/visulima/visulima/compare/@visulima/object@1.0.5...@visulima/object@1.0.6) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([736c6ce](https://github.com/visulima/visulima/commit/736c6ce7270b3e525a8ea9f79646a2a3fde47d4e))
+
 ## @visulima/object [1.0.5](https://github.com/visulima/visulima/compare/@visulima/object@1.0.4...@visulima/object@1.0.5) (2024-09-24)
 
 ### Bug Fixes
