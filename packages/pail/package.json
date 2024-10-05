@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "2.1.10",
+    "version": "2.1.11",
     "description": "Find a file or directory by walking up parent directories.",
     "keywords": [
         "ansi",
@@ -242,10 +242,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "1.4.11",
-        "@visulima/error": "4.4.6",
+        "@visulima/colorize": "1.4.12",
+        "@visulima/error": "4.4.7",
         "@visulima/fmt": "1.1.11",
-        "@visulima/inspector": "1.0.11",
+        "@visulima/inspector": "1.0.12",
         "safe-stable-stringify": "^2.5.0"
     },
     "devDependencies": {
