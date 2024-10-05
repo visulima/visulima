@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [2.0.62](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.61...@visulima/jsdoc-open-api@2.0.62) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.2.1
+
 ## @visulima/jsdoc-open-api [2.0.61](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.60...@visulima/jsdoc-open-api@2.0.61) (2024-09-29)
 
 ### Miscellaneous Chores
