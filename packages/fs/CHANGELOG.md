@@ -1,3 +1,11 @@
+## @visulima/fs [2.2.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.1...@visulima/fs@2.2.2) (2024-10-05)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.1
+* **@visulima/error:** upgraded to 4.4.7
+
 ## @visulima/fs [2.2.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.0...@visulima/fs@2.2.1) (2024-10-05)
 
 ### Bug Fixes
