@@ -61,7 +61,7 @@ For more information, please refer to <https://unlicense.org/>
 SPDX-License-Identifier: MIT or UNLICENSE
 
 <!-- DEPENDENCIES -->
-<!-- DEPENDENCIES -->
+<!-- /DEPENDENCIES -->
 
 <!-- TYPE_DEPENDENCIES -->
-<!-- TYPE_DEPENDENCIES -->
+<!-- /TYPE_DEPENDENCIES -->
