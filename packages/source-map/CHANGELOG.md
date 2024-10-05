@@ -1,3 +1,10 @@
+## @visulima/source-map [1.0.9](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.8...@visulima/source-map@1.0.9) (2024-10-05)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.1
+
 ## @visulima/source-map [1.0.8](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.7...@visulima/source-map@1.0.8) (2024-10-05)
 
 ### Bug Fixes
