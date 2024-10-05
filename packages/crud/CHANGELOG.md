@@ -1,3 +1,19 @@
+## @visulima/crud [2.0.32](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.31...@visulima/crud@2.0.32) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([736c6ce](https://github.com/visulima/visulima/commit/736c6ce7270b3e525a8ea9f79646a2a3fde47d4e))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.23
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.23
+
 ## @visulima/crud [2.0.31](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.30...@visulima/crud@2.0.31) (2024-09-24)
 
 ### Bug Fixes
