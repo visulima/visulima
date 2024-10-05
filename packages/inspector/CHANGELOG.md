@@ -1,3 +1,10 @@
+## @visulima/inspector [1.0.12](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.11...@visulima/inspector@1.0.12) (2024-10-05)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.12
+
 ## @visulima/inspector [1.0.11](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.10...@visulima/inspector@1.0.11) (2024-10-05)
 
 ### Bug Fixes
