@@ -1,3 +1,15 @@
+## @visulima/colorize [1.4.11](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.10...@visulima/colorize@1.4.11) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.8
+* **@visulima/path:** upgraded to 1.1.0
+
 ## @visulima/colorize [1.4.10](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.9...@visulima/colorize@1.4.10) (2024-09-24)
 
 ### Miscellaneous Chores
