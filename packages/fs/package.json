@@ -183,12 +183,12 @@
         "semantic-release": "24.0.0",
         "tempy": "^3.1.0",
         "type-fest": "^4.26.1",
-        "typescript": "5.4.5",
+        "typescript": "5.6.3",
         "vitest": "^2.1.2",
         "yaml": "^2.5.1"
     },
     "peerDependencies": {
-        "yaml": "^2.4.0"
+        "yaml": "^2.5.1"
     },
     "peerDependenciesMeta": {
         "yaml": {
