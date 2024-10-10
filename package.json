@@ -224,7 +224,7 @@
         "@nrwl/workspace": "19.4.3",
         "@octokit/rest": "^21.0.2",
         "@secretlint/secretlint-rule-preset-recommend": "^8.3.0",
-        "@types/node": "18.19.42",
+        "@types/node": "18.19.55",
         "audit-ci": "^7.1.0",
         "browserslist-config-anolilab": "^5.0.14",
         "commitizen": "^4.3.1",
@@ -239,7 +239,7 @@
         "prettier": "^3.3.3",
         "publint": "^0.2.11",
         "read-pkg": "^9.0.1",
-        "rimraf": "5.0.9",
+        "rimraf": "5.0.10",
         "secretlint": "8.2.4",
         "semantic-release": "^24.1.2",
         "sort-package-json": "^2.10.1",
@@ -249,7 +249,7 @@
         "typescript": "5.4.5",
         "vitest": "^2.1.2"
     },
-    "packageManager": "pnpm@9.12.0",
+    "packageManager": "pnpm@9.12.1",
     "engines": {
         "node": ">=18.* <=22.*"
     },
