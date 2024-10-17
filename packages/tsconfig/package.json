@@ -99,7 +99,7 @@
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@secretlint/secretlint-rule-preset-recommend": "^8.3.0",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "18.18.14",
+        "@types/node": "18.19.56",
         "@visulima/packem": "1.0.7",
         "@vitest/coverage-v8": "^2.1.2",
         "@vitest/ui": "^2.1.2",
@@ -120,7 +120,7 @@
         "semantic-release": "^24.1.2",
         "tempy": "^3.1.0",
         "type-fest": "^4.26.1",
-        "typescript": "5.4.5",
+        "typescript": "5.6.3",
         "vitest": "^2.1.2"
     },
     "engines": {
