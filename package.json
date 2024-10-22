@@ -30,6 +30,7 @@
         "cleanup:empty-packages": "node scripts/cleanup-empty-packages.js",
         "dev:docs": "pnpm run docs:symlink && pnpm run --filter=@apps/docs dev",
         "dev:storybook": "pnpm run --filter \"storybook\" dev",
+        "dev:flame": "pnpm run --filter \"flame\" dev",
         "docs:copy": "pnpm --filter \"docs\" run docs:copy",
         "docs:symlink": "pnpm --filter \"docs\" run docs:symlink",
         "example:api-platform:express:4:dev": "pnpm --filter \"express_example_api-platform\" run dev",
