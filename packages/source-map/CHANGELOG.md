@@ -1,3 +1,9 @@
+## @visulima/source-map [1.0.10](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.9...@visulima/source-map@1.0.10) (2024-10-22)
+
+### Bug Fixes
+
+* **source-map:** added all exports from @jridgewell/trace-mapping ([af4551a](https://github.com/visulima/visulima/commit/af4551af01347a1ea92d7237cb349951712b26dd))
+
 ## @visulima/source-map [1.0.9](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.8...@visulima/source-map@1.0.9) (2024-10-05)
 
 
