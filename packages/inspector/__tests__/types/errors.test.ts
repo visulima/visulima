@@ -56,5 +56,27 @@ describe("errors", () => {
 
             expect(inspect(error)).toBe("Error { message: { code: 404 } }");
         });
+
+        it("detects circular references", () => {
+            expect.assertions(1);
+
+            const error = new Error("message") as Error & { fluff: Error };
+
+            error.fluff = error;
+
+            expect(inspect(error)).toBe("Error: message { fluff: [Circular] }");
+        });
+    });
+
+    describe("ignores built in properties", () => {
+        it("does not add property to output", () => {
+            expect.assertions(1);
+
+            const error = new Error("message");
+
+            error.cause = new Error("i caused you");
+
+            expect(inspect(error)).toBe("Error: message { cause: Error: i caused you }");
+        });
     });
 });
