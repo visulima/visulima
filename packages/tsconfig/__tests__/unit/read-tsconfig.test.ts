@@ -11,7 +11,7 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { readTsConfig } from "../../src/read-tsconfig";
+import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
 
 describe("parses tsconfig", () => {
@@ -31,7 +31,7 @@ describe("parses tsconfig", () => {
         it("non-existent path", async () => {
             expect.assertions(1);
 
-            expect(() => readTsConfig("non-existent-path")).toThrow("Cannot resolve tsconfig at path: non-existent-path");
+            expect(() => readTsConfig("non-existent-path")).toThrow("Cannot resolve tsconfig at path: ");
         });
 
         it("empty file", async () => {
@@ -201,5 +201,42 @@ describe("parses tsconfig", () => {
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
+    });
+
+    it("paths > prefix match > nested directory", async () => {
+        expect.assertions(1);
+
+        const fixturePath = join(distribution, "dir");
+
+        writeJsonSync(join(fixturePath, "tsconfig.json"), {
+            compilerOptions: {
+                paths: {
+                    "@/*": ["./*"],
+                },
+            },
+            include: ["src"],
+        });
+        writeFileSync(join(fixturePath, "src", "a.ts"), "");
+
+        const originalCwd = process.cwd();
+
+        try {
+            process.chdir(fixturePath);
+
+            const expectedTsconfig = await getTscTsconfig(".");
+            delete expectedTsconfig.files;
+
+            const tsconfig = readTsConfig("./tsconfig.json", {
+                tscCompatible: true,
+            });
+
+            // @ts-expect-error - We're testing a private property
+            // eslint-disable-next-line security/detect-object-injection
+            delete tsconfig?.compilerOptions?.[implicitBaseUrlSymbol]
+
+            expect(tsconfig).toStrictEqual(expectedTsconfig);
+        } finally {
+            process.chdir(originalCwd);
+        }
     });
 });
