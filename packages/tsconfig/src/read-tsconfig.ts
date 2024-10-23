@@ -100,6 +100,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
     if (config.compilerOptions) {
         const { compilerOptions } = config;
+
         if (compilerOptions.paths && !compilerOptions.baseUrl) {
             // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
@@ -227,4 +228,4 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 };
 
 export const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
-export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(tsconfigPath, options);
+export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(resolve(tsconfigPath), options);
