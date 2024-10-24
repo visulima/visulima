@@ -1,3 +1,4 @@
+import typedocBuilder from "@visulima/packem/builder/typedoc";
 import type { BuildConfig } from "@visulima/packem/config";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
@@ -14,5 +15,13 @@ export default defineConfig({
         },
     },
     transformer,
+    builder: {
+        typedoc: typedocBuilder,
+    },
     cjsInterop: true,
+    typedoc: {
+        format: "inline",
+        readmePath: "./README.md",
+
+    },
 }) as BuildConfig;

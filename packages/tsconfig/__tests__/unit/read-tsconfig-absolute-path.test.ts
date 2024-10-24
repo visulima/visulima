@@ -9,10 +9,15 @@ import { rm } from "node:fs/promises";
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { Options } from "../../src/read-tsconfig";
 import { readTsConfig } from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
+
+// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+const typescriptVersion: Options["tscCompatible"] = (tsVersion.split(".")[0] + "." + tsVersion.split(".")[1]) as Options["tscCompatible"];
 
 describe("parse-tsconfig - absolute path", () => {
     let distribution: string;
@@ -44,7 +49,7 @@ describe("parse-tsconfig - absolute path", () => {
 
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -65,7 +70,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -86,7 +91,7 @@ describe("parse-tsconfig - absolute path", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
