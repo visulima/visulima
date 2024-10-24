@@ -22,6 +22,7 @@ export default defineConfig({
     typedoc: {
         format: "inline",
         readmePath: "./README.md",
-
+        excludePrivate: true,
+        excludeInternal: true,
     },
 }) as BuildConfig;

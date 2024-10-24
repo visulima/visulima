@@ -218,7 +218,7 @@ An `Error` when the "tsconfig.json" file is not found.
 
 #### Defined in
 
-[packages/tsconfig/src/find-tsconfig.ts:29](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/find-tsconfig.ts#L29)
+[packages/tsconfig/src/find-tsconfig.ts:29](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/find-tsconfig.ts#L29)
 
 ---
 
@@ -240,7 +240,7 @@ function findTsConfigSync(cwd?, options?): TsConfigResult;
 
 #### Defined in
 
-[packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/find-tsconfig.ts#L66)
+[packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/find-tsconfig.ts#L66)
 
 ---
 
@@ -330,7 +330,7 @@ Instructs the TypeScript compiler how to watch files.
 
 #### Defined in
 
-[packages/tsconfig/src/read-tsconfig.ts:279](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/read-tsconfig.ts#L279)
+[packages/tsconfig/src/read-tsconfig.ts:309](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/read-tsconfig.ts#L309)
 
 ---
 
@@ -362,7 +362,7 @@ The return type of function is `Promise<void>`.
 
 #### Defined in
 
-[packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/write-tsconfig.ts#L17)
+[packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/write-tsconfig.ts#L17)
 
 ---
 
@@ -394,7 +394,7 @@ The return type of function is `Promise<void>`.
 
 #### Defined in
 
-[packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/write-tsconfig.ts#L35)
+[packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/write-tsconfig.ts#L35)
 
 ---
 
@@ -406,7 +406,7 @@ const implicitBaseUrlSymbol: typeof implicitBaseUrlSymbol;
 
 #### Defined in
 
-[packages/tsconfig/src/read-tsconfig.ts:276](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/read-tsconfig.ts#L276)
+[packages/tsconfig/src/read-tsconfig.ts:306](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/read-tsconfig.ts#L306)
 
 ---
 
@@ -418,7 +418,7 @@ type TsConfigJsonResolved: Except<TsConfigJson, "extends">;
 
 #### Defined in
 
-[packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/types.ts#L3)
+[packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/types.ts#L3)
 
 ---
 
@@ -444,7 +444,7 @@ path: string;
 
 #### Defined in
 
-[packages/tsconfig/src/find-tsconfig.ts:14](https://github.com/visulima/visulima/blob/810c2b8ce40372e2916fb906f14f0b6ba1667792/packages/tsconfig/src/find-tsconfig.ts#L14)
+[packages/tsconfig/src/find-tsconfig.ts:14](https://github.com/visulima/visulima/blob/49d12d1acf10a7257d444199325e60b1ff3795d2/packages/tsconfig/src/find-tsconfig.ts#L14)
 
 ## File
 

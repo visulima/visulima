@@ -221,6 +221,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
         if (options?.tscCompatible && compilerOptions.strict) {
             if (["5.6", "true"].includes(String(options.tscCompatible))) {
+                // @ts-expect-error - this type is missing in the type-fest package
                 compilerOptions.strictBuiltinIteratorReturn = compilerOptions.strictBuiltinIteratorReturn ?? true;
             }
 
