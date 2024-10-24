@@ -259,7 +259,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "^8.3.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
-        "@visulima/packem": "1.0.7",
+        "@visulima/packem": "1.1.0",
         "@visulima/redact": "1.0.9",
         "@vitest/coverage-v8": "^2.1.2",
         "@vitest/ui": "^2.1.2",
@@ -281,13 +281,13 @@
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
         "type-fest": "^4.26.1",
-        "typescript": "5.4.5",
+        "typescript": "5.6.3",
         "vitest": "^2.1.2",
         "wrap-ansi": "^9.0.0"
     },
     "peerDependencies": {
         "@visulima/redact": "1.0.9",
-        "rotating-file-stream": "^3.1.1"
+        "rotating-file-stream": "^3.2.5"
     },
     "peerDependenciesMeta": {
         "@visulima/redact": {
