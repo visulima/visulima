@@ -10,16 +10,21 @@ import path from "node:path";
 import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { Options } from "../../src/read-tsconfig";
 import { readTsConfig } from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
+
+// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+const typescriptVersion: Options["tscCompatible"] = (tsVersion.split(".")[0] + "." + tsVersion.split(".")[1]) as Options["tscCompatible"];
 
 const validate = async (directoryPath: string) => {
     const expectedTsconfig = await getTscTsconfig(directoryPath);
     delete expectedTsconfig.files;
 
-    const tsconfig = readTsConfig(path.join(directoryPath, "tsconfig.json"), { tscCompatible: true });
+    const tsconfig = readTsConfig(path.join(directoryPath, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
     expect(tsconfig).toStrictEqual(expectedTsconfig);
 };

@@ -9,10 +9,15 @@ import { rm } from "node:fs/promises";
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { Options } from "../../src/read-tsconfig";
 import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
+
+// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+const typescriptVersion: Options["tscCompatible"] = (tsVersion.split(".")[0] + "." + tsVersion.split(".")[1]) as Options["tscCompatible"];
 
 describe("parses tsconfig", () => {
     let distribution: string;
@@ -96,7 +101,7 @@ describe("parses tsconfig", () => {
             },
         });
 
-        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
         const expectedTsconfig = await getTscTsconfig(distribution);
 
         delete expectedTsconfig.files;
@@ -227,12 +232,12 @@ describe("parses tsconfig", () => {
             delete expectedTsconfig.files;
 
             const tsconfig = readTsConfig("./tsconfig.json", {
-                tscCompatible: true,
+                tscCompatible: typescriptVersion,
             });
 
             // @ts-expect-error - We're testing a private property
             // eslint-disable-next-line security/detect-object-injection
-            delete tsconfig?.compilerOptions?.[implicitBaseUrlSymbol]
+            delete tsconfig?.compilerOptions?.[implicitBaseUrlSymbol];
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         } finally {

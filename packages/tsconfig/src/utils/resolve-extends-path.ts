@@ -16,9 +16,10 @@ import type { PackageJson } from "type-fest";
 
 import type { Cache } from "../types";
 
-const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) as unknown;
+const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
 
 const getPnpApi = () => {
+    // @ts-expect-error - This is a private API
     const { findPnpApi } = Module;
 
     // https://yarnpkg.com/advanced/pnpapi/#requirepnpapi
