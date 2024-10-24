@@ -21,6 +21,8 @@ const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath) as string) 
 // eslint-disable-next-line security/detect-unsafe-regex
 const normalizePath = (path: string): string => toNamespacedPath(/^\.{1,2}(?:\/.*)?$/.test(path) ? path : `./${path}`);
 
+const filesProperties = ["files", "include", "exclude"] as const;
+
 const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, options?: Options) => {
     const resolvedExtendsPath = resolveExtendsPath(extendsPath, fromDirectoryPath);
 
@@ -43,34 +45,47 @@ const resolveExtends = (extendsPath: string, fromDirectoryPath: string, circular
     const { compilerOptions } = extendsConfig;
 
     if (compilerOptions) {
-        const resolvePaths = ["baseUrl", "outDir"] as const;
+        const { baseUrl } = compilerOptions;
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-        for (const property of resolvePaths) {
-            // eslint-disable-next-line security/detect-object-injection
-            const unresolvedPath = compilerOptions[property];
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        if (baseUrl && !baseUrl.startsWith(configDirectoryPlaceholder)) {
+            compilerOptions.baseUrl = normalizePath(relative(fromDirectoryPath, join(extendsDirectoryPath, baseUrl))) || "./";
+        }
 
-            if (unresolvedPath) {
-                // eslint-disable-next-line security/detect-object-injection
-                compilerOptions[property] = relative(fromDirectoryPath, join(extendsDirectoryPath, unresolvedPath)).replaceAll("\\", "/") || "./";
+        let { outDir } = compilerOptions;
+
+        if (outDir) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            if (!outDir.startsWith(configDirectoryPlaceholder)) {
+                outDir = relative(fromDirectoryPath, join(extendsDirectoryPath, outDir));
             }
+
+            compilerOptions.outDir = normalizePath(outDir) || "./";
         }
     }
 
-    if (extendsConfig.files) {
-        extendsConfig.files = extendsConfig.files.map((file) => relative(fromDirectoryPath, join(extendsDirectoryPath, file)));
-    }
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const property of filesProperties) {
+        // eslint-disable-next-line security/detect-object-injection
+        const filesList = extendsConfig[property];
 
-    if (extendsConfig.include) {
-        extendsConfig.include = extendsConfig.include.map((file) => relative(fromDirectoryPath, join(extendsDirectoryPath, file)));
-    }
+        if (filesList) {
+            // eslint-disable-next-line security/detect-object-injection
+            extendsConfig[property] = filesList.map((file) => {
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                if (file.startsWith(configDirectoryPlaceholder)) {
+                    return file;
+                }
 
-    if (extendsConfig.exclude) {
-        extendsConfig.exclude = extendsConfig.exclude.map((file) => relative(fromDirectoryPath, join(extendsDirectoryPath, file)));
+                return relative(fromDirectoryPath, join(extendsDirectoryPath, file));
+            });
+        }
     }
 
     return extendsConfig;
 };
+
+const outputFields = ["outDir", "declarationDir"] as const;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const internalParseTsConfig = (tsconfigPath: string, options?: Options, circularExtendsTracker = new Set<string>()): TsConfigJsonResolved => {
@@ -150,27 +165,37 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
             // eslint-disable-next-line security/detect-object-injection
             const unresolvedPath = compilerOptions[property];
 
-            if (unresolvedPath) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            if (unresolvedPath && !unresolvedPath.startsWith(configDirectoryPlaceholder)) {
                 const resolvedBaseUrl = resolve(directoryPath, unresolvedPath);
-                const relativeBaseUrl = relative(directoryPath, resolvedBaseUrl);
 
                 // eslint-disable-next-line security/detect-object-injection
-                compilerOptions[property] = normalizePath(relativeBaseUrl);
+                compilerOptions[property] = relative(directoryPath, resolvedBaseUrl);
             }
         }
 
-        const { outDir } = compilerOptions;
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const outputField of outputFields) {
+            // eslint-disable-next-line security/detect-object-injection
+            let outputPath = compilerOptions[outputField];
 
-        if (outDir) {
-            if (!Array.isArray(config.exclude)) {
-                config.exclude = [];
+            if (outputPath) {
+                if (!Array.isArray(config.exclude)) {
+                    config.exclude = [];
+                }
+
+                if (!config.exclude.includes(outputPath)) {
+                    config.exclude.push(outputPath);
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                if (!outputPath.startsWith(configDirectoryPlaceholder)) {
+                    outputPath = normalizePath(outputPath);
+                }
+
+                // eslint-disable-next-line security/detect-object-injection
+                compilerOptions[outputField] = outputPath;
             }
-
-            if (!config.exclude.includes(outDir)) {
-                config.exclude.push(outDir);
-            }
-
-            compilerOptions.outDir = normalizePath(outDir);
         }
 
         if (options?.tscCompatible && compilerOptions.module === "node16") {
@@ -208,12 +233,15 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         config.compilerOptions = {};
     }
 
-    if (config.files) {
-        config.files = config.files.map((element) => normalizePath(element));
-    }
-
     if (config.include) {
         config.include = config.include.map((element) => normalize(element));
+
+        if (config.files) {
+            delete config.files;
+        }
+    } else if (config.files) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        config.files = config.files.map((file) => (file.startsWith(configDirectoryPlaceholder) ? file : normalizePath(file)));
     }
 
     if (config.watchOptions) {
@@ -227,5 +255,82 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     return config;
 };
 
+const interpolateConfigDirectory = (filePath: string, configDirectory: string): string | undefined => {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (filePath.startsWith(configDirectoryPlaceholder)) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return normalize(join(configDirectory, filePath.slice(configDirectoryPlaceholder.length)));
+    }
+
+    return undefined;
+};
+
+/**
+ * @see https://github.com/microsoft/TypeScript/issues/57485#issuecomment-2027787456
+ * exclude paths, as it requires custom processing
+ */
+const compilerFieldsWithConfigDirectory = ["outDir", "declarationDir", "outFile", "rootDir", "baseUrl", "tsBuildInfoFile"] as const;
+
+// eslint-disable-next-line no-template-curly-in-string,import/no-unused-modules
+export const configDirectoryPlaceholder = "${configDir}";
 export const implicitBaseUrlSymbol = Symbol("implicitBaseUrl");
-export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => internalParseTsConfig(resolve(tsconfigPath), options);
+
+export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJsonResolved => {
+    const resolvedTsconfigPath = resolve(tsconfigPath);
+
+    const config = internalParseTsConfig(resolvedTsconfigPath, options);
+
+    const configDirectory = dirname(resolvedTsconfigPath);
+
+    const { compilerOptions } = config;
+
+    if (compilerOptions) {
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const property of compilerFieldsWithConfigDirectory) {
+            // eslint-disable-next-line security/detect-object-injection
+            const value = compilerOptions[property];
+            if (value) {
+                const resolvedPath = interpolateConfigDirectory(value, configDirectory);
+                // eslint-disable-next-line security/detect-object-injection
+                compilerOptions[property] = resolvedPath ? relative(configDirectory, resolvedPath) : value;
+            }
+        }
+
+        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        for (const property of ["rootDirs", "typeRoots"] as const) {
+            // eslint-disable-next-line security/detect-object-injection
+            const value = compilerOptions[property];
+
+            if (value) {
+                // eslint-disable-next-line security/detect-object-injection
+                compilerOptions[property] = value.map((v) => {
+                    const resolvedPath = interpolateConfigDirectory(v, configDirectory);
+                    return resolvedPath ? relative(configDirectory, resolvedPath) : v;
+                });
+            }
+        }
+
+        const { paths } = compilerOptions;
+
+        if (paths) {
+            // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+            for (const name of Object.keys(paths)) {
+                // eslint-disable-next-line security/detect-object-injection
+                paths[name] = paths[name].map((filePath) => interpolateConfigDirectory(filePath, configDirectory) ?? filePath);
+            }
+        }
+    }
+
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const property of filesProperties) {
+        // eslint-disable-next-line security/detect-object-injection
+        const value = config[property];
+
+        if (value) {
+            // eslint-disable-next-line security/detect-object-injection
+            config[property] = value.map((filePath) => interpolateConfigDirectory(filePath, configDirectory) ?? filePath);
+        }
+    }
+
+    return config;
+};

@@ -12,7 +12,7 @@ import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { readTsConfig } from "../../src/read-tsconfig";
+import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
 import { getTscTsconfig } from "../helpers";
 
 describe("parse-tsconfig merges", () => {
@@ -441,5 +441,105 @@ describe("parse-tsconfig merges", () => {
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    // eslint-disable-next-line no-template-curly-in-string
+    describe("${configDir}", () => {
+        it("should work in paths, include, excludes", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    outDir: "${configDir}/dist",
+                    paths: {
+                        "@/*": ["${configDir}/*"],
+                    },
+                },
+                include: ["${configDir}/file.ts"],
+            });
+
+            writeFileSync(join(distribution, "extended", "file.ts"), "");
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("should support joins path", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    baseUrl: "${configDir}/dist/src",
+                    declarationDir: "${configDir}/dist/declaration",
+                    outDir: "${configDir}-asdf/dist",
+                    outFile: "${configDir}/dist/outfile.js",
+                    paths: {
+                        a: ["${configDir}_a/*"],
+                        b: ["ignores/${configDir}/*"],
+                    },
+                    rootDir: "${configDir}/dist/src",
+                    rootDirs: ["${configDir}/src", "${configDir}/static"],
+                    tsBuildInfoFile: "${configDir}/dist/dist.tsbuildinfo",
+                    typeRoots: ["${configDir}/src/type", "${configDir}/types"],
+                },
+                include: ["${configDir}/file.ts"],
+            });
+
+            writeFileSync(join(distribution, "extended", "file.ts"), "");
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("should support parent path", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file-b.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    outDir: "${configDir}/../dist",
+                },
+                include: ["${configDir}/../file-b.ts"],
+            });
+
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+console.log(parsedTsconfig)
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
     });
 });
