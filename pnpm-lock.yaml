@@ -1328,8 +1328,8 @@ importers:
         specifier: ^7.25.7
         version: 7.25.7
       '@hapi/hapi':
-        specifier: ^21.3.10
-        version: 21.3.10
+        specifier: ^21.3.11
+        version: 21.3.11
       '@koa/router':
         specifier: ^13.1.0
         version: 13.1.0
@@ -4013,7 +4013,7 @@ importers:
         version: 5.4.5
       vitest:
         specifier: 1.6.0
-        version: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+        version: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2(vitest@2.1.2))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
 
   packages/redact:
     dependencies:
@@ -6452,8 +6452,8 @@ packages:
   '@hapi/boom@10.0.1':
     resolution: {integrity: sha512-ERcCZaEjdH3OgSJlyjVk8pHIFeus91CjKP3v+MpgBNp5IvGzP2l/bRiD78nqYcKPaZdbKkK5vDBVPd2ohHBlsA==}
 
-  '@hapi/bounce@3.0.1':
-    resolution: {integrity: sha512-G+/Pp9c1Ha4FDP+3Sy/Xwg2O4Ahaw3lIZFSX+BL4uWi64CmiETuZPxhKDUD4xBMOUZbBlzvO8HjiK8ePnhBadA==}
+  '@hapi/bounce@3.0.2':
+    resolution: {integrity: sha512-d0XmlTi3H9HFDHhQLjg4F4auL1EY3Wqj7j7/hGDhFFe6xAbnm3qiGrXeT93zZnPH8gH+SKAFYiRzu26xkXcH3g==}
 
   '@hapi/bourne@3.0.0':
     resolution: {integrity: sha512-Waj1cwPXJDucOib4a3bAISsKJVb15MKi9IvmTI/7ssVEm6sywXGjVJDhl6/umt1pK1ZS7PacXU3A1PmFKHEZ2w==}
@@ -6477,15 +6477,15 @@ packages:
   '@hapi/file@3.0.0':
     resolution: {integrity: sha512-w+lKW+yRrLhJu620jT3y+5g2mHqnKfepreykvdOcl9/6up8GrQQn+l3FRTsjHTKbkbfQFkuksHpdv2EcpKcJ4Q==}
 
-  '@hapi/hapi@21.3.10':
-    resolution: {integrity: sha512-CmEcmTREW394MaGGKvWpoOK4rG8tKlpZLs30tbaBzhCrhiL2Ti/HARek9w+8Ya4nMBGcd+kDAzvU44OX8Ms0Jg==}
+  '@hapi/hapi@21.3.11':
+    resolution: {integrity: sha512-GJGXQLMWAHifE4OeaAdBlDXp1YWn2B5q3kmMzvPgJgGByuX7N1YVdYzjetNZDNxBPPBOPMu+jqk+73hhx8ECNQ==}
     engines: {node: '>=14.15.0'}
 
   '@hapi/heavy@8.0.1':
     resolution: {integrity: sha512-gBD/NANosNCOp6RsYTsjo2vhr5eYA3BEuogk6cxY0QdhllkkTaJFYtTXv46xd6qhBVMbMMqcSdtqey+UQU3//w==}
 
-  '@hapi/hoek@11.0.4':
-    resolution: {integrity: sha512-PnsP5d4q7289pS2T2EgGz147BFJ2Jpb4yrEdkpz2IhgEUzos1S7HTl7ezWh1yfYzYlj89KzLdCRkqsP6SIryeQ==}
+  '@hapi/hoek@11.0.5':
+    resolution: {integrity: sha512-2G2uHO5I6sS7duo7l60rATT41tGfq3tsG6Ha07KV0PvLIM09E8oa48ozPp7GVa8gEL3UyeaioVNbqbQV7Hb9lg==}
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -23082,41 +23082,41 @@ snapshots:
   '@hapi/accept@6.0.3':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/ammo@6.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/b64@6.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/boom@10.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
-  '@hapi/bounce@3.0.1':
+  '@hapi/bounce@3.0.2':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/bourne@3.0.0': {}
 
   '@hapi/call@9.0.1':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/catbox-memory@6.0.2':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/catbox@12.1.1':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/podium': 5.0.1
       '@hapi/validate': 2.0.1
 
@@ -23130,17 +23130,17 @@ snapshots:
 
   '@hapi/file@3.0.0': {}
 
-  '@hapi/hapi@21.3.10':
+  '@hapi/hapi@21.3.11':
     dependencies:
       '@hapi/accept': 6.0.3
       '@hapi/ammo': 6.0.1
       '@hapi/boom': 10.0.1
-      '@hapi/bounce': 3.0.1
+      '@hapi/bounce': 3.0.2
       '@hapi/call': 9.0.1
       '@hapi/catbox': 12.1.1
       '@hapi/catbox-memory': 6.0.2
       '@hapi/heavy': 8.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/mimos': 7.0.1
       '@hapi/podium': 5.0.1
       '@hapi/shot': 6.0.1
@@ -23154,10 +23154,10 @@ snapshots:
   '@hapi/heavy@8.0.1':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/validate': 2.0.1
 
-  '@hapi/hoek@11.0.4': {}
+  '@hapi/hoek@11.0.5': {}
 
   '@hapi/hoek@9.3.0': {}
 
@@ -23167,16 +23167,16 @@ snapshots:
       '@hapi/boom': 10.0.1
       '@hapi/bourne': 3.0.0
       '@hapi/cryptiles': 6.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/mimos@7.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       mime-db: 1.52.0
 
   '@hapi/nigel@5.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/vise': 5.0.1
 
   '@hapi/pez@6.1.0':
@@ -23184,32 +23184,32 @@ snapshots:
       '@hapi/b64': 6.0.1
       '@hapi/boom': 10.0.1
       '@hapi/content': 6.0.0
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/nigel': 5.0.1
 
   '@hapi/podium@5.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/teamwork': 6.0.0
       '@hapi/validate': 2.0.1
 
   '@hapi/shot@6.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/validate': 2.0.1
 
   '@hapi/somever@4.1.1':
     dependencies:
-      '@hapi/bounce': 3.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/bounce': 3.0.2
+      '@hapi/hoek': 11.0.5
 
   '@hapi/statehood@8.1.1':
     dependencies:
       '@hapi/boom': 10.0.1
-      '@hapi/bounce': 3.0.1
+      '@hapi/bounce': 3.0.2
       '@hapi/bourne': 3.0.0
       '@hapi/cryptiles': 6.0.1
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/iron': 7.0.1
       '@hapi/validate': 2.0.1
 
@@ -23219,7 +23219,7 @@ snapshots:
       '@hapi/bourne': 3.0.0
       '@hapi/content': 6.0.0
       '@hapi/file': 3.0.0
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/pez': 6.1.0
       '@hapi/wreck': 18.1.0
 
@@ -23231,22 +23231,22 @@ snapshots:
 
   '@hapi/topo@6.0.2':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/validate@2.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
       '@hapi/topo': 6.0.2
 
   '@hapi/vise@5.0.1':
     dependencies:
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@hapi/wreck@18.1.0':
     dependencies:
       '@hapi/boom': 10.0.1
       '@hapi/bourne': 3.0.0
-      '@hapi/hoek': 11.0.4
+      '@hapi/hoek': 11.0.5
 
   '@headlessui/react@1.7.19(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
@@ -28795,7 +28795,7 @@ snapshots:
       '@vitest/utils': 1.6.0
       magic-string: 0.30.10
       sirv: 2.0.4
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2(vitest@2.1.2))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
     optionalDependencies:
       playwright: 1.45.1
       webdriverio: 9.1.2
@@ -28826,7 +28826,7 @@ snapshots:
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2(vitest@2.1.2))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -29016,7 +29016,7 @@ snapshots:
       sirv: 2.0.4
       tinyglobby: 0.2.6
       tinyrainbow: 1.2.0
-      vitest: 2.1.2(@types/node@20.14.11)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.4.9(typescript@5.5.3))(terser@5.31.1)
+      vitest: 2.1.2(@types/node@22.5.4)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.4.9(typescript@5.4.5))(terser@5.31.1)
 
   '@vitest/utils@1.6.0':
     dependencies:
@@ -32651,7 +32651,7 @@ snapshots:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.4.5)
       eslint: 8.57.0
     optionalDependencies:
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2(vitest@2.1.2))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -43109,7 +43109,7 @@ snapshots:
       lightningcss: 1.25.1
       terser: 5.31.1
 
-  vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1):
+  vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.2(vitest@2.1.2))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
