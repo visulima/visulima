@@ -108,7 +108,7 @@
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
-        "yaml": "^2.5.1"
+        "yaml": "^2.6.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -140,7 +140,7 @@
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
         "tsup": "^8.3.0",
-        "typescript": "5.4.5",
+        "typescript": "5.6.3",
         "vitest": "^2.1.2",
         "webpack": "^5.95.0"
     },
