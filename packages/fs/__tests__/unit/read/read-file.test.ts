@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fixturePath = join(__dirname, "..", "..", "..", "__fixtures__", "read-file");
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["readFile", readFile],
@@ -20,12 +20,7 @@ describe.each([
     it("should read", async () => {
         expect.assertions(1);
 
-        let result = await function_(join(fixturePath, "text.md"));
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readFile") {
-            result = await result;
-        }
+        const result = await function_(join(fixturePath, "text.md"));
 
         expect(result).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
@@ -33,12 +28,7 @@ describe.each([
     it("should read buffer", async () => {
         expect.assertions(1);
 
-        let result = await function_(join(fixturePath, "text.md"), { buffer: true });
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readFile") {
-            result = await result;
-        }
+        const result = await function_(join(fixturePath, "text.md"), { buffer: true });
 
         expect(result?.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
@@ -59,12 +49,7 @@ describe.each([
     it("should read gzip file", async () => {
         expect.assertions(1);
 
-        let result = await function_(join(fixturePath, "text.md.gz"), { compression: "gzip" });
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readFile") {
-            result = await result;
-        }
+        const result = await function_(join(fixturePath, "text.md.gz"), { compression: "gzip" });
 
         expect(result).toBe("hello world!");
     });
@@ -72,12 +57,7 @@ describe.each([
     it("should read brotli file", async () => {
         expect.assertions(1);
 
-        let result = await function_(join(fixturePath, "note.md.br"), { compression: "brotli" });
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "readFile") {
-            result = await result;
-        }
+        const result = await function_(join(fixturePath, "note.md.br"), { compression: "brotli" });
 
         expect(result).toBe("hello world!");
     });

@@ -2,7 +2,8 @@ import { isSafe } from "redos-detector";
 import safe from "safe-regex2";
 import { describe, expect, it } from "vitest";
 
-import stripJsonComments, { INTERNAL_STRIP_JSON_REGEX } from "../../../src/utils/strip-json-comments";
+import { INTERNAL_STRIP_JSON_REGEX } from "../../../src/constants";
+import stripJsonComments from "../../../src/utils/strip-json-comments";
 
 describe("strip-json-comments", () => {
     it("should test if the regex is safe", () => {

@@ -30,7 +30,7 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
     expect(entries.map(({ path }) => path)).toStrictEqual(expect.arrayContaining(result));
 };
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe("walk", () => {
     it("should return current dir for empty dir", async () => {

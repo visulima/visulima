@@ -16,6 +16,8 @@ export { default as walk } from "./find/walk";
 export { default as walkSync } from "./find/walk-sync";
 export { default as isAccessible } from "./is-accessible";
 export { default as isAccessibleSync } from "./is-accessible-sync";
+export { move, moveSync, rename, renameSync } from "./move";
+export type { Options as MoveOptions } from "./move/types";
 export { default as readFile } from "./read/read-file";
 export { default as readFileSync } from "./read/read-file-sync";
 export { default as readJson } from "./read/read-json";
