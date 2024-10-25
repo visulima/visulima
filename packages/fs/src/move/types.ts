@@ -26,8 +26,20 @@ export type Options = {
     readonly overwrite?: boolean;
 };
 
+/**
+ * Internal options used by the move/rename implementation.
+ * Extends the public Options type with additional internal properties.
+ */
 export type InternalOptions = Options & {
+    /**
+     * Resolved working directory path.
+     * URLs from the Options type are converted to string paths.
+     */
     cwd: string;
 
+    /**
+     * Whether to validate the directory structure before operation.
+     * @internal
+     */
     validateDirectory?: boolean;
 };
