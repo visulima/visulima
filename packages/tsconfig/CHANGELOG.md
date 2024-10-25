@@ -1,3 +1,13 @@
+## @visulima/tsconfig [1.1.0](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.16...@visulima/tsconfig@1.1.0) (2024-10-25)
+
+### Features
+
+* **tsconfig:** adding support ${configDir} ([#476](https://github.com/visulima/visulima/issues/476)) ([d54c47b](https://github.com/visulima/visulima/commit/d54c47b780b293e33d2d6d3bcce8dc32a3a101c3))
+
+### Bug Fixes
+
+* **tsconfig:** handle relative tsconfig.json paths ([abf51b1](https://github.com/visulima/visulima/commit/abf51b1d2efa9b9ca5991a2272c824098cc968ba))
+
 ## @visulima/tsconfig [1.0.16](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.0.15...@visulima/tsconfig@1.0.16) (2024-10-05)
 
 
