@@ -10,10 +10,18 @@ import { rm } from "node:fs/promises";
 import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig } from "../helpers";
+import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
+import { getTscTsconfig, parseVersion } from "../helpers";
+
+const typescriptVersion = parseVersion(tsVersion);
+
+if (!typescriptVersion) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
+}
 
 describe("parse-tsconfig merges", () => {
     let distribution: string;
@@ -129,7 +137,7 @@ describe("parse-tsconfig merges", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -413,7 +421,7 @@ describe("parse-tsconfig merges", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -441,5 +449,161 @@ describe("parse-tsconfig merges", () => {
         const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    // Need to report this bug back to typescript
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("inherits with relative path from subdirectory", async () => {
+        expect.assertions(1);
+
+        writeFileSync(join(distribution, "src-a", "a.ts"), "");
+        writeFileSync(join(distribution, "src-a", "b.ts"), "");
+        writeFileSync(join(distribution, "src-a", "c.ts"), "");
+        writeJsonSync(join(distribution, "configs", "tsconfig.base.json"), {
+            include: ["../src-a/*"],
+        });
+
+        writeJsonSync(join(distribution, "tsconfig.json"), {
+            extends: "./configs/tsconfig.base.json",
+        });
+
+        const expectedTsconfig = await getTscTsconfig(distribution);
+        delete expectedTsconfig.files;
+
+        const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+        expect({
+            ...parsedTsconfig,
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            include: parsedTsconfig.include?.map((includePath) => `configs/../${includePath}`),
+        }).toStrictEqual(expectedTsconfig);
+    });
+
+    // eslint-disable-next-line no-template-curly-in-string
+    describe("${configDir}", () => {
+        it("should work in paths, include, excludes", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // eslint-disable-next-line no-template-curly-in-string
+                    outDir: "${configDir}/dist",
+                    paths: {
+                        // eslint-disable-next-line no-template-curly-in-string
+                        "@/*": ["${configDir}/*"],
+                    },
+                },
+                // eslint-disable-next-line no-template-curly-in-string
+                include: ["${configDir}/file.ts"],
+            });
+
+            writeFileSync(join(distribution, "extended", "file.ts"), "");
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+
+            /**
+             * tsc should put the outDir in exclude but doesn't happen
+             * when it's in extended tsconfig. I think this is a bug in tsc
+             */
+            expectedTsconfig.exclude = [join(distribution, "dist"), ...(expectedTsconfig.exclude as string[])];
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("should support joins path", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // eslint-disable-next-line no-template-curly-in-string
+                    baseUrl: "${configDir}/dist/src",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    declarationDir: "${configDir}/dist/declaration",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    outDir: "${configDir}-asdf/dist",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    outFile: "${configDir}/dist/outfile.js",
+                    paths: {
+                        // eslint-disable-next-line no-template-curly-in-string
+                        a: ["${configDir}_a/*"],
+                        // eslint-disable-next-line no-template-curly-in-string
+                        b: ["ignores/${configDir}/*"],
+                    },
+                    // eslint-disable-next-line no-template-curly-in-string
+                    rootDir: "${configDir}/dist/src",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    rootDirs: ["${configDir}/src", "${configDir}/static"],
+                    // eslint-disable-next-line no-template-curly-in-string
+                    tsBuildInfoFile: "${configDir}/dist/dist.tsbuildinfo",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    typeRoots: ["${configDir}/src/type", "${configDir}/types"],
+                },
+                // eslint-disable-next-line no-template-curly-in-string
+                include: ["${configDir}/file.ts"],
+            });
+
+            writeFileSync(join(distribution, "extended", "file.ts"), "");
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+
+            /**
+             * tsc should put the outDir in exclude but doesn't happen
+             * when it's in extended tsconfig. I think this is a bug in tsc
+             */
+            expectedTsconfig.exclude = [join(distribution, "-asdf/dist"), join(distribution, "dist/declaration"), ...(expectedTsconfig.exclude as string[])];
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("should support parent path", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file-b.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // eslint-disable-next-line no-template-curly-in-string
+                    outDir: "${configDir}/../dist",
+                },
+                // eslint-disable-next-line no-template-curly-in-string
+                include: ["${configDir}/../file-b.ts"],
+            });
+
+            writeJsonSync(join(distribution, "extended", "tsconfig.json"), {
+                extends: "../tsconfig.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(join(distribution, "extended"));
+            delete expectedTsconfig.files;
+
+            const parsedTsconfig = readTsConfig(join(distribution, "extended", "tsconfig.json"));
+
+            // @ts-expect-error Symbol is private
+            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-dynamic-delete
+            delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
     });
 });

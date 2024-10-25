@@ -12,10 +12,18 @@ import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 import { execaNode } from "execa";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { readTsConfig } from "../../src/read-tsconfig";
-import { esc, getTscTsconfig } from "../helpers";
+import { esc, getTscTsconfig, parseVersion } from "../helpers";
+
+const typescriptVersion = parseVersion(tsVersion);
+
+if (!typescriptVersion) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
+}
 
 describe("node_modules", () => {
     let distribution: string;
@@ -77,7 +85,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -98,7 +106,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -172,7 +180,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -198,7 +206,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -221,7 +229,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -242,7 +250,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -323,7 +331,7 @@ describe("node_modules", () => {
         const expectedTsconfig = await getTscTsconfig(distribution);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -347,7 +355,7 @@ describe("node_modules", () => {
         const expectedTsconfig = await getTscTsconfig(fixturePath);
         delete expectedTsconfig.files;
 
-        const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"), { tscCompatible: true });
+        const tsconfig = readTsConfig(join(fixturePath, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
@@ -413,7 +421,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -448,7 +456,7 @@ describe("node_modules", () => {
 
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -504,7 +512,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -534,7 +542,7 @@ describe("node_modules", () => {
             const expectedTsconfig = await getTscTsconfig(distribution);
             delete expectedTsconfig.files;
 
-            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -568,7 +576,7 @@ describe("node_modules", () => {
 
                 delete expectedTsconfig.files;
 
-                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
                 expect(tsconfig).toStrictEqual(expectedTsconfig);
             });
@@ -600,7 +608,7 @@ describe("node_modules", () => {
                 const expectedTsconfig = await getTscTsconfig(distribution);
                 delete expectedTsconfig.files;
 
-                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+                const tsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
                 expect(tsconfig).toStrictEqual(expectedTsconfig);
             });

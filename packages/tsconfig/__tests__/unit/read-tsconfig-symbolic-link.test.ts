@@ -10,16 +10,24 @@ import path from "node:path";
 import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
+import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig } from "../helpers";
+import { getTscTsconfig, parseVersion } from "../helpers";
+
+const typescriptVersion = parseVersion(tsVersion);
+
+if (!typescriptVersion) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
+}
 
 const validate = async (directoryPath: string) => {
     const expectedTsconfig = await getTscTsconfig(directoryPath);
     delete expectedTsconfig.files;
 
-    const tsconfig = readTsConfig(path.join(directoryPath, "tsconfig.json"), { tscCompatible: true });
+    const tsconfig = readTsConfig(path.join(directoryPath, "tsconfig.json"), { tscCompatible: typescriptVersion });
 
     expect(tsconfig).toStrictEqual(expectedTsconfig);
 };
