@@ -11,5 +11,21 @@ export const W_OK = 2; // constants?.W_OK
 export const X_OK = 1; // constants?.X_OK
 
 export const FIND_UP_STOP = Symbol("findUpStop");
-
-export const INTERNAL_STRIP_JSON_REGEX = /"(?:[^"\\]|\\.)*"?|\/\/[^\r\n]*|\/\*(?:[^*]|\*[^/])*(?:\*\/)?/g;
+/**
+ * Regular expression for stripping comments from JSON.
+ * Matches:
+ * 1. Quoted strings: "example \"escaped\" string"
+ * 2. Single-line comments: // comment
+ * 3. Multi-line comments: /* comment *\/
+ *
+ * @example
+ * const json = `{
+ *   // comment
+ *   "key": "value" // comment
+ * }`;
+ * json.replace(INTERNAL_STRIP_JSON_REGEX, (match) => 
+ *   /^"/.test(match) ? match : ''
+ * );
+ * // Result: { "key": "value" }
+ */
+export const INTERNAL_STRIP_JSON_REGEX = /"(?:[^"\\]|\\.)*"|\/\/[^\r\n]*|\/\*(?:[^*]|\*[^/])*\*\//g;

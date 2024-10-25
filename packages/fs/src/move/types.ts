@@ -1,3 +1,5 @@
+type FilePermissions = number;
+
 export type Options = {
     /**
      * The working directory to find source files.
@@ -5,7 +7,7 @@ export type Options = {
      *
      * @default process.cwd()
      * */
-    cwd?: URL | string;
+    cwd?: NodeJS.PathLike;
 
     /**
      * [Permissions](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) for created directories.
@@ -14,7 +16,7 @@ export type Options = {
      *
      * @default 0o777
      * */
-    readonly directoryMode?: number;
+    readonly directoryMode?: FilePermissions;
 
     /**
      * Overwrite existing destination file.

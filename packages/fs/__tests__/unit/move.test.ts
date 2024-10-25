@@ -43,23 +43,20 @@ describe.each([
         expect.assertions(1);
 
         const exdevError = new Error("exdevError") as Error & { code: "EXDEV" };
-
         exdevError.code = "EXDEV";
 
         const originalRenameSync = fs.renameSync;
+        try {
+            vi.spyOn(fs, "renameSync").mockImplementation(() => {
+                throw exdevError;
+            });
 
-        vi.spyOn(fs, "renameSync").mockImplementation(() => {
-            throw exdevError;
-        });
-
-        const destination = temporaryFile();
-
-        await function_(distributionFile, destination);
-
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        expect(readFileSync(destination, "utf8")).toBe(fixtureFileContent);
-
-        fs.renameSync = originalRenameSync;
+            const destination = temporaryFile();
+            await function_(distributionFile, destination);
+            expect(readFileSync(destination, "utf8")).toBe(fixtureFileContent);
+        } finally {
+            fs.renameSync = originalRenameSync;
+        }
     });
 
     it("should throw an error if overwriting is not allowed", async () => {
@@ -88,7 +85,7 @@ describe.each([
     });
 
     it("should set the `directoryMode` option correctly", async () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const root = temporaryDirectory();
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -97,6 +94,9 @@ describe.each([
         const directoryMode = 0o700;
 
         await function_(distributionFile, destination, { directoryMode });
+
+        // Verify directory exists
+        expect(fs.existsSync(directory)).toBe(true);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = statSync(directory);

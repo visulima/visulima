@@ -33,11 +33,13 @@ import internalMoveFileSync from "./utils/internal-move-file-sync";
  * ```
  */
 export const move = async (sourcePath: string, destinationPath: string, options: Options = {}): Promise<void> => {
-    const internalOptions = { overwrite: true, validateDirectory: false, ...options };
-
-    internalOptions.cwd = internalOptions.cwd ? toPath(internalOptions.cwd) : baseCwd();
-
-    await internalMoveFile(sourcePath, destinationPath, internalOptions as InternalOptions);
+    const internalOptions: InternalOptions = {
+        overwrite: true,
+        validateDirectory: false,
+        ...options,
+        cwd: options.cwd ? toPath(options.cwd) : baseCwd(),
+    };
+    await internalMoveFile(sourcePath, destinationPath, internalOptions);
 };
 
 /**
@@ -46,7 +48,7 @@ export const move = async (sourcePath: string, destinationPath: string, options:
  * @param sourcePath - The file you want to move.
  * @param destinationPath - Where you want the file moved.
  * @param options - Configuration options.
- * @returns A `Promise` that resolves when the file has been moved.
+ * @returns {void} Nothing is returned.
  *
  * @example
  * ```
@@ -96,8 +98,6 @@ export const rename = async (source: string, destination: string, options?: Opti
  * @param options - Configuration options.
  * @returns A `Promise` that resolves when the file has been renamed.
  *
- * @example
- * ```
  * @example
  * ```
  * import {renameFileSync} from '@visulima/fs';

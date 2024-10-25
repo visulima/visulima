@@ -147,14 +147,24 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeFile") {
-            // @ts-expect-error - this is just for tests
-            // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(writeFile(path, content)).rejects.toThrow("Path must be a non-empty string or URL.");
-        } else {
-            // @ts-expect-error - this is just for tests
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => writeFileSync(path, content)).toThrow("Path must be a non-empty string or URL.");
-        }
+            expect.assertions(4);
+    
+            const content = "Hello, World!";
+            const invalidPaths = [null, "", undefined, new URL("invalid://test")] as const;
+
+            if (name === "writeFile") {
+                for (const path of invalidPaths) {
+                    // @ts-expect-error - testing invalid inputs
+                    await expect(writeFile(path, content))
+                        .rejects.toThrow("Path must be a non-empty string or URL.");
+                }
+            } else {
+                for (const path of invalidPaths) {
+                    // @ts-expect-error - testing invalid inputs
+                    expect(() => writeFileSync(path, content))
+                        .toThrow("Path must be a non-empty string or URL.");
+                }
+            }
     });
 
     it("should throw error if content is invalid", async () => {
