@@ -147,9 +147,11 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeFile") {
+            // @ts-expect-error - this is just for tests
             // eslint-disable-next-line vitest/no-conditional-expect
             await expect(writeFile(path, content)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
+            // @ts-expect-error - this is just for tests
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => writeFileSync(path, content)).toThrow("Path must be a non-empty string or URL.");
         }
@@ -163,9 +165,11 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeFile") {
+            // @ts-expect-error - this is just for tests
             // eslint-disable-next-line vitest/no-conditional-expect
             await expect(writeFile(path, content)).rejects.toThrow("File contents must be a string, ArrayBuffer, or ArrayBuffer view.");
         } else {
+            // @ts-expect-error - this is just for tests
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => writeFileSync(path, content)).toThrow("File contents must be a string, ArrayBuffer, or ArrayBuffer view.");
         }

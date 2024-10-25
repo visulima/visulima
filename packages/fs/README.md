@@ -433,6 +433,3754 @@ Type: `string`
 
 The printable section of the JSON which produces the error.
 
+## Api Docs
+
+<!-- TYPEDOC -->
+
+# error
+
+## Classes
+
+### AlreadyExistsError
+
+Error thrown when file already exists.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new AlreadyExistsError()
+
+```ts
+new AlreadyExistsError(message): AlreadyExistsError
+```
+
+Creates a new instance.
+
+###### Parameters
+
+• **message**: `string`
+
+The error message.
+
+###### Returns
+
+[`AlreadyExistsError`](error.md#alreadyexistserror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/already-exists-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/already-exists-error.ts#L9)
+
+#### Accessors
+
+##### code
+
+```ts
+get code(): string
+```
+
+```ts
+set code(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Defined in
+
+[packages/fs/src/error/already-exists-error.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/already-exists-error.ts#L14)
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/already-exists-error.ts:24](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/already-exists-error.ts#L24)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+***
+
+### DirectoryError
+
+Error thrown when an operation is not allowed on a directory.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new DirectoryError()
+
+```ts
+new DirectoryError(message): DirectoryError
+```
+
+Creates a new instance.
+
+###### Parameters
+
+• **message**: `string`
+
+The error message.
+
+###### Returns
+
+[`DirectoryError`](error.md#directoryerror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/directory-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/directory-error.ts#L9)
+
+#### Accessors
+
+##### code
+
+```ts
+get code(): string
+```
+
+```ts
+set code(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Defined in
+
+[packages/fs/src/error/directory-error.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/directory-error.ts#L14)
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/directory-error.ts:24](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/directory-error.ts#L24)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+***
+
+### NotEmptyError
+
+Error thrown when a directory is not empty.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new NotEmptyError()
+
+```ts
+new NotEmptyError(message): NotEmptyError
+```
+
+Creates a new instance.
+
+###### Parameters
+
+• **message**: `string`
+
+The error message.
+
+###### Returns
+
+[`NotEmptyError`](error.md#notemptyerror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/not-empty-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-empty-error.ts#L9)
+
+#### Accessors
+
+##### code
+
+```ts
+get code(): string
+```
+
+```ts
+set code(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Defined in
+
+[packages/fs/src/error/not-empty-error.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-empty-error.ts#L14)
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/not-empty-error.ts:24](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-empty-error.ts#L24)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+***
+
+### NotFoundError
+
+Error thrown when a file or directory is not found.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new NotFoundError()
+
+```ts
+new NotFoundError(message): NotFoundError
+```
+
+Creates a new instance.
+
+###### Parameters
+
+• **message**: `string`
+
+The error message.
+
+###### Returns
+
+[`NotFoundError`](error.md#notfounderror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/not-found-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-found-error.ts#L9)
+
+#### Accessors
+
+##### code
+
+```ts
+get code(): string
+```
+
+```ts
+set code(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Defined in
+
+[packages/fs/src/error/not-found-error.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-found-error.ts#L14)
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/not-found-error.ts:24](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/not-found-error.ts#L24)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+***
+
+### PermissionError
+
+Error thrown when an operation is not permitted.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new PermissionError()
+
+```ts
+new PermissionError(message): PermissionError
+```
+
+Creates a new instance.
+
+###### Parameters
+
+• **message**: `string`
+
+The error message.
+
+###### Returns
+
+[`PermissionError`](error.md#permissionerror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/permission-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/permission-error.ts#L9)
+
+#### Accessors
+
+##### code
+
+```ts
+get code(): string
+```
+
+```ts
+set code(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Defined in
+
+[packages/fs/src/error/permission-error.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/permission-error.ts#L14)
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/permission-error.ts:24](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/permission-error.ts#L24)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+***
+
+### WalkError
+
+Error thrown in walk or walkSync during iteration.
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new WalkError()
+
+```ts
+new WalkError(cause, root): WalkError
+```
+
+Constructs a new instance.
+
+###### Parameters
+
+• **cause**: `unknown`
+
+• **root**: `string`
+
+###### Returns
+
+[`WalkError`](error.md#walkerror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/walk-error.ts:12](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/walk-error.ts#L12)
+
+#### Accessors
+
+##### name
+
+```ts
+get name(): string
+```
+
+```ts
+set name(_name): void
+```
+
+###### Parameters
+
+• **\_name**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/walk-error.ts:21](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/walk-error.ts#L21)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### message
+
+```ts
+message: string;
+```
+
+###### Inherited from
+
+`Error.message`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+##### root
+
+```ts
+root: string;
+```
+
+File path of the root that's being walked.
+
+###### Defined in
+
+[packages/fs/src/error/walk-error.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/walk-error.ts#L9)
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+## References
+
+### JSONError
+
+Re-exports [JSONError](utils.md#jsonerror)
+# index
+
+## Functions
+
+### collect()
+
+```ts
+function collect(directory, options): Promise<string[]>
+```
+
+#### Parameters
+
+• **directory**: `string`
+
+• **options**: [`WalkOptions`](index.md#walkoptions) = `{}`
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+#### Defined in
+
+[packages/fs/src/find/collect.ts:4](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/collect.ts#L4)
+
+***
+
+### collectSync()
+
+```ts
+function collectSync(directory, options): string[]
+```
+
+#### Parameters
+
+• **directory**: `string`
+
+• **options**: [`WalkOptions`](index.md#walkoptions) = `{}`
+
+#### Returns
+
+`string`[]
+
+#### Defined in
+
+[packages/fs/src/find/collect-sync.ts:4](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/collect-sync.ts#L4)
+
+***
+
+### detect()
+
+```ts
+function detect(content): "\n" | "\r\n"
+```
+
+Detect the EOL character for string input.
+Returns null if no newline.
+
+#### Parameters
+
+• **content**: `string`
+
+#### Returns
+
+"\n" \| "\r\n"
+
+#### Defined in
+
+[packages/fs/src/eol.ts:20](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L20)
+
+***
+
+### emptyDir()
+
+```ts
+function emptyDir(dir, options?): Promise<void>
+```
+
+Ensures that a directory is empty.
+Deletes directory contents if the directory is not empty.
+If the directory does not exist, it is created.
+The directory itself is not deleted.
+
+#### Parameters
+
+• **dir**: `string` \| `URL`
+
+• **options?**: [`EmptyDirOptions`](index.md#emptydiroptions)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/remove/empty-dir.ts:19](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/empty-dir.ts#L19)
+
+***
+
+### emptyDirSync()
+
+```ts
+function emptyDirSync(dir, options?): void
+```
+
+Ensures that a directory is empty.
+Deletes directory contents if the directory is not empty.
+If the directory does not exist, it is created.
+The directory itself is not deleted.
+
+#### Parameters
+
+• **dir**: `string` \| `URL`
+
+• **options?**: [`EmptyDirOptions`](index.md#emptydiroptions)
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/remove/empty-dir-sync.ts:18](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/empty-dir-sync.ts#L18)
+
+***
+
+### ensureDir()
+
+```ts
+function ensureDir(directory): Promise<void>
+```
+
+Ensures that the directory exists.
+If the directory structure does not exist, it is created. Like mkdir -p.
+
+#### Parameters
+
+• **directory**: `string` \| `URL`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-dir.ts:12](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-dir.ts#L12)
+
+***
+
+### ensureDirSync()
+
+```ts
+function ensureDirSync(directory): void
+```
+
+Ensures that the directory exists.
+If the directory structure does not exist, it is created. Like mkdir -p.
+
+#### Parameters
+
+• **directory**: `string` \| `URL`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-dir-sync.ts:12](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-dir-sync.ts#L12)
+
+***
+
+### ensureFile()
+
+```ts
+function ensureFile(filePath): Promise<void>
+```
+
+Ensures that the file exists.
+If the file that is requested to be created is in directories that do not exist,
+these directories are created. If the file already exists, it is NOTMODIFIED.
+
+#### Parameters
+
+• **filePath**: `string` \| `URL`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-file.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-file.ts#L16)
+
+***
+
+### ensureFileSync()
+
+```ts
+function ensureFileSync(filePath): void
+```
+
+Ensures that the file exists.
+If the file that is requested to be created is in directories that do not exist,
+these directories are created. If the file already exists, it is NOTMODIFIED.
+
+#### Parameters
+
+• **filePath**: `string` \| `URL`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-file-sync.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-file-sync.ts#L16)
+
+***
+
+### ensureLink()
+
+```ts
+function ensureLink(source, destination): Promise<void>
+```
+
+Ensures that the hard link exists.
+If the directory structure does not exist, it is created.
+
+#### Parameters
+
+• **source**: `string` \| `URL`
+
+• **destination**: `string` \| `URL`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-link.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-link.ts#L15)
+
+***
+
+### ensureLinkSync()
+
+```ts
+function ensureLinkSync(source, destination): void
+```
+
+Ensures that the hard link exists.
+If the directory structure does not exist, it is created.
+
+#### Parameters
+
+• **source**: `string` \| `URL`
+
+• **destination**: `string` \| `URL`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-link-sync.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-link-sync.ts#L15)
+
+***
+
+### ensureSymlink()
+
+```ts
+function ensureSymlink(
+   target, 
+   linkName, 
+type?): Promise<void>
+```
+
+Ensures that the link exists, and points to a valid file.
+If the directory structure does not exist, it is created.
+If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+
+#### Parameters
+
+• **target**: `string` \| `URL`
+
+the source file path
+
+• **linkName**: `string` \| `URL`
+
+the destination link path
+
+• **type?**: `Type`
+
+the type of the symlink, or null to use automatic detection
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A void promise that resolves once the link exists.
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-symlink.ts:28](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-symlink.ts#L28)
+
+***
+
+### ensureSymlinkSync()
+
+```ts
+function ensureSymlinkSync(
+   target, 
+   linkName, 
+   type?): void
+```
+
+Ensures that the link exists, and points to a valid file.
+If the directory structure does not exist, it is created.
+If the link already exists, it is not modified but error is thrown if it is not point to the given target.
+
+#### Parameters
+
+• **target**: `string` \| `URL`
+
+the source file path
+
+• **linkName**: `string` \| `URL`
+
+the destination link path
+
+• **type?**: `Type`
+
+the type of the symlink, or null to use automatic detection
+
+#### Returns
+
+`void`
+
+A void.
+
+#### Defined in
+
+[packages/fs/src/ensure/ensure-symlink-sync.ts:28](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-symlink-sync.ts#L28)
+
+***
+
+### findUp()
+
+```ts
+function findUp(name, options): Promise<string>
+```
+
+#### Parameters
+
+• **name**: [`FindUpName`](index.md#findupname)
+
+• **options**: [`FindUpOptions`](index.md#findupoptions) = `{}`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+#### Defined in
+
+[packages/fs/src/find/find-up.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/find-up.ts#L11)
+
+***
+
+### findUpSync()
+
+```ts
+function findUpSync(name, options): string
+```
+
+#### Parameters
+
+• **name**: [`FindUpNameSync`](index.md#findupnamesync)
+
+• **options**: [`FindUpOptions`](index.md#findupoptions) = `{}`
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[packages/fs/src/find/find-up-sync.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/find-up-sync.ts#L11)
+
+***
+
+### format()
+
+```ts
+function format(content, eol): string
+```
+
+Format the file to the targeted EOL.
+
+#### Parameters
+
+• **content**: `string`
+
+• **eol**: "\n" \| "\r\n"
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[packages/fs/src/eol.ts:36](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L36)
+
+***
+
+### isAccessible()
+
+```ts
+function isAccessible(path, mode?): Promise<boolean>
+```
+
+Returns a Promise that resolves to a boolean indicating if the path is accessible or not.
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **mode?**: `number`
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Defined in
+
+[packages/fs/src/is-accessible.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/is-accessible.ts#L9)
+
+***
+
+### isAccessibleSync()
+
+```ts
+function isAccessibleSync(path, mode?): boolean
+```
+
+Returns a boolean indicating if the path is accessible or not.
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **mode?**: `number`
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/fs/src/is-accessible-sync.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/is-accessible-sync.ts#L9)
+
+***
+
+### move()
+
+```ts
+function move(
+   sourcePath, 
+   destinationPath, 
+options): Promise<void>
+```
+
+Move a file asynchronously.
+
+#### Parameters
+
+• **sourcePath**: `string`
+
+The file you want to move.
+
+• **destinationPath**: `string`
+
+Where you want the file moved.
+
+• **options**: [`MoveOptions`](index.md#moveoptions) = `{}`
+
+Configuration options.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A `Promise` that resolves when the file has been moved.
+
+#### Example
+
+```
+import { moveFile } from '@visulima/fs';
+
+await moveFile('source/unicorn.png', 'destination/unicorn.png');
+console.log('The file has been moved');
+```
+
+#### Defined in
+
+[packages/fs/src/move/index.ts:25](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L25)
+
+***
+
+### moveSync()
+
+```ts
+function moveSync(
+   sourcePath, 
+   destinationPath, 
+   options?): void
+```
+
+Move a file synchronously.
+
+#### Parameters
+
+• **sourcePath**: `string`
+
+The file you want to move.
+
+• **destinationPath**: `string`
+
+Where you want the file moved.
+
+• **options?**: [`MoveOptions`](index.md#moveoptions)
+
+Configuration options.
+
+#### Returns
+
+`void`
+
+A `Promise` that resolves when the file has been moved.
+
+#### Example
+
+```
+import { moveFileSync } from '@visulima/fs';
+
+moveFileSync('source/unicorn.png', 'destination/unicorn.png');
+console.log('The file has been moved');
+```
+
+#### Defined in
+
+[packages/fs/src/move/index.ts:49](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L49)
+
+***
+
+### readFile()
+
+```ts
+function readFile<O>(path, options?): Promise<ContentType<O>>
+```
+
+#### Type Parameters
+
+• **O** *extends* [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: `O`
+
+#### Returns
+
+`Promise`\<`ContentType`\<`O`\>\>
+
+#### Defined in
+
+[packages/fs/src/read/read-file.ts:20](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-file.ts#L20)
+
+***
+
+### readFileSync()
+
+```ts
+function readFileSync<O>(path, options?): ContentType<O>
+```
+
+#### Type Parameters
+
+• **O** *extends* [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: `O`
+
+#### Returns
+
+`ContentType`\<`O`\>
+
+#### Defined in
+
+[packages/fs/src/read/read-file-sync.ts:18](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-file-sync.ts#L18)
+
+***
+
+### readJson()
+
+#### readJson(path, options)
+
+```ts
+function readJson<T>(path, options?): Promise<T>
+```
+
+##### Type Parameters
+
+• **T** *extends* `JsonValue`
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: [`ReadJsonOptions`](index.md#readjsonoptions)
+
+##### Returns
+
+`Promise`\<`T`\>
+
+##### Defined in
+
+[packages/fs/src/read/read-json.ts:8](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json.ts#L8)
+
+#### readJson(path, reviver, options)
+
+```ts
+function readJson<T>(
+   path, 
+   reviver, 
+options?): Promise<T>
+```
+
+##### Type Parameters
+
+• **T** *extends* `JsonValue`
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **reviver**
+
+• **options?**: [`ReadJsonOptions`](index.md#readjsonoptions)
+
+##### Returns
+
+`Promise`\<`T`\>
+
+##### Defined in
+
+[packages/fs/src/read/read-json.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json.ts#L10)
+
+***
+
+### readJsonSync()
+
+#### readJsonSync(path, options)
+
+```ts
+function readJsonSync<T>(path, options?): T
+```
+
+##### Type Parameters
+
+• **T** *extends* `JsonValue`
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: [`ReadJsonOptions`](index.md#readjsonoptions)
+
+##### Returns
+
+`T`
+
+##### Defined in
+
+[packages/fs/src/read/read-json-sync.ts:8](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json-sync.ts#L8)
+
+#### readJsonSync(path, reviver, options)
+
+```ts
+function readJsonSync<T>(
+   path, 
+   reviver, 
+   options?): T
+```
+
+##### Type Parameters
+
+• **T** *extends* `JsonValue`
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **reviver**
+
+• **options?**: [`ReadJsonOptions`](index.md#readjsonoptions)
+
+##### Returns
+
+`T`
+
+##### Defined in
+
+[packages/fs/src/read/read-json-sync.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json-sync.ts#L10)
+
+***
+
+### readYaml()
+
+#### readYaml(path, options)
+
+```ts
+function readYaml<R>(path, options?): Promise<R>
+```
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: `ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`Promise`\<`R`\>
+
+##### Defined in
+
+[packages/fs/src/read/read-yaml.ts:6](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml.ts#L6)
+
+#### readYaml(path, reviver, options)
+
+```ts
+function readYaml<R>(
+   path, 
+   reviver?, 
+options?): Promise<R>
+```
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **reviver?**: `YamlReviver`
+
+• **options?**: `ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`Promise`\<`R`\>
+
+##### Defined in
+
+[packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml.ts#L7)
+
+***
+
+### readYamlSync()
+
+#### readYamlSync(path, options)
+
+```ts
+function readYamlSync<R>(path, options?): R
+```
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options?**: `ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`R`
+
+##### Defined in
+
+[packages/fs/src/read/read-yaml-sync.ts:6](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml-sync.ts#L6)
+
+#### readYamlSync(path, reviver, options)
+
+```ts
+function readYamlSync<R>(
+   path, 
+   reviver?, 
+   options?): R
+```
+
+##### Type Parameters
+
+• **R** = `Record`\<`string`, `unknown`\>
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **reviver?**: `YamlReviver`
+
+• **options?**: `ReadYamlOptions`\<`"brotli"` \| `"gzip"` \| `"none"`\>
+
+##### Returns
+
+`R`
+
+##### Defined in
+
+[packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml-sync.ts#L7)
+
+***
+
+### remove()
+
+```ts
+function remove(path, options): Promise<void>
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options** = `{}`
+
+• **options.maxRetries?**: `number`
+
+If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
+`EPERM` error is encountered, Node.js will retry the operation with a linear
+backoff wait of `retryDelay` ms longer on each try. This option represents the
+number of retries. This option is ignored if the `recursive` option is not
+`true`.
+
+**Default**
+
+```ts
+0
+```
+
+• **options.retryDelay?**: `number`
+
+The amount of time in milliseconds to wait between retries.
+This option is ignored if the `recursive` option is not `true`.
+
+**Default**
+
+```ts
+100
+```
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/remove/remove.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/remove.ts#L5)
+
+***
+
+### removeSync()
+
+```ts
+function removeSync(path, options): void
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **options** = `{}`
+
+• **options.maxRetries?**: `number`
+
+If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
+`EPERM` error is encountered, Node.js will retry the operation with a linear
+backoff wait of `retryDelay` ms longer on each try. This option represents the
+number of retries. This option is ignored if the `recursive` option is not
+`true`.
+
+**Default**
+
+```ts
+0
+```
+
+• **options.retryDelay?**: `number`
+
+The amount of time in milliseconds to wait between retries.
+This option is ignored if the `recursive` option is not `true`.
+
+**Default**
+
+```ts
+100
+```
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/remove/remove-sync.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/remove-sync.ts#L5)
+
+***
+
+### rename()
+
+```ts
+function rename(
+   source, 
+   destination, 
+options?): Promise<void>
+```
+
+Rename a file asynchronously.
+
+#### Parameters
+
+• **source**: `string`
+
+The file you want to rename.
+
+• **destination**: `string`
+
+The name of the renamed file.
+
+• **options?**: [`MoveOptions`](index.md#moveoptions)
+
+Configuration options.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A `Promise` that resolves when the file has been renamed.
+
+#### Example
+
+```
+import { renameFile } from '@visulima/fs';
+
+await renameFile('unicorn.png', 'unicorns.png', {cwd: 'source'});
+console.log('The file has been renamed');
+```
+
+#### Defined in
+
+[packages/fs/src/move/index.ts:73](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L73)
+
+***
+
+### renameSync()
+
+```ts
+function renameSync(
+   source, 
+   destination, 
+   options?): void
+```
+
+Rename a file synchronously.
+
+#### Parameters
+
+• **source**: `string`
+
+The file you want to rename.
+
+• **destination**: `string`
+
+The name of the renamed file.
+
+• **options?**: [`MoveOptions`](index.md#moveoptions)
+
+Configuration options.
+
+#### Returns
+
+`void`
+
+A `Promise` that resolves when the file has been renamed.
+
+#### Example
+
+```
+@example
+```
+import {renameFileSync} from '@visulima/fs';
+
+renameFileSync('unicorn.png', 'unicorns.png', {cwd: 'source'});
+console.log('The file has been renamed');
+```
+
+#### Defined in
+
+[packages/fs/src/move/index.ts:99](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L99)
+
+***
+
+### walk()
+
+```ts
+function walk(directory, __namedParameters): AsyncIterableIterator<WalkEntry>
+```
+
+Walks the file tree rooted at root, yielding each file or directory in the
+tree filtered according to the given options.
+Options:
+- maxDepth?: number = Infinity;
+- includeFiles?: boolean = true;
+- includeDirs?: boolean = true;
+- includeSymlinks?: boolean = true;
+- followSymlinks?: boolean = false;
+- extensions?: string[];
+- match?: string | ReadonlyArray<string>;
+- skip?: string | ReadonlyArray<string>;
+
+#### Parameters
+
+• **directory**: `string` \| `URL`
+
+• **\_\_namedParameters**: [`WalkOptions`](index.md#walkoptions) = `{}`
+
+#### Returns
+
+`AsyncIterableIterator`\<[`WalkEntry`](index.md#walkentry)\>
+
+#### Defined in
+
+[packages/fs/src/find/walk.ts:52](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/walk.ts#L52)
+
+***
+
+### walkSync()
+
+```ts
+function walkSync(directory, __namedParameters): IterableIterator<WalkEntry>
+```
+
+Same as [`walk`](index.md#walk) but uses synchronous ops
+
+#### Parameters
+
+• **directory**: `string` \| `URL`
+
+• **\_\_namedParameters**: [`WalkOptions`](index.md#walkoptions) = `{}`
+
+#### Returns
+
+`IterableIterator`\<[`WalkEntry`](index.md#walkentry)\>
+
+#### Defined in
+
+[packages/fs/src/find/walk-sync.ts:40](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/walk-sync.ts#L40)
+
+***
+
+### writeFile()
+
+```ts
+function writeFile(
+   path, 
+   content, 
+options?): Promise<void>
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **content**: `string` \| `ArrayBuffer` \| `ArrayBufferView`
+
+• **options?**: [`WriteFileOptions`](index.md#writefileoptions)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/write/write-file.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-file.ts#L15)
+
+***
+
+### writeFileSync()
+
+```ts
+function writeFileSync(
+   path, 
+   content, 
+   options?): void
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **content**: `string` \| `ArrayBuffer` \| `ArrayBufferView`
+
+• **options?**: [`WriteFileOptions`](index.md#writefileoptions)
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/write/write-file-sync.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-file-sync.ts#L15)
+
+***
+
+### writeJson()
+
+```ts
+function writeJson(
+   path, 
+   data, 
+options): Promise<void>
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `unknown`
+
+• **options**: [`WriteJsonOptions`](index.md#writejsonoptions) = `{}`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[packages/fs/src/write/write-json.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-json.ts#L11)
+
+***
+
+### writeJsonSync()
+
+```ts
+function writeJsonSync(
+   path, 
+   data, 
+   options): void
+```
+
+#### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `unknown`
+
+• **options**: [`WriteJsonOptions`](index.md#writejsonoptions) = `{}`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/write/write-json-sync.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-json-sync.ts#L11)
+
+***
+
+### writeYaml()
+
+#### writeYaml(path, data, options)
+
+```ts
+function writeYaml(
+   path, 
+   data, 
+options?): Promise<void>
+```
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `any`
+
+• **options?**: `Options`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+##### Defined in
+
+[packages/fs/src/write/write-yaml.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-yaml.ts#L10)
+
+#### writeYaml(path, data, replacer, options)
+
+```ts
+function writeYaml(
+   path, 
+   data, 
+   replacer?, 
+options?): Promise<void>
+```
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `any`
+
+• **replacer?**: [`JsonReplacer`](index.md#jsonreplacer)
+
+• **options?**: `string` \| `number` \| `Options`
+
+##### Returns
+
+`Promise`\<`void`\>
+
+##### Defined in
+
+[packages/fs/src/write/write-yaml.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-yaml.ts#L16)
+
+***
+
+### writeYamlSync()
+
+#### writeYamlSync(path, data, options)
+
+```ts
+function writeYamlSync(
+   path, 
+   data, 
+   options?): void
+```
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `any`
+
+• **options?**: `Options`
+
+##### Returns
+
+`void`
+
+##### Defined in
+
+[packages/fs/src/write/write-yaml-sync.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-yaml-sync.ts#L10)
+
+#### writeYamlSync(path, data, replacer, options)
+
+```ts
+function writeYamlSync(
+   path, 
+   data, 
+   replacer?, 
+   options?): void
+```
+
+##### Parameters
+
+• **path**: `string` \| `URL`
+
+• **data**: `any`
+
+• **replacer?**: [`JsonReplacer`](index.md#jsonreplacer)
+
+• **options?**: `string` \| `number` \| `Options`
+
+##### Returns
+
+`void`
+
+##### Defined in
+
+[packages/fs/src/write/write-yaml-sync.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-yaml-sync.ts#L16)
+
+## Variables
+
+### CRLF
+
+```ts
+const CRLF: "\r\n";
+```
+
+End-of-line character for Windows platforms.
+
+#### Defined in
+
+[packages/fs/src/eol.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L9)
+
+***
+
+### EOL
+
+```ts
+const EOL: "\n" | "\r\n";
+```
+
+End-of-line character evaluated for the current platform.
+
+#### Defined in
+
+[packages/fs/src/eol.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L14)
+
+***
+
+### F\_OK
+
+```ts
+const F_OK: 0 = 0;
+```
+
+Is the path visible to the calling process?
+
+#### Defined in
+
+[packages/fs/src/constants.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L2)
+
+***
+
+### FIND\_UP\_STOP
+
+```ts
+const FIND_UP_STOP: typeof FIND_UP_STOP;
+```
+
+#### Defined in
+
+[packages/fs/src/constants.ts:13](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L13)
+
+***
+
+### LF
+
+```ts
+const LF: "\n";
+```
+
+End-of-line character for POSIX platforms such as macOS and Linux.
+
+#### Defined in
+
+[packages/fs/src/eol.ts:6](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L6)
+
+***
+
+### R\_OK
+
+```ts
+const R_OK: 4 = 4;
+```
+
+Is the path readable to the calling process?
+
+#### Defined in
+
+[packages/fs/src/constants.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L5)
+
+***
+
+### W\_OK
+
+```ts
+const W_OK: 2 = 2;
+```
+
+Is the path writable to the calling process?
+
+#### Defined in
+
+[packages/fs/src/constants.ts:8](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L8)
+
+***
+
+### X\_OK
+
+```ts
+const X_OK: 1 = 1;
+```
+
+Is the path executable to the calling process?
+
+#### Defined in
+
+[packages/fs/src/constants.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L11)
+
+## Interfaces
+
+### WalkEntry
+
+#### Extends
+
+- `Pick`\<`Dirent`, `"isDirectory"` \| `"isFile"` \| `"isSymbolicLink"` \| `"name"`\>
+
+#### Methods
+
+##### isDirectory()
+
+```ts
+isDirectory(): boolean
+```
+
+Returns `true` if the `fs.Dirent` object describes a file system
+directory.
+
+###### Returns
+
+`boolean`
+
+###### Since
+
+v10.10.0
+
+###### Inherited from
+
+`Pick.isDirectory`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:190
+
+##### isFile()
+
+```ts
+isFile(): boolean
+```
+
+Returns `true` if the `fs.Dirent` object describes a regular file.
+
+###### Returns
+
+`boolean`
+
+###### Since
+
+v10.10.0
+
+###### Inherited from
+
+`Pick.isFile`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:184
+
+##### isSymbolicLink()
+
+```ts
+isSymbolicLink(): boolean
+```
+
+Returns `true` if the `fs.Dirent` object describes a symbolic link.
+
+###### Returns
+
+`boolean`
+
+###### Since
+
+v10.10.0
+
+###### Inherited from
+
+`Pick.isSymbolicLink`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:205
+
+#### Properties
+
+##### name
+
+```ts
+name: string;
+```
+
+The file name that this `fs.Dirent` object refers to. The type of this
+value is determined by the `options.encoding` passed to readdir or readdirSync.
+
+###### Since
+
+v10.10.0
+
+###### Inherited from
+
+`Pick.name`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:222
+
+##### path
+
+```ts
+path: string;
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:57](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L57)
+
+***
+
+### WalkOptions
+
+#### Properties
+
+##### extensions?
+
+```ts
+optional extensions: string[];
+```
+
+List of file extensions used to filter entries.
+If specified, entries without the file extension specified by this option are excluded.
+
+###### Default
+
+```ts
+{undefined}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L15)
+
+##### followSymlinks?
+
+```ts
+optional followSymlinks: boolean;
+```
+
+Indicates whether symlinks should be resolved or not.
+
+###### Default
+
+```ts
+{false}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:20](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L20)
+
+##### includeDirs?
+
+```ts
+optional includeDirs: boolean;
+```
+
+Indicates whether directory entries should be included or not.
+
+###### Default
+
+```ts
+{true}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:25](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L25)
+
+##### includeFiles?
+
+```ts
+optional includeFiles: boolean;
+```
+
+Indicates whether file entries should be included or not.
+
+###### Default
+
+```ts
+{true}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:30](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L30)
+
+##### includeSymlinks?
+
+```ts
+optional includeSymlinks: boolean;
+```
+
+Indicates whether symlink entries should be included or not.
+This option is meaningful only if `followSymlinks` is set to `false`.
+
+###### Default
+
+```ts
+{true}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:36](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L36)
+
+##### match?
+
+```ts
+optional match: (string | RegExp)[];
+```
+
+List of regular expression or glob patterns used to filter entries.
+If specified, entries that do not match the patterns specified by this option are excluded.
+
+###### Default
+
+```ts
+{undefined}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:42](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L42)
+
+##### maxDepth?
+
+```ts
+optional maxDepth: number;
+```
+
+The maximum depth of the file tree to be walked recursively.
+
+###### Default
+
+```ts
+{Infinity}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:47](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L47)
+
+##### skip?
+
+```ts
+optional skip: (string | RegExp)[];
+```
+
+List of regular expression or glob patterns used to filter entries.
+If specified, entries matching the patterns specified by this option are excluded.
+
+###### Default
+
+```ts
+{undefined}
+```
+
+###### Defined in
+
+[packages/fs/src/types.ts:53](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L53)
+
+## Type Aliases
+
+### CodeFrameLocation
+
+```ts
+type CodeFrameLocation: object;
+```
+
+#### Type declaration
+
+##### column?
+
+```ts
+optional column: number;
+```
+
+##### line
+
+```ts
+line: number;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:91](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L91)
+
+***
+
+### EmptyDirOptions
+
+```ts
+type EmptyDirOptions: object;
+```
+
+#### Type declaration
+
+##### maxRetries?
+
+```ts
+optional maxRetries: number;
+```
+
+If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
+`EPERM` error is encountered, Node.js will retry the operation with a linear
+backoff wait of `retryDelay` ms longer on each try. This option represents the
+number of retries. This option is ignored if the `recursive` option is not
+`true`.
+
+###### Default
+
+```ts
+0
+```
+
+##### retryDelay?
+
+```ts
+optional retryDelay: number;
+```
+
+The amount of time in milliseconds to wait between retries.
+This option is ignored if the `recursive` option is not `true`.
+
+###### Default
+
+```ts
+100
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:186](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L186)
+
+***
+
+### FindUpName
+
+```ts
+type FindUpName: string[] | string | (directory) => FindUpNameFnResult;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:179](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L179)
+
+***
+
+### FindUpNameFnResult
+
+```ts
+type FindUpNameFnResult: PathLike | Promise<PathLike | typeof FIND_UP_STOP> | typeof FIND_UP_STOP | undefined;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:177](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L177)
+
+***
+
+### FindUpNameSync
+
+```ts
+type FindUpNameSync: string[] | string | (directory) => FindUpNameSyncFnResult;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:183](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L183)
+
+***
+
+### FindUpNameSyncFnResult
+
+```ts
+type FindUpNameSyncFnResult: PathLike | typeof FIND_UP_STOP | undefined;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:181](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L181)
+
+***
+
+### FindUpOptions
+
+```ts
+type FindUpOptions: object;
+```
+
+#### Type declaration
+
+##### allowSymlinks?
+
+```ts
+optional allowSymlinks: boolean;
+```
+
+##### cwd?
+
+```ts
+optional cwd: URL | string;
+```
+
+##### stopAt?
+
+```ts
+optional stopAt: URL | string;
+```
+
+##### type?
+
+```ts
+optional type: "directory" | "file";
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:170](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L170)
+
+***
+
+### JsonReplacer
+
+```ts
+type JsonReplacer: (number | string)[] | (this, key, value) => unknown | null;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:143](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L143)
+
+***
+
+### JsonReviver
+
+```ts
+type JsonReviver: Parameters<typeof JSON["parse"]>["1"];
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:89](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L89)
+
+***
+
+### MoveOptions
+
+```ts
+type MoveOptions: object;
+```
+
+#### Type declaration
+
+##### cwd?
+
+```ts
+optional cwd: URL | string;
+```
+
+The working directory to find source files.
+The source and destination path are relative to this.
+
+###### Default
+
+```ts
+process.cwd()
+```
+
+##### directoryMode?
+
+```ts
+readonly optional directoryMode: number;
+```
+
+[Permissions](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) for created directories.
+
+It has no effect on Windows.
+
+###### Default
+
+```ts
+0o777
+```
+
+##### overwrite?
+
+```ts
+readonly optional overwrite: boolean;
+```
+
+Overwrite existing destination file.
+
+###### Default
+
+```ts
+true
+```
+
+#### Defined in
+
+[packages/fs/src/move/types.ts:1](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/types.ts#L1)
+
+***
+
+### ReadFileEncoding
+
+```ts
+type ReadFileEncoding: 
+  | "ascii"
+  | "base64"
+  | "base64url"
+  | "hex"
+  | "latin1"
+  | "ucs-2"
+  | "ucs2"
+  | "utf-8"
+  | "utf-16le"
+  | "utf8"
+  | "utf16le";
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:61](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L61)
+
+***
+
+### ReadFileOptions\<C\>
+
+```ts
+type ReadFileOptions<C>: object;
+```
+
+#### Type Parameters
+
+• **C**
+
+#### Type declaration
+
+##### buffer?
+
+```ts
+optional buffer: boolean;
+```
+
+Return content as a Buffer. Default: `false`
+
+##### compression?
+
+```ts
+optional compression: C;
+```
+
+Compression method to decompress the file against. Default: `none`
+
+##### encoding?
+
+```ts
+optional encoding: ReadFileEncoding;
+```
+
+The encoding to use. Default: `utf8`
+
+###### See
+
+https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
+
+##### flag?
+
+```ts
+optional flag: number | string;
+```
+
+The flag used to open the file. Default: `r`
+
+#### Defined in
+
+[packages/fs/src/types.ts:63](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L63)
+
+***
+
+### ReadJsonOptions
+
+```ts
+type ReadJsonOptions: CodeFrameOptions & object;
+```
+
+#### Type declaration
+
+##### beforeParse()?
+
+```ts
+optional beforeParse: (source) => string;
+```
+
+###### Parameters
+
+• **source**: `string`
+
+###### Returns
+
+`string`
+
+#### Defined in
+
+[packages/fs/src/types.ts:104](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L104)
+
+***
+
+### WriteFileOptions
+
+```ts
+type WriteFileOptions: object;
+```
+
+#### Type declaration
+
+##### chown?
+
+```ts
+optional chown: object;
+```
+
+The group and user ID used to set the file ownership. Default: `undefined`
+
+##### chown.gid
+
+```ts
+gid: number;
+```
+
+##### chown.uid
+
+```ts
+uid: number;
+```
+
+##### encoding?
+
+```ts
+optional encoding: BufferEncoding | null;
+```
+
+The encoding to use. Default: `utf8`
+
+##### flag?
+
+```ts
+optional flag: string;
+```
+
+The flag used to write the file. Default: `w`
+
+##### mode?
+
+```ts
+optional mode: number;
+```
+
+The file mode (permission and sticky bits). Default: `0o666`
+
+##### overwrite?
+
+```ts
+optional overwrite: boolean;
+```
+
+Indicates whether the file should be overwritten if it already exists. Default: `false`
+
+##### recursive?
+
+```ts
+optional recursive: boolean;
+```
+
+Recursively create parent directories if needed. Default: `true`
+
+#### Defined in
+
+[packages/fs/src/types.ts:108](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L108)
+
+***
+
+### WriteJsonOptions
+
+```ts
+type WriteJsonOptions: WriteFileOptions & object;
+```
+
+#### Type declaration
+
+##### detectIndent?
+
+```ts
+optional detectIndent: boolean;
+```
+
+Detect indentation automatically if the file exists. Default: `false`
+
+##### indent?
+
+```ts
+optional indent: number | string;
+```
+
+The space used for pretty-printing.
+
+Pass in `undefined` for no formatting.
+
+##### replacer?
+
+```ts
+optional replacer: JsonReplacer;
+```
+
+Passed into `JSON.stringify`.
+
+##### stringify()?
+
+```ts
+optional stringify: (data, replacer, space) => string;
+```
+
+Override the default `JSON.stringify` method.
+
+###### Parameters
+
+• **data**: `unknown`
+
+• **replacer**: [`JsonReplacer`](index.md#jsonreplacer)
+
+• **space**: `number` \| `string` \| `undefined`
+
+###### Returns
+
+`string`
+
+#### Defined in
+
+[packages/fs/src/types.ts:146](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L146)
+
+***
+
+### YamlReplacer
+
+```ts
+type YamlReplacer: JsonReplacer;
+```
+
+#### Defined in
+
+[packages/fs/src/types.ts:144](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L144)
+# utils
+
+## Classes
+
+### JSONError
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### new JSONError()
+
+```ts
+new JSONError(message): JSONError
+```
+
+###### Parameters
+
+• **message**: `string`
+
+###### Returns
+
+[`JSONError`](utils.md#jsonerror)
+
+###### Overrides
+
+`Error.constructor`
+
+###### Defined in
+
+[packages/fs/src/error/json-error.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/json-error.ts#L11)
+
+#### Accessors
+
+##### message
+
+```ts
+get message(): string
+```
+
+```ts
+set message(message): void
+```
+
+###### Parameters
+
+• **message**: `string`
+
+###### Returns
+
+`string`
+
+###### Overrides
+
+`Error.message`
+
+###### Defined in
+
+[packages/fs/src/error/json-error.ts:21](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/json-error.ts#L21)
+
+#### Methods
+
+##### captureStackTrace()
+
+```ts
+static captureStackTrace(targetObject, constructorOpt?): void
+```
+
+Create .stack property on a target object
+
+###### Parameters
+
+• **targetObject**: `object`
+
+• **constructorOpt?**: `Function`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+`Error.captureStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+
+#### Properties
+
+##### cause?
+
+```ts
+optional cause: unknown;
+```
+
+###### Inherited from
+
+`Error.cause`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+
+##### codeFrame
+
+```ts
+codeFrame: string;
+```
+
+###### Defined in
+
+[packages/fs/src/error/json-error.ts:4](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/json-error.ts#L4)
+
+##### fileName
+
+```ts
+fileName: string;
+```
+
+###### Defined in
+
+[packages/fs/src/error/json-error.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/json-error.ts#L2)
+
+##### name
+
+```ts
+readonly name: "JSONError" = "JSONError";
+```
+
+###### Overrides
+
+`Error.name`
+
+###### Defined in
+
+[packages/fs/src/error/json-error.ts:7](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/error/json-error.ts#L7)
+
+##### stack?
+
+```ts
+optional stack: string;
+```
+
+###### Inherited from
+
+`Error.stack`
+
+###### Defined in
+
+node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+##### prepareStackTrace()?
+
+```ts
+static optional prepareStackTrace: (err, stackTraces) => any;
+```
+
+Optional override for formatting stack traces
+
+###### Parameters
+
+• **err**: `Error`
+
+• **stackTraces**: `CallSite`[]
+
+###### Returns
+
+`any`
+
+###### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+###### Inherited from
+
+`Error.prepareStackTrace`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+
+##### stackTraceLimit
+
+```ts
+static stackTraceLimit: number;
+```
+
+###### Inherited from
+
+`Error.stackTraceLimit`
+
+###### Defined in
+
+node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+
+## Functions
+
+### assertValidFileContents()
+
+```ts
+function assertValidFileContents(contents): void
+```
+
+#### Parameters
+
+• **contents**: `any`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/utils/assert-valid-file-contents.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/assert-valid-file-contents.ts#L2)
+
+***
+
+### assertValidFileOrDirectoryPath()
+
+```ts
+function assertValidFileOrDirectoryPath(fileOrDirectoryPath): void
+```
+
+#### Parameters
+
+• **fileOrDirectoryPath**: `any`
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/fs/src/utils/assert-valid-file-or-directory-path.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/assert-valid-file-or-directory-path.ts#L2)
+
+***
+
+### parseJson()
+
+#### parseJson(string, filename, options)
+
+```ts
+function parseJson<T>(
+   string, 
+   filename?, 
+   options?): T
+```
+
+##### Type Parameters
+
+• **T** = `JsonValue`
+
+##### Parameters
+
+• **string**: `string`
+
+• **filename?**: `string`
+
+• **options?**: `CodeFrameOptions`
+
+##### Returns
+
+`T`
+
+##### Defined in
+
+[packages/fs/src/utils/parse-json.ts:60](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/parse-json.ts#L60)
+
+#### parseJson(string, reviver, fileName, options)
+
+```ts
+function parseJson<T>(
+   string, 
+   reviver, 
+   fileName?, 
+   options?): T
+```
+
+##### Type Parameters
+
+• **T** = `JsonValue`
+
+##### Parameters
+
+• **string**: `string`
+
+• **reviver**
+
+• **fileName?**: `string`
+
+• **options?**: `CodeFrameOptions`
+
+##### Returns
+
+`T`
+
+##### Defined in
+
+[packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/parse-json.ts#L61)
+
+***
+
+### stripJsonComments()
+
+```ts
+function stripJsonComments(jsonString, __namedParameters): string
+```
+
+#### Parameters
+
+• **jsonString**: `string`
+
+• **\_\_namedParameters** = `{}`
+
+• **\_\_namedParameters.whitespace**: `boolean` = `true`
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[packages/fs/src/utils/strip-json-comments.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/strip-json-comments.ts#L5)
+
+***
+
+### toPath()
+
+```ts
+function toPath(urlOrPath): string
+```
+
+#### Parameters
+
+• **urlOrPath**: `string` \| `URL`
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+node\_modules/.pnpm/@visulima+path@1.1.1/node\_modules/@visulima/path/dist/utils.d.mts:7
+
+<!-- /TYPEDOC -->
+
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
