@@ -17,10 +17,10 @@ import resolveExtendsPath from "./utils/resolve-extends-path";
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
 
 const normalizePath = (path: string): string => {
-    // eslint-disable-next-line no-param-reassign
-    path = toNamespacedPath(path);
+    const namespacedPath = toNamespacedPath(path);
 
-    return isRelative(path) ? path : `./${path}`;
+    return isRelative(namespacedPath) ? namespacedPath : `./${namespacedPath}`;
+};
 };
 
 const filesProperties = ["files", "include", "exclude"] as const;
