@@ -32,7 +32,8 @@ const internalMoveFileSync = (sourcePath: string, destinationPath: string, { cwd
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         renameSync(sourcePath, destinationPath);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: NodeJS.ErrnoException) {
+    } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (error.code === "EXDEV") {
             copyFileSync(sourcePath, destinationPath);
             // eslint-disable-next-line security/detect-non-literal-fs-filename

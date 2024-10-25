@@ -11,6 +11,8 @@ export const W_OK = 2; // constants?.W_OK
 export const X_OK = 1; // constants?.X_OK
 
 export const FIND_UP_STOP = Symbol("findUpStop");
+
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Regular expression for stripping comments from JSON.
  * Matches:
@@ -23,7 +25,7 @@ export const FIND_UP_STOP = Symbol("findUpStop");
  *   // comment
  *   "key": "value" // comment
  * }`;
- * json.replace(INTERNAL_STRIP_JSON_REGEX, (match) => 
+ * json.replace(INTERNAL_STRIP_JSON_REGEX, (match) =>
  *   /^"/.test(match) ? match : ''
  * );
  * // Result: { "key": "value" }

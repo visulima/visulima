@@ -1,4 +1,5 @@
-import fs, { readFileSync, statSync } from "node:fs";
+// @ts-expect-error - this is just for tests
+import fs, { existsSync, readFileSync, statSync } from "node:fs";
 import { rm, writeFile } from "node:fs/promises";
 
 import { dirname, join, resolve } from "@visulima/path";
@@ -52,7 +53,10 @@ describe.each([
             });
 
             const destination = temporaryFile();
+
             await function_(distributionFile, destination);
+
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             expect(readFileSync(destination, "utf8")).toBe(fixtureFileContent);
         } finally {
             fs.renameSync = originalRenameSync;
@@ -96,7 +100,8 @@ describe.each([
         await function_(distributionFile, destination, { directoryMode });
 
         // Verify directory exists
-        expect(fs.existsSync(directory)).toBe(true);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        expect(existsSync(directory)).toBeTruthy();
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = statSync(directory);
@@ -149,8 +154,8 @@ describe.each([
             await function_(file, renamedFile);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.message).toBe("`source` and `destination` must be in the same directory");
+            // eslint-disable-next-line vitest/no-conditional-expect,@typescript-eslint/restrict-template-expressions
+            expect(error.message).toBe(`Source directory "${directory}" does not match destination directory "${resolve(directory, "dir2")}"`);
         }
     });
 });

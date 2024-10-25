@@ -1,3 +1,5 @@
+import type { PathLike } from "node:fs";
+
 type FilePermissions = number;
 
 export type Options = {
@@ -7,7 +9,7 @@ export type Options = {
      *
      * @default process.cwd()
      * */
-    cwd?: NodeJS.PathLike;
+    cwd?: PathLike;
 
     /**
      * [Permissions](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) for created directories.
