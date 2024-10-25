@@ -13,7 +13,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const file = join(__dirname, "..", "..", "tsconfig.json");
 const directory = __dirname;
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["isAccessible", isAccessible],

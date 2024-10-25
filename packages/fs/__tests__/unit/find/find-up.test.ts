@@ -9,8 +9,9 @@ import { FIND_UP_STOP } from "../../../src/constants";
 import ensureSymlinkSync from "../../../src/ensure/ensure-symlink-sync";
 import findUp from "../../../src/find/find-up";
 import findUpSync from "../../../src/find/find-up-sync";
+import type { FindUpOptions } from "../../../src/types";
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -91,7 +92,7 @@ describe.each([
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(join(absolute.packageDirectory, testName.fixtureDirectory));
+        expect(foundPath).toStrictEqual(join(absolute.packageDirectory as string, testName.fixtureDirectory));
     });
 
     it("should find explicit type file", async () => {
@@ -145,7 +146,7 @@ describe.each([
     it("should handle absolute directory", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(absolute.barDir, { cwd: tempDir, type: "directory" });
+        let foundPath = function_(absolute.barDir as string, { cwd: tempDir, type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -160,7 +161,7 @@ describe.each([
         ["somenonexistentfile.js"],
         [resolve("somenonexistentfile.js")], // absolute path
         [testName.baz, { cwd: relative.barDir, stopAt: absolute.fooDir }], // cousin file, custom cwd with stopAt
-    ])("should return a undefined if no %s file is found", async (path, options) => {
+    ])("should return a undefined if no %s file is found", async (path: string, options?: FindUpOptions) => {
         expect.assertions(1);
 
         let foundPath = function_(path, options);
@@ -176,7 +177,7 @@ describe.each([
     it("should find a ancestor directory", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(absolute.fixtureDirectory, { cwd: relative.barDir, type: "directory" });
+        let foundPath = function_(absolute.fixtureDirectory as string, { cwd: relative.barDir, type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -189,7 +190,7 @@ describe.each([
     it("should find a cousin directory with cwd", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(absolute.barDir, { cwd: relative.fixtureDirectory, type: "directory" });
+        let foundPath = function_(absolute.barDir as string, { cwd: relative.fixtureDirectory, type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -202,7 +203,7 @@ describe.each([
     it("should find a nested descendant directory with cwd", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(absolute.barDir, { cwd: relative.modulesDirectory, type: "directory" });
+        let foundPath = function_(absolute.barDir as string, { cwd: relative.modulesDirectory, type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -215,7 +216,7 @@ describe.each([
     it("should find a nested descendant directory", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(absolute.barDir, { type: "directory" });
+        let foundPath = function_(absolute.barDir as string, { type: "directory" });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
@@ -228,14 +229,14 @@ describe.each([
     it("should find a nested descendant file", async () => {
         expect.assertions(1);
 
-        let foundPath = function_(relative.baz, { cwd: join(__dirname, "..", "..", "..") });
+        let foundPath = function_(relative.baz as string, { cwd: join(__dirname, "..", "..", "..") });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {
             foundPath = await foundPath;
         }
 
-        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "..", relative.baz));
+        expect(foundPath).toStrictEqual(join(__dirname, "..", "..", "..", relative.baz as string));
     });
 
     it("should support finding a cousin file", async () => {
@@ -265,9 +266,9 @@ describe.each([
     });
 
     it.each([
-        [["fake", testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // second child file
-        [[testName.qux, testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.qux], // first child file
-        [[testName.baz], { cwd: join(relative.fixtureDirectory, testName.packageDirectory) }, absolute.baz], // first child file
+        [["fake", testName.baz], { cwd: join(relative.fixtureDirectory as string, testName.packageDirectory) }, absolute.baz], // second child file
+        [[testName.qux, testName.baz], { cwd: join(relative.fixtureDirectory as string, testName.packageDirectory) }, absolute.qux], // first child file
+        [[testName.baz], { cwd: join(relative.fixtureDirectory as string, testName.packageDirectory) }, absolute.baz], // first child file
     ])("should support a string array as it input", async (path, options, expected) => {
         expect.assertions(1);
 
@@ -285,7 +286,7 @@ describe.each([
         expect.assertions(4);
 
         const cwd = absolute.fixtureDirectory;
-        const fileLinkPath = join(absolute.fixtureDirectory, testName.fileLink);
+        const fileLinkPath = join(absolute.fixtureDirectory as string, testName.fileLink);
 
         ensureSymlinkSync(absolute.baz as string, fileLinkPath);
 
@@ -309,7 +310,7 @@ describe.each([
 
         await rm(fileLinkPath);
 
-        const directoryLinkPath = join(absolute.fixtureDirectory, testName.directoryLink);
+        const directoryLinkPath = join(absolute.fixtureDirectory as string, testName.directoryLink);
 
         ensureSymlinkSync(absolute.fooDir as string, directoryLinkPath);
 
@@ -350,11 +351,11 @@ describe.each([
         ],
         [() => ".", { cwd: absolute.fixtureDirectory, type: "directory" }, absolute.fixtureDirectory],
         // [async (): Promise<string> => 'package.json', { cwd: absolute.fixtureDirectory }, join(absolute.fixtureDirectory, "package.json")],
-        [() => "..", { cwd: absolute.fixtureDirectory, type: "directory" }, join(absolute.fixtureDirectory, "..")],
+        [() => "..", { cwd: absolute.fixtureDirectory, type: "directory" }, join(absolute.fixtureDirectory as string, "..")],
         [
             (directory: string) => (directory === absolute.fixtureDirectory ? undefined : ""),
             { cwd: absolute.fixtureDirectory, type: "directory" },
-            join(absolute.fixtureDirectory, ".."),
+            join(absolute.fixtureDirectory as string, ".."),
         ],
         [
             (directory: string) => (directory === absolute.fixtureDirectory ? "package.json" : undefined),
@@ -365,7 +366,7 @@ describe.each([
         // eslint-disable-next-line vitest/prefer-expect-assertions
         expect.assertions(assertions);
 
-        let foundPath = function_(path, options);
+        let foundPath = function_(path, options as FindUpOptions | undefined);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "findUp") {

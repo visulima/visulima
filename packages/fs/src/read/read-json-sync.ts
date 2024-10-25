@@ -31,7 +31,7 @@ function readJsonSync<T extends JsonValue>(path: URL | string, reviver: JsonRevi
         data = beforeParse(data);
     }
 
-    return parseJson<T>(data, reviver, toPath(path), { color });
+    return parseJson<T>(data, reviver as JsonReviver, toPath(path), { color });
 }
 
 export default readJsonSync;

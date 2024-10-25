@@ -1,6 +1,5 @@
 dist
 node_modules
-inject-react-import.js
 coverage
 vitest.config.ts
 recipes
@@ -12,5 +11,5 @@ __bench__
 _meta.*.json
 
 packem.config.ts
-
 package.json
+README.md
