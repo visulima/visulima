@@ -12,12 +12,15 @@ import { temporaryDirectory } from "tempy";
 import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { Options } from "../../src/read-tsconfig";
 import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig } from "../helpers";
+import { getTscTsconfig, parseVersion } from "../helpers";
 
-// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-const typescriptVersion: Options["tscCompatible"] = (tsVersion.split(".")[0] + "." + tsVersion.split(".")[1]) as Options["tscCompatible"];
+const typescriptVersion = parseVersion(tsVersion);
+
+if (!typescriptVersion) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    throw new Error(`Invalid TypeScript version format: ${tsVersion}`);
+}
 
 describe("parses tsconfig", () => {
     let distribution: string;

@@ -17,6 +17,8 @@ overrides:
   postcss@<8.4.31: '>=8.4.47'
   rollup@>=4.0.0 <4.22.4: '>=4.22.4'
   zod@<=3.22.2: '>=3.23.8'
+  cookie@<0.7.0: '>=0.7.0'
+  mermaid@<=10.9.2: '>=10.9.3'
 
 importers:
 
@@ -5490,9 +5492,6 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@braintree/sanitize-url@6.0.4':
-    resolution: {integrity: sha512-s3jaWicZd0pkP0jf5ysyHUI/RE7MHos6qlToFcGWXVp+ykHOy77OUMrfbgJ9it2C5bow7OIQwYYaHjk9XlBQ2A==}
-
   '@braintree/sanitize-url@7.0.2':
     resolution: {integrity: sha512-NVf/1YycDMs6+FxS0Tb/W8MjJRDQdXF+tBfDtZ5UZeiRUkTmwKc4vmYCKZTyymfJk1gnMsauvZSX/HiV9jOABw==}
 
@@ -9464,15 +9463,6 @@ packages:
   '@types/cors@2.8.17':
     resolution: {integrity: sha512-8CGDvrBj1zgo2qE+oS3pOCyYNqCPryMWY2bGfwA0dcfopWGgxs+78df0Rs3rc9THP4JkOhLsAa+15VdpAqkcUA==}
 
-  '@types/d3-scale-chromatic@3.0.3':
-    resolution: {integrity: sha512-laXM4+1o5ImZv3RpFAsTRn3TEkzqkytiOY0Dz0sq5cnd1dtNlk6sHLon4OvqaiJb28T0S/TdsBI3Sjsy+keJrw==}
-
-  '@types/d3-scale@4.0.8':
-    resolution: {integrity: sha512-gkK1VVTr5iNiYJ7vWDI+yUFFlszhNMtVeneJ6lUTKPjprsvLLI9/tgEGiXJOnlINJA8FyA88gfnQsHbybVZrYQ==}
-
-  '@types/d3-time@3.0.3':
-    resolution: {integrity: sha512-2p6olUZ4w3s+07q3Tm2dbiMZy5pCDfYwtLXXHUnVzXgQlZ/OyPtUz6OL382BkOuGlLXqfT+wqv8Fw2v8/0geBw==}
-
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
@@ -11695,14 +11685,6 @@ packages:
   cookie-signature@1.0.6:
     resolution: {integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ==}
 
-  cookie@0.5.0:
-    resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
-    engines: {node: '>= 0.6'}
-
-  cookie@0.6.0:
-    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
-    engines: {node: '>= 0.6'}
-
   cookie@0.7.1:
     resolution: {integrity: sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==}
     engines: {node: '>= 0.6'}
@@ -12461,9 +12443,6 @@ packages:
 
   electron-to-chromium@1.5.5:
     resolution: {integrity: sha512-QR7/A7ZkMS8tZuoftC/jfqNkZLQO779SSW3YuZHP4eXpj3EffGLFcB/Xu9AAZQzLccTiCV+EmUo3ha4mQ9wnlA==}
-
-  elkjs@0.9.3:
-    resolution: {integrity: sha512-f/ZeWvW/BCXbhGEf1Ujp29EASo/lk1FDnETgNKwJrsVvGZhUWCZyg3xLJjAsxfOmt8KjswHmI5EwCQcPMpOYhQ==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -15975,9 +15954,6 @@ packages:
   merge@2.1.1:
     resolution: {integrity: sha512-jz+Cfrg9GWOZbQAnDQ4hlVnQky+341Yk5ru8bZSe6sIDTCIg8n9i/u7hSQGSVOF3C7lH6mGtqjkiT9G4wFLL0w==}
 
-  mermaid@10.9.1:
-    resolution: {integrity: sha512-Mx45Obds5W1UkW1nv/7dHRsbfMM1aOKA2+Pxs/IGHNonygDHwmng8xTHyS9z4KWVi0rbko8gjiBmuwwXQ7tiNA==}
-
   mermaid@11.2.1:
     resolution: {integrity: sha512-F8TEaLVVyxTUmvKswVFyOkjPrlJA5h5vNR1f7ZnSWSpqxgEZG1hggtn/QCa7znC28bhlcrNh10qYaIiill7q4A==}
 
@@ -16657,9 +16633,6 @@ packages:
 
   node-releases@2.0.18:
     resolution: {integrity: sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==}
-
-  non-layered-tidy-tree-layout@2.0.2:
-    resolution: {integrity: sha512-gkXMxRzUH+PB0ax9dUN0yYF0S25BqeAYqhgMaLUFmpXLEk7Fcu8f4emJuOAY0V8kjDICxROIKsTAKsV/v355xw==}
 
   nopt@7.2.1:
     resolution: {integrity: sha512-taM24ViiimT/XntxbPyJQzCG+p4EKOpgD3mxFwW38mGjVUrfERQOeY4EDHjdnptttfHuHQXFx+lTP08Q+mLa/w==}
@@ -20752,9 +20725,6 @@ packages:
   web-tree-sitter@0.20.3:
     resolution: {integrity: sha512-zKGJW9r23y3BcJusbgvnOH2OYAW40MXAOi9bi3Gcc7T4Gms9WWgXF8m6adsJWpGJEhgOzCrfiz1IzKowJWrtYw==}
 
-  web-worker@1.3.0:
-    resolution: {integrity: sha512-BSR9wyRsy/KOValMgd5kMyr3JzpdeoR9KVId8u5GVlTTAtNChlsE4yTxeY7zMdNSyOmoKBv8NH2qeRY9Tg+IaA==}
-
   webdriver@9.1.2:
     resolution: {integrity: sha512-NjeYVTCSMwQrd+EDpSSB8YnSNzYeEPU2IoJhvjaXUwTEhoaIvz6x6fM4UqCbm/ph8lZ1uWux43fqIcfDzFQl5Q==}
     engines: {node: '>=18.20.0'}
@@ -22965,13 +22935,11 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@braintree/sanitize-url@6.0.4': {}
-
   '@braintree/sanitize-url@7.0.2': {}
 
   '@bundled-es-modules/cookie@2.0.0':
     dependencies:
-      cookie: 0.5.0
+      cookie: 0.7.1
 
   '@bundled-es-modules/statuses@1.0.1':
     dependencies:
@@ -28329,7 +28297,7 @@ snapshots:
 
   '@theguild/remark-mermaid@0.0.5(react@18.3.1)':
     dependencies:
-      mermaid: 10.9.1
+      mermaid: 11.2.1
       react: 18.3.1
       unist-util-visit: 5.0.0
     transitivePeerDependencies:
@@ -28441,14 +28409,6 @@ snapshots:
   '@types/cors@2.8.17':
     dependencies:
       '@types/node': 20.14.11
-
-  '@types/d3-scale-chromatic@3.0.3': {}
-
-  '@types/d3-scale@4.0.8':
-    dependencies:
-      '@types/d3-time': 3.0.3
-
-  '@types/d3-time@3.0.3': {}
 
   '@types/debug@4.1.12':
     dependencies:
@@ -31945,10 +31905,6 @@ snapshots:
 
   cookie-signature@1.0.6: {}
 
-  cookie@0.5.0: {}
-
-  cookie@0.6.0: {}
-
   cookie@0.7.1: {}
 
   cookies@0.9.1:
@@ -32753,8 +32709,6 @@ snapshots:
   electron-to-chromium@1.5.32: {}
 
   electron-to-chromium@1.5.5: {}
-
-  elkjs@0.9.3: {}
 
   emittery@0.13.1: {}
 
@@ -34605,7 +34559,7 @@ snapshots:
       body-parser: 1.20.3
       content-disposition: 0.5.4
       content-type: 1.0.5
-      cookie: 0.6.0
+      cookie: 0.7.1
       cookie-signature: 1.0.6
       debug: 2.6.9
       depd: 2.0.0
@@ -37194,7 +37148,7 @@ snapshots:
 
   light-my-request@6.0.0:
     dependencies:
-      cookie: 0.6.0
+      cookie: 0.7.1
       process-warning: 4.0.0
       set-cookie-parser: 2.6.0
 
@@ -38173,31 +38127,6 @@ snapshots:
 
   merge@2.1.1: {}
 
-  mermaid@10.9.1:
-    dependencies:
-      '@braintree/sanitize-url': 6.0.4
-      '@types/d3-scale': 4.0.8
-      '@types/d3-scale-chromatic': 3.0.3
-      cytoscape: 3.30.0
-      cytoscape-cose-bilkent: 4.1.0(cytoscape@3.30.0)
-      d3: 7.9.0
-      d3-sankey: 0.12.3
-      dagre-d3-es: 7.0.10
-      dayjs: 1.11.11
-      dompurify: 3.1.5
-      elkjs: 0.9.3
-      katex: 0.16.11
-      khroma: 2.1.0
-      lodash-es: 4.17.21
-      mdast-util-from-markdown: 1.3.1
-      non-layered-tidy-tree-layout: 2.0.2
-      stylis: 4.3.2
-      ts-dedent: 2.2.0
-      uuid: 9.0.1
-      web-worker: 1.3.0
-    transitivePeerDependencies:
-      - supports-color
-
   mermaid@11.2.1:
     dependencies:
       '@braintree/sanitize-url': 7.0.2
@@ -39148,7 +39077,7 @@ snapshots:
   next-test-api-route-handler@4.0.11(next@14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@whatwg-node/server': 0.9.49
-      cookie: 0.6.0
+      cookie: 0.7.1
       core-js: 3.38.1
       next: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
@@ -39471,8 +39400,6 @@ snapshots:
   node-releases@2.0.14: {}
 
   node-releases@2.0.18: {}
-
-  non-layered-tidy-tree-layout@2.0.2: {}
 
   nopt@7.2.1:
     dependencies:
@@ -43011,7 +42938,7 @@ snapshots:
       '@swagger-api/apidom-json-pointer': 1.0.0-alpha.5
       '@swagger-api/apidom-ns-openapi-3-1': 1.0.0-alpha.5
       '@swagger-api/apidom-reference': 1.0.0-alpha.5(debug@4.3.7)
-      cookie: 0.6.0
+      cookie: 0.7.1
       deepmerge: 4.3.1
       fast-json-patch: 3.1.1
       js-yaml: 4.1.0
@@ -45224,8 +45151,6 @@ snapshots:
 
   web-tree-sitter@0.20.3:
     optional: true
-
-  web-worker@1.3.0: {}
 
   webdriver@9.1.2:
     dependencies:

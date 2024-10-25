@@ -30,7 +30,7 @@ describe("tsconfig", () => {
 
             writeJsonSync(path, {});
 
-            const result: TsConfigResult = name === "findTsConfig" ? await function_(distribution) : function_(distribution);
+            const result: TsConfigResult = (name === "findTsConfig" ? await function_(distribution) : function_(distribution)) as TsConfigResult;
 
             expect(result.config).toBeDefined();
         });
@@ -46,7 +46,7 @@ describe("tsconfig", () => {
 
             writeJsonSync(path, {});
 
-            const result: TsConfigResult = name === "findTsConfig" ? await function_(path, options) : function_(path, options);
+            const result: TsConfigResult = (name === "findTsConfig" ? await function_(path, options) : function_(path, options)) as TsConfigResult;
 
             expect(result.config).toBeDefined();
         });

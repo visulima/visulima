@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import { execa } from "execa";
 import type { TsConfigJson } from "type-fest";
 
+import type { Options } from "../src/read-tsconfig";
+
 const tscPath = resolve("node_modules/.bin/tsc");
 
 /**
@@ -33,4 +35,22 @@ export const getTscTsconfig = async (cwd: string): Promise<TsConfigJson> => {
     const output = await execa(tscPath, ["--showConfig"], { cwd });
 
     return JSON.parse(output.stdout);
+};
+
+export const parseVersion = (version: string): Options["tscCompatible"] | undefined => {
+    const parts = version.split(".");
+
+    if (parts.length < 2) {
+        return undefined;
+    }
+
+    const major = Number.parseInt(parts[0] as string, 10);
+    const minor = Number.parseInt(parts[1] as string, 10);
+
+    if (Number.isNaN(major) || Number.isNaN(minor)) {
+        return undefined;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    return `${major}.${minor}` as Options["tscCompatible"];
 };
