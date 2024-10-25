@@ -21,7 +21,6 @@ const normalizePath = (path: string): string => {
 
     return isRelative(namespacedPath) ? namespacedPath : `./${namespacedPath}`;
 };
-};
 
 const filesProperties = ["files", "include", "exclude"] as const;
 
