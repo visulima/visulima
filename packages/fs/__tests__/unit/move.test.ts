@@ -1,4 +1,3 @@
-// @ts-expect-error - this is just for tests
 import fs, { existsSync, readFileSync, statSync } from "node:fs";
 import { rm, writeFile } from "node:fs/promises";
 
@@ -9,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { move, moveSync, rename, renameSync } from "../../src/move";
 
 const fixtureFileContent = "test content";
+const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE);
 
 describe.each([
     ["moveFileSync", moveSync],
@@ -95,7 +95,7 @@ describe.each([
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const directory = `${root}/dir`;
         const destination = `${directory}/file`;
-        const directoryMode = 0o700;
+        const directoryMode = isWindows ? 0o600 : 0o700;
 
         await function_(distributionFile, destination, { directoryMode });
 

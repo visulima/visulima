@@ -146,9 +146,11 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeFile") {
+            // @ts-expect-error - just for testing this has the wrong type
             // eslint-disable-next-line vitest/no-conditional-expect
             await expect(writeFile(path, content)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
+            // @ts-expect-error - just for testing this has the wrong type
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => writeFileSync(path, content)).toThrow("Path must be a non-empty string or URL.");
         }
