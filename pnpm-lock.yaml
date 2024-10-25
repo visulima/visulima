@@ -599,7 +599,7 @@ importers:
         specifier: ^6.13.3
         version: 6.13.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -663,7 +663,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/colorize
       next:
-        specifier: '>=14.2.10'
+        specifier: '>=14.1.1'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -755,7 +755,7 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -798,7 +798,7 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
@@ -932,7 +932,7 @@ importers:
         specifier: ^6.13.3
         version: 6.13.3
       next:
-        specifier: '>=14.1.1'
+        specifier: '>=13.4.20-canary.13'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prisma:
         specifier: ^4.15.0
@@ -1118,7 +1118,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/pail
       next:
-        specifier: '>=14.2.10'
+        specifier: '>=14.1.1'
         version: 14.2.13(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
@@ -16476,7 +16476,7 @@ packages:
   next-seo@6.5.0:
     resolution: {integrity: sha512-MfzUeWTN/x/rsKp/1n0213eojO97lIl0unxqbeCY+6pAucViHDA8GSLRRcXpgjsSmBxfCFdfpu7LXbt4ANQoNQ==}
     peerDependencies:
-      next: '>=14.2.10'
+      next: '>=13.4.20-canary.13'
       react: '>=16.0.0'
       react-dom: '>=16.0.0'
 
@@ -16484,7 +16484,7 @@ packages:
     resolution: {integrity: sha512-21OkBdnYToqOELEfXlW0447ZmtBk8ZT9iC960OWhlBAWQJu6GIURdrfxNu5XiPtK1X++PBtlSqIVgx0HOP/JbQ==}
     engines: {node: ^18.18.2 || ^20.10.0 || >=21.2.0}
     peerDependencies:
-      next: '>=14.2.10'
+      next: '>=13.5.0'
 
   next-themes@0.3.0:
     resolution: {integrity: sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==}
@@ -16517,7 +16517,7 @@ packages:
     resolution: {integrity: sha512-7of2rSBxuUa3+lbMmZwG9cqgftcoNOVQLTT6Rxf3EhBR9t1EI7b43dted8YoqSNaigdE3j1CoyNkX8N/ZzlEpw==}
     engines: {node: '>=16'}
     peerDependencies:
-      next: '>=14.2.10'
+      next: '>=13.4.20-canary.13'
       react: '>=16.13.1'
       react-dom: '>=16.13.1'
 
@@ -16525,7 +16525,7 @@ packages:
     resolution: {integrity: sha512-14NdEDZCdyZBrihbMBdGon3aq6feYVNonetHQrYXIVcCxuUsh9CNYRUX5bImpE3zQ6cfXDnRJsG70tHDbXdHMQ==}
     engines: {node: '>=18'}
     peerDependencies:
-      next: '>=14.2.10'
+      next: '>=13.4.20-canary.13'
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
