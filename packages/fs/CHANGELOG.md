@@ -1,3 +1,9 @@
+## @visulima/fs [2.3.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.2...@visulima/fs@2.3.0) (2024-10-25)
+
+### Features
+
+* **fs:** added moveFile, moveFileSync, renameFile, renameFileSync ([#477](https://github.com/visulima/visulima/issues/477)) ([1f2cd29](https://github.com/visulima/visulima/commit/1f2cd29e3c62a9cc661f6f97b1d1cbda8566ea9c))
+
 ## @visulima/fs [2.2.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.1...@visulima/fs@2.2.2) (2024-10-05)
 
 
