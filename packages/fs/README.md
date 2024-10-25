@@ -447,7 +447,7 @@ Error thrown when file already exists.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -553,7 +553,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -569,7 +569,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -583,7 +583,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### stack?
 
@@ -597,7 +597,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -627,7 +627,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -641,9 +641,9 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
-***
+---
 
 ### DirectoryError
 
@@ -651,7 +651,7 @@ Error thrown when an operation is not allowed on a directory.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -757,7 +757,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -773,7 +773,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -787,7 +787,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### stack?
 
@@ -801,7 +801,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -831,7 +831,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -845,9 +845,9 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
-***
+---
 
 ### NotEmptyError
 
@@ -855,7 +855,7 @@ Error thrown when a directory is not empty.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -961,7 +961,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -977,7 +977,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -991,7 +991,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### stack?
 
@@ -1005,7 +1005,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -1035,7 +1035,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -1049,9 +1049,9 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
-***
+---
 
 ### NotFoundError
 
@@ -1059,7 +1059,7 @@ Error thrown when a file or directory is not found.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -1165,7 +1165,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -1181,7 +1181,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -1195,7 +1195,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### stack?
 
@@ -1209,7 +1209,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -1239,7 +1239,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -1253,9 +1253,9 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
-***
+---
 
 ### PermissionError
 
@@ -1263,7 +1263,7 @@ Error thrown when an operation is not permitted.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -1369,7 +1369,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -1385,7 +1385,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -1399,7 +1399,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### stack?
 
@@ -1413,7 +1413,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -1443,7 +1443,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -1457,9 +1457,9 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
-***
+---
 
 ### WalkError
 
@@ -1467,7 +1467,7 @@ Error thrown in walk or walkSync during iteration.
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -1551,7 +1551,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -1567,7 +1567,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### message
 
@@ -1581,7 +1581,7 @@ message: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1077
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1077
 
 ##### root
 
@@ -1607,7 +1607,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -1637,7 +1637,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -1651,13 +1651,14 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
 ## References
 
 ### JSONError
 
 Re-exports [JSONError](utils.md#jsonerror)
+
 # index
 
 ## Functions
@@ -1665,7 +1666,7 @@ Re-exports [JSONError](utils.md#jsonerror)
 ### collect()
 
 ```ts
-function collect(directory, options): Promise<string[]>
+function collect(directory, options): Promise<string[]>;
 ```
 
 #### Parameters
@@ -1682,12 +1683,12 @@ function collect(directory, options): Promise<string[]>
 
 [packages/fs/src/find/collect.ts:4](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/collect.ts#L4)
 
-***
+---
 
 ### collectSync()
 
 ```ts
-function collectSync(directory, options): string[]
+function collectSync(directory, options): string[];
 ```
 
 #### Parameters
@@ -1704,12 +1705,12 @@ function collectSync(directory, options): string[]
 
 [packages/fs/src/find/collect-sync.ts:4](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/collect-sync.ts#L4)
 
-***
+---
 
 ### detect()
 
 ```ts
-function detect(content): "\n" | "\r\n"
+function detect(content): "\n" | "\r\n";
 ```
 
 Detect the EOL character for string input.
@@ -1727,12 +1728,12 @@ Returns null if no newline.
 
 [packages/fs/src/eol.ts:20](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L20)
 
-***
+---
 
 ### emptyDir()
 
 ```ts
-function emptyDir(dir, options?): Promise<void>
+function emptyDir(dir, options?): Promise<void>;
 ```
 
 Ensures that a directory is empty.
@@ -1754,12 +1755,12 @@ The directory itself is not deleted.
 
 [packages/fs/src/remove/empty-dir.ts:19](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/empty-dir.ts#L19)
 
-***
+---
 
 ### emptyDirSync()
 
 ```ts
-function emptyDirSync(dir, options?): void
+function emptyDirSync(dir, options?): void;
 ```
 
 Ensures that a directory is empty.
@@ -1781,12 +1782,12 @@ The directory itself is not deleted.
 
 [packages/fs/src/remove/empty-dir-sync.ts:18](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/empty-dir-sync.ts#L18)
 
-***
+---
 
 ### ensureDir()
 
 ```ts
-function ensureDir(directory): Promise<void>
+function ensureDir(directory): Promise<void>;
 ```
 
 Ensures that the directory exists.
@@ -1804,12 +1805,12 @@ If the directory structure does not exist, it is created. Like mkdir -p.
 
 [packages/fs/src/ensure/ensure-dir.ts:12](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-dir.ts#L12)
 
-***
+---
 
 ### ensureDirSync()
 
 ```ts
-function ensureDirSync(directory): void
+function ensureDirSync(directory): void;
 ```
 
 Ensures that the directory exists.
@@ -1827,12 +1828,12 @@ If the directory structure does not exist, it is created. Like mkdir -p.
 
 [packages/fs/src/ensure/ensure-dir-sync.ts:12](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-dir-sync.ts#L12)
 
-***
+---
 
 ### ensureFile()
 
 ```ts
-function ensureFile(filePath): Promise<void>
+function ensureFile(filePath): Promise<void>;
 ```
 
 Ensures that the file exists.
@@ -1851,12 +1852,12 @@ these directories are created. If the file already exists, it is NOTMODIFIED.
 
 [packages/fs/src/ensure/ensure-file.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-file.ts#L16)
 
-***
+---
 
 ### ensureFileSync()
 
 ```ts
-function ensureFileSync(filePath): void
+function ensureFileSync(filePath): void;
 ```
 
 Ensures that the file exists.
@@ -1875,12 +1876,12 @@ these directories are created. If the file already exists, it is NOTMODIFIED.
 
 [packages/fs/src/ensure/ensure-file-sync.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-file-sync.ts#L16)
 
-***
+---
 
 ### ensureLink()
 
 ```ts
-function ensureLink(source, destination): Promise<void>
+function ensureLink(source, destination): Promise<void>;
 ```
 
 Ensures that the hard link exists.
@@ -1900,12 +1901,12 @@ If the directory structure does not exist, it is created.
 
 [packages/fs/src/ensure/ensure-link.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-link.ts#L15)
 
-***
+---
 
 ### ensureLinkSync()
 
 ```ts
-function ensureLinkSync(source, destination): void
+function ensureLinkSync(source, destination): void;
 ```
 
 Ensures that the hard link exists.
@@ -1925,15 +1926,12 @@ If the directory structure does not exist, it is created.
 
 [packages/fs/src/ensure/ensure-link-sync.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-link-sync.ts#L15)
 
-***
+---
 
 ### ensureSymlink()
 
 ```ts
-function ensureSymlink(
-   target, 
-   linkName, 
-type?): Promise<void>
+function ensureSymlink(target, linkName, type?): Promise<void>;
 ```
 
 Ensures that the link exists, and points to a valid file.
@@ -1964,15 +1962,12 @@ A void promise that resolves once the link exists.
 
 [packages/fs/src/ensure/ensure-symlink.ts:28](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-symlink.ts#L28)
 
-***
+---
 
 ### ensureSymlinkSync()
 
 ```ts
-function ensureSymlinkSync(
-   target, 
-   linkName, 
-   type?): void
+function ensureSymlinkSync(target, linkName, type?): void;
 ```
 
 Ensures that the link exists, and points to a valid file.
@@ -2003,12 +1998,12 @@ A void.
 
 [packages/fs/src/ensure/ensure-symlink-sync.ts:28](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/ensure/ensure-symlink-sync.ts#L28)
 
-***
+---
 
 ### findUp()
 
 ```ts
-function findUp(name, options): Promise<string>
+function findUp(name, options): Promise<string>;
 ```
 
 #### Parameters
@@ -2025,12 +2020,12 @@ function findUp(name, options): Promise<string>
 
 [packages/fs/src/find/find-up.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/find-up.ts#L11)
 
-***
+---
 
 ### findUpSync()
 
 ```ts
-function findUpSync(name, options): string
+function findUpSync(name, options): string;
 ```
 
 #### Parameters
@@ -2047,12 +2042,12 @@ function findUpSync(name, options): string
 
 [packages/fs/src/find/find-up-sync.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/find-up-sync.ts#L11)
 
-***
+---
 
 ### format()
 
 ```ts
-function format(content, eol): string
+function format(content, eol): string;
 ```
 
 Format the file to the targeted EOL.
@@ -2071,12 +2066,12 @@ Format the file to the targeted EOL.
 
 [packages/fs/src/eol.ts:36](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L36)
 
-***
+---
 
 ### isAccessible()
 
 ```ts
-function isAccessible(path, mode?): Promise<boolean>
+function isAccessible(path, mode?): Promise<boolean>;
 ```
 
 Returns a Promise that resolves to a boolean indicating if the path is accessible or not.
@@ -2095,12 +2090,12 @@ Returns a Promise that resolves to a boolean indicating if the path is accessibl
 
 [packages/fs/src/is-accessible.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/is-accessible.ts#L9)
 
-***
+---
 
 ### isAccessibleSync()
 
 ```ts
-function isAccessibleSync(path, mode?): boolean
+function isAccessibleSync(path, mode?): boolean;
 ```
 
 Returns a boolean indicating if the path is accessible or not.
@@ -2119,15 +2114,12 @@ Returns a boolean indicating if the path is accessible or not.
 
 [packages/fs/src/is-accessible-sync.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/is-accessible-sync.ts#L9)
 
-***
+---
 
 ### move()
 
 ```ts
-function move(
-   sourcePath, 
-   destinationPath, 
-options): Promise<void>
+function move(sourcePath, destinationPath, options): Promise<void>;
 ```
 
 Move a file asynchronously.
@@ -2165,15 +2157,12 @@ console.log('The file has been moved');
 
 [packages/fs/src/move/index.ts:25](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L25)
 
-***
+---
 
 ### moveSync()
 
 ```ts
-function moveSync(
-   sourcePath, 
-   destinationPath, 
-   options?): void
+function moveSync(sourcePath, destinationPath, options?): void;
 ```
 
 Move a file synchronously.
@@ -2211,17 +2200,17 @@ console.log('The file has been moved');
 
 [packages/fs/src/move/index.ts:49](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L49)
 
-***
+---
 
 ### readFile()
 
 ```ts
-function readFile<O>(path, options?): Promise<ContentType<O>>
+function readFile<O>(path, options?): Promise<ContentType<O>>;
 ```
 
 #### Type Parameters
 
-• **O** *extends* [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+• **O** _extends_ [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
 
 #### Parameters
 
@@ -2237,17 +2226,17 @@ function readFile<O>(path, options?): Promise<ContentType<O>>
 
 [packages/fs/src/read/read-file.ts:20](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-file.ts#L20)
 
-***
+---
 
 ### readFileSync()
 
 ```ts
-function readFileSync<O>(path, options?): ContentType<O>
+function readFileSync<O>(path, options?): ContentType<O>;
 ```
 
 #### Type Parameters
 
-• **O** *extends* [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
+• **O** _extends_ [`ReadFileOptions`](index.md#readfileoptionsc)\<`"brotli"` \| `"gzip"` \| `"none"`\> = `undefined`
 
 #### Parameters
 
@@ -2263,19 +2252,19 @@ function readFileSync<O>(path, options?): ContentType<O>
 
 [packages/fs/src/read/read-file-sync.ts:18](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-file-sync.ts#L18)
 
-***
+---
 
 ### readJson()
 
 #### readJson(path, options)
 
 ```ts
-function readJson<T>(path, options?): Promise<T>
+function readJson<T>(path, options?): Promise<T>;
 ```
 
 ##### Type Parameters
 
-• **T** *extends* `JsonValue`
+• **T** _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -2294,15 +2283,12 @@ function readJson<T>(path, options?): Promise<T>
 #### readJson(path, reviver, options)
 
 ```ts
-function readJson<T>(
-   path, 
-   reviver, 
-options?): Promise<T>
+function readJson<T>(path, reviver, options?): Promise<T>;
 ```
 
 ##### Type Parameters
 
-• **T** *extends* `JsonValue`
+• **T** _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -2320,19 +2306,19 @@ options?): Promise<T>
 
 [packages/fs/src/read/read-json.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json.ts#L10)
 
-***
+---
 
 ### readJsonSync()
 
 #### readJsonSync(path, options)
 
 ```ts
-function readJsonSync<T>(path, options?): T
+function readJsonSync<T>(path, options?): T;
 ```
 
 ##### Type Parameters
 
-• **T** *extends* `JsonValue`
+• **T** _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -2351,15 +2337,12 @@ function readJsonSync<T>(path, options?): T
 #### readJsonSync(path, reviver, options)
 
 ```ts
-function readJsonSync<T>(
-   path, 
-   reviver, 
-   options?): T
+function readJsonSync<T>(path, reviver, options?): T;
 ```
 
 ##### Type Parameters
 
-• **T** *extends* `JsonValue`
+• **T** _extends_ `JsonValue`
 
 ##### Parameters
 
@@ -2377,14 +2360,14 @@ function readJsonSync<T>(
 
 [packages/fs/src/read/read-json-sync.ts:10](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-json-sync.ts#L10)
 
-***
+---
 
 ### readYaml()
 
 #### readYaml(path, options)
 
 ```ts
-function readYaml<R>(path, options?): Promise<R>
+function readYaml<R>(path, options?): Promise<R>;
 ```
 
 ##### Type Parameters
@@ -2408,10 +2391,7 @@ function readYaml<R>(path, options?): Promise<R>
 #### readYaml(path, reviver, options)
 
 ```ts
-function readYaml<R>(
-   path, 
-   reviver?, 
-options?): Promise<R>
+function readYaml<R>(path, reviver?, options?): Promise<R>;
 ```
 
 ##### Type Parameters
@@ -2434,14 +2414,14 @@ options?): Promise<R>
 
 [packages/fs/src/read/read-yaml.ts:7](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml.ts#L7)
 
-***
+---
 
 ### readYamlSync()
 
 #### readYamlSync(path, options)
 
 ```ts
-function readYamlSync<R>(path, options?): R
+function readYamlSync<R>(path, options?): R;
 ```
 
 ##### Type Parameters
@@ -2465,10 +2445,7 @@ function readYamlSync<R>(path, options?): R
 #### readYamlSync(path, reviver, options)
 
 ```ts
-function readYamlSync<R>(
-   path, 
-   reviver?, 
-   options?): R
+function readYamlSync<R>(path, reviver?, options?): R;
 ```
 
 ##### Type Parameters
@@ -2491,12 +2468,12 @@ function readYamlSync<R>(
 
 [packages/fs/src/read/read-yaml-sync.ts:7](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/read/read-yaml-sync.ts#L7)
 
-***
+---
 
 ### remove()
 
 ```ts
-function remove(path, options): Promise<void>
+function remove(path, options): Promise<void>;
 ```
 
 #### Parameters
@@ -2516,7 +2493,7 @@ number of retries. This option is ignored if the `recursive` option is not
 **Default**
 
 ```ts
-0
+0;
 ```
 
 • **options.retryDelay?**: `number`
@@ -2527,7 +2504,7 @@ This option is ignored if the `recursive` option is not `true`.
 **Default**
 
 ```ts
-100
+100;
 ```
 
 #### Returns
@@ -2538,12 +2515,12 @@ This option is ignored if the `recursive` option is not `true`.
 
 [packages/fs/src/remove/remove.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/remove.ts#L5)
 
-***
+---
 
 ### removeSync()
 
 ```ts
-function removeSync(path, options): void
+function removeSync(path, options): void;
 ```
 
 #### Parameters
@@ -2563,7 +2540,7 @@ number of retries. This option is ignored if the `recursive` option is not
 **Default**
 
 ```ts
-0
+0;
 ```
 
 • **options.retryDelay?**: `number`
@@ -2574,7 +2551,7 @@ This option is ignored if the `recursive` option is not `true`.
 **Default**
 
 ```ts
-100
+100;
 ```
 
 #### Returns
@@ -2585,15 +2562,12 @@ This option is ignored if the `recursive` option is not `true`.
 
 [packages/fs/src/remove/remove-sync.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/remove/remove-sync.ts#L5)
 
-***
+---
 
 ### rename()
 
 ```ts
-function rename(
-   source, 
-   destination, 
-options?): Promise<void>
+function rename(source, destination, options?): Promise<void>;
 ```
 
 Rename a file asynchronously.
@@ -2631,15 +2605,12 @@ console.log('The file has been renamed');
 
 [packages/fs/src/move/index.ts:73](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/index.ts#L73)
 
-***
+---
 
 ### renameSync()
 
 ```ts
-function renameSync(
-   source, 
-   destination, 
-   options?): void
+function renameSync(source, destination, options?): void;
 ```
 
 Rename a file synchronously.
@@ -2669,11 +2640,13 @@ A `Promise` that resolves when the file has been renamed.
 ```
 @example
 ```
+
 import {renameFileSync} from '@visulima/fs';
 
 renameFileSync('unicorn.png', 'unicorns.png', {cwd: 'source'});
 console.log('The file has been renamed');
-```
+
+````
 
 #### Defined in
 
@@ -2685,19 +2658,20 @@ console.log('The file has been renamed');
 
 ```ts
 function walk(directory, __namedParameters): AsyncIterableIterator<WalkEntry>
-```
+````
 
 Walks the file tree rooted at root, yielding each file or directory in the
 tree filtered according to the given options.
 Options:
-- maxDepth?: number = Infinity;
-- includeFiles?: boolean = true;
-- includeDirs?: boolean = true;
-- includeSymlinks?: boolean = true;
-- followSymlinks?: boolean = false;
-- extensions?: string[];
-- match?: string | ReadonlyArray<string>;
-- skip?: string | ReadonlyArray<string>;
+
+-   maxDepth?: number = Infinity;
+-   includeFiles?: boolean = true;
+-   includeDirs?: boolean = true;
+-   includeSymlinks?: boolean = true;
+-   followSymlinks?: boolean = false;
+-   extensions?: string[];
+-   match?: string | ReadonlyArray<string>;
+-   skip?: string | ReadonlyArray<string>;
 
 #### Parameters
 
@@ -2713,12 +2687,12 @@ Options:
 
 [packages/fs/src/find/walk.ts:52](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/walk.ts#L52)
 
-***
+---
 
 ### walkSync()
 
 ```ts
-function walkSync(directory, __namedParameters): IterableIterator<WalkEntry>
+function walkSync(directory, __namedParameters): IterableIterator<WalkEntry>;
 ```
 
 Same as [`walk`](index.md#walk) but uses synchronous ops
@@ -2737,15 +2711,12 @@ Same as [`walk`](index.md#walk) but uses synchronous ops
 
 [packages/fs/src/find/walk-sync.ts:40](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/find/walk-sync.ts#L40)
 
-***
+---
 
 ### writeFile()
 
 ```ts
-function writeFile(
-   path, 
-   content, 
-options?): Promise<void>
+function writeFile(path, content, options?): Promise<void>;
 ```
 
 #### Parameters
@@ -2764,15 +2735,12 @@ options?): Promise<void>
 
 [packages/fs/src/write/write-file.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-file.ts#L15)
 
-***
+---
 
 ### writeFileSync()
 
 ```ts
-function writeFileSync(
-   path, 
-   content, 
-   options?): void
+function writeFileSync(path, content, options?): void;
 ```
 
 #### Parameters
@@ -2791,15 +2759,12 @@ function writeFileSync(
 
 [packages/fs/src/write/write-file-sync.ts:15](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-file-sync.ts#L15)
 
-***
+---
 
 ### writeJson()
 
 ```ts
-function writeJson(
-   path, 
-   data, 
-options): Promise<void>
+function writeJson(path, data, options): Promise<void>;
 ```
 
 #### Parameters
@@ -2818,15 +2783,12 @@ options): Promise<void>
 
 [packages/fs/src/write/write-json.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-json.ts#L11)
 
-***
+---
 
 ### writeJsonSync()
 
 ```ts
-function writeJsonSync(
-   path, 
-   data, 
-   options): void
+function writeJsonSync(path, data, options): void;
 ```
 
 #### Parameters
@@ -2845,17 +2807,14 @@ function writeJsonSync(
 
 [packages/fs/src/write/write-json-sync.ts:11](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-json-sync.ts#L11)
 
-***
+---
 
 ### writeYaml()
 
 #### writeYaml(path, data, options)
 
 ```ts
-function writeYaml(
-   path, 
-   data, 
-options?): Promise<void>
+function writeYaml(path, data, options?): Promise<void>;
 ```
 
 ##### Parameters
@@ -2877,11 +2836,7 @@ options?): Promise<void>
 #### writeYaml(path, data, replacer, options)
 
 ```ts
-function writeYaml(
-   path, 
-   data, 
-   replacer?, 
-options?): Promise<void>
+function writeYaml(path, data, replacer?, options?): Promise<void>;
 ```
 
 ##### Parameters
@@ -2902,17 +2857,14 @@ options?): Promise<void>
 
 [packages/fs/src/write/write-yaml.ts:16](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/write/write-yaml.ts#L16)
 
-***
+---
 
 ### writeYamlSync()
 
 #### writeYamlSync(path, data, options)
 
 ```ts
-function writeYamlSync(
-   path, 
-   data, 
-   options?): void
+function writeYamlSync(path, data, options?): void;
 ```
 
 ##### Parameters
@@ -2934,11 +2886,7 @@ function writeYamlSync(
 #### writeYamlSync(path, data, replacer, options)
 
 ```ts
-function writeYamlSync(
-   path, 
-   data, 
-   replacer?, 
-   options?): void
+function writeYamlSync(path, data, replacer?, options?): void;
 ```
 
 ##### Parameters
@@ -2973,7 +2921,7 @@ End-of-line character for Windows platforms.
 
 [packages/fs/src/eol.ts:9](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L9)
 
-***
+---
 
 ### EOL
 
@@ -2987,9 +2935,9 @@ End-of-line character evaluated for the current platform.
 
 [packages/fs/src/eol.ts:14](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L14)
 
-***
+---
 
-### F\_OK
+### F_OK
 
 ```ts
 const F_OK: 0 = 0;
@@ -3001,9 +2949,9 @@ Is the path visible to the calling process?
 
 [packages/fs/src/constants.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L2)
 
-***
+---
 
-### FIND\_UP\_STOP
+### FIND_UP_STOP
 
 ```ts
 const FIND_UP_STOP: typeof FIND_UP_STOP;
@@ -3013,7 +2961,7 @@ const FIND_UP_STOP: typeof FIND_UP_STOP;
 
 [packages/fs/src/constants.ts:13](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L13)
 
-***
+---
 
 ### LF
 
@@ -3027,9 +2975,9 @@ End-of-line character for POSIX platforms such as macOS and Linux.
 
 [packages/fs/src/eol.ts:6](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/eol.ts#L6)
 
-***
+---
 
-### R\_OK
+### R_OK
 
 ```ts
 const R_OK: 4 = 4;
@@ -3041,9 +2989,9 @@ Is the path readable to the calling process?
 
 [packages/fs/src/constants.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L5)
 
-***
+---
 
-### W\_OK
+### W_OK
 
 ```ts
 const W_OK: 2 = 2;
@@ -3055,9 +3003,9 @@ Is the path writable to the calling process?
 
 [packages/fs/src/constants.ts:8](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/constants.ts#L8)
 
-***
+---
 
-### X\_OK
+### X_OK
 
 ```ts
 const X_OK: 1 = 1;
@@ -3075,7 +3023,7 @@ Is the path executable to the calling process?
 
 #### Extends
 
-- `Pick`\<`Dirent`, `"isDirectory"` \| `"isFile"` \| `"isSymbolicLink"` \| `"name"`\>
+-   `Pick`\<`Dirent`, `"isDirectory"` \| `"isFile"` \| `"isSymbolicLink"` \| `"name"`\>
 
 #### Methods
 
@@ -3102,7 +3050,7 @@ v10.10.0
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:190
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/fs.d.ts:190
 
 ##### isFile()
 
@@ -3126,7 +3074,7 @@ v10.10.0
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:184
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/fs.d.ts:184
 
 ##### isSymbolicLink()
 
@@ -3150,7 +3098,7 @@ v10.10.0
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:205
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/fs.d.ts:205
 
 #### Properties
 
@@ -3173,7 +3121,7 @@ v10.10.0
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/fs.d.ts:222
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/fs.d.ts:222
 
 ##### path
 
@@ -3185,7 +3133,7 @@ path: string;
 
 [packages/fs/src/types.ts:57](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L57)
 
-***
+---
 
 ### WalkOptions
 
@@ -3203,7 +3151,9 @@ If specified, entries without the file extension specified by this option are ex
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ###### Defined in
@@ -3221,7 +3171,9 @@ Indicates whether symlinks should be resolved or not.
 ###### Default
 
 ```ts
-{false}
+{
+    false;
+}
 ```
 
 ###### Defined in
@@ -3239,7 +3191,9 @@ Indicates whether directory entries should be included or not.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ###### Defined in
@@ -3257,7 +3211,9 @@ Indicates whether file entries should be included or not.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ###### Defined in
@@ -3276,7 +3232,9 @@ This option is meaningful only if `followSymlinks` is set to `false`.
 ###### Default
 
 ```ts
-{true}
+{
+    true;
+}
 ```
 
 ###### Defined in
@@ -3295,7 +3253,9 @@ If specified, entries that do not match the patterns specified by this option ar
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ###### Defined in
@@ -3313,7 +3273,9 @@ The maximum depth of the file tree to be walked recursively.
 ###### Default
 
 ```ts
-{Infinity}
+{
+    Infinity;
+}
 ```
 
 ###### Defined in
@@ -3332,7 +3294,9 @@ If specified, entries matching the patterns specified by this option are exclude
 ###### Default
 
 ```ts
-{undefined}
+{
+    undefined;
+}
 ```
 
 ###### Defined in
@@ -3365,7 +3329,7 @@ line: number;
 
 [packages/fs/src/types.ts:91](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L91)
 
-***
+---
 
 ### EmptyDirOptions
 
@@ -3390,7 +3354,7 @@ number of retries. This option is ignored if the `recursive` option is not
 ###### Default
 
 ```ts
-0
+0;
 ```
 
 ##### retryDelay?
@@ -3405,14 +3369,14 @@ This option is ignored if the `recursive` option is not `true`.
 ###### Default
 
 ```ts
-100
+100;
 ```
 
 #### Defined in
 
 [packages/fs/src/types.ts:186](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L186)
 
-***
+---
 
 ### FindUpName
 
@@ -3424,7 +3388,7 @@ type FindUpName: string[] | string | (directory) => FindUpNameFnResult;
 
 [packages/fs/src/types.ts:179](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L179)
 
-***
+---
 
 ### FindUpNameFnResult
 
@@ -3436,7 +3400,7 @@ type FindUpNameFnResult: PathLike | Promise<PathLike | typeof FIND_UP_STOP> | ty
 
 [packages/fs/src/types.ts:177](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L177)
 
-***
+---
 
 ### FindUpNameSync
 
@@ -3448,7 +3412,7 @@ type FindUpNameSync: string[] | string | (directory) => FindUpNameSyncFnResult;
 
 [packages/fs/src/types.ts:183](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L183)
 
-***
+---
 
 ### FindUpNameSyncFnResult
 
@@ -3460,7 +3424,7 @@ type FindUpNameSyncFnResult: PathLike | typeof FIND_UP_STOP | undefined;
 
 [packages/fs/src/types.ts:181](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L181)
 
-***
+---
 
 ### FindUpOptions
 
@@ -3498,7 +3462,7 @@ optional type: "directory" | "file";
 
 [packages/fs/src/types.ts:170](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L170)
 
-***
+---
 
 ### JsonReplacer
 
@@ -3510,7 +3474,7 @@ type JsonReplacer: (number | string)[] | (this, key, value) => unknown | null;
 
 [packages/fs/src/types.ts:143](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L143)
 
-***
+---
 
 ### JsonReviver
 
@@ -3522,7 +3486,7 @@ type JsonReviver: Parameters<typeof JSON["parse"]>["1"];
 
 [packages/fs/src/types.ts:89](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L89)
 
-***
+---
 
 ### MoveOptions
 
@@ -3544,7 +3508,7 @@ The source and destination path are relative to this.
 ###### Default
 
 ```ts
-process.cwd()
+process.cwd();
 ```
 
 ##### directoryMode?
@@ -3560,7 +3524,7 @@ It has no effect on Windows.
 ###### Default
 
 ```ts
-0o777
+0o777;
 ```
 
 ##### overwrite?
@@ -3574,19 +3538,19 @@ Overwrite existing destination file.
 ###### Default
 
 ```ts
-true
+true;
 ```
 
 #### Defined in
 
 [packages/fs/src/move/types.ts:1](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/move/types.ts#L1)
 
-***
+---
 
 ### ReadFileEncoding
 
 ```ts
-type ReadFileEncoding: 
+type ReadFileEncoding:
   | "ascii"
   | "base64"
   | "base64url"
@@ -3604,7 +3568,7 @@ type ReadFileEncoding:
 
 [packages/fs/src/types.ts:61](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L61)
 
-***
+---
 
 ### ReadFileOptions\<C\>
 
@@ -3658,7 +3622,7 @@ The flag used to open the file. Default: `r`
 
 [packages/fs/src/types.ts:63](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L63)
 
-***
+---
 
 ### ReadJsonOptions
 
@@ -3686,7 +3650,7 @@ optional beforeParse: (source) => string;
 
 [packages/fs/src/types.ts:104](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L104)
 
-***
+---
 
 ### WriteFileOptions
 
@@ -3760,7 +3724,7 @@ Recursively create parent directories if needed. Default: `true`
 
 [packages/fs/src/types.ts:108](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L108)
 
-***
+---
 
 ### WriteJsonOptions
 
@@ -3820,7 +3784,7 @@ Override the default `JSON.stringify` method.
 
 [packages/fs/src/types.ts:146](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L146)
 
-***
+---
 
 ### YamlReplacer
 
@@ -3831,6 +3795,7 @@ type YamlReplacer: JsonReplacer;
 #### Defined in
 
 [packages/fs/src/types.ts:144](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/types.ts#L144)
+
 # utils
 
 ## Classes
@@ -3839,7 +3804,7 @@ type YamlReplacer: JsonReplacer;
 
 #### Extends
 
-- `Error`
+-   `Error`
 
 #### Constructors
 
@@ -3919,7 +3884,7 @@ Create .stack property on a target object
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:20
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:20
 
 #### Properties
 
@@ -3935,7 +3900,7 @@ optional cause: unknown;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es2022.error.d.ts:24
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es2022.error.d.ts:24
 
 ##### codeFrame
 
@@ -3983,7 +3948,7 @@ optional stack: string;
 
 ###### Defined in
 
-node\_modules/.pnpm/typescript@5.6.3/node\_modules/typescript/lib/lib.es5.d.ts:1078
+node_modules/.pnpm/typescript@5.6.3/node_modules/typescript/lib/lib.es5.d.ts:1078
 
 ##### prepareStackTrace()?
 
@@ -4013,7 +3978,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:27
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:27
 
 ##### stackTraceLimit
 
@@ -4027,14 +3992,14 @@ static stackTraceLimit: number;
 
 ###### Defined in
 
-node\_modules/.pnpm/@types+node@18.19.15/node\_modules/@types/node/globals.d.ts:29
+node_modules/.pnpm/@types+node@18.19.15/node_modules/@types/node/globals.d.ts:29
 
 ## Functions
 
 ### assertValidFileContents()
 
 ```ts
-function assertValidFileContents(contents): void
+function assertValidFileContents(contents): void;
 ```
 
 #### Parameters
@@ -4049,12 +4014,12 @@ function assertValidFileContents(contents): void
 
 [packages/fs/src/utils/assert-valid-file-contents.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/assert-valid-file-contents.ts#L2)
 
-***
+---
 
 ### assertValidFileOrDirectoryPath()
 
 ```ts
-function assertValidFileOrDirectoryPath(fileOrDirectoryPath): void
+function assertValidFileOrDirectoryPath(fileOrDirectoryPath): void;
 ```
 
 #### Parameters
@@ -4069,17 +4034,14 @@ function assertValidFileOrDirectoryPath(fileOrDirectoryPath): void
 
 [packages/fs/src/utils/assert-valid-file-or-directory-path.ts:2](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/assert-valid-file-or-directory-path.ts#L2)
 
-***
+---
 
 ### parseJson()
 
 #### parseJson(string, filename, options)
 
 ```ts
-function parseJson<T>(
-   string, 
-   filename?, 
-   options?): T
+function parseJson<T>(string, filename?, options?): T;
 ```
 
 ##### Type Parameters
@@ -4105,11 +4067,7 @@ function parseJson<T>(
 #### parseJson(string, reviver, fileName, options)
 
 ```ts
-function parseJson<T>(
-   string, 
-   reviver, 
-   fileName?, 
-   options?): T
+function parseJson<T>(string, reviver, fileName?, options?): T;
 ```
 
 ##### Type Parameters
@@ -4134,12 +4092,12 @@ function parseJson<T>(
 
 [packages/fs/src/utils/parse-json.ts:61](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/parse-json.ts#L61)
 
-***
+---
 
 ### stripJsonComments()
 
 ```ts
-function stripJsonComments(jsonString, __namedParameters): string
+function stripJsonComments(jsonString, __namedParameters): string;
 ```
 
 #### Parameters
@@ -4158,12 +4116,12 @@ function stripJsonComments(jsonString, __namedParameters): string
 
 [packages/fs/src/utils/strip-json-comments.ts:5](https://github.com/visulima/visulima/blob/abf51b1d2efa9b9ca5991a2272c824098cc968ba/packages/fs/src/utils/strip-json-comments.ts#L5)
 
-***
+---
 
 ### toPath()
 
 ```ts
-function toPath(urlOrPath): string
+function toPath(urlOrPath): string;
 ```
 
 #### Parameters
@@ -4176,10 +4134,9 @@ function toPath(urlOrPath): string
 
 #### Defined in
 
-node\_modules/.pnpm/@visulima+path@1.1.1/node\_modules/@visulima/path/dist/utils.d.mts:7
+node_modules/.pnpm/@visulima+path@1.1.1/node_modules/@visulima/path/dist/utils.d.mts:7
 
 <!-- /TYPEDOC -->
-
 
 ## Supported Node.js Versions
 

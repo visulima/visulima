@@ -28,4 +28,4 @@ export type InternalOptions = Options & {
     cwd: string;
 
     validateDirectory?: boolean;
-}
+};

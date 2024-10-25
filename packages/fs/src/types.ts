@@ -174,10 +174,12 @@ export type FindUpOptions = {
     type?: "directory" | "file";
 };
 
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export type FindUpNameFnResult = PathLike | Promise<PathLike | typeof FIND_UP_STOP> | typeof FIND_UP_STOP | undefined;
 
 export type FindUpName = string[] | string | ((directory: string) => FindUpNameFnResult);
 
+// eslint-disable-next-line unicorn/prevent-abbreviations
 export type FindUpNameSyncFnResult = PathLike | typeof FIND_UP_STOP | undefined;
 
 export type FindUpNameSync = string[] | string | ((directory: string) => FindUpNameSyncFnResult);

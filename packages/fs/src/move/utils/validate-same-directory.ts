@@ -1,6 +1,6 @@
 import { dirname } from "@visulima/path";
 
-const validateSameDirectory = (source: string, destination: string) => {
+const validateSameDirectory = (source: string, destination: string): void => {
     if (dirname(source) !== dirname(destination)) {
         throw new Error("`source` and `destination` must be in the same directory");
     }

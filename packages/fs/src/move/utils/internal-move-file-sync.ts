@@ -6,11 +6,7 @@ import isAccessibleSync from "../../is-accessible-sync";
 import type { InternalOptions } from "../types";
 import validateSameDirectory from "./validate-same-directory";
 
-const internalMoveFileSync = (
-    sourcePath: string,
-    destinationPath: string,
-    { cwd, directoryMode, overwrite, validateDirectory }: InternalOptions,
-): void => {
+const internalMoveFileSync = (sourcePath: string, destinationPath: string, { cwd, directoryMode, overwrite, validateDirectory }: InternalOptions): void => {
     if (cwd) {
         // eslint-disable-next-line no-param-reassign
         sourcePath = resolve(cwd, sourcePath);
