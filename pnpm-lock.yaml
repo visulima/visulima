@@ -1275,8 +1275,8 @@ importers:
         specifier: 3.0.15
         version: 3.0.15(zod@3.23.8)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.63
-        version: 2.0.63(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)
+        specifier: 2.0.64
+        version: 2.0.64(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -1396,8 +1396,8 @@ importers:
         specifier: 2.0.32
         version: 2.0.32(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       '@visulima/fs':
-        specifier: 2.2.2
-        version: 2.2.2(yaml@2.5.1)
+        specifier: 2.3.0
+        version: 2.3.0(yaml@2.5.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.2
         version: 2.1.2(vitest@2.1.2)
@@ -1660,8 +1660,8 @@ importers:
         specifier: 1.4.12
         version: 1.4.12
       '@visulima/find-cache-dir':
-        specifier: 1.0.14
-        version: 1.0.14(yaml@2.6.0)
+        specifier: 1.0.15
+        version: 1.0.15(yaml@2.6.0)
       '@visulima/pail':
         specifier: 2.1.11
         version: 2.1.11(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
@@ -2438,8 +2438,8 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 2.2.2
-        version: 2.2.2(yaml@2.6.0)
+        specifier: 2.3.0
+        version: 2.3.0(yaml@2.6.0)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -3216,8 +3216,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.2.2
-        version: 2.2.2(yaml@2.5.1)
+        specifier: 2.3.0
+        version: 2.3.0(yaml@2.5.1)
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -3437,8 +3437,8 @@ importers:
   packages/package:
     dependencies:
       '@visulima/fs':
-        specifier: 2.2.2
-        version: 2.2.2(yaml@2.6.0)
+        specifier: 2.3.0
+        version: 2.3.0(yaml@2.6.0)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -4260,8 +4260,8 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 2.2.2
-        version: 2.2.2(yaml@2.6.0)
+        specifier: 2.3.0
+        version: 2.3.0(yaml@2.6.0)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -10100,6 +10100,10 @@ packages:
     resolution: {integrity: sha512-HJHYuKR57SpyVVp7SH7qHx/hg2udVyQOfWGP0nrHG0axV7suK7bwbwT/lOdInO8jASJDpL2GJquOktMl7mYlPw==}
     engines: {node: '>=18.* <=22.*'}
 
+  '@visulima/find-cache-dir@1.0.15':
+    resolution: {integrity: sha512-TG7xPlfteaPCZD4iTspUEOxW177l/yVvxkFgmfMfTX8TYtJsUVGwDUZKZFjdJUho06zXXNhaAWj2wzDl4kAGlg==}
+    engines: {node: '>=18.* <=22.*'}
+
   '@visulima/fmt@1.1.10':
     resolution: {integrity: sha512-JjlDwy7iK07IOBjwbBCJovoBKI6r0z9FaxxVWfxeDxsDhk2OSw96WzMng0jbh44ET8X01swLNiSUp1+PCHbtBg==}
     engines: {node: '>=18.* <=22.*'}
@@ -10150,6 +10154,16 @@ packages:
       yaml:
         optional: true
 
+  '@visulima/fs@2.3.0':
+    resolution: {integrity: sha512-2zSeRHfX9Mvzzu0QZ+PXXEmj3DV0NMwu/LznmHnlT0FnIVLyKgev/3/2HrWrt88vM6ed+LCQpFqCb2OoQ8F8xQ==}
+    engines: {node: '>=18.* <=22.*'}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      yaml: ^2.4.0
+    peerDependenciesMeta:
+      yaml:
+        optional: true
+
   '@visulima/humanizer@1.0.12':
     resolution: {integrity: sha512-zvpuQDuoCIMP6vXvGY648yDmkLFfevDscz5ZBnPejMwFadOilpMdxJwLfwTn+OVTGLSNUzkXwjLskkkpW0sZpA==}
     engines: {node: '>=18.* <=22.*'}
@@ -10176,8 +10190,8 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.63':
-    resolution: {integrity: sha512-ksb1+gELs9GM5Mk5uLRMPj3FVma/Xl/N3MDVVhozMh/Dy+FpDyb5WE84JWhA79ZQDE5CDdJT62WJvDxSOy5WGA==}
+  '@visulima/jsdoc-open-api@2.0.64':
+    resolution: {integrity: sha512-7W3RmlO9BqgSJMy7RJWy5xUjg5q5D/HVQmRGBn6snYJcKt452mAqsZSnKVjmRXwkRLmyTDxEWcD95EP5s95F3w==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -21739,7 +21753,7 @@ snapshots:
 
   '@anolilab/rc@1.1.2(yaml@2.5.1)':
     dependencies:
-      '@visulima/fs': 2.2.2(yaml@2.5.1)
+      '@visulima/fs': 2.3.0(yaml@2.5.1)
       ini: 4.1.3
       ts-deepmerge: 7.0.0
     transitivePeerDependencies:
@@ -21747,7 +21761,7 @@ snapshots:
 
   '@anolilab/rc@1.1.2(yaml@2.6.0)':
     dependencies:
-      '@visulima/fs': 2.2.2(yaml@2.6.0)
+      '@visulima/fs': 2.3.0(yaml@2.6.0)
       ini: 4.1.3
       ts-deepmerge: 7.0.0
     transitivePeerDependencies:
@@ -29974,6 +29988,13 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
+  '@visulima/find-cache-dir@1.0.15(yaml@2.6.0)':
+    dependencies:
+      '@visulima/fs': 2.3.0(yaml@2.6.0)
+      '@visulima/path': 1.1.1
+    transitivePeerDependencies:
+      - yaml
+
   '@visulima/fmt@1.1.10': {}
 
   '@visulima/fmt@1.1.11': {}
@@ -30008,13 +30029,19 @@ snapshots:
     optionalDependencies:
       yaml: 2.6.0
 
-  '@visulima/fs@2.2.2(yaml@2.5.1)':
+  '@visulima/fs@2.2.2(yaml@2.6.0)':
+    dependencies:
+      '@visulima/path': 1.1.1
+    optionalDependencies:
+      yaml: 2.6.0
+
+  '@visulima/fs@2.3.0(yaml@2.5.1)':
     dependencies:
       '@visulima/path': 1.1.1
     optionalDependencies:
       yaml: 2.5.1
 
-  '@visulima/fs@2.2.2(yaml@2.6.0)':
+  '@visulima/fs@2.3.0(yaml@2.6.0)':
     dependencies:
       '@visulima/path': 1.1.1
     optionalDependencies:
@@ -30032,14 +30059,14 @@ snapshots:
 
   '@visulima/is-ansi-color-supported@2.2.8': {}
 
-  '@visulima/jsdoc-open-api@2.0.63(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.64(@swc/core@1.6.7(@swc/helpers@0.5.5))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.2.2(yaml@2.5.1)
+      '@visulima/fs': 2.3.0(yaml@2.6.0)
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
-      yaml: 2.5.1
+      yaml: 2.6.0
     optionalDependencies:
       cli-progress: 3.12.0
       commander: 12.1.0
