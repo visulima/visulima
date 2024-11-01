@@ -1,0 +1,28 @@
+<svg viewBox="0 0 248 291" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="a" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="red">
+        <animate attributeName="stop-color" values="red;purple;blue;red;" dur="20s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="0.5" stop-color="purple">
+        <animate attributeName="stop-color" values="purple;blue;red;purple;" dur="20s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="1" stop-color="blue">
+        <animate attributeName="stop-color" values="blue;red;purple;blue;" dur="20s" repeatCount="indefinite" />
+      </stop>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="10s" repeatCount="indefinite" />
+    </linearGradient>
+    <linearGradient id="overlayGradientA" x1="62" y1="42.2253" x2="62" y2="290.225" gradientUnits="userSpaceOnUse">
+      <stop offset="0.34" stop-opacity="0.5" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="overlayGradientB" x1="186" y1="0" x2="186" y2="248" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0" />
+      <stop offset="0.695" stop-opacity="0.5" />
+    </linearGradient>
+  </defs>
+  <path d="M0 166.225C0 234.709 55.5167 290.225 124 290.225V42.2253C55.5167 42.2253 0 97.742 0 166.225Z M248 124C248 192.483 192.483 248 124 248V0C192.483 0 248 55.5167 248 124Z" fill="url(#a)" />
+  <path d="M0 166.225C0 234.709 55.5167 290.225 124 290.225V42.2253C55.5167 42.2253 0 97.742 0 166.225Z" fill="url(#overlayGradientA)" />
+  <path d="M248 124C248 192.483 192.483 248 124 248V0C192.483 0 248 55.5167 248 124Z" fill="url(#overlayGradientB)" />
+  <circle cx="124" cy="147" r="50" fill="white" />
+</svg>
