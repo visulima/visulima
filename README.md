@@ -1,9 +1,6 @@
 <p align="center">
   <a href="https://visulima.com">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="">
-      <img src="" height="128">
-    </picture>
+    <img src="./assets/visulima_logo.svg" width="200" />
     <h1 align="center">Visulima</h1>
   </a>
 </p>
