@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions";
-import findCacheDirectory from "find-cache-dir";
+import { findCacheDirSync } from "@visulima/find-cache-dir";
 
 import type { Solution, SolutionFinder, SolutionFinderFile } from "../../types";
 import openAiPrompt from "./open-ai-prompt";
@@ -8,7 +8,7 @@ import openAiSolutionResponse from "./open-ai-solution-response";
 import cache from "../../util/cache";
 import debugLog from "../../util/debug-log";
 
-const findCache = findCacheDirectory({ name: "visulima-flame" });
+const findCache = findCacheDirSync("visulima-flame");
 
 debugLog(findCache === undefined ? "No cache directory found." : `Cache directory found at ${findCache}.`);
 
@@ -18,7 +18,7 @@ if (findCache === undefined) {
 
 const cacheHandler = findCache ? cache(findCache) : undefined;
 
-const DEFAULT_HEADER = "## Ai Genereated Solution";
+const DEFAULT_HEADER = "## Ai Generated Solution";
 const DEFAULT_ERROR_MESSAGE = "Creation of a AI solution failed.";
 
 const OpenAiFinder: (
