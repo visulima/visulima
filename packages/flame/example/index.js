@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import httpDisplayer from "../dist/http-displayer.js";
+import httpDisplayer from "../dist/displayer/http-displayer.js";
 
 const port = 3000;
 const server = createServer(async (request, response) => {

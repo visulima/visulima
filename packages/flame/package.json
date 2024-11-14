@@ -51,21 +51,33 @@
     "type": "module",
     "exports": {
         ".": {
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            },
             "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
             }
         },
         "./displayer/cli": {
+            "require": {
+                "types": "./dist/displayer/cli-displayer.d.cts",
+                "default": "./dist/displayer/cli-displayer.cjs"
+            },
             "import": {
-                "types": "./dist/cli-displayer.d.ts",
-                "default": "./dist/cli-displayer.js"
+                "types": "./dist/displayer/cli-displayer.d.mts",
+                "default": "./dist/displayer/cli-displayer.mjs"
             }
         },
         "./displayer/http": {
+            "require": {
+                "types": "./dist/displayer/http-displayer.d.cts",
+                "default": "./dist/displayer/http-displayer.cjs"
+            },
             "import": {
-                "types": "./dist/http-displayer.d.ts",
-                "default": "./dist/http-displayer.js"
+                "types": "./dist/displayer/http-displayer.d.mts",
+                "default": "./dist/displayer/http-displayer.mjs"
             }
         },
         "./package.json": "./package.json"
@@ -78,92 +90,91 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "rimraf dist && cross-env NODE_ENV=development tsup",
-        "build:prod": "rimraf dist && cross-env NODE_ENV=production tsup",
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "cross-env NODE_ENV=development tsup --watch --onSuccess 'node ./example/index.js'",
+        "dev": "packem build --development --watch --onSuccess 'node ./example/index.js'",
+        "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
         "lint:eslint:fix": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs --fix",
-        "lint:packagejson": "publint --strict",
+        "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
         "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "lint:types": "tsc --noEmit",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest",
-        "types": "tsup --dts-only",
-        "types:check": "tsc --noEmit"
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@visulima/error": "workspace:*",
+        "@visulima/find-cache-dir": "workspace:*",
         "get-uri": "^6.0.3"
     },
     "devDependencies": {
-        "find-cache-dir": "^5.0.0",
-        "marked": "^14.1.2",
-        "sanitize-html": "^2.13.0",
-        "shikiji": "^0.10.2",
-        "open-editor": "^5.0.0",
-        "clipboard": "^2.0.11",
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-preset": "^9.0.0",
-        "@babel/core": "^7.25.2",
+        "@anolilab/semantic-release-preset": "^9.0.1",
+        "@babel/core": "^7.26.0",
         "@eslint-types/deprecation": "^2.0.0",
         "@eslint-types/import": "^2.29.1",
         "@eslint-types/jsdoc": "^48.2.2",
         "@eslint-types/typescript-eslint": "^7.5.0",
         "@eslint-types/unicorn": "^52.0.0",
-        "@rushstack/eslint-plugin-security": "^0.8.2",
+        "@rushstack/eslint-plugin-security": "^0.8.3",
         "@tailwindcss/forms": "^0.5.9",
         "@tailwindcss/typography": "^0.5.15",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/command-line-args": "^5.2.3",
-        "@types/node": "22.5.4",
+        "@types/node": "18.19.15",
         "@types/sanitize-html": "^2.13.0",
-        "@visulima/nextra-theme-docs": "4.0.26",
-        "@vitest/coverage-v8": "^2.1.1",
+        "@visulima/packem": "1.6.0",
+        "@vitest/coverage-v8": "^2.1.4",
+        "postcss-focus-visible": "^10.0.1",
         "chalk": "^5.3.0",
+        "clipboard": "^2.0.11",
         "concurrently": "^9.0.1",
         "cross-env": "^7.0.3",
-        "esbuild-plugin-inline-import": "1.1.0",
-        "eslint": "^8.54.0",
+        "cssnano": "7.0.6",
+        "esbuild": "0.24.0",
+        "eslint": "^9.14.0",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-import": "npm:eslint-plugin-i@^2.29.1",
         "eslint-plugin-mdx": "^3.1.5",
-        "eslint-plugin-vitest": "^0.4.1",
+        "eslint-plugin-vitest": "^0.5.4",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "lucide-static": "^0.441.0",
-        "openai": "4.61.0",
-        "postcss": "^8.4.45",
-        "postcss-cli": "^11.0.0",
-        "postcss-focus-visible": "^10.0.0",
-        "postcss-import": "^16.1.0",
-        "postcss-lightningcss": "1.0.1",
-        "preline": "^2.4.1",
+        "icss-utils": "5.1.0",
+        "lucide-static": "^0.454.0",
+        "marked": "^14.1.3",
+        "open-editor": "^5.0.0",
+        "openai": "4.70.2",
+        "postcss": "^8.4.47",
+        "postcss-load-config": "6.0.1",
+        "postcss-modules-extract-imports": "3.1.0",
+        "postcss-modules-local-by-default": "4.0.5",
+        "postcss-modules-scope": "3.2.0",
+        "postcss-modules-values": "4.0.0",
+        "postcss-value-parser": "4.2.0",
+        "preline": "^2.5.1",
         "prettier": "^3.3.3",
         "rimraf": "^6.0.1",
-        "semantic-release": "^24.1.1",
+        "sanitize-html": "^2.13.1",
+        "semantic-release": "^24.2.0",
+        "shikiji": "^0.10.2",
         "sort-package-json": "^2.10.1",
-        "tailwindcss": "^3.4.11",
-        "tsup": "^8.2.4",
-        "typescript": "^5.6.2",
-        "vitest": "^2.1.1"
+        "tailwindcss": "^3.4.14",
+        "typescript": "^5.6.3",
+        "vitest": "^2.1.4"
     },
     "peerDependencies": {
-        "find-cache-dir": "^5.0.0",
-        "openai": "4.20.1",
-        "marked": "^11.0.0",
         "clipboard": "^2.0.11",
+        "marked": "^11.0.0",
+        "open-editor": "^4.1.1",
+        "openai": "4.20.1",
         "sanitize-html": "^2.11.0",
-        "shikiji": "^0.7.5",
-        "open-editor": "^4.1.1"
+        "shikiji": "^0.7.5"
     },
     "peerDependenciesMeta": {
-        "find-cache-dir": {
-            "optional": true
-        },
         "openai": {
             "optional": true
         },
