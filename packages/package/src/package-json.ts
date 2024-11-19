@@ -18,11 +18,31 @@ import isNode from "./utils/is-node";
 
 type ReadOptions = {
     cache?: FindPackageJsonCache | boolean;
+    strict?: boolean;
 };
 
 const PackageJsonFileCache = new Map<string, NormalizedReadResult>();
 
 export type FindPackageJsonCache = Cache<NormalizedReadResult>
+
+const normalizeInput = (input: Input, strict: boolean): NormalizedPackageJson => {
+    const warnings: string[] = [];
+
+    normalizeData(
+        input,
+        (message) => {
+            warnings.push(message);
+        },
+        strict,
+    );
+
+    if (strict && warnings.length > 0) {
+        // eslint-disable-next-line unicorn/error-message
+        throw new Error(warnings.join("\n"));
+    }
+
+    return input as NormalizedPackageJson;
+};
 
 export type NormalizedReadResult = {
     packageJson: NormalizedPackageJson;
@@ -35,7 +55,8 @@ export type NormalizedReadResult = {
  * @param cwd - The current working directory.
  * @returns A `Promise` that resolves to an object containing the parsed package.json data and the file path.
  * The type of the returned promise is `Promise<NormalizedReadResult>`.
- * @throws An `Error` if the package.json file cannot be found.
+ *
+ * @throws {Error} If the package.json file cannot be found or if strict mode is enabled and normalize warnings are thrown.
  */
 export const findPackageJson = async (cwd?: URL | string, options: ReadOptions = {}): Promise<NormalizedReadResult> => {
     const findUpConfig: FindUpOptions = {
@@ -60,7 +81,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
 
     const packageJson = await readJson(filePath);
 
-    normalizeData(packageJson as Input);
+    normalizeInput(packageJson as Input, options.strict ?? false);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -95,7 +116,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
 
     const packageJson = readJsonSync(filePath);
 
-    normalizeData(packageJson as Input);
+    normalizeInput(packageJson as Input, options.strict ?? false);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -131,7 +152,22 @@ export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJso
     writeJsonSync(join(directory, "package.json"), data, writeOptions);
 };
 
-export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPackageJson => {
+/**
+ * A synchronous function to parse the package.json file/object/string and return normalize the data.
+ *
+ * @param {string | (JsonObject)} packageFile
+ * @param {{strict?: false | true | undefined}} options
+ *
+ * @returns {NormalizedPackageJson}
+ *
+ * @throws {Error} If the packageFile parameter is not an object or a string or if strict mode is enabled and normalize warnings are thrown.
+ */
+export const parsePackageJson = (
+    packageFile: JsonObject | string,
+    options?: {
+        strict?: boolean;
+    },
+): NormalizedPackageJson => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
@@ -147,7 +183,7 @@ export const parsePackageJson = (packageFile: JsonObject | string): NormalizedPa
           ? readJsonSync(packageFile as string)
           : parseJson(packageFile as string);
 
-    normalizeData(json as Input);
+    normalizeInput(json as Input, options?.strict ?? false);
 
     return json as NormalizedPackageJson;
 };
