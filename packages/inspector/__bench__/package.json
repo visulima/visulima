@@ -7,12 +7,12 @@
     },
     "dependencies": {
         "@visulima/inspector": "workspace:*",
-        "loupe": "^3.1.1",
-        "object-inspect": "^1.13.2"
+        "loupe": "^3.1.2",
+        "object-inspect": "^1.13.3"
     },
     "devDependencies": {
         "@types/object-inspect": "^1.13.0",
         "typescript": "5.4.5",
-        "vitest": "^2.1.2"
+        "vitest": "^2.1.5"
     }
 }

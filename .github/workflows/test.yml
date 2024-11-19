@@ -59,13 +59,13 @@ jobs:
             matrix:
                 os:
                     - "ubuntu-latest"
-                node_version: ["18", "20", "21", "22"]
+                node_version: ["18", "20", "21", "22", "23"]
                 # On the other platforms, we only test the lts node version
                 include:
                     - os: "macos-latest"
-                      node_version: "20"
+                      node_version: "22"
                     - os: "windows-latest"
-                      node_version: "20.14" # https://github.com/nodejs/node/issues/48673
+                      node_version: "22"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
