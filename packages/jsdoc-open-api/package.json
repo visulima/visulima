@@ -108,22 +108,22 @@
         "comment-parser": "^1.4.1",
         "lodash.mergewith": "^4.6.2",
         "read-pkg-up": "^7.0.1",
-        "yaml": "^2.5.1"
+        "yaml": "^2.6.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.3",
-        "@anolilab/semantic-release-preset": "^9.0.0",
-        "@babel/core": "^7.25.7",
+        "@anolilab/semantic-release-pnpm": "^1.1.5",
+        "@anolilab/semantic-release-preset": "^9.0.2",
+        "@babel/core": "^7.26.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@types/cli-progress": "^3.11.6",
         "@types/http-errors": "^2.0.4",
         "@types/lodash.mergewith": "^4.6.9",
         "@types/node": "18.19.15",
         "@types/webpack": "^5.28.5",
-        "@vitest/coverage-v8": "^2.1.2",
-        "@vitest/ui": "^2.1.2",
+        "@vitest/coverage-v8": "^2.1.5",
+        "@vitest/ui": "^2.1.5",
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -139,15 +139,15 @@
         "prettier": "^3.3.3",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
-        "tsup": "^8.3.0",
+        "tsup": "^8.3.5",
         "typescript": "5.4.5",
-        "vitest": "^2.1.2",
-        "webpack": "^5.95.0"
+        "vitest": "^2.1.5",
+        "webpack": "^5.96.1"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
-        "webpack": "^5.95.0"
+        "webpack": "^5.96.1"
     },
     "engines": {
         "node": ">=18.* <=22.*"
