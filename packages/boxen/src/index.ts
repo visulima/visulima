@@ -442,7 +442,7 @@ export const boxen = (text: string, options: Options = {}): string => {
     }
 
     if (options.textColor !== undefined && typeof options.textColor !== "function") {
-        throw new Error(`"backgroundColor" is not a valid function`);
+        throw new Error(`"textColor" is not a valid function`);
     }
 
     let config: DimensionOptions = {
