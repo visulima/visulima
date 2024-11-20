@@ -127,7 +127,7 @@
         "webdriverio": "^9.2.14"
     },
     "engines": {
-        "node": ">=18.* <=22.*"
+        "node": ">=18.* <=23.*"
     },
     "publishConfig": {
         "access": "public",

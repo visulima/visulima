@@ -117,7 +117,7 @@
         "vitest": "^2.1.5"
     },
     "engines": {
-        "node": ">=18.* <=22.*"
+        "node": ">=18.* <=23.*"
     },
     "publishConfig": {
         "access": "public",
