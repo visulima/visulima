@@ -19,7 +19,8 @@ import type { Cache } from "../types";
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
 
 const getPnpApi = () => {
-    // @ts-expect-error - This is a private API
+    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error,@typescript-eslint/ban-ts-comment
+    // @ts-ignore - This is a private API
     const { findPnpApi } = Module;
 
     // https://yarnpkg.com/advanced/pnpapi/#requirepnpapi
