@@ -202,7 +202,6 @@
         "type-fest": "^4.27.0",
         "typescript": "5.4.5",
         "vitest": "^2.1.5",
-        "which-pm-runs": "file:",
         "yarn": "^1.22.22"
     },
     "engines": {

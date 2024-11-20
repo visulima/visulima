@@ -2991,9 +2991,6 @@ importers:
       vitest:
         specifier: ^2.1.5
         version: 2.1.5(@types/node@18.19.15)(@vitest/browser@1.6.0)(@vitest/ui@2.1.5)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.6.5(@types/node@18.19.15)(typescript@5.4.5))(terser@5.31.1)
-      which-pm-runs:
-        specifier: 'file:'
-        version: 'link:'
       yarn:
         specifier: ^1.22.22
         version: 1.22.22
