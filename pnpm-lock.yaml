@@ -2478,7 +2478,7 @@ importers:
         specifier: 1.0.7
         version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/browser':
-        specifier: 2.1.5
+        specifier: ^2.1.5
         version: 2.1.5(@types/node@18.19.15)(playwright@1.49.0)(typescript@5.4.5)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.5)(webdriverio@9.2.14)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
