@@ -1,5 +1,5 @@
 import type { ColorizeType } from "@visulima/colorize";
-import { bold, cyan, green, grey, magenta, red, yellow } from "@visulima/colorize";
+import { bold, cyan, green, grey, magenta, red, yellow } from "@visulima/colorize/browser";
 import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
