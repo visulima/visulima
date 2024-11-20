@@ -132,10 +132,10 @@
         "vitest": "^2.1.5"
     },
     "optionalDependencies": {
-        "next": "^14.2.4"
+        "next": ">=14.0 || >=15.0"
     },
     "engines": {
-        "node": ">=18.* <=22.*"
+        "node": ">=18.* <=23.*"
     },
     "os": [
         "darwin",
