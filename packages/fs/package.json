@@ -192,7 +192,7 @@
         "yaml": "^2.6.1"
     },
     "peerDependencies": {
-        "yaml": "^2.4.0"
+        "yaml": ">=2.4"
     },
     "peerDependenciesMeta": {
         "yaml": {
