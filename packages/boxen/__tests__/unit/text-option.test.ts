@@ -52,7 +52,7 @@ describe("text option", () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/prefer-ts-expect-error
             // @ts-ignore - intentional error for testing
             boxen("foo", { textColor: "dark-yellow" });
-        }).toThrow("\"textColor\" is not a valid function");
+        }).toThrow('"textColor" is not a valid function');
     });
 
     it("text alignement option (left)", () => {

@@ -103,7 +103,7 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
         "@visulima/colorize": "1.4.12",
-        "@visulima/packem": "1.0.7",
+        "@visulima/packem": "1.8.2",
         "@vitest/browser": "^2.1.5",
         "playwright": "^1.49.0",
         "@vitest/coverage-v8": "^2.1.5",
