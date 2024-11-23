@@ -127,7 +127,7 @@ importers:
         version: 14.3.0
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
+        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -293,7 +293,7 @@ importers:
         version: 8.4.49
       postcss-cli:
         specifier: ^11.0.0
-        version: 11.0.0(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)
+        version: 11.0.0(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)
       postcss-import:
         specifier: ^16.1.0
         version: 16.1.0(postcss@8.4.49)
@@ -384,7 +384,7 @@ importers:
         version: 8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)
       '@storybook/react-vite':
         specifier: ^8.4.4
-        version: 8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.24.0)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.27.3)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/test-runner':
         specifier: ^0.19.1
         version: 0.19.1(@swc/helpers@0.5.13)(@types/node@20.14.11)(prettier@3.3.3)
@@ -628,8 +628,8 @@ importers:
         specifier: 1.4.12
         version: 1.4.12
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -963,7 +963,7 @@ importers:
         version: 5.17.14(@types/react@18.3.12)(debug@4.3.7)(ramda@0.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
+        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
       type-fest:
         specifier: ^4.27.0
         version: 4.27.0
@@ -1010,8 +1010,8 @@ importers:
         specifier: 1.4.12
         version: 1.4.12
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -1164,8 +1164,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -1319,7 +1319,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
+        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -1427,8 +1427,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -1633,7 +1633,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
+        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -1677,8 +1677,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -1818,8 +1818,8 @@ importers:
         specifier: 4.0.26
         version: 4.0.26(csstype@3.1.3)(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nextra@2.13.4(next@15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -1915,8 +1915,8 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -2002,8 +2002,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -2241,8 +2241,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -2361,8 +2361,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
         specifier: 1.1.1
         version: 1.1.1
@@ -2475,8 +2475,8 @@ importers:
         specifier: 1.4.12
         version: 1.4.12
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/browser':
         specifier: ^2.1.5
         version: 2.1.5(@types/node@18.19.15)(playwright@1.49.0)(typescript@5.4.5)(vite@5.4.11(@types/node@18.19.15)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.5)(webdriverio@9.2.14)
@@ -2596,8 +2596,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -2764,7 +2764,7 @@ importers:
         version: 24.0.0(typescript@5.4.5)
       tsup:
         specifier: ^8.3.5
-        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
+        version: 8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1)
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -2805,8 +2805,8 @@ importers:
         specifier: 18.19.39
         version: 18.19.39
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.6.1)
+        specifier: ^1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.5.4)))(typedoc@0.26.10(typescript@5.5.4))(typescript@5.5.4)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -2923,8 +2923,8 @@ importers:
         specifier: ^2.4.4
         version: 2.4.4
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -3037,8 +3037,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -3146,8 +3146,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/redact':
         specifier: 1.0.9
         version: 1.0.9
@@ -3294,8 +3294,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -3409,8 +3409,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.5)(@vitest/ui@2.1.5)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))
@@ -3503,8 +3503,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -3640,8 +3640,8 @@ importers:
         specifier: 20.14.2
         version: 20.14.2
       '@visulima/packem':
-        specifier: 1.0.7
-        version: 1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)
+        specifier: 1.8.2
+        version: 1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: ^2.1.5
         version: 2.1.5(@vitest/browser@2.1.5)(vitest@2.1.5)
@@ -4355,6 +4355,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  '@babel/parser@7.26.2':
+    resolution: {integrity: sha512-DWMCZH9WA4Maitz2q21SRKHo9QXZxkDsbNZoVD62gusNtNBBqDg9i7uOhASfTfIGNzW+O+r7+jAlM8dwphcJKQ==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   '@babel/plugin-bugfix-firefox-class-in-computed-class-key@7.24.7':
     resolution: {integrity: sha512-TiT1ss81W80eQsN+722OaeQMY/G4yTb4G9JrqeiDADs3N8lbPMGldWi9x8tyqCW5NLx1Jh2AvkE6r6QvEltMMQ==}
     engines: {node: '>=6.9.0'}
@@ -4959,17 +4964,16 @@ packages:
     peerDependencies:
       typedoc: ^0.23.15
 
-  '@ckeditor/typedoc-plugins@44.0.0':
-    resolution: {integrity: sha512-deXqG/UWG3cspE8B5QoLzrWh06GeH//7LDVpVqNM3tb5Q9NjX4zuVIKXpnFN0GlnHporvXX41WuI3P3AWXbK/Q==}
-    engines: {node: '>=18.0.0', npm: '>=5.7.1'}
-    peerDependencies:
-      typedoc: ^0.23.15
-
   '@clack/core@0.3.4':
     resolution: {integrity: sha512-H4hxZDXgHtWTwV3RAVenqcC4VbJZNegbBjlPvzOzCouXtS2y3sDvlO3IsbrPNWuLWPPlYVYPghQdSF64683Ldw==}
 
   '@clack/prompts@0.7.0':
     resolution: {integrity: sha512-0MhX9/B4iL6Re04jPrttDm+BsP8y6mS7byuv0BvXgdXhbV5PdlsHt55dvNsuBCPZ7xq1oTAOOuotR9NFbQyMSA==}
+    bundledDependencies:
+      - is-unicode-supported
+
+  '@clack/prompts@0.8.1':
+    resolution: {integrity: sha512-I263nEUNbX4lPTX93trl1fkIvGrGlz6nUYkqOddF0ZmjqcxUgUlXmpUIUqfapirRKJrFddvwF+qdZgg8cSqF7g==}
     bundledDependencies:
       - is-unicode-supported
 
@@ -5141,6 +5145,22 @@ packages:
   '@commitlint/types@19.5.0':
     resolution: {integrity: sha512-DSHae2obMSMkAtTBSOulg5X7/z+rGLxcXQIkg3OmWvY6wifojge5uVMydfhUvs7yQj+V7jNmRZ2Xzl8GJyqRgg==}
     engines: {node: '>=v18'}
+
+  '@csstools/css-parser-algorithms@3.0.4':
+    resolution: {integrity: sha512-Up7rBoV77rv29d3uKHUIVubz1BTcgyUK72IvCQAbfbMv584xHcGKCKbWh7i8hPrRJ7qU4Y8IO3IY9m+iTB7P3A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@csstools/css-tokenizer': ^3.0.3
+
+  '@csstools/css-tokenizer@3.0.3':
+    resolution: {integrity: sha512-UJnjoFsmxfKUdNYdWgOB0mWUypuLvAfQPH1+pyvRJs6euowbFkFC6P13w1l8mJyi3vxYMxc9kld5jZEGRQs6bw==}
+    engines: {node: '>=18'}
+
+  '@csstools/postcss-slow-plugins@2.0.0':
+    resolution: {integrity: sha512-G3zDVtcACreTMr5xdzDoChLpPUEYi/1IXqVs7vHanS6zu4UCHd8vFfdSannQDBTP03cfTl/CuJJtUAK8kKVfcw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      postcss: '>=8.4.49'
 
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
@@ -6445,6 +6465,9 @@ packages:
   '@napi-rs/wasm-runtime@0.2.4':
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
 
+  '@napi-rs/wasm-runtime@0.2.5':
+    resolution: {integrity: sha512-kwUxR7J9WLutBbulqg1dfOrMTwhMdXLdcGUhcbCcGwnPLt3gz19uHVdwH1syKVDbE022ZS2vZxOWflFLS0YTjw==}
+
   '@next/env@14.2.13':
     resolution: {integrity: sha512-s3lh6K8cbW1h5Nga7NNeXrbe0+2jIIYK9YaA9T7IufDWnZpozdFUp6Hf0d5rNWUKu4fEuSX2rCKlGjCrtylfDw==}
 
@@ -6855,11 +6878,6 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@oxc-parser/binding-darwin-arm64@0.30.5':
-    resolution: {integrity: sha512-D5XggvR5oPSM9KmX8A/kaqOZU05HDD3ipEID7BfVDLh+TC/vIj5it+XzhOlTMq59X4fkpNFhdkux3MypKvaHfQ==}
-    cpu: [arm64]
-    os: [darwin]
-
   '@oxc-parser/binding-darwin-arm64@0.32.0':
     resolution: {integrity: sha512-SiiPMuL5mxE/aJmpezCafrB/R0u5xdvFIvOxpg8Hdwbjx3gRSC5ys8AN2VsSU0S9wTo+SF5FCVQvU/buKTIZfA==}
     cpu: [arm64]
@@ -6870,9 +6888,9 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-  '@oxc-parser/binding-darwin-x64@0.30.5':
-    resolution: {integrity: sha512-iA/wLlKAOJGPQJ1+VmHO9rgeSE79hwGskiCgeGg7uHHYkCesaFbUOP/nqMOQGmpYjrK9aNcfXRF5fGDZlXPDJg==}
-    cpu: [x64]
+  '@oxc-parser/binding-darwin-arm64@0.36.0':
+    resolution: {integrity: sha512-i49m1L++ZAeAjNob5qho2ir3nflhIzgQl9hsFvmMBzG+we4OKseGlUAd/nEXJ2XnNvu1TEi/EocsE9XgWM5xlg==}
+    cpu: [arm64]
     os: [darwin]
 
   '@oxc-parser/binding-darwin-x64@0.32.0':
@@ -6885,10 +6903,10 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.30.5':
-    resolution: {integrity: sha512-6+8xLMY2LhyjxtCCWByp7dgLGkjednBeObVk/ZqzMPuS5dae97navOlmYWypGE1FDcVXCVd14aAHxAvNVbyzsg==}
-    cpu: [arm64]
-    os: [linux]
+  '@oxc-parser/binding-darwin-x64@0.36.0':
+    resolution: {integrity: sha512-+UYnDyItrh76gp7JNiTwCYyipwD1f1GkXlVkFt7L4y8GI2nMkTsvS1kUrYVsZTi33GHq4d7janrEN9HUTHqfGg==}
+    cpu: [x64]
+    os: [darwin]
 
   '@oxc-parser/binding-linux-arm64-gnu@0.32.0':
     resolution: {integrity: sha512-UsOdCTDNOZ1c/RQd+hUQq5KRyzJIkgxX7jWhK/jqZJZNWy8iOIxCgdIeCLQ78B15q/1R475r+TjYJzt9PcgxxA==}
@@ -6900,8 +6918,8 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-arm64-musl@0.30.5':
-    resolution: {integrity: sha512-lb68y/oywf04Cvy+W4iqMx3Si1wkllg30pgjzORFNzwEvfkIjIWX0QuVgv0Q0bMdqLSGDSIy24jZKqlR3SnPnw==}
+  '@oxc-parser/binding-linux-arm64-gnu@0.36.0':
+    resolution: {integrity: sha512-ZZXcl9FD77EbAENTpYXCYr/zZS1Ab+qomiKIhXVRC1PXIP8qqcYpFl2NtrJHKy0ScIqNHYjzB2F9pj84howN3w==}
     cpu: [arm64]
     os: [linux]
 
@@ -6915,9 +6933,9 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-gnu@0.30.5':
-    resolution: {integrity: sha512-ovN7XOxFgiOVwOme5fb0p7mDd6H5xJmeR/qAA+jhfZqWZrjbzVGapHtKccWBctkdF2MReymd0xDDtpfSSvn1dw==}
-    cpu: [x64]
+  '@oxc-parser/binding-linux-arm64-musl@0.36.0':
+    resolution: {integrity: sha512-2PqTw3uiazv4vp8pGSNWDAp8DSHAxFPh3rIub5colRlu4lLGZJNXm9fgFIp0fS5Z6BFYyhnYzWNZm8bc0q2tYA==}
+    cpu: [arm64]
     os: [linux]
 
   '@oxc-parser/binding-linux-x64-gnu@0.32.0':
@@ -6930,8 +6948,8 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-musl@0.30.5':
-    resolution: {integrity: sha512-GcIYJe3hPHsSNdQK8G2Fvc1cHgDh7dCGPHg0XJzMBPIXP+LJJY7KtzAOv5ldgIidk/xS8N2MmHsIeUfcm8jlmA==}
+  '@oxc-parser/binding-linux-x64-gnu@0.36.0':
+    resolution: {integrity: sha512-kmRgQj/48VaBf4R9P0ccZdpgepz4F2k7nJgg5L+oPenrJhnZeD9eUzImBlN27XcpBZhDxsvj7jOTp5xSVZ7E/Q==}
     cpu: [x64]
     os: [linux]
 
@@ -6945,10 +6963,10 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.30.5':
-    resolution: {integrity: sha512-sZ+TPkdUTZhTIHy5HEgHbqoLNajfY269lwFYStkOv9RcoqJYUxghZOfwOJWku0fukvAldvsMbF9BXM0J04onIA==}
-    cpu: [arm64]
-    os: [win32]
+  '@oxc-parser/binding-linux-x64-musl@0.36.0':
+    resolution: {integrity: sha512-hxpR0DdK2Zm6Gt3m/bqVLw4nZJdzkr5SsPc6sv0rPtsABx8Q6zxAf300+9mWxUm/Bf4hGHoWsCWFgWN0n87dBA==}
+    cpu: [x64]
+    os: [linux]
 
   '@oxc-parser/binding-win32-arm64-msvc@0.32.0':
     resolution: {integrity: sha512-25GA8cdiLofVj537x1mnMuOSXmSZ5lhFvJnuXt0DGhP+z4wUSVWlQj8/WD7y9lcg9v4MNN/qw8TJt53jBRrrLA==}
@@ -6960,9 +6978,9 @@ packages:
     cpu: [arm64]
     os: [win32]
 
-  '@oxc-parser/binding-win32-x64-msvc@0.30.5':
-    resolution: {integrity: sha512-hxSKjMYepF5ep5zw/z8mYkM4QkycM8a4hFzz7143MHMx0C5i7CuXRYEKH8h0rYkWShcA4QWscC6o6r1sc6rjJQ==}
-    cpu: [x64]
+  '@oxc-parser/binding-win32-arm64-msvc@0.36.0':
+    resolution: {integrity: sha512-IsarNWJhsbtARGa/7L2X2FfJt3mdQVH/CASWv99SowVaO62kLZ1lYHtU2Ps0F8dzfCwQUsWo5XnDtmfhd5nAkw==}
+    cpu: [arm64]
     os: [win32]
 
   '@oxc-parser/binding-win32-x64-msvc@0.32.0':
@@ -6972,6 +6990,69 @@ packages:
 
   '@oxc-parser/binding-win32-x64-msvc@0.33.0':
     resolution: {integrity: sha512-Wz3E6WyRBtlzut2V51O46XEcWoSCoamDSrjB+cxC1xLTugf7GRFHShD5f/YtDM7Z9IJyAc+tA14FwYi4yrg5kw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@oxc-parser/binding-win32-x64-msvc@0.36.0':
+    resolution: {integrity: sha512-NSlWyqWtmWA78nPWRWWzc4W6A8zY0YdX2yjbGg5PnEMiTXrW7NdVTyXdffX59ERDxtC3BT6E78e/sKS9u983pQ==}
+    cpu: [x64]
+    os: [win32]
+
+  '@oxc-project/types@0.36.0':
+    resolution: {integrity: sha512-VAv7ANBGE6glvOX5PEhGcca8hqBeGGDXt3xfPApZg7GhkrvbI8YCf01HojlpdIewixN2rnNpfO6cFgHS6Ixe5A==}
+
+  '@oxc-resolver/binding-darwin-arm64@2.0.1':
+    resolution: {integrity: sha512-0l180Q0aBPRj23FlY7heLKo4znwXZGyTirxhtQewUeqLVnTzdyOuqGGKrnlL2rMXyE9cEXqQ4ZODdzdmWO6QsQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxc-resolver/binding-darwin-x64@2.0.1':
+    resolution: {integrity: sha512-56icBBSx+5eM/+uV6KwsK66AJ8LIs3lMTH0Nw9ivVHRqos/eHIUigtlRzsEFF1CtOFCE4mC6p/kihiuBvQoVzA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxc-resolver/binding-freebsd-x64@2.0.1':
+    resolution: {integrity: sha512-/tbk+uuplx77DOuctwz0nZxfWMRnpBBQei1BGfjABNWtCQxnABhuiGgDIRXHx5TzJZhbbspxcndPagW3NHGixg==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@oxc-resolver/binding-linux-arm-gnueabihf@2.0.1':
+    resolution: {integrity: sha512-DeALa9wNzaKpR3vqXOFANFNygYwcLXUB50CYNhX3oqBLNhp4U79N5mDhQOr00fsDhaYcsCkMtRnxBi9zQUkGzQ==}
+    cpu: [arm]
+    os: [linux]
+
+  '@oxc-resolver/binding-linux-arm64-gnu@2.0.1':
+    resolution: {integrity: sha512-dMHO0PG0KYVeLxCOsmE7HMsdVmvovYPp+2k00Mp/PTu9HqbmFPdYaWbbDs0g+tqePL8u+Q7+bEMX7gUFGPFP2Q==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-resolver/binding-linux-arm64-musl@2.0.1':
+    resolution: {integrity: sha512-J0O5YbVZ+ioDH7e9VhHnqEEj140iHDB5KdxNIfRbPWa3nVuRrWDeBztk8239Yi1Mjb0tGp1m1arGU/XmlEar0A==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-resolver/binding-linux-x64-gnu@2.0.1':
+    resolution: {integrity: sha512-5nGiVH3R0p8SxHN47hd0bwtCDxdeWlQ6z1UO1U3wx6LfBwqSKbsuL1r5Z/+izBOEAtON1QQlpDBUaoCQMCyduQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-resolver/binding-linux-x64-musl@2.0.1':
+    resolution: {integrity: sha512-abG5WmO2ZgkQTTfRZItFatzo9d+KYuePJ68cp1sJ/gHlNTliE+/6XepTggmRm85+8ehexjjceldvNdj80j6Gjg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-resolver/binding-wasm32-wasi@2.0.1':
+    resolution: {integrity: sha512-CES19bgvEETC1YkpdJSFFrprtZ5L7VaoxR5ZVNUJrpCAM6WVPMhjev2NXLfgzbaHOBJo6lL4jnTDCtRPwzoYQw==}
+    engines: {node: '>=14.0.0'}
+    cpu: [wasm32]
+
+  '@oxc-resolver/binding-win32-arm64-msvc@2.0.1':
+    resolution: {integrity: sha512-iXIQ6JNylPio31j+bAE900jYsp9qu4DKwST1ODok6RxMQkyKfJjc9xoD/WsN6gbh8VfOAAEiAL1uMsLdwGHagA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxc-resolver/binding-win32-x64-msvc@2.0.1':
+    resolution: {integrity: sha512-hPUQ+dtWOFPWeemo0VK6DNH/NY9UjjBxAfpsjoCPOAcXpyuMQ3CsHFDwi2keNkPkCgfJSJRfffFvQysqF3fKKQ==}
     cpu: [x64]
     os: [win32]
 
@@ -7573,27 +7654,9 @@ packages:
       rollup:
         optional: true
 
-  '@rollup/plugin-commonjs@28.0.0':
-    resolution: {integrity: sha512-BJcu+a+Mpq476DMXG+hevgPSl56bkUoi88dKT8t3RyUp8kGuOh+2bU8Gs7zXDlu+fyZggnJ+iOBGrb/O1SorYg==}
-    engines: {node: '>=16.0.0 || 14 >= 14.17'}
-    peerDependencies:
-      rollup: '>=4.22.4'
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
   '@rollup/plugin-commonjs@28.0.1':
     resolution: {integrity: sha512-+tNWdlWKbpB3WgBN7ijjYkq9X5uhjmcvyjEght4NmH5fAU++zfQzAJ6wumLS+dNcvwEZhKx2Z+skY8m7v0wGSA==}
     engines: {node: '>=16.0.0 || 14 >= 14.17'}
-    peerDependencies:
-      rollup: '>=4.22.4'
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
-  '@rollup/plugin-dynamic-import-vars@2.1.3':
-    resolution: {integrity: sha512-9ZuItXkvbx0NUeEO0TMIYY7KAK/c7biumCTVrk6nwW81om7apA3/yju6JUm1pFMWmF/bZbyrom20NupRZWk9Wg==}
-    engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: '>=4.22.4'
     peerDependenciesMeta:
@@ -7604,7 +7667,7 @@ packages:
     resolution: {integrity: sha512-Mymi24fd9hlRifdZV/jYIFj1dn99F34imiYu3KzlAcgBcRi3i9SucgW/VRo5SQ9K4NuQ7dCep6pFWgNyhRdFHQ==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: '>=4.22.4'
+      rollup: ^4.24.0
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -7663,8 +7726,22 @@ packages:
       rollup:
         optional: true
 
+  '@rollup/pluginutils@5.1.3':
+    resolution: {integrity: sha512-Pnsb6f32CD2W3uCaLZIzDmeFyQ2b8UWMFI7xtwUezpcGBDVDW6y9XgAWIlARiGAo6eNF5FK5aQTr0LFyNyqq5A==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: '>=4.22.4'
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
   '@rollup/rollup-android-arm-eabi@4.24.0':
     resolution: {integrity: sha512-Q6HJd7Y6xdB48x8ZNVDOqsbh2uByBhgK8PiQgPhwkIw/HC/YX5Ghq2mQY5sRMZWHb3VsFkWooUVOZHKr7DmDIA==}
+    cpu: [arm]
+    os: [android]
+
+  '@rollup/rollup-android-arm-eabi@4.27.3':
+    resolution: {integrity: sha512-EzxVSkIvCFxUd4Mgm4xR9YXrcp976qVaHnqom/Tgm+vU79k4vV4eYTjmRvGfeoW8m9LVcsAy/lGjcgVegKEhLQ==}
     cpu: [arm]
     os: [android]
 
@@ -7673,8 +7750,18 @@ packages:
     cpu: [arm64]
     os: [android]
 
+  '@rollup/rollup-android-arm64@4.27.3':
+    resolution: {integrity: sha512-LJc5pDf1wjlt9o/Giaw9Ofl+k/vLUaYsE2zeQGH85giX2F+wn/Cg8b3c5CDP3qmVmeO5NzwVUzQQxwZvC2eQKw==}
+    cpu: [arm64]
+    os: [android]
+
   '@rollup/rollup-darwin-arm64@4.24.0':
     resolution: {integrity: sha512-bIv+X9xeSs1XCk6DVvkO+S/z8/2AMt/2lMqdQbMrmVpgFvXlmde9mLcbQpztXm1tajC3raFDqegsH18HQPMYtA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@rollup/rollup-darwin-arm64@4.27.3':
+    resolution: {integrity: sha512-OuRysZ1Mt7wpWJ+aYKblVbJWtVn3Cy52h8nLuNSzTqSesYw1EuN6wKp5NW/4eSre3mp12gqFRXOKTcN3AI3LqA==}
     cpu: [arm64]
     os: [darwin]
 
@@ -7683,8 +7770,28 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@rollup/rollup-darwin-x64@4.27.3':
+    resolution: {integrity: sha512-xW//zjJMlJs2sOrCmXdB4d0uiilZsOdlGQIC/jjmMWT47lkLLoB1nsNhPUcnoqyi5YR6I4h+FjBpILxbEy8JRg==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rollup/rollup-freebsd-arm64@4.27.3':
+    resolution: {integrity: sha512-58E0tIcwZ+12nK1WiLzHOD8I0d0kdrY/+o7yFVPRHuVGY3twBwzwDdTIBGRxLmyjciMYl1B/U515GJy+yn46qw==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@rollup/rollup-freebsd-x64@4.27.3':
+    resolution: {integrity: sha512-78fohrpcVwTLxg1ZzBMlwEimoAJmY6B+5TsyAZ3Vok7YabRBUvjYTsRXPTjGEvv/mfgVBepbW28OlMEz4w8wGA==}
+    cpu: [x64]
+    os: [freebsd]
+
   '@rollup/rollup-linux-arm-gnueabihf@4.24.0':
     resolution: {integrity: sha512-0KXvIJQMOImLCVCz9uvvdPgfyWo93aHHp8ui3FrtOP57svqrF/roSSR5pjqL2hcMp0ljeGlU4q9o/rQaAQ3AYA==}
+    cpu: [arm]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm-gnueabihf@4.27.3':
+    resolution: {integrity: sha512-h2Ay79YFXyQi+QZKo3ISZDyKaVD7uUvukEHTOft7kh00WF9mxAaxZsNs3o/eukbeKuH35jBvQqrT61fzKfAB/Q==}
     cpu: [arm]
     os: [linux]
 
@@ -7693,8 +7800,18 @@ packages:
     cpu: [arm]
     os: [linux]
 
+  '@rollup/rollup-linux-arm-musleabihf@4.27.3':
+    resolution: {integrity: sha512-Sv2GWmrJfRY57urktVLQ0VKZjNZGogVtASAgosDZ1aUB+ykPxSi3X1nWORL5Jk0sTIIwQiPH7iE3BMi9zGWfkg==}
+    cpu: [arm]
+    os: [linux]
+
   '@rollup/rollup-linux-arm64-gnu@4.24.0':
     resolution: {integrity: sha512-i0xTLXjqap2eRfulFVlSnM5dEbTVque/3Pi4g2y7cxrs7+a9De42z4XxKLYJ7+OhE3IgxvfQM7vQc43bwTgPwA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rollup/rollup-linux-arm64-gnu@4.27.3':
+    resolution: {integrity: sha512-FPoJBLsPW2bDNWjSrwNuTPUt30VnfM8GPGRoLCYKZpPx0xiIEdFip3dH6CqgoT0RnoGXptaNziM0WlKgBc+OWQ==}
     cpu: [arm64]
     os: [linux]
 
@@ -7703,8 +7820,18 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@rollup/rollup-linux-arm64-musl@4.27.3':
+    resolution: {integrity: sha512-TKxiOvBorYq4sUpA0JT+Fkh+l+G9DScnG5Dqx7wiiqVMiRSkzTclP35pE6eQQYjP4Gc8yEkJGea6rz4qyWhp3g==}
+    cpu: [arm64]
+    os: [linux]
+
   '@rollup/rollup-linux-powerpc64le-gnu@4.24.0':
     resolution: {integrity: sha512-2XFFPJ2XMEiF5Zi2EBf4h73oR1V/lycirxZxHZNc93SqDN/IWhYYSYj8I9381ikUFXZrz2v7r2tOVk2NBwxrWw==}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@rollup/rollup-linux-powerpc64le-gnu@4.27.3':
+    resolution: {integrity: sha512-v2M/mPvVUKVOKITa0oCFksnQQ/TqGrT+yD0184/cWHIu0LoIuYHwox0Pm3ccXEz8cEQDLk6FPKd1CCm+PlsISw==}
     cpu: [ppc64]
     os: [linux]
 
@@ -7713,8 +7840,18 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@rollup/rollup-linux-riscv64-gnu@4.27.3':
+    resolution: {integrity: sha512-LdrI4Yocb1a/tFVkzmOE5WyYRgEBOyEhWYJe4gsDWDiwnjYKjNs7PS6SGlTDB7maOHF4kxevsuNBl2iOcj3b4A==}
+    cpu: [riscv64]
+    os: [linux]
+
   '@rollup/rollup-linux-s390x-gnu@4.24.0':
     resolution: {integrity: sha512-mjBaoo4ocxJppTorZVKWFpy1bfFj9FeCMJqzlMQGjpNPY9JwQi7OuS1axzNIk0nMX6jSgy6ZURDZ2w0QW6D56g==}
+    cpu: [s390x]
+    os: [linux]
+
+  '@rollup/rollup-linux-s390x-gnu@4.27.3':
+    resolution: {integrity: sha512-d4wVu6SXij/jyiwPvI6C4KxdGzuZOvJ6y9VfrcleHTwo68fl8vZC5ZYHsCVPUi4tndCfMlFniWgwonQ5CUpQcA==}
     cpu: [s390x]
     os: [linux]
 
@@ -7723,8 +7860,18 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@rollup/rollup-linux-x64-gnu@4.27.3':
+    resolution: {integrity: sha512-/6bn6pp1fsCGEY5n3yajmzZQAh+mW4QPItbiWxs69zskBzJuheb3tNynEjL+mKOsUSFK11X4LYF2BwwXnzWleA==}
+    cpu: [x64]
+    os: [linux]
+
   '@rollup/rollup-linux-x64-musl@4.24.0':
     resolution: {integrity: sha512-w1i+L7kAXZNdYl+vFvzSZy8Y1arS7vMgIy8wusXJzRrPyof5LAb02KGr1PD2EkRcl73kHulIID0M501lN+vobQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rollup/rollup-linux-x64-musl@4.27.3':
+    resolution: {integrity: sha512-nBXOfJds8OzUT1qUreT/en3eyOXd2EH5b0wr2bVB5999qHdGKkzGzIyKYaKj02lXk6wpN71ltLIaQpu58YFBoQ==}
     cpu: [x64]
     os: [linux]
 
@@ -7733,13 +7880,28 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@rollup/rollup-win32-arm64-msvc@4.27.3':
+    resolution: {integrity: sha512-ogfbEVQgIZOz5WPWXF2HVb6En+kWzScuxJo/WdQTqEgeyGkaa2ui5sQav9Zkr7bnNCLK48uxmmK0TySm22eiuw==}
+    cpu: [arm64]
+    os: [win32]
+
   '@rollup/rollup-win32-ia32-msvc@4.24.0':
     resolution: {integrity: sha512-xrNcGDU0OxVcPTH/8n/ShH4UevZxKIO6HJFK0e15XItZP2UcaiLFd5kiX7hJnqCbSztUF8Qot+JWBC/QXRPYWQ==}
     cpu: [ia32]
     os: [win32]
 
+  '@rollup/rollup-win32-ia32-msvc@4.27.3':
+    resolution: {integrity: sha512-ecE36ZBMLINqiTtSNQ1vzWc5pXLQHlf/oqGp/bSbi7iedcjcNb6QbCBNG73Euyy2C+l/fn8qKWEwxr+0SSfs3w==}
+    cpu: [ia32]
+    os: [win32]
+
   '@rollup/rollup-win32-x64-msvc@4.24.0':
     resolution: {integrity: sha512-fbMkAF7fufku0N2dE5TBXcNlg0pt0cJue4xBRE2Qc5Vqikxr4VCgKj/ht6SMdFcOacVA9rqF70APJ8RN/4vMJw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rollup/rollup-win32-x64-msvc@4.27.3':
+    resolution: {integrity: sha512-vliZLrDmYKyaUoMzEbMTg2JkerfBjn03KmAw9CykO0Zzkzoyd7o3iZNam/TpyWNjNT+Cz2iO3P9Smv2wgrR+Eg==}
     cpu: [x64]
     os: [win32]
 
@@ -9446,18 +9608,8 @@ packages:
     resolution: {integrity: sha512-+IB8fYbVHEAtLfhCXSRS61Q/OfBJTaPCXhvGvXTBIUfs9lqZMDesZ2UnvKYbnEYHSMgCzBaj5BOq66iePl8mjw==}
     engines: {node: '>=16'}
 
-  '@visulima/boxen@1.0.19':
-    resolution: {integrity: sha512-U7gz7mBxsN004ar0q1+M8DAc04xTEWv9B4EF4rtE9ONYJM8+0gTaOSJ0QO8tfQU8/nRF632aN1ydwWBaQpaU1g==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/boxen@1.0.21':
     resolution: {integrity: sha512-n/tL6Vh2RezjVzgGCPLT5zmnGgrwPBbWLN6R4FzyXTz+C0Vtttbc5gyr2c/16Oaz8DIL0HD2Uz2RStT2q62Wcw==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/cerebro@1.1.22':
-    resolution: {integrity: sha512-gILJke4sjX6rg93isz2ci7aWeZllkx4UhESxDN3FrXfjA4Si6g6U0JNqKdCP2GgjndIdsQz1dgTpbV1zrDD/Gw==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9466,8 +9618,8 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/colorize@1.4.10':
-    resolution: {integrity: sha512-6MSea9GPTKC00AGtqERcExadk7/eE5liPjEtItzC8tXjzzY6cpO2rMqDljcw1+Ye+JYmg1iMERPxgP1q06KFpg==}
+  '@visulima/cerebro@1.1.25':
+    resolution: {integrity: sha512-rCAWD4kw6khMVqNw4p1z/2cJ2AuTAC3YIy64Adbp2Hc/WK8fNiSfWR+BDn5NXx867yjUOrA5pN886X2tNtih8g==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
@@ -9488,19 +9640,10 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/error@4.4.5':
-    resolution: {integrity: sha512-NPpcT/EdjOMiyRw2Yuau1u5818EnsWubpQCIRIy6F3BvNEGHfXV/PeyiVXOa7GwwE7qA3q53t6vBog3nXxVaHQ==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/error@4.4.7':
     resolution: {integrity: sha512-X2bWFkR+6bfHhUIedkTfUw3WHZR+5z9o4H1+C9VYpela0KFG/kiewDjEJIJOW8y3+/KgXWj3PnQeTbtB1pYsrw==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
-
-  '@visulima/find-cache-dir@1.0.12':
-    resolution: {integrity: sha512-xUVIlXqlXdSn15MpH4ZuGkpGBRU/UV0BO2BhpPfhlnKwOK3s0XI/ASJwoWQyYM3D82KuIKRB37xP/R+Ndli4zg==}
-    engines: {node: '>=18.* <=22.*'}
 
   '@visulima/find-cache-dir@1.0.14':
     resolution: {integrity: sha512-HJHYuKR57SpyVVp7SH7qHx/hg2udVyQOfWGP0nrHG0axV7suK7bwbwT/lOdInO8jASJDpL2GJquOktMl7mYlPw==}
@@ -9509,11 +9652,6 @@ packages:
   '@visulima/find-cache-dir@1.0.15':
     resolution: {integrity: sha512-TG7xPlfteaPCZD4iTspUEOxW177l/yVvxkFgmfMfTX8TYtJsUVGwDUZKZFjdJUho06zXXNhaAWj2wzDl4kAGlg==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/fmt@1.1.10':
-    resolution: {integrity: sha512-JjlDwy7iK07IOBjwbBCJovoBKI6r0z9FaxxVWfxeDxsDhk2OSw96WzMng0jbh44ET8X01swLNiSUp1+PCHbtBg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/fmt@1.1.11':
     resolution: {integrity: sha512-RjXv/xZ8K5cEDnTRTFc+sPn+1X1Zm7RYunBQd3fqxIBD3fRGw1wGbxk65z1/Bbm/QhVU+Ov3E505jcv6Qw4r+A==}
@@ -9532,16 +9670,6 @@ packages:
 
   '@visulima/fs@2.1.7':
     resolution: {integrity: sha512-zrdAoYrjayGWLVZgxbBvumxMeBgXyh3TPpyyZXKYkllCn2+9lTjYmBUhHyq8IwnDFWMBD6/04I2CaWzTJvW48g==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      yaml: ^2.4.0
-    peerDependenciesMeta:
-      yaml:
-        optional: true
-
-  '@visulima/fs@2.2.0':
-    resolution: {integrity: sha512-tcgCMPHxwfYWIrxch1v1otuKUsaEHLTQ2ojU+1vWoD9qdNsl5nz9TzRKxU9XCjJ8+nFFcfa5l82jCfx4+dKoow==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -9570,26 +9698,13 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/humanizer@1.0.12':
-    resolution: {integrity: sha512-zvpuQDuoCIMP6vXvGY648yDmkLFfevDscz5ZBnPejMwFadOilpMdxJwLfwTn+OVTGLSNUzkXwjLskkkpW0sZpA==}
-    engines: {node: '>=18.* <=22.*'}
-
   '@visulima/humanizer@1.0.14':
     resolution: {integrity: sha512-DUzmAlNOuCYL0MxJCwQC6eUBd9ke7K4GXzk8azZ26G28SoOO0+B3NfMJ2S1pB6qDXFQJvQkWWrVeaJP8HzzwMA==}
-    engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/inspector@1.0.10':
-    resolution: {integrity: sha512-JjeTRrSjyqTejpjGohMnsM8n0J01dqhULOEJ8zzNJ+Vk+6uUgE/K/cK1SJs/fAxr5Uk218wJX+zChVtzbAF0pQ==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/inspector@1.0.12':
     resolution: {integrity: sha512-+3BbqOCL9VQrVrYuWV4owVtjG8VJsdLVh05c3b1nwbhnV4lota3GsS3LygiZV05eproP8ymTb8ciGjs3Utoo5g==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/is-ansi-color-supported@2.2.7':
-    resolution: {integrity: sha512-R5MpERsXS8Iq2GMzgmhzpdZEgBXLSiKpzAtKje8lmsKUfTEdhp7xH+SCnVBdAaN9JqYeACT6wj9bBNOPLhHcgg==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/is-ansi-color-supported@2.2.8':
     resolution: {integrity: sha512-onPZ3tqUiv5LGLTrEFt+9Uudy84qUXi1n4yGBiE66xhBl4O0zr+Ypi0fB2lreQcsNkZ0jyQafjERhir4xGQdYg==}
@@ -9617,11 +9732,6 @@ packages:
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/package@3.1.2':
-    resolution: {integrity: sha512-UvYsSMCWU7kTXaH4AbKYVX+k4BN9FnWTXTJMVMOwsRAQcOr+lbt6c9d939HoT4/mgsSNnrmPDNdo1Q8ayybYJQ==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-
   '@visulima/package@3.1.4':
     resolution: {integrity: sha512-NwJaSZ0jfKc0Afdc/OD+nOH51CuEB//J/8eKgzeRxPiXmeZnlWL2TUtCCLL7p1u6TD3tgHRMbqo1K2fd2k6fdg==}
     engines: {node: '>=18.* <=22.*'}
@@ -9631,28 +9741,6 @@ packages:
     resolution: {integrity: sha512-s6yYr/ePzzNwflYByZtE5258B+0NJzEBRFyxcbmJl87vxZH8sLlJHTqgJvlmXH9wzLSdbUQPNG26tzBoUqaPmQ==}
     engines: {node: '>=18.* <=22.*'}
     os: [darwin, linux, win32]
-
-  '@visulima/packem@1.0.7':
-    resolution: {integrity: sha512-cR++ySy6y2lF2fb8NcEU/04VVm+4EzXEi9q56KX50PvLR0rHpua3PHLHzvGHnoE3hFYIN+i/7sw4C2lFa5p/7Q==}
-    engines: {node: '>=18.* <=22.*'}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': ^1.5.7
-      esbuild: ^0.20.2 || ^0.21.3
-      oxc-transform: ^0.20.0
-      sucrase: ^3.35.0
-      typescript: ^4.5 || ^5.0
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      esbuild:
-        optional: true
-      oxc-transform:
-        optional: true
-      sucrase:
-        optional: true
-      typescript:
-        optional: true
 
   '@visulima/packem@1.1.0':
     resolution: {integrity: sha512-DoQcQgBljPr4fvMkT2AkOSkIiyc78emC+Yi5JGYwzMbN7uXyCOTvTRBKD6k0GXhSL6nq0Hj4DIVDBmcb/sSKjQ==}
@@ -9722,6 +9810,85 @@ packages:
       typescript:
         optional: true
 
+  '@visulima/packem@1.8.2':
+    resolution: {integrity: sha512-N2P8M2DT6wJdbMIVbxgkipgsTDzr4NjaTWhQgqtzv34T0gL76RKLu7oMxBy4wc5XjRNuQzgKVWDpOMmCuK27Yw==}
+    engines: {node: '>=18.* <=23.*'}
+    hasBin: true
+    peerDependencies:
+      '@ckeditor/typedoc-plugins': '>=44.0.0'
+      '@swc/core': '>=1.5.7'
+      cssnano: '>=7.0.6'
+      esbuild: '>=0.20.2'
+      icss-utils: '>=5.1.0'
+      less: '>=4.2.0'
+      lightningcss: '>=1.27.0'
+      node-sass: '>=9.0.0'
+      oxc-transform: '>=0.20.0'
+      postcss: '>=8.4.47'
+      postcss-load-config: '>=6.0.1'
+      postcss-modules-extract-imports: '>=3.1.0'
+      postcss-modules-local-by-default: '>=4.0.5'
+      postcss-modules-scope: '>=3.2.0'
+      postcss-modules-values: '>=4.0.0'
+      postcss-value-parser: '>=4.2.0'
+      sass: '>=1.43.4'
+      sass-embedded: '>=1.79.4'
+      stylus: '>=0.63.0'
+      sucrase: '>=3.35.0'
+      typedoc: '>=0.26.0'
+      typedoc-plugin-markdown: '>=4.2.0'
+      typedoc-plugin-rename-defaults: '>=0.7.0'
+      typescript: '>=4.5 || >=5.0'
+    peerDependenciesMeta:
+      '@ckeditor/typedoc-plugins':
+        optional: true
+      '@swc/core':
+        optional: true
+      cssnano:
+        optional: true
+      esbuild:
+        optional: true
+      icss-utils:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      node-sass:
+        optional: true
+      oxc-transform:
+        optional: true
+      postcss:
+        optional: true
+      postcss-load-config:
+        optional: true
+      postcss-modules-extract-imports:
+        optional: true
+      postcss-modules-local-by-default:
+        optional: true
+      postcss-modules-scope:
+        optional: true
+      postcss-modules-values:
+        optional: true
+      postcss-value-parser:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sucrase:
+        optional: true
+      typedoc:
+        optional: true
+      typedoc-plugin-markdown:
+        optional: true
+      typedoc-plugin-rename-defaults:
+        optional: true
+      typescript:
+        optional: true
+
   '@visulima/pagination@3.0.23':
     resolution: {integrity: sha512-tmt6R+30cGEWsMsUPlfatWG5RXbfdBDiUaX7o6JwYjqDprac4yBErbEX4esd0DVc7FIO0pEyz1lDyisVpBQrcg==}
     engines: {node: '>=18.* <=22.*'}
@@ -9740,27 +9907,9 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.9':
-    resolution: {integrity: sha512-EDrO6+vlmVnFhsW+gUR9mSek0w3xk9pY4gmgkXfsy7Qdu7XGHF7BHpLFMbnYkemtNXjp3lXjggmIFA8YsmNeFA==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
-    peerDependencies:
-      '@visulima/redact': 1.0.8
-      rotating-file-stream: ^3.1.1
-    peerDependenciesMeta:
-      '@visulima/redact':
-        optional: true
-      rotating-file-stream:
-        optional: true
-
   '@visulima/path@1.0.2':
     resolution: {integrity: sha512-swUmYnU83E9KTMXCIkatLlsyMLZfIKG0r6EByYVuJPoZu58MTyOFHWu+nMwIVr04VFYAkoFUTHzmzgU0F1HbyA==}
     engines: {node: '>=18.* <=22.*'}
-
-  '@visulima/path@1.0.9':
-    resolution: {integrity: sha512-hNxVeOR+GPkVZqcXZhLZSOUzW6zUA/Jk1nr6d5kSDB52NSu2UnBhoEY1SvLNwuuhMN5LthgNE15y0Nv6lfiM8g==}
-    engines: {node: '>=18.* <=22.*'}
-    os: [darwin, linux, win32]
 
   '@visulima/path@1.1.1':
     resolution: {integrity: sha512-QWw3HAr7M8gVjSx7K/ACn9C+0qx8+UxxGQP1cq2Ae5Mf1jaxghhpvpZikGV0RBY9bu4BMoyF3MdSev5uu2y1Vg==}
@@ -9779,12 +9928,16 @@ packages:
     resolution: {integrity: sha512-Mzj1qXefwOHI5OlNygMa53lkMUj+wEWq8JKGh+EPk6FeKOuRMwYJEuzqSqdfwBBQVhKwb9YCT2aZHqk30XtHwg==}
     engines: {node: '>=18.* <=22.*'}
 
-  '@visulima/tsconfig@1.0.14':
-    resolution: {integrity: sha512-HD5JAq4AqjUsD4UpOU5/yXCZNCeKYXjpOS+Mig/OgCQDjB9HJ+ApqArQ+QQJ7E2YAklfBLjB3jmfRxrH4EQgkA==}
+  '@visulima/source-map@1.0.10':
+    resolution: {integrity: sha512-qDcOyz1ibs/QYImN4XVoyzl+9XwR6IK6cFJwYVJ3hpXzsgVjQ1T/S/2+zZS9sjNSICCJuCEV4A+SSGp6IoDL9Q==}
     engines: {node: '>=18.* <=22.*'}
 
   '@visulima/tsconfig@1.0.16':
     resolution: {integrity: sha512-8X0o5yVq7zSfNTgA3rfLvBg2hOOmZT7YmpoLYHelRPEiD9+ntA2ntud14xW9bE9cdRqTpGMlukTWb0usIP7nMw==}
+    engines: {node: '>=18.* <=22.*'}
+
+  '@visulima/tsconfig@1.1.1':
+    resolution: {integrity: sha512-aYQoDr6Bxrrtrqzm5kVjyqxUWoooLLK0WqBzkW1XuVYyTVSibstyXNI2dpXGlSJ+yOhfnfCVk1Hgd017QZkBDg==}
     engines: {node: '>=18.* <=22.*'}
 
   '@vitejs/plugin-react@4.3.3':
@@ -10558,6 +10711,11 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
+  browserslist@4.24.2:
+    resolution: {integrity: sha512-ZIc+Q62revdMcqC6aChtW4jz3My3klmCO1fEmINZY/8J3EpBg5/A/D0AKmBveUh6pgoeycoMkVMko84tuYS+Gg==}
+    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+    hasBin: true
+
   bser@2.1.1:
     resolution: {integrity: sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==}
 
@@ -10692,6 +10850,9 @@ packages:
 
   caniuse-lite@1.0.30001667:
     resolution: {integrity: sha512-7LTwJjcRkzKFmtqGsibMeuXmvFDfZq/nzIjnmgCGzKKRVzjD72selLDK1oPF/Oxzmt4fNcPvTDvGqSDG4tCALw==}
+
+  caniuse-lite@1.0.30001680:
+    resolution: {integrity: sha512-rPQy70G6AGUMnbwS1z6Xg+RkHYPAi18ihs47GH0jcxIG7wArmPgY3XbS2sRdBbxJljp3thdT8BIqv9ccCypiPA==}
 
   capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -11941,6 +12102,9 @@ packages:
   electron-to-chromium@1.5.5:
     resolution: {integrity: sha512-QR7/A7ZkMS8tZuoftC/jfqNkZLQO779SSW3YuZHP4eXpj3EffGLFcB/Xu9AAZQzLccTiCV+EmUo3ha4mQ9wnlA==}
 
+  electron-to-chromium@1.5.63:
+    resolution: {integrity: sha512-ddeXKuY9BHo/mw145axlyWjlJ1UBt4WK3AlvkT7W2AbqfRQoacVoRUCF6wL3uIx/8wT9oLKXzI+rFqHHscByaA==}
+
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
@@ -12129,6 +12293,10 @@ packages:
 
   escalade@3.1.2:
     resolution: {integrity: sha512-ErCHMCae19vR8vQGe50xIsVomy19rg6gFu3+r3jkEO46suLMWBksvVyoGgQV+jOfl84ZSOSlmv6Gxa89PmTGmA==}
+    engines: {node: '>=6'}
+
+  escalade@3.2.0:
+    resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
     engines: {node: '>=6'}
 
   escape-goat@4.0.0:
@@ -14502,12 +14670,12 @@ packages:
     resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
 
-  jiti@2.1.0:
-    resolution: {integrity: sha512-Nftp80J8poC3u+93ZxpjstsgfQ5d0o5qyD6yStv32sgnWr74xRxBppEwsUoA/GIdrJpgGRkC1930YkLcAsFdSw==}
-    hasBin: true
-
   jiti@2.3.3:
     resolution: {integrity: sha512-EX4oNDwcXSivPrw2qKH2LB5PoFxEvgtv2JgwW0bU858HoLQ+kutSvjLMUqBd0PeJYEinLWhoI9Ol0eYMqj/wNQ==}
+    hasBin: true
+
+  jiti@2.4.0:
+    resolution: {integrity: sha512-H5UpaUI+aHOqZXlYOaFP/8AzKsg+guWu+Pr3Y8i7+Y3zr1aXAvCvTAQ1RxSc6oVD8R8c7brgNtTVP91E7upH/g==}
     hasBin: true
 
   jju@1.4.0:
@@ -15104,11 +15272,11 @@ packages:
   magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
 
-  magic-string@0.30.11:
-    resolution: {integrity: sha512-+Wri9p0QHMy+545hKww7YAu5NyzF8iomPL/RQazugQ9+Ez4Ic3mERMd8ZTX5rfK944j+560ZJi8iAwgak1Ac7A==}
-
   magic-string@0.30.12:
     resolution: {integrity: sha512-Ea8I3sQMVXr8JhN4z+H/d8zwo+tYDgHE9+5G4Wnrwhs0gaK9fXTKx0Tw5Xwsd/bCPTTZNRAdpyzvoeORe9LYpw==}
+
+  magic-string@0.30.13:
+    resolution: {integrity: sha512-8rYBO+MsWkgjDSOvLomYnzhdwEG51olQ4zL5KXnNJWV5MNmrb4rTZdrtkhxjnD/QyZUqR/Z/XDsUs/4ej2nx0g==}
 
   magicast@0.3.4:
     resolution: {integrity: sha512-TyDF/Pn36bBji9rWKHlZe+PZb6Mx5V8IHCSxk7X4aljM4e/vyDvZZYwHewdVaqiA0nb3ghfHU/6AUpDxWoER2Q==}
@@ -15738,11 +15906,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  mlly@1.7.1:
-    resolution: {integrity: sha512-rrVRZRELyQzrIUAVMHxP97kv+G786pHmOKzuFII8zDYahFBS7qnHh2AlYSl1GAHhaMPCz6/oHjVMcfFYgFYHgA==}
-
   mlly@1.7.2:
     resolution: {integrity: sha512-tN3dvVHYVz4DhSXinXIk7u9syPYaJvio118uomkovAtWBT+RdbP6Lfh/5Lvo519YMmwBafwlh20IPTXIStscpA==}
+
+  mlly@1.7.3:
+    resolution: {integrity: sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A==}
 
   mobx-react-lite@4.0.7:
     resolution: {integrity: sha512-RjwdseshK9Mg8On5tyJZHtGD+J78ZnCnRaxeQDSiciKVQDUbfZcXhmld0VMxAwvcTnPEHZySGGewm467Fcpreg==}
@@ -16396,14 +16564,17 @@ packages:
   outvariant@1.4.3:
     resolution: {integrity: sha512-+Sl2UErvtsoajRDKCE5/dBz4DIvHXQQnAxtQTF04OJxY0+DyZXSo5P5Bb7XYWOh81syohlYL24hbDwxedPUJCA==}
 
-  oxc-parser@0.30.5:
-    resolution: {integrity: sha512-ilcJ7SJrept5Yqr6y+MTGCVlXCQ8woxr2h+TWaHP/7yE6GnYXNP0+1oVIwr2rCoH0E9mSMyLJCfyiWwMcohp/g==}
-
   oxc-parser@0.32.0:
     resolution: {integrity: sha512-s/1CL9DzwMI0S90DFXSbWpuiPfjwyozhtAWeAJMZFv9/FPV9xIa9hhGFDIYnuJNlr4YS+xmxgZaJvKPbZ5MEHg==}
 
   oxc-parser@0.33.0:
     resolution: {integrity: sha512-6qW0SjR8tfJFk71hx02pcolcPpJZEGHIKSa6gYFd8+OZfsMWc0DA40YfeGKc0tBsPWFlv9P/WoFRiDosPfQO1Q==}
+
+  oxc-parser@0.36.0:
+    resolution: {integrity: sha512-dcjn+8WvWVbIO0Bb0qAJcfq8JwdkbPflYyFBg3rcDb83awlXAQLnhZuheGUxuWEh18oQFAcxkgdUdObS6DvA7A==}
+
+  oxc-resolver@2.0.1:
+    resolution: {integrity: sha512-xEbYdEGwafn+Y2GTyW0BGC3iIjJZXl+fxrIkyheew5mZrDODmPXJf2qwsa1ocBeVUC51g9e835vNZ9tRR5fYCg==}
 
   p-cancelable@3.0.0:
     resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
@@ -16538,9 +16709,6 @@ packages:
 
   package-manager-detector@0.1.2:
     resolution: {integrity: sha512-iePyefLTOm2gEzbaZKSW+eBMjg+UYsQvUKxmvGXAQ987K16efBg10MxIjZs08iyX+DY2/owKY9DIdu193kX33w==}
-
-  package-manager-detector@0.2.0:
-    resolution: {integrity: sha512-E385OSk9qDcXhcM9LNSe4sdhx8a9mAPrZ4sMLW+tmxl5ZuGtPUcdFu+MPP2jbgiWAZ6Pfe5soGFMd+0Db5Vrog==}
 
   package-manager-detector@0.2.4:
     resolution: {integrity: sha512-H/OUu9/zUfP89z1APcBf2X8Us0tt8dUK4lUmKqz12QNXif3DxAs1/YqjGtcutZi1zQqeNQRWr9C+EbQnnvSSFA==}
@@ -17916,6 +18084,11 @@ packages:
 
   rollup@4.24.0:
     resolution: {integrity: sha512-DOmrlGSXNk1DM0ljiQA+i+o0rSLhtii1je5wgk60j49d1jHT5YYttBv1iWOnYSTG+fZZESUOSNiAl89SIet+Cg==}
+    engines: {node: '>=18.0.0', npm: '>=8.0.0'}
+    hasBin: true
+
+  rollup@4.27.3:
+    resolution: {integrity: sha512-SLsCOnlmGt9VoZ9Ek8yBK8tAdmPHeppkw+Xa7yDlCEhDTvwYei03JlWo1fdc7YTfLZ4tD8riJCUyAgTbszk1fQ==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
@@ -19380,13 +19553,6 @@ packages:
     peerDependencies:
       typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
 
-  typedoc@0.26.7:
-    resolution: {integrity: sha512-gUeI/Wk99vjXXMi8kanwzyhmeFEGv1LTdTQsiyIsmSYsBebvFxhbcyAx7Zjo4cMbpLGxM4Uz3jVIjksu/I2v6Q==}
-    engines: {node: '>= 18'}
-    hasBin: true
-    peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
-
   types-ramda@0.30.1:
     resolution: {integrity: sha512-1HTsf5/QVRmLzcGfldPFvkVsAdi1db1BBKzi7iW3KBUlOICg/nKnFS+jGqDJS3YD8VsWbAh7JiHeBvbsw8RPxA==}
 
@@ -19427,9 +19593,6 @@ packages:
 
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
-
-  ufo@1.5.3:
-    resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
 
   ufo@1.5.4:
     resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
@@ -19658,6 +19821,12 @@ packages:
 
   update-browserslist-db@1.1.0:
     resolution: {integrity: sha512-EdRAaAyk2cUE1wOf2DkEhzxqOQvFOoRJFNS6NeyJ01Gp2beMRpBAINjM2iDXE3KCuKhwnvHIQCJm6ThL2Z+HzQ==}
+    hasBin: true
+    peerDependencies:
+      browserslist: '>= 4.21.0'
+
+  update-browserslist-db@1.1.1:
+    resolution: {integrity: sha512-R8UzCaa9Az+38REPiJ1tXlImTJXlVfgHZsglwBD/k6nj76ctsH1E3q4doGrukiLQd3sGQYu56r5+lo5r94l29A==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
@@ -20971,8 +21140,8 @@ snapshots:
 
   '@antfu/install-pkg@0.4.1':
     dependencies:
-      package-manager-detector: 0.2.0
-      tinyexec: 0.3.0
+      package-manager-detector: 0.2.4
+      tinyexec: 0.3.1
 
   '@antfu/ni@0.23.0': {}
 
@@ -21141,7 +21310,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.24.7
       '@babel/helper-validator-option': 7.24.7
-      browserslist: 4.24.0
+      browserslist: 4.24.2
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -21149,7 +21318,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.25.2
       '@babel/helper-validator-option': 7.24.8
-      browserslist: 4.24.0
+      browserslist: 4.24.2
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -21369,6 +21538,10 @@ snapshots:
       '@babel/types': 7.25.9
 
   '@babel/parser@7.26.0':
+    dependencies:
+      '@babel/types': 7.26.0
+
+  '@babel/parser@7.26.2':
     dependencies:
       '@babel/types': 7.26.0
 
@@ -22022,13 +22195,13 @@ snapshots:
   '@babel/template@7.25.0':
     dependencies:
       '@babel/code-frame': 7.25.7
-      '@babel/parser': 7.26.0
+      '@babel/parser': 7.26.2
       '@babel/types': 7.26.0
 
   '@babel/template@7.25.7':
     dependencies:
-      '@babel/code-frame': 7.25.7
-      '@babel/parser': 7.26.0
+      '@babel/code-frame': 7.26.0
+      '@babel/parser': 7.26.2
       '@babel/types': 7.26.0
 
   '@babel/template@7.25.9':
@@ -22041,7 +22214,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.25.7
       '@babel/generator': 7.25.7
-      '@babel/parser': 7.25.9
+      '@babel/parser': 7.26.2
       '@babel/template': 7.25.7
       '@babel/types': 7.25.7
       debug: 4.3.7
@@ -22143,20 +22316,18 @@ snapshots:
     dependencies:
       typedoc: 0.26.10(typescript@5.6.3)
 
-  '@ckeditor/typedoc-plugins@44.0.0(typedoc@0.26.7(typescript@5.4.5))':
-    dependencies:
-      typedoc: 0.26.7(typescript@5.4.5)
-
-  '@ckeditor/typedoc-plugins@44.0.0(typedoc@0.26.7(typescript@5.5.4))':
-    dependencies:
-      typedoc: 0.26.7(typescript@5.5.4)
-
   '@clack/core@0.3.4':
     dependencies:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
   '@clack/prompts@0.7.0':
+    dependencies:
+      '@clack/core': 0.3.4
+      picocolors: 1.1.1
+      sisteransi: 1.0.5
+
+  '@clack/prompts@0.8.1':
     dependencies:
       '@clack/core': 0.3.4
       picocolors: 1.1.1
@@ -22364,7 +22535,7 @@ snapshots:
       '@commitlint/types': 19.5.0
       git-raw-commits: 4.0.0
       minimist: 1.2.8
-      tinyexec: 0.3.0
+      tinyexec: 0.3.1
 
   '@commitlint/resolve-extends@18.6.1':
     dependencies:
@@ -22429,6 +22600,16 @@ snapshots:
     dependencies:
       '@types/conventional-commits-parser': 5.0.0
       chalk: 5.3.0
+
+  '@csstools/css-parser-algorithms@3.0.4(@csstools/css-tokenizer@3.0.3)':
+    dependencies:
+      '@csstools/css-tokenizer': 3.0.3
+
+  '@csstools/css-tokenizer@3.0.3': {}
+
+  '@csstools/postcss-slow-plugins@2.0.0(postcss@8.4.49)':
+    dependencies:
+      postcss: 8.4.49
 
   '@dabh/diagnostics@2.0.3':
     dependencies:
@@ -23093,7 +23274,7 @@ snapshots:
       debug: 4.3.7
       kolorist: 1.8.0
       local-pkg: 0.5.0
-      mlly: 1.7.2
+      mlly: 1.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -23721,6 +23902,13 @@ snapshots:
       '@emnapi/runtime': 1.2.0
       '@tybys/wasm-util': 0.9.0
 
+  '@napi-rs/wasm-runtime@0.2.5':
+    dependencies:
+      '@emnapi/core': 1.2.0
+      '@emnapi/runtime': 1.2.0
+      '@tybys/wasm-util': 0.9.0
+    optional: true
+
   '@next/env@14.2.13': {}
 
   '@next/env@15.0.3': {}
@@ -24090,16 +24278,13 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@oxc-parser/binding-darwin-arm64@0.30.5':
-    optional: true
-
   '@oxc-parser/binding-darwin-arm64@0.32.0':
     optional: true
 
   '@oxc-parser/binding-darwin-arm64@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-darwin-x64@0.30.5':
+  '@oxc-parser/binding-darwin-arm64@0.36.0':
     optional: true
 
   '@oxc-parser/binding-darwin-x64@0.32.0':
@@ -24108,7 +24293,7 @@ snapshots:
   '@oxc-parser/binding-darwin-x64@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.30.5':
+  '@oxc-parser/binding-darwin-x64@0.36.0':
     optional: true
 
   '@oxc-parser/binding-linux-arm64-gnu@0.32.0':
@@ -24117,7 +24302,7 @@ snapshots:
   '@oxc-parser/binding-linux-arm64-gnu@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-musl@0.30.5':
+  '@oxc-parser/binding-linux-arm64-gnu@0.36.0':
     optional: true
 
   '@oxc-parser/binding-linux-arm64-musl@0.32.0':
@@ -24126,7 +24311,7 @@ snapshots:
   '@oxc-parser/binding-linux-arm64-musl@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-gnu@0.30.5':
+  '@oxc-parser/binding-linux-arm64-musl@0.36.0':
     optional: true
 
   '@oxc-parser/binding-linux-x64-gnu@0.32.0':
@@ -24135,7 +24320,7 @@ snapshots:
   '@oxc-parser/binding-linux-x64-gnu@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-musl@0.30.5':
+  '@oxc-parser/binding-linux-x64-gnu@0.36.0':
     optional: true
 
   '@oxc-parser/binding-linux-x64-musl@0.32.0':
@@ -24144,7 +24329,7 @@ snapshots:
   '@oxc-parser/binding-linux-x64-musl@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.30.5':
+  '@oxc-parser/binding-linux-x64-musl@0.36.0':
     optional: true
 
   '@oxc-parser/binding-win32-arm64-msvc@0.32.0':
@@ -24153,13 +24338,53 @@ snapshots:
   '@oxc-parser/binding-win32-arm64-msvc@0.33.0':
     optional: true
 
-  '@oxc-parser/binding-win32-x64-msvc@0.30.5':
+  '@oxc-parser/binding-win32-arm64-msvc@0.36.0':
     optional: true
 
   '@oxc-parser/binding-win32-x64-msvc@0.32.0':
     optional: true
 
   '@oxc-parser/binding-win32-x64-msvc@0.33.0':
+    optional: true
+
+  '@oxc-parser/binding-win32-x64-msvc@0.36.0':
+    optional: true
+
+  '@oxc-project/types@0.36.0': {}
+
+  '@oxc-resolver/binding-darwin-arm64@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-darwin-x64@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-freebsd-x64@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-linux-arm-gnueabihf@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-linux-arm64-gnu@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-linux-arm64-musl@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-linux-x64-gnu@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-linux-x64-musl@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-wasm32-wasi@2.0.1':
+    dependencies:
+      '@napi-rs/wasm-runtime': 0.2.5
+    optional: true
+
+  '@oxc-resolver/binding-win32-arm64-msvc@2.0.1':
+    optional: true
+
+  '@oxc-resolver/binding-win32-x64-msvc@2.0.1':
     optional: true
 
   '@phenomnomnominal/tsquery@5.0.1(typescript@5.4.5)':
@@ -24836,67 +25061,85 @@ snapshots:
     optionalDependencies:
       rollup: 4.24.0
 
-  '@rollup/plugin-commonjs@28.0.0(rollup@4.24.0)':
-    dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
-      commondir: 1.0.1
-      estree-walker: 2.0.2
-      fdir: 6.3.0(picomatch@2.3.1)
-      is-reference: 1.2.1
-      magic-string: 0.30.11
-      picomatch: 2.3.1
+  '@rollup/plugin-alias@5.1.1(rollup@4.27.3)':
     optionalDependencies:
-      rollup: 4.24.0
+      rollup: 4.27.3
 
   '@rollup/plugin-commonjs@28.0.1(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
       commondir: 1.0.1
       estree-walker: 2.0.2
-      fdir: 6.4.0(picomatch@4.0.2)
+      fdir: 6.4.2(picomatch@4.0.2)
       is-reference: 1.2.1
-      magic-string: 0.30.12
+      magic-string: 0.30.13
       picomatch: 4.0.2
     optionalDependencies:
       rollup: 4.24.0
 
-  '@rollup/plugin-dynamic-import-vars@2.1.3(rollup@4.24.0)':
+  '@rollup/plugin-commonjs@28.0.1(rollup@4.27.3)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
-      astring: 1.8.6
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      commondir: 1.0.1
       estree-walker: 2.0.2
-      fast-glob: 3.3.2
-      magic-string: 0.30.11
+      fdir: 6.4.2(picomatch@4.0.2)
+      is-reference: 1.2.1
+      magic-string: 0.30.13
+      picomatch: 4.0.2
     optionalDependencies:
-      rollup: 4.24.0
+      rollup: 4.27.3
 
   '@rollup/plugin-dynamic-import-vars@2.1.5(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
       astring: 1.8.6
       estree-walker: 2.0.2
       fast-glob: 3.3.2
-      magic-string: 0.30.12
+      magic-string: 0.30.13
     optionalDependencies:
       rollup: 4.24.0
+
+  '@rollup/plugin-dynamic-import-vars@2.1.5(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      astring: 1.8.6
+      estree-walker: 2.0.2
+      fast-glob: 3.3.2
+      magic-string: 0.30.13
+    optionalDependencies:
+      rollup: 4.27.3
 
   '@rollup/plugin-inject@5.0.5(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
       estree-walker: 2.0.2
-      magic-string: 0.30.12
+      magic-string: 0.30.13
     optionalDependencies:
       rollup: 4.24.0
+
+  '@rollup/plugin-inject@5.0.5(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      estree-walker: 2.0.2
+      magic-string: 0.30.13
+    optionalDependencies:
+      rollup: 4.27.3
 
   '@rollup/plugin-json@6.1.0(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
     optionalDependencies:
       rollup: 4.24.0
 
+  '@rollup/plugin-json@6.1.0(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+    optionalDependencies:
+      rollup: 4.27.3
+
   '@rollup/plugin-node-resolve@15.3.0(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-module: 1.0.0
@@ -24904,18 +25147,41 @@ snapshots:
     optionalDependencies:
       rollup: 4.24.0
 
+  '@rollup/plugin-node-resolve@15.3.0(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      '@types/resolve': 1.20.2
+      deepmerge: 4.3.1
+      is-module: 1.0.0
+      resolve: 1.22.8
+    optionalDependencies:
+      rollup: 4.27.3
+
   '@rollup/plugin-replace@6.0.1(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
-      magic-string: 0.30.11
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
+      magic-string: 0.30.13
     optionalDependencies:
       rollup: 4.24.0
 
+  '@rollup/plugin-replace@6.0.1(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      magic-string: 0.30.13
+    optionalDependencies:
+      rollup: 4.27.3
+
   '@rollup/plugin-wasm@6.2.2(rollup@4.24.0)':
     dependencies:
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
     optionalDependencies:
       rollup: 4.24.0
+
+  '@rollup/plugin-wasm@6.2.2(rollup@4.27.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+    optionalDependencies:
+      rollup: 4.27.3
 
   '@rollup/pluginutils@5.1.2(rollup@4.24.0)':
     dependencies:
@@ -24925,52 +25191,130 @@ snapshots:
     optionalDependencies:
       rollup: 4.24.0
 
+  '@rollup/pluginutils@5.1.2(rollup@4.27.3)':
+    dependencies:
+      '@types/estree': 1.0.6
+      estree-walker: 2.0.2
+      picomatch: 2.3.1
+    optionalDependencies:
+      rollup: 4.27.3
+
+  '@rollup/pluginutils@5.1.3(rollup@4.24.0)':
+    dependencies:
+      '@types/estree': 1.0.6
+      estree-walker: 2.0.2
+      picomatch: 4.0.2
+    optionalDependencies:
+      rollup: 4.24.0
+
+  '@rollup/pluginutils@5.1.3(rollup@4.27.3)':
+    dependencies:
+      '@types/estree': 1.0.6
+      estree-walker: 2.0.2
+      picomatch: 4.0.2
+    optionalDependencies:
+      rollup: 4.27.3
+
   '@rollup/rollup-android-arm-eabi@4.24.0':
+    optional: true
+
+  '@rollup/rollup-android-arm-eabi@4.27.3':
     optional: true
 
   '@rollup/rollup-android-arm64@4.24.0':
     optional: true
 
+  '@rollup/rollup-android-arm64@4.27.3':
+    optional: true
+
   '@rollup/rollup-darwin-arm64@4.24.0':
+    optional: true
+
+  '@rollup/rollup-darwin-arm64@4.27.3':
     optional: true
 
   '@rollup/rollup-darwin-x64@4.24.0':
     optional: true
 
+  '@rollup/rollup-darwin-x64@4.27.3':
+    optional: true
+
+  '@rollup/rollup-freebsd-arm64@4.27.3':
+    optional: true
+
+  '@rollup/rollup-freebsd-x64@4.27.3':
+    optional: true
+
   '@rollup/rollup-linux-arm-gnueabihf@4.24.0':
+    optional: true
+
+  '@rollup/rollup-linux-arm-gnueabihf@4.27.3':
     optional: true
 
   '@rollup/rollup-linux-arm-musleabihf@4.24.0':
     optional: true
 
+  '@rollup/rollup-linux-arm-musleabihf@4.27.3':
+    optional: true
+
   '@rollup/rollup-linux-arm64-gnu@4.24.0':
+    optional: true
+
+  '@rollup/rollup-linux-arm64-gnu@4.27.3':
     optional: true
 
   '@rollup/rollup-linux-arm64-musl@4.24.0':
     optional: true
 
+  '@rollup/rollup-linux-arm64-musl@4.27.3':
+    optional: true
+
   '@rollup/rollup-linux-powerpc64le-gnu@4.24.0':
+    optional: true
+
+  '@rollup/rollup-linux-powerpc64le-gnu@4.27.3':
     optional: true
 
   '@rollup/rollup-linux-riscv64-gnu@4.24.0':
     optional: true
 
+  '@rollup/rollup-linux-riscv64-gnu@4.27.3':
+    optional: true
+
   '@rollup/rollup-linux-s390x-gnu@4.24.0':
+    optional: true
+
+  '@rollup/rollup-linux-s390x-gnu@4.27.3':
     optional: true
 
   '@rollup/rollup-linux-x64-gnu@4.24.0':
     optional: true
 
+  '@rollup/rollup-linux-x64-gnu@4.27.3':
+    optional: true
+
   '@rollup/rollup-linux-x64-musl@4.24.0':
+    optional: true
+
+  '@rollup/rollup-linux-x64-musl@4.27.3':
     optional: true
 
   '@rollup/rollup-win32-arm64-msvc@4.24.0':
     optional: true
 
+  '@rollup/rollup-win32-arm64-msvc@4.27.3':
+    optional: true
+
   '@rollup/rollup-win32-ia32-msvc@4.24.0':
     optional: true
 
+  '@rollup/rollup-win32-ia32-msvc@4.27.3':
+    optional: true
+
   '@rollup/rollup-win32-x64-msvc@4.24.0':
+    optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.27.3':
     optional: true
 
   '@rtsao/scc@1.1.0': {}
@@ -26249,10 +26593,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       storybook: 8.4.4(prettier@3.3.3)
 
-  '@storybook/react-vite@8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.24.0)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@storybook/react-vite@8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.27.3)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.3.0(typescript@5.5.3)(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
+      '@rollup/pluginutils': 5.1.2(rollup@4.27.3)
       '@storybook/builder-vite': 8.4.4(storybook@8.4.4(prettier@3.3.3))(vite@5.4.11(@types/node@20.14.11)(lightningcss@1.25.1)(terser@5.31.1))
       '@storybook/react': 8.4.4(@storybook/test@8.4.4(storybook@8.4.4(prettier@3.3.3)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.4.4(prettier@3.3.3))(typescript@5.5.3)
       find-up: 5.0.0
@@ -27355,7 +27699,7 @@ snapshots:
 
   '@types/acorn@4.0.6':
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   '@types/aria-query@5.0.4': {}
 
@@ -27373,7 +27717,7 @@ snapshots:
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.25.9
+      '@babel/parser': 7.26.2
       '@babel/types': 7.25.6
 
   '@types/babel__traverse@7.20.6':
@@ -28697,23 +29041,7 @@ snapshots:
       satori: 0.12.0
       yoga-wasm-web: 0.3.3
 
-  '@visulima/boxen@1.0.19': {}
-
   '@visulima/boxen@1.0.21': {}
-
-  '@visulima/cerebro@1.1.22(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)':
-    dependencies:
-      '@visulima/boxen': 1.0.19
-      '@visulima/colorize': 1.4.10
-      '@visulima/find-cache-dir': 1.0.12(yaml@2.6.1)
-      '@visulima/pail': 2.1.9(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
-      cli-table3: 0.6.5
-      command-line-args: 6.0.0
-      fastest-levenshtein: 1.0.16
-    transitivePeerDependencies:
-      - '@visulima/redact'
-      - rotating-file-stream
-      - yaml
 
   '@visulima/cerebro@1.1.24(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)':
     dependencies:
@@ -28729,9 +29057,19 @@ snapshots:
       - rotating-file-stream
       - yaml
 
-  '@visulima/colorize@1.4.10':
+  '@visulima/cerebro@1.1.25(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)':
     dependencies:
-      '@visulima/is-ansi-color-supported': 2.2.7
+      '@visulima/boxen': 1.0.21
+      '@visulima/colorize': 1.4.12
+      '@visulima/find-cache-dir': 1.0.15(yaml@2.6.1)
+      '@visulima/pail': 2.1.11(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
+      cli-table3: 0.6.5
+      command-line-args: 6.0.0
+      fastest-levenshtein: 1.0.16
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - rotating-file-stream
+      - yaml
 
   '@visulima/colorize@1.4.12':
     dependencies:
@@ -28753,16 +29091,7 @@ snapshots:
       - '@prisma/client'
       - prisma
 
-  '@visulima/error@4.4.5': {}
-
   '@visulima/error@4.4.7': {}
-
-  '@visulima/find-cache-dir@1.0.12(yaml@2.6.1)':
-    dependencies:
-      '@visulima/fs': 2.2.0(yaml@2.6.1)
-      '@visulima/path': 1.0.9
-    transitivePeerDependencies:
-      - yaml
 
   '@visulima/find-cache-dir@1.0.14(yaml@2.6.1)':
     dependencies:
@@ -28778,8 +29107,6 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/fmt@1.1.10': {}
-
   '@visulima/fmt@1.1.11': {}
 
   '@visulima/fs@2.1.10(yaml@2.6.1)':
@@ -28791,12 +29118,6 @@ snapshots:
   '@visulima/fs@2.1.7(yaml@2.6.1)':
     dependencies:
       '@visulima/path': 1.0.2
-    optionalDependencies:
-      yaml: 2.6.1
-
-  '@visulima/fs@2.2.0(yaml@2.6.1)':
-    dependencies:
-      '@visulima/path': 1.0.9
     optionalDependencies:
       yaml: 2.6.1
 
@@ -28812,15 +29133,9 @@ snapshots:
     optionalDependencies:
       yaml: 2.6.1
 
-  '@visulima/humanizer@1.0.12': {}
-
   '@visulima/humanizer@1.0.14': {}
 
-  '@visulima/inspector@1.0.10': {}
-
   '@visulima/inspector@1.0.12': {}
-
-  '@visulima/is-ansi-color-supported@2.2.7': {}
 
   '@visulima/is-ansi-color-supported@2.2.8': {}
 
@@ -28915,14 +29230,6 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/package@3.1.2(yaml@2.6.1)':
-    dependencies:
-      '@visulima/fs': 2.2.0(yaml@2.6.1)
-      '@visulima/path': 1.0.9
-      normalize-package-data: 6.0.2
-    transitivePeerDependencies:
-      - yaml
-
   '@visulima/package@3.1.4(yaml@2.6.1)':
     dependencies:
       '@visulima/fs': 2.2.2(yaml@2.6.1)
@@ -28937,114 +29244,6 @@ snapshots:
       '@visulima/path': 1.1.1
       normalize-package-data: 7.0.0
     transitivePeerDependencies:
-      - yaml
-
-  '@visulima/packem@1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.4.5)(yaml@2.6.1)':
-    dependencies:
-      '@antfu/install-pkg': 0.4.1
-      '@babel/parser': 7.25.6
-      '@ckeditor/typedoc-plugins': 44.0.0(typedoc@0.26.7(typescript@5.4.5))
-      '@clack/prompts': 0.7.0
-      '@rollup/plugin-alias': 5.1.1(rollup@4.24.0)
-      '@rollup/plugin-commonjs': 28.0.0(rollup@4.24.0)
-      '@rollup/plugin-dynamic-import-vars': 2.1.3(rollup@4.24.0)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.24.0)
-      '@rollup/plugin-json': 6.1.0(rollup@4.24.0)
-      '@rollup/plugin-node-resolve': 15.3.0(rollup@4.24.0)
-      '@rollup/plugin-replace': 6.0.1(rollup@4.24.0)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.24.0)
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
-      '@visulima/cerebro': 1.1.22(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)
-      '@visulima/colorize': 1.4.10
-      '@visulima/find-cache-dir': 1.0.12(yaml@2.6.1)
-      '@visulima/fs': 2.2.0(yaml@2.6.1)
-      '@visulima/humanizer': 1.0.12
-      '@visulima/package': 3.1.2(yaml@2.6.1)
-      '@visulima/pail': 2.1.9(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.0.9
-      '@visulima/tsconfig': 1.0.14(yaml@2.6.1)
-      defu: 6.1.4
-      es-module-lexer: 1.5.4
-      fastest-levenshtein: 1.0.16
-      glob-parent: 6.0.2
-      hookable: 5.5.3
-      jiti: 2.1.0
-      magic-string: 0.30.11
-      mlly: 1.7.1
-      oxc-parser: 0.30.5
-      rollup: 4.24.0
-      rollup-plugin-dts: 6.1.1(rollup@4.24.0)(typescript@5.4.5)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.24.0)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.24.0)
-      rollup-plugin-visualizer: 5.12.0(rollup@4.24.0)
-      semver: 7.6.3
-      tinyglobby: 0.2.9
-      typedoc: 0.26.7(typescript@5.4.5)
-      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.7(typescript@5.4.5))
-      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.7(typescript@5.4.5))
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.13)
-      esbuild: 0.24.0
-      sucrase: 3.35.0
-      typescript: 5.4.5
-    transitivePeerDependencies:
-      - '@visulima/redact'
-      - picomatch
-      - rotating-file-stream
-      - yaml
-
-  '@visulima/packem@1.0.7(@swc/core@1.6.7(@swc/helpers@0.5.13))(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typescript@5.5.4)(yaml@2.6.1)':
-    dependencies:
-      '@antfu/install-pkg': 0.4.1
-      '@babel/parser': 7.25.6
-      '@ckeditor/typedoc-plugins': 44.0.0(typedoc@0.26.7(typescript@5.5.4))
-      '@clack/prompts': 0.7.0
-      '@rollup/plugin-alias': 5.1.1(rollup@4.24.0)
-      '@rollup/plugin-commonjs': 28.0.0(rollup@4.24.0)
-      '@rollup/plugin-dynamic-import-vars': 2.1.3(rollup@4.24.0)
-      '@rollup/plugin-inject': 5.0.5(rollup@4.24.0)
-      '@rollup/plugin-json': 6.1.0(rollup@4.24.0)
-      '@rollup/plugin-node-resolve': 15.3.0(rollup@4.24.0)
-      '@rollup/plugin-replace': 6.0.1(rollup@4.24.0)
-      '@rollup/plugin-wasm': 6.2.2(rollup@4.24.0)
-      '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
-      '@visulima/cerebro': 1.1.22(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)
-      '@visulima/colorize': 1.4.10
-      '@visulima/find-cache-dir': 1.0.12(yaml@2.6.1)
-      '@visulima/fs': 2.2.0(yaml@2.6.1)
-      '@visulima/humanizer': 1.0.12
-      '@visulima/package': 3.1.2(yaml@2.6.1)
-      '@visulima/pail': 2.1.9(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
-      '@visulima/path': 1.0.9
-      '@visulima/tsconfig': 1.0.14(yaml@2.6.1)
-      defu: 6.1.4
-      es-module-lexer: 1.5.4
-      fastest-levenshtein: 1.0.16
-      glob-parent: 6.0.2
-      hookable: 5.5.3
-      jiti: 2.1.0
-      magic-string: 0.30.11
-      mlly: 1.7.1
-      oxc-parser: 0.30.5
-      rollup: 4.24.0
-      rollup-plugin-dts: 6.1.1(rollup@4.24.0)(typescript@5.5.4)
-      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.24.0)
-      rollup-plugin-polyfill-node: 0.13.0(rollup@4.24.0)
-      rollup-plugin-visualizer: 5.12.0(rollup@4.24.0)
-      semver: 7.6.3
-      tinyglobby: 0.2.9
-      typedoc: 0.26.7(typescript@5.5.4)
-      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.7(typescript@5.5.4))
-      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.7(typescript@5.5.4))
-    optionalDependencies:
-      '@swc/core': 1.6.7(@swc/helpers@0.5.13)
-      esbuild: 0.24.0
-      sucrase: 3.35.0
-      typescript: 5.5.4
-    transitivePeerDependencies:
-      - '@visulima/redact'
-      - picomatch
-      - rotating-file-stream
       - yaml
 
   '@visulima/packem@1.1.0(@ckeditor/typedoc-plugins@43.0.0(typedoc@0.26.10(typescript@5.6.3)))(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.6.3)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.6.3)))(typedoc@0.26.10(typescript@5.6.3))(typescript@5.6.3)(yaml@2.6.1)':
@@ -29155,6 +29354,146 @@ snapshots:
       - rotating-file-stream
       - yaml
 
+  '@visulima/packem@1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)':
+    dependencies:
+      '@antfu/install-pkg': 0.4.1
+      '@babel/parser': 7.26.2
+      '@clack/prompts': 0.8.1
+      '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
+      '@csstools/css-tokenizer': 3.0.3
+      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
+      '@rollup/plugin-alias': 5.1.1(rollup@4.27.3)
+      '@rollup/plugin-commonjs': 28.0.1(rollup@4.27.3)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.27.3)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.27.3)
+      '@rollup/plugin-json': 6.1.0(rollup@4.27.3)
+      '@rollup/plugin-node-resolve': 15.3.0(rollup@4.27.3)
+      '@rollup/plugin-replace': 6.0.1(rollup@4.27.3)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.27.3)
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      '@visulima/cerebro': 1.1.25(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)
+      '@visulima/colorize': 1.4.12
+      '@visulima/find-cache-dir': 1.0.15(yaml@2.6.1)
+      '@visulima/fs': 2.3.0(yaml@2.6.1)
+      '@visulima/humanizer': 1.0.14
+      '@visulima/package': 3.1.5(yaml@2.6.1)
+      '@visulima/pail': 2.1.11(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.1.1
+      '@visulima/source-map': 1.0.10
+      '@visulima/tsconfig': 1.1.1(yaml@2.6.1)
+      browserslist: 4.24.2
+      defu: 6.1.4
+      es-module-lexer: 1.5.4
+      fastest-levenshtein: 1.0.16
+      glob-parent: 6.0.2
+      hookable: 5.5.3
+      jiti: 2.4.0
+      magic-string: 0.30.13
+      mlly: 1.7.3
+      oxc-parser: 0.36.0
+      oxc-resolver: 2.0.1
+      rollup: 4.27.3
+      rollup-plugin-dts: 6.1.1(rollup@4.27.3)(typescript@5.4.5)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.27.3)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.27.3)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.27.3)
+      semver: 7.6.3
+      source-map-js: 1.2.1
+      tinyexec: 0.3.1
+      tinyglobby: 0.2.10
+    optionalDependencies:
+      '@swc/core': 1.6.7(@swc/helpers@0.5.13)
+      esbuild: 0.24.0
+      icss-utils: 5.1.0(postcss@8.4.49)
+      lightningcss: 1.25.1
+      postcss: 8.4.49
+      postcss-load-config: 6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.4.49)
+      postcss-modules-local-by-default: 4.0.5(postcss@8.4.49)
+      postcss-modules-scope: 3.2.0(postcss@8.4.49)
+      postcss-modules-values: 4.0.0(postcss@8.4.49)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.26.10(typescript@5.4.5)
+      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.10(typescript@5.4.5))
+      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.10(typescript@5.4.5))
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - picomatch
+      - rotating-file-stream
+      - yaml
+
+  '@visulima/packem@1.8.2(@swc/core@1.6.7(@swc/helpers@0.5.13))(@visulima/redact@1.0.9)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.5.4)))(typedoc@0.26.10(typescript@5.5.4))(typescript@5.5.4)(yaml@2.6.1)':
+    dependencies:
+      '@antfu/install-pkg': 0.4.1
+      '@babel/parser': 7.26.2
+      '@clack/prompts': 0.8.1
+      '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
+      '@csstools/css-tokenizer': 3.0.3
+      '@csstools/postcss-slow-plugins': 2.0.0(postcss@8.4.49)
+      '@rollup/plugin-alias': 5.1.1(rollup@4.27.3)
+      '@rollup/plugin-commonjs': 28.0.1(rollup@4.27.3)
+      '@rollup/plugin-dynamic-import-vars': 2.1.5(rollup@4.27.3)
+      '@rollup/plugin-inject': 5.0.5(rollup@4.27.3)
+      '@rollup/plugin-json': 6.1.0(rollup@4.27.3)
+      '@rollup/plugin-node-resolve': 15.3.0(rollup@4.27.3)
+      '@rollup/plugin-replace': 6.0.1(rollup@4.27.3)
+      '@rollup/plugin-wasm': 6.2.2(rollup@4.27.3)
+      '@rollup/pluginutils': 5.1.3(rollup@4.27.3)
+      '@visulima/cerebro': 1.1.25(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)(yaml@2.6.1)
+      '@visulima/colorize': 1.4.12
+      '@visulima/find-cache-dir': 1.0.15(yaml@2.6.1)
+      '@visulima/fs': 2.3.0(yaml@2.6.1)
+      '@visulima/humanizer': 1.0.14
+      '@visulima/package': 3.1.5(yaml@2.6.1)
+      '@visulima/pail': 2.1.11(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)
+      '@visulima/path': 1.1.1
+      '@visulima/source-map': 1.0.10
+      '@visulima/tsconfig': 1.1.1(yaml@2.6.1)
+      browserslist: 4.24.2
+      defu: 6.1.4
+      es-module-lexer: 1.5.4
+      fastest-levenshtein: 1.0.16
+      glob-parent: 6.0.2
+      hookable: 5.5.3
+      jiti: 2.4.0
+      magic-string: 0.30.13
+      mlly: 1.7.3
+      oxc-parser: 0.36.0
+      oxc-resolver: 2.0.1
+      rollup: 4.27.3
+      rollup-plugin-dts: 6.1.1(rollup@4.27.3)(typescript@5.5.4)
+      rollup-plugin-license: 3.5.3(picomatch@4.0.2)(rollup@4.27.3)
+      rollup-plugin-polyfill-node: 0.13.0(rollup@4.27.3)
+      rollup-plugin-visualizer: 5.12.0(rollup@4.27.3)
+      semver: 7.6.3
+      source-map-js: 1.2.1
+      tinyexec: 0.3.1
+      tinyglobby: 0.2.10
+    optionalDependencies:
+      '@swc/core': 1.6.7(@swc/helpers@0.5.13)
+      esbuild: 0.24.0
+      icss-utils: 5.1.0(postcss@8.4.49)
+      lightningcss: 1.25.1
+      postcss: 8.4.49
+      postcss-load-config: 6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1)
+      postcss-modules-extract-imports: 3.1.0(postcss@8.4.49)
+      postcss-modules-local-by-default: 4.0.5(postcss@8.4.49)
+      postcss-modules-scope: 3.2.0(postcss@8.4.49)
+      postcss-modules-values: 4.0.0(postcss@8.4.49)
+      postcss-value-parser: 4.2.0
+      sucrase: 3.35.0
+      typedoc: 0.26.10(typescript@5.5.4)
+      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
+      typedoc-plugin-rename-defaults: 0.7.1(typedoc@0.26.10(typescript@5.5.4))
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - '@visulima/redact'
+      - picomatch
+      - rotating-file-stream
+      - yaml
+
   '@visulima/pagination@3.0.23': {}
 
   '@visulima/pail@2.1.11(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)':
@@ -29168,20 +29507,7 @@ snapshots:
       '@visulima/redact': 1.0.9
       rotating-file-stream: 3.2.5
 
-  '@visulima/pail@2.1.9(@visulima/redact@1.0.9)(rotating-file-stream@3.2.5)':
-    dependencies:
-      '@visulima/colorize': 1.4.10
-      '@visulima/error': 4.4.5
-      '@visulima/fmt': 1.1.10
-      '@visulima/inspector': 1.0.10
-      safe-stable-stringify: 2.5.0
-    optionalDependencies:
-      '@visulima/redact': 1.0.9
-      rotating-file-stream: 3.2.5
-
   '@visulima/path@1.0.2': {}
-
-  '@visulima/path@1.0.9': {}
 
   '@visulima/path@1.1.1': {}
 
@@ -29195,18 +29521,23 @@ snapshots:
     dependencies:
       compromise: 14.14.0
 
-  '@visulima/tsconfig@1.0.14(yaml@2.6.1)':
+  '@visulima/source-map@1.0.10':
     dependencies:
-      '@visulima/fs': 2.2.0(yaml@2.6.1)
-      '@visulima/path': 1.0.9
+      '@jridgewell/trace-mapping': 0.3.25
+      '@visulima/path': 1.1.1
+
+  '@visulima/tsconfig@1.0.16(yaml@2.6.1)':
+    dependencies:
+      '@visulima/fs': 2.2.2(yaml@2.6.1)
+      '@visulima/path': 1.1.1
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/tsconfig@1.0.16(yaml@2.6.1)':
+  '@visulima/tsconfig@1.1.1(yaml@2.6.1)':
     dependencies:
-      '@visulima/fs': 2.2.2(yaml@2.6.1)
+      '@visulima/fs': 2.3.0(yaml@2.6.1)
       '@visulima/path': 1.1.1
       jsonc-parser: 3.3.1
       resolve-pkg-maps: 1.0.0
@@ -29595,7 +29926,7 @@ snapshots:
 
   '@vitest/snapshot@1.6.0':
     dependencies:
-      magic-string: 0.30.12
+      magic-string: 0.30.13
       pathe: 1.1.2
       pretty-format: 29.7.0
 
@@ -30475,6 +30806,13 @@ snapshots:
       node-releases: 2.0.18
       update-browserslist-db: 1.1.0(browserslist@4.24.0)
 
+  browserslist@4.24.2:
+    dependencies:
+      caniuse-lite: 1.0.30001680
+      electron-to-chromium: 1.5.63
+      node-releases: 2.0.18
+      update-browserslist-db: 1.1.1(browserslist@4.24.2)
+
   bser@2.1.1:
     dependencies:
       node-int64: 0.4.0
@@ -30608,6 +30946,8 @@ snapshots:
   caniuse-lite@1.0.30001651: {}
 
   caniuse-lite@1.0.30001667: {}
+
+  caniuse-lite@1.0.30001680: {}
 
   capital-case@1.0.4:
     dependencies:
@@ -31175,7 +31515,7 @@ snapshots:
 
   core-js-compat@3.37.1:
     dependencies:
-      browserslist: 4.24.0
+      browserslist: 4.24.2
 
   core-js-pure@3.37.1: {}
 
@@ -31956,6 +32296,8 @@ snapshots:
 
   electron-to-chromium@1.5.5: {}
 
+  electron-to-chromium@1.5.63: {}
+
   emittery@0.13.1: {}
 
   emoji-regex@10.3.0: {}
@@ -32348,6 +32690,8 @@ snapshots:
       '@esbuild/win32-x64': 0.24.0
 
   escalade@3.1.2: {}
+
+  escalade@3.2.0: {}
 
   escape-goat@4.0.0: {}
 
@@ -33420,7 +33764,7 @@ snapshots:
 
   estree-util-attach-comments@2.1.1:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   estree-util-build-jsx@2.2.2:
     dependencies:
@@ -33779,10 +34123,6 @@ snapshots:
   fd-slicer@1.1.0:
     dependencies:
       pend: 1.2.0
-
-  fdir@6.3.0(picomatch@2.3.1):
-    optionalDependencies:
-      picomatch: 2.3.1
 
   fdir@6.3.0(picomatch@4.0.2):
     optionalDependencies:
@@ -34874,7 +35214,7 @@ snapshots:
       bundle-require: 5.0.0(esbuild@0.23.1)
       debug: 4.3.7
       esbuild: 0.23.1
-      jiti: 2.3.3
+      jiti: 2.4.0
       pathe: 1.1.2
       tsx: 4.19.2
     transitivePeerDependencies:
@@ -35187,7 +35527,7 @@ snapshots:
 
   is-reference@3.0.2:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   is-regex@1.1.4:
     dependencies:
@@ -35322,7 +35662,7 @@ snapshots:
   istanbul-lib-instrument@5.2.1:
     dependencies:
       '@babel/core': 7.26.0
-      '@babel/parser': 7.26.0
+      '@babel/parser': 7.26.2
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
       semver: 6.3.1
@@ -35332,7 +35672,7 @@ snapshots:
   istanbul-lib-instrument@6.0.3:
     dependencies:
       '@babel/core': 7.26.0
-      '@babel/parser': 7.26.0
+      '@babel/parser': 7.26.2
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
       semver: 7.6.3
@@ -35848,9 +36188,9 @@ snapshots:
 
   jiti@1.21.6: {}
 
-  jiti@2.1.0: {}
-
   jiti@2.3.3: {}
+
+  jiti@2.4.0: {}
 
   jju@1.4.0: {}
 
@@ -36265,7 +36605,7 @@ snapshots:
 
   local-pkg@0.5.0:
     dependencies:
-      mlly: 1.7.1
+      mlly: 1.7.3
       pkg-types: 1.1.3
 
   locate-app@2.4.21:
@@ -36454,23 +36794,23 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  magic-string@0.30.11:
+  magic-string@0.30.12:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  magic-string@0.30.12:
+  magic-string@0.30.13:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
   magicast@0.3.4:
     dependencies:
-      '@babel/parser': 7.25.6
+      '@babel/parser': 7.26.2
       '@babel/types': 7.24.9
       source-map-js: 1.2.1
 
   magicast@0.3.5:
     dependencies:
-      '@babel/parser': 7.26.0
+      '@babel/parser': 7.26.2
       '@babel/types': 7.26.0
       source-map-js: 1.2.1
 
@@ -37178,7 +37518,7 @@ snapshots:
 
   micromark-extension-mdx-expression@1.0.8:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       micromark-factory-mdx-expression: 1.0.9
       micromark-factory-space: 1.1.0
       micromark-util-character: 1.2.0
@@ -37189,7 +37529,7 @@ snapshots:
 
   micromark-extension-mdx-expression@3.0.0:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       devlop: 1.1.0
       micromark-factory-mdx-expression: 2.0.1
       micromark-factory-space: 2.0.0
@@ -37201,7 +37541,7 @@ snapshots:
   micromark-extension-mdx-jsx@1.0.5:
     dependencies:
       '@types/acorn': 4.0.6
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       estree-util-is-identifier-name: 2.1.0
       micromark-factory-mdx-expression: 1.0.9
       micromark-factory-space: 1.1.0
@@ -37214,7 +37554,7 @@ snapshots:
   micromark-extension-mdx-jsx@3.0.0:
     dependencies:
       '@types/acorn': 4.0.6
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       devlop: 1.1.0
       estree-util-is-identifier-name: 3.0.0
       micromark-factory-mdx-expression: 2.0.1
@@ -37234,7 +37574,7 @@ snapshots:
 
   micromark-extension-mdxjs-esm@1.0.5:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       micromark-core-commonmark: 1.1.0
       micromark-util-character: 1.2.0
       micromark-util-events-to-acorn: 1.2.3
@@ -37246,7 +37586,7 @@ snapshots:
 
   micromark-extension-mdxjs-esm@3.0.0:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.1
       micromark-util-character: 2.1.0
@@ -37306,7 +37646,7 @@ snapshots:
 
   micromark-factory-mdx-expression@1.0.9:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       micromark-util-character: 1.2.0
       micromark-util-events-to-acorn: 1.2.3
       micromark-util-symbol: 1.1.0
@@ -37317,7 +37657,7 @@ snapshots:
 
   micromark-factory-mdx-expression@2.0.1:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       devlop: 1.1.0
       micromark-util-character: 2.1.0
       micromark-util-events-to-acorn: 2.0.2
@@ -37433,7 +37773,7 @@ snapshots:
   micromark-util-events-to-acorn@1.2.3:
     dependencies:
       '@types/acorn': 4.0.6
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       '@types/unist': 2.0.10
       estree-util-visit: 1.2.1
       micromark-util-symbol: 1.1.0
@@ -37444,7 +37784,7 @@ snapshots:
   micromark-util-events-to-acorn@2.0.2:
     dependencies:
       '@types/acorn': 4.0.6
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       '@types/unist': 3.0.2
       devlop: 1.1.0
       estree-util-visit: 2.0.0
@@ -37647,16 +37987,16 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
-  mlly@1.7.1:
-    dependencies:
-      acorn: 8.12.1
-      pathe: 1.1.2
-      pkg-types: 1.1.3
-      ufo: 1.5.3
-
   mlly@1.7.2:
     dependencies:
-      acorn: 8.12.1
+      acorn: 8.14.0
+      pathe: 1.1.2
+      pkg-types: 1.2.1
+      ufo: 1.5.4
+
+  mlly@1.7.3:
+    dependencies:
+      acorn: 8.14.0
       pathe: 1.1.2
       pkg-types: 1.2.1
       ufo: 1.5.4
@@ -38710,17 +39050,6 @@ snapshots:
 
   outvariant@1.4.3: {}
 
-  oxc-parser@0.30.5:
-    optionalDependencies:
-      '@oxc-parser/binding-darwin-arm64': 0.30.5
-      '@oxc-parser/binding-darwin-x64': 0.30.5
-      '@oxc-parser/binding-linux-arm64-gnu': 0.30.5
-      '@oxc-parser/binding-linux-arm64-musl': 0.30.5
-      '@oxc-parser/binding-linux-x64-gnu': 0.30.5
-      '@oxc-parser/binding-linux-x64-musl': 0.30.5
-      '@oxc-parser/binding-win32-arm64-msvc': 0.30.5
-      '@oxc-parser/binding-win32-x64-msvc': 0.30.5
-
   oxc-parser@0.32.0:
     optionalDependencies:
       '@oxc-parser/binding-darwin-arm64': 0.32.0
@@ -38742,6 +39071,33 @@ snapshots:
       '@oxc-parser/binding-linux-x64-musl': 0.33.0
       '@oxc-parser/binding-win32-arm64-msvc': 0.33.0
       '@oxc-parser/binding-win32-x64-msvc': 0.33.0
+
+  oxc-parser@0.36.0:
+    dependencies:
+      '@oxc-project/types': 0.36.0
+    optionalDependencies:
+      '@oxc-parser/binding-darwin-arm64': 0.36.0
+      '@oxc-parser/binding-darwin-x64': 0.36.0
+      '@oxc-parser/binding-linux-arm64-gnu': 0.36.0
+      '@oxc-parser/binding-linux-arm64-musl': 0.36.0
+      '@oxc-parser/binding-linux-x64-gnu': 0.36.0
+      '@oxc-parser/binding-linux-x64-musl': 0.36.0
+      '@oxc-parser/binding-win32-arm64-msvc': 0.36.0
+      '@oxc-parser/binding-win32-x64-msvc': 0.36.0
+
+  oxc-resolver@2.0.1:
+    optionalDependencies:
+      '@oxc-resolver/binding-darwin-arm64': 2.0.1
+      '@oxc-resolver/binding-darwin-x64': 2.0.1
+      '@oxc-resolver/binding-freebsd-x64': 2.0.1
+      '@oxc-resolver/binding-linux-arm-gnueabihf': 2.0.1
+      '@oxc-resolver/binding-linux-arm64-gnu': 2.0.1
+      '@oxc-resolver/binding-linux-arm64-musl': 2.0.1
+      '@oxc-resolver/binding-linux-x64-gnu': 2.0.1
+      '@oxc-resolver/binding-linux-x64-musl': 2.0.1
+      '@oxc-resolver/binding-wasm32-wasi': 2.0.1
+      '@oxc-resolver/binding-win32-arm64-msvc': 2.0.1
+      '@oxc-resolver/binding-win32-x64-msvc': 2.0.1
 
   p-cancelable@3.0.0: {}
 
@@ -38871,8 +39227,6 @@ snapshots:
 
   package-manager-detector@0.1.2: {}
 
-  package-manager-detector@0.2.0: {}
-
   package-manager-detector@0.2.4: {}
 
   package-name-regex@2.0.6: {}
@@ -38953,7 +39307,7 @@ snapshots:
 
   parse-json@6.0.2:
     dependencies:
-      '@babel/code-frame': 7.25.9
+      '@babel/code-frame': 7.26.0
       error-ex: 1.3.2
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 2.0.4
@@ -39191,13 +39545,13 @@ snapshots:
   pkg-types@1.1.3:
     dependencies:
       confbox: 0.1.7
-      mlly: 1.7.2
+      mlly: 1.7.3
       pathe: 1.1.2
 
   pkg-types@1.2.1:
     dependencies:
       confbox: 0.1.8
-      mlly: 1.7.2
+      mlly: 1.7.3
       pathe: 1.1.2
 
   plain-object-clone@2.0.0: {}
@@ -39248,7 +39602,7 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-cli@11.0.0(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2):
+  postcss-cli@11.0.0(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2):
     dependencies:
       chokidar: 3.6.0
       dependency-graph: 0.11.0
@@ -39257,7 +39611,7 @@ snapshots:
       globby: 14.0.2
       picocolors: 1.0.1
       postcss: 8.4.49
-      postcss-load-config: 5.1.0(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)
+      postcss-load-config: 5.1.0(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)
       postcss-reporter: 7.1.0(postcss@8.4.49)
       pretty-hrtime: 1.0.3
       read-cache: 1.0.0
@@ -39299,20 +39653,20 @@ snapshots:
     optionalDependencies:
       postcss: 8.4.49
 
-  postcss-load-config@5.1.0(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2):
+  postcss-load-config@5.1.0(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2):
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.6.1
     optionalDependencies:
-      jiti: 2.3.3
+      jiti: 2.4.0
       postcss: 8.4.49
       tsx: 4.19.2
 
-  postcss-load-config@6.0.1(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1):
+  postcss-load-config@6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1):
     dependencies:
       lilconfig: 3.1.2
     optionalDependencies:
-      jiti: 2.3.3
+      jiti: 2.4.0
       postcss: 8.4.49
       tsx: 4.19.2
       yaml: 2.6.1
@@ -40413,39 +40767,53 @@ snapshots:
 
   robust-predicates@3.0.2: {}
 
-  rollup-plugin-dts@6.1.1(rollup@4.24.0)(typescript@5.4.5):
-    dependencies:
-      magic-string: 0.30.11
-      rollup: 4.24.0
-      typescript: 5.4.5
-    optionalDependencies:
-      '@babel/code-frame': 7.24.7
-
-  rollup-plugin-dts@6.1.1(rollup@4.24.0)(typescript@5.5.4):
-    dependencies:
-      magic-string: 0.30.11
-      rollup: 4.24.0
-      typescript: 5.5.4
-    optionalDependencies:
-      '@babel/code-frame': 7.24.7
-
   rollup-plugin-dts@6.1.1(rollup@4.24.0)(typescript@5.6.3):
     dependencies:
-      magic-string: 0.30.11
+      magic-string: 0.30.13
       rollup: 4.24.0
       typescript: 5.6.3
     optionalDependencies:
-      '@babel/code-frame': 7.24.7
+      '@babel/code-frame': 7.26.0
+
+  rollup-plugin-dts@6.1.1(rollup@4.27.3)(typescript@5.4.5):
+    dependencies:
+      magic-string: 0.30.13
+      rollup: 4.27.3
+      typescript: 5.4.5
+    optionalDependencies:
+      '@babel/code-frame': 7.26.0
+
+  rollup-plugin-dts@6.1.1(rollup@4.27.3)(typescript@5.5.4):
+    dependencies:
+      magic-string: 0.30.13
+      rollup: 4.27.3
+      typescript: 5.5.4
+    optionalDependencies:
+      '@babel/code-frame': 7.26.0
 
   rollup-plugin-license@3.5.3(picomatch@4.0.2)(rollup@4.24.0):
     dependencies:
       commenting: 1.1.0
       fdir: 6.3.0(picomatch@4.0.2)
       lodash: 4.17.21
-      magic-string: 0.30.11
+      magic-string: 0.30.13
       moment: 2.30.1
       package-name-regex: 2.0.6
       rollup: 4.24.0
+      spdx-expression-validate: 2.0.0
+      spdx-satisfies: 5.0.1
+    transitivePeerDependencies:
+      - picomatch
+
+  rollup-plugin-license@3.5.3(picomatch@4.0.2)(rollup@4.27.3):
+    dependencies:
+      commenting: 1.1.0
+      fdir: 6.3.0(picomatch@4.0.2)
+      lodash: 4.17.21
+      magic-string: 0.30.13
+      moment: 2.30.1
+      package-name-regex: 2.0.6
+      rollup: 4.27.3
       spdx-expression-validate: 2.0.0
       spdx-satisfies: 5.0.1
     transitivePeerDependencies:
@@ -40456,6 +40824,11 @@ snapshots:
       '@rollup/plugin-inject': 5.0.5(rollup@4.24.0)
       rollup: 4.24.0
 
+  rollup-plugin-polyfill-node@0.13.0(rollup@4.27.3):
+    dependencies:
+      '@rollup/plugin-inject': 5.0.5(rollup@4.27.3)
+      rollup: 4.27.3
+
   rollup-plugin-visualizer@5.12.0(rollup@4.24.0):
     dependencies:
       open: 8.4.2
@@ -40464,6 +40837,15 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       rollup: 4.24.0
+
+  rollup-plugin-visualizer@5.12.0(rollup@4.27.3):
+    dependencies:
+      open: 8.4.2
+      picomatch: 2.3.1
+      source-map: 0.7.4
+      yargs: 17.7.2
+    optionalDependencies:
+      rollup: 4.27.3
 
   rollup@4.24.0:
     dependencies:
@@ -40485,6 +40867,30 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.24.0
       '@rollup/rollup-win32-ia32-msvc': 4.24.0
       '@rollup/rollup-win32-x64-msvc': 4.24.0
+      fsevents: 2.3.3
+
+  rollup@4.27.3:
+    dependencies:
+      '@types/estree': 1.0.6
+    optionalDependencies:
+      '@rollup/rollup-android-arm-eabi': 4.27.3
+      '@rollup/rollup-android-arm64': 4.27.3
+      '@rollup/rollup-darwin-arm64': 4.27.3
+      '@rollup/rollup-darwin-x64': 4.27.3
+      '@rollup/rollup-freebsd-arm64': 4.27.3
+      '@rollup/rollup-freebsd-x64': 4.27.3
+      '@rollup/rollup-linux-arm-gnueabihf': 4.27.3
+      '@rollup/rollup-linux-arm-musleabihf': 4.27.3
+      '@rollup/rollup-linux-arm64-gnu': 4.27.3
+      '@rollup/rollup-linux-arm64-musl': 4.27.3
+      '@rollup/rollup-linux-powerpc64le-gnu': 4.27.3
+      '@rollup/rollup-linux-riscv64-gnu': 4.27.3
+      '@rollup/rollup-linux-s390x-gnu': 4.27.3
+      '@rollup/rollup-linux-x64-gnu': 4.27.3
+      '@rollup/rollup-linux-x64-musl': 4.27.3
+      '@rollup/rollup-win32-arm64-msvc': 4.27.3
+      '@rollup/rollup-win32-ia32-msvc': 4.27.3
+      '@rollup/rollup-win32-x64-msvc': 4.27.3
       fsevents: 2.3.3
 
   rotating-file-stream@3.2.5: {}
@@ -42252,7 +42658,7 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  tsup@8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1):
+  tsup@8.3.5(@swc/core@1.6.7(@swc/helpers@0.5.13))(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(typescript@5.4.5)(yaml@2.6.1):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.24.0)
       cac: 6.7.14
@@ -42262,7 +42668,7 @@ snapshots:
       esbuild: 0.24.0
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.3.3)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1)
+      postcss-load-config: 6.0.1(jiti@2.4.0)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1)
       resolve-from: 5.0.0
       rollup: 4.24.0
       source-map: 0.8.0-beta.0
@@ -42433,32 +42839,56 @@ snapshots:
 
   typedarray@0.0.6: {}
 
+  typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)):
+    dependencies:
+      typedoc: 0.26.10(typescript@5.4.5)
+    optional: true
+
+  typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)):
+    dependencies:
+      typedoc: 0.26.10(typescript@5.5.4)
+    optional: true
+
   typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.6.3)):
     dependencies:
       typedoc: 0.26.10(typescript@5.6.3)
 
-  typedoc-plugin-markdown@4.2.9(typedoc@0.26.7(typescript@5.4.5)):
+  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)):
     dependencies:
-      typedoc: 0.26.7(typescript@5.4.5)
+      camelcase: 8.0.0
+      typedoc: 0.26.10(typescript@5.4.5)
+    optional: true
 
-  typedoc-plugin-markdown@4.2.9(typedoc@0.26.7(typescript@5.5.4)):
+  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.5.4)):
     dependencies:
-      typedoc: 0.26.7(typescript@5.5.4)
+      camelcase: 8.0.0
+      typedoc: 0.26.10(typescript@5.5.4)
+    optional: true
 
   typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.6.3)):
     dependencies:
       camelcase: 8.0.0
       typedoc: 0.26.10(typescript@5.6.3)
 
-  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.7(typescript@5.4.5)):
+  typedoc@0.26.10(typescript@5.4.5):
     dependencies:
-      camelcase: 8.0.0
-      typedoc: 0.26.7(typescript@5.4.5)
+      lunr: 2.3.9
+      markdown-it: 14.1.0
+      minimatch: 9.0.5
+      shiki: 1.18.0
+      typescript: 5.4.5
+      yaml: 2.6.1
+    optional: true
 
-  typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.7(typescript@5.5.4)):
+  typedoc@0.26.10(typescript@5.5.4):
     dependencies:
-      camelcase: 8.0.0
-      typedoc: 0.26.7(typescript@5.5.4)
+      lunr: 2.3.9
+      markdown-it: 14.1.0
+      minimatch: 9.0.5
+      shiki: 1.18.0
+      typescript: 5.5.4
+      yaml: 2.6.1
+    optional: true
 
   typedoc@0.26.10(typescript@5.6.3):
     dependencies:
@@ -42467,24 +42897,6 @@ snapshots:
       minimatch: 9.0.5
       shiki: 1.18.0
       typescript: 5.6.3
-      yaml: 2.6.1
-
-  typedoc@0.26.7(typescript@5.4.5):
-    dependencies:
-      lunr: 2.3.9
-      markdown-it: 14.1.0
-      minimatch: 9.0.5
-      shiki: 1.18.0
-      typescript: 5.4.5
-      yaml: 2.6.1
-
-  typedoc@0.26.7(typescript@5.5.4):
-    dependencies:
-      lunr: 2.3.9
-      markdown-it: 14.1.0
-      minimatch: 9.0.5
-      shiki: 1.18.0
-      typescript: 5.5.4
       yaml: 2.6.1
 
   types-ramda@0.30.1:
@@ -42514,8 +42926,6 @@ snapshots:
   typical@7.1.1: {}
 
   uc.micro@2.1.0: {}
-
-  ufo@1.5.3: {}
 
   ufo@1.5.4: {}
 
@@ -42864,6 +43274,12 @@ snapshots:
     dependencies:
       browserslist: 4.24.0
       escalade: 3.1.2
+      picocolors: 1.1.1
+
+  update-browserslist-db@1.1.1(browserslist@4.24.2):
+    dependencies:
+      browserslist: 4.24.2
+      escalade: 3.2.0
       picocolors: 1.1.1
 
   update-check@1.5.4:
