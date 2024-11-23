@@ -125,6 +125,12 @@ jobs:
                       pnpm run test:affected --files=${files//\\/\/}
                   fi
 
+            - name: "Install playwright in the needed packages"
+              shell: "bash"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              run: |
+                  pnpm --filter "inspector" exec playwright install
+
             - name: "Run chrome browser tests"
               shell: "bash"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
