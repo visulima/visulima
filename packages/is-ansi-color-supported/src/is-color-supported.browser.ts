@@ -1,7 +1,8 @@
-// Some of this code is taken from https://github.com/chalk/supports-color/blob/main/index.js
-// MIT License
-// Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
-
+/*
+ * Some of this code is taken from https://github.com/chalk/supports-color/blob/main/index.js
+ * MIT License
+ * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ */
 import { SPACE_16_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
@@ -24,14 +25,6 @@ const isColorSupported = (): ColorSupportLevel =>
             if (/\b(Chrome|Chromium)\//.test(navigator.userAgent)) {
                 return SPACE_16_COLORS;
             }
-        }
-
-        // when Next.JS runtime is `edge`, process.stdout is undefined, but colors output is supported
-        // runtime values supported colors: `nodejs`, `edge`, `experimental-edge`
-        if (typeof process !== "undefined") {
-            const isNextJS = (process.env.NEXT_RUNTIME ?? "").includes("edge");
-
-            return isNextJS ? SPACE_16_COLORS : SPACE_MONO;
         }
 
         return SPACE_MONO;
