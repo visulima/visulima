@@ -147,13 +147,13 @@ jobs:
 
                   pnpm run test:affected:browser:firefox --files=${files//\\/\/}
 
-            - name: "Run edge browser tests"
+            - name: "Run webkit browser tests"
               shell: "bash"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
-                  pnpm run test:affected:browser:edge --files=${files//\\/\/}
+                  pnpm run test:affected:browser:webkit --files=${files//\\/\/}
 
             - name: "Prepare nx cache"
               shell: "bash"
