@@ -213,7 +213,7 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
     const mainFrame = stack.shift();
 
     return [
-        options.hideMessage ? undefined : getMessage(error, config, deep),
+        options.hideMessage ? undefined : getMessage(error, config, deep).replaceAll('\\', '/'),
         getHint(error, config, deep),
         mainFrame ? getMainFrame(mainFrame, config, deep) : undefined,
         mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, deep) : undefined,
