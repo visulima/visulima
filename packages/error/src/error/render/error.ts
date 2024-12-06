@@ -213,7 +213,7 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
     const mainFrame = stack.shift();
 
     return [
-        options.hideMessage ? undefined : getMessage(error, config, deep).replaceAll('\\', '/'),
+        options.hideMessage ? undefined : getMessage(error, config, deep),
         getHint(error, config, deep),
         mainFrame ? getMainFrame(mainFrame, config, deep) : undefined,
         mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, deep) : undefined,
@@ -222,7 +222,8 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
         stack.length > 0 ? getStacktrace(stack, config) : undefined,
     ]
         .filter(Boolean)
-        .join("\n");
+        .join("\n")
+        .replaceAll("\\", "/");
 };
 
 export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
