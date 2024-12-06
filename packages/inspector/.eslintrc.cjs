@@ -40,8 +40,8 @@ module.exports = defineConfig({
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
-                "prefer-template": "off",
                 "perfectionist/sort-intersection-types": "off",
+                "prefer-template": "off",
             },
         },
         {

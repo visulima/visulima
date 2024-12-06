@@ -4,6 +4,6 @@
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "moduleResolution": "bundler",
-        "types": ["@vitest/browser/providers/webdriverio", "@vitest/browser/providers/playwright"]
+        "types": ["@vitest/browser/providers/playwright"]
     }
 }

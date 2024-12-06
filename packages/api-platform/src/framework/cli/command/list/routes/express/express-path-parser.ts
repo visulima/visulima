@@ -50,13 +50,13 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
     // eslint-disable-next-line no-param-reassign
     keys = [...keys, ...layer.keys];
 
-    if (layer.name === "router" && layer.handle) {
-        layer.handle.stack.forEach((l: Layer) => {
+    if (layer.name === "router" && layer.handle && layer.handle.stack !== undefined) {
+        for (const l of layer.handle.stack) {
             // eslint-disable-next-line no-param-reassign
             path = path || "";
 
-            traverse(routes, `${path}/${pathRegexParser(layer.regexp, layer.keys)}`, l, keys);
-        });
+            traverse(routes, `${path}/${pathRegexParser(layer.regexp, layer.keys)}`, l as Layer, keys);
+        }
     }
 
     if (!layer.route || layer.route.stack.length === 0) {
@@ -87,9 +87,10 @@ const expressPathParser = (app: Express): RouteMetaData[] => {
     const router: Router = app._router || app.router;
     const routes: RouteMetaData[] = [];
 
-    router.stack.forEach((layer: Layer) => {
-        traverse(routes, "", layer, []);
-    });
+    for (const layer of router.stack) {
+        // @TODO: revisit this type assertion
+        traverse(routes, "", layer as unknown as Layer, []);
+    }
 
     return routes;
 };
