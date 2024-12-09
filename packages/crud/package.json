@@ -128,7 +128,7 @@
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
         "tsup": "^8.3.0",
-        "typescript": "5.4.5",
+        "typescript": "5.7.2",
         "vitest": "^2.1.2"
     },
     "engines": {
