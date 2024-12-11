@@ -149,7 +149,7 @@ jobs:
 
             - name: "Run webkit browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              if: "matrix.os == 'macos-latest' && matrix.node_version == 22"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
