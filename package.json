@@ -96,7 +96,7 @@
         "lint:eslint:redact": "pnpm --filter \"redact\" run lint:eslint",
         "lint:eslint:storybook": "pnpm --filter \"storybook\" run lint:eslint",
         "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix && pnpm run sort-package-json",
-        "lint:package-json": "nx run-many --target=lint:packagejson --parallel --projects=tag:type:package",
+        "lint:package-json": "nx run-many --target=lint:package-json --parallel --projects=tag:type:package",
         "lint:prettier": "pnpm run lint:prettier:root && nx run-many --target=lint:prettier --all --parallel",
         "lint:prettier:fix": "pnpm run lint:prettier:fix:root && nx run-many --target=lint:prettier:fix --all --parallel",
         "lint:prettier:fix:root": "prettier --config=.prettierrc.cjs --write '*.{json,yml,yaml,js,ts}' && prettier --config=.prettierrc.cjs --write 'examples/**/*.{json,yml,yaml,js,ts}'",
