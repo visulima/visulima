@@ -97,7 +97,7 @@ jobs:
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
-                  skip-playwright: "matrix.node_version != 18"
+                  skip-playwright: "(matrix.node_version != 18 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
