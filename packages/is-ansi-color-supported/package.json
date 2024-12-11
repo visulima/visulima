@@ -61,12 +61,12 @@
     "exports": {
         ".": {
             "edge-light": {
-                "default": "./dist/is-color-supported.edge-light.mjs",
-                "types": "./dist/is-color-supported.edge-light.d.mts"
+                "types": "./dist/is-color-supported.edge-light.d.mts",
+                "default": "./dist/is-color-supported.edge-light.mjs"
             },
             "browser": {
-                "default": "./dist/is-color-supported.browser.mjs",
-                "types": "./dist/is-color-supported.browser.d.mts"
+                "types": "./dist/is-color-supported.browser.d.mts",
+                "default": "./dist/is-color-supported.browser.mjs"
             },
             "require": {
                 "types": "./dist/is-color-supported.server.d.cts",
