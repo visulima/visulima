@@ -148,7 +148,7 @@ describe("utils", () => {
 
         if (process.version.includes("v19") || process.version.includes("v20")) {
             errorMessage = "Unexpected token 'i', \"invalid JSON\" is not valid JSON";
-        } else if (process.version.includes("v21") || process.version.includes("v22")) {
+        } else if (process.version.includes("v21") || process.version.includes("v22") || process.version.includes("v23")) {
             errorMessage = `Unexpected token 'i', "invalid JSON" is not valid JSON`;
         }
 

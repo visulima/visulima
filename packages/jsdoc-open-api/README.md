@@ -330,10 +330,10 @@ components:
 
 Supported authentication methods are:
 
--   HTTP authentication: Basic, Bearer, and so on.
--   API key as a header or query parameter or in cookies
--   OAuth 2
--   OpenID Connect Discovery
+- HTTP authentication: Basic, Bearer, and so on.
+- API key as a header or query parameter or in cookies
+- OAuth 2
+- OpenID Connect Discovery
 
 For more information, see [Authentication](/docs/short/authentication.md).
 

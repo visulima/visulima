@@ -1,11 +1,11 @@
 /// <reference types="vitest" />
-import type { UserConfig } from "vitest/config";
+import type { ViteUserConfig } from "vitest/config";
 import { defineConfig, configDefaults, coverageConfigDefaults } from "vitest/config";
 
 const VITEST_SEQUENCE_SEED = Date.now();
 
 // https://vitejs.dev/config/
-export const getVitestConfig = (options: UserConfig = {}) => {
+export const getVitestConfig = (options: ViteUserConfig = {}) => {
     console.log("VITEST_SEQUENCE_SEED", VITEST_SEQUENCE_SEED);
 
     return defineConfig({

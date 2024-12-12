@@ -35,11 +35,11 @@ and based on
 
 ## Features
 
--   Async middleware
--   [Lightweight](https://bundlephobia.com/scan-results?packages=express,@visulima/connect,koa,micro) => Suitable for serverless environment
--   [way faster](https://github.com/visulima/packages/connect/tree/main/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
--   Works with async handlers (with error catching)
--   TypeScript support
+- Async middleware
+- [Lightweight](https://bundlephobia.com/scan-results?packages=express,@visulima/connect,koa,micro) => Suitable for serverless environment
+- [way faster](https://github.com/visulima/packages/connect/tree/main/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
+- Works with async handlers (with error catching)
+- TypeScript support
 
 ## Installation
 
@@ -279,8 +279,8 @@ Create an instance Node.js router.
 
 `fn`(s) can either be:
 
--   functions of `(req, res[, next])`
--   **or** a router instance
+- functions of `(req, res[, next])`
+- **or** a router instance
 
 ```javascript
 // Mount a middleware function
@@ -612,9 +612,9 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [next-connect](https://github.com/hoangvvo/next-connect)
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [next-connect](https://github.com/hoangvvo/next-connect)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

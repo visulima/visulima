@@ -2,11 +2,7 @@ import { match } from "path-to-regexp";
 
 import { RouteType } from "../types";
 
-interface PathMatch {
-    id: string;
-}
-
-const getRouteType: (method: string, url: string, resourceName: string) => GetRouteType = (method, url, resourceName) => {
+const getRouteType = (method: string, url: string, resourceName: string): GetRouteType => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
 
@@ -18,19 +14,19 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
         throw new Error(`invalid resource name '${resourceName}' for route '${realPath}'`);
     }
 
-    const entityMatcher = match<PathMatch>([`/(.*)/${resourceName}`, `/(.*)/${resourceName}/:id`], { decode: decodeURIComponent });
-    const simpleMatcher = match(`/(.*)/${resourceName}`, {
+    const entityMatcher = match(`/*placeholder/${resourceName}{/:id}`, { decode: decodeURIComponent });
+    const simpleMatcher = match(`/*placeholder/${resourceName}`, {
         decode: decodeURIComponent,
     });
 
     switch (method) {
         case "GET": {
             const pathMatch = entityMatcher(realPath);
-
+            console.log(pathMatch);
             // If we got a /something after the resource name, we are reading 1 entity
-            if (typeof pathMatch === "object" && pathMatch.params.id) {
+            if (typeof pathMatch === "object" && pathMatch.params !== null && pathMatch.params.id) {
                 return {
-                    resourceId: pathMatch.params.id,
+                    resourceId: pathMatch.params.id as string,
                     routeType: RouteType.READ_ONE,
                 };
             }
@@ -58,7 +54,7 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
 
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
-                    resourceId: pathMatch.params.id,
+                    resourceId: pathMatch.params.id as string,
                     routeType: RouteType.UPDATE,
                 };
             }
@@ -72,7 +68,7 @@ const getRouteType: (method: string, url: string, resourceName: string) => GetRo
 
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
-                    resourceId: pathMatch.params.id,
+                    resourceId: pathMatch.params.id as string,
                     routeType: RouteType.DELETE,
                 };
             }

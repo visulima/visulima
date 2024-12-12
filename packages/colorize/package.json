@@ -154,21 +154,21 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "2.2.8"
+        "@visulima/is-ansi-color-supported": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.3",
-        "@anolilab/semantic-release-preset": "^9.0.0",
-        "@babel/core": "^7.25.7",
+        "@anolilab/semantic-release-pnpm": "^1.1.5",
+        "@anolilab/semantic-release-preset": "^9.0.2",
+        "@babel/core": "^7.26.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
-        "@secretlint/secretlint-rule-preset-recommend": "^8.3.0",
+        "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
         "@visulima/path": "1.1.1",
-        "@vitest/coverage-v8": "^2.1.2",
-        "@vitest/ui": "^2.1.2",
+        "@vitest/coverage-v8": "^2.1.8",
+        "@vitest/ui": "^2.1.8",
         "ansi-regex": "^6.1.0",
         "ansi-styles": "^6.2.1",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -180,16 +180,16 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "prettier": "^3.3.3",
+        "prettier": "^3.4.2",
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
         "semantic-release": "24.0.0",
-        "tsup": "^8.3.0",
+        "tsup": "^8.3.5",
         "typescript": "5.4.5",
-        "vitest": "^2.1.2"
+        "vitest": "^2.1.8"
     },
     "engines": {
-        "node": ">=18.* <=22.*"
+        "node": ">=18.* <=23.*"
     },
     "os": [
         "darwin",

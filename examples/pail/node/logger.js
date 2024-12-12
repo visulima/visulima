@@ -95,11 +95,13 @@ jsonLogger.info({
     message: "Hello Json!",
     suffix: "suffix",
     prefix: "prefix",
-    context: {
-        test: new ArrayBuffer(1),
-        stream: new Stream.Stream(),
-        buffer: Buffer.alloc(1),
-    },
+    context: [
+        {
+            test: new ArrayBuffer(1),
+            stream: new Stream.Stream(),
+            buffer: Buffer.alloc(1),
+        },
+    ],
 });
 
 jsonLogger.error(
@@ -120,7 +122,7 @@ class TestFunctionCall {
 }
 let test = new TestFunctionCall();
 
-pail.info(test.count("a", "b"));
+jsonLogger.info(test.count("a", "b"));
 
 console.log("------------------ GROUP ------------------\n");
 
