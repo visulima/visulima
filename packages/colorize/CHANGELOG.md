@@ -1,3 +1,27 @@
+## @visulima/colorize [1.4.13](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.12...@visulima/colorize@1.4.13) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* **colorize:** migrated from tsup to packem ([d9356e5](https://github.com/visulima/visulima/commit/d9356e57ddb8f915b412b3351b77e4b7471a30fe))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* **colorize:** fixed test on prod build ([be87894](https://github.com/visulima/visulima/commit/be87894d8ca2c33da6dda012c704a2a2413d4e54))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 2.2.9
+* **@visulima/path:** upgraded to 1.1.2
+
 ## @visulima/colorize [1.4.12](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.11...@visulima/colorize@1.4.12) (2024-10-05)
 
 
