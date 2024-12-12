@@ -1,3 +1,22 @@
+## @visulima/is-ansi-color-supported [2.2.9](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.8...@visulima/is-ansi-color-supported@2.2.9) (2024-12-12)
+
+### Bug Fixes
+
+* added missing placeholder variables into LICENSE.md file ([cef32c6](https://github.com/visulima/visulima/commit/cef32c6eb19dc3215a835e848ef12223a8fa05e0))
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* create a new edge-light export to remove the process check in browser export and updated packem to v1.9.2 ([c3b73c6](https://github.com/visulima/visulima/commit/c3b73c6ed25654e2b855f6bf23cf6508dc08d057))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+* **is-ansi-color-supported:** fixed order of exports ([2e89785](https://github.com/visulima/visulima/commit/2e89785846f812f50c239161aed9428df4320215))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
 ## @visulima/is-ansi-color-supported [2.2.8](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.7...@visulima/is-ansi-color-supported@2.2.8) (2024-10-05)
 
 ### Bug Fixes
