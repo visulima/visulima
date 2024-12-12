@@ -1,3 +1,21 @@
+## @visulima/redact [1.0.10](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.9...@visulima/redact@1.0.10) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* **redact:** updated compromise to 14.14.3 ([4c37ad3](https://github.com/visulima/visulima/commit/4c37ad33ef0ab12c1e65f685408b62859703f1ac))
+* **redact:** updated compromise to v14.14.2, updated dev-deps, add v23 node support ([c3aa851](https://github.com/visulima/visulima/commit/c3aa8510d6fecaa925dcc9aa1d8dd6039797ee4e))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
 ## @visulima/redact [1.0.9](https://github.com/visulima/visulima/compare/@visulima/redact@1.0.8...@visulima/redact@1.0.9) (2024-10-05)
 
 ### Bug Fixes
