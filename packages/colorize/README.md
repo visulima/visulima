@@ -32,10 +32,10 @@ For instance, you can use `green` to make `` green`Hello World!` `` pop, `` red`
 
 ## Why Colorize?
 
--   Supports both **ESM** and **CommonJS**
--   **TypeScript** support out of the box
--   Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
--   [Standard API](#base-colors) compatible with **Chalk**, switch from **Chalk** to **Colorize** without changing your code
+- Supports both **ESM** and **CommonJS**
+- **TypeScript** support out of the box
+- Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
+- [Standard API](#base-colors) compatible with **Chalk**, switch from **Chalk** to **Colorize** without changing your code
 
 ```diff
 - import chalk from 'chalk';
@@ -46,29 +46,29 @@ red.bold('Error!');       // <- the same result with Colorize
 red.bold`Error!`;         // <- the same result with Colorize
 ```
 
--   Default import
-    -   `import colorize from '@visulima/colorize'` or `const colorize = require('@visulima/colorize')`
--   [Named import](#named-import)
-    -   `import { red } from '@visulima/colorize'` or `const { red } = require('@visulima/colorize')`
--   [Chained syntax](#chained-syntax) `red.bold.underline('text')`
--   [Template literals](#template-literals) `` red`text` ``
--   String styling with [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), see [template-literals](#tagged-template-literals)
--   [Nested **template strings**](#nested-syntax) `` red`R ${green`G`} R` ``
--   [Base ANSI styles](#base-colors) `dim` **`bold`** _`italic`_ <u>`underline`</u> <s>`strikethrough`</s>
--   [Base ANSI 16 colors](#base-colors) `` red`Error!` `` `` redBright`Error!` `` `` bgRed`Error!` `` `` bgRedBright`Error!` ``
--   [ANSI 256 colors](#256-colors) and [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
--   [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
--   [Fallback](#fallback) to supported [color space](#color-support): TrueColor → 256 colors → 16 colors → no colors
--   [ANSI codes](#escape-codes) as `open` and `close` property for each style `` `Hello ${red.open}World${red.close}!` ``
--   [Strip ANSI codes](#strip) method `colorize.strip()`
--   [Correct style break](#new-line) at the `end of line` when used `\n` in string
--   Supports the [environment variables](#cli-vars) `NO_COLOR` `FORCE_COLOR` and flags `--no-color` `--color`
--   Expressive API
--   Doesn't extend `String.prototype`
--   Up to **x3 faster** than **chalk**, [see benchmarks](#benchmark)
--   **Auto detects** color support
--   Clean and focused
--   [String Gradient´s](#gradient)
+- Default import
+    - `import colorize from '@visulima/colorize'` or `const colorize = require('@visulima/colorize')`
+- [Named import](#named-import)
+    - `import { red } from '@visulima/colorize'` or `const { red } = require('@visulima/colorize')`
+- [Chained syntax](#chained-syntax) `red.bold.underline('text')`
+- [Template literals](#template-literals) `` red`text` ``
+- String styling with [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), see [template-literals](#tagged-template-literals)
+- [Nested **template strings**](#nested-syntax) `` red`R ${green`G`} R` ``
+- [Base ANSI styles](#base-colors) `dim` **`bold`** _`italic`_ <u>`underline`</u> <s>`strikethrough`</s>
+- [Base ANSI 16 colors](#base-colors) `` red`Error!` `` `` redBright`Error!` `` `` bgRed`Error!` `` `` bgRedBright`Error!` ``
+- [ANSI 256 colors](#256-colors) and [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
+- [TrueColor](#truecolor) (**RGB**, **HEX**) `` rgb(224, 17, 95)`Ruby` ``, `` hex('#96C')`Amethyst` ``
+- [Fallback](#fallback) to supported [color space](#color-support): TrueColor → 256 colors → 16 colors → no colors
+- [ANSI codes](#escape-codes) as `open` and `close` property for each style `` `Hello ${red.open}World${red.close}!` ``
+- [Strip ANSI codes](#strip) method `colorize.strip()`
+- [Correct style break](#new-line) at the `end of line` when used `\n` in string
+- Supports the [environment variables](#cli-vars) `NO_COLOR` `FORCE_COLOR` and flags `--no-color` `--color`
+- Expressive API
+- Doesn't extend `String.prototype`
+- Up to **x3 faster** than **chalk**, [see benchmarks](#benchmark)
+- **Auto detects** color support
+- Clean and focused
+- [String Gradient´s](#gradient)
 
 ## Install
 
@@ -594,26 +594,26 @@ If you're on Windows, do yourself a favor and use [Windows Terminal](https://git
 >
 > **Naming colors**
 >
-> -   standard: colors have [standard names](#base-colors-and-styles), e.g.: `red`, `redBright`, `bgRed`, `bgRedBright`
-> -   _non-standard_: colors have lib-specific names, e.g.: `brightRed`, `bgBrightRed`, `red_b`, `red_btt`
+> - standard: colors have [standard names](#base-colors-and-styles), e.g.: `red`, `redBright`, `bgRed`, `bgRedBright`
+> - _non-standard_: colors have lib-specific names, e.g.: `brightRed`, `bgBrightRed`, `red_b`, `red_btt`
 >
 > **ANSI 256 colors**
 >
 > The method names:
 >
-> -   [`@visulima/colorize`][npm-url]: `ansi256(n)` `bgAnsi256(n)` `fg(n)` `bg(n)`
-> -   [`ansis`][ansis]: `ansi256(n)` `bgAnsi256(n)` `fg(n)` `bg(n)`
-> -   [`chalk`][chalk]: `ansi256(n)` `bgAnsi256(n)`
-> -   [`cli-color`][cli-color]: `xterm(n)`
-> -   [`colors-cli`][colors-cli]: `x<n>`
+> - [`@visulima/colorize`][npm-url]: `ansi256(n)` `bgAnsi256(n)` `fg(n)` `bg(n)`
+> - [`ansis`][ansis]: `ansi256(n)` `bgAnsi256(n)` `fg(n)` `bg(n)`
+> - [`chalk`][chalk]: `ansi256(n)` `bgAnsi256(n)`
+> - [`cli-color`][cli-color]: `xterm(n)`
+> - [`colors-cli`][colors-cli]: `x<n>`
 >
 > **Truecolor**
 >
 > The method names:
 >
-> -   [`@visulima/colorize`][npm-url]: `hex()` `rgb()`
-> -   [`ansis`][ansis]: `hex()` `rgb()`
-> -   [`chalk`][chalk]: `hex()` `rgb()`
+> - [`@visulima/colorize`][npm-url]: `hex()` `rgb()`
+> - [`ansis`][ansis]: `hex()` `rgb()`
+> - [`chalk`][chalk]: `hex()` `rgb()`
 >
 > **Chained syntax**\
 > `lib.red.bold('text')`
@@ -670,8 +670,8 @@ console.log(gradient(["blue", "cyan", "blue"])("----------------"));
 
 ## Reference
 
--   [The opaque named colors](https://drafts.csswg.org/css-color/#named-colors)
--   [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
+- [The opaque named colors](https://drafts.csswg.org/css-color/#named-colors)
+- [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 The [ANSI Escape](https://en.wikipedia.org/wiki/ANSI_escape_code) sequences control code screen.
 
@@ -697,32 +697,32 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [WebDiscus](https://github.com/webdiscus)
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [WebDiscus](https://github.com/webdiscus)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## About
 
 ### Related Projects
 
--   [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
--   [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
--   [chalk][chalk] - Terminal string styling done right
--   [cli-color][cli-color] - Colors and formatting for the console
--   [colorette][colorette] - Easily set your terminal text color & styles
--   [colors-cli][colors-cli] - Terminal string styling done right.
--   [colors.js][colors.js] - get colors in your node.js console
--   [kleur][kleur] - The fastest Node.js library for formatting terminal text with ANSI colors~!
--   [picocolors][picocolors] - Tiny yet powerful colors for terminal
+- [ansis][ansis] - The Node.js library for formatting text in terminal with ANSI colors & styles
+- [ansi-colors][ansi-colors] - Easily add ANSI colors to your text and symbols in the terminal.
+- [chalk][chalk] - Terminal string styling done right
+- [cli-color][cli-color] - Colors and formatting for the console
+- [colorette][colorette] - Easily set your terminal text color & styles
+- [colors-cli][colors-cli] - Terminal string styling done right.
+- [colors.js][colors.js] - get colors in your node.js console
+- [kleur][kleur] - The fastest Node.js library for formatting terminal text with ANSI colors~!
+- [picocolors][picocolors] - Tiny yet powerful colors for terminal
 
 Template:
 
--   [chalk-template][chalk-template] - Terminal string styling with tagged template literals
+- [chalk-template][chalk-template] - Terminal string styling with tagged template literals
 
 Gradient:
 
--   [tinygradient](https://github.com/mistic100/tinygradient) - Easily generate color gradients with an unlimited number of color stops and steps.
--   [gradient-string](https://github.com/bokub/gradient-string) - Beautiful color gradients in terminal output
+- [tinygradient](https://github.com/mistic100/tinygradient) - Easily generate color gradients with an unlimited number of color stops and steps.
+- [gradient-string](https://github.com/bokub/gradient-string) - Beautiful color gradients in terminal output
 
 ## License
 

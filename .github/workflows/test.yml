@@ -59,13 +59,13 @@ jobs:
             matrix:
                 os:
                     - "ubuntu-latest"
-                node_version: ["18", "20", "21", "22"]
+                node_version: ["18", "20", "21", "22", "23"]
                 # On the other platforms, we only test the lts node version
                 include:
                     - os: "macos-latest"
-                      node_version: "20"
+                      node_version: "22"
                     - os: "windows-latest"
-                      node_version: "20.14" # https://github.com/nodejs/node/issues/48673
+                      node_version: "22"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -97,6 +97,7 @@ jobs:
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
+                  skip-playwright: "(matrix.node_version != 18 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -124,6 +125,12 @@ jobs:
                       pnpm run test:affected --files=${files//\\/\/}
                   fi
 
+            - name: "Install playwright in the needed packages"
+              shell: "bash"
+              if: "(matrix.os == 'ubuntu-latest' && matrix.node_version == 18) || (matrix.node_version == 22 && matrix.os == 'macos-latest')"
+              run: |
+                  pnpm --filter "inspector" exec playwright install
+
             - name: "Run chrome browser tests"
               shell: "bash"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
@@ -140,13 +147,13 @@ jobs:
 
                   pnpm run test:affected:browser:firefox --files=${files//\\/\/}
 
-            - name: "Run edge browser tests"
+            - name: "Run webkit browser tests"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              if: "matrix.os == 'macos-latest' && matrix.node_version == 22"
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
 
-                  pnpm run test:affected:browser:edge --files=${files//\\/\/}
+                  pnpm run test:affected:browser:webkit --files=${files//\\/\/}
 
             - name: "Prepare nx cache"
               shell: "bash"

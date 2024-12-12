@@ -1,0 +1,25 @@
+{
+    "name": "nextjs_15_example_colorize",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "next": "15.1.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "18.18.14",
+        "@types/react": "^19.0.1",
+        "@types/react-dom": "^19.0.2",
+        "eslint": "^8",
+        "eslint-config-next": "^15.1.0",
+        "typescript": "5.4.5"
+    }
+}

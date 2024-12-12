@@ -67,9 +67,9 @@ const { cursorUp, cursorLeft } = require("@visulima/ansi");
 
 ## Related
 
--   [ansi-escapes](https://github.com/sindresorhus/ansi-escapes) - ANSI escape codes for manipulating the terminal
--   [sisteransi](https://github.com/terkelg/sisteransi) - ANSI escape codes for some terminal swag.
--   [console-clear](https://github.com/lukeed/console-clear) - Clear the console, cross-platform
+- [ansi-escapes](https://github.com/sindresorhus/ansi-escapes) - ANSI escape codes for manipulating the terminal
+- [sisteransi](https://github.com/terkelg/sisteransi) - ANSI escape codes for some terminal swag.
+- [console-clear](https://github.com/lukeed/console-clear) - Clear the console, cross-platform
 
 ## Supported Node.js Versions
 
@@ -84,8 +84,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

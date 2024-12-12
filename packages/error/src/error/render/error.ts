@@ -222,7 +222,8 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
         stack.length > 0 ? getStacktrace(stack, config) : undefined,
     ]
         .filter(Boolean)
-        .join("\n");
+        .join("\n")
+        .replaceAll("\\", "/");
 };
 
 export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
