@@ -1,3 +1,31 @@
+## @visulima/api-platform [3.0.27](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.26...@visulima/api-platform@3.0.27) (2024-12-12)
+
+### Bug Fixes
+
+* added missing placeholder variables into LICENSE.md file ([cef32c6](https://github.com/visulima/visulima/commit/cef32c6eb19dc3215a835e848ef12223a8fa05e0))
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* **api-platform:** updated debug to 4.4.0 ([44b63d8](https://github.com/visulima/visulima/commit/44b63d848822dcb268ef4f8ec3ad8732a9a9c9ff))
+* **api-platform:** updated yaml to v2.6.1, updated dev-deps, add v23 node support ([b99bc36](https://github.com/visulima/visulima/commit/b99bc366e8d9d9c7f9f8f0628b1de9dc681983d5))
+
+### Styles
+
+* cs fixes ([8b4851d](https://github.com/visulima/visulima/commit/8b4851d533a4b02082c1548e553ce6c67f9dfc0a))
+
+### Miscellaneous Chores
+
+* **api-platform:** fixed test for node v23 ([855d5d5](https://github.com/visulima/visulima/commit/855d5d5452a7d5f6c0d82146fef1e3e629787454))
+* **api-platform:** fixed type issues ([bda5e0d](https://github.com/visulima/visulima/commit/bda5e0dffd68cff1089fc619c153e099b84e6bbf))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 3.0.16
+* **@visulima/jsdoc-open-api:** upgraded to 2.0.65
+* **@visulima/path:** upgraded to 1.1.2
+* **@visulima/crud:** upgraded to 2.0.33
+* **@visulima/fs:** upgraded to 2.3.1
+
 ## @visulima/api-platform [3.0.26](https://github.com/visulima/visulima/compare/@visulima/api-platform@3.0.25...@visulima/api-platform@3.0.26) (2024-10-25)
 
 
