@@ -80,20 +80,20 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.server.js",
+            "browser": "./dist/index.server.mjs",
             "require": {
                 "types": "./dist/index.server.d.cts",
                 "default": "./dist/index.server.cjs"
             },
             "import": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
+                "types": "./dist/index.server.d.mts",
+                "default": "./dist/index.server.mjs"
             }
         },
         "./browser": {
             "import": {
-                "types": "./dist/index.browser.d.ts",
-                "default": "./dist/index.browser.js"
+                "types": "./dist/index.browser.d.mts",
+                "default": "./dist/index.browser.mjs"
             }
         },
         "./template": {
@@ -102,8 +102,8 @@
                 "default": "./dist/template.cjs"
             },
             "import": {
-                "types": "./dist/template.d.ts",
-                "default": "./dist/template.js"
+                "types": "./dist/template.d.mts",
+                "default": "./dist/template.mjs"
             }
         },
         "./gradient": {
@@ -112,8 +112,8 @@
                 "default": "./dist/gradient.cjs"
             },
             "import": {
-                "types": "./dist/gradient.d.ts",
-                "default": "./dist/gradient.js"
+                "types": "./dist/gradient.d.mts",
+                "default": "./dist/gradient.mjs"
             }
         },
         "./utils": {
@@ -122,14 +122,14 @@
                 "default": "./dist/utils.cjs"
             },
             "import": {
-                "types": "./dist/utils.d.ts",
-                "default": "./dist/utils.js"
+                "types": "./dist/utils.d.mts",
+                "default": "./dist/utils.mjs"
             }
         },
         "./package.json": "./package.json"
     },
     "main": "dist/index.server.cjs",
-    "module": "dist/index.server.js",
+    "module": "dist/index.server.mjs",
     "types": "dist/index.server.d.ts",
     "files": [
         "dist/**",
@@ -138,8 +138,8 @@
         "LICENSE.md"
     ],
     "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
+        "build": "cross-env NODE_ENV=development packem build",
+        "build:prod": "cross-env NODE_ENV=production packem build",
         "clean": "rimraf node_modules dist .eslintcache",
         "dev": "pnpm run build --watch",
         "lint:eslint": "eslint . --ext js,cjs,mjs,jsx,ts,tsx,cts,mts,json,yaml,yml,md,mdx --max-warnings=0 --config .eslintrc.cjs",
@@ -181,10 +181,12 @@
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "prettier": "^3.4.2",
+        "esbuild": "0.24.0",
+        "rollup": "4.27.4",
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
         "semantic-release": "24.0.0",
-        "tsup": "^8.3.5",
+        "@visulima/packem": "1.9.2",
         "typescript": "5.4.5",
         "vitest": "^2.1.8"
     },
@@ -212,42 +214,17 @@
             "info_on_disabling_etc_no_deprecated": false
         }
     },
-    "sources": [
-        {
-            "source": "src/index.browser.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/index.server.mts",
-            "format": "esm"
-        },
-        {
-            "source": "src/index.server.cts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/template.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/template.ts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/gradient.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/gradient.ts",
-            "format": "cjs"
-        },
-        {
-            "source": "src/utils.ts",
-            "format": "esm"
-        },
-        {
-            "source": "src/utils.ts",
-            "format": "cjs"
+    "typesVersions": {
+        ">=5.0": {
+            "template": [
+                "./dist/template.d.ts"
+            ],
+            "gradient": [
+                "./dist/gradient.d.ts"
+            ],
+            "utils": [
+                "./dist/utils.d.ts"
+            ]
         }
-    ]
+    }
 }
