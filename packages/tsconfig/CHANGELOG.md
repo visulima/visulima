@@ -1,3 +1,25 @@
+## @visulima/tsconfig [1.1.2](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.1...@visulima/tsconfig@1.1.2) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* **tsconfig:** removed no needed [@ts-expect-error](https://github.com/ts-expect-error) ([8d7b961](https://github.com/visulima/visulima/commit/8d7b96191b62d597d49f7836a7c0543fa64461f0))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Miscellaneous Chores
+
+* **tsconfig:** fixed type issues ([13d2f0e](https://github.com/visulima/visulima/commit/13d2f0eb7695a2762649da1e1fbc4f2f190992cd))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+* updated README.md ([fa3d4aa](https://github.com/visulima/visulima/commit/fa3d4aaef3435488b70e5ee1141559b85dcbb6c4))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.1
+* **@visulima/path:** upgraded to 1.1.2
+
 ## @visulima/tsconfig [1.1.1](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.0...@visulima/tsconfig@1.1.1) (2024-10-25)
 
 
