@@ -127,7 +127,7 @@ jobs:
 
             - name: "Install playwright in the needed packages"
               shell: "bash"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 18"
+              if: "(matrix.os == 'ubuntu-latest' && matrix.node_version == 18) || (matrix.node_version == 22 && matrix.os == 'macos-latest')"
               run: |
                   pnpm --filter "inspector" exec playwright install
 
