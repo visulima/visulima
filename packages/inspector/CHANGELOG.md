@@ -1,3 +1,28 @@
+## @visulima/inspector [1.0.13](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.12...@visulima/inspector@1.0.13) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* changed edge browser to webkit ([2164067](https://github.com/visulima/visulima/commit/216406705e097550efd7f7b8d9526792515f3323))
+* **inspector:** added test for handle circular refs in errors ([8749976](https://github.com/visulima/visulima/commit/8749976d25906a92d2e535179ffdc3f9e0721f9b))
+* **inspector:** fixed browser tests ([2ce9948](https://github.com/visulima/visulima/commit/2ce994804a2f65258414f9c75fb38b8f4ffb0240))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.13
+
 ## @visulima/inspector [1.0.12](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.11...@visulima/inspector@1.0.12) (2024-10-05)
 
 
