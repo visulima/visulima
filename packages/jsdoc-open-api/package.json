@@ -122,8 +122,8 @@
         "@types/lodash.mergewith": "^4.6.9",
         "@types/node": "18.19.15",
         "@types/webpack": "^5.28.5",
-        "@vitest/coverage-v8": "^2.1.5",
-        "@vitest/ui": "^2.1.5",
+        "@vitest/coverage-v8": "^2.1.8",
+        "@vitest/ui": "^2.1.8",
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -136,18 +136,18 @@
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "openapi-types": "^12.1.3",
-        "prettier": "^3.3.3",
+        "prettier": "^3.4.2",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
         "tsup": "^8.3.5",
         "typescript": "5.4.5",
-        "vitest": "^2.1.5",
-        "webpack": "^5.96.1"
+        "vitest": "^2.1.8",
+        "webpack": "^5.97.1"
     },
     "optionalDependencies": {
         "cli-progress": "^3.12.0",
         "commander": "^12.1.0",
-        "webpack": "^5.96.1"
+        "webpack": "^5.97.1"
     },
     "engines": {
         "node": ">=18.* <=23.*"

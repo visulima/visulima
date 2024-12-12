@@ -167,8 +167,8 @@
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "18.19.15",
         "@visulima/path": "1.1.1",
-        "@vitest/coverage-v8": "^2.1.5",
-        "@vitest/ui": "^2.1.5",
+        "@vitest/coverage-v8": "^2.1.8",
+        "@vitest/ui": "^2.1.8",
         "ansi-regex": "^6.1.0",
         "ansi-styles": "^6.2.1",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -180,13 +180,13 @@
         "eslint-plugin-mdx": "^3.1.5",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "prettier": "^3.3.3",
+        "prettier": "^3.4.2",
         "rimraf": "5.0.9",
         "secretlint": "8.2.4",
         "semantic-release": "24.0.0",
         "tsup": "^8.3.5",
         "typescript": "5.4.5",
-        "vitest": "^2.1.5"
+        "vitest": "^2.1.8"
     },
     "engines": {
         "node": ">=18.* <=23.*"
