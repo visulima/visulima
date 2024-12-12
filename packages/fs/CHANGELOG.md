@@ -1,3 +1,28 @@
+## @visulima/fs [2.3.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.0...@visulima/fs@2.3.1) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* **fs:** fixed constrain of yaml peer dependency ([ddb7981](https://github.com/visulima/visulima/commit/ddb798129787043e710ce2c0452463e4a8d040c4))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+* updated README.md ([fa3d4aa](https://github.com/visulima/visulima/commit/fa3d4aaef3435488b70e5ee1141559b85dcbb6c4))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.1.2
+* **@visulima/error:** upgraded to 4.4.8
+
 ## @visulima/fs [2.3.0](https://github.com/visulima/visulima/compare/@visulima/fs@2.2.2...@visulima/fs@2.3.0) (2024-10-25)
 
 ### Features
