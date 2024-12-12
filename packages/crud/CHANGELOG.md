@@ -1,3 +1,22 @@
+## @visulima/crud [2.0.33](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.32...@visulima/crud@2.0.33) (2024-12-12)
+
+### Bug Fixes
+
+* added missing placeholder variables into LICENSE.md file ([cef32c6](https://github.com/visulima/visulima/commit/cef32c6eb19dc3215a835e848ef12223a8fa05e0))
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* **crud:** updated path-to-regexp to 8.2.0 ([2c030cc](https://github.com/visulima/visulima/commit/2c030cc5eeae698a9b9871c0a6e6ebd920eee3ce))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 3.0.24
+* **@visulima/prisma-dmmf-transformer:** upgraded to 2.0.24
+
 ## @visulima/crud [2.0.32](https://github.com/visulima/visulima/compare/@visulima/crud@2.0.31...@visulima/crud@2.0.32) (2024-10-05)
 
 ### Bug Fixes
