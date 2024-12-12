@@ -1,3 +1,19 @@
+## @visulima/object [1.0.7](https://github.com/visulima/visulima/compare/@visulima/object@1.0.6...@visulima/object@1.0.7) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
 ## @visulima/object [1.0.6](https://github.com/visulima/visulima/compare/@visulima/object@1.0.5...@visulima/object@1.0.6) (2024-10-05)
 
 ### Bug Fixes
