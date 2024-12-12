@@ -154,7 +154,7 @@ Type: `string | object`\
 Default: `'single'`\
 Values:
 
--   `'single'`
+- `'single'`
 
 ```
 ┌───┐
@@ -162,7 +162,7 @@ Values:
 └───┘
 ```
 
--   `'double'`
+- `'double'`
 
 ```
 ╔═══╗
@@ -170,7 +170,7 @@ Values:
 ╚═══╝
 ```
 
--   `'round'` (`'single'` sides with round corners)
+- `'round'` (`'single'` sides with round corners)
 
 ```
 ╭───╮
@@ -178,7 +178,7 @@ Values:
 ╰───╯
 ```
 
--   `'bold'`
+- `'bold'`
 
 ```
 ┏━━━┓
@@ -186,7 +186,7 @@ Values:
 ┗━━━┛
 ```
 
--   `'singleDouble'` (`'single'` on top and bottom, `'double'` on right and left)
+- `'singleDouble'` (`'single'` on top and bottom, `'double'` on right and left)
 
 ```
 ╓───╖
@@ -194,7 +194,7 @@ Values:
 ╙───╜
 ```
 
--   `'doubleSingle'` (`'double'` on top and bottom, `'single'` on right and left)
+- `'doubleSingle'` (`'double'` on top and bottom, `'single'` on right and left)
 
 ```
 ╒═══╕
@@ -202,7 +202,7 @@ Values:
 ╘═══╛
 ```
 
--   `'classic'`
+- `'classic'`
 
 ```
 +---+
@@ -210,7 +210,7 @@ Values:
 +---+
 ```
 
--   `'arrow'`
+- `'arrow'`
 
 ```
 ↘↓↓↓↙
@@ -218,7 +218,7 @@ Values:
 ↗↑↑↑↖
 ```
 
--   `'none'`
+- `'none'`
 
 ```
 foo
@@ -287,7 +287,7 @@ Align the text in the top bar.
 
 Values:
 
--   `'left'`
+- `'left'`
 
 ```text
 ┌ example ──────┐
@@ -295,7 +295,7 @@ Values:
 └───────────────┘
 ```
 
--   `'center'`
+- `'center'`
 
 ```text
 ┌─── example ───┐
@@ -303,7 +303,7 @@ Values:
 └───────────────┘
 ```
 
--   `'right'`
+- `'right'`
 
 ```text
 ┌────── example ┐
@@ -357,7 +357,7 @@ Align the footer text.
 
 Values:
 
--   `'left'`
+- `'left'`
 
 ```text
 ┌───────────────┐
@@ -365,7 +365,7 @@ Values:
 └ Footer Text ──┘
 ```
 
--   `'center'`
+- `'center'`
 
 ```text
 ┌───────────────┐
@@ -373,7 +373,7 @@ Values:
 └─── example ───┘
 ```
 
--   `'right'`
+- `'right'`
 
 ```text
 ┌───────────────┐
@@ -505,10 +505,10 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [boxen](https://github.com/sindresorhus/boxen)
--   [ansi-align](https://github.com/nexdrew/ansi-align)
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [boxen](https://github.com/sindresorhus/boxen)
+- [ansi-align](https://github.com/nexdrew/ansi-align)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

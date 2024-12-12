@@ -152,14 +152,14 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## About
 
 ### Related Projects
 
--   [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
+- [read-pkg](https://github.com/sindresorhus/read-pkg) - Read a package.json file.
 
 ## License
 
