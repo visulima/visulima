@@ -95,11 +95,13 @@ jsonLogger.info({
     message: "Hello Json!",
     suffix: "suffix",
     prefix: "prefix",
-    context: [{
-        test: new ArrayBuffer(1),
-        stream: new Stream.Stream(),
-        buffer: Buffer.alloc(1),
-    }],
+    context: [
+        {
+            test: new ArrayBuffer(1),
+            stream: new Stream.Stream(),
+            buffer: Buffer.alloc(1),
+        },
+    ],
 });
 
 jsonLogger.error(

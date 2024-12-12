@@ -123,9 +123,9 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [quick-format-unescaped](https://github.com/pinojs/quick-format-unescaped)
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [quick-format-unescaped](https://github.com/pinojs/quick-format-unescaped)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

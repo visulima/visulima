@@ -101,12 +101,12 @@ omit(doc, ["items.discard"]);
 
 ## Related
 
--   [is-plain-object](https://github.com/jonschlinkert/is-plain-object) - Returns true if the given value is an object created by the Object constructor.
--   [is-plain-obj][is-plain-obj] - Check if a value is a plain object.
--   [dot-prop][dot-prop] - Get, set, or delete a property from a nested object using a dot path.
--   [ts-dot-prop](https://github.com/justinlettau/ts-dot-prop) - TypeScript utility to transform nested objects using a dot notation path.
--   [dset](https://www.npmjs.com/package/dset) - A tiny (194B) utility for safely writing deep Object values~!
--   [filter-anything](https://github.com/mesqueeb/filter-anything) - A simple (TypeScript) integration of "pick" and "omit" to filter props of an object.
+- [is-plain-object](https://github.com/jonschlinkert/is-plain-object) - Returns true if the given value is an object created by the Object constructor.
+- [is-plain-obj][is-plain-obj] - Check if a value is a plain object.
+- [dot-prop][dot-prop] - Get, set, or delete a property from a nested object using a dot path.
+- [ts-dot-prop](https://github.com/justinlettau/ts-dot-prop) - TypeScript utility to transform nested objects using a dot notation path.
+- [dset](https://www.npmjs.com/package/dset) - A tiny (194B) utility for safely writing deep Object values~!
+- [filter-anything](https://github.com/mesqueeb/filter-anything) - A simple (TypeScript) integration of "pick" and "omit" to filter props of an object.
 
 ## Supported Node.js Versions
 
@@ -121,8 +121,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

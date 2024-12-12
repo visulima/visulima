@@ -198,12 +198,12 @@ Default: `4`
 
 Currently supported browsers/platforms:
 
--   Firefox
--   Chrome
--   Webkit / Safari
--   Edge
--   Node / Node V8
--   Opera (Chromium based)
+- Firefox
+- Chrome
+- Webkit / Safari
+- Edge
+- Node / Node V8
+- Opera (Chromium based)
 
 ```ts
 import { parseStacktrace } from "@visulima/error";
@@ -254,18 +254,18 @@ The maximum number of frames to parse.
 
 ## `serialize` an error object
 
--   Ensures errors are safe to serialize with JSON
--   Can be used as error.toJSON()
--   Deep serialization, including transforming
--   Custom serialization (e.g. YAML or process.send())
--   Keeps both native (TypeError, etc.) and custom error classes
--   Preserves errors' additional properties
--   Can keep constructor's arguments
--   Works recursively with error.cause and AggregateError
--   Buffer properties are replaced with [object Buffer]
--   Circular references are handled.
--   If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
--   It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
+- Ensures errors are safe to serialize with JSON
+- Can be used as error.toJSON()
+- Deep serialization, including transforming
+- Custom serialization (e.g. YAML or process.send())
+- Keeps both native (TypeError, etc.) and custom error classes
+- Preserves errors' additional properties
+- Can keep constructor's arguments
+- Works recursively with error.cause and AggregateError
+- Buffer properties are replaced with [object Buffer]
+- Circular references are handled.
+- If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
+- It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
 
 ```ts
 import { serializeError } from "@visulima/error";
@@ -399,31 +399,31 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## About
 
 ### Related Projects
 
--   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
--   [callsites](https://github.com/sindresorhus/callsites): get callsites from the V8 stack trace API.
--   [explain-error](https://github.com/dominictarr/explain-error): wrap an error with additional explanation.
--   [error-wrapper](https://github.com/spudly/error-wrapper): merges the stack of another error to its own.
--   [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
--   [trace](https://github.com/AndreasMadsen/trace): create super long stack traces.
--   [clarify](https://github.com/AndreasMadsen/clarify): remove node related stack trace noise.
--   [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
--   [pretty-error](https://github.com/AriaMinaei/pretty-error): make the call stacks clear.
--   [node-pretty-exceptions](https://github.com/ahmadnassri/node-pretty-exceptions) - Pretty and more helpful uncaught exceptions, automatically
--   [youch-terminal](https://github.com/poppinss/youch-terminal/tree/develop) - Display youch error message on terminal
--   [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
--   [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
--   [marvinhagemeister/errorstacks](https://github.com/marvinhagemeister/errorstacks) Tiny library to parse error stack traces
--   [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
--   [serialize-error](https://github.com/sindresorhus/serialize-error) - Serialize/deserialize an error into a plain object
--   [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
--   [callsite-record](https://github.com/inikulin/callsite-record) - Create fancy log entries for errors and function call sites
+- [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
+- [callsites](https://github.com/sindresorhus/callsites): get callsites from the V8 stack trace API.
+- [explain-error](https://github.com/dominictarr/explain-error): wrap an error with additional explanation.
+- [error-wrapper](https://github.com/spudly/error-wrapper): merges the stack of another error to its own.
+- [errwischt/stacktrace-parser](https://github.com/errwischt/stacktrace-parser)
+- [trace](https://github.com/AndreasMadsen/trace): create super long stack traces.
+- [clarify](https://github.com/AndreasMadsen/clarify): remove node related stack trace noise.
+- [piotr-szewczyk/stacktrace-parser-node](https://github.com/piotr-szewczyk/stacktrace-parser-node)
+- [pretty-error](https://github.com/AriaMinaei/pretty-error): make the call stacks clear.
+- [node-pretty-exceptions](https://github.com/ahmadnassri/node-pretty-exceptions) - Pretty and more helpful uncaught exceptions, automatically
+- [youch-terminal](https://github.com/poppinss/youch-terminal/tree/develop) - Display youch error message on terminal
+- [ono](https://github.com/bigstickcarpet/ono): allow different types of error to be thrown.
+- [stacktracejs/error-stack-parser](https://github.com/stacktracejs/error-stack-parser)
+- [marvinhagemeister/errorstacks](https://github.com/marvinhagemeister/errorstacks) Tiny library to parse error stack traces
+- [getsentry/sentry-javascript](https://github.com/getsentry/sentry-javascript)
+- [serialize-error](https://github.com/sindresorhus/serialize-error) - Serialize/deserialize an error into a plain object
+- [baseerr](https://github.com/tjmehta/baseerr): merge another error with additional properties.
+- [callsite-record](https://github.com/inikulin/callsite-record) - Create fancy log entries for errors and function call sites
 
 ## License
 
