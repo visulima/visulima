@@ -103,11 +103,11 @@ Throw an error if a `.cache` folder can't be found.
 
 ## Tips
 
--   To test modules using `@visulima/find-cache-dir`, set the `CACHE_DIR` environment variable to temporarily override the directory that is resolved.
+- To test modules using `@visulima/find-cache-dir`, set the `CACHE_DIR` environment variable to temporarily override the directory that is resolved.
 
 ## Related
 
--   [find-cache-dir](https://github.com/sindresorhus/find-cache-dir) - Find the cache directory.
+- [find-cache-dir](https://github.com/sindresorhus/find-cache-dir) - Find the cache directory.
 
 ## Supported Node.js Versions
 
@@ -122,8 +122,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

@@ -87,18 +87,18 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## About
 
 ### Related Projects
 
--   [oclif](https://oclif.io) - The Open CLI Framework
--   [gluegun](https://infinitered.github.io/gluegun/#/) - A delightful toolkit for building TypeScript-powered command-line apps.
--   [meow](https://www.npmjs.com/package/meow) - CLI app helper
--   [commander.js](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
--   [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
+- [oclif](https://oclif.io) - The Open CLI Framework
+- [gluegun](https://infinitered.github.io/gluegun/#/) - A delightful toolkit for building TypeScript-powered command-line apps.
+- [meow](https://www.npmjs.com/package/meow) - CLI app helper
+- [commander.js](https://github.com/tj/commander.js) - node.js command-line interfaces made easy
+- [yargs](https://www.npmjs.com/package/yargs) - yargs the modern, pirate-themed successor to optimist.
 
 ## License
 

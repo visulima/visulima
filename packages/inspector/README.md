@@ -104,9 +104,9 @@ The indentation to use.
 
 ## Related
 
--   [object-inspect](https://github.com/inspect-js/object-inspect) - string representations of objects in node and the browser
--   [loupe](https://github.com/chaijs/loupe) - Inspect utility for Node.js and browsers
--   [util.inspect](https://nodejs.org/api/util.html#util_util_inspect_object_options)
+- [object-inspect](https://github.com/inspect-js/object-inspect) - string representations of objects in node and the browser
+- [loupe](https://github.com/chaijs/loupe) - Inspect utility for Node.js and browsers
+- [util.inspect](https://nodejs.org/api/util.html#util_util_inspect_object_options)
 
 ## Supported Node.js Versions
 
@@ -121,8 +121,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

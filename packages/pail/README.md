@@ -36,27 +36,27 @@
 
 ## Why Pail?
 
--   Easy to use
--   Hackable to the core
--   Integrated timers
--   Custom pluggable processors and reporters
--   TypeScript support
--   Interactive and regular modes
--   Secrets & sensitive information filtering
--   Filename, date and timestamp support
--   Scoped loggers and timers
--   Scaled logging levels mechanism
--   String interpolation support
--   Object and error interpolation
--   Stack trace and pretty errors
--   Simple and minimal syntax
--   Spam prevention by throttling logs
--   [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
--   Redirect console and stdout/stderr to pail and easily restore redirect.
--   `Pretty` or `JSON` output
--   CJS & ESM with tree shaking support
--   Supports circular structures
--   Fast and powerful, see the [benchmarks](__bench__/README.md)
+- Easy to use
+- Hackable to the core
+- Integrated timers
+- Custom pluggable processors and reporters
+- TypeScript support
+- Interactive and regular modes
+- Secrets & sensitive information filtering
+- Filename, date and timestamp support
+- Scoped loggers and timers
+- Scaled logging levels mechanism
+- String interpolation support
+- Object and error interpolation
+- Stack trace and pretty errors
+- Simple and minimal syntax
+- Spam prevention by throttling logs
+- [Browser](./__assets__/header-browser.png) and [Server](./__assets__/header-server.png) support
+- Redirect console and stdout/stderr to pail and easily restore redirect.
+- `Pretty` or `JSON` output
+- CJS & ESM with tree shaking support
+- Supports circular structures
+- Fast and powerful, see the [benchmarks](__bench__/README.md)
 
 ## Install
 
@@ -81,23 +81,23 @@ pnpm add @visulima/pail
 
 Pail supports the logging levels described by [RFC 5424][rfc-5424].
 
--   `DEBUG`: Detailed debug information.
+- `DEBUG`: Detailed debug information.
 
--   `INFO`: Interesting events. Examples: User logs in, SQL logs.
+- `INFO`: Interesting events. Examples: User logs in, SQL logs.
 
--   `NOTICE`: Normal but significant events.
+- `NOTICE`: Normal but significant events.
 
--   `TRACE`: Very detailed and fine-grained informational events.
+- `TRACE`: Very detailed and fine-grained informational events.
 
--   `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+- `WARNING`: Exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
 
--   `ERROR`: Runtime errors that do not require immediate action but should typically be logged and monitored.
+- `ERROR`: Runtime errors that do not require immediate action but should typically be logged and monitored.
 
--   `CRITICAL`: Critical conditions. Example: Application component unavailable, unexpected exception.
+- `CRITICAL`: Critical conditions. Example: Application component unavailable, unexpected exception.
 
--   `ALERT`: Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
+- `ALERT`: Action must be taken immediately. Example: Entire website down, database unavailable, etc. This should trigger the SMS alerts and wake you up.
 
--   `EMERGENCY`: Emergency: system is unusable.
+- `EMERGENCY`: Emergency: system is unusable.
 
 ### Reporters
 
@@ -119,13 +119,13 @@ A processor can be added to a logger directly (and is subsequently applied to lo
 
 `pail` comes with a few built-in processors:
 
--   `CallerProcessor` - adds the caller information to the log message
-    -   The Meta Object is extended with a file name, line number and column number
--   `RedactProcessor` - redacts sensitive information from the log message
+- `CallerProcessor` - adds the caller information to the log message
+    - The Meta Object is extended with a file name, line number and column number
+- `RedactProcessor` - redacts sensitive information from the log message
     > The redact processor needs the "@visulima/redact" package to work.
     > Use `npm install @visulima/redact`, `pnpm add @visulima/redact` or `yarn add @visulima/redact` to install it.
--   `MessageFormatterProcessor` - formats the log message (Util.format-like unescaped string formatting utility) [@visulima/fmt][fmt]
--   `ErrorProcessor` - serializes the error with cause object to a std error object that can be serialized.
+- `MessageFormatterProcessor` - formats the log message (Util.format-like unescaped string formatting utility) [@visulima/fmt][fmt]
+- `ErrorProcessor` - serializes the error with cause object to a std error object that can be serialized.
 
 ## Usage
 
@@ -397,17 +397,17 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## About
 
 ### Related Projects
 
--   [pino](https://github.com/pinojs/pino) - 🌲 super fast, all natural json logger
--   [winston](https://github.com/winstonjs/winston) - A logger for just about everything.
--   [signale](https://github.com/klaudiosinani/signale) - Highly configurable logging utility
--   [consola](https://github.com/unjs/consola) - 🐨 Elegant Console Logger for Node.js and Browser
+- [pino](https://github.com/pinojs/pino) - 🌲 super fast, all natural json logger
+- [winston](https://github.com/winstonjs/winston) - A logger for just about everything.
+- [signale](https://github.com/klaudiosinani/signale) - Highly configurable logging utility
+- [consola](https://github.com/unjs/consola) - 🐨 Elegant Console Logger for Node.js and Browser
 
 ## License
 

@@ -60,10 +60,10 @@ console.log(isStderrColorSupported()); // 3
 
 Ansis automatically detects the supported color space:
 
--   TrueColor
--   ANSI 256 colors
--   ANSI 16 colors
--   black & white (no color)
+- TrueColor
+- ANSI 256 colors
+- ANSI 16 colors
+- black & white (no color)
 
 There is no standard way to detect which color space is supported.
 The most common way to detect color support is to check the `TERM` and `COLORTERM` environment variables.
@@ -93,8 +93,8 @@ Combine that with the knowledge about which operating system the program is runn
 
 See also:
 
--   [Truecolor Support in Output Devices](https://github.com/termstandard/colors#truecolor-support-in-output-devices).
--   [So you want to render colors in your terminal](https://marvinh.dev/blog/terminal-colors/).
+- [Truecolor Support in Output Devices](https://github.com/termstandard/colors#truecolor-support-in-output-devices).
+- [So you want to render colors in your terminal](https://marvinh.dev/blog/terminal-colors/).
 
 ## Environment variables
 
@@ -145,8 +145,8 @@ Explicit 256/Truecolor mode can be enabled using the `--color=256` and `--color=
 
 ## Related
 
--   [supports-color](https://github.com/chalk/supports-color) - Detect whether a terminal supports color
--   [supports-color-cli](https://github.com/chalk/supports-color-cli) - CLI for this module
+- [supports-color](https://github.com/chalk/supports-color) - Detect whether a terminal supports color
+- [supports-color-cli](https://github.com/chalk/supports-color-cli) - CLI for this module
 
 ## Supported Node.js Versions
 
@@ -161,8 +161,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

@@ -18,10 +18,10 @@ Here is an example:
 
 OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location.
 
--   [path parameters](#Parameter-parameters), such as `/users/{id}`
--   [query parameters](#Query-parameters), such as `/users?role=admin`
--   [header parameters](#Header-parameters), such as `X-MyHeader: Value`
--   [cookie parameters](#Cookie-parameters), which are passed in the `Cookie` header, such as `Cookie: debug=0; csrftoken=BUSe35dohU3O1MZvDCU`
+- [path parameters](#Parameter-parameters), such as `/users/{id}`
+- [query parameters](#Query-parameters), such as `/users?role=admin`
+- [header parameters](#Header-parameters), such as `X-MyHeader: Value`
+- [cookie parameters](#Cookie-parameters), which are passed in the `Cookie` header, such as `Cookie: debug=0; csrftoken=BUSe35dohU3O1MZvDCU`
 
 ### Parameter parameters
 

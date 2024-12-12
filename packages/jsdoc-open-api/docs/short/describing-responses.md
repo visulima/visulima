@@ -68,9 +68,9 @@ or a 400 Bad Request response in case of invalid operation parameters.
 
 A response body can define:
 
--   An `object` or an `array` — typically used with JSON and XML APIs
--   A primitive data type such as a `number` or `string` – used for plain text responses
--   A file – (see below)
+- An `object` or an `array` — typically used with JSON and XML APIs
+- A primitive data type such as a `number` or `string` – used for plain text responses
+- A file – (see below)
 
 Objects can be defined in `components`:
 

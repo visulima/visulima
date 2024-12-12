@@ -31,60 +31,60 @@
 
 ## Why Redact?
 
--   Easy to use
--   Anonymize specific categories in a text, including emails, monetary values, organizations, people, and phone numbers and more.
--   Customizable anonymization: Specify which categories to anonymize and which to exclude.
--   Built-in compatibility with nlp NER - compromise.
--   Does not modify input objects
--   Performs a deep copy of the input object
--   Handles circular references
--   Filters valid JSON strings
--   Filters valid and malformed URL query params
--   Filters Errors, Arrays, Maps, Sets, and simple objects
--   Includes a default set of rules
-    -   apikey
-    -   awsid
-    -   awskey
-    -   bankacc
-    -   basic_auth
-    -   token
-    -   crypto
-    -   id
-    -   creditcard
-    -   date
-    -   dl
-    -   domain
-    -   ip
-    -   mac_address
-    -   phonenumber
-    -   routing
-    -   ssn
-    -   time
-    -   uk_nin
-    -   url
-    -   us_social_security
-    -   isbn
-    -   zip_code
-    -   firstname
-    -   lastname
-    -   organization
-    -   money
-    -   bankcc
-    -   email
-    -   passport
-    -   password
-    -   username
-    -   auth
-    -   bearer
-    -   credit
-    -   CVD
-    -   CVV
-    -   encrypt
-    -   PAN
-    -   pass
-    -   secret
--   TypeScript support
--   Fast and powerful, see the [benchmarks](__bench__/README.md)
+- Easy to use
+- Anonymize specific categories in a text, including emails, monetary values, organizations, people, and phone numbers and more.
+- Customizable anonymization: Specify which categories to anonymize and which to exclude.
+- Built-in compatibility with nlp NER - compromise.
+- Does not modify input objects
+- Performs a deep copy of the input object
+- Handles circular references
+- Filters valid JSON strings
+- Filters valid and malformed URL query params
+- Filters Errors, Arrays, Maps, Sets, and simple objects
+- Includes a default set of rules
+    - apikey
+    - awsid
+    - awskey
+    - bankacc
+    - basic_auth
+    - token
+    - crypto
+    - id
+    - creditcard
+    - date
+    - dl
+    - domain
+    - ip
+    - mac_address
+    - phonenumber
+    - routing
+    - ssn
+    - time
+    - uk_nin
+    - url
+    - us_social_security
+    - isbn
+    - zip_code
+    - firstname
+    - lastname
+    - organization
+    - money
+    - bankcc
+    - email
+    - passport
+    - password
+    - username
+    - auth
+    - bearer
+    - credit
+    - CVD
+    - CVV
+    - encrypt
+    - PAN
+    - pass
+    - secret
+- TypeScript support
+- Fast and powerful, see the [benchmarks](__bench__/README.md)
 
 ## Install
 
@@ -102,7 +102,7 @@ pnpm add @visulima/redact
 
 ## Usage
 
--   redact(input, rules, options)
+- redact(input, rules, options)
 
 ```typescript
 const input = {
@@ -138,7 +138,7 @@ console.log(result);
 //}
 ```
 
--   stringAnonymize(input, rules, options)
+- stringAnonymize(input, rules, options)
     > It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
 
 ```typescript
@@ -224,11 +224,11 @@ A function to log debug messages.
 
 ## Related
 
--   [fast-redact](https://github.com/davidmarkclements/fast-redact) - very fast object redaction
--   [fast-unset](https://github.com/lucagoslar/fast-unset) - 🪄 Efficiently remove, replace, set or default object properties.
--   [masker](https://github.com/qiwi/masker) - Composite data masking utility
--   [sensitive-param-filter](https://github.com/zjullion/sensitive-param-filter) - A package for filtering sensitive data (parameters, keys) from a variety of JS objects
--   [anonymize-nlp](https://github.com/nitaiaharoni1/anonymize-nlp) - Anonymize-NLP is a lightweight and robust package for text anonymization. It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
+- [fast-redact](https://github.com/davidmarkclements/fast-redact) - very fast object redaction
+- [fast-unset](https://github.com/lucagoslar/fast-unset) - 🪄 Efficiently remove, replace, set or default object properties.
+- [masker](https://github.com/qiwi/masker) - Composite data masking utility
+- [sensitive-param-filter](https://github.com/zjullion/sensitive-param-filter) - A package for filtering sensitive data (parameters, keys) from a variety of JS objects
+- [anonymize-nlp](https://github.com/nitaiaharoni1/anonymize-nlp) - Anonymize-NLP is a lightweight and robust package for text anonymization. It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
 
 ## Supported Node.js Versions
 
@@ -243,8 +243,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

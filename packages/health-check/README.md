@@ -43,9 +43,9 @@ pnpm add @visulima/health-check
 
 Keeping the API health check endpoints generic allows to use them for multiple purposes. In this section, we will review of the everyday use cases of an API health check endpoint
 
--   Container orchestrators and API load balancers can use API health check endpoint to find out about the process status
--   Usage of memory, disk, and other server resources can be monitored via API health check endpoints
--   Health checks can test APIs dependencies, such as databases and external service endpoints, to confirm availability and normal functioning.
+- Container orchestrators and API load balancers can use API health check endpoint to find out about the process status
+- Usage of memory, disk, and other server resources can be monitored via API health check endpoints
+- Health checks can test APIs dependencies, such as databases and external service endpoints, to confirm availability and normal functioning.
 
 ## Usage
 
@@ -63,11 +63,11 @@ export default healthCheckHandler(HealthCheckService); // returns a http handler
 
 There are at least three different types of API health check endpoints designed to serve specific purposes.
 
--   _The readiness endpoint_, often available via `/health/ready`, returns the readiness state to accept incoming requests from the gateway or the upstream proxy. Readiness signals that the app is running normally but isn’t ready to receive requests yet.
+- _The readiness endpoint_, often available via `/health/ready`, returns the readiness state to accept incoming requests from the gateway or the upstream proxy. Readiness signals that the app is running normally but isn’t ready to receive requests yet.
 
--   _The liveness endpoint_, often available via `/health/live`, returns the liveness of a microservice. If the check does not return the expected response, it means that the process is unhealthy or dead and should be replaced as soon as possible.
+- _The liveness endpoint_, often available via `/health/live`, returns the liveness of a microservice. If the check does not return the expected response, it means that the process is unhealthy or dead and should be replaced as soon as possible.
 
--   _The generic health check endpoint_, often available via `/health`, returns the status of the service and the dependencies.
+- _The generic health check endpoint_, often available via `/health`, returns the status of the service and the dependencies.
 
 Consider the following example: an API that loads JSON-based data into memory to serve requests.
 
@@ -189,8 +189,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

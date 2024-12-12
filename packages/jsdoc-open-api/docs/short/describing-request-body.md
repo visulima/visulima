@@ -87,11 +87,11 @@ Can be reused as:
 The term "form data" is used for the media types `application/x-www-form-urlencoded` and `multipart/form-data`,
 which are commonly used to submit HTML forms.
 
--   `application/x-www-form-urlencoded` is used to send ASCII text data as key=value pairs.
-    The payload format is similar to query parameters.
--   `multipart/form-data` allows submitting binary data as well as multiple media types in a single message (for example, image, and JSON).
-    Each form field has its own section in the payload with internal HTTP headers.
-    `multipart` requests are commonly used for file uploads.
+- `application/x-www-form-urlencoded` is used to send ASCII text data as key=value pairs.
+  The payload format is similar to query parameters.
+- `multipart/form-data` allows submitting binary data as well as multiple media types in a single message (for example, image, and JSON).
+  Each form field has its own section in the payload with internal HTTP headers.
+  `multipart` requests are commonly used for file uploads.
 
 To illustrate form data, consider an HTML POST form:
 

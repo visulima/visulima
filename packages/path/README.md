@@ -77,8 +77,8 @@ const { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelativ
 
 ## Related
 
--   [upath](https://github.com/anodynos/upath) - A proxy to `path`, replacing `\` with `/` for all results & methods to add, change, default, trim file extensions.
--   [pathe](https://github.com/unjs/pathe) - 🛣️ Drop-in replacement of the Node.js's path module, module that ensures paths are normalized.
+- [upath](https://github.com/anodynos/upath) - A proxy to `path`, replacing `\` with `/` for all results & methods to add, change, default, trim file extensions.
+- [pathe](https://github.com/unjs/pathe) - 🛣️ Drop-in replacement of the Node.js's path module, module that ensures paths are normalized.
 
 ## Supported Node.js Versions
 
@@ -93,8 +93,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 

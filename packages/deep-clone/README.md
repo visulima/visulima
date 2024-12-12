@@ -79,24 +79,24 @@ Type: `object`
 
 A set of custom handlers for specific type of value. Each handler is a function that takes the original value and returns a new value or throws an error if the value is not supported.
 
--   Array: InternalHandler<unknown[]>;
--   ArrayBuffer: InternalHandler<ArrayBuffer>;
--   Blob: InternalHandler<Blob>;
--   DataView: InternalHandler<DataView>;
--   Date: InternalHandler<Date>;
--   Error: InternalHandler<Error>;
--   Float32Array: InternalHandler<Float32Array>;
--   Float64Array: InternalHandler<Float64Array>;
--   Int8Array: InternalHandler<Int8Array>;
--   Int16Array: InternalHandler<Int16Array>;
--   Int32Array: InternalHandler<Int32Array>;
--   Map: InternalHandler<Map<unknown, unknown>>;
--   Object: InternalHandler<Record<string, unknown>>;
--   Promise: InternalHandler<Promise<unknown>>;
--   RegExp: InternalHandler<RegExp>;
--   Set: InternalHandler<Set<unknown>>;
--   WeakMap: InternalHandler<WeakMap<any, unknown>>;
--   WeakSet: InternalHandler<WeakSet<any>>;
+- Array: InternalHandler<unknown[]>;
+- ArrayBuffer: InternalHandler<ArrayBuffer>;
+- Blob: InternalHandler<Blob>;
+- DataView: InternalHandler<DataView>;
+- Date: InternalHandler<Date>;
+- Error: InternalHandler<Error>;
+- Float32Array: InternalHandler<Float32Array>;
+- Float64Array: InternalHandler<Float64Array>;
+- Int8Array: InternalHandler<Int8Array>;
+- Int16Array: InternalHandler<Int16Array>;
+- Int32Array: InternalHandler<Int32Array>;
+- Map: InternalHandler<Map<unknown, unknown>>;
+- Object: InternalHandler<Record<string, unknown>>;
+- Promise: InternalHandler<Promise<unknown>>;
+- RegExp: InternalHandler<RegExp>;
+- Set: InternalHandler<Set<unknown>>;
+- WeakMap: InternalHandler<WeakMap<any, unknown>>;
+- WeakSet: InternalHandler<WeakSet<any>>;
 
 ## Utils
 
@@ -130,59 +130,59 @@ console.log(clean); // => {}
 
 ## Notes
 
--   List of **supported** values/types:
+- List of **supported** values/types:
 
-    -   `undefined` (original value is returned)
-    -   `null` (original value is returned)
-    -   `boolean`/`Boolean` (original value is returned)
-    -   `string`/`String` (original value is returned)
-    -   `number`/`Number` (original value is returned)
-    -   `function`
-    -   `Object`
-    -   `Date`
-    -   `RegExp`
-    -   `Set`
-    -   `Map`
-    -   [`Error`][mdn-error]
-    -   [`URIError`][mdn-uri-error]
-    -   [`ReferenceError`][mdn-reference-error]
-    -   [`SyntaxError`][mdn-syntax-error]
-    -   [`RangeError`][mdn-range-error]
-    -   [`EvalError`][mdn-eval-error]
-    -   [`TypeError`][mdn-type-error]
-    -   [`System Error`][node-system-error] (Node.js)
-    -   `Array`
-    -   `Int8Array`
-    -   `Uint8Array`
-    -   `Uint8ClampedArray`
-    -   `Init16Array`
-    -   `Uint16Array`
-    -   `Int32Array`
-    -   `Uint32Array`
-    -   `Float32Array`
-    -   `Float64Array`
-    -   `Buffer` ([Node.js][node-buffer])
-    -   `DataView`
-    -   `Blob`
+    - `undefined` (original value is returned)
+    - `null` (original value is returned)
+    - `boolean`/`Boolean` (original value is returned)
+    - `string`/`String` (original value is returned)
+    - `number`/`Number` (original value is returned)
+    - `function`
+    - `Object`
+    - `Date`
+    - `RegExp`
+    - `Set`
+    - `Map`
+    - [`Error`][mdn-error]
+    - [`URIError`][mdn-uri-error]
+    - [`ReferenceError`][mdn-reference-error]
+    - [`SyntaxError`][mdn-syntax-error]
+    - [`RangeError`][mdn-range-error]
+    - [`EvalError`][mdn-eval-error]
+    - [`TypeError`][mdn-type-error]
+    - [`System Error`][node-system-error] (Node.js)
+    - `Array`
+    - `Int8Array`
+    - `Uint8Array`
+    - `Uint8ClampedArray`
+    - `Init16Array`
+    - `Uint16Array`
+    - `Int32Array`
+    - `Uint32Array`
+    - `Float32Array`
+    - `Float64Array`
+    - `Buffer` ([Node.js][node-buffer])
+    - `DataView`
+    - `Blob`
 
--   List of **unsupported** values/types:
+- List of **unsupported** values/types:
 
-    -   `DOMElement`: to copy DOM elements, use `element.cloneNode()`.
-    -   `Symbol`
-    -   `WeakMap`
-    -   `WeakSet`
-    -   `File`
-    -   `FileList`
-    -   `ImageData`
-    -   `ImageBitmap`
-    -   `Promise`
-    -   `SharedArrayBuffer`
+    - `DOMElement`: to copy DOM elements, use `element.cloneNode()`.
+    - `Symbol`
+    - `WeakMap`
+    - `WeakSet`
+    - `File`
+    - `FileList`
+    - `ImageData`
+    - `ImageBitmap`
+    - `Promise`
+    - `SharedArrayBuffer`
 
--   The implementation **can** handle circular references.
--   If a `Number`, `String`, or `Boolean` object is encountered, the value is cloned as a **primitive**. This behavior is intentional. The implementation is opinionated in wanting to **avoid** creating `numbers`, `strings`, and `booleans` via the `new` operator and a constructor.
--   The implementation **only** checks whether basic `Objects`, `Arrays`, and class instances are `extensible`, `sealed`, and/or `frozen`.
--   `functions` are **not** cloned; their reference is copied.
--   The implementation supports custom [`error`][mdn-error] types which are [`Error`][mdn-error] instances (e.g., ES2015 subclasses).
+- The implementation **can** handle circular references.
+- If a `Number`, `String`, or `Boolean` object is encountered, the value is cloned as a **primitive**. This behavior is intentional. The implementation is opinionated in wanting to **avoid** creating `numbers`, `strings`, and `booleans` via the `new` operator and a constructor.
+- The implementation **only** checks whether basic `Objects`, `Arrays`, and class instances are `extensible`, `sealed`, and/or `frozen`.
+- `functions` are **not** cloned; their reference is copied.
+- The implementation supports custom [`error`][mdn-error] types which are [`Error`][mdn-error] instances (e.g., ES2015 subclasses).
 
 ## Benchmarks
 
@@ -207,8 +207,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 ## Credits
 
--   [Daniel Bannert](https://github.com/prisis)
--   [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## License
 
