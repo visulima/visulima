@@ -99,7 +99,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "compromise": "^14.14.2"
+        "compromise": "^14.14.3"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
