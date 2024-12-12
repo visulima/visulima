@@ -1,3 +1,29 @@
+## @visulima/boxen [1.0.22](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.21...@visulima/boxen@1.0.22) (2024-12-12)
+
+### Bug Fixes
+
+* added missing placeholder variables into LICENSE.md file ([cef32c6](https://github.com/visulima/visulima/commit/cef32c6eb19dc3215a835e848ef12223a8fa05e0))
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* **boxen:** fixed wrong error message for textColor ([7d489b3](https://github.com/visulima/visulima/commit/7d489b33ea2441c0543cd14be33fa36383dce71d))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* **boxen:** fixed test ([b139f80](https://github.com/visulima/visulima/commit/b139f80b036d8629f5fa6621197879936443e4d0))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.13
+* **@visulima/path:** upgraded to 1.1.2
+
 ## @visulima/boxen [1.0.21](https://github.com/visulima/visulima/compare/@visulima/boxen@1.0.20...@visulima/boxen@1.0.21) (2024-10-05)
 
 
