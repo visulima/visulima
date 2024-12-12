@@ -13,15 +13,8 @@ describe("usage `@visulima/colorize` npm package", () => {
 
         const received = execScriptSync(filename, ["--color"]);
 
-        let functionName = "Colorize";
-
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (process.env.TEST_PROD_BUILD === "true") {
-            functionName = "O";
-        }
-
         const expected =
-            `{ strip: \u001B[36m[Function (anonymous)]\u001B[39m, Colorize: \u001B[36m[Function: ${functionName}]\u001B[39m }
+            `{ strip: \u001B[36m[Function (anonymous)]\u001B[39m, Colorize: \u001B[36m[Function: Colorize]\u001B[39m }
 ` +
             "\u001B[93m\u001B[7m -= [colorize package] CommonJS =- \u001B[27m\u001B[39m\n" +
             "\u001B[31m\u001B[1m\u001B[4mred.bold.underline('red')\u001B[24m\u001B[22m\u001B[39m\n" +
