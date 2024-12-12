@@ -84,7 +84,7 @@
         "@visulima/pagination": "3.0.23",
         "@visulima/prisma-dmmf-transformer": "2.0.23",
         "http-errors": "^2.0.0",
-        "path-to-regexp": "^6.3.0"
+        "path-to-regexp": "^8.2.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
