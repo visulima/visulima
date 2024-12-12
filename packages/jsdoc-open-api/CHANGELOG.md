@@ -1,3 +1,24 @@
+## @visulima/jsdoc-open-api [2.0.65](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.64...@visulima/jsdoc-open-api@2.0.65) (2024-12-12)
+
+### Bug Fixes
+
+* added missing placeholder variables into LICENSE.md file ([cef32c6](https://github.com/visulima/visulima/commit/cef32c6eb19dc3215a835e848ef12223a8fa05e0))
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* **jsdoc-open-api:** updated yaml to v2.6.1, updated dev-deps, add v23 node support ([93096d2](https://github.com/visulima/visulima/commit/93096d2857fe59603d39f61f38cb5cce5aa37622))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.1
+
 ## @visulima/jsdoc-open-api [2.0.64](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.63...@visulima/jsdoc-open-api@2.0.64) (2024-10-25)
 
 
