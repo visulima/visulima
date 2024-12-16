@@ -6,7 +6,8 @@ import { execa } from "execa";
 import { describe, expect, it, vi } from "vitest";
 
 import package_ from "../../package.json";
-import { findPackageManager, findPackageManagerSync, getPackageManagerVersion } from "../../src/package-manager";
+import type { PackageManager } from "../../src/package-manager";
+import { findPackageManager, findPackageManagerSync, generateMissingPackagesInstallMessage, getPackageManagerVersion } from "../../src/package-manager";
 
 const whichPMFixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "which-package-manager");
 
@@ -146,6 +147,59 @@ describe("package-manager", () => {
             const { stdout } = await execa("pnpm", ["install"], { cwd: join(whichPMFixturePath, "pnpm") });
 
             expect(stdout).toBeDefined();
+        });
+    });
+
+    describe("generateMissingPackagesInstallMessage", () => {
+        it("should generate install message with default package managers for single missing package", () => {
+            const result = generateMissingPackagesInstallMessage("test-package", ["lodash"], {});
+
+            expect(result).toContain("test-package could not find the following package\n\n  lodash");
+            expect(result).toContain("npm install lodash@latest --save-dev");
+            expect(result).toContain("pnpm add lodash@latest -D");
+            expect(result).toContain("yarn add lodash@latest --dev");
+        });
+
+        it("should throw error when packageManagers array is empty", () => {
+            expect(() => {
+                generateMissingPackagesInstallMessage("test-package", ["lodash"], {
+                    packageManagers: [],
+                });
+            }).toThrow("No package managers provided, please provide at least one package manager");
+        });
+
+        it("should generate install message with default package managers for multiple missing packages", () => {
+            const packageName = "my-package";
+            const missingPackages = ["lodash", "express"];
+            const options = {};
+
+            const result = generateMissingPackagesInstallMessage(packageName, missingPackages, options);
+
+            expect(result).toContain("npm install lodash@latest express@latest --save-dev");
+            expect(result).toContain("pnpm add lodash@latest express@latest -D");
+            expect(result).toContain("yarn add lodash@latest express@latest --dev");
+        });
+
+        it("should generate install message with custom package managers list", () => {
+            const packageName = "my-package";
+            const missingPackages = ["lodash"];
+            const options = { packageManagers: ["bun"] as PackageManager[] };
+
+            const result = generateMissingPackagesInstallMessage(packageName, missingPackages, options);
+
+            expect(result).toContain("bun add lodash@latest -D");
+        });
+
+        it("should generate install message with pre and post messages", () => {
+            const packageName = "my-package";
+            const missingPackages = ["lodash"];
+            const options = { postMessage: "Post-message", preMessage: "Pre-message" };
+
+            const result = generateMissingPackagesInstallMessage(packageName, missingPackages, options);
+
+            expect(result).toContain("Pre-message");
+            expect(result).toContain("npm install lodash@latest --save-dev");
+            expect(result).toContain("Post-message");
         });
     });
 });
