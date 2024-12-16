@@ -1,3 +1,9 @@
+## @visulima/package [3.2.0](https://github.com/visulima/visulima/compare/@visulima/package@3.1.6...@visulima/package@3.2.0) (2024-12-16)
+
+### Features
+
+* **package:** added new generateMissingPackagesInstallMessage function ([4503cd8](https://github.com/visulima/visulima/commit/4503cd8db2c09f705d8261a73dc47bc10fa24b31))
+
 ## @visulima/package [3.1.6](https://github.com/visulima/visulima/compare/@visulima/package@3.1.5...@visulima/package@3.1.6) (2024-12-12)
 
 ### Bug Fixes
