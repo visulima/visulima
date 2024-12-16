@@ -207,3 +207,87 @@ export const identifyInitiatingPackageManager = async (): Promise<
         version: pmSpec.slice(Math.max(0, separatorPos + 1)),
     };
 };
+
+/**
+ * Function that generates a message to install missing packages.
+ *
+ * @param packageName - The name of the package that requires the missing packages.
+ * @param missingPackages - An array of missing package names.
+ * @param options - An object containing optional parameters:
+ *   - `packageManagers` (optional): An array of package managers to include in the message. Defaults to \["npm", "pnpm", "yarn"\].
+ *   - `postMessage` (optional): A string to append to the end of the message.
+ *   - `preMessage` (optional): A string to prepend to the beginning of the message.
+ *
+ * @returns A string message with instructions to install the missing packages using the specified package managers.
+ *
+ * @throws An `Error` if no package managers are provided in the options.
+ */
+export const generateMissingPackagesInstallMessage = (
+    packageName: string,
+    missingPackages: string[],
+    options: {
+        packageManagers?: PackageManager[];
+        postMessage?: string;
+        preMessage?: string;
+    },
+): string => {
+    const s = missingPackages.length === 1 ? "" : "s";
+
+    if (options.packageManagers === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        options.packageManagers = ["npm", "pnpm", "yarn"];
+    }
+
+    if (options.packageManagers.length === 0) {
+        throw new Error("No package managers provided, please provide at least one package manager");
+    }
+
+    if (missingPackages.length === 0) {
+        throw new Error("No missing packages provided, please provide at least one missing package");
+    }
+
+    let message = `\n${options.preMessage ?? ""}
+${packageName} could not find the following package${s}
+
+  ${missingPackages.join("\n  ")}
+
+To install the missing package${s}, please run the following command:
+`;
+
+    const atLatest = (name: string): string => {
+        if (!name.split("@").includes("@")) {
+            return `${name}@latest`;
+        }
+
+        return name;
+    };
+
+    const packageManagerCommands = options.packageManagers.map((packageManager) => {
+        const missingPackagesString = missingPackages.map((element) => atLatest(element)).join(" ");
+        switch (packageManager) {
+            case "bun": {
+                return `  bun add ${missingPackagesString} -D`;
+            }
+            case "npm": {
+                return `  npm install ${missingPackagesString} --save-dev`;
+            }
+            case "pnpm": {
+                return `  pnpm add ${missingPackagesString} -D`;
+            }
+            case "yarn": {
+                return `  yarn add ${missingPackagesString} --dev`;
+            }
+            default: {
+                throw new Error("Unknown package manager");
+            }
+        }
+    });
+
+    message += packageManagerCommands.join("\n\nor\n\n");
+
+    if (options.postMessage) {
+        message += options.postMessage;
+    }
+
+    return message;
+};

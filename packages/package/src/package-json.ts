@@ -5,6 +5,7 @@ import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } 
 import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
 import { join } from "@visulima/path";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { getProperty, hasProperty } from "dot-prop";
 import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";

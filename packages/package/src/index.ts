@@ -21,5 +21,6 @@ export {
     findPackageManagerSync,
     getPackageManagerVersion,
     identifyInitiatingPackageManager,
+    generateMissingPackagesInstallMessage,
 } from "./package-manager";
 export type { NormalizedPackageJson, PackageJson } from "./types";
