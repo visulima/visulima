@@ -89,3 +89,4 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
 
     throw new Error("Could not find root directory");
 };
+

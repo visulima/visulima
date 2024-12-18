@@ -2072,6 +2072,9 @@ importers:
       '@visulima/path':
         specifier: 1.1.2
         version: 1.1.2
+      yaml:
+        specifier: ^2.6.1
+        version: 2.6.1
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -2184,9 +2187,6 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.6.8(@types/node@18.19.15)(typescript@5.6.3))(terser@5.31.1)
-      yaml:
-        specifier: ^2.6.1
-        version: 2.6.1
 
   packages/fs/__fixtures__/find-up: {}
 
