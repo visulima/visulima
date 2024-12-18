@@ -149,7 +149,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "1.1.2"
+        "@visulima/path": "1.1.2",
+        "yaml": "^2.6.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -188,16 +189,7 @@
         "typedoc-plugin-markdown": "4.2.9",
         "typedoc-plugin-rename-defaults": "0.7.1",
         "typescript": "5.6.3",
-        "vitest": "^2.1.8",
-        "yaml": "^2.6.1"
-    },
-    "peerDependencies": {
-        "yaml": ">=2.4"
-    },
-    "peerDependenciesMeta": {
-        "yaml": {
-            "optional": true
-        }
+        "vitest": "^2.1.8"
     },
     "engines": {
         "node": ">=18.* <=23.*"
