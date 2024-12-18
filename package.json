@@ -246,7 +246,7 @@
         "taze": "^0.18.0",
         "textlint": "^14.4.0",
         "tsup": "^8.3.5",
-        "typescript": "5.4.5",
+        "typescript": "5.7.2",
         "vitest": "^2.1.8"
     },
     "packageManager": "pnpm@9.15.0",
