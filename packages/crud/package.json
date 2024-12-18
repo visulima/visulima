@@ -94,7 +94,7 @@
         "@arthurgeron/eslint-plugin-react-usememo": "^2.4.4",
         "@babel/core": "^7.26.0",
         "@opentelemetry/api": "^1.9.0",
-        "@prisma/client": "5.15.1",
+        "@prisma/client": "5.22.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@testing-library/react": "^16.1.0",
         "@types/http-errors": "^2.0.4",
