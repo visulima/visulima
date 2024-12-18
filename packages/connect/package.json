@@ -101,7 +101,7 @@
         "@types/http-errors": "^2.0.4",
         "@types/node": "18.19.15",
         "@visulima/nextra-theme-docs": "4.0.26",
-        "@visulima/packem": "1.9.2",
+        "@visulima/packem": "1.10.0",
         "@vitest/coverage-v8": "^2.1.8",
         "@vitest/ui": "^2.1.8",
         "conventional-changelog-conventionalcommits": "8.0.0",
@@ -116,17 +116,17 @@
         "eslint-plugin-vitest-globals": "^1.5.0",
         "eslint-plugin-zod": "^1.4.0",
         "express": "^4.21.2",
-        "fastify": "^5.1.0",
+        "fastify": "^5.2.0",
         "isomorphic-fetch": "^3.0.0",
         "prettier": "^3.4.2",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
-        "typescript": "5.4.5",
+        "typescript": "5.7.2",
         "vitest": "^2.1.8",
         "zod": "^3.24.1"
     },
     "peerDependencies": {
-        "zod": "^3.22.4"
+        "zod": "^3.24.1"
     },
     "engines": {
         "node": ">=18.* <=23.*"
