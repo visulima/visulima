@@ -32,7 +32,7 @@
         "@visulima/nextra-theme-docs": "4.0.26",
         "clsx": "^2.1.1",
         "fathom-client": "^3.7.2",
-        "framer-motion": "^11.13.5",
+        "framer-motion": "^11.15.0",
         "fs-extra": "^11.2.0",
         "lucide-react": "^0.468.0",
         "next": "^14.2.5",
@@ -58,7 +58,7 @@
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.1.0",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "20.14.11",
+        "@types/node": "20.17.10",
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
         "cross-env": "^7.0.3",
@@ -84,7 +84,7 @@
         "sort-package-json": "^2.12.0",
         "symlink-dir": "^6.0.3",
         "tailwindcss": "^3.4.16",
-        "typescript": "5.5.3",
+        "typescript": "5.7.2",
         "vitest": "^2.1.8"
     },
     "anolilab": {
