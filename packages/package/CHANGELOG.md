@@ -1,3 +1,18 @@
+## @visulima/package [3.2.1](https://github.com/visulima/visulima/compare/@visulima/package@3.2.0...@visulima/package@3.2.1) (2024-12-27)
+
+### Bug Fixes
+
+* **fs:** added missing yaml to dependencies ([210b995](https://github.com/visulima/visulima/commit/210b99503da7a30ceb3aa01019ae7d3f8bed6807))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.2
+
 ## @visulima/package [3.2.0](https://github.com/visulima/visulima/compare/@visulima/package@3.1.6...@visulima/package@3.2.0) (2024-12-16)
 
 ### Features
