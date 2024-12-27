@@ -1,3 +1,13 @@
+## @visulima/fs [2.3.2](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.1...@visulima/fs@2.3.2) (2024-12-27)
+
+### Bug Fixes
+
+* **fs:** added missing yaml to dependencies ([210b995](https://github.com/visulima/visulima/commit/210b99503da7a30ceb3aa01019ae7d3f8bed6807))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
 ## @visulima/fs [2.3.1](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.0...@visulima/fs@2.3.1) (2024-12-12)
 
 ### Bug Fixes
