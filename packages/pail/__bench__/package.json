@@ -8,8 +8,8 @@
         "@dynamicabot/signales": "^2.1.2",
         "@visulima/pail": "workspace:*",
         "bunyan": "^1.8.15",
-        "consola": "^3.2.3",
-        "pino": "^9.5.0",
+        "consola": "^3.3.3",
+        "pino": "^9.6.0",
         "tslog": "^4.9.3",
         "winston": "^3.17.0"
     },

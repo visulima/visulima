@@ -251,9 +251,9 @@
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
         "@anolilab/prettier-config": "^5.0.14",
-        "@anolilab/semantic-release-pnpm": "^1.1.5",
-        "@anolilab/semantic-release-preset": "^9.0.2",
-        "@arethetypeswrong/cli": "^0.17.1",
+        "@anolilab/semantic-release-pnpm": "^1.1.6",
+        "@anolilab/semantic-release-preset": "^9.0.3",
+        "@arethetypeswrong/cli": "^0.17.2",
         "@babel/core": "^7.26.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@secretlint/secretlint-rule-preset-recommend": "^9.0.0",
@@ -280,7 +280,7 @@
         "semantic-release": "24.0.0",
         "string-length": "^6.0.0",
         "terminal-size": "^4.0.0",
-        "type-fest": "^4.30.0",
+        "type-fest": "^4.31.0",
         "typescript": "5.4.5",
         "vitest": "^2.1.8",
         "wrap-ansi": "^9.0.0"
