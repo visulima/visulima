@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.1.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.26...@visulima/cerebro@1.1.27) (2024-12-27)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 1.0.17
+
 ## @visulima/cerebro [1.1.26](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.25...@visulima/cerebro@1.1.26) (2024-12-12)
 
 ### Bug Fixes
