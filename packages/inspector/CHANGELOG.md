@@ -1,3 +1,18 @@
+## @visulima/inspector [1.0.14](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.13...@visulima/inspector@1.0.14) (2024-12-31)
+
+### Styles
+
+* cs fixes ([12d0b20](https://github.com/visulima/visulima/commit/12d0b20814c6b97f48dffbdfbdb9f458222dc64b))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.14
+
 ## @visulima/inspector [1.0.13](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.12...@visulima/inspector@1.0.13) (2024-12-12)
 
 ### Bug Fixes
