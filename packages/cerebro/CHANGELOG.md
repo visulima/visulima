@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.1.28](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.27...@visulima/cerebro@1.1.28) (2024-12-31)
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.23
+* **@visulima/colorize:** upgraded to 1.4.14
+* **@visulima/find-cache-dir:** upgraded to 1.0.18
+* **@visulima/pail:** upgraded to 2.1.13
+* **@visulima/path:** upgraded to 1.2.0
+
 ## @visulima/cerebro [1.1.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.26...@visulima/cerebro@1.1.27) (2024-12-27)
 
 ### Miscellaneous Chores
