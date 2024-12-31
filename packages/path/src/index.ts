@@ -1,3 +1,8 @@
+import type NodePath from "node:path";
+
+// eslint-disable-next-line import/no-namespace
+import * as path from "./path";
+
 export {
     basename,
     delimiter,
@@ -6,6 +11,7 @@ export {
     format,
     isAbsolute,
     join,
+    matchesGlob,
     normalize,
     normalizeString,
     parse,
@@ -15,5 +21,9 @@ export {
     toNamespacedPath,
 } from "./path";
 
-// eslint-disable-next-line no-restricted-exports
-export * as default from "./path";
+export type Path = Omit<typeof NodePath, "posix" | "win32">;
+
+export const posix = path satisfies Path;
+
+export const win32 = path satisfies Path;
+export default path satisfies Path;

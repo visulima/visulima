@@ -3300,8 +3300,8 @@ importers:
         specifier: ^9.0.0
         version: 9.0.0
       '@types/node':
-        specifier: 18.19.15
-        version: 18.19.15
+        specifier: ^22.10.2
+        version: 22.10.2
       '@visulima/packem':
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
@@ -3344,6 +3344,9 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
+      minimatch:
+        specifier: ^10.0.1
+        version: 10.0.1
       prettier:
         specifier: ^3.4.2
         version: 3.4.2
@@ -3361,7 +3364,7 @@ importers:
         version: 5.4.5
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.7.0(@types/node@18.19.15)(typescript@5.4.5))(terser@5.31.1)
+        version: 2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.4.5))(terser@5.31.1)
 
   packages/path/__fixtures__/package/cjs:
     dependencies:
