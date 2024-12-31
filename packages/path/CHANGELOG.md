@@ -1,3 +1,13 @@
+## @visulima/path [1.2.0](https://github.com/visulima/visulima/compare/@visulima/path@1.1.2...@visulima/path@1.2.0) (2024-12-31)
+
+### Features
+
+* added matchesGlob export, added Path type, added posix and win32 exports ([2374dad](https://github.com/visulima/visulima/commit/2374dadf62026394df061c7bf8ce1e99ce0304c4))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
 ## @visulima/path [1.1.2](https://github.com/visulima/visulima/compare/@visulima/path@1.1.1...@visulima/path@1.1.2) (2024-12-12)
 
 ### Bug Fixes
