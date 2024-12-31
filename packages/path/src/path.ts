@@ -15,6 +15,8 @@
 
 import type path from "node:path";
 
+import { minimatch } from "minimatch";
+
 import normalizeWindowsPath from "./normalize-windows-path";
 
 const UNC_REGEX = /^[/\\]{2}/;
@@ -22,6 +24,7 @@ const IS_ABSOLUTE_RE = /^[/\\](?![/\\])|^[/\\]{2}(?!\.)|^[A-Z]:[/\\]/i;
 const DRIVE_LETTER_RE = /^[A-Z]:$/i;
 const ROOT_FOLDER_RE = /^\/([A-Z]:)?$/i;
 const EXTNAME_RE = /.(\.[^./]+)$/;
+const PATH_ROOT_RE = /^[/\\]|^[a-z]:[/\\]/i;
 
 const cwd = () => {
     if (typeof process !== "undefined" && typeof process.cwd === "function") {
@@ -367,16 +370,11 @@ export const basename: typeof path.basename = (path: string, extension?: string)
  * @returns an object representing the path.
  */
 export const parse: typeof path.parse = function (p: string): path.ParsedPath {
-    let root = normalizeWindowsPath(p).split("/").shift() as string;
-
-    if (root === "") {
-        root = "/";
-    } else {
-        root += "/";
-    }
-
+    // The root of the path such as '/' or 'c:\'
+    const root = PATH_ROOT_RE.exec(p)?.[0]?.replace(/\\/g, "/") ?? "";
     const base = basename(p);
     const extension = extname(base);
+
     return {
         base,
         dir: dirname(p),
@@ -385,3 +383,15 @@ export const parse: typeof path.parse = function (p: string): path.ParsedPath {
         root,
     };
 };
+
+export const matchesGlob: typeof path.matchesGlob = (path: string, pattern: string) =>
+    // https://github.com/nodejs/node/blob/main/lib/internal/fs/glob.js#L660
+    // https://github.com/isaacs/minimatch#windows
+     minimatch(normalize(path), pattern, {
+        nocaseMagicOnly: true,
+        nocomment: true,
+        nonegate: true,
+        optimizationLevel: 2,
+        windowsPathsNoEscape: true,
+    })
+;

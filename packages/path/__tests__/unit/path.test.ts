@@ -15,6 +15,7 @@ import {
     format,
     isAbsolute,
     join,
+    matchesGlob,
     normalize,
     normalizeString,
     parse,
@@ -203,7 +204,7 @@ runTest("normalize", normalize, {
 
 // eslint-disable-next-line vitest/require-top-level-describe
 test("parse", () => {
-    expect.assertions(7);
+    expect.assertions(10);
 
     // POSIX
     expect(parse("/home/user/dir/file.txt")).toStrictEqual({
@@ -218,7 +219,7 @@ test("parse", () => {
         dir: "./dir",
         ext: "",
         name: "file",
-        root: "./",
+        root: "",
     });
 
     // Windows
@@ -234,10 +235,33 @@ test("parse", () => {
         dir: "./dir",
         ext: "",
         name: "file",
-        root: "./",
+        root: "",
     });
     // Windows path can have spaces
     expect(parse("C:\\pa th\\dir\\file.txt")).toStrictEqual({
+        base: "file.txt",
+        dir: "C:/pa th/dir",
+        ext: ".txt",
+        name: "file",
+        root: "C:/",
+    });
+    // Test with normalized windows path
+    expect(parse("C:/path/dir/file.txt")).toStrictEqual({
+        base: "file.txt",
+        dir: "C:/path/dir",
+        ext: ".txt",
+        name: "file",
+        root: "C:/",
+    });
+    expect(parse("C:/pa th/dir/file.txt")).toStrictEqual({
+        base: "file.txt",
+        dir: "C:/pa th/dir",
+        ext: ".txt",
+        name: "file",
+        root: "C:/",
+    });
+    // Windows path can have spaces
+    expect(parse(String.raw`C:\pa th\dir\file.txt`)).toStrictEqual({
         base: "file.txt",
         dir: "C:/pa th/dir",
         ext: ".txt",
@@ -336,5 +360,25 @@ describe("constants", () => {
         expect.assertions(1);
 
         expect(separator).toBe("/");
+    });
+});
+
+describe("matchesGlob", () => {
+    it("should match a glob pattern", () => {
+        expect.assertions(1);
+
+        expect(matchesGlob("/foo/bar", "/foo/**")).toBeTruthy();
+    });
+
+    it("should not match a glob pattern", () => {
+        expect.assertions(1);
+
+        expect(matchesGlob("/foo/bar", "/bar/**")).toBeFalsy();
+    });
+
+    it("should match a glob pattern with String.raw input", () => {
+        expect.assertions(1);
+
+        expect(matchesGlob(String.raw`\foo\bar`, "/foo/**")).toBeTruthy();
     });
 });
