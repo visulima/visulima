@@ -1,3 +1,9 @@
+## @visulima/package [3.3.0](https://github.com/visulima/visulima/compare/@visulima/package@3.2.2...@visulima/package@3.3.0) (2025-01-02)
+
+### Features
+
+* added new ensurePackages function to install missing packages ([20c05c0](https://github.com/visulima/visulima/commit/20c05c02e32b7c601f42e46bb2d49fe5db87e117))
+
 ## @visulima/package [3.2.2](https://github.com/visulima/visulima/compare/@visulima/package@3.2.1...@visulima/package@3.2.2) (2024-12-31)
 
 
