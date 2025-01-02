@@ -4,6 +4,7 @@ export { findMonorepoRoot, findMonorepoRootSync } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
 export type { NormalizedReadResult } from "./package-json";
 export {
+    ensurePackages,
     findPackageJson,
     findPackageJsonSync,
     getPackageJsonProperty,
@@ -19,8 +20,8 @@ export {
     findLockFileSync,
     findPackageManager,
     findPackageManagerSync,
+    generateMissingPackagesInstallMessage,
     getPackageManagerVersion,
     identifyInitiatingPackageManager,
-    generateMissingPackagesInstallMessage,
 } from "./package-manager";
 export type { NormalizedPackageJson, PackageJson } from "./types";

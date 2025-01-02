@@ -1,5 +1,10 @@
 import { existsSync } from "node:fs";
 
+import type {InstallPackageOptions} from '@antfu/install-pkg';
+import { installPackage  } from '@antfu/install-pkg'
+import confirm from "@inquirer/confirm";
+import type { Theme } from "@inquirer/core";
+import type { PartialDeep } from "@inquirer/type";
 import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
@@ -12,6 +17,7 @@ import normalizeData from "normalize-package-data";
 import type { JsonObject, Paths } from "type-fest";
 
 import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
+import isNode from "./utils/is-node";
 
 type ReadOptions = {
     cache?: Cache<NormalizedReadResult> | boolean;
@@ -186,6 +192,7 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
 
     const allDependencies = { ...dependencies, ...devDependencies, ...(options?.peerDeps === false ? {} : peerDependencies) };
 
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const argument of arguments_) {
         if (hasProperty(allDependencies, argument)) {
             return true;
@@ -193,4 +200,86 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
     }
 
     return false;
+};
+
+/**
+ * An asynchronous function to ensure that the specified packages are installed in the package.json file.
+ * If the packages are not installed, the user will be prompted to install them.
+ * If the user agrees, the packages will be installed.
+ * If the user declines, the function will return without installing the packages.
+ * If the user does not respond, the function will return without installing the packages.
+ *
+ * @param {NormalizedPackageJson} packageJson
+ * @param {string[]} packages
+ * @param {"dependencies" | "devDependencies"} installKey
+ * @param {{confirm?: {default?: false | true | undefined, message: string, theme?: PartialDeep<Theme>, cwd?: string | URL | undefined, deps?: false | true | undefined, devDeps?: false | true | undefined, installPackage?: Omit<InstallPackageOptions, "cwd" | "dev"> | undefined, peerDeps?: false | true | undefined}} options
+ * @returns {Promise<void>}
+ */
+export const ensurePackages = async (
+    packageJson: NormalizedPackageJson,
+    packages: string[],
+    installKey: "dependencies" | "devDependencies" = "dependencies",
+    options: {
+        confirm?: {
+            default?: boolean;
+            message: string;
+            theme?: PartialDeep<Theme>;
+            transformer?: (value: boolean) => string;
+        };
+        cwd?: URL | string;
+        deps?: boolean;
+        devDeps?: boolean;
+        installPackage?: Omit<InstallPackageOptions, "cwd" | "dev">
+        peerDeps?: boolean;
+    } = {},
+): Promise<void> => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (process.env.CI || (isNode && process.stdout?.isTTY === false)) {
+
+        console.warn("Skipping package installation because the process is not interactive.");
+        return;
+    }
+
+    const dependencies = getProperty(packageJson, "dependencies", {});
+    const devDependencies = getProperty(packageJson, "devDependencies", {});
+    const peerDependencies = getProperty(packageJson, "peerDependencies", {});
+
+    const nonExistingPackages = [];
+
+    const config = {
+        confirm: {},
+        deps: true,
+        devDeps: true,
+        peerDeps: false,
+        ...options,
+    };
+
+    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    for (const packageName of packages) {
+        if (
+            (config.deps && hasProperty(dependencies, packageName)) ||
+            (config.devDeps && hasProperty(devDependencies, packageName)) ||
+            (config.peerDeps && hasProperty(peerDependencies, packageName))
+        ) {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        nonExistingPackages.push(packageName);
+    }
+
+    const answer = await confirm({
+        message: `${nonExistingPackages.length === 1 ? "Package is" : "Packages are"} required for this config: ${nonExistingPackages.join(", ")}. Do you want to install them?`,
+        ...config.confirm,
+    });
+
+    if (!answer) {
+        return;
+    }
+
+    await installPackage(nonExistingPackages, {
+        ...config.installPackage,
+        cwd: config.cwd ? toPath(config.cwd) : undefined,
+        dev: installKey === "devDependencies",
+    });
 };
