@@ -4,10 +4,11 @@ import { fileURLToPath } from "node:url";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NormalizedReadResult } from "../../src/package-json";
 import {
+    ensurePackages,
     findPackageJson,
     findPackageJsonSync,
     getPackageJsonProperty,
@@ -20,6 +21,23 @@ import {
 import type { NormalizedPackageJson } from "../../src/types";
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
+
+const { mockConfirm, mockInstallPackage } = vi.hoisted(() => {
+    return {
+        mockConfirm: vi.fn(),
+        mockInstallPackage: vi.fn(),
+    };
+});
+
+vi.mock("@inquirer/confirm", () => {
+    return {
+        default: mockConfirm,
+    };
+});
+
+vi.mock("@antfu/install-pkg", () => {
+    return { installPackage: mockInstallPackage };
+});
 
 describe("package-json", () => {
     describe.each([
@@ -333,6 +351,73 @@ describe("package-json", () => {
             const result = hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["dependency-1", "dependency-2"]);
 
             expect(result).toBeFalsy();
+        });
+    });
+
+    describe("ensurePackages", () => {
+        beforeEach(() => {
+            vi.resetAllMocks();
+        });
+
+        it("should install packages when user confirms and packages are missing", async () => {
+            mockConfirm.mockResolvedValue(true);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: true },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1", "package2"]);
+
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: "Packages are required for this config: package1, package2. Do you want to install them?",
+                }),
+            );
+
+            expect(mockInstallPackage).toHaveBeenCalledWith(["package1", "package2"], expect.any(Object));
+        });
+
+        it("should return early when running in CI environment", async () => {
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: true },
+                stdout: { isTTY: true },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1"]);
+
+            expect(mockConfirm).not.toHaveBeenCalled();
+            expect(mockInstallPackage).not.toHaveBeenCalled();
+        });
+
+        it("should return early when not in TTY environment", async () => {
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: false },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1"]);
+
+            expect(mockConfirm).not.toHaveBeenCalled();
+            expect(mockInstallPackage).not.toHaveBeenCalled();
         });
     });
 });
