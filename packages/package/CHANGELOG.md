@@ -1,3 +1,9 @@
+## @visulima/package [3.4.0](https://github.com/visulima/visulima/compare/@visulima/package@3.3.0...@visulima/package@3.4.0) (2025-01-03)
+
+### Features
+
+* **package:** ensurePackages confirm message key support now a function call ([aa8d64c](https://github.com/visulima/visulima/commit/aa8d64c72103d13996f922ec7aa4de74dafe0f1d))
+
 ## @visulima/package [3.3.0](https://github.com/visulima/visulima/compare/@visulima/package@3.2.2...@visulima/package@3.3.0) (2025-01-02)
 
 ### Features
