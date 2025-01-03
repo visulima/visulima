@@ -24,4 +24,4 @@ export {
     getPackageManagerVersion,
     identifyInitiatingPackageManager,
 } from "./package-manager";
-export type { NormalizedPackageJson, PackageJson } from "./types";
+export type { NormalizedPackageJson, PackageJson, EnsurePackagesOptions } from "./types";
