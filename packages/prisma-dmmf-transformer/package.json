@@ -84,7 +84,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "5.15.1"
+        "@prisma/generator-helper": "5.22.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^15.0.3",
@@ -93,8 +93,8 @@
         "@anolilab/semantic-release-preset": "^9.0.3",
         "@arethetypeswrong/cli": "^0.17.2",
         "@babel/core": "^7.26.0",
-        "@prisma/client": "5.15.1",
-        "@prisma/internals": "5.15.1",
+        "@prisma/client": "5.22.0",
+        "@prisma/internals": "5.22.0",
         "@rushstack/eslint-plugin-security": "^0.8.3",
         "@types/json-schema": "7.0.15",
         "@types/micromatch": "4.0.7",
@@ -114,7 +114,7 @@
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
         "prettier": "3.3.2",
-        "prisma": "5.15.1",
+        "prisma": "5.22.0",
         "rimraf": "5.0.9",
         "semantic-release": "24.0.0",
         "typescript": "5.4.5",
