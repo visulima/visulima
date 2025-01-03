@@ -1,10 +1,7 @@
 import { existsSync } from "node:fs";
 
-import type {InstallPackageOptions} from '@antfu/install-pkg';
-import { installPackage  } from '@antfu/install-pkg'
+import { installPackage } from "@antfu/install-pkg";
 import confirm from "@inquirer/confirm";
-import type { Theme } from "@inquirer/core";
-import type { PartialDeep } from "@inquirer/type";
 import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
@@ -16,7 +13,7 @@ import type { Input } from "normalize-package-data";
 import normalizeData from "normalize-package-data";
 import type { JsonObject, Paths } from "type-fest";
 
-import type { Cache, NormalizedPackageJson, PackageJson } from "./types";
+import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";
 import isNode from "./utils/is-node";
 
 type ReadOptions = {
@@ -212,31 +209,19 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
  * @param {NormalizedPackageJson} packageJson
  * @param {string[]} packages
  * @param {"dependencies" | "devDependencies"} installKey
- * @param {{confirm?: {default?: false | true | undefined, message: string, theme?: PartialDeep<Theme>, cwd?: string | URL | undefined, deps?: false | true | undefined, devDeps?: false | true | undefined, installPackage?: Omit<InstallPackageOptions, "cwd" | "dev"> | undefined, peerDeps?: false | true | undefined}} options
+ * @param {EnsurePackagesOptions} options
  * @returns {Promise<void>}
  */
 export const ensurePackages = async (
     packageJson: NormalizedPackageJson,
     packages: string[],
     installKey: "dependencies" | "devDependencies" = "dependencies",
-    options: {
-        confirm?: {
-            default?: boolean;
-            message: string;
-            theme?: PartialDeep<Theme>;
-            transformer?: (value: boolean) => string;
-        };
-        cwd?: URL | string;
-        deps?: boolean;
-        devDeps?: boolean;
-        installPackage?: Omit<InstallPackageOptions, "cwd" | "dev">
-        peerDeps?: boolean;
-    } = {},
+    options: EnsurePackagesOptions = {},
 ): Promise<void> => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (process.env.CI || (isNode && process.stdout?.isTTY === false)) {
-
+    if (process.env.CI || (isNode && !(process.stdout?.isTTY))) {
         console.warn("Skipping package installation because the process is not interactive.");
+
         return;
     }
 
@@ -247,12 +232,11 @@ export const ensurePackages = async (
     const nonExistingPackages = [];
 
     const config = {
-        confirm: {},
         deps: true,
         devDeps: true,
         peerDeps: false,
         ...options,
-    };
+    } satisfies EnsurePackagesOptions;
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
     for (const packageName of packages) {
@@ -268,10 +252,23 @@ export const ensurePackages = async (
         nonExistingPackages.push(packageName);
     }
 
-    const answer = await confirm({
-        message: `${nonExistingPackages.length === 1 ? "Package is" : "Packages are"} required for this config: ${nonExistingPackages.join(", ")}. Do you want to install them?`,
-        ...config.confirm,
-    });
+    if (typeof config.confirm?.message === "function") {
+        config.confirm.message = config.confirm.message(nonExistingPackages);
+    }
+
+    if (config.confirm?.message === undefined) {
+        const message = `${nonExistingPackages.length === 1 ? "Package is" : "Packages are"} required for this config: ${nonExistingPackages.join(", ")}. Do you want to install them?`;
+
+        if (config.confirm === undefined) {
+            config.confirm = {
+                message,
+            };
+        } else {
+            config.confirm.message = message;
+        }
+    }
+
+    const answer = await confirm(config.confirm as EnsurePackagesOptions["confirm"] & { message: string });
 
     if (!answer) {
         return;

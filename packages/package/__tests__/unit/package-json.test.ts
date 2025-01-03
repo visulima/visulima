@@ -384,6 +384,35 @@ describe("package-json", () => {
             expect(mockInstallPackage).toHaveBeenCalledWith(["package1", "package2"], expect.any(Object));
         });
 
+        it("should install packages when user confirms and packages are missing with custom message function", async () => {
+            mockConfirm.mockResolvedValue(true);
+
+            vi.stubGlobal("process", {
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: true },
+            });
+
+            const packageJson = {
+                dependencies: {},
+                devDependencies: {},
+            } as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["package1", "package2"], "dependencies", {
+                confirm: {
+                    message: (packages) => `Custom Packages are required for this config: ${packages.join(", ")}. Do you want to install them?`,
+                }
+            });
+
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: "Custom Packages are required for this config: package1, package2. Do you want to install them?",
+                }),
+            );
+
+            expect(mockInstallPackage).toHaveBeenCalledWith(["package1", "package2"], expect.any(Object));
+        });
+
         it("should return early when running in CI environment", async () => {
             vi.stubGlobal("process", {
                 argv: [],
