@@ -89,7 +89,7 @@ jobs:
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@76907e7e5d3cd17ddb5e2b123389f054bffcdd03" # v4
+              uses: "nrwl/nx-set-shas@e2e6dc8bce4b0387a05eb687735c39c41580b792" # v4
 
             - name: "Setup resources and environment"
               id: "setup"
