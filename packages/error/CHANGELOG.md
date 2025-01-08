@@ -1,3 +1,10 @@
+## @visulima/error [4.4.10](https://github.com/visulima/visulima/compare/@visulima/error@4.4.9...@visulima/error@4.4.10) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.0
+
 ## @visulima/error [4.4.9](https://github.com/visulima/visulima/compare/@visulima/error@4.4.8...@visulima/error@4.4.9) (2024-12-31)
 
 ### Miscellaneous Chores
