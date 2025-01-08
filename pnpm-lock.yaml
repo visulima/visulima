@@ -628,14 +628,14 @@ importers:
         specifier: 20.14.6
         version: 20.14.6
       '@visulima/colorize':
-        specifier: 1.4.14
-        version: 1.4.14
+        specifier: 1.4.15
+        version: 1.4.15
       '@visulima/packem':
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -718,11 +718,11 @@ importers:
         specifier: 3.0.16
         version: 3.0.16(zod@3.24.1)
       '@visulima/jsdoc-open-api':
-        specifier: 2.0.67
-        version: 2.0.67(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
+        specifier: 2.0.68
+        version: 2.0.68(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       accepts:
         specifier: ^1.3.8
         version: 1.3.8
@@ -839,8 +839,8 @@ importers:
         specifier: 2.0.33
         version: 2.0.33(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
       '@visulima/fs':
-        specifier: 2.3.3
-        version: 2.3.3
+        specifier: 2.3.4
+        version: 2.3.4
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1010,14 +1010,14 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/colorize':
-        specifier: 1.4.14
-        version: 1.4.14
+        specifier: 1.4.15
+        version: 1.4.15
       '@visulima/packem':
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1097,17 +1097,17 @@ importers:
   packages/cerebro:
     dependencies:
       '@visulima/boxen':
-        specifier: 1.0.23
-        version: 1.0.23
+        specifier: 1.0.24
+        version: 1.0.24
       '@visulima/colorize':
-        specifier: 1.4.14
-        version: 1.4.14
+        specifier: 1.4.15
+        version: 1.4.15
       '@visulima/find-cache-dir':
-        specifier: 1.0.18
-        version: 1.0.18
+        specifier: 1.0.19
+        version: 1.0.19
       '@visulima/pail':
-        specifier: 2.1.13
-        version: 2.1.13(rotating-file-stream@3.2.5)
+        specifier: 2.1.14
+        version: 2.1.14(rotating-file-stream@3.2.5)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1170,8 +1170,8 @@ importers:
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1270,8 +1270,8 @@ importers:
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1830,8 +1830,8 @@ importers:
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -1887,11 +1887,11 @@ importers:
   packages/find-cache-dir:
     dependencies:
       '@visulima/fs':
-        specifier: 2.3.3
-        version: 2.3.3
+        specifier: 2.3.4
+        version: 2.3.4
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -2071,8 +2071,8 @@ importers:
   packages/fs:
     dependencies:
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       yaml:
         specifier: ^2.6.1
         version: 2.6.1
@@ -2105,8 +2105,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/error':
-        specifier: 4.4.9
-        version: 4.4.9
+        specifier: 4.4.10
+        version: 4.4.10
       '@visulima/packem':
         specifier: 1.1.1
         version: 1.1.1(@ckeditor/typedoc-plugins@43.0.0(typedoc@0.26.10(typescript@5.6.3)))(@swc/core@1.6.7(@swc/helpers@0.5.15))(esbuild@0.24.0)(picomatch@4.0.2)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.6.3)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.6.3)))(typedoc@0.26.10(typescript@5.6.3))(typescript@5.6.3)(yaml@2.6.1)
@@ -2373,8 +2373,8 @@ importers:
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@vitest/coverage-v8':
         specifier: ^2.1.8
         version: 2.1.8(@vitest/browser@2.1.8)(vitest@2.1.8)
@@ -2481,8 +2481,8 @@ importers:
         specifier: 18.19.15
         version: 18.19.15
       '@visulima/colorize':
-        specifier: 1.4.14
-        version: 1.4.14
+        specifier: 1.4.15
+        version: 1.4.15
       '@visulima/packem':
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
@@ -2668,8 +2668,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 2.3.3
-        version: 2.3.3
+        specifier: 2.3.4
+        version: 2.3.4
       comment-parser:
         specifier: ^1.4.1
         version: 1.4.1
@@ -2895,11 +2895,11 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(@types/node@18.19.15)
       '@visulima/fs':
-        specifier: 2.3.3
-        version: 2.3.3
+        specifier: 2.3.4
+        version: 2.3.4
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       normalize-package-data:
         specifier: ^7.0.0
         version: 7.0.0
@@ -3121,17 +3121,17 @@ importers:
   packages/pail:
     dependencies:
       '@visulima/colorize':
-        specifier: 1.4.14
-        version: 1.4.14
+        specifier: 1.4.15
+        version: 1.4.15
       '@visulima/error':
-        specifier: 4.4.9
-        version: 4.4.9
+        specifier: 4.4.10
+        version: 4.4.10
       '@visulima/fmt':
         specifier: 1.1.12
         version: 1.1.12
       '@visulima/inspector':
-        specifier: 1.0.14
-        version: 1.0.14
+        specifier: 1.0.15
+        version: 1.0.15
       safe-stable-stringify:
         specifier: ^2.5.0
         version: 2.5.0
@@ -3630,8 +3630,8 @@ importers:
         specifier: ^0.3.25
         version: 0.3.25
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3724,11 +3724,11 @@ importers:
   packages/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 2.3.3
-        version: 2.3.3
+        specifier: 2.3.4
+        version: 2.3.4
       '@visulima/path':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.3.0
+        version: 1.3.0
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -9622,8 +9622,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/boxen@1.0.23':
-    resolution: {integrity: sha512-os8zpUA6Iizcbp2JtH43diakJB1EagyEk57v1KaNd6Eh1A7XekNZw0AyUW5AdVmOoeWC0wZkrMXBNWxHL35AQQ==}
+  '@visulima/boxen@1.0.24':
+    resolution: {integrity: sha512-vdfvnLRWHoARq+dmL3tZ2NbPfFPGTPz7ZYtGHD4bnZjEGaP1TbRODOQ2mEi83kCdDKVe4jb9LXfkSQBTZkIN+w==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9652,8 +9652,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/colorize@1.4.14':
-    resolution: {integrity: sha512-d78gKcysz8kcD3Ki5m4kLUGYzyLwwaoGAY1IA/juhN9dvuJ+RJedi0Kx5nP/TdYmNDiQyNTFLSyr4F+yMsY2BA==}
+  '@visulima/colorize@1.4.15':
+    resolution: {integrity: sha512-GBfnO3WQIMBbsRfTVC3BC3hmiq57uwqFVRT3GW5I+70PAYTmUIkvwFFPwspU1/N+swXqqRH5gPPwNdmAkSCIqA==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9669,6 +9669,11 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
+  '@visulima/error@4.4.10':
+    resolution: {integrity: sha512-pYvB1ju1VTVzH23oEZi/ZCqqc1DPPIBLeaJNU5AdAOXt6zpxRmfMDbfHMcA2TfIw3XmlV80OcbASfeWRfaufrA==}
+    engines: {node: '>=18.* <=23.*'}
+    os: [darwin, linux, win32]
+
   '@visulima/error@4.4.7':
     resolution: {integrity: sha512-X2bWFkR+6bfHhUIedkTfUw3WHZR+5z9o4H1+C9VYpela0KFG/kiewDjEJIJOW8y3+/KgXWj3PnQeTbtB1pYsrw==}
     engines: {node: '>=18.* <=22.*'}
@@ -9676,11 +9681,6 @@ packages:
 
   '@visulima/error@4.4.8':
     resolution: {integrity: sha512-GMKhzc5EWlazvfjdxxl6RYA03YC481LL6GrXDOxw86kH91bn0LtZZenugAEx8kytK/ARf3mmcLY1UsrplEwYUQ==}
-    engines: {node: '>=18.* <=23.*'}
-    os: [darwin, linux, win32]
-
-  '@visulima/error@4.4.9':
-    resolution: {integrity: sha512-oJ2Jm6qPmZ6LpuGAPghwDTud7RTuFRWrsSWdmd7ppym4DszDEXWhpCjwEGevOL4fGL8Q8gqvItGnzBwM0geFmQ==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9696,8 +9696,8 @@ packages:
     resolution: {integrity: sha512-wuRLE96rDe61HdIMbIVRFJ39zIpvbKsSd+ZTsmBN6RrhYJRDg4DDZhHV4rSFBK+OML5ZwcehBMAmhQ2bUKLQtQ==}
     engines: {node: '>=18.* <=23.*'}
 
-  '@visulima/find-cache-dir@1.0.18':
-    resolution: {integrity: sha512-chxkcfQ2aTLeVDRNWCJkeSbBNEh7SugwD90ufzI08GHiDamXAnXjE9HEtRwX+b7HQnLnfSZxUOEHR1xl1WaFSA==}
+  '@visulima/find-cache-dir@1.0.19':
+    resolution: {integrity: sha512-6CMlFbwxxfhrrAUTRpYTp7VEvcPQPgqmtOJEnFOxL+KPtC5285Q50HWt6E0Q4Dt+aGzay0htmCEPTyokFF0FJQ==}
     engines: {node: '>=18.* <=23.*'}
 
   '@visulima/fmt@1.1.11':
@@ -9760,8 +9760,8 @@ packages:
       yaml:
         optional: true
 
-  '@visulima/fs@2.3.3':
-    resolution: {integrity: sha512-IQCD9hJWLQDFMWi6FfDnDcAgHXbagqGyEgLdcsbgNhU14gfl/UpAJ3ypEY3r9//vx84ww1vGTT8X2yrXBIrBUQ==}
+  '@visulima/fs@2.3.4':
+    resolution: {integrity: sha512-aXl/I7WFbW/lQ5mDz8hzNmzbPfdhtd+RU/pKIo8oZ475KCFS8VY5WpGrsadc/ft1y9XYoksPWOEV/nZMyStFIQ==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -9781,8 +9781,8 @@ packages:
     resolution: {integrity: sha512-hG/Exsr88vsCjzDzW0u7mpMGH/3Gbgat1mnS+7OGzgeI7yV8j5Slccb9JXKr45cd9njKixMo1T37E+N7dxhiIA==}
     engines: {node: '>=18.* <=23.*'}
 
-  '@visulima/inspector@1.0.14':
-    resolution: {integrity: sha512-p7AYC8pSHmk+U2OupPFz4VZgKOyDtTq3Fw4wxXqOPfBeFh1Q5OcowLsWjfD/JgW3VNeAg/obN+8VAYPx+wbc/w==}
+  '@visulima/inspector@1.0.15':
+    resolution: {integrity: sha512-gTWf24SCMdWOABCpCtUG2OaHGNGQZ8J9AcXvXTgDt0iPOYT7TJ8GT1COlID6En8/H4ZJHopalMpv1weOSeeQsw==}
     engines: {node: '>=18.* <=23.*'}
 
   '@visulima/is-ansi-color-supported@2.2.8':
@@ -9795,8 +9795,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/jsdoc-open-api@2.0.67':
-    resolution: {integrity: sha512-eRfmS6I/kDWtsAO63YE78wCp1sKUL6WKZ1vCQCLCs2q5hFW72GNOeMxxq2kUBFi6i4pn0K8AfavIAMYbgSurgg==}
+  '@visulima/jsdoc-open-api@2.0.68':
+    resolution: {integrity: sha512-mbHI0JiH4Syw0S3zQr63I1kmTnpJQ0qpSCnCtwHDfS9M5s50o/mJQvYOjWdi3zmWvsfdD9c+kCIyR41izs3RpQ==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -10093,8 +10093,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.13':
-    resolution: {integrity: sha512-gCYNdC++vUAS/qfctrFRCJAkw1REqxWGJ7Jxk/CcwrjnqwpJdWnmxoaUY1oKIpYHvIQ+9M/UXeL5Ff4E6sp2HQ==}
+  '@visulima/pail@2.1.14':
+    resolution: {integrity: sha512-bj2gYHcXjIrGS2On9yCk6E6KXy0wwU8KVX0IunKLpum1vD+4qux8bihDjrbvUTRIwbP8sYF6YWgP5pExIDtP1g==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -10120,8 +10120,8 @@ packages:
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
-  '@visulima/path@1.2.0':
-    resolution: {integrity: sha512-OXiDZrK+wSM/qXx0bIiBwKRLvLFnedrBlq2IfczadBMAuobcxQzM+g/qMjoixT5/eHhJdK845zNKCY6NvjxOAw==}
+  '@visulima/path@1.3.0':
+    resolution: {integrity: sha512-9Qyt/QDnz0gLWLhvBxUka8gepuHHb8T88cMWG1n5rtVd9Twzkr8LFO8MHti0tbL1UtSRdx1AbUGr9I9aua/Hfg==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
 
@@ -21561,14 +21561,14 @@ snapshots:
 
   '@anolilab/rc@1.1.2':
     dependencies:
-      '@visulima/fs': 2.3.3
+      '@visulima/fs': 2.3.4
       ini: 4.1.3
       ts-deepmerge: 7.0.0
 
   '@anolilab/rc@1.1.4':
     dependencies:
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
+      '@visulima/fs': 2.3.4
+      '@visulima/path': 1.3.0
       ini: 5.0.0
       ts-deepmerge: 7.0.2
 
@@ -21578,7 +21578,7 @@ snapshots:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 2.1.10(yaml@2.6.1)
       '@visulima/package': 1.10.3(yaml@2.6.1)
-      '@visulima/path': 1.2.0
+      '@visulima/path': 1.3.0
       aggregate-error: 5.0.0
       execa: 9.3.0
       ini: 4.1.3
@@ -21593,9 +21593,9 @@ snapshots:
     dependencies:
       '@anolilab/rc': 1.1.4
       '@semantic-release/error': 4.0.0
-      '@visulima/fs': 2.3.3
+      '@visulima/fs': 2.3.4
       '@visulima/package': 3.2.0(yaml@2.6.1)
-      '@visulima/path': 1.2.0
+      '@visulima/path': 1.3.0
       aggregate-error: 5.0.0
       execa: 9.5.2
       ini: 5.0.0
@@ -29836,7 +29836,7 @@ snapshots:
 
   '@visulima/boxen@1.0.22': {}
 
-  '@visulima/boxen@1.0.23': {}
+  '@visulima/boxen@1.0.24': {}
 
   '@visulima/cerebro@1.1.24(rotating-file-stream@3.2.5)(yaml@2.6.1)':
     dependencies:
@@ -29891,7 +29891,7 @@ snapshots:
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.9
 
-  '@visulima/colorize@1.4.14':
+  '@visulima/colorize@1.4.15':
     dependencies:
       '@visulima/is-ansi-color-supported': 2.2.9
 
@@ -29911,11 +29911,11 @@ snapshots:
       - '@prisma/client'
       - prisma
 
+  '@visulima/error@4.4.10': {}
+
   '@visulima/error@4.4.7': {}
 
   '@visulima/error@4.4.8': {}
-
-  '@visulima/error@4.4.9': {}
 
   '@visulima/find-cache-dir@1.0.14(yaml@2.6.1)':
     dependencies:
@@ -29938,10 +29938,10 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@visulima/find-cache-dir@1.0.18':
+  '@visulima/find-cache-dir@1.0.19':
     dependencies:
-      '@visulima/fs': 2.3.3
-      '@visulima/path': 1.2.0
+      '@visulima/fs': 2.3.4
+      '@visulima/path': 1.3.0
 
   '@visulima/fmt@1.1.11': {}
 
@@ -29977,9 +29977,9 @@ snapshots:
     optionalDependencies:
       yaml: 2.6.1
 
-  '@visulima/fs@2.3.3':
+  '@visulima/fs@2.3.4':
     dependencies:
-      '@visulima/path': 1.2.0
+      '@visulima/path': 1.3.0
       yaml: 2.6.1
 
   '@visulima/humanizer@1.0.14': {}
@@ -29990,16 +29990,16 @@ snapshots:
 
   '@visulima/inspector@1.0.13': {}
 
-  '@visulima/inspector@1.0.14': {}
+  '@visulima/inspector@1.0.15': {}
 
   '@visulima/is-ansi-color-supported@2.2.8': {}
 
   '@visulima/is-ansi-color-supported@2.2.9': {}
 
-  '@visulima/jsdoc-open-api@2.0.67(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
+  '@visulima/jsdoc-open-api@2.0.68(@swc/core@1.6.7(@swc/helpers@0.5.15))(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 10.1.0(openapi-types@12.1.3)
-      '@visulima/fs': 2.3.3
+      '@visulima/fs': 2.3.4
       comment-parser: 1.4.1
       lodash.mergewith: 4.6.2
       read-pkg-up: 7.0.1
@@ -30395,12 +30395,12 @@ snapshots:
       '@visulima/redact': 1.0.10
       rotating-file-stream: 3.2.5
 
-  '@visulima/pail@2.1.13(rotating-file-stream@3.2.5)':
+  '@visulima/pail@2.1.14(rotating-file-stream@3.2.5)':
     dependencies:
-      '@visulima/colorize': 1.4.14
-      '@visulima/error': 4.4.9
+      '@visulima/colorize': 1.4.15
+      '@visulima/error': 4.4.10
       '@visulima/fmt': 1.1.12
-      '@visulima/inspector': 1.0.14
+      '@visulima/inspector': 1.0.15
       safe-stable-stringify: 2.5.0
     optionalDependencies:
       rotating-file-stream: 3.2.5
@@ -30411,7 +30411,7 @@ snapshots:
 
   '@visulima/path@1.1.2': {}
 
-  '@visulima/path@1.2.0': {}
+  '@visulima/path@1.3.0': {}
 
   '@visulima/prisma-dmmf-transformer@2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
     dependencies:
