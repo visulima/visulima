@@ -1,3 +1,9 @@
+## @visulima/path [1.3.1](https://github.com/visulima/visulima/compare/@visulima/path@1.3.0...@visulima/path@1.3.1) (2025-01-08)
+
+### Bug Fixes
+
+* **path:** switched minimatch to zeptomatch ([d10d466](https://github.com/visulima/visulima/commit/d10d4667094345693b554641522d1aeec86f2f56))
+
 ## @visulima/path [1.3.0](https://github.com/visulima/visulima/compare/@visulima/path@1.2.0...@visulima/path@1.3.0) (2025-01-08)
 
 ### Features
