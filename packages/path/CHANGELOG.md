@@ -1,3 +1,9 @@
+## @visulima/path [1.3.0](https://github.com/visulima/visulima/compare/@visulima/path@1.2.0...@visulima/path@1.3.0) (2025-01-08)
+
+### Features
+
+* **path:** preserve normalized unc paths in join ([316301d](https://github.com/visulima/visulima/commit/316301d1103f707953e7b4fc2df3d921d0120561))
+
 ## @visulima/path [1.2.0](https://github.com/visulima/visulima/compare/@visulima/path@1.1.2...@visulima/path@1.2.0) (2024-12-31)
 
 ### Features
