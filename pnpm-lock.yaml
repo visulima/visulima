@@ -3356,9 +3356,6 @@ importers:
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
-      minimatch:
-        specifier: ^10.0.1
-        version: 10.0.1
       prettier:
         specifier: ^3.4.2
         version: 3.4.2
@@ -3377,6 +3374,9 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.4.5))(terser@5.31.1)
+      zeptomatch:
+        specifier: ^2.0.0
+        version: 2.0.0
 
   packages/path/__fixtures__/package/cjs:
     dependencies:
@@ -13896,6 +13896,9 @@ packages:
     resolution: {integrity: sha512-rXunEHF9M9EkMydTBux7+IryYXEZinRk6g8OBOGDBzo/qWJjhTxy86i5q7lQYpCLHN8Sqv1XX3OIOc7ka2gtvQ==}
     engines: {node: '>=8.0.0'}
 
+  grammex@3.1.3:
+    resolution: {integrity: sha512-rUZoJJQguOCaAMTuoyxs40OxqSLgVhzCCwDn1mbp2vETWutv/TmgAz7KxMR8Tz4z4cty/zIh88HrOWKqWgeGjg==}
+
   grapheme-splitter@1.0.4:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
 
@@ -21040,6 +21043,9 @@ packages:
 
   zenscroll@4.0.2:
     resolution: {integrity: sha512-jEA1znR7b4C/NnaycInCU6h/d15ZzCd1jmsruqOKnZP6WXQSMH3W2GL+OXbkruslU4h+Tzuos0HdswzRUk/Vgg==}
+
+  zeptomatch@2.0.0:
+    resolution: {integrity: sha512-xjsIq0tpg7dNtJcbl0tNf4d4It4UK1ujSYJZXvGygse3GNgX44v/b2FRbM8sCGZS2qh4o983u8+1CBNNF+106g==}
 
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
@@ -35784,6 +35790,8 @@ snapshots:
 
   grad-school@0.0.5: {}
 
+  grammex@3.1.3: {}
+
   grapheme-splitter@1.0.4: {}
 
   graphemer@1.4.0: {}
@@ -46079,6 +46087,10 @@ snapshots:
   yoga-wasm-web@0.3.3: {}
 
   zenscroll@4.0.2: {}
+
+  zeptomatch@2.0.0:
+    dependencies:
+      grammex: 3.1.3
 
   zip-stream@6.0.1:
     dependencies:

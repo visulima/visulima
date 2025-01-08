@@ -15,9 +15,9 @@
 
 import type path from "node:path";
 
-import { minimatch } from "minimatch";
-
 import normalizeWindowsPath from "./normalize-windows-path";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import zeptomatch from "zeptomatch";
 
 const UNC_REGEX = /^[/\\]{2}/;
 const IS_ABSOLUTE_RE = /^[/\\](?![/\\])|^[/\\]{2}(?!\.)|^[A-Z]:[/\\]/i;
@@ -390,13 +390,14 @@ export const parse: typeof path.parse = function (p: string): path.ParsedPath {
     };
 };
 
-export const matchesGlob: typeof path.matchesGlob = (path: string, pattern: string) =>
+/**
+ * The `path.matchesGlob()` method determines if `path` matches the `pattern`.
+ *
+ * @param path The path to glob-match against.
+ * @param pattern The glob to check the path against.
+ *
+ * @returns `true` if the path matches the pattern, otherwise `false`.
+ */
+export const matchesGlob: typeof path.matchesGlob = (path: string, pattern: string[] | string): boolean =>
     // https://github.com/nodejs/node/blob/main/lib/internal/fs/glob.js#L660
-    // https://github.com/isaacs/minimatch#windows
-    minimatch(normalize(path), pattern, {
-        nocaseMagicOnly: true,
-        nocomment: true,
-        nonegate: true,
-        optimizationLevel: 2,
-        windowsPathsNoEscape: true,
-    });
+    zeptomatch(pattern, normalize(path));
