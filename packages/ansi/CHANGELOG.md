@@ -1,3 +1,11 @@
+## @visulima/ansi [1.0.13](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.12...@visulima/ansi@1.0.13) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.16
+* **@visulima/path:** upgraded to 1.3.1
+
 ## @visulima/ansi [1.0.12](https://github.com/visulima/visulima/compare/@visulima/ansi@1.0.11...@visulima/ansi@1.0.12) (2025-01-08)
 
 
