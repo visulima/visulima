@@ -1,3 +1,12 @@
+## @visulima/pail [2.1.14](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.13...@visulima/pail@2.1.14) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.15
+* **@visulima/error:** upgraded to 4.4.10
+* **@visulima/inspector:** upgraded to 1.0.15
+
 ## @visulima/pail [2.1.13](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.12...@visulima/pail@2.1.13) (2024-12-31)
 
 ### Miscellaneous Chores
