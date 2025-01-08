@@ -1,3 +1,10 @@
+## @visulima/humanizer [1.0.17](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.16...@visulima/humanizer@1.0.17) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.0
+
 ## @visulima/humanizer [1.0.16](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.15...@visulima/humanizer@1.0.16) (2024-12-31)
 
 ### Miscellaneous Chores
