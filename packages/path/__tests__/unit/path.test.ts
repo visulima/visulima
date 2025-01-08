@@ -145,6 +145,10 @@ runTest("format", format, [
 runTest("join", join, [
     ["."],
     [undefined, "."],
+    ["", "."],
+    ["./", "./"],
+    ["", "/foo", "/foo"],
+    ["/foo", "//bar", "/foo/bar"],
     ["/", "/path", "/path"],
     ["/test//", "//path", "/test/path"],
     ["some/nodejs/deep", "../path", "some/nodejs/path"],
@@ -161,6 +165,7 @@ runTest("join", join, [
     ["\\\\server\\share\\file", "..\\path", "//server/share/path"],
     ["\\\\.\\c:\\temp\\file", "..\\path", "//./c:/temp/path"],
     ["\\\\server/share/file", "../path", "//server/share/path"],
+    [String.raw`//server/share/file`, "../path", "//server/share/path"],
 ]);
 
 runTest("normalize", normalize, {

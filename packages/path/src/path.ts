@@ -195,29 +195,35 @@ export const normalize: typeof path.normalize = function (path: string) {
  * @param arguments_ - The path segments to join.
  * @returns the joined and normalised path.
  */
-export const join: typeof path.join = function (...arguments_) {
-    if (arguments_.length === 0) {
-        return ".";
-    }
-
-    let joined: string | undefined;
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const join: typeof path.join = (...segments): string => {
+    let path = "";
 
     // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
-    for (const argument of arguments_) {
-        if (argument && argument.length > 0) {
-            if (joined === undefined) {
-                joined = argument;
+    for (const seg of segments) {
+        if (!seg) {
+            // eslint-disable-next-line no-continue
+            continue;
+        }
+
+        if (path.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with,unicorn/prefer-at
+            const pathTrailing = path[path.length - 1] === "/";
+            // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
+            const segLeading = seg[0] === "/";
+            const both = pathTrailing && segLeading;
+
+            if (both) {
+                path += seg.slice(1);
             } else {
-                joined += `/${argument}`;
+                path += pathTrailing || segLeading ? seg : `/${seg}`;
             }
+        } else {
+            path += seg;
         }
     }
 
-    if (joined === undefined) {
-        return ".";
-    }
-
-    return normalize(joined.replaceAll(/\/{2,}/g, "/"));
+    return normalize(path);
 };
 
 /**
@@ -387,11 +393,10 @@ export const parse: typeof path.parse = function (p: string): path.ParsedPath {
 export const matchesGlob: typeof path.matchesGlob = (path: string, pattern: string) =>
     // https://github.com/nodejs/node/blob/main/lib/internal/fs/glob.js#L660
     // https://github.com/isaacs/minimatch#windows
-     minimatch(normalize(path), pattern, {
+    minimatch(normalize(path), pattern, {
         nocaseMagicOnly: true,
         nocomment: true,
         nonegate: true,
         optimizationLevel: 2,
         windowsPathsNoEscape: true,
-    })
-;
+    });
