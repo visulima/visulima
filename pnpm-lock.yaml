@@ -838,7 +838,7 @@ importers:
         version: 5.28.5(@swc/core@1.6.7(@swc/helpers@0.5.15))
       '@visulima/crud':
         specifier: 2.0.33
-        version: 2.0.33(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
+        version: 2.0.33(@prisma/client@5.22.0(prisma@5.22.0))(prisma@5.22.0)
       '@visulima/fs':
         specifier: 2.3.5
         version: 2.3.5
@@ -1107,8 +1107,8 @@ importers:
         specifier: 1.0.20
         version: 1.0.20
       '@visulima/pail':
-        specifier: 2.1.15
-        version: 2.1.15(rotating-file-stream@3.2.5)
+        specifier: 2.1.16
+        version: 2.1.16(rotating-file-stream@3.2.5)
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
@@ -1513,7 +1513,7 @@ importers:
         version: 3.0.24
       '@visulima/prisma-dmmf-transformer':
         specifier: 2.0.24
-        version: 2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
+        version: 2.0.24(@prisma/client@5.22.0(prisma@5.22.0))(prisma@5.22.0)
       http-errors:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1543,8 +1543,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@prisma/client':
-        specifier: 5.15.1
-        version: 5.15.1(prisma@5.15.1)
+        specifier: 5.22.0
+        version: 5.22.0(prisma@5.22.0)
       '@rushstack/eslint-plugin-security':
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.4.5)
@@ -3394,8 +3394,8 @@ importers:
   packages/prisma-dmmf-transformer:
     dependencies:
       '@prisma/generator-helper':
-        specifier: 5.15.1
-        version: 5.15.1
+        specifier: 5.22.0
+        version: 5.22.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^15.0.3
@@ -3416,11 +3416,11 @@ importers:
         specifier: ^7.26.0
         version: 7.26.0
       '@prisma/client':
-        specifier: 5.15.1
-        version: 5.15.1(prisma@5.15.1)
+        specifier: 5.22.0
+        version: 5.22.0(prisma@5.22.0)
       '@prisma/internals':
-        specifier: 5.15.1
-        version: 5.15.1
+        specifier: 5.22.0
+        version: 5.22.0
       '@rushstack/eslint-plugin-security':
         specifier: ^0.8.3
         version: 0.8.3(eslint@8.57.0)(typescript@5.4.5)
@@ -3438,7 +3438,7 @@ importers:
         version: 1.9.2(@swc/core@1.6.7(@swc/helpers@0.5.15))(@visulima/redact@1.0.10)(esbuild@0.24.0)(icss-utils@5.1.0(postcss@8.4.49))(lightningcss@1.25.1)(picomatch@4.0.2)(postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.4.49)(tsx@4.19.2)(yaml@2.6.1))(postcss-modules-extract-imports@3.1.0(postcss@8.4.49))(postcss-modules-local-by-default@4.0.5(postcss@8.4.49))(postcss-modules-scope@3.2.0(postcss@8.4.49))(postcss-modules-values@4.0.0(postcss@8.4.49))(postcss-value-parser@4.2.0)(postcss@8.4.49)(rotating-file-stream@3.2.5)(sucrase@3.35.0)(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.4.5)))(typedoc-plugin-rename-defaults@0.7.1(typedoc@0.26.10(typescript@5.4.5)))(typedoc@0.26.10(typescript@5.4.5))(typescript@5.4.5)(yaml@2.6.1)
       '@vitest/coverage-v8':
         specifier: 1.6.0
-        version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))
       ajv:
         specifier: 8.16.0
         version: 8.16.0
@@ -3471,7 +3471,7 @@ importers:
         version: 3.1.5(eslint@8.57.0)
       eslint-plugin-vitest:
         specifier: ^0.4.1
-        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))
+        version: 0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))
       eslint-plugin-vitest-globals:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3479,8 +3479,8 @@ importers:
         specifier: 3.3.2
         version: 3.3.2
       prisma:
-        specifier: 5.15.1
-        version: 5.15.1
+        specifier: 5.22.0
+        version: 5.22.0
       rimraf:
         specifier: 5.0.9
         version: 5.0.9
@@ -3492,7 +3492,7 @@ importers:
         version: 5.4.5
       vitest:
         specifier: 1.6.0
-        version: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+        version: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
 
   packages/redact:
     dependencies:
@@ -7108,8 +7108,8 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@prisma/client@5.15.1':
-    resolution: {integrity: sha512-fmZRGmsUJ9+VwC/AvfP/PwdpD0xAEyPvNsD9/B3+GYpETq9VejVRT3PiqNvl76q1uYYzNZeo8u/LmzzTetHSEg==}
+  '@prisma/client@5.22.0':
+    resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
     engines: {node: '>=16.13'}
     peerDependencies:
       prisma: '*'
@@ -7120,29 +7120,35 @@ packages:
   '@prisma/debug@5.15.1':
     resolution: {integrity: sha512-NQjdEplhXEcPvf84ghxExC+LD+iTimbg3sZvA3BhybVQIocBEBxFf9GTHhmRVPmjrWoBaYJBVgEEBXZT27JTbQ==}
 
-  '@prisma/engines-version@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3':
-    resolution: {integrity: sha512-7csphKGCG6n/cN1MkT1mJvQ78Ir18IknlYZ8eyEoLKdQBb0HscR/6TyPmzqrMA7Rz01K1KeXqctwAqxtA/lKQg==}
+  '@prisma/debug@5.22.0':
+    resolution: {integrity: sha512-AUt44v3YJeggO2ZU5BkXI7M4hu9BF2zzH2iF2V5pyXT/lRTyWiElZ7It+bRH1EshoMRxHgpYg4VB6rCM+mG5jQ==}
 
-  '@prisma/engines@5.15.1':
-    resolution: {integrity: sha512-1iTRxJEFvpBpEWf2bYiMG6LBBQhX7X+GA5piH+tmPWgc/v+/ElxQf2kjQxby8AErmZqtZkdoKJ7FSRjNjBPE9Q==}
+  '@prisma/engines-version@5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2':
+    resolution: {integrity: sha512-2PTmxFR2yHW/eB3uqWtcgRcgAbG1rwG9ZriSvQw+nnb7c4uCr3RAcGMb6/zfE88SKlC1Nj2ziUvc96Z379mHgQ==}
 
-  '@prisma/fetch-engine@5.15.1':
-    resolution: {integrity: sha512-mj0wfsJ+mAdDp1ynT2JKxAXa+CoYMT267qF7g2Uv+oaVTI2CMfGWouMARht8T2QLTgl+gpXSFTwIYbcR+oWEtw==}
+  '@prisma/engines@5.22.0':
+    resolution: {integrity: sha512-UNjfslWhAt06kVL3CjkuYpHAWSO6L4kDCVPegV6itt7nD1kSJavd3vhgAEhjglLJJKEdJ7oIqDJ+yHk6qO8gPA==}
+
+  '@prisma/fetch-engine@5.22.0':
+    resolution: {integrity: sha512-bkrD/Mc2fSvkQBV5EpoFcZ87AvOgDxbG99488a5cexp5Ccny+UM6MAe/UFkUC0wLYD9+9befNOqGiIJhhq+HbA==}
 
   '@prisma/generator-helper@5.15.1':
     resolution: {integrity: sha512-eTYGy6FSk2qflQfoXyzGhyCVIIAf+yL7YoSfLDBExSOB9kgug7pfSEWSwkce0CRxUskzx0XU/I4GDBj02laMfg==}
 
-  '@prisma/get-platform@5.15.1':
-    resolution: {integrity: sha512-oFccp7bYys+ZYkmtYzjR+0cRrGKvSuF+h5QhSkyEsYQ9kzJzQRvuWt2SiHRPt8xOQ4MTmujM+bP5uOexnnAHdQ==}
+  '@prisma/generator-helper@5.22.0':
+    resolution: {integrity: sha512-LwqcBQ5/QsuAaLNQZAIVIAJDJBMjHwMwn16e06IYx/3Okj/xEEfw9IvrqB2cJCl3b2mCBlh3eVH0w9WGmi4aHg==}
 
-  '@prisma/internals@5.15.1':
-    resolution: {integrity: sha512-kXoKRbt7g+65347aS5c082UJ4mNvYYrwL/MkFGOs+W7Rvauh4JhNuzIyv4R+04ETdojsTi0yL9ZD7lKR9DxXYQ==}
+  '@prisma/get-platform@5.22.0':
+    resolution: {integrity: sha512-pHhpQdr1UPFpt+zFfnPazhulaZYCUqeIcPpJViYoq9R+D/yw4fjE+CtnsnKzPYm0ddUbeXUzjGVGIRVgPDCk4Q==}
 
-  '@prisma/prisma-schema-wasm@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3':
-    resolution: {integrity: sha512-7oN1RVcb7PA4M2vJbxYUlkU7wDcUPPOE977JvfD1BJTxmEmfSzoTM6Z0BNQN+Ukl7CHOOPiko3tdM1CzxOEOfQ==}
+  '@prisma/internals@5.22.0':
+    resolution: {integrity: sha512-Rsjw2ARB9VQzDczzEimUriSBdXmYG/Z5tNRer2IEwof/O8Q6A9cqV3oNVUpJ52TgWfQqMAq5K/KEf8LvvYLLOw==}
 
-  '@prisma/schema-files-loader@5.15.1':
-    resolution: {integrity: sha512-KmqciQNkmhuv5xRKzfjre0D/sB2JKbQQfdk8qnMI/mEw1bHTzME0n7nJrElx/ivx7Ndai8ejgFTnlGxcxS+vdA==}
+  '@prisma/prisma-schema-wasm@5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2':
+    resolution: {integrity: sha512-WPNB7SgTxF/rSHMa5o5/9AIINy4oVnRhvUkRzqR4Nfp8Hu9Q2IyUptxuiDuzRVJdjJBRi/U82sHTxyiD3oBBhQ==}
+
+  '@prisma/schema-files-loader@5.22.0':
+    resolution: {integrity: sha512-/TNAJXvMSk6mCgZa+gIBM6sp5OUQBnb7rbjiSQm88gvcSibxEuKkVV/2pT3RmQpEAn1yiabvS4+dOvIotYe3ww==}
 
   '@promptbook/utils@0.58.0':
     resolution: {integrity: sha512-TglWndmjikWN+OGg9eNOUaMTM7RHr8uFCtgxfWULT1BUjcohywdijf54vS1U4mZ1tBLdHD4/fIrIHtmHzPUIZQ==}
@@ -10145,8 +10151,8 @@ packages:
       rotating-file-stream:
         optional: true
 
-  '@visulima/pail@2.1.15':
-    resolution: {integrity: sha512-qewydPHiZDKkn20POE9eV9d/XDQta1hPQMuRcxxN9ycoNgtkl1HzSM4X/bnKkM/tEP6+di8CYiVyyIVaShjp3g==}
+  '@visulima/pail@2.1.16':
+    resolution: {integrity: sha512-3aDBbARinGVBEgYH6vXMVHccU6RtJHcnwcvYE6kb4JyBrpWs6D82k6nydquBDfE2dth+D+z0/s4UMNnLv0Ogow==}
     engines: {node: '>=18.* <=23.*'}
     os: [darwin, linux, win32]
     peerDependencies:
@@ -17790,8 +17796,8 @@ packages:
     peerDependencies:
       react: '>=16.0.0'
 
-  prisma@5.15.1:
-    resolution: {integrity: sha512-pYsUVpTlYvZ6mWvZKDv9rKdUa7tlfSUJY1CVtgb8Had1pHbIm9fr1MBASccr5XnSuCUrjnvKhWNwgSYy6aCajA==}
+  prisma@5.22.0:
+    resolution: {integrity: sha512-vtpjW3XuYCSnMsNVBjLMNkTj6OZbudcPPTPYHqX0CJfpcdWciI1dM8uHETwmDxxiqEwCIE6WvXucWUetJgfu/A==}
     engines: {node: '>=16.13'}
     hasBin: true
 
@@ -25102,52 +25108,58 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@prisma/client@5.15.1(prisma@5.15.1)':
+  '@prisma/client@5.22.0(prisma@5.22.0)':
     optionalDependencies:
-      prisma: 5.15.1
+      prisma: 5.22.0
 
   '@prisma/debug@5.15.1': {}
 
-  '@prisma/engines-version@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3': {}
+  '@prisma/debug@5.22.0': {}
 
-  '@prisma/engines@5.15.1':
-    dependencies:
-      '@prisma/debug': 5.15.1
-      '@prisma/engines-version': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
-      '@prisma/fetch-engine': 5.15.1
-      '@prisma/get-platform': 5.15.1
+  '@prisma/engines-version@5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2': {}
 
-  '@prisma/fetch-engine@5.15.1':
+  '@prisma/engines@5.22.0':
     dependencies:
-      '@prisma/debug': 5.15.1
-      '@prisma/engines-version': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
-      '@prisma/get-platform': 5.15.1
+      '@prisma/debug': 5.22.0
+      '@prisma/engines-version': 5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2
+      '@prisma/fetch-engine': 5.22.0
+      '@prisma/get-platform': 5.22.0
+
+  '@prisma/fetch-engine@5.22.0':
+    dependencies:
+      '@prisma/debug': 5.22.0
+      '@prisma/engines-version': 5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2
+      '@prisma/get-platform': 5.22.0
 
   '@prisma/generator-helper@5.15.1':
     dependencies:
       '@prisma/debug': 5.15.1
 
-  '@prisma/get-platform@5.15.1':
+  '@prisma/generator-helper@5.22.0':
     dependencies:
-      '@prisma/debug': 5.15.1
+      '@prisma/debug': 5.22.0
 
-  '@prisma/internals@5.15.1':
+  '@prisma/get-platform@5.22.0':
     dependencies:
-      '@prisma/debug': 5.15.1
-      '@prisma/engines': 5.15.1
-      '@prisma/fetch-engine': 5.15.1
-      '@prisma/generator-helper': 5.15.1
-      '@prisma/get-platform': 5.15.1
-      '@prisma/prisma-schema-wasm': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
-      '@prisma/schema-files-loader': 5.15.1
+      '@prisma/debug': 5.22.0
+
+  '@prisma/internals@5.22.0':
+    dependencies:
+      '@prisma/debug': 5.22.0
+      '@prisma/engines': 5.22.0
+      '@prisma/fetch-engine': 5.22.0
+      '@prisma/generator-helper': 5.22.0
+      '@prisma/get-platform': 5.22.0
+      '@prisma/prisma-schema-wasm': 5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2
+      '@prisma/schema-files-loader': 5.22.0
       arg: 5.0.2
       prompts: 2.4.2
 
-  '@prisma/prisma-schema-wasm@5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3': {}
+  '@prisma/prisma-schema-wasm@5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2': {}
 
-  '@prisma/schema-files-loader@5.15.1':
+  '@prisma/schema-files-loader@5.22.0':
     dependencies:
-      '@prisma/prisma-schema-wasm': 5.15.1-1.5675a3182f972f1a8f31d16eee6abf4fd54910e3
+      '@prisma/prisma-schema-wasm': 5.22.0-44.605197351a3c8bdd595af2d2a9bc3025bca48ea2
       fs-extra: 11.1.1
 
   '@promptbook/utils@0.58.0':
@@ -30000,10 +30012,10 @@ snapshots:
       regexparam: 3.0.0
       zod: 3.24.1
 
-  '@visulima/crud@2.0.33(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
+  '@visulima/crud@2.0.33(@prisma/client@5.22.0(prisma@5.22.0))(prisma@5.22.0)':
     dependencies:
       '@visulima/pagination': 3.0.24
-      '@visulima/prisma-dmmf-transformer': 2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)
+      '@visulima/prisma-dmmf-transformer': 2.0.24(@prisma/client@5.22.0(prisma@5.22.0))(prisma@5.22.0)
       http-errors: 2.0.0
       path-to-regexp: 8.2.0
     transitivePeerDependencies:
@@ -30494,7 +30506,7 @@ snapshots:
       '@visulima/redact': 1.0.10
       rotating-file-stream: 3.2.5
 
-  '@visulima/pail@2.1.15(rotating-file-stream@3.2.5)':
+  '@visulima/pail@2.1.16(rotating-file-stream@3.2.5)':
     dependencies:
       '@visulima/colorize': 1.4.16
       '@visulima/error': 4.4.11
@@ -30512,11 +30524,11 @@ snapshots:
 
   '@visulima/path@1.3.1': {}
 
-  '@visulima/prisma-dmmf-transformer@2.0.24(@prisma/client@5.15.1(prisma@5.15.1))(prisma@5.15.1)':
+  '@visulima/prisma-dmmf-transformer@2.0.24(@prisma/client@5.22.0(prisma@5.22.0))(prisma@5.22.0)':
     dependencies:
-      '@prisma/client': 5.15.1(prisma@5.15.1)
+      '@prisma/client': 5.22.0(prisma@5.22.0)
       '@prisma/generator-helper': 5.15.1
-      prisma: 5.15.1
+      prisma: 5.22.0
 
   '@visulima/redact@1.0.10':
     dependencies:
@@ -30776,7 +30788,7 @@ snapshots:
       - vite
     optional: true
 
-  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))':
+  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -30791,7 +30803,7 @@ snapshots:
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -30972,7 +30984,7 @@ snapshots:
       sirv: 3.0.0
       tinyglobby: 0.2.10
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@20.14.11)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.7.0(@types/node@20.14.11)(typescript@5.5.3))(terser@5.31.1)
+      vitest: 2.1.8(@types/node@22.10.2)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(msw@2.7.0(@types/node@22.10.2)(typescript@5.4.5))(terser@5.31.1)
 
   '@vitest/utils@1.6.0':
     dependencies:
@@ -34689,12 +34701,12 @@ snapshots:
 
   eslint-plugin-vitest-globals@1.5.0: {}
 
-  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)):
+  eslint-plugin-vitest@0.4.1(eslint@8.57.0)(typescript@5.4.5)(vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)):
     dependencies:
       '@typescript-eslint/utils': 7.15.0(eslint@8.57.0)(typescript@5.4.5)
       eslint: 8.57.0
     optionalDependencies:
-      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
+      vitest: 1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -41115,9 +41127,11 @@ snapshots:
       clsx: 2.1.1
       react: 19.0.0
 
-  prisma@5.15.1:
+  prisma@5.22.0:
     dependencies:
-      '@prisma/engines': 5.15.1
+      '@prisma/engines': 5.22.0
+    optionalDependencies:
+      fsevents: 2.3.3
 
   prismjs@1.27.0: {}
 
@@ -45359,7 +45373,7 @@ snapshots:
       tsx: 4.19.2
       yaml: 2.6.1
 
-  vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8)(@vitest/ui@2.1.8)(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1):
+  vitest@1.6.0(@types/node@18.19.15)(@vitest/browser@2.1.8(@types/node@22.10.2)(playwright@1.49.1)(typescript@5.7.2)(vite@5.4.11(@types/node@22.10.2)(lightningcss@1.25.1)(terser@5.31.1))(vitest@2.1.8)(webdriverio@9.4.5))(@vitest/ui@2.1.8(vitest@2.1.8))(jsdom@25.0.1)(lightningcss@1.25.1)(terser@5.31.1):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
