@@ -118,7 +118,7 @@
         "eslint-plugin-validate-jsx-nesting": "^0.1.1",
         "eslint-plugin-vitest": "^0.4.1",
         "eslint-plugin-vitest-globals": "^1.5.0",
-        "next": "^14.2.4",
+        "next": "^15.1.0",
         "next-test-api-route-handler": "^4.0.14",
         "node-mocks-http": "^1.16.2",
         "openapi-types": "^12.1.3",
