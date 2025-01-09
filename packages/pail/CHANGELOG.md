@@ -1,3 +1,9 @@
+## @visulima/pail [2.1.16](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.15...@visulima/pail@2.1.16) (2025-01-09)
+
+### Bug Fixes
+
+* **pail:** fixed wrong description ([14f0d57](https://github.com/visulima/visulima/commit/14f0d577a779ed003c316f5c791f06700609eabf))
+
 ## @visulima/pail [2.1.15](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.14...@visulima/pail@2.1.15) (2025-01-08)
 
 
