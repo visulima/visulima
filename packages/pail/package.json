@@ -1,7 +1,7 @@
 {
     "name": "@visulima/pail",
     "version": "2.1.15",
-    "description": "Find a file or directory by walking up parent directories.",
+    "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
         "anolilab",
