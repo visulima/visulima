@@ -98,8 +98,10 @@ const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconf
 ### TsConfigJson
 
 ```ts
-type TsConfigJson: object;
+type TsConfigJson = object;
 ```
+
+Defined in: node\_modules/.pnpm/type-fest@4.32.0/node\_modules/type-fest/source/tsconfig-json.d.ts:1
 
 Type for [TypeScript's `tsconfig.json` file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) (TypeScript 3.7).
 
@@ -181,80 +183,86 @@ optional watchOptions: WatchOptions;
 
 Instructs the TypeScript compiler how to watch files.
 
-#### Defined in
-
-node_modules/.pnpm/type-fest@4.30.0/node_modules/type-fest/source/tsconfig-json.d.ts:1
-
 ## Other
 
 ### findTsConfig()
 
 ```ts
-function findTsConfig(cwd?, options?): Promise<TsConfigResult>;
+function findTsConfig(cwd?, options?): Promise<TsConfigResult>
 ```
+
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:29](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/find-tsconfig.ts#L29)
 
 An asynchronous function that retrieves the TSConfig by searching for the "tsconfig.json" first,
 second attempt is to look for the "jsconfig.json" file from a given current working directory.
 
 #### Parameters
 
-• **cwd?**: `string` \| `URL`
+##### cwd?
 
 Optional. The current working directory from which to search for the "tsconfig.json" file.
-The type of `cwd` is `string`.
+             The type of `cwd` is `string`.
 
-• **options?**: `Options` = `{}`
+`string` | `URL`
+
+##### options?
+
+`Options` = `{}`
 
 #### Returns
 
 `Promise`\<[`TsConfigResult`](README.md#tsconfigresult)\>
 
 A `Promise` that resolves to the TSConfig result object.
-The return type of the function is `Promise<TsConfigResult>`.
+         The return type of the function is `Promise<TsConfigResult>`.
 
 #### Throws
 
 An `Error` when the "tsconfig.json" file is not found.
 
-#### Defined in
-
-[packages/tsconfig/src/find-tsconfig.ts:29](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/find-tsconfig.ts#L29)
-
----
+***
 
 ### findTsConfigSync()
 
 ```ts
-function findTsConfigSync(cwd?, options?): TsConfigResult;
+function findTsConfigSync(cwd?, options?): TsConfigResult
 ```
+
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/find-tsconfig.ts#L66)
 
 #### Parameters
 
-• **cwd?**: `string` \| `URL`
+##### cwd?
 
-• **options?**: `Options` = `{}`
+`string` | `URL`
+
+##### options?
+
+`Options` = `{}`
 
 #### Returns
 
 [`TsConfigResult`](README.md#tsconfigresult)
 
-#### Defined in
-
-[packages/tsconfig/src/find-tsconfig.ts:66](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/find-tsconfig.ts#L66)
-
----
+***
 
 ### readTsConfig()
 
 ```ts
-function readTsConfig(tsconfigPath, options?): object;
+function readTsConfig(tsconfigPath, options?): object
 ```
+
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:307](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/read-tsconfig.ts#L307)
 
 #### Parameters
 
-• **tsconfigPath**: `string`
+##### tsconfigPath
 
-• **options?**: `Options`
+`string`
+
+##### options?
+
+`Options`
 
 #### Returns
 
@@ -328,27 +336,29 @@ optional watchOptions: WatchOptions;
 
 Instructs the TypeScript compiler how to watch files.
 
-#### Defined in
-
-[packages/tsconfig/src/read-tsconfig.ts:307](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/read-tsconfig.ts#L307)
-
----
+***
 
 ### writeTsConfig()
 
 ```ts
-function writeTsConfig(tsConfig, options): Promise<void>;
+function writeTsConfig(tsConfig, options): Promise<void>
 ```
+
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/write-tsconfig.ts#L17)
 
 An asynchronous function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
 #### Parameters
 
-• **tsConfig**: [`TsConfigJson`](README.md#tsconfigjson)
+##### tsConfig
+
+[`TsConfigJson`](README.md#tsconfigjson)
 
 The TypeScript configuration object to write. The type of `tsConfig` is `TsConfigJson`.
 
-• **options**: `WriteFileOptions` & `object` & `object` = `{}`
+##### options
+
+`WriteFileOptions` & `object` & `object` = `{}`
 
 Optional. The write options and the current working directory. The type of `options` is an
 intersection type of `WriteOptions` and a Record type with an optional `cwd` key of type `string`.
@@ -360,27 +370,29 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-#### Defined in
-
-[packages/tsconfig/src/write-tsconfig.ts:17](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/write-tsconfig.ts#L17)
-
----
+***
 
 ### writeTsConfigSync()
 
 ```ts
-function writeTsConfigSync(tsConfig, options): void;
+function writeTsConfigSync(tsConfig, options): void
 ```
+
+Defined in: [packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/write-tsconfig.ts#L35)
 
 A function that writes the provided TypeScript configuration object to a tsconfig.json file.
 
 #### Parameters
 
-• **tsConfig**: [`TsConfigJson`](README.md#tsconfigjson)
+##### tsConfig
+
+[`TsConfigJson`](README.md#tsconfigjson)
 
 The TypeScript configuration object to write. The type of `tsConfig` is `TsConfigJson`.
 
-• **options**: `WriteFileOptions` & `object` & `object` = `{}`
+##### options
+
+`WriteFileOptions` & `object` & `object` = `{}`
 
 Optional. The write options and the current working directory. The type of `options` is an
 intersection type of `WriteOptions` and a Record type with an optional `cwd` key of type `string`.
@@ -392,11 +404,7 @@ intersection type of `WriteOptions` and a Record type with an optional `cwd` key
 A `Promise` that resolves when the tsconfig.json file has been written.
 The return type of function is `Promise<void>`.
 
-#### Defined in
-
-[packages/tsconfig/src/write-tsconfig.ts:35](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/write-tsconfig.ts#L35)
-
----
+***
 
 ### implicitBaseUrlSymbol
 
@@ -404,29 +412,27 @@ The return type of function is `Promise<void>`.
 const implicitBaseUrlSymbol: typeof implicitBaseUrlSymbol;
 ```
 
-#### Defined in
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:304](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/read-tsconfig.ts#L304)
 
-[packages/tsconfig/src/read-tsconfig.ts:304](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/read-tsconfig.ts#L304)
-
----
+***
 
 ### TsConfigJsonResolved
 
 ```ts
-type TsConfigJsonResolved: Except<TsConfigJson, "extends">;
+type TsConfigJsonResolved = Except<TsConfigJson, "extends">;
 ```
 
-#### Defined in
+Defined in: [packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/types.ts#L3)
 
-[packages/tsconfig/src/types.ts:3](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/types.ts#L3)
-
----
+***
 
 ### TsConfigResult
 
 ```ts
-type TsConfigResult: object;
+type TsConfigResult = object;
 ```
+
+Defined in: [packages/tsconfig/src/find-tsconfig.ts:14](https://github.com/visulima/visulima/blob/a1a6030f0556817b8241bd6056fb4363660e631c/packages/tsconfig/src/find-tsconfig.ts#L14)
 
 #### Type declaration
 
@@ -441,10 +447,6 @@ config: TsConfigJsonResolved;
 ```ts
 path: string;
 ```
-
-#### Defined in
-
-[packages/tsconfig/src/find-tsconfig.ts:14](https://github.com/visulima/visulima/blob/78872bace21a0cb329dd2a18a673d0b630371107/packages/tsconfig/src/find-tsconfig.ts#L14)
 
 ## File
 

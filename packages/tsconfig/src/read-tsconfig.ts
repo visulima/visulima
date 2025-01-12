@@ -209,32 +209,6 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
             }
         }
 
-        if (options?.tscCompatible && compilerOptions.module === "node16" && ["5.4", "5.5", "5.6", "true"].includes(String(options.tscCompatible))) {
-            compilerOptions.allowSyntheticDefaultImports = compilerOptions.allowSyntheticDefaultImports ?? true;
-            compilerOptions.esModuleInterop = compilerOptions.esModuleInterop ?? true;
-            compilerOptions.moduleDetection = compilerOptions.moduleDetection ?? "force";
-            compilerOptions.moduleResolution = compilerOptions.moduleResolution ?? "node16";
-            compilerOptions.target = compilerOptions.target ?? "es2022";
-            compilerOptions.useDefineForClassFields = compilerOptions.useDefineForClassFields ?? true;
-        }
-
-        if (options?.tscCompatible && compilerOptions.strict) {
-            if (["5.6", "true"].includes(String(options.tscCompatible))) {
-                compilerOptions.strictBuiltinIteratorReturn = compilerOptions.strictBuiltinIteratorReturn ?? true;
-            }
-
-            if (["5.4", "5.5", "5.6", "true"].includes(String(options.tscCompatible))) {
-                compilerOptions.noImplicitAny = compilerOptions.noImplicitAny ?? true;
-                compilerOptions.noImplicitThis = compilerOptions.noImplicitThis ?? true;
-                compilerOptions.strictNullChecks = compilerOptions.strictNullChecks ?? true;
-                compilerOptions.strictFunctionTypes = compilerOptions.strictFunctionTypes ?? true;
-                compilerOptions.strictBindCallApply = compilerOptions.strictBindCallApply ?? true;
-                compilerOptions.strictPropertyInitialization = compilerOptions.strictPropertyInitialization ?? true;
-                compilerOptions.alwaysStrict = compilerOptions.alwaysStrict ?? true;
-                compilerOptions.useUnknownInCatchVariables = compilerOptions.useUnknownInCatchVariables ?? true;
-            }
-        }
-
         if (options?.tscCompatible && compilerOptions.isolatedModules) {
             compilerOptions.preserveConstEnums = compilerOptions.preserveConstEnums ?? true;
         }
@@ -287,6 +261,110 @@ const interpolateConfigDirectory = (filePath: string, configDirectory: string): 
  * exclude paths, as it requires custom processing
  */
 const compilerFieldsWithConfigDirectory = ["outDir", "declarationDir", "outFile", "rootDir", "baseUrl", "tsBuildInfoFile"] as const;
+
+const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options): TsConfigJsonResolved => {
+    if (config.compilerOptions === undefined) {
+        return config;
+    }
+
+    if (config.compilerOptions.module === "node16" && ["5.4", "5.5", "5.6", "5.7", "true"].includes(String(options.tscCompatible))) {
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.allowSyntheticDefaultImports = config.compilerOptions.allowSyntheticDefaultImports ?? true;
+
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.esModuleInterop =
+            config.compilerOptions.module === "node16" || config.compilerOptions.module === "nodenext" || config.compilerOptions.module === "perserve"
+                ? (config.compilerOptions.esModuleInterop ?? true)
+                : (config.compilerOptions.esModuleInterop ?? false);
+
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.moduleDetection =
+            config?.compilerOptions.moduleDetection ?? (["node16", "nodenext"].includes(config.compilerOptions.module) ? "force" : "auto");
+
+        let moduleResolution: TsConfigJson.CompilerOptions.ModuleResolution = "classic";
+
+        // eslint-disable-next-line default-case
+        switch ((config.compilerOptions?.module as TsConfigJson.CompilerOptions.Module).toLocaleLowerCase()) {
+            case "commonjs": {
+                moduleResolution = "node10";
+                break;
+            }
+            case "node16": {
+                moduleResolution = "node16";
+                break;
+            }
+            case "nodenext": {
+                moduleResolution = "nodenext";
+                break;
+            }
+            case "preserve": {
+                moduleResolution = "bundler";
+                break;
+            }
+        }
+
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.moduleResolution = moduleResolution;
+
+        if (["5.7"].includes(String(options.tscCompatible))) {
+            let resolvePackageJson = false;
+
+            if (
+                config.compilerOptions.moduleResolution === "node16" ||
+                config.compilerOptions.moduleResolution === "nodenext" ||
+                config.compilerOptions.moduleResolution === "bundler"
+            ) {
+                resolvePackageJson = true;
+            }
+
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.resolvePackageJsonExports = config.compilerOptions.resolvePackageJsonExports ?? resolvePackageJson;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.resolvePackageJsonImports = config.compilerOptions.resolvePackageJsonImports ?? resolvePackageJson;
+        }
+
+        let target: TsConfigJson.CompilerOptions.Target = "es5";
+
+        if (config.compilerOptions.module === "node16") {
+            target = "es2022";
+        } else if (config.compilerOptions.module === "nodenext") {
+            target = "esnext";
+        }
+
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.target = target;
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.useDefineForClassFields = config.compilerOptions.useDefineForClassFields ?? (config.compilerOptions.target.includes("es202") || config.compilerOptions.target === "esnext");
+    }
+
+    if (config.compilerOptions.strict) {
+        if (["5.6", "5.7", "true"].includes(String(options.tscCompatible))) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.strictBuiltinIteratorReturn = config.compilerOptions.strictBuiltinIteratorReturn ?? true;
+        }
+
+        if (["5.4", "5.5", "5.6", "5.7", "true"].includes(String(options.tscCompatible))) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.noImplicitAny = config.compilerOptions.noImplicitAny ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.noImplicitThis = config.compilerOptions.noImplicitThis ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.strictNullChecks = config.compilerOptions.strictNullChecks ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.strictFunctionTypes = config.compilerOptions.strictFunctionTypes ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.strictBindCallApply = config.compilerOptions.strictBindCallApply ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.strictPropertyInitialization = config.compilerOptions.strictPropertyInitialization ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.alwaysStrict = config.compilerOptions.alwaysStrict ?? true;
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.useUnknownInCatchVariables = config.compilerOptions.useUnknownInCatchVariables ?? true;
+        }
+    }
+
+    return config;
+};
 
 export type Options = {
     /**
@@ -382,6 +460,10 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
                 return normalize(filePath);
             });
         }
+    }
+
+    if (options?.tscCompatible) {
+        tsCompatibleWrapper(config, options);
     }
 
     return config;
