@@ -1,3 +1,14 @@
+## @visulima/jsdoc-open-api [2.0.70](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.69...@visulima/jsdoc-open-api@2.0.70) (2025-01-12)
+
+### Bug Fixes
+
+* **jsdoc-open-api:** updated yaml to 2.7.0, @apidevtools/swagger-parser to 10.1.1 and all dev deps ([ad4327c](https://github.com/visulima/visulima/commit/ad4327c3b8251c09312f3d0a2243d133242f0d59))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.6
+
 ## @visulima/jsdoc-open-api [2.0.69](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.68...@visulima/jsdoc-open-api@2.0.69) (2025-01-08)
 
 
