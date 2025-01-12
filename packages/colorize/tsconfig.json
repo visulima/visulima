@@ -4,6 +4,7 @@
     "include": ["src/**/*", "*.d.ts"],
     "compilerOptions": {
         "moduleResolution": "bundler",
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": false
     }
 }
