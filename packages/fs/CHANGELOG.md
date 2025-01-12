@@ -1,3 +1,15 @@
+## @visulima/fs [2.3.6](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.5...@visulima/fs@2.3.6) (2025-01-12)
+
+### Bug Fixes
+
+* **fs:** updated yaml to 2.7.0 and all dev deps ([f836ac3](https://github.com/visulima/visulima/commit/f836ac3fa28c345d56218ab7918f86fe75034804))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.2
+* **@visulima/error:** upgraded to 4.4.12
+
 ## @visulima/fs [2.3.5](https://github.com/visulima/visulima/compare/@visulima/fs@2.3.4...@visulima/fs@2.3.5) (2025-01-08)
 
 
