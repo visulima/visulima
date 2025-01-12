@@ -1,3 +1,15 @@
+## @visulima/package [3.4.3](https://github.com/visulima/visulima/compare/@visulima/package@3.4.2...@visulima/package@3.4.3) (2025-01-12)
+
+### Bug Fixes
+
+* **package:** updated @antfu/install-pkg to v1, @inquirer/confirm 5.1.2 and all dev deps ([a30e052](https://github.com/visulima/visulima/commit/a30e05260417546889d3ff32bba33075a337472f))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.6
+* **@visulima/path:** upgraded to 1.3.2
+
 ## @visulima/package [3.4.2](https://github.com/visulima/visulima/compare/@visulima/package@3.4.1...@visulima/package@3.4.2) (2025-01-08)
 
 
