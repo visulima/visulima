@@ -1,3 +1,9 @@
+## @visulima/path [1.3.2](https://github.com/visulima/visulima/compare/@visulima/path@1.3.1...@visulima/path@1.3.2) (2025-01-12)
+
+### Bug Fixes
+
+* updated @visulima/packem, and all other dev dependencies ([7797a1c](https://github.com/visulima/visulima/commit/7797a1c3e6f1fc532895247bd88285a8a9883c40))
+
 ## @visulima/path [1.3.1](https://github.com/visulima/visulima/compare/@visulima/path@1.3.0...@visulima/path@1.3.1) (2025-01-08)
 
 ### Bug Fixes
