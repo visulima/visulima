@@ -1,3 +1,13 @@
+## @visulima/is-ansi-color-supported [2.2.10](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.9...@visulima/is-ansi-color-supported@2.2.10) (2025-01-12)
+
+### Bug Fixes
+
+* updated @visulima/packem, and all other dev dependencies ([7797a1c](https://github.com/visulima/visulima/commit/7797a1c3e6f1fc532895247bd88285a8a9883c40))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
 ## @visulima/is-ansi-color-supported [2.2.9](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.2.8...@visulima/is-ansi-color-supported@2.2.9) (2024-12-12)
 
 ### Bug Fixes
