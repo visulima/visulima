@@ -1,3 +1,15 @@
+## @visulima/tsconfig [1.1.7](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.6...@visulima/tsconfig@1.1.7) (2025-01-12)
+
+### Bug Fixes
+
+* **tsconfig:** added support for ts 5.7, fixed compatible wrapper output, updated deps ([3110f7b](https://github.com/visulima/visulima/commit/3110f7bda8e868fa1661e0eb84a721727a8e5f04))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.6
+* **@visulima/path:** upgraded to 1.3.2
+
 ## @visulima/tsconfig [1.1.6](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.5...@visulima/tsconfig@1.1.6) (2025-01-08)
 
 
