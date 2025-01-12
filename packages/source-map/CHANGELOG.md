@@ -1,3 +1,14 @@
+## @visulima/source-map [1.0.15](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.14...@visulima/source-map@1.0.15) (2025-01-12)
+
+### Bug Fixes
+
+* updated @visulima/packem, and all other dev dependencies ([7797a1c](https://github.com/visulima/visulima/commit/7797a1c3e6f1fc532895247bd88285a8a9883c40))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.2
+
 ## @visulima/source-map [1.0.14](https://github.com/visulima/visulima/compare/@visulima/source-map@1.0.13...@visulima/source-map@1.0.14) (2025-01-08)
 
 
