@@ -1,3 +1,14 @@
+## @visulima/cerebro [1.1.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.32...@visulima/cerebro@1.1.33) (2025-01-13)
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 1.0.27
+* **@visulima/colorize:** upgraded to 1.4.18
+* **@visulima/find-cache-dir:** upgraded to 1.0.22
+* **@visulima/pail:** upgraded to 2.1.18
+* **@visulima/path:** upgraded to 1.3.3
+
 ## @visulima/cerebro [1.1.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@1.1.31...@visulima/cerebro@1.1.32) (2025-01-12)
 
 ### Bug Fixes
