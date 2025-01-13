@@ -1,3 +1,10 @@
+## @visulima/humanizer [1.0.20](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.19...@visulima/humanizer@1.0.20) (2025-01-13)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.3
+
 ## @visulima/humanizer [1.0.19](https://github.com/visulima/visulima/compare/@visulima/humanizer@1.0.18...@visulima/humanizer@1.0.19) (2025-01-12)
 
 ### Bug Fixes
