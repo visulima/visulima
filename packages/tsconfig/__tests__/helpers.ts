@@ -31,10 +31,10 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
  * MIT License
  * Copyright (c) Hiroki Osame <hiroki.osame@gmail.com>
  */
-export const getTscTsconfig = async (cwd: string): Promise<TsConfigJson> => {
-    const output = await execa(tscPath, ["--showConfig"], { cwd });
+export const getTscTsconfig = async (cwd: string, filePath?: string): Promise<TsConfigJson> => {
+    const output = await execa(tscPath, ["--showConfig", ...(filePath ? ["--project", filePath] : [])], { cwd });
 
-    return JSON.parse(output.stdout);
+    return JSON.parse(output.stdout) as TsConfigJson;
 };
 
 export const parseVersion = (version: string): Options["tscCompatible"] | undefined => {

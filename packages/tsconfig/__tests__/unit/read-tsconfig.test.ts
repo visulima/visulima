@@ -247,4 +247,106 @@ describe("parses tsconfig", () => {
             process.chdir(originalCwd);
         }
     });
+
+    it("when extending a base config include and exclude get overwritten by base config", async () => {
+        expect.assertions(1);
+
+        writeJsonSync(join(distribution, "tsconfig.base.json"), {
+            compileOnSave: false,
+            compilerOptions: {
+                allowImportingTsExtensions: true,
+                allowSyntheticDefaultImports: true,
+                baseUrl: ".",
+                declaration: true,
+                emitDecoratorMetadata: true,
+                esModuleInterop: true,
+                experimentalDecorators: true,
+                forceConsistentCasingInFileNames: true,
+                importHelpers: true,
+                lib: ["ES2023"],
+                module: "Node16",
+                moduleResolution: "Node16",
+                noEmit: true,
+                noFallthroughCasesInSwitch: true,
+                noImplicitOverride: true,
+                noImplicitReturns: true,
+                noPropertyAccessFromIndexSignature: true,
+                resolveJsonModule: true,
+                rootDir: ".",
+                skipDefaultLibCheck: true,
+                skipLibCheck: true,
+                sourceMap: true,
+                strict: true,
+                target: "es2022",
+                useUnknownInCatchVariables: true,
+            },
+            exclude: ["node_modules", "tmp"],
+        });
+        writeJsonSync(join(distribution, "configs", "tsconfig.jsx.json"), {
+            compilerOptions: {
+                isolatedModules: true,
+                jsx: "preserve",
+                jsxImportSource: "solid-js",
+                lib: ["ESNext", "DOM", "DOM.Iterable"],
+                module: "ESNext",
+                moduleResolution: "bundler",
+                target: "ES2022",
+            },
+        });
+        writeJsonSync(join(distribution, "configs", "tsconfig.jsx.spec.json"), {
+            compilerOptions: {
+                outDir: "../../dist/out-tsc",
+                types: ["vitest/globals", "vitest/importMeta", "vite/client", "vinxi/types/client", "node", "vitest", "@testing-library/jest-dom"],
+            },
+            extends: "./tsconfig.jsx.json",
+        });
+        writeJsonSync(join(distribution, "library", "tsconfig.base.json"), {
+            compileOnSave: false,
+            compilerOptions: {
+                allowImportingTsExtensions: true,
+            },
+            exclude: ["node_modules", "tmp"],
+        });
+        writeJsonSync(join(distribution, "library", "tsconfig.json"), {
+            compilerOptions: {},
+            extends: "../tsconfig.base.json",
+            files: [],
+            include: [],
+            references: [
+                {
+                    path: "./tsconfig.lib.json",
+                },
+                {
+                    path: "./tsconfig.spec.json",
+                },
+            ],
+        });
+        writeJsonSync(join(distribution, "library", "tsconfig.spec.json"), {
+            extends: ["./tsconfig.json", "../configs/tsconfig.jsx.spec.json"],
+            include: [
+                "vite.config.ts",
+                "src/**/*.test.ts",
+                "src/**/*.spec.ts",
+                "src/**/*.test.tsx",
+                "src/**/*.spec.tsx",
+                "src/**/*.stories.tsx",
+                "src/**/*.d.ts",
+                "types/**/*.d.ts",
+                ".storybook/**/*.ts",
+                ".storybook/**/*.tsx",
+            ],
+        });
+        writeJsonSync(join(distribution, "library", "tsconfig.lib.json"), {
+            exclude: ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/*.spec.tsx", "src/**/*.test.tsx", "t.ts"],
+            extends: ["./tsconfig.json", "../configs/tsconfig.jsx.json"],
+            include: ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"],
+        });
+
+        const parsedTsconfig = readTsConfig(join(distribution, "library", "tsconfig.lib.json"), { tscCompatible: typescriptVersion });
+        const expectedTsconfig = await getTscTsconfig(distribution, "library/tsconfig.lib.json");
+
+        delete expectedTsconfig.files;
+
+        expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+    });
 });
