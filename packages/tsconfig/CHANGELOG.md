@@ -1,3 +1,16 @@
+## @visulima/tsconfig [1.1.8](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.7...@visulima/tsconfig@1.1.8) (2025-01-13)
+
+### Bug Fixes
+
+* **tsconfig:** adjusted error messages and added check for config placeholder ([91304e1](https://github.com/visulima/visulima/commit/91304e1126993b7c002fd16a406185a908b64074))
+* **tsconfig:** fixed resolution of rootDir and baseUrl, fixed correct behavior of tsCompatibleWrapper ([20d25d7](https://github.com/visulima/visulima/commit/20d25d79f41ab7a8946c50f8e31c1646a6032d4c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 2.3.7
+* **@visulima/path:** upgraded to 1.3.3
+
 ## @visulima/tsconfig [1.1.7](https://github.com/visulima/visulima/compare/@visulima/tsconfig@1.1.6...@visulima/tsconfig@1.1.7) (2025-01-12)
 
 ### Bug Fixes
