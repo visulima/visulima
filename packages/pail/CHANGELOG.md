@@ -1,3 +1,12 @@
+## @visulima/pail [2.1.18](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.17...@visulima/pail@2.1.18) (2025-01-13)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.18
+* **@visulima/error:** upgraded to 4.4.13
+* **@visulima/inspector:** upgraded to 1.0.18
+
 ## @visulima/pail [2.1.17](https://github.com/visulima/visulima/compare/@visulima/pail@2.1.16...@visulima/pail@2.1.17) (2025-01-12)
 
 ### Bug Fixes
