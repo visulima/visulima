@@ -1,3 +1,9 @@
+## @visulima/path [1.3.3](https://github.com/visulima/visulima/compare/@visulima/path@1.3.2...@visulima/path@1.3.3) (2025-01-13)
+
+### Bug Fixes
+
+* **path:** fixed isRelative with ".." syntax ([67a63b5](https://github.com/visulima/visulima/commit/67a63b5c7044605b9a77b9f13cf6dc7ac37f376b))
+
 ## @visulima/path [1.3.2](https://github.com/visulima/visulima/compare/@visulima/path@1.3.1...@visulima/path@1.3.2) (2025-01-12)
 
 ### Bug Fixes
