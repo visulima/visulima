@@ -1,3 +1,10 @@
+## @visulima/colorize [1.4.18](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.17...@visulima/colorize@1.4.18) (2025-01-13)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 1.3.3
+
 ## @visulima/colorize [1.4.17](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.16...@visulima/colorize@1.4.17) (2025-01-12)
 
 ### Bug Fixes
