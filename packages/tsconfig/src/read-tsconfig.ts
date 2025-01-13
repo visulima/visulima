@@ -138,12 +138,13 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
             if (!resolvedExtendsPath) {
                 // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                throw new NotFoundError("No such file or directory, for " + extendsPath + " found.");
+                throw new NotFoundError("No such file or directory, for '" + extendsPath + "' found.");
             }
 
             const extendsConfig = resolveExtends(resolvedExtendsPath, directoryPath, new Set(circularExtendsTracker), options);
 
-            if (extendsConfig.compilerOptions?.rootDir !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            if (extendsConfig.compilerOptions?.rootDir !== undefined && !extendsConfig.compilerOptions.rootDir.startsWith(configDirectoryPlaceholder)) {
                 extendsConfig.compilerOptions.rootDir = join(dirname(resolvedExtendsPath), extendsConfig.compilerOptions.rootDir);
             }
 

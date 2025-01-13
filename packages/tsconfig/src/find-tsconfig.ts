@@ -42,7 +42,7 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     }
 
     if (!filePath) {
-        throw new NotFoundError(`No such file or directory, for ${configFileName} or jsconfig.json found.`);
+        throw new NotFoundError("No such file or directory, for '" + configFileName + "' or 'jsconfig.json' found.");
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
@@ -79,7 +79,7 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
     }
 
     if (!filePath) {
-        throw new NotFoundError(`No such file or directory, for ${configFileName} or jsconfig.json found.`);
+        throw new NotFoundError("No such file or directory, for '" + configFileName + "' or 'jsconfig.json' found.");
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : TsConfigFileCache;
